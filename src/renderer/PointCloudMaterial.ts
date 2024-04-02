@@ -393,7 +393,6 @@ class PointCloudMaterial extends ShaderMaterial {
         }
 
         this.fog = true;
-        this.extensions.fragDepth = true;
         this.colorLayer = null;
         this.needsUpdate = true;
 

@@ -1,12 +1,5 @@
 import type { Camera, Material, Object3D, WebGLRenderer } from 'three';
-import {
-    Color,
-    DepthTexture,
-    FloatType,
-    NearestFilter,
-    UnsignedByteType,
-    WebGLRenderTarget,
-} from 'three';
+import { Color, DepthTexture, FloatType, NearestFilter, WebGLRenderTarget } from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { TexturePass } from 'three/examples/jsm/postprocessing/TexturePass.js';
@@ -85,9 +78,7 @@ export default class RenderPipeline {
             this.sceneRenderTarget?.dispose();
             this.effectComposer?.dispose();
 
-            const depthBufferType = this.renderer.capabilities.floatFragmentTextures
-                ? FloatType
-                : UnsignedByteType;
+            const depthBufferType = FloatType;
 
             // This is the render target that the initial rendering of scene will be:
             // opaque, transparent and point cloud buckets render into this.
