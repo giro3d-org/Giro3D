@@ -156,6 +156,33 @@ Before merging, the assignee must first:
 -   ensure labels are properly set on the corresponding issue (or on the MR if there's no issue)
 -   ensure milestone is properly set to the next version on the corresponding issue (or on the MR if there's no issue)
 
+### Git workflow
+
+During regular development, we follow a simple [feature branch workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/feature-branch-workflow) on top of a [scaled trunk-based development process](https://trunkbaseddevelopment.com/#scaled-trunk-based-development): all developments are done in feature or bugfix branches, which start from the (latest) `main` branch. No commits should be done directly on `main`, only merges from Merge Requests via GitLab.
+
+When forking Giro3D, we encourage using the same branch workflow, instead of working directly on `main`. This will simplify pulling upstream changes from our repo to your fork, and will let you open multiple MRs if you have multiple unrelated contributions to make.
+
+```mermaid
+gitGraph
+    commit
+    commit
+    branch feature
+    checkout feature
+    commit
+    commit
+    checkout main
+    merge feature
+    branch bugfix
+    checkout bugfix
+    commit
+    commit
+    checkout main
+    merge bugfix
+    commit
+```
+
+For releases and hotfixes, we work with release branches. The process is described in the [How to release](HOW_TO_RELEASE.md) procedure.
+
 ### Releasing Giro3D
 
 Any committer can perform a release, following the [How to release](HOW_TO_RELEASE.md) procedure.
