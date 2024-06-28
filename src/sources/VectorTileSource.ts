@@ -44,6 +44,7 @@ import { MVT } from 'ol/format.js';
 import type FeatureFormat from 'ol/format/Feature.js';
 import type { Geometry } from 'ol/geom';
 import type { Projection } from 'ol/proj';
+import type RenderFeature from 'ol/render/Feature';
 import type { StyleFunction } from 'ol/style/Style';
 import type Extent from '../core/geographic/Extent';
 import EmptyTexture from '../renderer/EmptyTexture';
@@ -149,7 +150,7 @@ export interface VectorTileSourceOptions extends ImageSourceOptions {
     /**
      * The format of the vector tile. Default is {@link MVT}.
      */
-    format?: FeatureFormat;
+    format?: FeatureFormat<typeof RenderFeature>;
 
     /**
      * The style or style function.
@@ -277,7 +278,7 @@ class VectorTileSource extends ImageSource {
         const executorGroups = tile.executorGroups[this._olUID];
         for (let i = 0, ii = executorGroups.length; i < ii; ++i) {
             const executorGroup = executorGroups[i];
-            executorGroup.execute(ctx, 1, transform, 0, true);
+            executorGroup.execute(ctx, [width, height], transform, 0, true);
         }
 
         ctx.restore();

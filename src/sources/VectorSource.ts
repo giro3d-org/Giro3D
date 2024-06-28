@@ -116,7 +116,7 @@ function rasterizeBuilderGroup(
         builderGroup.finish(),
     );
 
-    executor.execute(ctx, 1, transform, 0, true);
+    executor.execute(ctx, [canvas.width, canvas.height], transform, 0, true);
 }
 
 /**
