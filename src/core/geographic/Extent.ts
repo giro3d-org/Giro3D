@@ -898,6 +898,20 @@ class Extent {
 
         return result;
     }
+
+    /**
+     * The bounds of the Web Mercator (EPSG:3857) projection.
+     */
+    static get webMercator(): Extent {
+        return new Extent('EPSG:3857', -20037508.34, 20037508.34, -20048966.1, 20048966.1);
+    }
+
+    /**
+     * The bounds of the whole world in the EPSG:4326 projection.
+     */
+    static get WGS84(): Extent {
+        return new Extent('EPSG:4326', -180, 180, -90, 90);
+    }
 }
 
 export default Extent;
