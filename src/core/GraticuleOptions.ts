@@ -1,4 +1,4 @@
-import type { Color } from 'three';
+import type { ColorRepresentation } from 'three';
 
 /**
  * Options for map graticules.
@@ -15,7 +15,7 @@ export default interface GraticuleOptions {
     /**
      * The graticule color.
      */
-    color?: Color;
+    color?: ColorRepresentation;
     /**
      * The distance between vertical lines, in CRS units.
      */
