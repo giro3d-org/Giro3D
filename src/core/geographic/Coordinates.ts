@@ -280,7 +280,7 @@ class Coordinates {
      * // Geographic system
      * const coordinates =
      *      new Coordinates('EPSG:4326', position.longitude, position.latitude, position.altitude);
-     * coordinates.altitude(); // Altitude in geographic system
+     * coordinates.altitude; // Altitude in geographic system
      * // returns : 24999549
      *
      * // or
@@ -289,12 +289,12 @@ class Coordinates {
      * // Geocentric system
      * const coords = new Coordinates('EPSG:4978', position.x, position.y, position.z);
      * const coordinates = coords.as('EPSG:4326');  // Geographic system
-     * coordinates.altitude(); // Altitude in geographic system
+     * coordinates.altitude; // Altitude in geographic system
      * // returns : 24999548.046711832
      * ```
      * @returns The altitude of the position.
      */
-    altitude() {
+    get altitude() {
         assertIsGeographic(this.crs);
         return this._values[2];
     }

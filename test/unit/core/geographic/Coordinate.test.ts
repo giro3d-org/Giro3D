@@ -173,6 +173,13 @@ describe('Coordinates', () => {
         });
     });
 
+    describe('altitude', () => {
+        it('should return the 3rd coordinate', () => {
+            const coord = new Coordinates('EPSG:4326', 0, 0, 999);
+            expect(coord.altitude).toEqual(999);
+        });
+    });
+
     describe('as()', () => {
         // This case happend in Giro3D when we convert the tile extent (4326) to a target WFS server
         // (EPSG:3946 for example) to request Lyon bus line in WFS.
