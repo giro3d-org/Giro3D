@@ -10,6 +10,7 @@ import Map, {
     type MapEventMap,
     DEFAULT_MAP_BACKGROUND_COLOR,
     DEFAULT_MAP_SEGMENTS,
+    DEFAULT_SUBDIVISION_THRESHOLD,
 } from './Map';
 import PotreePointCloud from './PotreePointCloud';
 import Entity, { type EntityEventMap, type EntityUserData } from './Entity';
@@ -35,6 +36,7 @@ export {
     ElevationSample,
     DEFAULT_MAP_BACKGROUND_COLOR,
     DEFAULT_MAP_SEGMENTS,
+    DEFAULT_SUBDIVISION_THRESHOLD,
     LayerCompareFn,
     MapEventMap,
     AxisGrid,
