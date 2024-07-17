@@ -127,6 +127,9 @@ class MapInspector extends EntityInspector {
         this.addController<boolean>(this.map.materialOptions, 'showTileOutlines')
             .name('Show tiles outlines')
             .onChange(() => this.notify());
+        this.addColorController(this.map.materialOptions, 'tileOutlineColor')
+            .name('Tile outline color')
+            .onChange(() => this.notify());
         this.addController<boolean>(this, 'showTileInfo')
             .name('Show tile info')
             .onChange(() => this.toggleBoundingBoxes());
