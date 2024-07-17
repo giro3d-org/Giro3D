@@ -164,6 +164,10 @@ describe('Coordinates', () => {
             expect(new Coordinates('EPSG:4326', 0, 0, 0).isGeographic()).toBeTruthy();
         });
 
+        it('should return true for EPSG:4979', () => {
+            expect(new Coordinates('EPSG:4326', 0, 0, 0).isGeographic()).toBeTruthy();
+        });
+
         it('should return false for EPSG:3857', () => {
             expect(new Coordinates('EPSG:3857', 0, 0, 0).isGeographic()).toBeFalsy();
         });

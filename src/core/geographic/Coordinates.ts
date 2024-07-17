@@ -1,7 +1,12 @@
 import { Vector3, MathUtils, Vector2 } from 'three';
 import proj4 from 'proj4';
+import { register } from 'ol/proj/proj4';
 
 const projectionCache: Map<string, Map<string, proj4.Converter>> = new Map();
+
+proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs +type=crs');
+proj4.defs('EPSG:4979', '+proj=longlat +datum=WGS84 +no_defs +type=crs');
+register(proj4);
 
 export const UNIT = {
     DEGREE: 1,
@@ -30,7 +35,7 @@ function unitFromProj4Unit(projunit: string) {
 }
 
 /**
- * Returns the unit of measure (UoM) of the specified CRS
+ * Returns the horizontal unit of measure (UoM) of the specified CRS
  *
  * @param crs - the CRS to test
  * @returns the unit of measure (see `UNIT`)
@@ -38,6 +43,7 @@ function unitFromProj4Unit(projunit: string) {
 export function crsToUnit(crs: string) {
     switch (crs) {
         case 'EPSG:4326':
+        case 'EPSG:4979':
             return UNIT.DEGREE;
         case 'EPSG:4978':
             return UNIT.METER;
