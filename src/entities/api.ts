@@ -1,4 +1,4 @@
-import type ElevationSample from '../core/ElevationSample';
+import type Atmosphere from './Atmosphere';
 import AxisGrid, {
     type TickOrigin as AxisGridOrigin,
     type Style as AxisGridStyle,
@@ -8,6 +8,7 @@ import AxisGrid, {
 import Entity, { type EntityEventMap, type EntityUserData } from './Entity';
 import Entity3D, { type Entity3DEventMap } from './Entity3D';
 import FeatureCollection, { type MeshUserData } from './FeatureCollection';
+import Glow from './Glow';
 import Map, {
     DEFAULT_MAP_BACKGROUND_COLOR,
     DEFAULT_MAP_SEGMENTS,
@@ -22,6 +23,7 @@ import Shape, * as shape from './Shape';
 import Tiles3D, { type Tiles3DOptions, type Tiles3DPickResult } from './Tiles3D';
 
 export {
+    Atmosphere,
     AxisGrid,
     AxisGridOrigin,
     AxisGridStyle,
@@ -30,13 +32,13 @@ export {
     DEFAULT_MAP_BACKGROUND_COLOR,
     DEFAULT_MAP_SEGMENTS,
     DEFAULT_SUBDIVISION_THRESHOLD,
-    ElevationSample,
     Entity,
     Entity3D,
     Entity3DEventMap,
     EntityEventMap,
     EntityUserData,
     FeatureCollection,
+    Glow,
     LayerCompareFn,
     Map,
     MapConstructorOptions,
