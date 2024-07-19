@@ -4,8 +4,7 @@ import EntityInspector from './EntityInspector';
 import type Shape from '../entities/Shape';
 import { Color } from 'three';
 
-class ShapeInspector extends EntityInspector {
-    entity: Shape;
+class ShapeInspector extends EntityInspector<Shape> {
     color: string;
 
     /**

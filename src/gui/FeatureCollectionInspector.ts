@@ -32,9 +32,7 @@ function applyToMaterial(
     });
 }
 
-class FeatureCollectionInspector extends EntityInspector {
-    /** The inspected FeatureCollection. */
-    featureCollection: FeatureCollection;
+class FeatureCollectionInspector extends EntityInspector<FeatureCollection> {
     /** Toggle the wireframe rendering of the features. */
     wireframe: boolean;
     /** Toggle the frozen property of the features. */
@@ -59,10 +57,9 @@ class FeatureCollectionInspector extends EntityInspector {
             opacity: true,
         });
 
-        this.featureCollection = featureCollection;
         this.wireframe = false;
-        this.frozen = this.featureCollection.frozen ?? false;
-        this.dataProjection = this.featureCollection.dataProjection || '';
+        this.frozen = this.entity.frozen ?? false;
+        this.dataProjection = this.entity.dataProjection || '';
 
         this.showGrid = false;
 
@@ -70,7 +67,7 @@ class FeatureCollectionInspector extends EntityInspector {
         this.addController<boolean>(this, 'wireframe')
             .name('Wireframe')
             .onChange(v => this.toggleWireframe(v));
-        this.addController<number>(featureCollection, 'materialCount').name('Materials');
+        this.addController<number>(this.entity, 'materialCount').name('Materials');
     }
 
     /**
@@ -88,12 +85,12 @@ class FeatureCollectionInspector extends EntityInspector {
     }
 
     toggleWireframe(value: boolean) {
-        applyToMaterial(this.rootObject, this.featureCollection, material => {
+        applyToMaterial(this.rootObject, this.entity, material => {
             if ('wireframe' in material) {
                 material.wireframe = value;
             }
         });
-        this.notify(this.featureCollection);
+        this.notify(this.entity);
     }
 }
 

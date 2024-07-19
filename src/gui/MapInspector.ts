@@ -29,9 +29,7 @@ function createTileLabel() {
     return text;
 }
 
-class MapInspector extends EntityInspector {
-    /** The inspected map. */
-    map: Map;
+class MapInspector extends EntityInspector<Map> {
     /** Toggle the frozen property of the map. */
     frozen: boolean;
     showGrid: boolean;
@@ -74,17 +72,16 @@ class MapInspector extends EntityInspector {
             opacity: true,
         });
 
-        this.map = map;
-        this.frozen = this.map.frozen ?? false;
+        this.frozen = this.entity.frozen ?? false;
         this.showGrid = false;
         this.renderState = 'Normal';
 
-        this.addController<never>(this.map.materialOptions, 'discardNoData')
+        this.addController<never>(this.entity.materialOptions, 'discardNoData')
             .name('Discard no-data values')
-            .onChange(() => this.notify(this.map));
-        this.layerCount = this.map.layerCount;
-        this.background = new Color().copyLinearToSRGB(this.map.materialOptions.backgroundColor);
-        this.backgroundOpacity = this.map.materialOptions.backgroundOpacity;
+            .onChange(() => this.notify(this.entity));
+        this.layerCount = this.entity.layerCount;
+        this.background = new Color().copyLinearToSRGB(this.entity.materialOptions.backgroundColor);
+        this.backgroundOpacity = this.entity.materialOptions.backgroundOpacity;
 
         this.extentColor = new Color('red');
         this.showExtent = false;
@@ -96,23 +93,23 @@ class MapInspector extends EntityInspector {
 
         this.labels = new window.Map();
 
-        this.addController<number>(this.map, 'renderOrder')
+        this.addController<number>(this.entity, 'renderOrder')
             .name('Render order')
             .onChange(() => this.notify(map));
         this.addController<number>(this, 'visibleTiles').name('Visible tiles');
         this.addController<number>(this, 'reachableTiles').name('Reachable tiles');
-        this.addController<number>(this.map.allTiles, 'size').name('Loaded tiles');
-        if (this.map.materialOptions.elevationRange) {
-            this.addController<number>(this.map.materialOptions.elevationRange, 'min')
+        this.addController<number>(this.entity.allTiles, 'size').name('Loaded tiles');
+        if (this.entity.materialOptions.elevationRange) {
+            this.addController<number>(this.entity.materialOptions.elevationRange, 'min')
                 .name('Elevation range minimum')
                 .onChange(() => this.notify(map));
 
-            this.addController<number>(this.map.materialOptions.elevationRange, 'max')
+            this.addController<number>(this.entity.materialOptions.elevationRange, 'max')
                 .name('Elevation range maximum')
                 .onChange(() => this.notify(map));
         }
-        this.addController<number>(this.map.imageSize, 'width').name('Tile width  (pixels)');
-        this.addController<number>(this.map.imageSize, 'height').name('Tile height  (pixels)');
+        this.addController<number>(this.entity.imageSize, 'width').name('Tile width  (pixels)');
+        this.addController<number>(this.entity.imageSize, 'height').name('Tile height  (pixels)');
         this.addController<boolean>(this, 'showGrid')
             .name('Show grid')
             .onChange(v => this.toggleGrid(v));
@@ -124,10 +121,10 @@ class MapInspector extends EntityInspector {
             .min(0)
             .max(1)
             .onChange(v => this.updateBackgroundOpacity(v));
-        this.addController<boolean>(this.map.materialOptions, 'showTileOutlines')
+        this.addController<boolean>(this.entity.materialOptions, 'showTileOutlines')
             .name('Show tiles outlines')
             .onChange(() => this.notify());
-        this.addColorController(this.map.materialOptions, 'tileOutlineColor')
+        this.addColorController(this.entity.materialOptions, 'tileOutlineColor')
             .name('Tile outline color')
             .onChange(() => this.notify());
         this.addController<boolean>(this, 'showTileInfo')
@@ -139,35 +136,35 @@ class MapInspector extends EntityInspector {
         this.addColorController(this, 'extentColor')
             .name('Extent color')
             .onChange(() => this.updateExtentColor());
-        this.addController<number>(this.map, 'subdivisionThreshold')
+        this.addController<number>(this.entity, 'subdivisionThreshold')
             .name('Subdivision threshold')
             .min(0.1)
             .max(3)
             .step(0.1)
             .onChange(() => this.notify());
 
-        this.terrainPanel = new MapTerrainPanel(this.map, this.gui, instance);
+        this.terrainPanel = new MapTerrainPanel(this.entity, this.gui, instance);
 
         this.hillshadingPanel = new HillshadingPanel(
-            this.map.materialOptions.hillshading,
+            this.entity.materialOptions.hillshading,
             this.gui,
             instance,
         );
 
         this.graticulePanel = new GraticulePanel(
-            this.map.materialOptions.graticule,
+            this.entity.materialOptions.graticule,
             this.gui,
             instance,
         );
 
         this.contourLinePanel = new ContourLinePanel(
-            this.map.materialOptions.contourLines,
+            this.entity.materialOptions.contourLines,
             this.gui,
             instance,
         );
 
         this.colorimetryPanel = new ColorimetryPanel(
-            this.map.materialOptions.colorimetry,
+            this.entity.materialOptions.colorimetry,
             this.gui,
             instance,
         );
@@ -185,19 +182,19 @@ class MapInspector extends EntityInspector {
 
         this._fillLayersCb = () => this.fillLayers();
 
-        this.map.addEventListener('layer-added', this._fillLayersCb);
-        this.map.addEventListener('layer-removed', this._fillLayersCb);
-        this.map.addEventListener('layer-order-changed', this._fillLayersCb);
+        this.entity.addEventListener('layer-added', this._fillLayersCb);
+        this.entity.addEventListener('layer-removed', this._fillLayersCb);
+        this.entity.addEventListener('layer-order-changed', this._fillLayersCb);
 
         this.fillLayers();
     }
 
     disposeMapAndLayers() {
-        const layers = this.map.getLayers();
+        const layers = this.entity.getLayers();
         for (const layer of layers) {
-            this.map.removeLayer(layer, { disposeLayer: true });
+            this.entity.removeLayer(layer, { disposeLayer: true });
         }
-        this.instance.remove(this.map);
+        this.instance.remove(this.entity);
         this.notify();
     }
 
@@ -219,7 +216,7 @@ class MapInspector extends EntityInspector {
 
     getInfo(tile: TileMesh): string {
         const layers = [];
-        for (const layer of this.map.getLayers()) {
+        for (const layer of this.entity.getLayers()) {
             const info = layer.getInfo(tile);
             layers.push(
                 `${layer.name ?? layer.id}: ${info.imageCount} img, ${info.state}, ${info.paintCount} paints)`,
@@ -278,14 +275,14 @@ class MapInspector extends EntityInspector {
 
     updateBackgroundOpacity(a: number) {
         this.backgroundOpacity = a;
-        this.map.materialOptions.backgroundOpacity = a;
-        this.notify(this.map);
+        this.entity.materialOptions.backgroundOpacity = a;
+        this.notify(this.entity);
     }
 
     updateBackgroundColor(srgb: Color) {
         this.background.copy(srgb);
-        this.map.materialOptions.backgroundColor.copySRGBToLinear(srgb);
-        this.notify(this.map);
+        this.entity.materialOptions.backgroundColor.copySRGBToLinear(srgb);
+        this.notify(this.entity);
     }
 
     updateExtentColor() {
@@ -300,8 +297,8 @@ class MapInspector extends EntityInspector {
 
     toggleExtent() {
         if (!this.extentHelper && this.showExtent) {
-            const { min, max } = this.map.getElevationMinMax();
-            const box = this.map.extent.toBox3(min, max);
+            const { min, max } = this.entity.getElevationMinMax();
+            const box = this.entity.extent.toBox3(min, max);
             this.extentHelper = Helpers.createBoxHelper(box, this.extentColor);
             this.instance.threeObjects.add(this.extentHelper);
             this.extentHelper.updateMatrixWorld(true);
@@ -311,28 +308,28 @@ class MapInspector extends EntityInspector {
             this.extentHelper.visible = this.showExtent;
         }
 
-        this.notify(this.map);
+        this.notify(this.entity);
     }
 
     setRenderState(state: string) {
         switch (state) {
             case 'Normal':
-                this.map.setRenderState(RenderingState.FINAL);
+                this.entity.setRenderState(RenderingState.FINAL);
                 break;
             case 'Picking':
-                this.map.setRenderState(RenderingState.PICKING);
+                this.entity.setRenderState(RenderingState.PICKING);
                 break;
             default:
                 break;
         }
 
-        this.notify(this.map);
+        this.notify(this.entity);
     }
 
     removeEventListeners() {
-        this.map.removeEventListener('layer-added', this._fillLayersCb);
-        this.map.removeEventListener('layer-removed', this._fillLayersCb);
-        this.map.removeEventListener('layer-order-changed', this._fillLayersCb);
+        this.entity.removeEventListener('layer-added', this._fillLayersCb);
+        this.entity.removeEventListener('layer-removed', this._fillLayersCb);
+        this.entity.removeEventListener('layer-order-changed', this._fillLayersCb);
     }
 
     dispose() {
@@ -341,18 +338,18 @@ class MapInspector extends EntityInspector {
     }
 
     dumpTiles() {
-        console.log(this.map.level0Nodes);
+        console.log(this.entity.level0Nodes);
     }
 
     updateValues() {
         super.updateValues();
         this.toggleBoundingBoxes();
-        this.layerCount = this.map.layerCount;
+        this.layerCount = this.entity.layerCount;
         this.layers.forEach(l => l.updateValues());
 
         this.reachableTiles = 0;
         this.visibleTiles = 0;
-        this.map.traverseTiles(t => {
+        this.entity.traverseTiles(t => {
             if (t.material.visible) {
                 this.visibleTiles++;
             }
@@ -366,11 +363,11 @@ class MapInspector extends EntityInspector {
         }
         // We reverse the order so that the layers are displayed in a natural order:
         // top layers in the inspector are also on top in the composition.
-        this.map
+        this.entity
             .getLayers()
             .reverse()
             .forEach(lyr => {
-                const gui = new LayerInspector(this.layerFolder, this.instance, this.map, lyr);
+                const gui = new LayerInspector(this.layerFolder, this.instance, this.entity, lyr);
                 this.layers.push(gui);
             });
     }
@@ -384,9 +381,9 @@ class MapInspector extends EntityInspector {
                 this.axes.parent?.remove(this.axes);
             }
         } else {
-            const dims = this.map.extent.dimensions();
+            const dims = this.entity.extent.dimensions();
             const size = Math.max(dims.x, dims.y) * 1.1;
-            const origin = this.map.extent.centerAsVector3();
+            const origin = this.entity.extent.centerAsVector3();
 
             const grid = Helpers.createGrid(origin, size, 20);
             this.instance.scene.add(grid);
