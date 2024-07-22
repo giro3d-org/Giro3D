@@ -6,6 +6,7 @@ import type { BoundingBoxHelper } from '../../helpers/Helpers';
 import Helpers from '../../helpers/Helpers';
 import Panel from '../Panel';
 import OutlinerPropertyView from './OutlinerPropertyView';
+import type Entity3D from '../../entities/Entity3D';
 
 type OutlinedObject3D = Object3D & {
     treeviewVisible?: boolean;
@@ -22,8 +23,7 @@ type TreeviewNode = {
     object: OutlinedObject3D;
     root: HTMLElement;
     name: HTMLParagraphElement;
-    fore: string;
-    back: string;
+    textColor: string;
     opacity?: string;
 };
 
@@ -44,6 +44,10 @@ function getHash(scene: Scene): number {
  * @returns the object containing foreground and background colors
  */
 function selectColor(obj: OutlinedObject3D): { back: string; fore: string } {
+    const entity = isEntityRoot(obj);
+    if (entity) {
+        return { back: 'gold', fore: 'black' };
+    }
     switch (obj.type) {
         case 'Mesh':
         case 'TileMesh':
@@ -77,6 +81,33 @@ function getMaterialVisibility(obj: Object3D): boolean {
     return true;
 }
 
+function isEntityRoot(obj: Object3D): Entity3D | null {
+    if (obj.userData.parentEntity != null) {
+        const entity: Entity3D = obj.userData.parentEntity;
+        if (entity.object3d === obj) {
+            return entity;
+        }
+    }
+
+    return null;
+}
+
+function getType(obj: Object3D): string {
+    const entity = isEntityRoot(obj);
+    if (entity != null) {
+        return entity.type;
+    }
+    return obj.type;
+}
+
+function getName(obj: Object3D): string {
+    const entity = isEntityRoot(obj);
+    if (entity != null) {
+        return entity.id;
+    }
+    return obj.name;
+}
+
 function createTreeViewNode(
     object: OutlinedObject3D,
     marginLeft: number,
@@ -93,11 +124,11 @@ function createTreeViewNode(
     name.style.background = 'transparent';
     const textColor = getMaterialVisibility(object) ? 'white' : 'rgba(222, 208, 105, 0.59)';
     const { fore, back } = selectColor(object);
-    name.innerHTML = `<span style="border-radius: 6px; padding: 2px; font-family: monospace; background-color: ${back}; color: ${fore}">${object.type}</span> <span style="font-family: monospace; color: ${textColor}";>${object.name}</span>`;
+    name.innerHTML = `<span style="border-radius: 6px; padding: 2px; font-family: monospace; background-color: ${back}; color: ${fore}">${getType(object)}</span> <span style="font-family: monospace; color: ${textColor}";>${getName(object)}</span>`;
 
     root.appendChild(name);
 
-    return { root, name, object, fore, back, opacity: undefined };
+    return { root, name, object, textColor, opacity: undefined };
 }
 
 function updateNode(node: TreeviewNode) {
@@ -113,7 +144,8 @@ function updateNode(node: TreeviewNode) {
     const textColor = getMaterialVisibility(object) ? 'white' : 'rgba(222, 208, 105, 0.59)';
     const { fore, back } = selectColor(object);
 
-    if (fore !== node.fore && back !== node.back) {
+    if (textColor !== node.textColor) {
+        node.textColor = textColor;
         name.innerHTML = `<span style="border-radius: 6px; padding: 2px; font-family: monospace; background-color: ${back}; color: ${fore}">${object.type}</span> <span style="font-family: monospace; color: ${textColor}";>${object.name}</span>`;
     }
 }
