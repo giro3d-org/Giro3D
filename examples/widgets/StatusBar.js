@@ -37,7 +37,7 @@ function processUrl(instance, url) {
             const [x, y, z, tx, ty, tz] = pov.split(',').map(s => Number.parseFloat(s));
 
             instance.view.camera.position.set(x, y, z);
-            instance.controls.target.set(tx, ty, tz);
+            instance.controls?.target?.set(tx, ty, tz);
         } finally {
             instance.notifyChange();
         }
