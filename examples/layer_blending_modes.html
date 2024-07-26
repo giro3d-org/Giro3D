@@ -1,0 +1,110 @@
+---
+title: Blending modes
+shortdesc: Assign various blending modes to a color layer.
+longdesc: Color layers can have different blending modes depending on the desired effect. The default blending mode (<pre>BlendingMode.Normal</pre>) is alpha blending, where the transparency of the pixels is used to blend the layer with the previous layer (or the background).
+attribution: © <a target="_blank" href="https://www.mapbox.com/">Mapbox</a>, © <a target="_blank" href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a target="_blank" href="https://visibleearth.nasa.gov/collection/1484/blue-marble">NASA</a>
+tags: [map, osm, layer, blending]
+---
+
+<div class="side-pane-with-status-bar">
+    <!--Parameters -->
+    <div class="card">
+        <div class="card-header">
+            Parameters
+            <button type="button" id="reset" class="btn btn-sm btn-primary rounded float-end">
+                reset
+            </button>
+        </div>
+
+        <div class="card-body">
+            <!-- Cloud layer -->
+            <div class="input-group mb-3">
+                <div class="input-group-text">
+                    <input
+                        class="form-check-input"
+                        type="checkbox"
+                        checked="true"
+                        role="switch"
+                        id="show-cloud"
+                        autocomplete="off"
+                    />
+                </div>
+                <label class="input-group-text" style="width: 8rem" for="cloud">Cloud layer</label>
+                <select class="form-select" id="cloud" autocomplete="off">
+                    <option value="0">None</option>
+                    <option value="1">Normal</option>
+                    <option value="2" selected>Add</option>
+                    <option value="3">Multiply</option>
+                </select>
+            </div>
+
+            <!-- Vector layer -->
+            <div class="input-group mb-3">
+                <div class="input-group-text">
+                    <input
+                        class="form-check-input"
+                        type="checkbox"
+                        checked="true"
+                        role="switch"
+                        id="show-vector"
+                        autocomplete="off"
+                    />
+                </div>
+                <label class="input-group-text" style="width: 8rem" for="vector"
+                    >Vector layer</label
+                >
+                <select class="form-select" id="vector" autocomplete="off">
+                    <option value="0">None</option>
+                    <option value="1" selected>Normal</option>
+                    <option value="2">Add</option>
+                    <option value="3">Multiply</option>
+                </select>
+            </div>
+
+            <!-- Satellite layer -->
+            <div class="input-group mb-3">
+                <div class="input-group-text">
+                    <input
+                        class="form-check-input"
+                        type="checkbox"
+                        checked="true"
+                        role="switch"
+                        id="show-satellite"
+                        autocomplete="off"
+                    />
+                </div>
+                <label class="input-group-text" style="width: 8rem" for="satellite"
+                    >Satellite layer</label
+                >
+                <select class="form-select" id="satellite" autocomplete="off">
+                    <option value="0" selected>None</option>
+                    <option value="1">Normal</option>
+                    <option value="2">Add</option>
+                    <option value="3">Multiply</option>
+                </select>
+            </div>
+
+            <!-- Background color -->
+            <div class="input-group">
+                <div class="input-group-text">
+                    <input
+                        class="form-check-input"
+                        type="checkbox"
+                        checked="true"
+                        role="switch"
+                        id="show-background"
+                        autocomplete="off"
+                    />
+                </div>
+                <label class="input-group-text" style="width: 8rem" for="color">Background</label>
+                <input
+                    type="color"
+                    class="form-control form-control-color"
+                    id="color"
+                    value="#2978b4"
+                    title="color"
+                />
+            </div>
+        </div>
+    </div>
+</div>

@@ -12,6 +12,7 @@ import type PickableFeatures from '../picking/PickableFeatures';
 import type PickOptions from '../picking/PickOptions';
 import { type VectorPickFeature } from '../picking/PickResult';
 import { type MapPickResult } from '../picking/PickTilesAt';
+import BlendingMode from './BlendingMode';
 import { Mode as InterpretationMode } from './Interpretation';
 import Layer, {
     type LayerEvents,
@@ -34,6 +35,8 @@ export interface ColorLayerEvents extends LayerEvents {
     'saturation-property-changed': { saturation: number };
     /** When the layer elevationRange property changes */
     'elevationRange-property-changed': { range: ElevationRange | null };
+    /** When the layer blendingMode property changes */
+    'blendingMode-property-changed': { blendingMode: BlendingMode };
 }
 
 export interface ColorLayerOptions extends LayerOptions {
@@ -46,6 +49,11 @@ export interface ColorLayerOptions extends LayerOptions {
      * The opacity of the layer. Default is 1 (opaque).
      */
     opacity?: number;
+    /**
+     * The blending mode.
+     * @defaultValue {@link BlendingMode.Normal}
+     */
+    blendingMode?: BlendingMode;
 }
 
 /**
@@ -56,6 +64,8 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
     implements PickableFeatures<VectorPickFeature, MapPickResult<VectorPickFeature>>
 {
     private _opacity: number;
+    private _blendingMode: BlendingMode = BlendingMode.Normal;
+
     /**
      * Read-only flag to check if a given object is of type ColorLayer.
      */
@@ -75,6 +85,7 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
         this.type = 'ColorLayer';
         this._elevationRange = options.elevationRange ?? null;
         this._opacity = options.opacity ?? 1;
+        this._blendingMode = options.blendingMode ?? BlendingMode.Normal;
     }
 
     /**
@@ -90,6 +101,20 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
     set elevationRange(range: ElevationRange | null) {
         this._elevationRange = range;
         this.dispatchEvent({ type: 'elevationRange-property-changed', range });
+    }
+
+    /**
+     * Gets or sets the blending mode of this layer.
+     */
+    get blendingMode() {
+        return this._blendingMode;
+    }
+
+    set blendingMode(v: BlendingMode) {
+        if (this._blendingMode !== v) {
+            this._blendingMode = v;
+            this.dispatchEvent({ type: 'blendingMode-property-changed', blendingMode: v });
+        }
     }
 
     /**

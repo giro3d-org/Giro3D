@@ -32,6 +32,11 @@ struct Hillshading {
     float zFactor;    // The factor to apply to slopes.
 };
 
+const int BLENDING_MODE_NONE = 0;
+const int BLENDING_MODE_NORMAL = 1;
+const int BLENDING_MODE_ADDITIVE = 2;
+const int BLENDING_MODE_MULTIPLICATIVE = 3;
+
 /**
  * Describe a color layer's attributes.
  */
@@ -44,6 +49,7 @@ struct LayerInfo {
     vec2        elevationRange; // Optional elevation range for the layer. Any fragment above or below this range will be ignored.
     #endif
     vec3        brightnessContrastSaturation;
+    int         blendingMode;
 };
 
 struct NoDataOptions {
@@ -103,6 +109,20 @@ vec4 blend(vec4 fore, vec4 back) {
     vec3 color = (fore.rgb * fore.a) + back.rgb * (back.a * (1.0 - fore.a)) / alpha;
 
     return vec4(color, alpha);
+}
+
+vec4 applyBlending(vec4 fore, vec4 back, int blendingMode) {
+    if (blendingMode == BLENDING_MODE_NORMAL) {
+        return blend(fore, back);
+    } else if (blendingMode == BLENDING_MODE_ADDITIVE) {
+        vec3 rgb = clamp((fore.rgb * fore.a) + (back.rgb * back.a), 0.0, 1.0);
+        return vec4(rgb, 1.0);
+    } else if (blendingMode == BLENDING_MODE_MULTIPLICATIVE) {
+        vec3 rgb = clamp(fore.rgb * back.rgb, 0.0, 1.0);
+        return vec4(rgb, 1.0);
+    } else {
+        return fore;
+    }
 }
 
 vec3 desaturate(vec3 color, float factor) {

@@ -1,0 +1,130 @@
+import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
+
+import { Stroke, Style } from 'ol/style.js';
+import XYZ from 'ol/source/XYZ.js';
+import GeoJSON from 'ol/format/GeoJSON.js';
+
+import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
+import Instance from '@giro3d/giro3d/core/Instance.js';
+import Map from '@giro3d/giro3d/entities/Map.js';
+import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
+import BlendingMode from '@giro3d/giro3d/core/layer/BlendingMode.js';
+import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
+import Inspector from '@giro3d/giro3d/gui/Inspector.js';
+import StaticImageSource from '@giro3d/giro3d/sources/StaticImageSource.js';
+import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
+
+import StatusBar from './widgets/StatusBar.js';
+import { bindNumericalDropDown } from './widgets/bindNumericalDropDown.js';
+import { bindButton } from './widgets/bindButton.js';
+import { bindColorPicker } from './widgets/bindColorPicker.js';
+import { bindToggle } from './widgets/bindToggle.js';
+
+const instance = new Instance({
+    target: 'view',
+    crs: 'EPSG:4326',
+});
+
+const extent = new Extent('EPSG:4326', -180, 180, -90, 90);
+
+const map = new Map({ extent, backgroundColor: 'blue' });
+
+instance.add(map);
+
+const key =
+    'pk.eyJ1IjoidG11Z3VldCIsImEiOiJjbGJ4dTNkOW0wYWx4M25ybWZ5YnpicHV6In0.KhDJ7W5N3d1z3ArrsDjX_A';
+
+// Create a satellite layer with no blending at all (layer is completely opaque)
+const satellite = new ColorLayer({
+    name: 'satellite',
+    blendingMode: BlendingMode.None,
+    source: new TiledImageSource({
+        source: new XYZ({
+            url: `https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.webp?access_token=${key}`,
+            crossOrigin: 'anonymous',
+        }),
+    }),
+});
+map.addLayer(satellite).catch(e => console.error(e));
+
+// Create a vector layer with normal blending mode.
+const vector = new ColorLayer({
+    name: 'boundaries',
+    blendingMode: BlendingMode.Normal,
+    source: new VectorSource({
+        data: {
+            url: 'https://3d.oslandia.com/giro3d/vectors/countries.geojson',
+            format: new GeoJSON(),
+        },
+        style: new Style({
+            stroke: new Stroke({ color: 'red', width: 2 }),
+        }),
+        dataProjection: 'EPSG:4326',
+    }),
+});
+map.addLayer(vector).catch(e => console.error(e));
+
+// Create a cloud coverage layer with an additive blending mode
+const cloud = new ColorLayer({
+    name: 'clouds',
+    blendingMode: BlendingMode.Add,
+    source: new StaticImageSource({
+        source: 'https://3d.oslandia.com/giro3d/images/cloud_cover.webp',
+        extent,
+    }),
+});
+map.addLayer(cloud).catch(e => console.error(e));
+
+instance.view.camera.position.set(0, 0, 230);
+
+const controls = new MapControls(instance.view.camera, instance.domElement);
+
+instance.view.setControls(controls);
+
+// Example GUI
+
+const [setBackground] = bindColorPicker('color', v => {
+    map.backgroundColor = v;
+    instance.notifyChange(map);
+});
+const setMode = (layer, mode) => {
+    layer.blendingMode = mode;
+    instance.notifyChange(layer);
+};
+const [setCloudMode] = bindNumericalDropDown('cloud', v => setMode(cloud, v));
+const [setVectorMode] = bindNumericalDropDown('vector', v => setMode(vector, v));
+const [setSatelliteMode] = bindNumericalDropDown('satellite', v => setMode(satellite, v));
+
+const show = (layer, v) => {
+    layer.visible = v;
+    instance.notifyChange(layer);
+};
+const [showClouds] = bindToggle('show-cloud', v => show(cloud, v));
+const [showSatellite] = bindToggle('show-satellite', v => show(satellite, v));
+const [showVector] = bindToggle('show-vector', v => show(vector, v));
+const [showBackground] = bindToggle('show-background', v => {
+    map.backgroundOpacity = v ? 1 : 0;
+    instance.notifyChange(map);
+});
+
+const reset = () => {
+    setCloudMode(BlendingMode.Add);
+    setVectorMode(BlendingMode.Normal);
+    setSatelliteMode(BlendingMode.None);
+
+    showClouds(true);
+    showVector(true);
+    showSatellite(true);
+
+    setBackground('blue');
+
+    showBackground(true);
+};
+
+bindButton('reset', reset);
+
+reset();
+
+Inspector.attach('inspector', instance);
+
+StatusBar.bind(instance);

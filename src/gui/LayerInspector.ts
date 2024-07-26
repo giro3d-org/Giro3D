@@ -1,5 +1,6 @@
 import type GUI from 'lil-gui';
 import { Color } from 'three';
+
 import type Instance from '../core/Instance';
 import { isColorLayer } from '../core/layer/ColorLayer';
 import { isElevationLayer } from '../core/layer/ElevationLayer';
@@ -18,6 +19,8 @@ import SourceInspector from './SourceInspector';
 function getTitle(layer: Layer) {
     return [layer.visible ? '👁️' : '❌', layer.type, `(${layer.name ?? layer.id})`].join(' ');
 }
+
+const blendingModes = ['None', 'Normal', 'Add', 'Multiply'];
 
 /**
  * Inspector for a {@link Layer}.
@@ -42,6 +45,7 @@ class LayerInspector extends Panel {
     composerImages = 0;
     cpuMemoryUsage = 'unknown';
     gpuMemoryUsage = 'unknown';
+    blendingMode = 'Normal';
 
     /**
      * @param gui - The GUI.
@@ -76,6 +80,7 @@ class LayerInspector extends Panel {
                 this.gui.title(getTitle(layer));
                 this.notify(entity);
             });
+
         this.addController<boolean>(this.layer, 'frozen')
             .name('Frozen')
             .onChange(() => {
@@ -98,19 +103,31 @@ class LayerInspector extends Panel {
             this.addController<number>(this.minmax, 'min').name('Minimum elevation');
             this.addController<number>(this.minmax, 'max').name('Maximum elevation');
         }
+
         if (isColorLayer(this.layer)) {
-            if (this.layer.elevationRange) {
-                this.addController<number>(this.layer.elevationRange, 'min')
+            const colorLayer = this.layer;
+
+            if (colorLayer.elevationRange) {
+                this.addController<number>(colorLayer.elevationRange, 'min')
                     .name('Elevation range minimum')
                     .onChange(() => this.notify(entity));
 
-                this.addController<number>(this.layer.elevationRange, 'max')
+                this.addController<number>(colorLayer.elevationRange, 'max')
                     .name('Elevation range maximum')
                     .onChange(() => this.notify(entity));
             }
 
+            this.blendingMode = blendingModes[colorLayer.blendingMode];
+
+            this.addController<string>(this, 'blendingMode', blendingModes)
+                .name('Blending mode')
+                .onChange(v => {
+                    colorLayer.blendingMode = blendingModes.indexOf(v);
+                    this.notify(colorLayer);
+                });
+
             this.colorimetryPanel = new ColorimetryPanel(
-                this.layer.colorimetry,
+                colorLayer.colorimetry,
                 this.gui,
                 instance,
             );
