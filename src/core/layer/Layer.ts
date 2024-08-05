@@ -113,6 +113,7 @@ export class Target implements MemoryUsage {
     controller: AbortController;
     state: TargetState;
     geometryExtent: Extent;
+    paintCount = 0;
     private _disposed = false;
     private _onVisibilityChanged: () => void;
 
@@ -906,18 +907,23 @@ abstract class Layer<
         const texture = target.renderTarget.texture;
         this.applyTextureToNode({ texture, pitch: target.pitch }, target, false);
         this._instance.notifyChange(this);
+        target.paintCount++;
     }
 
     /**
      * @internal
      */
-    getInfo(node: Node): { state: string; imageCount: number } {
+    getInfo(node: Node): { state: string; imageCount: number; paintCount: number } {
         const target = this._targets.get(node.id);
         if (target) {
-            return { state: TargetState[target.state], imageCount: target.imageIds.size };
+            return {
+                state: TargetState[target.state],
+                imageCount: target.imageIds.size,
+                paintCount: target.paintCount,
+            };
         }
 
-        return { state: 'unknown', imageCount: -1 };
+        return { state: 'unknown', imageCount: -1, paintCount: -1 };
     }
 
     /**
@@ -981,6 +987,8 @@ abstract class Layer<
                     } else {
                         target.state = TargetState.Pending;
                     }
+
+                    target.paintCount++;
 
                     const texture = target.renderTarget.texture;
                     this.applyTextureToNode({ texture, pitch }, target, isLastRender);

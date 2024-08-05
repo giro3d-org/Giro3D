@@ -238,7 +238,7 @@ class MapInspector extends EntityInspector {
             `;
             for (const layer of this.map.getLayers()) {
                 const info = layer.getInfo(tile);
-                innerText += `Layer '${layer.id}' - (images=${info.imageCount}, state=${info.state})\n`;
+                innerText += `Layer '${layer.name ?? layer.id}' - (images=${info.imageCount}, state=${info.state}, paints=${info.paintCount})\n`;
             }
             element.innerText = innerText;
             element.style.color = `#${color.getHexString()}`;
