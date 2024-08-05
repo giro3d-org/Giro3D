@@ -105,9 +105,7 @@ export interface ImageSourceEvents {
     /**
      * Raised when the source's content has been updated.
      */
-    updated: {
-        /** empty */
-    };
+    updated: { extent?: Extent };
 }
 
 /**
@@ -210,8 +208,8 @@ abstract class ImageSource<Events extends ImageSourceEvents = ImageSourceEvents>
     /**
      * Raises an event to reload the source.
      */
-    update() {
-        this.dispatchEvent({ type: 'updated' });
+    update(extent?: Extent) {
+        this.dispatchEvent({ type: 'updated', extent });
     }
 
     /**

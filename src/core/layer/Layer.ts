@@ -436,7 +436,7 @@ abstract class Layer<
         }
         this.source = options.source;
 
-        this.source.addEventListener('updated', () => this.onSourceUpdated());
+        this.source.addEventListener('updated', ({ extent }) => this.onSourceUpdated(extent));
 
         this.backgroundColor = new Color(options.backgroundColor);
 
@@ -462,8 +462,8 @@ abstract class Layer<
         return shouldCancel(node);
     }
 
-    private onSourceUpdated() {
-        this.clear();
+    private onSourceUpdated(extent?: Extent) {
+        this.clear(extent);
     }
 
     onRenderingContextLost(): void {
@@ -476,22 +476,31 @@ abstract class Layer<
 
     /**
      * Resets all render targets to a blank state and repaint all the targets.
+     * @param extent - An optional extent to limit the region to clear.
      */
-    clear() {
+    clear(extent?: Extent) {
         if (!this.ready) {
             return;
         }
-        this._composer.clear();
+        this._composer.clear(extent);
 
         this._fallbackImagesPromise = null;
 
-        this.loadFallbackImages().then(() => {
+        const reset = () => {
             for (const target of this._targets.values()) {
-                target.reset();
+                if (!extent || extent.intersectsExtent(target.extent)) {
+                    target.reset();
+                }
             }
 
             this._instance.notifyChange(this, true);
-        });
+        };
+
+        if (this._preloadImages) {
+            this.loadFallbackImages().then(reset);
+        } else {
+            reset();
+        }
     }
 
     /**

@@ -773,10 +773,20 @@ class LayerComposer implements MemoryUsage {
     /**
      * Clears the composer.
      */
-    clear() {
-        this.images.forEach(img => img.texture.dispose());
-        this.images.clear();
-        this.composer.reset();
+    clear(extent?: Extent) {
+        if (extent) {
+            [...this.images.values()].forEach(img => {
+                if (img.extent.intersectsExtent(extent)) {
+                    img.texture.dispose();
+                    img.mesh.removeFromParent();
+                    this.images.delete(img.id);
+                }
+            });
+        } else {
+            this.images.forEach(img => img.texture.dispose());
+            this.images.clear();
+            this.composer.reset();
+        }
     }
 
     /**
