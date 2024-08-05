@@ -144,7 +144,7 @@ export const limitRemovePointHook = (limit: number) => (options: { shape: Shape 
     return options.shape.points.length > limit;
 };
 
-export const afterRemovePointOfPolygon = (options: { shape: Shape; index: number }) => {
+export const afterRemovePointOfRing = (options: { shape: Shape; index: number }) => {
     const { shape, index } = options;
 
     if (index === 0) {
@@ -158,7 +158,7 @@ export const afterRemovePointOfPolygon = (options: { shape: Shape; index: number
     shape.makeClosed();
 };
 
-export const afterUpdatePointOfPolygon = (options: {
+export const afterUpdatePointOfRing = (options: {
     shape: Shape;
     index: number;
     newPosition: Vector3;
@@ -802,8 +802,8 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
             minPoints: 3,
             maxPoints: +Infinity,
             beforeRemovePoint: limitRemovePointHook(4), // We take into account the doubled first/last point
-            afterRemovePoint: afterRemovePointOfPolygon,
-            afterUpdatePoint: afterUpdatePointOfPolygon,
+            afterRemovePoint: afterRemovePointOfRing,
+            afterUpdatePoint: afterUpdatePointOfRing,
         });
     }
 
@@ -820,6 +820,8 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
             minPoints: 3,
             maxPoints: +Infinity,
             beforeRemovePoint: limitRemovePointHook(3),
+            afterRemovePoint: afterRemovePointOfRing,
+            afterUpdatePoint: afterUpdatePointOfRing,
         });
     }
 

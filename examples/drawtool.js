@@ -10,8 +10,8 @@ import Map from '@giro3d/giro3d/entities/Map.js';
 import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
 import DrawTool, {
-    afterRemovePointOfPolygon,
-    afterUpdatePointOfPolygon,
+    afterRemovePointOfRing,
+    afterUpdatePointOfRing,
     inhibitHook,
     limitRemovePointHook,
 } from '@giro3d/giro3d/interactions/DrawTool.js';
@@ -281,8 +281,8 @@ function fromGeoJSON(feature) {
                 showSurfaceLabel: true,
                 surfaceLabelFormatter,
                 beforeRemovePoint: limitRemovePointHook(4), // We take into account the doubled first/last point
-                afterRemovePoint: afterRemovePointOfPolygon,
-                afterUpdatePoint: afterUpdatePointOfPolygon,
+                afterRemovePoint: afterRemovePointOfRing,
+                afterUpdatePoint: afterUpdatePointOfRing,
             });
             result.setPoints(feature.geometry.coordinates[0].map(getPoint));
             break;
