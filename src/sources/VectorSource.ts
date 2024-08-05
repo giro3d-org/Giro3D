@@ -269,16 +269,14 @@ class VectorSource extends ImageSource {
             }
         }
 
-        this.source.on('change', () => {
-            this.update();
-        });
-
         this.source.on('addfeature', evt => {
-            this.update();
+            const feature = evt.feature;
 
             if (shouldReproject) {
-                this.reproject(evt.feature);
+                this.reproject(feature);
             }
+
+            this.updateFeature(feature);
         });
     }
 
@@ -289,6 +287,37 @@ class VectorSource extends ImageSource {
      */
     getFeatures() {
         return this.source.getFeatures();
+    }
+
+    /**
+     * Updates the region associated with the feature(s).
+     * @param feature - The feature(s) to update.
+     */
+    updateFeature(...feature: Feature[]) {
+        if (feature == null || feature.length === 0) {
+            return;
+        }
+
+        let extent: Extent;
+        if (feature.length === 1) {
+            extent = OpenLayersUtils.getFeatureExtent(feature[0], this._targetProjection);
+        } else {
+            feature = feature.filter(f => f != null);
+
+            if (feature.length > 0) {
+                extent = OpenLayersUtils.getFeatureExtent(feature[0], this._targetProjection);
+
+                for (let i = 1; i < feature.length; i++) {
+                    const f = feature[i];
+                    if (f != null) {
+                        const e = OpenLayersUtils.getFeatureExtent(f, this._targetProjection);
+                        extent.union(e);
+                    }
+                }
+            }
+        }
+
+        this.update(extent);
     }
 
     /**
