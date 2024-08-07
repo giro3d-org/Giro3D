@@ -12,8 +12,9 @@ type OutlinedObject3D = Object3D & {
 };
 type ClickHandler = (obj: OutlinedObject3D) => void;
 interface Filter {
-    showHelpers?: boolean;
-    searchRegex?: RegExp | null;
+    showHelpers: boolean;
+    showHiddenObjects: boolean;
+    searchRegex?: RegExp;
     searchQuery: string;
 }
 
@@ -167,12 +168,32 @@ function isHelper(obj: Object3D): boolean {
     return 'isHelper' in obj && obj.isHelper === true;
 }
 
+function matches(obj: Object3D, regex?: RegExp): boolean {
+    if (regex == null) {
+        return true;
+    }
+
+    if (regex.test(obj.name.toLowerCase())) {
+        return true;
+    }
+
+    if (regex.test(obj.type.toLowerCase())) {
+        return true;
+    }
+
+    return false;
+}
+
 function shouldBeDisplayedInTree(obj: OutlinedObject3D, filter: Filter) {
     if (isHelper(obj) && !filter.showHelpers) {
         return false;
     }
 
-    if (filter.searchRegex == null || filter.searchRegex.test(obj.name.toLowerCase())) {
+    if (!obj.visible && !filter.showHiddenObjects) {
+        return false;
+    }
+
+    if (matches(obj, filter.searchRegex)) {
         return true;
     }
 
@@ -218,8 +239,9 @@ class Outliner extends Panel {
 
         this.filters = {
             showHelpers: false,
+            showHiddenObjects: true,
             searchQuery: '',
-            searchRegex: null,
+            searchRegex: undefined,
         };
 
         this.treeviewContainer = document.createElement('div');
@@ -234,6 +256,12 @@ class Outliner extends Panel {
 
         this.addController<boolean>(this.filters, 'showHelpers')
             .name('Show helpers')
+            .onChange(() => {
+                this.search();
+                this.instance.notifyChange();
+            });
+        this.addController<boolean>(this.filters, 'showHiddenObjects')
+            .name('Show hidden objects')
             .onChange(() => {
                 this.search();
                 this.instance.notifyChange();
@@ -295,7 +323,7 @@ class Outliner extends Panel {
     search() {
         this.filters.searchQuery = this.filters.searchQuery.trim().toLowerCase();
         this.filters.searchRegex =
-            this.filters.searchQuery.length > 0 ? new RegExp(this.filters.searchQuery) : null;
+            this.filters.searchQuery.length > 0 ? new RegExp(this.filters.searchQuery) : undefined;
         this.sceneHash = undefined;
         this.updateTreeView();
     }
