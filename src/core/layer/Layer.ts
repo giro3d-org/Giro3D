@@ -349,7 +349,6 @@ abstract class Layer<
     private readonly _filter: (id: string) => boolean;
     /** @internal */
     protected readonly _queue: RequestQueue;
-    private _shouldNotify: boolean;
     disposed: boolean;
     private readonly _opCounter: OperationCounter;
     private _sortedTargets: Target[];
@@ -447,7 +446,6 @@ abstract class Layer<
 
         this._queue = DefaultQueue;
 
-        this._shouldNotify = false;
         this.disposed = false;
 
         this._opCounter = new OperationCounter();
@@ -1190,10 +1188,7 @@ abstract class Layer<
 
         this.deleteUnusedTargets();
 
-        if (this._composer?.postUpdate() || this._shouldNotify) {
-            this._instance.notifyChange(this);
-        }
-        this._shouldNotify = false;
+        this._composer?.postUpdate();
     }
 
     get composer(): Readonly<LayerComposer> {
