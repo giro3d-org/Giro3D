@@ -1,4 +1,4 @@
-import { MathUtils as ThreeMath, Sphere } from 'three';
+import { MathUtils as ThreeMath, Sphere, Clock } from 'three';
 import Context from './Context';
 import type C3DEngine from '../renderer/c3DEngine';
 import type Instance from './Instance';
@@ -87,8 +87,8 @@ class MainLoop {
         return this._gfxEngine;
     }
     private _updateLoopRestarted: boolean;
-    private _lastTimestamp: number;
     private readonly _changeSources: Set<unknown>;
+    private readonly _clock = new Clock();
 
     /**
      * Toggles automatic camera clipping plane computation.
@@ -107,14 +107,16 @@ class MainLoop {
         this._needsRedraw = false;
         this._gfxEngine = engine; // TODO: remove me
         this._updateLoopRestarted = true;
-        this._lastTimestamp = 0;
         this._changeSources = new Set<unknown>();
     }
 
     scheduleUpdate(
         instance: Instance,
-        forceRedraw: boolean,
         changeSource: unknown | unknown[] = undefined,
+        options?: {
+            needsRedraw?: boolean;
+            immediate?: boolean;
+        },
     ) {
         if (changeSource) {
             if (Array.isArray(changeSource)) {
@@ -123,14 +125,20 @@ class MainLoop {
                 this._changeSources.add(changeSource);
             }
         }
-        this._needsRedraw = this._needsRedraw || forceRedraw;
+        const needsRedraw = options?.needsRedraw ?? true;
+        const immediate = options?.immediate ?? false;
+        this._needsRedraw = this._needsRedraw || needsRedraw;
 
         if (this._renderingState !== RenderingState.RENDERING_SCHEDULED) {
             this._renderingState = RenderingState.RENDERING_SCHEDULED;
 
-            requestAnimationFrame(timestamp => {
-                this.step(instance, timestamp);
-            });
+            if (immediate) {
+                this.step(instance);
+            } else {
+                requestAnimationFrame(() => {
+                    this.step(instance);
+                });
+            }
         }
     }
 
@@ -214,8 +222,8 @@ class MainLoop {
         instance.camera.update();
     }
 
-    private step(instance: Instance, timestamp: number) {
-        const dt = timestamp - this._lastTimestamp;
+    private step(instance: Instance) {
+        const dt = this._clock.getDelta();
 
         instance.dispatchEvent({
             type: 'update-start',
@@ -224,7 +232,6 @@ class MainLoop {
         });
 
         const willRedraw = this._needsRedraw;
-        this._lastTimestamp = timestamp;
 
         // Reset internal state before calling _update (so future calls to Instance.notifyChange()
         // can properly change it)

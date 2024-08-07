@@ -546,7 +546,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
             this._scene.add(entity.object3d);
         }
 
-        this.notifyChange(object, false);
+        this.notifyChange(object, { needsRedraw: false });
         this.dispatchEvent({ type: 'entity-added' });
         return object;
     }
@@ -575,7 +575,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
             this._threeObjects.remove(object);
         }
 
-        this.notifyChange(this._camera.camera3D, true);
+        this.notifyChange(this._camera.camera3D);
     }
 
     /**
@@ -586,8 +586,11 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * @param changeSources - the source(s) of the change. Might be a single object or an array.
      * @param needsRedraw - indicates if notified change requires a full scene redraw.
      */
-    notifyChange(changeSources: unknown | unknown[] = undefined, needsRedraw = true): void {
-        this._mainLoop.scheduleUpdate(this, needsRedraw, changeSources);
+    notifyChange(
+        changeSources: unknown | unknown[] = undefined,
+        options?: { needsRedraw?: boolean; immediate?: boolean },
+    ): void {
+        this._mainLoop.scheduleUpdate(this, changeSources, options);
     }
 
     /**
