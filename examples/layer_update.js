@@ -116,18 +116,18 @@ Inspector.attach(document.getElementById('panelDiv'), instance);
 
 instance.notifyChange(map);
 
-source.source.addFeatures([point, line, polygon]);
+source.addFeatures([point, line, polygon]);
 
 const setStrokeWidth = bindSlider('stroke-width', v => {
     style.getStroke().setWidth(v);
     style.getImage().getStroke().setWidth(v);
     style.getImage().setRadius(style.getImage().getRadius());
-    layer.source.update();
+    source.update();
 });
 const setPointRadius = bindSlider('point-radius', v => {
     style.getImage().setRadius(v);
     style.setImage(style.getImage());
-    layer.source.update();
+    source.update();
 });
 const setOpacity = bindSlider('style-opacity', v => {
     style
@@ -151,30 +151,30 @@ const setOpacity = bindSlider('style-opacity', v => {
 
     style.getImage().setRadius(style.getImage().getRadius());
 
-    layer.source.update();
+    source.update();
 });
 
 bindToggle('show-line', v => {
     if (v) {
-        source.source.addFeature(line);
+        source.addFeature(line);
     } else {
-        source.source.removeFeature(line);
+        source.removeFeature(line);
     }
     source.update();
 });
 bindToggle('show-polygon', v => {
     if (v) {
-        source.source.addFeature(polygon);
+        source.addFeature(polygon);
     } else {
-        source.source.removeFeature(polygon);
+        source.removeFeature(polygon);
     }
     source.update();
 });
 bindToggle('show-point', v => {
     if (v) {
-        source.source.addFeature(point);
+        source.addFeature(point);
     } else {
-        source.source.removeFeature(point);
+        source.removeFeature(point);
     }
     source.update();
 });

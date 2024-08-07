@@ -157,20 +157,19 @@ instance.add(label);
 let previousFeature;
 
 function pickFeatures(mouseEvent) {
-    const pickResult = instance.pickObjectsAt(mouseEvent, {
-        radius: 0,
-    });
+    const pickResult = instance.pickObjectsAt(mouseEvent);
 
     const picked = pickResult.at(0);
 
-    previousFeature?.set('highlight', false);
-
     function resetPickedFeatures() {
-        previousFeature = null;
+        if (previousFeature) {
+            previousFeature.set('highlight', false);
+            wfsSource.updateFeature(previousFeature);
+        }
         if (label.visible) {
-            instance.notifyChange(map);
             label.visible = false;
         }
+        previousFeature = null;
     }
 
     if (picked) {
@@ -185,11 +184,14 @@ function pickFeatures(mouseEvent) {
         if (features.length > 0) {
             const firstFeature = features[features.length - 1];
 
+            previousFeature?.set('highlight', false);
             firstFeature.set('highlight', true);
 
-            previousFeature = firstFeature;
+            if (previousFeature !== firstFeature) {
+                wfsSource.updateFeature(previousFeature, firstFeature);
+                previousFeature = firstFeature;
+            }
 
-            instance.notifyChange(map);
             label.position.set(x, y, 0);
             label.visible = true;
             lineNumber.style.background = getColor(getUid(firstFeature));
