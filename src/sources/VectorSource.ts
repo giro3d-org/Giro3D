@@ -290,6 +290,44 @@ class VectorSource extends ImageSource {
     }
 
     /**
+     * Adds a feature to this source.
+     * @param feature - The feature to add.
+     */
+    addFeature(feature: Feature) {
+        if (feature) {
+            this.source.addFeature(feature);
+        }
+    }
+
+    /**
+     * Adds features to this source.
+     * @param features - The features to add.
+     */
+    addFeatures(features: Feature[]) {
+        if (features) {
+            this.source.addFeatures(features);
+        }
+    }
+
+    /**
+     * Removes a feature from this source.
+     * @param feature - The feature to remove.
+     */
+    removeFeature(feature: Feature) {
+        if (feature) {
+            this.source.removeFeature(feature);
+        }
+    }
+
+    /**
+     * Removes all feature in this source.
+     */
+    clear() {
+        this.source.clear();
+        this.update();
+    }
+
+    /**
      * Updates the region associated with the feature(s).
      * @param feature - The feature(s) to update.
      */
