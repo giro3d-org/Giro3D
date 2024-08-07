@@ -415,6 +415,11 @@ export type MapConstructorOptions = {
      */
     showOutline?: boolean;
     /**
+     * The color of the tile borders.
+     * @defaultValue red
+     */
+    outlineColor?: ColorRepresentation;
+    /**
      * The optional elevation range of the map. The map will not be
      * rendered for elevations outside of this range.
      * Note: this feature is only useful if an elevation layer is added to this map.
@@ -592,6 +597,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
             segments: this.segments,
             elevationRange: options.elevationRange,
             backgroundOpacity: options.backgroundOpacity ?? 1,
+            tileOutlineColor: options.outlineColor ?? '#ff0000',
             backgroundColor:
                 options.backgroundColor !== undefined
                     ? new Color(options.backgroundColor)
