@@ -6,16 +6,26 @@ import type { BoundingBoxHelper } from '../../helpers/Helpers';
 import Helpers from '../../helpers/Helpers';
 import Panel from '../Panel';
 import OutlinerPropertyView from './OutlinerPropertyView';
+import type Entity3D from '../../entities/Entity3D';
 
 type OutlinedObject3D = Object3D & {
     treeviewVisible?: boolean;
 };
 type ClickHandler = (obj: OutlinedObject3D) => void;
 interface Filter {
-    showHelpers?: boolean;
-    searchRegex?: RegExp | null;
+    showHelpers: boolean;
+    showHiddenObjects: boolean;
+    searchRegex?: RegExp;
     searchQuery: string;
 }
+
+type TreeviewNode = {
+    object: OutlinedObject3D;
+    root: HTMLElement;
+    name: HTMLParagraphElement;
+    textColor: string;
+    opacity?: string;
+};
 
 function getHash(scene: Scene): number {
     let hash = 27 | 0;
@@ -34,6 +44,10 @@ function getHash(scene: Scene): number {
  * @returns the object containing foreground and background colors
  */
 function selectColor(obj: OutlinedObject3D): { back: string; fore: string } {
+    const entity = isEntityRoot(obj);
+    if (entity) {
+        return { back: 'gold', fore: 'black' };
+    }
     switch (obj.type) {
         case 'Mesh':
         case 'TileMesh':
@@ -67,23 +81,73 @@ function getMaterialVisibility(obj: Object3D): boolean {
     return true;
 }
 
-function createTreeViewNode(obj: OutlinedObject3D, marginLeft: number, clickHandler: ClickHandler) {
-    const div = document.createElement('button');
-    div.style.textAlign = 'left';
-    div.onclick = () => clickHandler(obj);
+function isEntityRoot(obj: Object3D): Entity3D | null {
+    if (obj.userData.parentEntity != null) {
+        const entity: Entity3D = obj.userData.parentEntity;
+        if (entity.object3d === obj) {
+            return entity;
+        }
+    }
+
+    return null;
+}
+
+function getType(obj: Object3D): string {
+    const entity = isEntityRoot(obj);
+    if (entity != null) {
+        return entity.type;
+    }
+    return obj.type;
+}
+
+function getName(obj: Object3D): string {
+    const entity = isEntityRoot(obj);
+    if (entity != null) {
+        return entity.id;
+    }
+    return obj.name;
+}
+
+function createTreeViewNode(
+    object: OutlinedObject3D,
+    marginLeft: number,
+    clickHandler: ClickHandler,
+): TreeviewNode {
+    const root = document.createElement('button');
+    root.style.textAlign = 'left';
+    root.onclick = () => clickHandler(object);
 
     const name = document.createElement('p');
     name.style.marginLeft = `${marginLeft}px`;
     name.style.marginTop = '0px';
     name.style.marginBottom = '0px';
     name.style.background = 'transparent';
-    const textColor = getMaterialVisibility(obj) ? 'white' : 'rgba(222, 208, 105, 0.59)';
-    const { fore, back } = selectColor(obj);
-    name.innerHTML = `<span style="border-radius: 6px; padding: 2px; font-family: monospace; background-color: ${back}; color: ${fore}">${obj.type}</span> <span style="font-family: monospace; color: ${textColor}";>${obj.name}</span>`;
+    const textColor = getMaterialVisibility(object) ? 'white' : 'rgba(222, 208, 105, 0.59)';
+    const { fore, back } = selectColor(object);
+    name.innerHTML = `<span style="border-radius: 6px; padding: 2px; font-family: monospace; background-color: ${back}; color: ${fore}">${getType(object)}</span> <span style="font-family: monospace; color: ${textColor}";>${getName(object)}</span>`;
 
-    div.appendChild(name);
+    root.appendChild(name);
 
-    return div;
+    return { root, name, object, textColor, opacity: undefined };
+}
+
+function updateNode(node: TreeviewNode) {
+    const { root, object, name } = node;
+
+    const opacity = object.visible ? '100%' : '50%';
+
+    if (node.opacity == null || node.opacity !== opacity) {
+        root.style.opacity = opacity;
+        node.opacity = opacity;
+    }
+
+    const textColor = getMaterialVisibility(object) ? 'white' : 'rgba(222, 208, 105, 0.59)';
+    const { fore, back } = selectColor(object);
+
+    if (textColor !== node.textColor) {
+        node.textColor = textColor;
+        name.innerHTML = `<span style="border-radius: 6px; padding: 2px; font-family: monospace; background-color: ${back}; color: ${fore}">${object.type}</span> <span style="font-family: monospace; color: ${textColor}";>${object.name}</span>`;
+    }
 }
 
 /**
@@ -96,6 +160,7 @@ function createTreeViewNode(obj: OutlinedObject3D, marginLeft: number, clickHand
 function createTreeViewNodeWithDescendants(
     obj: OutlinedObject3D,
     clickHandler: ClickHandler,
+    map: Map<number, TreeviewNode>,
     level = 0,
 ) {
     if (obj.type !== 'Scene' && obj.treeviewVisible === false) {
@@ -108,12 +173,14 @@ function createTreeViewNodeWithDescendants(
 
     // create the DOM element for the object itself
     const marginLeft = level * 15;
-    div.appendChild(createTreeViewNode(obj, marginLeft, clickHandler));
+    const node = createTreeViewNode(obj, marginLeft, clickHandler);
+    map.set(obj.id, node);
+    div.appendChild(node.root);
 
     // recursively create the DOM elements for the children
     const childLevel = level + 1;
     obj.children.forEach((child: OutlinedObject3D) => {
-        const childNode = createTreeViewNodeWithDescendants(child, clickHandler, childLevel);
+        const childNode = createTreeViewNodeWithDescendants(child, clickHandler, map, childLevel);
         if (childNode) {
             div.appendChild(childNode);
         }
@@ -133,12 +200,32 @@ function isHelper(obj: Object3D): boolean {
     return 'isHelper' in obj && obj.isHelper === true;
 }
 
+function matches(obj: Object3D, regex?: RegExp): boolean {
+    if (regex == null) {
+        return true;
+    }
+
+    if (regex.test(obj.name.toLowerCase())) {
+        return true;
+    }
+
+    if (regex.test(obj.type.toLowerCase())) {
+        return true;
+    }
+
+    return false;
+}
+
 function shouldBeDisplayedInTree(obj: OutlinedObject3D, filter: Filter) {
     if (isHelper(obj) && !filter.showHelpers) {
         return false;
     }
 
-    if (filter.searchRegex == null || filter.searchRegex.test(obj.name.toLowerCase())) {
+    if (!obj.visible && !filter.showHiddenObjects) {
+        return false;
+    }
+
+    if (matches(obj, filter.searchRegex)) {
         return true;
     }
 
@@ -173,6 +260,7 @@ class Outliner extends Panel {
     propView: OutlinerPropertyView;
     selectionHelper?: BoundingBoxHelper;
     sceneHash: number | undefined = undefined;
+    private readonly _nodes: Map<number, TreeviewNode> = new Map();
 
     /**
      * @param gui - The GUI.
@@ -183,8 +271,9 @@ class Outliner extends Panel {
 
         this.filters = {
             showHelpers: false,
+            showHiddenObjects: true,
             searchQuery: '',
-            searchRegex: null,
+            searchRegex: undefined,
         };
 
         this.treeviewContainer = document.createElement('div');
@@ -199,6 +288,12 @@ class Outliner extends Panel {
 
         this.addController<boolean>(this.filters, 'showHelpers')
             .name('Show helpers')
+            .onChange(() => {
+                this.search();
+                this.instance.notifyChange();
+            });
+        this.addController<boolean>(this.filters, 'showHiddenObjects')
+            .name('Show hidden objects')
             .onChange(() => {
                 this.search();
                 this.instance.notifyChange();
@@ -260,7 +355,7 @@ class Outliner extends Panel {
     search() {
         this.filters.searchQuery = this.filters.searchQuery.trim().toLowerCase();
         this.filters.searchRegex =
-            this.filters.searchQuery.length > 0 ? new RegExp(this.filters.searchQuery) : null;
+            this.filters.searchQuery.length > 0 ? new RegExp(this.filters.searchQuery) : undefined;
         this.sceneHash = undefined;
         this.updateTreeView();
     }
@@ -268,6 +363,10 @@ class Outliner extends Panel {
     updateObject(o: Object3D) {
         o.updateMatrixWorld(true);
         this.instance.notifyChange();
+    }
+
+    private updateExistingNodes() {
+        this._nodes.forEach(n => updateNode(n));
     }
 
     updateTreeView() {
@@ -278,23 +377,26 @@ class Outliner extends Panel {
 
         const hash = getHash(this.instance.scene);
         if (hash === this.sceneHash) {
-            return;
-        }
+            this.updateExistingNodes();
+        } else {
+            this.sceneHash = hash;
 
-        this.sceneHash = hash;
+            if (this.rootNode) {
+                this.treeview.removeChild(this.rootNode);
+            }
 
-        if (this.rootNode) {
-            this.treeview.removeChild(this.rootNode);
-        }
+            applySearchFilter(this.instance.scene as unknown as OutlinedObject3D, this.filters);
 
-        applySearchFilter(this.instance.scene as unknown as OutlinedObject3D, this.filters);
+            this._nodes.clear();
 
-        this.rootNode = createTreeViewNodeWithDescendants(
-            this.instance.scene as unknown as OutlinedObject3D,
-            obj => this.onNodeClicked(obj),
-        );
-        if (this.rootNode) {
-            this.treeview.appendChild(this.rootNode);
+            this.rootNode = createTreeViewNodeWithDescendants(
+                this.instance.scene as unknown as OutlinedObject3D,
+                obj => this.onNodeClicked(obj),
+                this._nodes,
+            );
+            if (this.rootNode) {
+                this.treeview.appendChild(this.rootNode);
+            }
         }
     }
 }
