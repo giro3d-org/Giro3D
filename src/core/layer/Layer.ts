@@ -493,7 +493,7 @@ abstract class Layer<
                 }
             }
 
-            this._instance.notifyChange(this, true);
+            this._instance.notifyChange(this, { immediate: true });
         };
 
         if (this._preloadImages) {
@@ -727,11 +727,6 @@ abstract class Layer<
             target.imageIds.add(r.id);
         });
 
-        // Let's wait for a short time to avoid processing requests that become
-        // immediately obsolete, such as tiles that become visible for a very brief moment.
-        // Those tiles will be rendered using whatever data is available in the composer.
-        await PromiseUtils.delay(200);
-
         if (this.shouldCancelRequest(node)) {
             target.abortAndThrow();
         }
@@ -915,7 +910,7 @@ abstract class Layer<
 
         const texture = target.renderTarget.texture;
         this.applyTextureToNode({ texture, pitch: target.pitch }, target, false);
-        this._instance.notifyChange(this);
+        this._instance.notifyChange(this, { immediate: true });
         target.paintCount++;
     }
 
@@ -1001,7 +996,7 @@ abstract class Layer<
 
                     const texture = target.renderTarget.texture;
                     this.applyTextureToNode({ texture, pitch }, target, isLastRender);
-                    this._instance.notifyChange(this);
+                    this._instance.notifyChange(this, { immediate: true });
                 })
                 .catch(err => {
                     // Abort errors are perfectly normal, so we don't need to log them.
