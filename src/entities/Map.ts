@@ -944,6 +944,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     /**
      * Sets the render state of the map.
      *
+     * @internal
      * @param state - The new state.
      * @returns The function to revert to the previous state.
      */

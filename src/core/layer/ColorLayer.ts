@@ -3,8 +3,8 @@ import { type Feature } from 'ol';
 import Layer, {
     type LayerOptions,
     type LayerEvents,
-    type Node,
-    type NodeMaterial,
+    type LayerNode,
+    type LayerNodeMaterial,
     type TextureAndPitch,
     type LayerUserData,
     type Target,
@@ -154,7 +154,7 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
         }
     }
 
-    protected updateMaterial(material: NodeMaterial) {
+    protected updateMaterial(material: LayerNodeMaterial) {
         if (material.hasColorLayer(this)) {
             // Update material parameters
             material.setLayerVisibility(this, this.visible);
@@ -188,7 +188,7 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
         return target.node.canProcessColorLayer();
     }
 
-    unregisterNode(node: Node) {
+    unregisterNode(node: LayerNode) {
         super.unregisterNode(node);
         const material = node.material;
         if (material) {
