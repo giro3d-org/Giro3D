@@ -1,5 +1,40 @@
 # Changelog
 
+## v0.38.1 (2024-08-08)
+
+A minor release that brings performance improvements on layers and some fixes.
+
+### Feat
+
+-   **VectorSource**: add `clear()` method to remove all features in the source
+-   **VectorSource**: add `removeFeature()` to remove a feature from the source
+-   **VectorSource**: add `addFeature()` and `addFeatures()` methods to add features
+-   **VectorSource**: add `updateFeature()` to repaint a subset of feature(s)
+-   **Map**: make outline color configurable
+-   **Outliner**: add option to hide non-visible objects
+-   **Outliner**: clearly identify the root objects of entities
+-   **Entity3D**: add a `'object-created'` event
+-   **Layer**: count number of paints of a given target
+
+### Fix
+
+-   **GeometryConverter**: add missing handling of `renderOrder`
+-   **Outliner**: update existing objects without recreating the tree view
+-   **DrawTool**: ensure that rings remain closed after edition (#489)
+-   **Tiles3D**: fix bounding box display when we have a mesh transform
+-   **Tiles3D**: fix wireframe handling
+-   **entities**: don't swallow errors
+-   **FeatureCollection**: really call `onObjectCreated` on all created objects
+-   **Tiles3D**: take into account each mesh opacity
+-   **Tiles3D**: correctly handle errors
+-   **Tiles3dInspector**: support other materials than `PointCloudMaterial`
+
+### Perf
+
+-   **Layer**: reduce latency of repaints by using an immediate notification
+-   **MainLoop**: allow immediate updates
+-   **Layer**: allow partial repaints (#488)
+
 ## v0.38.0 (2024-07-31)
 
 This release brings many new features and improvements.
