@@ -48,15 +48,44 @@ export function isOrthographicCamera(obj: unknown): obj is OrthographicCamera {
 /**
  * Adds geospatial capabilities to three.js cameras.
  */
-class Camera {
-    private _crs: string;
-    camera3D: PerspectiveCamera | OrthographicCamera;
-    private _viewMatrix: Matrix4;
-    width: number;
-    height: number;
+class View {
+    private readonly _crs: string;
+    private readonly _viewMatrix: Matrix4;
+    private _camera: PerspectiveCamera | OrthographicCamera;
+    private _width: number;
+    private _height: number;
     private _preSSE: number;
     private _maxFar: number = DEFAULT_MAX_NEAR_PLANE;
     private _minNear: number = DEFAULT_MIN_NEAR_PLANE;
+
+    /**
+     * The width, in pixels, of this view.
+     */
+    get width() {
+        return this._width;
+    }
+
+    /**
+     * The height, in pixels, of this view.
+     */
+    get height() {
+        return this._height;
+    }
+
+    /**
+     * Gets or sets the current camera.
+     */
+    get camera(): PerspectiveCamera | OrthographicCamera {
+        return this._camera;
+    }
+
+    set camera(c: PerspectiveCamera | OrthographicCamera) {
+        if (c) {
+            this._camera = c;
+        } else {
+            throw new Error('a camera is required');
+        }
+    }
 
     /**
      * @param crs - the CRS of this camera
@@ -67,13 +96,13 @@ class Camera {
     constructor(crs: string, width: number, height: number, options: CameraOptions = {}) {
         this._crs = crs;
 
-        this.camera3D = options.camera ? options.camera : new PerspectiveCamera(30, width / height);
-        this.camera3D.near = DEFAULT_MIN_NEAR_PLANE;
-        this.camera3D.far = DEFAULT_MAX_NEAR_PLANE;
-        this.camera3D.updateProjectionMatrix();
+        this._camera = options.camera ? options.camera : new PerspectiveCamera(30, width / height);
+        this._camera.near = DEFAULT_MIN_NEAR_PLANE;
+        this._camera.far = DEFAULT_MAX_NEAR_PLANE;
+        this._camera.updateProjectionMatrix();
         this._viewMatrix = new Matrix4();
-        this.width = width;
-        this.height = height;
+        this._width = width;
+        this._height = height;
 
         this._preSSE = Infinity;
     }
@@ -85,6 +114,7 @@ class Camera {
     get preSSE() {
         return this._preSSE;
     }
+
     set preSSE(value) {
         this._preSSE = value;
     }
@@ -94,7 +124,7 @@ class Camera {
     }
 
     get near() {
-        return this.camera3D.near;
+        return this.camera.near;
     }
 
     /**
@@ -102,11 +132,11 @@ class Camera {
      * the bounds defined by {@link minNearPlane} and {@link maxFarPlane}.
      */
     set near(distance: number) {
-        this.camera3D.near = MathUtils.clamp(distance, this.minNearPlane, this.maxFarPlane);
+        this.camera.near = MathUtils.clamp(distance, this.minNearPlane, this.maxFarPlane);
     }
 
     get far() {
-        return this.camera3D.far;
+        return this.camera.far;
     }
 
     /**
@@ -114,7 +144,7 @@ class Camera {
      * the bounds defined by {@link minNearPlane} and {@link maxFarPlane}.
      */
     set far(distance: number) {
-        this.camera3D.far = MathUtils.clamp(distance, this.minNearPlane, this.maxFarPlane);
+        this.camera.far = MathUtils.clamp(distance, this.minNearPlane, this.maxFarPlane);
     }
 
     /**
@@ -126,7 +156,7 @@ class Camera {
 
     set maxFarPlane(distance: number) {
         this._maxFar = distance;
-        this.camera3D.far = Math.min(this.camera3D.far, distance);
+        this.camera.far = Math.min(this.camera.far, distance);
     }
 
     /**
@@ -138,7 +168,7 @@ class Camera {
 
     set minNearPlane(distance: number) {
         this._minNear = distance;
-        this.camera3D.near = Math.max(this.camera3D.near, distance);
+        this.camera.near = Math.max(this.camera.near, distance);
     }
 
     /**
@@ -149,31 +179,34 @@ class Camera {
         this.far = this.maxFarPlane;
     }
 
+    /**
+     * @internal
+     */
     update(width?: number, height?: number) {
-        this._resize(width, height);
+        this.resize(width, height);
 
         // update matrix
-        this.camera3D.updateMatrixWorld();
+        this.camera.updateMatrixWorld();
 
         // keep our visibility testing matrix ready
         this._viewMatrix.multiplyMatrices(
-            this.camera3D.projectionMatrix,
-            this.camera3D.matrixWorldInverse,
+            this.camera.projectionMatrix,
+            this.camera.matrixWorldInverse,
         );
     }
 
-    private _resize(width?: number, height?: number) {
+    private resize(width?: number, height?: number) {
         if (width && height) {
-            this.width = width;
-            this.height = height;
+            this._width = width;
+            this._height = height;
             const ratio = width / height;
 
-            if (isPerspectiveCamera(this.camera3D)) {
-                if (this.camera3D.aspect !== ratio) {
-                    this.camera3D.aspect = ratio;
+            if (isPerspectiveCamera(this.camera)) {
+                if (this.camera.aspect !== ratio) {
+                    this.camera.aspect = ratio;
                 }
-            } else if (isOrthographicCamera(this.camera3D)) {
-                const orthographic = this.camera3D;
+            } else if (isOrthographicCamera(this.camera)) {
+                const orthographic = this.camera;
                 const width = orthographic.right - orthographic.left;
                 const height = width / ratio;
                 orthographic.top = height / 2;
@@ -181,7 +214,7 @@ class Camera {
             }
         }
 
-        this.camera3D.updateProjectionMatrix();
+        this.camera.updateProjectionMatrix();
     }
 
     /**
@@ -192,7 +225,7 @@ class Camera {
      * @returns Coordinates object holding camera's position
      */
     position(crs?: string) {
-        return new Coordinates(this.crs, this.camera3D.position).as(crs || this.crs);
+        return new Coordinates(this.crs, this.camera.position).as(crs || this.crs);
     }
 
     isBox3Visible(box3: Box3, matrixWorld: Matrix4) {
@@ -210,7 +243,7 @@ class Camera {
     }
 
     box3SizeOnScreen(box3: Box3, matrixWorld: Matrix4) {
-        const pts = this._projectBox3PointsInCameraSpace(box3, matrixWorld);
+        const pts = this.projectBox3PointsInCameraSpace(box3, matrixWorld);
 
         // All points are in front of the near plane -> box3 is invisible
         if (!pts) {
@@ -219,23 +252,23 @@ class Camera {
 
         // Project points on screen
         for (let i = 0; i < 8; i++) {
-            pts[i].applyMatrix4(this.camera3D.projectionMatrix);
+            pts[i].applyMatrix4(this.camera.projectionMatrix);
         }
 
         return tmp.box3.setFromPoints(pts);
     }
 
-    private _projectBox3PointsInCameraSpace(box3: Box3, matrixWorld?: Matrix4) {
-        if (!('near' in this.camera3D)) {
+    private projectBox3PointsInCameraSpace(box3: Box3, matrixWorld?: Matrix4) {
+        if (!('near' in this.camera)) {
             return undefined;
         }
 
         // Projects points in camera space
         // We don't project directly on screen to avoid artifacts when projecting
         // points behind the near plane.
-        let m = this.camera3D.matrixWorldInverse;
+        let m = this.camera.matrixWorldInverse;
         if (matrixWorld) {
-            m = tmp.matrix.multiplyMatrices(this.camera3D.matrixWorldInverse, matrixWorld);
+            m = tmp.matrix.multiplyMatrices(this.camera.matrixWorldInverse, matrixWorld);
         }
         points[0].set(box3.min.x, box3.min.y, box3.min.z).applyMatrix4(m);
         points[1].set(box3.min.x, box3.min.y, box3.max.z).applyMatrix4(m);
@@ -250,11 +283,11 @@ class Camera {
         // So if min.z is > -near, the object is invisible
         let atLeastOneInFrontOfNearPlane = false;
         for (let i = 0; i < 8; i++) {
-            if (points[i].z <= -this.camera3D.near) {
+            if (points[i].z <= -this.camera.near) {
                 atLeastOneInFrontOfNearPlane = true;
             } else {
                 // Clamp to near plane
-                points[i].z = -this.camera3D.near;
+                points[i].z = -this.camera.near;
             }
         }
 
@@ -262,4 +295,4 @@ class Camera {
     }
 }
 
-export default Camera;
+export default View;

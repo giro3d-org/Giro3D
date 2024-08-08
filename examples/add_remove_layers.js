@@ -35,10 +35,10 @@ const instance = new Instance(viewerDiv, {
 
 // Instanciates camera
 const camPos = new Vector3(220295, 6810219, 409065);
-instance.camera.camera3D.position.set(camPos.x, camPos.y, camPos.z);
+instance.view.camera.position.set(camPos.x, camPos.y, camPos.z);
 
 // Instanciates controls
-const controls = new MapControls(instance.camera.camera3D, instance.domElement);
+const controls = new MapControls(instance.view.camera, instance.domElement);
 
 controls.target.set(camPos.x, camPos.y + 1, 0);
 instance.useTHREEControls(controls);

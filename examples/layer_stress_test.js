@@ -31,10 +31,10 @@ const instance = new Instance(viewerDiv, {
 });
 
 // Instanciates camera
-instance.camera.camera3D.position.set(0, 0, 25000000);
+instance.view.camera.position.set(0, 0, 25000000);
 
 // Instanciates controls
-const controls = new MapControls(instance.camera.camera3D, instance.domElement);
+const controls = new MapControls(instance.view.camera, instance.domElement);
 
 instance.useTHREEControls(controls);
 

@@ -143,19 +143,19 @@ class MainLoop {
     }
 
     private update(instance: Instance, updateSources: Set<unknown>, dt: number) {
-        const context = new Context(instance.camera, instance);
+        const context = new Context(instance.view, instance);
 
         if (this.automaticCameraPlaneComputation) {
             // Reset near/far to default value to allow update function to test
             // visibility using camera's frustum; without depending on the near/far
             // values which are only used for rendering.
-            instance.camera.resetPlanes();
+            instance.view.resetPlanes();
         }
 
-        // We can't just use camera3D.updateProjectionMatrix() because part of
+        // We can't just use camera.updateProjectionMatrix() because part of
         // the update process use camera._viewMatrix, and this matrix depends
         // on near/far values.
-        instance.camera.update();
+        instance.view.update();
 
         for (const entity of instance.getObjects(o => o instanceof Entity) as Entity[]) {
             context.resetForEntity(entity);
@@ -182,7 +182,7 @@ class MainLoop {
                     const entityDistance = entity.distance as { min: number; max: number };
                     context.distance.min = Math.min(context.distance.min, entityDistance.min);
                     if (entityDistance.max === Infinity) {
-                        context.distance.max = instance.camera.maxFarPlane;
+                        context.distance.max = instance.view.maxFarPlane;
                     } else {
                         context.distance.max = Math.max(context.distance.max, entityDistance.max);
                     }
@@ -207,7 +207,7 @@ class MainLoop {
             if (boundingSphere && !boundingSphere.isEmpty()) {
                 tmpSphere.copy(boundingSphere);
                 tmpSphere.applyMatrix4(o.matrixWorld);
-                const d = tmpSphere.distanceToPoint(context.camera.camera3D.position);
+                const d = tmpSphere.distanceToPoint(context.view.camera.position);
                 context.distance.min = ThreeMath.clamp(d, 0, context.distance.min);
 
                 context.distance.max = Math.max(context.distance.max, d + 2 * tmpSphere.radius);
@@ -215,11 +215,11 @@ class MainLoop {
         });
 
         if (this.automaticCameraPlaneComputation) {
-            instance.camera.near = context.distance.min;
-            instance.camera.far = context.distance.max;
+            instance.view.near = context.distance.min;
+            instance.view.far = context.distance.max;
         }
 
-        instance.camera.update();
+        instance.view.update();
     }
 
     private step(instance: Instance) {
@@ -242,14 +242,14 @@ class MainLoop {
 
         instance.dispatchEvent({
             type: 'before-camera-update',
-            camera: instance.camera,
+            camera: instance.view,
             dt,
             updateLoopRestarted: this._updateLoopRestarted,
         });
         instance.execCameraUpdate();
         instance.dispatchEvent({
             type: 'after-camera-update',
-            camera: instance.camera,
+            camera: instance.view,
             dt,
             updateLoopRestarted: this._updateLoopRestarted,
         });
@@ -261,8 +261,8 @@ class MainLoop {
         // camera matrixWorld.
         // Note: this is required at least because WEBGLRenderer calls
         // camera.updateMatrixWorld()
-        const oldAutoUpdate = instance.camera.camera3D.matrixAutoUpdate;
-        instance.camera.camera3D.matrixAutoUpdate = false;
+        const oldAutoUpdate = instance.view.camera.matrixAutoUpdate;
+        instance.view.camera.matrixAutoUpdate = false;
 
         // update data-structure
         this.update(instance, updateSources, dt);
@@ -289,7 +289,7 @@ class MainLoop {
         // next time, we'll consider that we've just started the loop if we are still PAUSED now
         this._updateLoopRestarted = this._renderingState === RenderingState.RENDERING_PAUSED;
 
-        instance.camera.camera3D.matrixAutoUpdate = oldAutoUpdate;
+        instance.view.camera.matrixAutoUpdate = oldAutoUpdate;
 
         instance.dispatchEvent({
             type: 'update-end',

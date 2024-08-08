@@ -39,7 +39,7 @@ instance.scene.add(sun2);
 // ambient
 const ambientLight = new AmbientLight(0xffffff, 1);
 instance.scene.add(ambientLight);
-instance.camera.minNearPlane = 0.5;
+instance.view.minNearPlane = 0.5;
 
 // Configure Point Cloud
 const ifc = new Tiles3D(
@@ -56,17 +56,17 @@ ifc.addEventListener('object-created', evt => {
 });
 
 function placeCamera(position, lookAt) {
-    instance.camera.camera3D.position.set(position.x, position.y, position.z);
-    instance.camera.camera3D.lookAt(lookAt);
+    instance.view.camera.position.set(position.x, position.y, position.z);
+    instance.view.camera.lookAt(lookAt);
     // create controls
-    const controls = new MapControls(instance.camera.camera3D, instance.domElement);
+    const controls = new MapControls(instance.view.camera, instance.domElement);
     controls.target.copy(lookAt);
     controls.enableDamping = true;
     controls.dampingFactor = 0.25;
 
     instance.useTHREEControls(controls);
 
-    instance.notifyChange(instance.camera.camera3D);
+    instance.notifyChange(instance.view.camera);
 }
 
 // add pointcloud to scene
@@ -75,7 +75,7 @@ function initializeCamera() {
         ? ifc.root.bbox
         : ifc.root.boundingVolume.box.clone().applyMatrix4(ifc.root.matrixWorld);
 
-    // instance.camera.camera3D.far = 2.0 * bbox.getSize(tmpVec3).length();
+    // instance.view.camera.far = 2.0 * bbox.getSize(tmpVec3).length();
 
     const ratio = bbox.getSize(tmpVec3).x / bbox.getSize(tmpVec3).z;
     const position = bbox.min

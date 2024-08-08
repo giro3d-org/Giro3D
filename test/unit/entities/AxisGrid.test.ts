@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import Extent from 'src/core/geographic/Extent';
 import AxisGrid, { type Volume } from 'src/entities/AxisGrid';
 import Context from 'src/core/Context';
-import Camera from 'src/renderer/Camera';
+import View from 'src/renderer/View';
 
 const DEFAULT_EXTENT = new Extent('EPSG:3857', -10, 10, -10, 10);
 const defaultVolume: Volume = {
@@ -14,13 +14,13 @@ const defaultVolume: Volume = {
 
 describe('AxisGrid', () => {
     let context: Context;
-    let camera: Camera;
-    let threeCamera: THREE.PerspectiveCamera;
+    let view: View;
+    let camera: THREE.PerspectiveCamera;
 
     beforeEach(() => {
-        threeCamera = new THREE.PerspectiveCamera(45);
-        camera = new Camera('foo', 1, 1, { camera: threeCamera });
-        context = new Context(camera, null);
+        camera = new THREE.PerspectiveCamera(45);
+        view = new View('foo', 1, 1, { camera: camera });
+        context = new Context(view, null);
     });
 
     describe('constructor', () => {
@@ -76,7 +76,7 @@ describe('AxisGrid', () => {
             const midHeight = 50;
 
             // Set the camera position in the middle of the volume
-            threeCamera.position.set(0, 0, midHeight);
+            camera.position.set(0, 0, midHeight);
 
             grid.preUpdate(context);
 
@@ -99,8 +99,8 @@ describe('AxisGrid', () => {
 
             function testSide(sideIndex: number) {
                 sides[sideIndex].getWorldPosition(vec);
-                threeCamera.lookAt(vec);
-                threeCamera.updateWorldMatrix(true, true);
+                camera.lookAt(vec);
+                camera.updateWorldMatrix(true, true);
 
                 grid.preUpdate(context);
 

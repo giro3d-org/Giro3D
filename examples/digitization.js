@@ -132,14 +132,14 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
     })
     .catch(console.error);
 
-instance.camera.camera3D.position.set(892_342, 6_246_816, 3000);
+instance.view.camera.position.set(892_342, 6_246_816, 3000);
 const lookAt = new Vector3(892_342, 6_246_816 + 1, 50);
-instance.camera.camera3D.lookAt(lookAt);
+instance.view.camera.lookAt(lookAt);
 // Notify Giro3D we've changed the three.js camera position directly
-instance.notifyChange(instance.camera.camera3D);
+instance.notifyChange(instance.view.camera);
 
 // Creates controls
-const controls = new MapControls(instance.camera.camera3D, instance.domElement);
+const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 

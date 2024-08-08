@@ -165,15 +165,15 @@ const capitals = new FeatureCollection('capitals', {
 
 instance.add(capitals);
 
-instance.camera.camera3D.position.set(0, 5500000, 50000000);
+instance.view.camera.position.set(0, 5500000, 50000000);
 const lookAt = new Vector3(0, 5500000 + 1, 0);
-instance.camera.camera3D.lookAt(lookAt);
+instance.view.camera.lookAt(lookAt);
 
 // Notify Giro3D we've changed the three.js camera position directly
-instance.notifyChange(instance.camera.camera3D);
+instance.notifyChange(instance.view.camera);
 
 // Creates controls
-const controls = new MapControls(instance.camera.camera3D, instance.domElement);
+const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.4;
 

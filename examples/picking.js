@@ -135,14 +135,14 @@ instance.add(cube);
 cube.updateMatrixWorld(true);
 
 // place camera above grenoble
-instance.camera.camera3D.position.set(913349.2364044407, 6456426.459171033, 1706.0108044011636);
+instance.view.camera.position.set(913349.2364044407, 6456426.459171033, 1706.0108044011636);
 
 // and look at the Bastille
 const lookAt = new Vector3(913896, 6459191, 200);
-instance.camera.camera3D.lookAt(lookAt);
+instance.view.camera.lookAt(lookAt);
 
 // Creates controls
-const controls = new MapControls(instance.camera.camera3D, instance.domElement);
+const controls = new MapControls(instance.view.camera, instance.domElement);
 
 // Then looks at extent's center
 controls.target.copy(lookAt);

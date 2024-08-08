@@ -1,8 +1,8 @@
 import type { Sphere } from 'three';
 import { Matrix4, Vector3, ShapeUtils, Box3 } from 'three';
 
-import type Camera from '../renderer/Camera';
-import { isPerspectiveCamera } from '../renderer/Camera';
+import type View from '../renderer/View';
+import { isPerspectiveCamera } from '../renderer/View';
 
 const m = new Matrix4();
 const tmpBox3 = new Box3();
@@ -37,7 +37,7 @@ function computeSSE(
     offset: Vector3,
     size: Vector3,
     matrix: Matrix4,
-    camera: Camera,
+    camera: View,
     _3d: boolean,
 ): SSE {
     temp[0].copy(offset);
@@ -96,14 +96,14 @@ function computeSSE(
     return result;
 }
 
-function findBox3Distance(camera: Camera, box3: Box3, matrix: Matrix4, isMode3d: boolean) {
+function findBox3Distance(camera: View, box3: Box3, matrix: Matrix4, isMode3d: boolean) {
     // TODO: can be cached
     // TODO: what about matrix scale component
     m.copy(matrix).invert();
     // Move camera position in box3 basis
     // (we don't transform box3 to camera basis because box3 are AABB,
     // so instead we apply the inverse transformation to the camera)
-    const pt = new Vector3(0, 0, 0).applyMatrix4(camera.camera3D.matrixWorld).applyMatrix4(m);
+    const pt = new Vector3(0, 0, 0).applyMatrix4(camera.camera.matrixWorld).applyMatrix4(m);
     // Compute distance between the camera / box3
     tmpBox3.copy(box3);
     if (!isMode3d) {
@@ -153,13 +153,13 @@ export default {
      * @param mode - Whether or not use 3D in the calculus
      */
     computeFromBox3(
-        camera: Camera,
+        camera: View,
         box3: Box3,
         matrix: Matrix4,
         geometricError: number,
         mode: Mode,
     ): SSE {
-        if (isPerspectiveCamera(camera.camera3D)) {
+        if (isPerspectiveCamera(camera.camera)) {
             const distance = findBox3Distance(camera, box3, matrix, mode === Mode.MODE_3D);
             if (distance <= geometricError) {
                 return null;
@@ -174,11 +174,11 @@ export default {
         return sse;
     },
 
-    computeFromSphere(camera: Camera, sphere: Sphere, matrix: Matrix4, geometricError: number) {
+    computeFromSphere(camera: View, sphere: Sphere, matrix: Matrix4, geometricError: number) {
         const s = sphere.clone().applyMatrix4(matrix);
-        const distance = Math.max(0.0, s.distanceToPoint(camera.camera3D.position));
+        const distance = Math.max(0.0, s.distanceToPoint(camera.camera.position));
         temp[0].set(geometricError, 0, -distance);
-        temp[0].applyMatrix4(camera.camera3D.projectionMatrix);
+        temp[0].applyMatrix4(camera.camera.projectionMatrix);
         temp[0].x = temp[0].x * camera.width * 0.5;
         temp[0].y = temp[0].y * camera.height * 0.5;
         temp[0].z = 0;

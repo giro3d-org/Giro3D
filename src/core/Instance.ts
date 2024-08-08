@@ -11,7 +11,7 @@ import {
 } from 'three';
 import proj4 from 'proj4';
 import { register } from 'ol/proj/proj4.js';
-import Camera, { type CameraOptions } from '../renderer/Camera';
+import View, { type CameraOptions } from '../renderer/View';
 import C3DEngine, { type RendererOptions } from '../renderer/c3DEngine';
 import type RenderingOptions from '../renderer/RenderingOptions';
 import MainLoop from './MainLoop';
@@ -82,11 +82,11 @@ export interface InstanceEvents {
     /**
      * Fires before the camera update
      */
-    'before-camera-update': { camera: Camera } & FrameEventPayload;
+    'before-camera-update': { camera: View } & FrameEventPayload;
     /**
      * Fires after the camera update
      */
-    'after-camera-update': { camera: Camera } & FrameEventPayload;
+    'after-camera-update': { camera: View } & FrameEventPayload;
     /**
      * Fires before the entity update
      */
@@ -215,10 +215,10 @@ function isObject3D(o: unknown): o is Object3D {
  * instance.domElement.addEventListener('dblclick', dblClickHandler);
  *
  * // Get the camera position
- * const myvector = instance.camera.camera3D.position;
+ * const myvector = instance.view.camera.position;
  * // Set the camera position
- * instance.camera.camera3D.position.set(newPosition);
- * instance.camera.camera3D.lookAt(lookAt);
+ * instance.view.camera.position.set(newPosition);
+ * instance.view.camera.lookAt(lookAt);
  * ```
  */
 class Instance extends EventDispatcher<InstanceEvents> implements Progress {
@@ -228,7 +228,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
     private readonly _engine: C3DEngine;
     private readonly _scene: Scene;
     private readonly _threeObjects: Group;
-    private readonly _camera: Camera;
+    private readonly _view: View;
     private readonly _entities: Set<Entity>;
     private readonly _resizeObserver?: ResizeObserver;
     private readonly _pickingClock: Clock;
@@ -307,7 +307,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
             this._scene.matrixWorldAutoUpdate = false;
         }
 
-        this._camera = new Camera(
+        this._view = new View(
             this._referenceCrs,
             this._engine.getWindowSize().x,
             this._engine.getWindowSize().y,
@@ -424,9 +424,9 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         return this._threeObjects;
     }
 
-    /** Gets the Camera. */
-    get camera(): Camera {
-        return this._camera;
+    /** Gets the view. */
+    get view(): View {
+        return this._view;
     }
 
     /** Gets the currently bound camera controls. */
@@ -444,7 +444,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
 
     private _doUpdateRendererSize(div: HTMLDivElement): void {
         this._engine.onWindowResize(div.clientWidth, div.clientHeight);
-        this.notifyChange(this._camera.camera3D);
+        this.notifyChange(this._view.camera);
     }
 
     private _updateRendererSize(div: HTMLDivElement): void {
@@ -575,7 +575,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
             this._threeObjects.remove(object);
         }
 
-        this.notifyChange(this._camera.camera3D);
+        this.notifyChange(this._view.camera);
     }
 
     /**
@@ -698,7 +698,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      */
     execCameraUpdate() {
         const dim = this._engine.getWindowSize();
-        this.camera.update(dim.x, dim.y);
+        this.view.update(dim.x, dim.y);
     }
 
     /**
@@ -708,7 +708,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * @internal
      */
     render() {
-        this._engine.render(this._scene, this._camera.camera3D);
+        this._engine.render(this._scene, this._view.camera);
     }
 
     /**
@@ -767,8 +767,8 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * @returns NDC coordinates (x and y are [-1, 1])
      */
     canvasToNormalizedCoords(canvasCoords: Vector2, target: Vector2): Vector2 {
-        target.x = 2 * (canvasCoords.x / this._camera.width) - 1;
-        target.y = -2 * (canvasCoords.y / this._camera.height) + 1;
+        target.x = 2 * (canvasCoords.x / this._view.width) - 1;
+        target.y = -2 * (canvasCoords.y / this._view.height) + 1;
         return target;
     }
 
@@ -780,8 +780,8 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * @returns canvas coordinates (in pixels, 0-0 = top-left of the instance)
      */
     normalizedToCanvasCoords(ndcCoords: Vector2, target: Vector2): Vector2 {
-        target.x = (ndcCoords.x + 1) * 0.5 * this._camera.width;
-        target.y = (ndcCoords.y - 1) * -0.5 * this._camera.height;
+        target.x = (ndcCoords.x + 1) * 0.5 * this._view.width;
+        target.y = (ndcCoords.y - 1) * -0.5 * this._view.height;
         return target;
     }
 
@@ -900,7 +900,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * @param obj - Object to look at
      */
     focusObject(obj: Object3D | Entity3D) {
-        const cam = this._camera.camera3D;
+        const cam = this._view.camera;
         if (obj instanceof Map) {
             // Configure camera
             // TODO support different CRS
@@ -967,7 +967,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         }
 
         this._controlFunctions = {
-            eventListener: () => this.notifyChange(this._camera.camera3D),
+            eventListener: () => this.notifyChange(this._view.camera),
             update: () => this.updateControls(),
         };
 

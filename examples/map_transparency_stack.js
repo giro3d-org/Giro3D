@@ -122,10 +122,10 @@ vectorMap.object3d.translateZ(+2500);
 vectorMap.object3d.updateMatrixWorld();
 
 // Sets the camera position
-instance.camera.camera3D.position.set(1832816, 5163527, 6121);
+instance.view.camera.position.set(1832816, 5163527, 6121);
 
 // Creates controls
-const controls = new MapControls(instance.camera.camera3D, instance.domElement);
+const controls = new MapControls(instance.view.camera, instance.domElement);
 // Then looks at extent's center
 controls.target = extent.centerAsVector3();
 controls.saveState();

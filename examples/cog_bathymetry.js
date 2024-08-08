@@ -66,14 +66,14 @@ map.addLayer(
     }),
 );
 
-const controls = new MapControls(instance.camera.camera3D, instance.domElement);
+const controls = new MapControls(instance.view.camera, instance.domElement);
 
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 
 const center = extent.centerAsVector2();
 
-instance.camera.camera3D.position.set(2195551, 4146310, 90_000);
+instance.view.camera.position.set(2195551, 4146310, 90_000);
 controls.target.set(center.x, center.y, min);
 
 instance.useTHREEControls(controls);

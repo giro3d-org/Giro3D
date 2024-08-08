@@ -90,10 +90,10 @@ map.addLayer(elevationLayer);
 const mapCenter = extent.centerAsVector3();
 
 // Sets the camera position
-instance.camera.camera3D.position.set(mapCenter.x, mapCenter.y - 1, 10000);
+instance.view.camera.position.set(mapCenter.x, mapCenter.y - 1, 10000);
 
 // Creates controls
-const controls = new MapControls(instance.camera.camera3D, instance.domElement);
+const controls = new MapControls(instance.view.camera, instance.domElement);
 
 // Then looks at extent's center
 controls.target = mapCenter;

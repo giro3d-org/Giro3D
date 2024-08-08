@@ -109,7 +109,7 @@ class Tiles3dInspector extends EntityInspector<Tiles3D> {
     }
 
     notify() {
-        this.instance.notifyChange(this.instance.camera.camera3D);
+        this.instance.notifyChange(this.instance.view.camera);
     }
 
     toggleBoundingBoxes(visible: boolean) {

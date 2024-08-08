@@ -78,17 +78,17 @@ const pointcloud = new Tiles3D(
 let colorLayer;
 
 function placeCamera(position, lookAt) {
-    instance.camera.camera3D.position.set(position.x, position.y, position.z);
-    instance.camera.camera3D.lookAt(lookAt);
+    instance.view.camera.position.set(position.x, position.y, position.z);
+    instance.view.camera.lookAt(lookAt);
     // create controls
-    const controls = new MapControls(instance.camera.camera3D, instance.domElement);
+    const controls = new MapControls(instance.view.camera, instance.domElement);
     controls.target.copy(lookAt);
     controls.enableDamping = true;
     controls.dampingFactor = 0.25;
 
     instance.useTHREEControls(controls);
 
-    instance.notifyChange(instance.camera.camera3D);
+    instance.notifyChange(instance.view.camera);
 }
 
 // add pointcloud to scene
@@ -97,7 +97,7 @@ function initializeCamera() {
         ? pointcloud.root.bbox
         : pointcloud.root.boundingVolume.box.clone().applyMatrix4(pointcloud.root.matrixWorld);
 
-    instance.camera.camera3D.far = 2.0 * bbox.getSize(tmpVec3).length();
+    instance.view.camera.far = 2.0 * bbox.getSize(tmpVec3).length();
 
     const ratio = bbox.getSize(tmpVec3).x / bbox.getSize(tmpVec3).z;
     const position = bbox.min

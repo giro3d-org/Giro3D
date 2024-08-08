@@ -85,14 +85,14 @@ instance.add(axisGrid);
 
 const center = extent.centerAsVector2();
 
-instance.camera.camera3D.position.set(-13609580, 5858793, 32757);
+instance.view.camera.position.set(-13609580, 5858793, 32757);
 const lookAt = new Vector3(center.x, center.y, 0);
-instance.camera.camera3D.lookAt(lookAt);
+instance.view.camera.lookAt(lookAt);
 
-instance.notifyChange(instance.camera.camera3D);
+instance.notifyChange(instance.view.camera);
 
 // Creates controls
-const controls = new MapControls(instance.camera.camera3D, instance.domElement);
+const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 
@@ -258,7 +258,7 @@ const setVerticalExaggeration = bindSlider('vertical-exaggeration', v => {
 });
 
 instance.addEventListener('before-render', () => {
-    const camera = instance.camera.camera3D;
+    const camera = instance.view.camera;
     camera.near = 1000;
     camera.far = 200000;
 });

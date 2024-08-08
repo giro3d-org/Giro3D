@@ -28,10 +28,10 @@ const instance = new Instance(viewerDiv, {
 });
 
 // Instantiate the camera
-instance.camera.camera3D.position.set(center.x, center.y, 2500);
+instance.view.camera.position.set(center.x, center.y, 2500);
 
 // Instantiate the controls
-const controls = new MapControls(instance.camera.camera3D, instance.domElement);
+const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.target.set(center.x, center.y + 1, center.z);
@@ -42,45 +42,41 @@ instance.useTHREEControls(controls);
 const map = new Map('planar', { extent });
 instance.add(map);
 
-const channels = [0, 1, 2];
+// Data coming from the same source as
+// https://openlayers.org/en/latest/examples/cog-math-multisource.html
+const source = new CogSource({
+    url: 'https://3d.oslandia.com/cog_data/20200428_211318_ssc8d1_0017_pansharpened.cog.tif',
+    crs: extent.crs(),
+    channels: [0, 1, 2],
+});
 
-function createLayer() {
-    // Data coming from the same source as
-    // https://openlayers.org/en/latest/examples/cog-math-multisource.html
-    const source = new CogSource({
-        url: 'https://3d.oslandia.com/cog_data/20200428_211318_ssc8d1_0017_pansharpened.cog.tif',
-        crs: extent.crs(),
-        channels,
-    });
-    return new ColorLayer({
-        name: 'color-layer',
-        source,
-        extent,
-        interpretation: Interpretation.CompressTo8Bit(0, 900),
-    });
-}
+const layer = new ColorLayer({
+    name: 'color-layer',
+    source,
+    extent,
+    interpretation: Interpretation.CompressTo8Bit(0, 900),
+});
 
-let layer = createLayer();
 map.addLayer(layer);
 
 function bindDropdown(id, action) {
     document.getElementById(id).addEventListener('change', e => {
         const value = parseInt(e.target.value, 10);
         action(value);
-        map.removeLayer(layer, { disposeLayer: true });
-        layer = createLayer();
-        map.addLayer(layer);
     });
 }
 
 bindDropdown('r-channel', v => {
-    channels[0] = v;
+    source.channels[0] = v;
+    source.update();
 });
 bindDropdown('g-channel', v => {
-    channels[1] = v;
+    source.channels[1] = v;
+    source.update();
 });
 bindDropdown('b-channel', v => {
-    channels[2] = v;
+    source.channels[2] = v;
+    source.update();
 });
 
 Inspector.attach(document.getElementById('panelDiv'), instance);

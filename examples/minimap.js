@@ -89,15 +89,15 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
     .catch(console.error);
 
 // place camera above grenoble
-mainInstance.camera.camera3D.position.set(913349.2364044407, 6456426.459171033, 1706.0108044011636);
+mainInstance.view.camera.position.set(913349.2364044407, 6456426.459171033, 1706.0108044011636);
 // and look at the Bastille
 const lookAt = new Vector3(913896, 6459191, 200);
-mainInstance.camera.camera3D.lookAt(lookAt);
+mainInstance.view.camera.lookAt(lookAt);
 // Notify Giro3D we've changed the three.js camera position directly
-mainInstance.notifyChange(mainInstance.camera.camera3D);
+mainInstance.notifyChange(mainInstance.view.camera);
 
 // Creates controls
-const controls = new MapControls(mainInstance.camera.camera3D, mainInstance.domElement);
+const controls = new MapControls(mainInstance.view.camera, mainInstance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 
@@ -146,7 +146,7 @@ const minimapCamera = new OrthographicCamera(
 
 // We replace the default perspective camera of the minimap view by
 // an orthographic camera, which is much more suitable for this kind of view.
-minimapInstance.camera.camera3D = minimapCamera;
+minimapInstance.view.camera = minimapCamera;
 
 // Let's create our minimap map with the same extent than the main map.
 const minimap = new Map('minimap', {
@@ -182,7 +182,7 @@ function synchronizeCameras() {
     // The minimap camera "altitude" never changes because we are using an orthographic camera.
     // Changing this value will not change the size of objects rendered in this view.
     const MINIMAP_CAMERA_ALTITUDE = 10;
-    minimapInstance.camera.camera3D.position.set(position.x, position.y, MINIMAP_CAMERA_ALTITUDE);
+    minimapInstance.view.camera.position.set(position.x, position.y, MINIMAP_CAMERA_ALTITUDE);
 
     // Instruct the minimap instance to render the view.
     minimapInstance.notifyChange(minimap);

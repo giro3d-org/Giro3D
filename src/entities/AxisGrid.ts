@@ -952,7 +952,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
             this._needsRebuild = false;
         }
 
-        const camera = context.camera.camera3D as Camera;
+        const camera = context.view.camera as Camera;
 
         this._cameraForward.setFromMatrixColumn(camera.matrixWorld, 2);
 
@@ -964,7 +964,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
     }
 
     private updateMinMaxDistance(context: Context) {
-        const cameraPos = context.camera.camera3D.position;
+        const cameraPos = context.view.camera.position;
 
         const centerDistance = this._boundingSphere.center.distanceTo(cameraPos);
         const radius = this._boundingSphere.radius;

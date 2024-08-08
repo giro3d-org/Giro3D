@@ -47,9 +47,9 @@ WmtsSource.fromCapabilities(
     })
     .catch(e => console.error(e));
 
-instance.camera.camera3D.position.set(0, 0, 80000000);
+instance.view.camera.position.set(0, 0, 80000000);
 
-const controls = new MapControls(instance.camera.camera3D, instance.domElement);
+const controls = new MapControls(instance.view.camera, instance.domElement);
 
 instance.useTHREEControls(controls);
 

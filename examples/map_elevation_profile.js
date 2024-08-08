@@ -106,10 +106,10 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
 
 const center = extent.centerAsVector2();
 
-instance.camera.camera3D.position.set(center.x - 4000, center.y - 4000, 7300);
+instance.view.camera.position.set(center.x - 4000, center.y - 4000, 7300);
 
 // Instanciates controls
-const controls = new MapControls(instance.camera.camera3D, instance.domElement);
+const controls = new MapControls(instance.view.camera, instance.domElement);
 
 controls.target.set(center.x, center.y, 300);
 

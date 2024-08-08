@@ -31,9 +31,9 @@ instance.add(
 );
 
 // Position our camera
-instance.camera.camera3D.position.set(831542.2870560559, 6287655.35350404, 31.86644500706522);
-instance.camera.camera3D.lookAt(new Vector3(831585.923, 6287652.23, 27.461));
-instance.camera.camera3D.updateMatrixWorld();
+instance.view.camera.position.set(831542.2870560559, 6287655.35350404, 31.86644500706522);
+instance.view.camera.lookAt(new Vector3(831585.923, 6287652.23, 27.461));
+instance.view.camera.updateMatrixWorld();
 // And create our controls
 const controls = new FirstPersonControls(instance, {
     focusOnMouseOver: true,
@@ -41,7 +41,7 @@ const controls = new FirstPersonControls(instance, {
 controls.reset();
 instance.domElement.focus();
 
-instance.notifyChange(instance.camera.camera3D);
+instance.notifyChange(instance.view.camera);
 
 Inspector.attach(document.getElementById('panelDiv'), instance);
 StatusBar.bind(instance, { disableUrlUpdate: true });

@@ -4,6 +4,14 @@ import type {
     DrawToolEventMap,
     CreateShapeOptions,
     CreationOptions,
+    MouseCallback,
 } from './DrawTool';
 
-export { DrawTool, PickCallback, DrawToolEventMap, CreateShapeOptions, CreationOptions };
+export {
+    DrawTool,
+    PickCallback,
+    DrawToolEventMap,
+    CreateShapeOptions,
+    CreationOptions,
+    MouseCallback,
+};

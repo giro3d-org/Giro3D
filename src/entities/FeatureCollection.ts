@@ -846,7 +846,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
 
         // Are we visible ?
         if (!this.frozen) {
-            const isVisible = ctx.camera.isBox3Visible(tile.boundingBox, tile.matrixWorld);
+            const isVisible = ctx.view.isBox3Visible(tile.boundingBox, tile.matrixWorld);
             tile.visible = isVisible;
         }
 
@@ -933,7 +933,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         if (!this.frozen) {
             const s = tile.boundingBox.getSize(vector);
             const sse = ScreenSpaceError.computeFromBox3(
-                ctx.camera,
+                ctx.view,
                 tile.boundingBox,
                 tile.matrixWorld,
                 Math.max(s.x, s.y),

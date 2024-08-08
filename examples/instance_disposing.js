@@ -55,14 +55,14 @@ function init() {
     ).catch(e => console.error(e));
 
     // Instanciates camera
-    instance.camera.camera3D.position.set(
+    instance.view.camera.position.set(
         (Math.random() - 0.5) * dimensions.x,
         (Math.random() - 0.5) * dimensions.y,
         25000000,
     );
 
     // Instanciates controls
-    controls = new MapControls(instance.camera.camera3D, instance.domElement);
+    controls = new MapControls(instance.view.camera, instance.domElement);
 
     instance.useTHREEControls(controls);
 

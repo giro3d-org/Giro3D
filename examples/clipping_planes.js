@@ -49,7 +49,7 @@ const instance = new Instance(viewerDiv, { crs: 'EPSG:2154' });
 instance.renderingOptions.enableEDL = true;
 
 // Creates controls
-const controls = new MapControls(instance.camera.camera3D, instance.domElement);
+const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 
@@ -207,7 +207,7 @@ function generateBoxHelper() {
 }
 
 // refresh scene
-instance.notifyChange(instance.camera.camera3D);
+instance.notifyChange(instance.view.camera);
 
 function update() {
     volumeHelpers.visible = options.showHelper && options.enableClippingPlanes;
@@ -327,8 +327,8 @@ Inspector.attach(document.getElementById('panelDiv'), instance);
 
 // configure camera
 const lookAt = new Vector3(915833, 6455879, 121);
-instance.camera.camera3D.position.set(909914, 6448629, 7925);
-instance.camera.camera3D.lookAt(lookAt);
+instance.view.camera.position.set(909914, 6448629, 7925);
+instance.view.camera.lookAt(lookAt);
 controls.target.copy(lookAt);
 controls.saveState();
 

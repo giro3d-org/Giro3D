@@ -36,7 +36,7 @@ function processUrl(instance, url) {
         try {
             const [x, y, z, tx, ty, tz] = pov.split(',').map(s => Number.parseFloat(s));
 
-            instance.camera.camera3D.position.set(x, y, z);
+            instance.view.camera.position.set(x, y, z);
             instance.controls.target.set(tx, ty, tz);
         } finally {
             instance.notifyChange();
@@ -52,7 +52,7 @@ function updateUrl() {
         return Math.round(n * 10) / 10;
     }
 
-    const cam = currentInstance.camera.camera3D.position;
+    const cam = currentInstance.view.camera.position;
     const target = currentInstance?.controls?.target;
     if (target) {
         const pov = `${round10(cam.x)},${round10(cam.y)},${round10(cam.z)},${round10(target.x)},${round10(target.y)},${round10(target.z)}`;
@@ -69,7 +69,7 @@ function updateUrl() {
 }
 
 function updateCameraMoving() {
-    const cameraPosition = currentInstance.camera.camera3D.getWorldPosition(tmpVec3);
+    const cameraPosition = currentInstance.view.camera.getWorldPosition(tmpVec3);
     // Don't pick while the camera is moving
     if (!lastCameraPosition || lastCameraPosition.distanceToSquared(cameraPosition) < 3) {
         isCameraMoving = false;

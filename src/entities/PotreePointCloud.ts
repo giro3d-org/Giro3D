@@ -35,7 +35,7 @@ import type ColorLayer from '../core/layer/ColorLayer';
 import type { LayerEvents } from '../core/layer/Layer';
 import type Layer from '../core/layer/Layer';
 import { type EntityUserData } from './Entity';
-import { isOrthographicCamera, isPerspectiveCamera } from '../renderer/Camera';
+import { isOrthographicCamera, isPerspectiveCamera } from '../renderer/View';
 import {
     createEmptyReport,
     getGeometryMemoryUsage,
@@ -557,15 +557,15 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
             return [];
         }
 
-        const camera = context.camera;
-        const camera3D = camera.camera3D;
+        const view = context.view;
+        const camera = view.camera;
 
-        if (isPerspectiveCamera(camera3D)) {
+        if (isPerspectiveCamera(camera)) {
             // See https://cesiumjs.org/hosted-apps/massiveworlds/downloads/Ring/WorldScaleTerrainRendering.pptx
             // slide 17
-            camera.preSSE = camera.height / (2 * Math.tan(MathUtils.degToRad(camera3D.fov) * 0.5));
-        } else if (isOrthographicCamera(camera3D)) {
-            camera.preSSE = (camera.height * camera3D.near) / (camera3D.top - camera3D.bottom);
+            view.preSSE = view.height / (2 * Math.tan(MathUtils.degToRad(camera.fov) * 0.5));
+        } else if (isOrthographicCamera(camera)) {
+            view.preSSE = (view.height * camera.near) / (camera.top - camera.bottom);
         }
 
         if (this.material) {
@@ -627,7 +627,7 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
         }
         const pointSpacing = this.metadata.spacing / 2 ** elt.name.length;
         // Estimate the onscreen distance between 2 points
-        const onScreenSpacing = (context.camera.preSSE * pointSpacing) / distance;
+        const onScreenSpacing = (context.view.preSSE * pointSpacing) / distance;
         // [  P1  ]--------------[   P2   ]
         //     <--------------------->      = pointsSpacing (in world coordinates)
         //                                  ~ onScreenSpacing (in pixels)
@@ -667,7 +667,7 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
             }
             this.updateMinMaxDistance(context, bbox);
         } else {
-            elt.visible = context.camera.isBox3Visible(bbox, this.object3d.matrixWorld);
+            elt.visible = context.view.isBox3Visible(bbox, this.object3d.matrixWorld);
 
             if (!elt.visible) {
                 markForDeletion(elt);

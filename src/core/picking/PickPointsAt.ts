@@ -101,7 +101,7 @@ function pickPointsAt(
 
     // render 1 pixel
     const buffer = instance.engine.renderToBuffer({
-        camera: instance.camera.camera3D,
+        camera: instance.view.camera,
         scene: entity.object3d,
         clearColor: BLACK,
         datatype: UnsignedByteType,
@@ -177,7 +177,7 @@ function pickPointsAt(
                     entity,
                     point: position,
                     coord: candidates[i].coord,
-                    distance: instance.camera.camera3D.position.distanceTo(position),
+                    distance: instance.view.camera.position.distanceTo(position),
                 };
                 if (!filter || filter(p)) {
                     target.push(p);

@@ -106,10 +106,10 @@ function createScene(crs, crsDef, extent) {
 
     // Sets the camera position
     const center = extent.centerAsVector3();
-    instance.camera.camera3D.position.set(center.x, center.y - 1, extent.dimensions().y * 2);
+    instance.view.camera.position.set(center.x, center.y - 1, extent.dimensions().y * 2);
 
     // Creates controls
-    controls = new MapControls(instance.camera.camera3D, viewerDiv);
+    controls = new MapControls(instance.view.camera, viewerDiv);
 
     // Then looks at extent's center
     controls.target = center;

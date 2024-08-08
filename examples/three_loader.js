@@ -32,10 +32,10 @@ renderer.shadowMap.enabled = true;
 
 // Create the Giro3D instance
 const instance = new Instance(viewerDiv, { crs: 'EPSG:3857', renderer: { renderer } });
-const camera = instance.camera.camera3D;
+const camera = instance.view.camera;
 
 // Creates controls
-const controls = new MapControls(instance.camera.camera3D, instance.domElement);
+const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 

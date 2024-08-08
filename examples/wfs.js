@@ -121,9 +121,9 @@ const wfsLayer = new ColorLayer({
 map.addLayer(wfsLayer);
 
 // Creates controls
-const controls = new MapControls(instance.camera.camera3D, instance.domElement);
+const controls = new MapControls(instance.view.camera, instance.domElement);
 
-instance.camera.camera3D.position.set(1839739, 5171618, 910);
+instance.view.camera.position.set(1839739, 5171618, 910);
 controls.target = new Vector3(1840839, 5172718, 0);
 controls.saveState();
 

@@ -103,13 +103,13 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
     .catch(console.error);
 
 const center = extent.centerAsVector2();
-instance.camera.camera3D.position.set(center.x - 1000, center.y - 1000, 3000);
+instance.view.camera.position.set(center.x - 1000, center.y - 1000, 3000);
 const lookAt = new Vector3(center.x, center.y, 200);
-instance.camera.camera3D.lookAt(lookAt);
-instance.notifyChange(instance.camera.camera3D);
+instance.view.camera.lookAt(lookAt);
+instance.notifyChange(instance.view.camera);
 
 // Creates controls
-const controls = new MapControls(instance.camera.camera3D, instance.domElement);
+const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.target.copy(lookAt);

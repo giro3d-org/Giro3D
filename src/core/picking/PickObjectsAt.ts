@@ -57,7 +57,7 @@ function pickObjectsAt(
 
         pixels = instance.engine.renderToBuffer({
             scene: object,
-            camera: instance.camera.camera3D,
+            camera: instance.view.camera,
             zone,
             clearColor,
         });
@@ -91,10 +91,10 @@ function pickObjectsAt(
         }
 
         // Perform raycasting
-        tmp.setX(normalized.x + x / instance.camera.width).setY(
-            normalized.y + y / instance.camera.height,
+        tmp.setX(normalized.x + x / instance.view.width).setY(
+            normalized.y + y / instance.view.height,
         );
-        raycaster.setFromCamera(tmp, instance.camera.camera3D);
+        raycaster.setFromCamera(tmp, instance.view.camera);
 
         const intersects = raycaster.intersectObject(object, true) as PickResult[];
         for (const inter of intersects) {

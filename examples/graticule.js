@@ -81,10 +81,10 @@ const dem = new ElevationLayer({
 
 map.addLayer(dem);
 
-instance.camera.camera3D.position.set(-13600394, 5818579, 11832);
+instance.view.camera.position.set(-13600394, 5818579, 11832);
 
 // Instanciates controls
-const controls = new MapControls(instance.camera.camera3D, instance.domElement);
+const controls = new MapControls(instance.view.camera, instance.domElement);
 
 controls.target.set(-13603000, 5811000, 0);
 
