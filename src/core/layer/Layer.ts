@@ -1224,6 +1224,9 @@ abstract class Layer<
         this._composer?.postUpdate();
     }
 
+    /**
+     * @internal
+     */
     get composer(): Readonly<LayerComposer> {
         return this._composer;
     }

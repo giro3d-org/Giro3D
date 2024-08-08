@@ -76,8 +76,8 @@ export type StrokeStyle = BaseStyle & {
      */
     color?: ColorRepresentation;
     /**
-     * The line width. If {@link worldUnits} is true, the width is expressed in CRS units (typically meters).
-     * Otherwise the line width is expressed in pixels.
+     * The line width. If {@link lineWidthUnits} is `world`, the width is expressed in CRS units
+     * (typically meters). Otherwise the line width is expressed in pixels.
      * @defaultValue {@link DEFAULT_LINE_WIDTH}
      */
     lineWidth?: number;
