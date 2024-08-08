@@ -1,4 +1,11 @@
-import Layer, { type LayerEvents, type LayerOptions, type LayerUserData } from './Layer';
+import Layer, {
+    type LayerEvents,
+    type LayerOptions,
+    type LayerUserData,
+    type LayerNode,
+    type LayerNodeEventMap,
+    type LayerNodeMaterial,
+} from './Layer';
 import ColorLayer, { type ColorLayerEvents, type ColorLayerOptions } from './ColorLayer';
 import MaskLayer, { type MaskLayerOptions, type MaskMode } from './MaskLayer';
 import ElevationLayer, { type ElevationLayerOptions } from './ElevationLayer';
@@ -26,6 +33,9 @@ export {
     InterpretationMode,
     InterpretationOptions,
     Layer,
+    LayerNode,
+    LayerNodeEventMap,
+    LayerNodeMaterial,
     LayerOptions,
     LayerEvents,
     LayerUserData,
