@@ -223,7 +223,7 @@ const setLayerType = bindDropDown('layerType', v => {
     instance.notifyChange(map);
 });
 const setBackgroundOpacity = bindSlider('backgroundOpacity', v => {
-    map.materialOptions.backgroundOpacity = v;
+    map.backgroundOpacity = v;
     instance.notifyChange(map);
 });
 const updateBounds = bindColorMapBounds((min, max) => {

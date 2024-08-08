@@ -131,10 +131,10 @@ bindToggle('colorlayer-range', enabled => {
 });
 
 bindSlider('mapMin', v => {
-    map.materialOptions.elevationRange.min = v;
+    map.elevationRange.min = v;
 });
 bindSlider('mapMax', v => {
-    map.materialOptions.elevationRange.max = v;
+    map.elevationRange.max = v;
 });
 bindSlider('layerMin', v => {
     colorLayer.elevationRange = { min: v, max: colorLayer.elevationRange.max };

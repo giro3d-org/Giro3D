@@ -91,19 +91,19 @@ function updateActiveLayer() {
     switch (activeLayer) {
         case 0:
             elevationLayer.visible = true;
-            map.materialOptions.backgroundOpacity = 0;
-            map.materialOptions.discardNoData = true;
+            map.backgroundOpacity = 0;
+            map.discardNoData = true;
             break;
         case 1:
             maskLayer.visible = true;
-            map.materialOptions.backgroundOpacity = 1;
-            map.materialOptions.discardNoData = false;
+            map.backgroundOpacity = 1;
+            map.discardNoData = false;
             break;
         case 2:
         default:
             colorLayer.visible = true;
-            map.materialOptions.backgroundOpacity = 0;
-            map.materialOptions.discardNoData = false;
+            map.backgroundOpacity = 0;
+            map.discardNoData = false;
             break;
     }
 }

@@ -119,7 +119,7 @@ bindSlider('map-opacity', v => {
     map.opacity = v;
 });
 bindSlider('bg-opacity', v => {
-    map.materialOptions.backgroundOpacity = v;
+    map.backgroundOpacity = v;
 });
 bindSlider('blue-opacity', v => {
     blueTriangle.opacity = v;

@@ -211,7 +211,7 @@ instance.domElement.addEventListener('mousemove', updateMeasurements);
 StatusBar.bind(instance);
 
 const showColliders = bindToggle('show-colliders', v => {
-    map.materialOptions.showColliderMeshes = v;
+    map.showColliderMeshes = v;
     instance.notifyChange(map);
 });
 
@@ -247,7 +247,7 @@ const setVerticalExaggeration = bindSlider('vertical-exaggeration', v => {
     // By default, vertical exaggeration has no effect on shading,
     // so let's apply it to hillshading to increase the shading intensity
     // when the vertical exaggeration increases.
-    map.materialOptions.hillshading.zFactor = v;
+    map.hillshading.zFactor = v;
 
     instance.notifyChange(map);
 

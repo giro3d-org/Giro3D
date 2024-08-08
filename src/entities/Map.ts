@@ -1,27 +1,60 @@
 import {
+    Box3,
+    Color,
+    Group,
+    MathUtils,
+    Quaternion,
+    Raycaster,
+    UnsignedByteType,
     Vector2,
     Vector3,
-    Quaternion,
-    Group,
-    Color,
-    MathUtils,
-    type Camera as ThreeCamera,
+    type ColorRepresentation,
+    type Intersection,
     type Object3D,
     type TextureDataType,
-    UnsignedByteType,
-    Raycaster,
-    type Intersection,
-    type ColorRepresentation,
-    Box3,
+    type Camera as ThreeCamera,
 } from 'three';
 
+import type ColorimetryOptions from '../core/ColorimetryOptions';
+import { defaultColorimetryOptions } from '../core/ColorimetryOptions';
+import type Context from '../core/Context';
+import type ContourLineOptions from '../core/ContourLineOptions';
+import type ElevationRange from '../core/ElevationRange';
+import Coordinates from '../core/geographic/Coordinates';
 import type Extent from '../core/geographic/Extent';
-import Layer from '../core/layer/Layer';
+import type GraticuleOptions from '../core/GraticuleOptions';
+import type HillshadingOptions from '../core/HillshadingOptions';
+import type { ColorMap } from '../core/layer';
 import ColorLayer, { isColorLayer } from '../core/layer/ColorLayer';
 import ElevationLayer, { isElevationLayer } from '../core/layer/ElevationLayer';
-import Entity3D, { type Entity3DEventMap } from './Entity3D';
+import type HasLayers from '../core/layer/HasLayers';
+import Layer from '../core/layer/Layer';
+import type MemoryUsage from '../core/MemoryUsage';
+import {
+    createEmptyReport,
+    type GetMemoryUsageContext,
+    type MemoryUsageReport,
+} from '../core/MemoryUsage';
+import type Pickable from '../core/picking/Pickable';
+import type PickableFeatures from '../core/picking/PickableFeatures';
+import { isPickableFeatures } from '../core/picking/PickableFeatures';
+import traversePickingCircle from '../core/picking/PickingCircle';
+import type PickOptions from '../core/picking/PickOptions';
+import pickTilesAt, { type MapPickResult } from '../core/picking/PickTilesAt';
 import type { SSE } from '../core/ScreenSpaceError';
 import ScreenSpaceError from '../core/ScreenSpaceError';
+import Capabilities from '../core/system/Capabilities';
+import type TerrainOptions from '../core/TerrainOptions';
+import {
+    DEFAULT_ENABLE_CPU_TERRAIN,
+    DEFAULT_ENABLE_STITCHING,
+    DEFAULT_ENABLE_TERRAIN,
+} from '../core/TerrainOptions';
+import type TileGeometry from '../core/TileGeometry';
+import TileIndex, { type NeighbourList } from '../core/TileIndex';
+import TileMesh, { isTileMesh } from '../core/TileMesh';
+import AtlasBuilder, { type AtlasInfo } from '../renderer/AtlasBuilder';
+import ColorMapAtlas from '../renderer/ColorMapAtlas';
 import LayeredMaterial, {
     DEFAULT_AZIMUTH,
     DEFAULT_GRATICULE_COLOR,
@@ -30,45 +63,12 @@ import LayeredMaterial, {
     DEFAULT_HILLSHADING_INTENSITY,
     DEFAULT_HILLSHADING_ZFACTOR,
     DEFAULT_ZENITH,
+    type MaterialOptions,
 } from '../renderer/LayeredMaterial';
-import TileMesh, { isTileMesh } from '../core/TileMesh';
-import TileIndex, { type NeighbourList } from '../core/TileIndex';
 import type RenderingState from '../renderer/RenderingState';
-import ColorMapAtlas from '../renderer/ColorMapAtlas';
-import AtlasBuilder, { type AtlasInfo } from '../renderer/AtlasBuilder';
-import Capabilities from '../core/system/Capabilities';
-import type TileGeometry from '../core/TileGeometry';
-import { type MaterialOptions } from '../renderer/LayeredMaterial';
-import type HillshadingOptions from '../core/HillshadingOptions';
-import type TerrainOptions from '../core/TerrainOptions';
-import type GraticuleOptions from '../core/GraticuleOptions';
-import type ColorimetryOptions from '../core/ColorimetryOptions';
-import type Pickable from '../core/picking/Pickable';
-import type PickOptions from '../core/picking/PickOptions';
-import pickTilesAt, { type MapPickResult } from '../core/picking/PickTilesAt';
-import type PickableFeatures from '../core/picking/PickableFeatures';
-import { isPickableFeatures } from '../core/picking/PickableFeatures';
-import type { ColorMap } from '../core/layer';
-import type HasLayers from '../core/layer/HasLayers';
-import { defaultColorimetryOptions } from '../core/ColorimetryOptions';
 import TextureGenerator from '../utils/TextureGenerator';
 import type { EntityUserData } from './Entity';
-import type MemoryUsage from '../core/MemoryUsage';
-import {
-    createEmptyReport,
-    type GetMemoryUsageContext,
-    type MemoryUsageReport,
-} from '../core/MemoryUsage';
-import {
-    DEFAULT_ENABLE_CPU_TERRAIN,
-    DEFAULT_ENABLE_STITCHING,
-    DEFAULT_ENABLE_TERRAIN,
-} from '../core/TerrainOptions';
-import Coordinates from '../core/geographic/Coordinates';
-import traversePickingCircle from '../core/picking/PickingCircle';
-import type ContourLineOptions from '../core/ContourLineOptions';
-import type ElevationRange from '../core/ElevationRange';
-import type Context from '../core/Context';
+import Entity3D, { type Entity3DEventMap } from './Entity3D';
 import type GetElevationOptions from './GetElevationOptions';
 import type GetElevationResult from './GetElevationResult';
 
@@ -520,7 +520,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
      */
     readonly isMap: boolean = true;
     readonly isPickableFeatures = true;
-    readonly materialOptions: MaterialOptions;
+    private readonly _materialOptions: Required<MaterialOptions>;
     readonly showOutline: boolean;
     /** @internal */
     readonly tileIndex: TileIndex<TileMesh>;
@@ -583,7 +583,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
         this._segments = options.segments || DEFAULT_MAP_SEGMENTS;
 
-        this.materialOptions = {
+        this._materialOptions = {
             showColliderMeshes: false,
             forceTextureAtlases: options.forceTextureAtlases,
             hillshading: getHillshadingOptions(options.hillshading),
@@ -595,9 +595,10 @@ class Map<UserData extends EntityUserData = EntityUserData>
             colorimetry: getColorimetryOptions(options.colorimetry),
             graticule: getGraticuleOptions(options.graticule),
             segments: this.segments,
+            colorMapAtlas: null,
             elevationRange: options.elevationRange,
             backgroundOpacity: options.backgroundOpacity ?? 1,
-            tileOutlineColor: options.outlineColor ?? '#ff0000',
+            tileOutlineColor: new Color(options.outlineColor ?? '#ff0000'),
             backgroundColor:
                 options.backgroundColor !== undefined
                     ? new Color(options.backgroundColor)
@@ -629,6 +630,138 @@ class Map<UserData extends EntityUserData = EntityUserData>
         return sum / this._layers.length;
     }
 
+    /**
+     * Gets or sets the background opacity.
+     */
+    get backgroundOpacity(): number {
+        return this._materialOptions.backgroundOpacity;
+    }
+
+    set backgroundOpacity(opacity: number) {
+        this._materialOptions.backgroundOpacity = opacity;
+    }
+
+    /**
+     * Gets or sets the terrain options.
+     */
+    get terrain(): TerrainOptions {
+        return this._materialOptions.terrain;
+    }
+
+    set terrain(opacity: TerrainOptions) {
+        this._materialOptions.terrain = opacity;
+    }
+
+    /**
+     * Toggles discard no-data pixels.
+     */
+    get discardNoData(): boolean {
+        return this._materialOptions.discardNoData;
+    }
+
+    set discardNoData(opacity: boolean) {
+        this._materialOptions.discardNoData = opacity;
+    }
+
+    /**
+     * Gets or sets the background color.
+     */
+    get backgroundColor(): Color {
+        return this._materialOptions.backgroundColor;
+    }
+
+    set backgroundColor(c: ColorRepresentation) {
+        this._materialOptions.backgroundColor = new Color(c);
+    }
+
+    /**
+     * Gets or sets graticule options.
+     */
+    get graticule(): GraticuleOptions {
+        return this._materialOptions.graticule;
+    }
+
+    set graticule(opts: GraticuleOptions) {
+        this._materialOptions.graticule = opts;
+    }
+
+    /**
+     * Gets or sets hillshading options.
+     */
+    get hillshading(): HillshadingOptions {
+        return this._materialOptions.hillshading;
+    }
+
+    set hillshading(opts: HillshadingOptions) {
+        this._materialOptions.hillshading = opts;
+    }
+
+    /**
+     * Gets or sets colorimetry options.
+     */
+    get colorimetry(): ColorimetryOptions {
+        return this._materialOptions.colorimetry;
+    }
+
+    set colorimetry(opts: ColorimetryOptions) {
+        this._materialOptions.colorimetry = opts;
+    }
+
+    /**
+     * Gets or sets elevation range.
+     */
+    get elevationRange(): ElevationRange {
+        return this._materialOptions.elevationRange;
+    }
+
+    set elevationRange(range: ElevationRange) {
+        this._materialOptions.elevationRange = range;
+    }
+
+    /**
+     * Shows tile outlines.
+     */
+    get showTileOutlines(): boolean {
+        return this._materialOptions.showTileOutlines;
+    }
+
+    set showTileOutlines(show: boolean) {
+        this._materialOptions.showTileOutlines = show;
+    }
+
+    /**
+     * Gets or sets tile outline color.
+     */
+    get tileOutlineColor(): Color {
+        return this._materialOptions.tileOutlineColor;
+    }
+
+    set tileOutlineColor(color: ColorRepresentation) {
+        this._materialOptions.tileOutlineColor = new Color(color);
+    }
+
+    /**
+     * Gets or sets contour line options.
+     */
+    get contourLines(): ContourLineOptions {
+        return this._materialOptions.contourLines;
+    }
+
+    set contourLines(opts: ContourLineOptions) {
+        this._materialOptions.contourLines = opts;
+    }
+
+    /**
+     * Shows meshes used for raycasting purposes.
+     */
+    get showColliderMeshes(): boolean {
+        return this._materialOptions.showColliderMeshes;
+    }
+
+    set showColliderMeshes(show: boolean) {
+        this._materialOptions.showColliderMeshes = show;
+    }
+
     get segments() {
         return this._segments;
     }
@@ -639,7 +772,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
                 // Delete cached geometries that just became obsolete
                 this.clearGeometryPool();
                 this._segments = v;
-                this.materialOptions.segments = v;
+                this._materialOptions.segments = v;
                 this.updateGeometries();
             } else {
                 throw new Error(
@@ -680,7 +813,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
                     c.update(context, child);
                 }
 
-                child.update(this.materialOptions);
+                child.update(this._materialOptions);
                 child.updateMatrixWorld(true);
                 i++;
             }
@@ -745,7 +878,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         const material = new LayeredMaterial({
             renderer: this._instance.renderer,
             atlasInfo: this._atlasInfo,
-            options: this.materialOptions,
+            options: this._materialOptions,
             getIndexFn: this.getIndex.bind(this),
             textureDataType: this._colorAtlasDataType,
             hasElevationLayer: this._hasElevationLayer,
@@ -760,8 +893,8 @@ class Map<UserData extends EntityUserData = EntityUserData>
             textureSize: this._imageSize,
             segments: this.segments,
             coord: { level, x, y },
-            enableCPUTerrain: this.materialOptions.terrain.enableCPUTerrain,
-            enableTerrainDeformation: this.materialOptions.terrain.enabled,
+            enableCPUTerrain: this._materialOptions.terrain.enableCPUTerrain,
+            enableTerrainDeformation: this._materialOptions.terrain.enabled,
             onElevationChanged: this._onTileElevationChanged,
         });
 
@@ -914,7 +1047,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     preUpdate(context: Context, changeSources: Set<unknown>) {
-        this.materialOptions.colorMapAtlas?.update();
+        this._materialOptions.colorMapAtlas?.update();
 
         this.tileIndex.update();
 
@@ -1013,7 +1146,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     onRenderingContextRestored(): void {
-        this.materialOptions.colorMapAtlas?.forceUpdate();
+        this._materialOptions.colorMapAtlas?.forceUpdate();
         this.forEachLayer(layer => layer.onRenderingContextRestored());
         this._instance.notifyChange(this);
     }
@@ -1156,7 +1289,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
             }
 
             if (node.material.visible) {
-                node.material.update(this.materialOptions);
+                node.material.update(this._materialOptions);
 
                 this.updateMinMaxDistance(context, node);
 
@@ -1174,7 +1307,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     private testVisibility(node: TileMesh, context: Context): boolean {
-        node.update(this.materialOptions);
+        node.update(this._materialOptions);
 
         const isVisible = context.camera.isBox3Visible(node.boundingBox, node.matrixWorld);
 
@@ -1185,7 +1318,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         this._layers.forEach(l => l.postUpdate());
 
         const computeNeighbours =
-            this.materialOptions.terrain.stitching && this.materialOptions.terrain.enabled;
+            this._materialOptions.terrain.stitching && this._materialOptions.terrain.enabled;
 
         if (computeNeighbours) {
             this.traverseTiles(tile => {
@@ -1231,13 +1364,13 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     private registerColorMap(colorMap: ColorMap) {
-        if (!this.materialOptions.colorMapAtlas) {
-            this.materialOptions.colorMapAtlas = new ColorMapAtlas(this._instance.renderer);
+        if (!this._materialOptions.colorMapAtlas) {
+            this._materialOptions.colorMapAtlas = new ColorMapAtlas(this._instance.renderer);
             this.traverseTiles(t => {
-                t.material.setColorMapAtlas(this.materialOptions.colorMapAtlas);
+                t.material.setColorMapAtlas(this._materialOptions.colorMapAtlas);
             });
         }
-        this.materialOptions.colorMapAtlas.add(colorMap);
+        this._materialOptions.colorMapAtlas.add(colorMap);
     }
 
     /**
@@ -1322,7 +1455,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
             this._layerIds.delete(layer.id);
             this._layers.splice(this._layers.indexOf(layer), 1);
             if (layer.colorMap) {
-                this.materialOptions.colorMapAtlas?.remove(layer.colorMap);
+                this._materialOptions.colorMapAtlas?.remove(layer.colorMap);
             }
             if (layer instanceof ElevationLayer) {
                 this._hasElevationLayer = false;
@@ -1414,7 +1547,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
             this.getLayers().forEach(layer => layer.dispose());
         }
 
-        this.materialOptions.colorMapAtlas?.dispose();
+        this._materialOptions.colorMapAtlas?.dispose();
     }
 
     private disposeTile(tile: TileMesh) {
@@ -1496,7 +1629,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
             return result;
         }
 
-        if (!this.materialOptions.terrain.enableCPUTerrain) {
+        if (!this._materialOptions.terrain.enableCPUTerrain) {
             console.warn(
                 'Map.getElevation() is only supported when TerrainOptions.enableCPUTerrain is enabled',
             );
@@ -1541,7 +1674,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     canSubdivide(node: TileMesh): boolean {
         // No problem subdividing if terrain deformation is disabled,
         // since bounding boxes are always up to date (as they don't have an elevation component).
-        if (!this.materialOptions.terrain.enabled) {
+        if (!this._materialOptions.terrain.enabled) {
             return true;
         }
 

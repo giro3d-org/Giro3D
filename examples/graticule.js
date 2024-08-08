@@ -115,16 +115,16 @@ function bindDropdown(id, callback) {
     });
 }
 
-bindToggle('toggle-graticule', v => (map.materialOptions.graticule.enabled = v));
+bindToggle('toggle-graticule', v => (map.graticule.enabled = v));
 
-bindSlider('x-step', v => (map.materialOptions.graticule.xStep = v));
-bindSlider('y-step', v => (map.materialOptions.graticule.yStep = v));
-bindSlider('x-offset', v => (map.materialOptions.graticule.xOffset = v));
-bindSlider('y-offset', v => (map.materialOptions.graticule.yOffset = v));
-bindSlider('opacity', v => (map.materialOptions.graticule.opacity = v));
-bindSlider('thickness', v => (map.materialOptions.graticule.thickness = v));
+bindSlider('x-step', v => (map.graticule.xStep = v));
+bindSlider('y-step', v => (map.graticule.yStep = v));
+bindSlider('x-offset', v => (map.graticule.xOffset = v));
+bindSlider('y-offset', v => (map.graticule.yOffset = v));
+bindSlider('opacity', v => (map.graticule.opacity = v));
+bindSlider('thickness', v => (map.graticule.thickness = v));
 
-bindDropdown('color', v => (map.materialOptions.graticule.color = new Color(v)));
+bindDropdown('color', v => (map.graticule.color = new Color(v)));
 
 Inspector.attach(document.getElementById('panelDiv'), instance);
 StatusBar.bind(instance);

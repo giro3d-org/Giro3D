@@ -76,12 +76,12 @@ class MapInspector extends EntityInspector<Map> {
         this.showGrid = false;
         this.renderState = 'Normal';
 
-        this.addController<never>(this.entity.materialOptions, 'discardNoData')
+        this.addController<never>(this.entity, 'discardNoData')
             .name('Discard no-data values')
             .onChange(() => this.notify(this.entity));
         this.layerCount = this.entity.layerCount;
-        this.background = new Color().copyLinearToSRGB(this.entity.materialOptions.backgroundColor);
-        this.backgroundOpacity = this.entity.materialOptions.backgroundOpacity;
+        this.background = new Color().copyLinearToSRGB(this.entity.backgroundColor);
+        this.backgroundOpacity = this.entity.backgroundOpacity;
 
         this.extentColor = new Color('red');
         this.showExtent = false;
@@ -99,12 +99,12 @@ class MapInspector extends EntityInspector<Map> {
         this.addController<number>(this, 'visibleTiles').name('Visible tiles');
         this.addController<number>(this, 'reachableTiles').name('Reachable tiles');
         this.addController<number>(this.entity.allTiles, 'size').name('Loaded tiles');
-        if (this.entity.materialOptions.elevationRange) {
-            this.addController<number>(this.entity.materialOptions.elevationRange, 'min')
+        if (this.entity.elevationRange) {
+            this.addController<number>(this.entity.elevationRange, 'min')
                 .name('Elevation range minimum')
                 .onChange(() => this.notify(map));
 
-            this.addController<number>(this.entity.materialOptions.elevationRange, 'max')
+            this.addController<number>(this.entity.elevationRange, 'max')
                 .name('Elevation range maximum')
                 .onChange(() => this.notify(map));
         }
@@ -121,10 +121,10 @@ class MapInspector extends EntityInspector<Map> {
             .min(0)
             .max(1)
             .onChange(v => this.updateBackgroundOpacity(v));
-        this.addController<boolean>(this.entity.materialOptions, 'showTileOutlines')
+        this.addController<boolean>(this.entity, 'showTileOutlines')
             .name('Show tiles outlines')
             .onChange(() => this.notify());
-        this.addColorController(this.entity.materialOptions, 'tileOutlineColor')
+        this.addColorController(this.entity, 'tileOutlineColor')
             .name('Tile outline color')
             .onChange(() => this.notify());
         this.addController<boolean>(this, 'showTileInfo')
@@ -145,29 +145,13 @@ class MapInspector extends EntityInspector<Map> {
 
         this.terrainPanel = new MapTerrainPanel(this.entity, this.gui, instance);
 
-        this.hillshadingPanel = new HillshadingPanel(
-            this.entity.materialOptions.hillshading,
-            this.gui,
-            instance,
-        );
+        this.hillshadingPanel = new HillshadingPanel(this.entity.hillshading, this.gui, instance);
 
-        this.graticulePanel = new GraticulePanel(
-            this.entity.materialOptions.graticule,
-            this.gui,
-            instance,
-        );
+        this.graticulePanel = new GraticulePanel(this.entity.graticule, this.gui, instance);
 
-        this.contourLinePanel = new ContourLinePanel(
-            this.entity.materialOptions.contourLines,
-            this.gui,
-            instance,
-        );
+        this.contourLinePanel = new ContourLinePanel(this.entity.contourLines, this.gui, instance);
 
-        this.colorimetryPanel = new ColorimetryPanel(
-            this.entity.materialOptions.colorimetry,
-            this.gui,
-            instance,
-        );
+        this.colorimetryPanel = new ColorimetryPanel(this.entity.colorimetry, this.gui, instance);
 
         this.addController<number>(this, 'layerCount').name('Layer count');
         this.addController<string>(this, 'renderState', ['Normal', 'Picking'])
@@ -275,13 +259,13 @@ class MapInspector extends EntityInspector<Map> {
 
     updateBackgroundOpacity(a: number) {
         this.backgroundOpacity = a;
-        this.entity.materialOptions.backgroundOpacity = a;
+        this.entity.backgroundOpacity = a;
         this.notify(this.entity);
     }
 
     updateBackgroundColor(srgb: Color) {
         this.background.copy(srgb);
-        this.entity.materialOptions.backgroundColor.copySRGBToLinear(srgb);
+        this.entity.backgroundColor.copySRGBToLinear(srgb);
         this.notify(this.entity);
     }
 
