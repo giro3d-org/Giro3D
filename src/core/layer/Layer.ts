@@ -113,6 +113,7 @@ export class Target implements MemoryUsage {
     controller: AbortController;
     state: TargetState;
     geometryExtent: Extent;
+    paintCount = 0;
     private _disposed = false;
     private _onVisibilityChanged: () => void;
 
@@ -348,7 +349,6 @@ abstract class Layer<
     private readonly _filter: (id: string) => boolean;
     /** @internal */
     protected readonly _queue: RequestQueue;
-    private _shouldNotify: boolean;
     disposed: boolean;
     private readonly _opCounter: OperationCounter;
     private _sortedTargets: Target[];
@@ -435,7 +435,7 @@ abstract class Layer<
         }
         this.source = options.source;
 
-        this.source.addEventListener('updated', () => this.onSourceUpdated());
+        this.source.addEventListener('updated', ({ extent }) => this.onSourceUpdated(extent));
 
         this.backgroundColor = new Color(options.backgroundColor);
 
@@ -446,7 +446,6 @@ abstract class Layer<
 
         this._queue = DefaultQueue;
 
-        this._shouldNotify = false;
         this.disposed = false;
 
         this._opCounter = new OperationCounter();
@@ -461,8 +460,8 @@ abstract class Layer<
         return shouldCancel(node);
     }
 
-    private onSourceUpdated() {
-        this.clear();
+    private onSourceUpdated(extent?: Extent) {
+        this.clear(extent);
     }
 
     onRenderingContextLost(): void {
@@ -475,22 +474,31 @@ abstract class Layer<
 
     /**
      * Resets all render targets to a blank state and repaint all the targets.
+     * @param extent - An optional extent to limit the region to clear.
      */
-    clear() {
+    clear(extent?: Extent) {
         if (!this.ready) {
             return;
         }
-        this._composer.clear();
+        this._composer.clear(extent);
 
         this._fallbackImagesPromise = null;
 
-        this.loadFallbackImages().then(() => {
+        const reset = () => {
             for (const target of this._targets.values()) {
-                target.reset();
+                if (!extent || extent.intersectsExtent(target.extent)) {
+                    target.reset();
+                }
             }
 
-            this._instance.notifyChange(this, true);
-        });
+            this._instance.notifyChange(this, { immediate: true });
+        };
+
+        if (this._preloadImages) {
+            this.loadFallbackImages().then(reset);
+        } else {
+            reset();
+        }
     }
 
     /**
@@ -717,11 +725,6 @@ abstract class Layer<
             target.imageIds.add(r.id);
         });
 
-        // Let's wait for a short time to avoid processing requests that become
-        // immediately obsolete, such as tiles that become visible for a very brief moment.
-        // Those tiles will be rendered using whatever data is available in the composer.
-        await PromiseUtils.delay(200);
-
         if (this.shouldCancelRequest(node)) {
             target.abortAndThrow();
         }
@@ -905,19 +908,24 @@ abstract class Layer<
 
         const texture = target.renderTarget.texture;
         this.applyTextureToNode({ texture, pitch: target.pitch }, target, false);
-        this._instance.notifyChange(this);
+        this._instance.notifyChange(this, { immediate: true });
+        target.paintCount++;
     }
 
     /**
      * @internal
      */
-    getInfo(node: Node): { state: string; imageCount: number } {
+    getInfo(node: Node): { state: string; imageCount: number; paintCount: number } {
         const target = this._targets.get(node.id);
         if (target) {
-            return { state: TargetState[target.state], imageCount: target.imageIds.size };
+            return {
+                state: TargetState[target.state],
+                imageCount: target.imageIds.size,
+                paintCount: target.paintCount,
+            };
         }
 
-        return { state: 'unknown', imageCount: -1 };
+        return { state: 'unknown', imageCount: -1, paintCount: -1 };
     }
 
     /**
@@ -982,9 +990,11 @@ abstract class Layer<
                         target.state = TargetState.Pending;
                     }
 
+                    target.paintCount++;
+
                     const texture = target.renderTarget.texture;
                     this.applyTextureToNode({ texture, pitch }, target, isLastRender);
-                    this._instance.notifyChange(this);
+                    this._instance.notifyChange(this, { immediate: true });
                 })
                 .catch(err => {
                     // Abort errors are perfectly normal, so we don't need to log them.
@@ -1178,10 +1188,7 @@ abstract class Layer<
 
         this.deleteUnusedTargets();
 
-        if (this._composer?.postUpdate() || this._shouldNotify) {
-            this._instance.notifyChange(this);
-        }
-        this._shouldNotify = false;
+        this._composer?.postUpdate();
     }
 
     get composer(): Readonly<LayerComposer> {

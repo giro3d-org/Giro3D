@@ -862,7 +862,7 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
         // Query HRC if we don't have children metadata yet.
         if (metadata.childrenBitField && metadata.children.length === 0) {
             this.parseOctree(this.metadata.hierarchyStepSize, metadata).then(() =>
-                this._instance.notifyChange(this, false),
+                this._instance.notifyChange(this, { needsRedraw: false }),
             );
         }
 

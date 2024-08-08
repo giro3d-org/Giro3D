@@ -321,7 +321,7 @@ class FirstPersonControls {
         const move = MOVEMENTS[e.keyCode];
         if (move) {
             this.moves.delete(move);
-            this.instance.notifyChange(undefined, false);
+            this.instance.notifyChange(undefined);
             e.preventDefault();
         }
     }
@@ -333,7 +333,7 @@ class FirstPersonControls {
         const move = MOVEMENTS[e.keyCode];
         if (move) {
             this.moves.add(move);
-            this.instance.notifyChange(undefined, false);
+            this.instance.notifyChange(undefined);
             e.preventDefault();
         }
     }

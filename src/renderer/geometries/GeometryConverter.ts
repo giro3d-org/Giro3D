@@ -630,6 +630,9 @@ export default class GeometryConverter<
 
         object.traverse(desc => {
             desc.updateMatrix();
+            if (options.renderOrder) {
+                desc.renderOrder = options.renderOrder;
+            }
         });
         object.updateMatrixWorld(true);
     }

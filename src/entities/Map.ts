@@ -1107,7 +1107,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
         this.dispatchEvent({ type: 'layer-order-changed' });
 
-        this._instance.notifyChange(this, true);
+        this._instance.notifyChange(this);
     }
 
     contains(obj: unknown) {
@@ -1283,7 +1283,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
         this.reorderLayers();
 
-        this._instance.notifyChange(this, false);
+        this._instance.notifyChange(this);
 
         this.dispatchEvent({ type: 'layer-added', layer });
 
@@ -1334,7 +1334,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
             layer.postUpdate();
             this.reorderLayers();
             this.dispatchEvent({ type: 'layer-removed', layer });
-            this._instance.notifyChange(this, true);
+            this._instance.notifyChange(this);
             if (options.disposeLayer) {
                 layer.dispose();
             }

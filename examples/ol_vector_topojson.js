@@ -117,14 +117,15 @@ function pickFeatures(mouseEvent) {
 
     const picked = pickResult.at(0);
 
-    previousFeature?.set('highlight', false);
-
     function resetPickedFeatures() {
-        previousFeature = null;
+        if (previousFeature) {
+            previousFeature.set('highlight', false);
+            buildingsLayer.source.updateFeature(previousFeature);
+        }
         if (label.visible) {
-            instance.notifyChange(map);
             label.visible = false;
         }
+        previousFeature = null;
     }
 
     if (picked) {
@@ -136,9 +137,13 @@ function pickFeatures(mouseEvent) {
         if (features.length > 0) {
             const firstFeature = features[0];
 
+            previousFeature?.set('highlight', false);
             firstFeature.set('highlight', true);
 
-            previousFeature = firstFeature;
+            if (previousFeature !== firstFeature) {
+                buildingsLayer.source.updateFeature(previousFeature, firstFeature);
+                previousFeature = firstFeature;
+            }
 
             instance.notifyChange(map);
             label.position.set(x, y, 100);

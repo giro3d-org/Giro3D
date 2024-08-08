@@ -217,6 +217,21 @@ class MapInspector extends EntityInspector {
         return label;
     }
 
+    getInfo(tile: TileMesh): string {
+        const layers = [];
+        for (const layer of this.map.getLayers()) {
+            const info = layer.getInfo(tile);
+            layers.push(
+                `${layer.name ?? layer.id}: ${info.imageCount} img, ${info.state}, ${info.paintCount} paints)`,
+            );
+        }
+
+        return [
+            `Node #${tile.id} (${Math.ceil(tile.progress * 100)}%) - LOD=${tile.z}, x=${tile.x}, y=${tile.y}`,
+            ...layers,
+        ].join('\n');
+    }
+
     updateLabel(tile: TileMesh, visible: boolean, color: Color) {
         if (!visible) {
             const label = this.labels.get(tile.id);
@@ -229,18 +244,7 @@ class MapInspector extends EntityInspector {
             const isVisible = tile.visible && tile.material.visible;
             const label = this.getOrCreateLabel(tile);
             const element = label.element;
-            let innerText = `
-            Map=${this.map.id}
-            {x=${tile.x},y=${tile.y}} LOD=${tile.z}
-            (node #${tile.id})
-            progress=${Math.ceil(tile.progress * 100)}%
-            layers=${tile.material.getLayerCount()}
-            `;
-            for (const layer of this.map.getLayers()) {
-                const info = layer.getInfo(tile);
-                innerText += `Layer '${layer.id}' - (images=${info.imageCount}, state=${info.state})\n`;
-            }
-            element.innerText = innerText;
+            element.innerText = this.getInfo(tile);
             element.style.color = `#${color.getHexString()}`;
             element.style.opacity = isVisible ? '100%' : '0%';
             tile.boundingBox.getCenter(label.position);

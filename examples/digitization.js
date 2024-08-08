@@ -158,7 +158,7 @@ const tool = new DrawTool({
 });
 
 const removeFeatures = bindButton('remove-features', button => {
-    vectorSource.source.clear();
+    vectorSource.clear();
     button.disabled = true;
 });
 
@@ -173,7 +173,7 @@ const createFeature = shape => {
     if (shape) {
         const feature = shape.toOpenLayersFeature();
 
-        vectorSource.source.addFeature(feature);
+        vectorSource.addFeature(feature);
 
         removeFeatures.disabled = false;
 

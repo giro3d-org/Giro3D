@@ -194,14 +194,15 @@ function pickFeatures(mouseEvent) {
 
     const picked = pickResult.at(0);
 
-    previousFeature?.set('highlight', false);
-
     function resetPickedFeatures() {
-        previousFeature = null;
+        if (previousFeature) {
+            previousFeature.set('highlight', false);
+            ecoRegionLayer.source.updateFeature(previousFeature);
+        }
         if (label.visible) {
-            instance.notifyChange(map);
             label.visible = false;
         }
+        previousFeature = null;
     }
 
     if (picked) {
@@ -213,11 +214,14 @@ function pickFeatures(mouseEvent) {
         if (features.length > 0) {
             const firstFeature = features[0];
 
+            previousFeature?.set('highlight', false);
             firstFeature.set('highlight', true);
 
-            previousFeature = firstFeature;
+            if (previousFeature !== firstFeature) {
+                ecoRegionLayer.source.updateFeature(previousFeature, firstFeature);
+                previousFeature = firstFeature;
+            }
 
-            instance.notifyChange(map);
             label.position.set(x, y, 100);
             label.visible = true;
             label.element.innerText = firstFeature.get('ECO_NAME');
@@ -232,5 +236,3 @@ function pickFeatures(mouseEvent) {
 
 instance.domElement.addEventListener('mousemove', pickFeatures);
 Inspector.attach(document.getElementById('panelDiv'), instance);
-
-instance.notifyChange(map);
