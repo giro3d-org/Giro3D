@@ -920,7 +920,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
                     options.xStep,
                     options.yStep,
                 );
-                const rgb = options.color;
+                const rgb = new Color(options.color);
                 uniform.color.set(rgb.r, rgb.g, rgb.b, options.opacity);
             }
         }
