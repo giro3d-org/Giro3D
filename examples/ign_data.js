@@ -44,7 +44,7 @@ const instance = new Instance(viewerDiv, { crs: 'EPSG:2154', renderer: { clearCo
 const extent = new Extent('EPSG:2154', -111629.52, 1275028.84, 5976033.79, 7230161.64);
 
 // create a map
-const map = new Giro3dMap('planar', {
+const map = new Giro3dMap({
     extent,
     backgroundColor: 'gray',
     hillshading: {
@@ -180,7 +180,7 @@ const extrusionOffsetCallback = feature => {
     return extrusionOffset;
 };
 
-const featureCollection = new FeatureCollection('buildings', {
+const featureCollection = new FeatureCollection({
     source: buildingSource,
     extent,
     extrusionOffset: extrusionOffsetCallback,

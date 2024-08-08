@@ -208,7 +208,7 @@ function isObject3D(o: unknown): o is Object3D {
  * ```js
  * // example of Giro3D instantiation
  * const instance = new Instance(viewerDiv, { crs: extent.crs() });
- * const map = new Map('myMap', null, extent, { maxSubdivisionLevel: 10 });
+ * const map = new Map(...);
  * instance.add(map);
  *
  * // Bind an event listener on double click
@@ -250,7 +250,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      *  crs = exent.crs()
      * };
      * const instance = new Instance(viewerDiv, opts);
-     * const map = new Map('myMap', null, extent, { maxSubdivisionLevel: 10 });
+     * const map = new Map(...);
      * instance.add(map);
      * ```
      */
@@ -497,10 +497,10 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      *
      * @example
      * // Add Map to instance
-     * instance.add(new Map('myMap', myMapExtent));
+     * instance.add(new Map(...);
      *
      * // Add Map to instance then wait for the map to be ready.
-     * instance.add(new Map('myMap', myMapExtent)).then(...);
+     * instance.add(new Map(...).then(...);
      * @param object - the object to add
      * @returns a promise resolved with the new layer object when it is fully initialized
      * or rejected if any error occurred.

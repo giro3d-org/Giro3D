@@ -68,7 +68,6 @@ material.colorMap.colors = colorRamps['viridis'];
 
 // Create the 3D tiles entity
 const pointcloud = new Tiles3D(
-    'pointcloud',
     new Tiles3DSource('https://3d.oslandia.com/3dtiles/lyon.3dtiles/tileset.json'),
     {
         material,

@@ -64,7 +64,7 @@ describe('Map', () => {
         const options = { mainLoop, crs: extent.crs() };
         instance = new Instance(viewerDiv, options);
 
-        map = new Map('myEntity', {
+        map = new Map({
             extent,
             maxSubdivisionLevel: 15,
         });
@@ -80,19 +80,15 @@ describe('Map', () => {
     }
 
     describe('constructor', () => {
-        it('should throw on undefined id', () => {
-            expect(() => new Map(undefined, { extent })).toThrow(/Missing id parameter/);
-        });
-
         it('should throw if the extent is invalid', () => {
             // reversed extent (min values are greater than max values)
             const invalid = new Extent('EPSG:3857', +10, -10, +5, -5);
 
-            expect(() => new Map('foo', { extent: invalid })).toThrow(/Invalid extent/);
+            expect(() => new Map({ extent: invalid })).toThrow(/Invalid extent/);
         });
 
         it('should honor hillshading parameters when hillshading is a boolean', () => {
-            const m = new Map('foo', {
+            const m = new Map({
                 extent,
                 hillshading: true,
             });
@@ -104,7 +100,7 @@ describe('Map', () => {
         });
 
         it('should honor hillshading parameters', () => {
-            const m1 = new Map('foo', {
+            const m1 = new Map({
                 extent,
                 hillshading: {
                     enabled: true,
@@ -120,7 +116,7 @@ describe('Map', () => {
             expect(m1.hillshading.azimuth).toEqual(98);
 
             // Check if the map assigns default values to parameters
-            const m2 = new Map('foo', {
+            const m2 = new Map({
                 extent,
                 hillshading: {
                     enabled: true,
@@ -135,7 +131,7 @@ describe('Map', () => {
         });
 
         it('should honor contourLines parameter when contourLines is a boolean', () => {
-            const m = new Map('foo', {
+            const m = new Map({
                 extent,
                 contourLines: true,
             });
@@ -147,7 +143,7 @@ describe('Map', () => {
         });
 
         it('should honor contour line parameters', () => {
-            const m1 = new Map('foo', {
+            const m1 = new Map({
                 extent,
                 contourLines: {
                     enabled: true,
@@ -165,7 +161,7 @@ describe('Map', () => {
             expect(m1.contourLines.color).toEqual(new Color('red'));
 
             // Check if the map assigns default values to parameters
-            const m2 = new Map('foo', {
+            const m2 = new Map({
                 extent,
                 contourLines: {
                     enabled: true,
@@ -181,7 +177,7 @@ describe('Map', () => {
         });
 
         it.each([true, false], 'should honor terrain parameters when terrain is a boolean', b => {
-            const m = new Map('foo', {
+            const m = new Map({
                 extent,
                 terrain: b,
             });
@@ -191,7 +187,7 @@ describe('Map', () => {
         });
 
         it('should honor terrain parameters', () => {
-            const m1 = new Map('foo', {
+            const m1 = new Map({
                 extent,
                 terrain: {
                     enabled: true,
@@ -203,7 +199,7 @@ describe('Map', () => {
             expect(m1.terrain.stitching).toEqual(false);
 
             // Check if the map assigns default values to parameters
-            const m2 = new Map('foo', {
+            const m2 = new Map({
                 extent,
                 terrain: {
                     enabled: true,
@@ -221,7 +217,7 @@ describe('Map', () => {
                 backgroundColor: 'red',
                 discardNoData: b,
             };
-            const m = new Map('foo', opts);
+            const m = new Map(opts);
 
             expect(m).toBeDefined();
             expect(m.discardNoData).toEqual(opts.discardNoData);
@@ -248,7 +244,7 @@ describe('Map', () => {
 
         it('should honor the provided extent', () => {
             const ex = new Extent('EPSG:3857', -10000, 242444, 34000, 100000);
-            const sut = new Map('foo', { extent: ex });
+            const sut = new Map({ extent: ex });
             expect(sut.extent).toEqual(ex);
         });
 
@@ -264,7 +260,7 @@ describe('Map', () => {
     describe('preprocess', () => {
         it('should produce multiple horizontal root tiles if needed', async () => {
             const horizontalExtent = new Extent('EPSG:3857', -250, 250, -100, 100);
-            const horizontalMap = new Map('horizontal', { extent: horizontalExtent });
+            const horizontalMap = new Map({ extent: horizontalExtent });
 
             horizontalMap._instance = { referenceCrs: 'EPSG:3857' };
 
@@ -275,7 +271,7 @@ describe('Map', () => {
 
         it('should produce multiple vertical root tiles if needed', async () => {
             const verticalExtent = new Extent('EPSG:3857', -100, 100, -250, 250);
-            const verticalMap = new Map('horizontal', { extent: verticalExtent });
+            const verticalMap = new Map({ extent: verticalExtent });
 
             verticalMap._instance = { referenceCrs: 'EPSG:3857' };
 
@@ -286,7 +282,7 @@ describe('Map', () => {
 
         it('should convert the extent to the instance CRS', async () => {
             const verticalExtent = new Extent('EPSG:3857', -100, 100, -250, 250);
-            const verticalMap = new Map('horizontal', { extent: verticalExtent });
+            const verticalMap = new Map({ extent: verticalExtent });
 
             Instance.registerCRS(
                 'EPSG:3946',

@@ -31,7 +31,7 @@ const viewerDiv = document.getElementById('viewerDiv');
 const instance = new Instance(viewerDiv, { crs: 'EPSG:3946' });
 
 // Adds the map that will contain the layers.
-const map = new Map('planar', { extent, hillshading: true, backgroundColor: 'white' });
+const map = new Map({ extent, hillshading: true, backgroundColor: 'white' });
 instance.add(map);
 
 // Adds a WMS imagery layer

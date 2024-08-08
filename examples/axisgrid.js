@@ -35,7 +35,7 @@ const instance = new Instance(viewerDiv, {
 });
 
 // Creates a map that will contain the layer
-const map = new Map('planar', {
+const map = new Map({
     extent,
     hillshading: true,
     discardNoData: true,
@@ -71,7 +71,7 @@ const dem = new ElevationLayer({
 map.addLayer(dem);
 
 // Create an axis grid that encompasses the Map.
-const axisGrid = new AxisGrid('axis-grid', {
+const axisGrid = new AxisGrid({
     volume: {
         extent: extent.withRelativeMargin(0.1),
         floor,

@@ -36,7 +36,7 @@ controls.target.set(-13545408, 5837154, 0);
 instance.useTHREEControls(controls);
 
 // Construct a map and add it to the instance
-const map = new Map('planar', {
+const map = new Map({
     extent,
     backgroundColor: 'gray',
     hillshading: true,

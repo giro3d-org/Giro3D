@@ -33,7 +33,7 @@ const instance = new Instance(viewerDiv, {
 });
 
 // Creates a map that will contain the layer
-const map = new Map('planar', {
+const map = new Map({
     extent,
     hillshading: true,
     doubleSided: true,

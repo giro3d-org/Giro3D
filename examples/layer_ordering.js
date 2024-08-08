@@ -19,7 +19,7 @@ const instance = new Instance(viewerDiv, { crs });
 // Instanciates camera
 instance.view.camera.position.set(256227, 5882214, 4000000);
 
-const map = new Map('planar', { extent: mapExtent, backgroundOpacity: 0 });
+const map = new Map({ extent: mapExtent, backgroundOpacity: 0 });
 instance.add(map);
 
 const layerSize = 1000000;

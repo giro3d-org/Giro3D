@@ -43,7 +43,8 @@ const promises = [];
 for (const ex of extent.split(8, 8)) {
     const mapExtent = ex.withRelativeMargin(-0.05);
     // Creates a map that will contain the layer
-    const map = new Map(`planar ${index++}`, { extent: mapExtent });
+    const map = new Map({ extent: mapExtent });
+    map.name = `${index++}`;
 
     instance.add(map);
 

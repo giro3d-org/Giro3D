@@ -64,13 +64,9 @@ material.colorMap.colors = makeColorRamp('rdbu').reverse();
 material.colorMap.min = 200;
 material.colorMap.max = 1800;
 
-const pointCloud = new Tiles3D(
-    'pointcloud',
-    new Tiles3DSource('https://3d.oslandia.com/lidar_hd/tileset.json'),
-    {
-        material,
-    },
-);
+const pointCloud = new Tiles3D(new Tiles3DSource('https://3d.oslandia.com/lidar_hd/tileset.json'), {
+    material,
+});
 
 instance.add(pointCloud);
 
@@ -116,7 +112,7 @@ const options = {
 };
 
 // create a map
-const map = new Map('terrain', {
+const map = new Map({
     extent,
     hillshading: false,
     discardNoData: true,

@@ -61,12 +61,14 @@ function createMap(extent) {
     mapCount++;
     const object3d = new Object3D();
     // Creates a map that will contain the layer
-    currentMap = new Map(`${mapCount}`, {
+    currentMap = new Map({
         extent,
         maxSubdivisionLevel: 10,
         object3d,
         showOutline: true,
     });
+
+    currentMap.name = `${mapCount}`;
 
     currentMap.object3d.position.set(0, 0, mapCount * 10000);
 

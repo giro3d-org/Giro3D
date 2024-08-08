@@ -25,7 +25,6 @@ const instance = new Instance(viewerDiv, {
 // Configure and add Point Cloud to the scene
 instance.add(
     new Tiles3D(
-        'pointcloud',
         new Tiles3DSource('https://3d.oslandia.com/3dtiles/eglise_saint_blaise_arles/tileset.json'),
     ),
 );

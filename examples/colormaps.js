@@ -95,7 +95,7 @@ function updatePreview(colors) {
 updatePreview(parameters.colors);
 
 // Adds the map that will contain the layers.
-const map = new Map('planar', {
+const map = new Map({
     extent,
     backgroundColor: 'cyan',
     doubleSided: true,

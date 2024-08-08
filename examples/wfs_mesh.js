@@ -35,7 +35,7 @@ const viewerDiv = document.getElementById('viewerDiv');
 const instance = new Instance(viewerDiv, { crs: 'EPSG:3946' });
 
 // Adds the map that will contain the layers.
-const map = new Map('planar', { extent });
+const map = new Map({ extent });
 instance.add(map);
 
 const capabilitiesUrl =
@@ -86,7 +86,7 @@ function makeStyle() {
 const lineStyles = {};
 
 // Create the `FeatureCollection` entity that will load our features as meshes.
-const busLines = new FeatureCollection('bus lines', {
+const busLines = new FeatureCollection({
     source: busLinesSource,
     extent,
     minLevel: 0,
@@ -120,6 +120,7 @@ const busLines = new FeatureCollection('bus lines', {
         };
     },
 });
+busLines.name = 'bus lines';
 
 // Let's add our bus lines feature collection to the scene
 instance.add(busLines);
@@ -142,7 +143,7 @@ const busStopSource = new VectorSource({
     strategy: tile(createXYZ({ tileSize: 512 })),
 });
 // Create the `FeatureCollection` entity that will load our features as meshes.
-const busStops = new FeatureCollection('bus stops', {
+const busStops = new FeatureCollection({
     source: busStopSource,
     extent,
     minLevel: 0,
@@ -162,6 +163,7 @@ const busStops = new FeatureCollection('bus stops', {
         };
     },
 });
+busStops.name = 'bus stops';
 instance.add(busStops);
 
 // add a skybox background, just to look nicer :-)

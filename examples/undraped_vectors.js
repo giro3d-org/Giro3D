@@ -122,7 +122,7 @@ const countryStyle = feature => {
     };
 };
 
-const countries = new FeatureCollection('countries', {
+const countries = new FeatureCollection({
     source: new VectorSource({
         format: new GeoJSON(),
         url: 'https://3d.oslandia.com/giro3d/vectors/countries.geojson',
@@ -133,6 +133,7 @@ const countries = new FeatureCollection('countries', {
     minLevel: 0,
     maxLevel: 0,
 });
+countries.name = 'countries';
 
 instance.add(countries);
 
@@ -151,7 +152,7 @@ const capitalStyle = feature => {
     };
 };
 
-const capitals = new FeatureCollection('capitals', {
+const capitals = new FeatureCollection({
     source: new VectorSource({
         format: new GeoJSON(),
         url: 'https://3d.oslandia.com/giro3d/vectors/capitals.geojson',
@@ -162,6 +163,7 @@ const capitals = new FeatureCollection('capitals', {
     minLevel: 0,
     maxLevel: 0,
 });
+capitals.name = 'capitals';
 
 instance.add(capitals);
 

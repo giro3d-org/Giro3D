@@ -43,7 +43,6 @@ instance.view.minNearPlane = 0.5;
 
 // Configure Point Cloud
 const ifc = new Tiles3D(
-    'haus',
     new Tiles3DSource('https://3d.oslandia.com/3dtiles/19_rue_Marc_Antoine_Petit_ifc/tileset.json'),
 );
 

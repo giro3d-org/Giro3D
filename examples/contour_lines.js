@@ -27,7 +27,7 @@ const viewerDiv = document.getElementById('viewerDiv');
 
 const instance = new Instance(viewerDiv, { crs: extent.crs() });
 
-const map = new Map('planar', {
+const map = new Map({
     extent,
     hillshading: {
         enabled: true,

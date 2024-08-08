@@ -25,7 +25,7 @@ const instance = new Instance(viewerDiv, {
     },
 });
 
-const map = new Map('planar', {
+const map = new Map({
     extent,
     hillshading: true,
 });
@@ -39,7 +39,7 @@ const source = new CogSource({
 const min = -5200;
 const max = -900;
 
-const axisGrid = new AxisGrid('grid', {
+const axisGrid = new AxisGrid({
     volume: {
         extent,
         floor: min,

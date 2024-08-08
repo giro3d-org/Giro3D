@@ -15,7 +15,7 @@ const source = new PotreeSource(
     'cloud.js',
 );
 
-const potree = new PotreePointCloud('potree', source);
+const potree = new PotreePointCloud(source);
 
 const instance = new Instance(viewerDiv, { crs: 'EPSG:3857', renderer: { clearColor: 'bisque' } });
 

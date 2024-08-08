@@ -131,7 +131,7 @@ for (let i = 0; i < wmsLayers.length; i++) {
     cubeSide.updateMatrixWorld(true);
 
     const wms = wmsLayers[i];
-    const map = new Map(`planar${wms}${i}`, { extent, object3d: cubeSide, maxSubdivisionLevel: 2 });
+    const map = new Map({ extent, object3d: cubeSide, maxSubdivisionLevel: 2 });
     instance.add(map);
 
     map.addLayer(createColorLayer(wms, 'https://download.data.grandlyon.com/wms/grandlyon'));

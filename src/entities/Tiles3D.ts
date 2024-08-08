@@ -119,9 +119,10 @@ class Tiles3D<
     extends Entity3D<Entity3DEventMap, UserData>
     implements Pickable<Tiles3DPickResult>, HasLayers
 {
-    readonly hasLayers = true;
+    readonly type = 'Tiles3D' as const;
+    readonly hasLayers = true as const;
     /** Read-only flag to check if a given object is of type Tiles3D. */
-    readonly isTiles3D = true;
+    readonly isTiles3D = true as const;
     private readonly _url: string;
     private _networkOptions: RequestInit;
     private _colorLayer: ColorLayer;
@@ -163,12 +164,11 @@ class Tiles3D<
     /**
      * Constructs a Tiles3D object.
      *
-     * @param id - The unique identifier of the entity.
      * @param source - The data source.
      * @param options - Optional properties.
      */
-    constructor(id: string, source: Tiles3DSource, options: Tiles3DOptions<TMaterial> = {}) {
-        super(id, options.object3d || new Group());
+    constructor(source: Tiles3DSource, options: Tiles3DOptions<TMaterial> = {}) {
+        super(options.object3d || new Group());
 
         if (!source) {
             throw new Error('missing source');

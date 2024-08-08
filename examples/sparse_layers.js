@@ -48,7 +48,7 @@ const source = new CogSource({
     crs: extent.crs(),
 });
 
-const map = new Map('map', {
+const map = new Map({
     extent,
     doubleSided: true,
     showOutline: true,

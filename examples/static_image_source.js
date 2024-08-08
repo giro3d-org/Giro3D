@@ -36,7 +36,7 @@ const instance = new Instance(viewerDiv, {
 });
 
 // Creates a map that will contain the layer
-const map = new Map('planar', { extent, backgroundColor: 'white' });
+const map = new Map({ extent, backgroundColor: 'white' });
 
 instance.add(map);
 

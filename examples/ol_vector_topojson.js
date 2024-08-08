@@ -54,7 +54,7 @@ controls.target.set(center.x, center.y, 0);
 
 // Adds layers in a map
 
-const map = new Map('planar', { extent, backgroundColor: '#135D66' });
+const map = new Map({ extent, backgroundColor: '#135D66' });
 instance.add(map);
 
 const buildingsStyle = feature => {

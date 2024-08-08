@@ -40,7 +40,7 @@ function getHue(area) {
 }
 
 // feat get automatically reprojected
-const arrondissements = new FeatureCollection('arrondissements', {
+const arrondissements = new FeatureCollection({
     source: arrondissementSource,
     extent,
     ignoreZ: true,
@@ -69,6 +69,7 @@ const arrondissements = new FeatureCollection('arrondissements', {
         };
     },
 });
+arrondissements.name = 'arrondissements';
 instance.add(arrondissements);
 
 // another geojson in 3857 (openlayers, and thus Giro3D, supports the non-official yet supported
@@ -77,7 +78,7 @@ const perimeterqaaSource = new VectorSource({
     format: new GeoJSON(),
     url: './data/perimetreqaa.geojson',
 });
-const perimeterqaa = new FeatureCollection('perimeterqaa', {
+const perimeterqaa = new FeatureCollection({
     source: perimeterqaaSource,
     extent,
     ignoreZ: true,
@@ -101,6 +102,7 @@ const perimeterqaa = new FeatureCollection('perimeterqaa', {
         };
     },
 });
+perimeterqaa.name = 'perimeterqaa';
 instance.add(perimeterqaa);
 
 // a WFS source in 3857
@@ -121,7 +123,7 @@ const bdTopoSource = new VectorSource({
     },
     strategy: tile(createXYZ({ tileSize: 512 })),
 });
-const feat = new FeatureCollection('buildings', {
+const buildings = new FeatureCollection({
     source: bdTopoSource,
     // we specify that FeatureCollection should reproject the features before displaying them
     dataProjection: 'EPSG:3857',
@@ -158,8 +160,8 @@ const feat = new FeatureCollection('buildings', {
     minLevel: 11,
     maxLevel: 11,
 });
-
-instance.add(feat);
+buildings.name = 'buildings';
+instance.add(buildings);
 
 // place camera above paris
 const position = new Coordinates('EPSG:2154', 652212.5, 6860754.1, 27717.3);

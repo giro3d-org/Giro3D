@@ -22,7 +22,8 @@ const instance = new Instance(viewerDiv, { crs: 'EPSG:3857' });
 function createMap(mapExtent, tileset) {
     const key =
         'pk.eyJ1IjoidG11Z3VldCIsImEiOiJjbGJ4dTNkOW0wYWx4M25ybWZ5YnpicHV6In0.KhDJ7W5N3d1z3ArrsDjX_A';
-    const map = new Map(tileset, { extent: mapExtent });
+    const map = new Map({ extent: mapExtent });
+    map.name = tileset;
     instance.add(map);
 
     // Adds a XYZ elevation layer with MapBox terrain RGB tileset

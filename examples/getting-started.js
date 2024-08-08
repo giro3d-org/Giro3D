@@ -75,7 +75,7 @@ const extent = new Extent('EPSG:3946', xmin, xmax, ymin, ymax);
 
 // Now we can create the Map. Let's give it a nice identifier,
 // and the extent in the constructor options.
-const map = new Map('city-of-lyon', { extent });
+const map = new Map({ extent });
 
 // Let's add the map to the instance.
 instance.add(map);

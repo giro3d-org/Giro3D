@@ -495,7 +495,10 @@ class Map<UserData extends EntityUserData = EntityUserData>
         HasLayers,
         MemoryUsage
 {
-    readonly hasLayers = true;
+    readonly isMap = true as const;
+    readonly type = 'Map' as const;
+    readonly hasLayers = true as const;
+
     private _segments: number;
     private _hasElevationLayer = false;
     private readonly _atlasInfo: AtlasInfo;
@@ -515,10 +518,6 @@ class Map<UserData extends EntityUserData = EntityUserData>
     readonly geometryPool: globalThis.Map<string, TileGeometry>;
     extent: Extent;
     readonly maxSubdivisionLevel: number;
-    /**
-     * Read-only flag to check if a given object is of type Map.
-     */
-    readonly isMap: boolean = true;
     readonly isPickableFeatures = true;
     private readonly _materialOptions: Required<MaterialOptions>;
     readonly showOutline: boolean;
@@ -551,11 +550,10 @@ class Map<UserData extends EntityUserData = EntityUserData>
     /**
      * Constructs a Map object.
      *
-     * @param id - The unique identifier of the map.
      * @param options - Constructor options.
      */
-    constructor(id: string, options: MapConstructorOptions) {
-        super(id, options.object3d || new Group());
+    constructor(options: MapConstructorOptions) {
+        super(options.object3d || new Group());
 
         this.level0Nodes = [];
 
@@ -578,8 +576,6 @@ class Map<UserData extends EntityUserData = EntityUserData>
         this.maxSubdivisionLevel = options.maxSubdivisionLevel ?? 30;
         this._onTileElevationChanged = this.onTileElevationChanged.bind(this);
         this._onLayerVisibilityChanged = this.onLayerVisibilityChanged.bind(this);
-
-        this.type = 'Map';
 
         this._segments = options.segments || DEFAULT_MAP_SEGMENTS;
 

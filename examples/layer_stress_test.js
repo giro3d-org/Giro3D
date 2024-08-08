@@ -80,7 +80,7 @@ function buildMapAndLayers() {
     }
 
     // Creates a map that will contain the layer
-    map = new Map('map', { extent, forceTextureAtlases });
+    map = new Map({ extent, forceTextureAtlases });
 
     instance.add(map);
 

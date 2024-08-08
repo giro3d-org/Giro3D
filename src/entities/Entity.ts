@@ -1,4 +1,4 @@
-import { type Camera, EventDispatcher } from 'three';
+import { type Camera, EventDispatcher, MathUtils } from 'three';
 import type Context from '../core/Context';
 import { type ObjectToUpdate } from '../core/MainLoop';
 import type Disposable from '../core/Disposable';
@@ -69,14 +69,22 @@ export type EntityUserData = Record<string, unknown>;
  * @typeParam TEventMap - The event map of the entity.
  * @typeParam TUserData - The type of the `userData` property.
  */
-class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserData = EntityUserData>
+abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserData = EntityUserData>
     extends EventDispatcher<TEventMap & EntityEventMap>
     implements Disposable
 {
-    private readonly _id: string;
+    /**
+     * The unique identifier of this entity.
+     */
+    readonly id: string;
     private _frozen: boolean;
     public whenReady?: Promise<this>;
     public ready?: boolean;
+
+    /**
+     * The name of this entity.
+     */
+    name: string | undefined;
 
     /**
      * An object that can be used to store custom data about the {@link Entity}.
@@ -86,7 +94,7 @@ class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserData = Enti
     /**
      * Read-only flag to check if a given object is of type Entity.
      */
-    readonly isEntity: boolean = true;
+    readonly isEntity: boolean = true as const;
     /**
      * The name of the type of this object.
      */
@@ -94,27 +102,16 @@ class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserData = Enti
 
     /**
      * Creates an entity with the specified unique identifier.
-     *
-     * @param id - the unique identifier of this entity.
      */
-    constructor(id: string) {
+    constructor() {
         super();
-        if (!id) {
-            throw new Error('Missing id parameter (Entity must have a unique id defined)');
-        }
 
-        this._id = id;
+        this.id = MathUtils.generateUUID();
+        this.name;
         this.type = 'Entity';
         this._frozen = false;
         // @ts-expect-error {} cannot be assigned to TUserData, but it's better than null/undefined.
         this.userData = {};
-    }
-
-    /**
-     * Gets the unique identifier of this entity.
-     */
-    get id() {
-        return this._id;
     }
 
     /**

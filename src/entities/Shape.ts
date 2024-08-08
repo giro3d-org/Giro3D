@@ -1169,11 +1169,10 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
 
     /**
      * Creates a {@link Shape}.
-     * @param id - The identifier of this entity.
      * @param options - The constructor options.
      */
-    constructor(id: string, options?: ShapeConstructorOptions) {
-        super(id, new Group());
+    constructor(options?: ShapeConstructorOptions) {
+        super(new Group());
 
         this._showVertices = options?.showVertices ?? this._showVertices;
         this._showFloorVertices = options?.showFloorVertices ?? this._showFloorVertices;

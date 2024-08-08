@@ -48,7 +48,7 @@ instance.renderingOptions.enableInpainting = true;
 instance.renderingOptions.enablePointCloudOcclusion = true;
 
 // create a map
-const map = new Map('map', {
+const map = new Map({
     extent,
     backgroundColor: 'gray',
     supportRaycast: true,
@@ -101,13 +101,9 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
     .catch(console.error);
 
 // Create the 3D tiles entity
-const pointcloud = new Tiles3D(
-    'pointcloud',
-    new Tiles3DSource('https://3d.oslandia.com/lidar_hd/tileset.json'),
-    {
-        material: new PointCloudMaterial(),
-    },
-);
+const pointcloud = new Tiles3D(new Tiles3DSource('https://3d.oslandia.com/lidar_hd/tileset.json'), {
+    material: new PointCloudMaterial(),
+});
 
 instance.add(pointcloud);
 

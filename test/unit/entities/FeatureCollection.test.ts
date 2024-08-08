@@ -12,15 +12,9 @@ describe('FeatureCollection', () => {
             north: 10,
         });
 
-        it('should throw on undefined id', () => {
-            expect(() => new FeatureCollection(undefined, { source, extent })).toThrow(
-                /Missing id parameter/,
-            );
-        });
-
         it('should throw if the extent is not provided', () => {
-            expect(() => new FeatureCollection('foo', { source, extent: null })).toThrow(
-                /Error while initializing FeatureCollection with id "foo": missing options.extent/,
+            expect(() => new FeatureCollection({ source, extent: null })).toThrow(
+                /Error while initializing FeatureCollection: missing options.extent/,
             );
         });
 
@@ -28,23 +22,21 @@ describe('FeatureCollection', () => {
             // reversed extent (min values are greater than max values)
             const invalid = new Extent('EPSG:3857', +10, -10, +5, -5);
 
-            expect(() => new FeatureCollection('foo', { source, extent: invalid })).toThrow(
+            expect(() => new FeatureCollection({ source, extent: invalid })).toThrow(
                 /Invalid extent/,
             );
         });
 
         it('should throw if the source is not present', () => {
             // @ts-expect-error source is undefined
-            expect(() => new FeatureCollection('foo', { extent })).toThrow(
-                'options.source is mandatory.',
-            );
-            expect(() => new FeatureCollection('foo', { extent, source: null })).toThrow(
+            expect(() => new FeatureCollection({ extent })).toThrow('options.source is mandatory.');
+            expect(() => new FeatureCollection({ extent, source: null })).toThrow(
                 'options.source is mandatory.',
             );
         });
 
         it('should assign the correct options', () => {
-            const fc = new FeatureCollection('foo', {
+            const fc = new FeatureCollection({
                 source,
                 extent,
                 minLevel: 10,

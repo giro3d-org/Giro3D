@@ -24,32 +24,26 @@ describe('AxisGrid', () => {
     });
 
     describe('constructor', () => {
-        it('should assign the id property', () => {
-            const grid = new AxisGrid('foo', { volume: defaultVolume });
-
-            expect(grid.id).toEqual('foo');
-        });
-
         it('should assign the extent property', () => {
-            const grid = new AxisGrid('foo', { volume: defaultVolume });
+            const grid = new AxisGrid({ volume: defaultVolume });
 
             expect(grid.volume.extent).toBe(DEFAULT_EXTENT);
         });
 
         it('should assign the object3d property', () => {
-            const grid = new AxisGrid('foo', { volume: defaultVolume });
+            const grid = new AxisGrid({ volume: defaultVolume });
 
             expect(grid.object3d).toBeInstanceOf(THREE.Group);
         });
 
         it('should throw if volume is undefined', () => {
-            expect(() => new AxisGrid('foo', { volume: undefined })).toThrow(/volume is undefined/);
+            expect(() => new AxisGrid({ volume: undefined })).toThrow(/volume is undefined/);
         });
     });
 
     describe('ticks', () => {
         it('should set the ticks property', () => {
-            const grid = new AxisGrid('foo', { volume: defaultVolume });
+            const grid = new AxisGrid({ volume: defaultVolume });
             grid.ticks = { x: 1, y: 2, z: 3 };
             expect(grid.ticks).toEqual({ x: 1, y: 2, z: 3 });
         });
@@ -57,7 +51,7 @@ describe('AxisGrid', () => {
 
     describe('volume', () => {
         it('should set the volume property', () => {
-            const grid = new AxisGrid('foo', { volume: defaultVolume });
+            const grid = new AxisGrid({ volume: defaultVolume });
             grid.volume = { ceiling: 199, floor: 111, extent: new Extent('EPSG:3857', 1, 2, 3, 4) };
 
             expect(grid.volume).toEqual({
@@ -70,7 +64,7 @@ describe('AxisGrid', () => {
 
     describe('preUpdate', () => {
         it('should set each side visible if its facing toward the camera', () => {
-            const grid = new AxisGrid('foo', {
+            const grid = new AxisGrid({
                 volume: { extent: DEFAULT_EXTENT, floor: 0, ceiling: 100 },
             });
             const midHeight = 50;

@@ -50,7 +50,6 @@ class FeatureCollectionInspector extends EntityInspector<FeatureCollection> {
      */
     constructor(parentGui: GUI, instance: Instance, featureCollection: FeatureCollection) {
         super(parentGui, instance, featureCollection, {
-            title: `FeatureCollection ('${featureCollection.id}')`,
             visibility: true,
             boundingBoxColor: true,
             boundingBoxes: true,
