@@ -26,7 +26,7 @@ const viewerDiv = document.getElementById('viewerDiv');
 const instance = new Instance(viewerDiv, { crs: 'EPSG:2154' });
 
 // Creates controls
-const controls = new MapControls(instance.camera.camera3D, instance.domElement);
+const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 
@@ -56,7 +56,7 @@ function initializeCameraPosition(layer) {
         : layer.root.boundingVolume.box.clone().applyMatrix4(layer.root.matrixWorld);
 
     // configure camera
-    instance.camera.camera3D.far = 2.0 * bbox.getSize(tmpVec3).length();
+    instance.view.camera.far = 2.0 * bbox.getSize(tmpVec3).length();
 
     const ratio = bbox.getSize(tmpVec3).x / bbox.getSize(tmpVec3).z;
     const position = bbox.min
@@ -64,8 +64,8 @@ function initializeCameraPosition(layer) {
         .add(bbox.getSize(tmpVec3).multiply({ x: 0, y: 0, z: ratio * 0.5 }));
     const lookAt = bbox.getCenter(tmpVec3);
     lookAt.z = bbox.min.z;
-    instance.camera.camera3D.position.set(position.x, position.y, position.z);
-    instance.camera.camera3D.lookAt(lookAt);
+    instance.view.camera.position.set(position.x, position.y, position.z);
+    instance.view.camera.lookAt(lookAt);
     controls.target.copy(lookAt);
     controls.saveState();
 
@@ -84,7 +84,7 @@ function initializeCameraPosition(layer) {
     instance.renderingOptions.enablePointCloudOcclusion = true;
 
     // refresh scene
-    instance.notifyChange(instance.camera.camera3D);
+    instance.notifyChange(instance.view.camera);
 }
 instance.add(pointcloud).then(initializeCameraPosition);
 

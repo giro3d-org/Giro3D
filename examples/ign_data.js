@@ -214,17 +214,17 @@ const ambientLight = new AmbientLight(0xffffff, 0.2);
 instance.scene.add(ambientLight);
 
 // place camera above Grenoble
-instance.camera.camera3D.position.set(913349.2364044407, 6456426.459171033, 1706.0108044011636);
+instance.view.camera.position.set(913349.2364044407, 6456426.459171033, 1706.0108044011636);
 
 // and look at the Bastille
 const lookAt = new Vector3(913896, 6459191, 200);
-instance.camera.camera3D.lookAt(lookAt);
+instance.view.camera.lookAt(lookAt);
 
 // Notify Giro3D we've changed the three.js camera position directly
-instance.notifyChange(instance.camera.camera3D);
+instance.notifyChange(instance.view.camera);
 
 // Creates controls
-const controls = new MapControls(instance.camera.camera3D, instance.domElement);
+const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.4;
 
@@ -370,9 +370,9 @@ instance.scene.fog = fog;
 
 function processFogAndClippingPlanes(camera) {
     // Compute the tilt, in radians, of the camera.
-    const tilt = DOWN_VECTOR.angleTo(camera.camera3D.getWorldDirection(tmpVec3));
+    const tilt = DOWN_VECTOR.angleTo(camera.camera.getWorldDirection(tmpVec3));
 
-    const altitude = MathUtils.clamp(camera.camera3D.position.z, 20, 100000);
+    const altitude = MathUtils.clamp(camera.camera.position.z, 20, 100000);
 
     const maxFarPlane = 9_999_999;
     const actualTilt = MathUtils.clamp(tilt, 0, Math.PI / 3);
@@ -387,7 +387,7 @@ instance.addEventListener('after-camera-update', event =>
     processFogAndClippingPlanes(event.camera),
 );
 
-processFogAndClippingPlanes(instance.camera);
+processFogAndClippingPlanes(instance.view);
 
 // Bind events
 StatusBar.bind(instance);

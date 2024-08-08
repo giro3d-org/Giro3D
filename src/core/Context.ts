@@ -1,5 +1,5 @@
 import { Plane, Vector3 } from 'three';
-import type Camera from '../renderer/Camera';
+import type View from '../renderer/View';
 import type Instance from './Instance';
 import type Entity from '../entities/Entity';
 
@@ -12,9 +12,9 @@ import type Entity from '../entities/Entity';
  */
 class Context {
     /**
-     * The active camera.
+     * The view.
      */
-    readonly camera: Camera;
+    readonly view: View;
     /**
      * The Giro3D instance
      */
@@ -51,18 +51,18 @@ class Context {
     /**
      * Constructs a context.
      *
-     * @param camera - the active camera.
+     * @param view - the view.
      * @param instance - the Giro3D instance.
      */
-    constructor(camera: Camera, instance: Instance) {
-        this.camera = camera;
+    constructor(view: View, instance: Instance) {
+        this.view = view;
 
         this.instance = instance;
 
         this.distance = {
             plane: new Plane().setFromNormalAndCoplanarPoint(
-                camera.camera3D.getWorldDirection(new Vector3()),
-                camera.camera3D.position /* TODO matrixWorld */,
+                view.camera.getWorldDirection(new Vector3()),
+                view.camera.position /* TODO matrixWorld */,
             ),
             min: Infinity,
             max: 0,

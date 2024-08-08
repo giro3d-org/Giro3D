@@ -165,13 +165,13 @@ instance.add(feat);
 const position = new Coordinates('EPSG:2154', 652212.5, 6860754.1, 27717.3);
 const lookAtCoords = new Coordinates('EPSG:2154', 652338.3, 6862087.1, 200);
 const lookAt = new Vector3(lookAtCoords.x, lookAtCoords.y, lookAtCoords.z);
-instance.camera.camera3D.position.set(position.x, position.y, position.z);
-instance.camera.camera3D.lookAt(lookAt);
+instance.view.camera.position.set(position.x, position.y, position.z);
+instance.view.camera.lookAt(lookAt);
 // Notify Giro3D we've changed the three.js camera position directly
-instance.notifyChange(instance.camera.camera3D);
+instance.notifyChange(instance.view.camera);
 
 // Creates controls
-const controls = new MapControls(instance.camera.camera3D, instance.domElement);
+const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 

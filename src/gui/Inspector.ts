@@ -1,6 +1,6 @@
 import GUI from 'lil-gui';
 import type Instance from '../core/Instance';
-import CameraInspector from './CameraInspector';
+import ViewInspector from './ViewInspector';
 import EntityPanel from './EntityPanel';
 import Outliner from './outliner/Outliner';
 import ProcessingInspector from './ProcessingInspector';
@@ -74,7 +74,7 @@ class Inspector {
 
         this.addPanel(new PackageInfoInspector(this.gui, instance));
         this.addPanel(new InstanceInspector(this.gui, instance));
-        this.addPanel(new CameraInspector(this.gui, instance));
+        this.addPanel(new ViewInspector(this.gui, instance));
         this.addPanel(new ProcessingInspector(this.gui, instance));
         this.addPanel(new EntityPanel(this.gui, instance));
         this.addPanel(new Outliner(this.gui, instance));

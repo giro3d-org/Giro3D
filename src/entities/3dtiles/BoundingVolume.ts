@@ -1,7 +1,7 @@
 import { Vector3, Box3, type Matrix4, Sphere } from 'three';
 import type OBB from '../../core/OBB';
 import { type ProcessedTile } from './3dTilesIndex';
-import type Camera from '../../renderer/Camera';
+import type View from '../../renderer/View';
 import Extent from '../../core/geographic/Extent';
 import Tile from './Tile';
 
@@ -48,7 +48,7 @@ export function boundingVolumeToExtent(
 
 export function cullingTestViewer(
     boundingVolume: BoundingVolume,
-    camera: Camera,
+    camera: View,
     tileMatrixWorld: Matrix4,
 ): boolean {
     if (boundingVolume.region) {
@@ -63,7 +63,7 @@ export function cullingTestViewer(
         // To check the distance between the center sphere and the camera
         tmp.s.copy(boundingVolume.sphere);
         tmp.s.applyMatrix4(tileMatrixWorld);
-        if (!(camera.camera3D.position.distanceTo(tmp.s.center) <= tmp.s.radius)) {
+        if (!(camera.camera.position.distanceTo(tmp.s.center) <= tmp.s.radius)) {
             return true;
         }
     }
@@ -73,7 +73,7 @@ export function cullingTestViewer(
 
 export function cullingTestBoundingVolume(
     boundingVolume: BoundingVolume,
-    camera: Camera,
+    camera: View,
     tileMatrixWorld: Matrix4,
 ): boolean {
     if (boundingVolume.region) {
@@ -93,7 +93,7 @@ export function cullingTestBoundingVolume(
 }
 
 export function cullingTest(
-    camera: Camera,
+    camera: View,
     node: ProcessedTile | Tile,
     tileMatrixWorld: Matrix4,
 ): boolean {

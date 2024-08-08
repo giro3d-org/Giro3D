@@ -36,11 +36,11 @@ instance.add(map);
 
 // Function to look at an extent from top
 function lookTopDownAt(lookAtExtent, lookAtAltitude = 0) {
-    const hFov = THREEMath.degToRad(instance.camera.camera3D.fov) / 2;
+    const hFov = THREEMath.degToRad(instance.view.camera.fov) / 2;
 
     const altitude =
         (Math.max(
-            lookAtExtent.dimensions().x / instance.camera.camera3D.aspect,
+            lookAtExtent.dimensions().x / instance.view.camera.aspect,
             lookAtExtent.dimensions().y,
         ) /
             Math.tan(hFov)) *
@@ -49,16 +49,16 @@ function lookTopDownAt(lookAtExtent, lookAtAltitude = 0) {
     const lookAt = lookAtExtent.centerAsVector3();
     lookAt.z = lookAtAltitude;
     // place camera above
-    instance.camera.camera3D.position.copy(position);
+    instance.view.camera.position.copy(position);
     // look down
-    instance.camera.camera3D.lookAt(lookAt);
+    instance.view.camera.lookAt(lookAt);
     // make sure the camera isn't rotating around its view axis
-    instance.camera.camera3D.rotation.z = 0;
-    instance.camera.camera3D.rotation.x = 0.01; // quickfix to avoid bizarre jumps
+    instance.view.camera.rotation.z = 0;
+    instance.view.camera.rotation.x = 0.01; // quickfix to avoid bizarre jumps
 
     instance.controls.target.copy(lookAt);
     instance.controls.saveState();
-    instance.notifyChange(instance.camera.camera3D);
+    instance.notifyChange(instance.view.camera);
 }
 
 const wmsSource = new TiledImageSource({
@@ -169,9 +169,9 @@ map.addLayer(geoJsonLayer).then(() => {
     instance.notifyChange(geoJsonLayer);
 });
 
-instance.camera.camera3D.position.set(extent.west(), extent.south(), 2000);
+instance.view.camera.position.set(extent.west(), extent.south(), 2000);
 
-const controls = new MapControls(instance.camera.camera3D, instance.domElement);
+const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.target = extent.centerAsVector3();
 controls.saveState();
 

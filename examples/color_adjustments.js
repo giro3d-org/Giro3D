@@ -88,7 +88,7 @@ const geoJsonLayer = new ColorLayer({
 });
 map.addLayer(geoJsonLayer);
 
-const camera = instance.camera.camera3D;
+const camera = instance.view.camera;
 const cameraAltitude = 2000;
 
 const cameraPosition = new Vector3(extent.west(), extent.south(), cameraAltitude);

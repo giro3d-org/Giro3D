@@ -1923,7 +1923,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
             threshold: this.lineWidth * 8,
         };
 
-        raycaster.setFromCamera(normalized, this._instance.camera.camera3D);
+        raycaster.setFromCamera(normalized, this._instance.view.camera);
 
         const pickedVertexIndex = this.raycastVertices(raycaster);
 

@@ -43,7 +43,7 @@ function renderTileBuffer(
     const restore = map.setRenderState(RenderingState.PICKING);
 
     const buffer = instance.engine.renderToBuffer({
-        camera: instance.camera.camera3D,
+        camera: instance.view.camera,
         scene: map.object3d,
         clearColor: BLACK,
         datatype: FloatType,
@@ -133,7 +133,7 @@ function pickTilesAt(
                     entity: map,
                     point,
                     coord,
-                    distance: instance.camera.camera3D.position.distanceTo(point),
+                    distance: instance.view.camera.position.distanceTo(point),
                 };
 
                 if (!filter || filter(p)) {

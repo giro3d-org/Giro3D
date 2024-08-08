@@ -1,6 +1,6 @@
 import { Object3D, Box3, Sphere, Vector3, type Camera as ThreeCamera } from 'three';
 import ScreenSpaceError from '../../core/ScreenSpaceError';
-import { type Camera } from '../../renderer';
+import type View from '../../renderer/View';
 import { type ProcessedTile } from './3dTilesIndex';
 import { type BoundingVolume } from './BoundingVolume';
 
@@ -65,12 +65,12 @@ class Tile extends Object3D {
         return this.children.filter(n => n.isTile && n.tileId);
     }
 
-    computeNodeSSE(camera: Camera): number {
+    computeNodeSSE(view: View): number {
         if (this.boundingVolume.region) {
             throw new Error('boundingVolume.region is unsupported');
         } else if (this.boundingVolume.box) {
             const sse = ScreenSpaceError.computeFromBox3(
-                camera,
+                view,
                 this.boundingVolume.box,
                 this.matrixWorld,
                 this.geometricError,
@@ -87,7 +87,7 @@ class Tile extends Object3D {
                 // This test is needed in case geometricError = distance = 0
                 return Infinity;
             }
-            return camera.preSSE * (this.geometricError / this.distance.max);
+            return view.preSSE * (this.geometricError / this.distance.max);
         } else {
             // TODO invalid tileset, should we throw?
             return Infinity;

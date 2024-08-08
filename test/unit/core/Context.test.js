@@ -11,14 +11,14 @@ describe('Context', () => {
 
     describe('Constructor', () => {
         it('should assigns properties', () => {
-            const camera = {
-                camera3D: threeCamera,
+            const view = {
+                camera: threeCamera,
             };
             const instance = {};
 
-            const context = new Context(camera, instance);
+            const context = new Context(view, instance);
 
-            expect(context.camera).toBe(camera);
+            expect(context.view).toBe(view);
             expect(context.instance).toBe(instance);
             expect(context.fastUpdateHint).toBeUndefined();
             expect(context.distance.min).toBe(Infinity);

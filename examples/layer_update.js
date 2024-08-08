@@ -34,10 +34,10 @@ const instance = new Instance(viewerDiv, {
 
 // Instanciates camera
 const center = extent.centerAsVector3();
-instance.camera.camera3D.position.set(center.x, center.y - 1, 1000000);
+instance.view.camera.position.set(center.x, center.y - 1, 1000000);
 
 // Creates controls
-const controls = new MapControls(instance.camera.camera3D, viewerDiv);
+const controls = new MapControls(instance.view.camera, viewerDiv);
 
 // Then looks at extent's center
 controls.target = center;

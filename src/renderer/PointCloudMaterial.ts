@@ -19,7 +19,7 @@ import type Extent from '../core/geographic/Extent';
 import type { TextureAndPitch } from '../core/layer/Layer';
 import OffsetScale from '../core/OffsetScale';
 import MaterialUtils, { type VertexAttributeType } from './MaterialUtils';
-import { ColorMap } from '../core/layer';
+import ColorMap from '../core/layer/ColorMap';
 
 const tmpDims = new Vector2();
 

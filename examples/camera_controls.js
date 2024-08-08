@@ -71,7 +71,7 @@ instance.add(pointcloud).then(pc => pc.attach(colorLayer));
 
 // Configure our controls
 // eslint-disable-next-line no-undef
-const controls = new CameraControls(instance.camera.camera3D, instance.domElement);
+const controls = new CameraControls(instance.view.camera, instance.domElement);
 controls.dollyToCursor = true;
 controls.enableDamping = true;
 controls.verticalDragToForward = true;
@@ -96,14 +96,14 @@ instance.addEventListener('before-camera-update', () => {
     const delta = clock.getDelta();
     const hasControlsUpdated = controls.update(delta);
     if (hasControlsUpdated) {
-        instance.notifyChange(instance.camera.camera3D);
+        instance.notifyChange(instance.view.camera);
     }
 });
 // As Giro3D runs the event loop only when needed, we need to notify Giro3D when
 // the controls update the view.
 // We need both events to make sure the view is updated from user interactions and from animations
-controls.addEventListener('update', () => instance.notifyChange(instance.camera.camera3D));
-controls.addEventListener('control', () => instance.notifyChange(instance.camera.camera3D));
+controls.addEventListener('update', () => instance.notifyChange(instance.view.camera));
+controls.addEventListener('control', () => instance.notifyChange(instance.view.camera));
 
 // place camera
 controls.setLookAt(1842456, 5174330, 735, 1841993, 5175493, 188);

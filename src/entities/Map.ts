@@ -972,7 +972,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         const normalized = this._instance.canvasToNormalizedCoords(coordinates, tempNDC);
 
         const raycaster = new Raycaster();
-        raycaster.setFromCamera(normalized, this._instance.camera.camera3D);
+        raycaster.setFromCamera(normalized, this._instance.view.camera);
 
         tmpIntersectList.length = 0;
 
@@ -1270,7 +1270,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
                 const size = node.boundingBox.getSize(tmpVector);
                 const box = node.boundingBox;
                 const sse = ScreenSpaceError.computeFromBox3(
-                    context.camera,
+                    context.view,
                     box,
                     node.matrixWorld,
                     Math.max(size.x, size.y),
@@ -1310,7 +1310,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     private testVisibility(node: TileMesh, context: Context): boolean {
         node.update(this._materialOptions);
 
-        const isVisible = context.camera.isBox3Visible(node.boundingBox, node.matrixWorld);
+        const isVisible = context.view.isBox3Visible(node.boundingBox, node.matrixWorld);
 
         return isVisible;
     }

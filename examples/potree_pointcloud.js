@@ -20,7 +20,7 @@ const potree = new PotreePointCloud('potree', source);
 const instance = new Instance(viewerDiv, { crs: 'EPSG:3857', renderer: { clearColor: 'bisque' } });
 
 function placeCamera() {
-    const camera = instance.camera.camera3D;
+    const camera = instance.view.camera;
 
     // create controls
     const controls = new OrbitControls(camera, instance.domElement);
@@ -40,7 +40,7 @@ function placeCamera() {
 }
 
 instance.add(potree).then(placeCamera);
-instance.notifyChange(instance.camera.camera3D);
+instance.notifyChange(instance.view.camera);
 
 Inspector.attach(document.getElementById('panelDiv'), instance);
 

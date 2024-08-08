@@ -40,10 +40,10 @@ const instance = new Instance(viewerDiv, {
 
 // Instanciates camera
 const center = extent.centerAsVector2();
-instance.camera.camera3D.position.set(center.x, center.y - 1, 2000);
+instance.view.camera.position.set(center.x, center.y - 1, 2000);
 
 // Instanciates controls
-const controls = new MapControls(instance.camera.camera3D, instance.domElement);
+const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.25;
 

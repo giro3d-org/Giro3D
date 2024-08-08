@@ -82,10 +82,10 @@ const satelliteLayer = new ColorLayer({
 });
 map.addLayer(satelliteLayer);
 
-const controls = new MapControls(instance.camera.camera3D, instance.domElement);
+const controls = new MapControls(instance.view.camera, instance.domElement);
 
 const center = extent.centerAsVector2();
-instance.camera.camera3D.position.set(994_410, 6_520_646, 5_520);
+instance.view.camera.position.set(994_410, 6_520_646, 5_520);
 controls.target.set(1_011_954, 6_539_864, 1_000);
 
 instance.useTHREEControls(controls);

@@ -170,7 +170,7 @@ map.addLayer(elevationLayer);
 // the `MapControls`, which are perfectly adapted to our need.
 
 // Let's get the THREE camera of our scene.
-const camera = instance.camera.camera3D;
+const camera = instance.view.camera;
 
 // Let's specify the camera position. We will position it in the southwest corner of the map, at an
 // altitude of 2000 meters.

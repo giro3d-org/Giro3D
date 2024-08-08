@@ -2,7 +2,7 @@ import type { PerspectiveCamera } from 'three';
 import { Euler, MathUtils, Quaternion, Vector2, Vector3 } from 'three';
 import type Instance from '../core/Instance';
 import { type InstanceEvents } from '../core/Instance';
-import { isPerspectiveCamera } from '../renderer/Camera';
+import { isPerspectiveCamera } from '../renderer/View';
 
 // Note: we could use existing js controls (like
 // https://github.com/mrdoob/js/blob/dev/examples/js/controls/FirstPersonControls.js) but
@@ -19,21 +19,21 @@ interface State {
 const tmpVec2 = new Vector2();
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function limitRotation(camera3D: PerspectiveCamera, rot: number, verticalFOV: number) {
+function limitRotation(camera: PerspectiveCamera, rot: number, verticalFOV: number) {
     // Limit vertical rotation (look up/down) to make sure the user cannot see
     // outside of the cone defined by verticalFOV
-    // const limit = MathUtils.degToRad(verticalFOV - camera3D.fov * 0.5) * 0.5;
+    // const limit = MathUtils.degToRad(verticalFOV - camera.fov * 0.5) * 0.5;
     const limit = Math.PI * 0.5 - 0.01;
     return MathUtils.clamp(rot, -limit, limit);
 }
 
-function applyRotation(instance: Instance, camera3D: PerspectiveCamera, state: State) {
-    camera3D.quaternion.setFromUnitVectors(new Vector3(0, 1, 0), camera3D.up);
+function applyRotation(instance: Instance, camera: PerspectiveCamera, state: State) {
+    camera.quaternion.setFromUnitVectors(new Vector3(0, 1, 0), camera.up);
 
-    camera3D.rotateY(state.rotateY);
-    camera3D.rotateX(state.rotateX);
+    camera.rotateY(state.rotateY);
+    camera.rotateX(state.rotateX);
 
-    instance.notifyChange(instance.camera.camera3D);
+    instance.notifyChange(instance.view.camera);
 }
 
 type MoveMethod = 'translateX' | 'translateY' | 'translateZ';
@@ -97,10 +97,10 @@ class FirstPersonControls {
      * @param options - additional options
      */
     constructor(instance: Instance, options: FirstPersonControlsOptions = {}) {
-        if (!isPerspectiveCamera(instance.camera.camera3D)) {
+        if (!isPerspectiveCamera(instance.view.camera)) {
             throw new Error('this control only supports perspective cameras');
         }
-        this.camera = instance.camera.camera3D;
+        this.camera = instance.view.camera;
         this.instance = instance;
         this.enabled = true;
         this.moves = new Set();
@@ -228,7 +228,7 @@ class FirstPersonControls {
         }
 
         if (this.moves.size > 0) {
-            this.instance.notifyChange(this.instance.camera.camera3D);
+            this.instance.notifyChange(this.instance.view.camera);
         }
     }
 

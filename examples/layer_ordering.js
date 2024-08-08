@@ -17,7 +17,7 @@ const viewerDiv = document.getElementById('viewerDiv');
 const instance = new Instance(viewerDiv, { crs });
 
 // Instanciates camera
-instance.camera.camera3D.position.set(256227, 5882214, 4000000);
+instance.view.camera.position.set(256227, 5882214, 4000000);
 
 const map = new Map('planar', { extent: mapExtent, backgroundOpacity: 0 });
 instance.add(map);

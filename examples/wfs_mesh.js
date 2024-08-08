@@ -179,14 +179,14 @@ instance.scene.background = cubeTexture;
 
 // Place camera at the bottom left corner of the map
 const center = extent.centerAsVector3();
-instance.camera.camera3D.position.set(center.x - 300, center.y - 300, 5000);
+instance.view.camera.position.set(center.x - 300, center.y - 300, 5000);
 // and look at the center of our extent
-instance.camera.camera3D.lookAt(center);
+instance.view.camera.lookAt(center);
 // we need to tell Giro3D we changed the camera position
-instance.notifyChange(instance.camera.camera3D);
+instance.notifyChange(instance.view.camera);
 
 // Creates controls
-const controls = new MapControls(instance.camera.camera3D, viewerDiv);
+const controls = new MapControls(instance.view.camera, viewerDiv);
 
 // MapControls needs a target, let's set it at our lookAt position
 controls.target = extent.centerAsVector3();

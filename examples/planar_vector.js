@@ -174,10 +174,10 @@ const gmlLayer = new ColorLayer({
 map.addLayer(gmlLayer);
 
 // Sets the camera position
-instance.camera.camera3D.position.set(extent.west(), extent.south(), 2000);
+instance.view.camera.position.set(extent.west(), extent.south(), 2000);
 
 // Creates controls
-const controls = new MapControls(instance.camera.camera3D, instance.domElement);
+const controls = new MapControls(instance.view.camera, instance.domElement);
 // Then looks at extent's center
 controls.target = extent.centerAsVector3();
 controls.saveState();

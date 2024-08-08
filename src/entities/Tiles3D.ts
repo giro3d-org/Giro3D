@@ -452,7 +452,7 @@ class Tiles3D<
         let returnValue;
 
         // do proper culling
-        const isVisible = !cullingTest(context.camera, node, node.matrixWorld);
+        const isVisible = !cullingTest(context.view, node, node.matrixWorld);
         node.visible = isVisible;
 
         if (isVisible) {
@@ -463,7 +463,7 @@ class Tiles3D<
             // - near / far calculation in MainLoop. For this one, we need the distance for *all*
             // displayed tiles.
             // For this last reason, we need to calculate this here, and not in subdivisionControl
-            node.calculateCameraDistance(context.camera.camera3D);
+            node.calculateCameraDistance(context.view.camera);
 
             if (!this.frozen) {
                 if (node.pendingSubdivision || this.subdivisionTest(context, node)) {
@@ -618,7 +618,7 @@ class Tiles3D<
             return true;
         }
 
-        const sse = node.computeNodeSSE(context.camera);
+        const sse = node.computeNodeSSE(context.view);
         node.sse = sse;
 
         return sse > this.sseThreshold;
@@ -641,7 +641,7 @@ class Tiles3D<
                 );
             }
 
-            const isVisible = !cullingTest(context.camera, child, overrideMatrixWorld);
+            const isVisible = !cullingTest(context.view, child, overrideMatrixWorld);
 
             // child is not visible => skip
             if (!isVisible) {

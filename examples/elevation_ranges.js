@@ -81,10 +81,10 @@ const colorLayer = new ColorLayer({
 map.addLayer(colorLayer);
 
 // Sets the camera position
-instance.camera.camera3D.position.set(-13615016, 5835706, 14797);
+instance.view.camera.position.set(-13615016, 5835706, 14797);
 
 // Creates controls
-const controls = new MapControls(instance.camera.camera3D, instance.domElement);
+const controls = new MapControls(instance.view.camera, instance.domElement);
 
 // Then looks at extent's center
 controls.target = new Vector3(-13603869, 5814829, 0);

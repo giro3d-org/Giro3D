@@ -31,11 +31,11 @@ instance.renderingOptions.enableInpainting = true;
 instance.renderingOptions.enablePointCloudOcclusion = true;
 
 // Creates controls
-const controls = new MapControls(instance.camera.camera3D, instance.domElement);
+const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 
-instance.camera.camera3D.position.set(227137, 6876151, 128);
+instance.view.camera.position.set(227137, 6876151, 128);
 controls.target.set(227423, 6876442, 0);
 
 controls.saveState();

@@ -5,7 +5,7 @@ import { Group, Matrix4, Mesh, MeshBasicMaterial } from 'three';
 import Tiles3D from '../../../src/entities/Tiles3D';
 import $3dTilesIndex from '../../../src/entities/3dtiles/3dTilesIndex';
 import Tile from '../../../src/entities/3dtiles/Tile';
-import Camera from '../../../src/renderer/Camera';
+import View from '../../../src/renderer/View';
 import Coordinates from '../../../src/core/geographic/Coordinates';
 import Tiles3DSource from '../../../src/sources/Tiles3DSource';
 import Entity3D from '../../../src/entities/Entity3D';
@@ -67,9 +67,9 @@ describe('Tiles3D', () => {
             '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
         );
 
-        const camera = new Camera('EPSG:3946', 100, 100);
-        camera.camera3D.position.copy(new Coordinates('EPSG:3946', 0, 0, 100).toVector3());
-        camera.camera3D.updateMatrixWorld(true);
+        const view = new View('EPSG:3946', 100, 100);
+        view.camera.position.copy(new Coordinates('EPSG:3946', 0, 0, 100).toVector3());
+        view.camera.updateMatrixWorld(true);
 
         it('should compute distance correctly', () => {
             const tileset = tilesetWithBox();
@@ -77,7 +77,7 @@ describe('Tiles3D', () => {
 
             const tile = new Tile(tileIndex.index['1']);
 
-            tile.calculateCameraDistance(camera.camera3D);
+            tile.calculateCameraDistance(view.camera);
 
             expect(tile.distance).toEqual({ min: 99, max: 102.46410161513775 });
         });
@@ -92,7 +92,7 @@ describe('Tiles3D', () => {
 
             const tile = new Tile(tileIndex.index['1']);
 
-            tile.calculateCameraDistance(camera.camera3D);
+            tile.calculateCameraDistance(view.camera);
 
             expect(tile.distance).toEqual({ max: 90.02464101615138, min: 89.99 });
         });
@@ -104,9 +104,9 @@ describe('Tiles3D', () => {
             '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
         );
 
-        const camera = new Camera('EPSG:3946', 100, 100);
-        camera.camera3D.position.copy(new Coordinates('EPSG:3946', 0, 0, 100).toVector3());
-        camera.camera3D.updateMatrixWorld(true);
+        const view = new View('EPSG:3946', 100, 100);
+        view.camera.position.copy(new Coordinates('EPSG:3946', 0, 0, 100).toVector3());
+        view.camera.updateMatrixWorld(true);
 
         it('should compute distance correctly', () => {
             const tileset = tilesetWithSphere();
@@ -114,7 +114,7 @@ describe('Tiles3D', () => {
 
             const tile = new Tile(tileIndex.index['1']);
 
-            tile.calculateCameraDistance(camera.camera3D);
+            tile.calculateCameraDistance(view.camera);
 
             expect(tile.distance).toEqual({ max: 101, min: 99 });
         });
@@ -129,9 +129,9 @@ describe('Tiles3D', () => {
 
             const tile = new Tile(tileIndex.index['1']);
 
-            tile.calculateCameraDistance(camera.camera3D);
+            tile.calculateCameraDistance(view.camera);
 
-            tile.calculateCameraDistance(camera.camera3D);
+            tile.calculateCameraDistance(view.camera);
 
             // floats...
             expect(tile.distance.min).toBeCloseTo(89.99, 12);

@@ -1,4 +1,4 @@
-import Camera from './Camera';
+import View from './View';
 import { type RendererOptions } from './c3DEngine';
 import MemoryTracker from './MemoryTracker';
 import PointCloudMaterial, {
@@ -12,7 +12,7 @@ import type RenderingContextHandler from './RenderingContextHandler';
 import * as simpleGeometries from './geometries';
 
 export {
-    Camera,
+    View,
     RendererOptions,
     MemoryTracker,
     PointCloudMaterial,
