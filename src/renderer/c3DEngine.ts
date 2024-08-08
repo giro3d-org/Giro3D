@@ -291,8 +291,9 @@ class C3DEngine {
      *
      * @returns The viewport size, in pixels.
      */
-    getWindowSize() {
-        return new Vector2(this.width, this.height);
+    getWindowSize(target?: Vector2) {
+        target = target ?? new Vector2();
+        return target.set(this.width, this.height);
     }
 
     /**
