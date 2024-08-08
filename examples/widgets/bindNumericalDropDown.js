@@ -6,13 +6,13 @@
  */
 export function bindNumericalDropDown(id, onChange) {
     /** @type {HTMLInputElement} */
-    const value = document.getElementById(id);
-    value.onchange = () => {
-        onChange(value.valueAsNumber);
+    const element = document.getElementById(id);
+    element.onchange = () => {
+        onChange(parseInt(element.value));
     };
 
     return v => {
-        value.valueAsNumber = v;
-        onChange(value.valueAsNumber);
+        element.value = v.toString();
+        onChange(parseInt(element.value));
     };
 }
