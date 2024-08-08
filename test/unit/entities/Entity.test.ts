@@ -4,7 +4,8 @@ describe('Entity', () => {
     let entity: Entity;
 
     beforeEach(() => {
-        entity = new Entity('myEntity');
+        // @ts-expect-error abstract class
+        entity = new Entity();
     });
 
     describe('userData', () => {
@@ -18,14 +19,6 @@ describe('Entity', () => {
     });
 
     describe('constructor', () => {
-        it('should throw on undefined id', () => {
-            expect(() => new Entity(undefined)).toThrow(/Missing id parameter/);
-        });
-
-        it('should assign the id property', () => {
-            expect(entity.id).toEqual('myEntity');
-        });
-
         it('defines the update, preUpdate, postUpdate methods', () => {
             expect(entity.update).toBeDefined();
             expect(entity.update).not.toThrow();

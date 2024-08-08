@@ -77,7 +77,7 @@ const elevationLayer = new ElevationLayer({
     minmax: { min, max },
 });
 
-const map = new Map('map', {
+const map = new Map({
     extent,
     doubleSided: true,
     backgroundOpacity: 0,

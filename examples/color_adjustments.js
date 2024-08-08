@@ -47,7 +47,7 @@ const ymax = 5178412.82698;
 
 const extent = new Extent('EPSG:3946', xmin, xmax, ymin, ymax);
 
-const map = new Map('city-of-lyon', { extent });
+const map = new Map({ extent });
 instance.add(map);
 
 const satelliteSource = new WmsSource({

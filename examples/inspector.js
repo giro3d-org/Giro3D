@@ -57,7 +57,7 @@ const viewerDiv = document.getElementById('viewerDiv');
 // Creates a Giro3D instance
 const instance = new Instance(viewerDiv, { crs: extent.crs() });
 
-const map = new Map('planar', { extent });
+const map = new Map({ extent });
 instance.add(map);
 
 // Adds an TMS imagery layer

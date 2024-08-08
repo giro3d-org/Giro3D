@@ -46,7 +46,7 @@ instance.useTHREEControls(controls);
 
 // Adds layers in a map
 
-const map = new Map('planar', { extent, backgroundColor: '#135D66' });
+const map = new Map({ extent, backgroundColor: '#135D66' });
 instance.add(map);
 
 const ecoRegionLayerStyle = feature => {

@@ -145,7 +145,7 @@ describe('Instance', () => {
         });
 
         it('should add a map', () => {
-            const map = new Map('myEntity', {
+            const map = new Map({
                 extent: new Extent('EPSG:4326', {
                     west: 0,
                     east: 10,
@@ -168,10 +168,7 @@ describe('Instance', () => {
                 geometricError: 50,
             };
             Fetcher.json.mockResolvedValue(tileset);
-            const tiles3d = new Tiles3D(
-                'myEntity',
-                new Tiles3DSource('https://domain.tld/tileset.json'),
-            );
+            const tiles3d = new Tiles3D(new Tiles3DSource('https://domain.tld/tileset.json'));
             return instance.add(tiles3d).then(() => {
                 expect(instance.getObjects()).toStrictEqual([tiles3d]);
             });
@@ -187,7 +184,7 @@ describe('Instance', () => {
         it('should fire the entity-added event', () => {
             let eventFired = false;
 
-            const map = new Map('myEntity', {
+            const map = new Map({
                 extent: new Extent('EPSG:4326', {
                     west: 0,
                     east: 10,
@@ -212,9 +209,9 @@ describe('Instance', () => {
     describe('remove', () => {
         it('should remove the object from the list', () => {
             const extent = new Extent('EPSG:4326', 0, 0, 0, 0);
-            const map1 = new Map('map1', { extent });
-            const map2 = new Map('map2', { extent });
-            const map3 = new Map('map3', { extent });
+            const map1 = new Map({ extent });
+            const map2 = new Map({ extent });
+            const map3 = new Map({ extent });
 
             instance.add(map1);
             instance.add(map2);
@@ -253,7 +250,7 @@ describe('Instance', () => {
         });
 
         it('should call the dispose() method if it exists', () => {
-            const map = new Map('owner', { extent: new Extent('EPSG:4326', 0, 0, 0, 0) });
+            const map = new Map({ extent: new Extent('EPSG:4326', 0, 0, 0, 0) });
             map.dispose = jest.fn();
             return instance.add(map).then(() => {
                 instance.remove(map);
@@ -264,7 +261,7 @@ describe('Instance', () => {
         it('should fire the entity-removed event', () => {
             let eventFired = false;
 
-            const map = new Map('myEntity', {
+            const map = new Map({
                 extent: new Extent('EPSG:4326', {
                     west: 0,
                     east: 10,
@@ -294,8 +291,8 @@ describe('Instance', () => {
 
         it('should return true if any entity is loading', () => {
             const extent = new Extent('EPSG:4326', 0, 0, 0, 0);
-            const map1 = new Map('map1', { extent });
-            const map2 = new Map('map2', { extent });
+            const map1 = new Map({ extent });
+            const map2 = new Map({ extent });
 
             let map1Loading = false;
             let map2Loading = false;
@@ -334,8 +331,8 @@ describe('Instance', () => {
     describe('getEntities', () => {
         it('should return added entities', () => {
             const extent = new Extent('EPSG:4326', 0, 0, 0, 0);
-            const map1 = new Map('map1', { extent });
-            const map2 = new Map('map2', { extent });
+            const map1 = new Map({ extent });
+            const map2 = new Map({ extent });
 
             instance.add(map1);
 
@@ -358,8 +355,8 @@ describe('Instance', () => {
     describe('getObjects', () => {
         it('should return added objects and entities', () => {
             const extent = new Extent('EPSG:4326', 0, 0, 0, 0);
-            const map1 = new Map('map1', { extent });
-            const map2 = new Map('map2', { extent });
+            const map1 = new Map({ extent });
+            const map2 = new Map({ extent });
             const object1 = new Object3D();
             const object2 = new Object3D();
 
@@ -389,8 +386,8 @@ describe('Instance', () => {
 
         it('should return the average of all entities progress', () => {
             const extent = new Extent('EPSG:4326', 0, 0, 0, 0);
-            const map1 = new Map('map1', { extent });
-            const map2 = new Map('map2', { extent });
+            const map1 = new Map({ extent });
+            const map2 = new Map({ extent });
 
             Object.defineProperty(map1, 'progress', {
                 get: jest.fn(() => 0.7),

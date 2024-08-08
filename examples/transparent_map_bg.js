@@ -42,7 +42,7 @@ controls.dampingFactor = 0.25;
 
 instance.useTHREEControls(controls);
 
-const map = new Map('map', { extent, backgroundColor: 'green' });
+const map = new Map({ extent, backgroundColor: 'green' });
 instance.add(map);
 
 const rectangle = {

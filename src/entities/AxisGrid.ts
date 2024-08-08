@@ -147,7 +147,7 @@ function createLabelElement(text: string, color: string, opacity: number, fontSi
  * //
  * // Display a tick (grid line), every 10 meters on the horizontal axes,
  * // and every 50 meters on the vertical axis.
- * const grid = new AxisGrid('axis-grid', {
+ * const grid = new AxisGrid({
  *   volume: {
  *       extent,
  *       floor: 0,
@@ -163,10 +163,11 @@ function createLabelElement(text: string, color: string, opacity: number, fontSi
  * ```
  */
 class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, UserData> {
+    readonly type = 'AxisGrid' as const;
     /**
      * Read-only flag to check if a given object is of type AxisGrid.
      */
-    readonly isAxisGrid = true;
+    readonly isAxisGrid = true as const;
 
     private readonly _root: Group;
     private readonly _labelRoot: Group;
@@ -204,25 +205,14 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
     /**
      * Creates an instance of AxisGrid.
      *
-     * @param id - The unique identifier of this entity.
      * @param options - The options.
      * @param options -.volume The grid volume.
      * @param options -.origin The origin of the ticks.
      * @param options -.ticks The distance between grid lines.
      * @param options -.style The styling options.
      */
-    constructor(
-        id: string,
-        options: {
-            volume: Volume;
-            origin?: TickOrigin;
-            ticks?: Ticks;
-            style?: Style;
-        },
-    ) {
-        super(id, new Group());
-
-        this.type = 'AxisGrid';
+    constructor(options: { volume: Volume; origin?: TickOrigin; ticks?: Ticks; style?: Style }) {
+        super(new Group());
 
         this._root = this.object3d as Group;
 

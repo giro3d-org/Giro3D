@@ -34,7 +34,7 @@ const extent = new Extent(
     5939002.826,
 ).withMargin(-200, -200);
 
-const map = new Map('planar', {
+const map = new Map({
     extent,
     backgroundColor: 'gray',
     hillshading: {
@@ -68,7 +68,7 @@ const elevationLayer = new ElevationLayer({
 
 map.addLayer(elevationLayer);
 
-const axisGrid = new AxisGrid('axis-grid', {
+const axisGrid = new AxisGrid({
     volume: {
         extent: map.extent,
         floor: -2000,

@@ -50,7 +50,7 @@ const instance = new Instance(viewerDiv, {
 });
 
 // Creates a map that will contain the layer
-const map = new Map('planar', {
+const map = new Map({
     extent,
     hillshading: {
         enabled: true,
@@ -119,11 +119,12 @@ instance.useTHREEControls(controls);
 const measureTool = new DrawTool({ instance });
 
 // The 3D line that will follow the elevation profile
-const measure = new Shape('profile', {
+const measure = new Shape({
     showVertices: false,
     showLine: true,
     vertexRadius: 3,
 });
+measure.name = 'profile';
 measure.renderOrder = 10;
 
 instance.add(measure);
@@ -326,13 +327,14 @@ bindToggle('showColorLayer', v => {
     instance.notifyChange(map);
 });
 
-const hoveredPoint = new Shape('hovered-point', {
+const hoveredPoint = new Shape({
     vertexRadius: 6,
     showVertexLabels: true,
     vertexLabelFormatter: ({ position }) => {
         return `${position.z.toFixed(0)}m`;
     },
 });
+hoveredPoint.name = 'hovered-point';
 hoveredPoint.points.push(new Vector3());
 hoveredPoint.renderOrder = measure.renderOrder + 2;
 hoveredPoint.color = measure.color;

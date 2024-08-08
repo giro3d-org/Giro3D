@@ -43,7 +43,7 @@ const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.target.set(camPos.x, camPos.y + 1, 0);
 instance.useTHREEControls(controls);
 
-const map = new Map('map', {
+const map = new Map({
     extent,
     backgroundColor: 'gray',
     maxSubdivisionLevel: 13,

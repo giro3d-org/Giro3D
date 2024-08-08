@@ -45,10 +45,7 @@ const wmsOthophotoSource = new TiledImageSource({
     }),
 });
 
-const pointcloud = new Tiles3D(
-    'pointcloud',
-    new Tiles3DSource('https://3d.oslandia.com/lidar_hd/tileset.json'),
-);
+const pointcloud = new Tiles3D(new Tiles3DSource('https://3d.oslandia.com/lidar_hd/tileset.json'));
 // add pointcloud to scene
 function initializeCameraPosition(layer) {
     const bbox = layer.root.bbox

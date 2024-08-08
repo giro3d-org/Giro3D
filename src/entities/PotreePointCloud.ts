@@ -1,8 +1,8 @@
 import {
     Box3,
-    Group,
     BufferAttribute,
     BufferGeometry,
+    Group,
     LineBasicMaterial,
     LineDashedMaterial,
     LineSegments,
@@ -11,37 +11,37 @@ import {
     Vector3,
     type Camera,
 } from 'three';
-import Entity3D, { type Entity3DEventMap } from './Entity3D';
-import PointCloudMaterial, { MODE, type Mode } from '../renderer/PointCloudMaterial';
-import type RequestQueue from '../core/RequestQueue';
-import { DefaultQueue } from '../core/RequestQueue';
-import type PotreeSource from '../sources/PotreeSource';
-import OperationCounter from '../core/OperationCounter';
-import PotreeBinParser from '../parser/PotreeBinParser';
-import PotreeCinParser from '../parser/PotreeCinParser';
-import Fetcher from '../utils/Fetcher';
-import Extent from '../core/geographic/Extent';
-import PointCloud from '../core/PointCloud';
-import type { ObjectToUpdate } from '../core/MainLoop';
 import type Context from '../core/Context';
-import type Pickable from '../core/picking/Pickable';
-import type PickOptions from '../core/picking/PickOptions';
-import pickPointsAt, {
-    type PointsPickResult,
-    preparePointGeometryForPicking,
-} from '../core/picking/PickPointsAt';
-import type HasLayers from '../core/layer/HasLayers';
+import Extent from '../core/geographic/Extent';
 import type ColorLayer from '../core/layer/ColorLayer';
-import type { LayerEvents } from '../core/layer/Layer';
+import type HasLayers from '../core/layer/HasLayers';
 import type Layer from '../core/layer/Layer';
-import { type EntityUserData } from './Entity';
-import { isOrthographicCamera, isPerspectiveCamera } from '../renderer/View';
+import type { LayerEvents } from '../core/layer/Layer';
+import type { ObjectToUpdate } from '../core/MainLoop';
 import {
     createEmptyReport,
     getGeometryMemoryUsage,
     type GetMemoryUsageContext,
     type MemoryUsageReport,
 } from '../core/MemoryUsage';
+import OperationCounter from '../core/OperationCounter';
+import type Pickable from '../core/picking/Pickable';
+import type PickOptions from '../core/picking/PickOptions';
+import pickPointsAt, {
+    preparePointGeometryForPicking,
+    type PointsPickResult,
+} from '../core/picking/PickPointsAt';
+import PointCloud from '../core/PointCloud';
+import type RequestQueue from '../core/RequestQueue';
+import { DefaultQueue } from '../core/RequestQueue';
+import PotreeBinParser from '../parser/PotreeBinParser';
+import PotreeCinParser from '../parser/PotreeCinParser';
+import PointCloudMaterial, { MODE, type Mode } from '../renderer/PointCloudMaterial';
+import { isOrthographicCamera, isPerspectiveCamera } from '../renderer/View';
+import type PotreeSource from '../sources/PotreeSource';
+import Fetcher from '../utils/Fetcher';
+import { type EntityUserData } from './Entity';
+import Entity3D, { type Entity3DEventMap } from './Entity3D';
 
 // Draw a cube with lines (12 lines).
 function cube(size: Vector3) {
@@ -273,7 +273,11 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
     extends Entity3D<Entity3DEventMap, UserData>
     implements Pickable<PointsPickResult>, HasLayers
 {
-    readonly isPotreePointCloud = true;
+    /**
+     * Read-only flag to check if a given object is of type PotreePointCloud.
+     */
+    readonly isPotreePointCloud = true as const;
+    readonly type = 'PotreePointCloud' as const;
     readonly hasLayers = true;
     private _colorLayer: ColorLayer;
     source: PotreeSource;
@@ -292,7 +296,7 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
      * The parameter is a {@link Points} object.
      *
      * ```js
-     * const cloud = new PotreePointCloud('myCloud', source);
+     * const cloud = new PotreePointCloud(source);
      * cloud.onPointsCreated = function(pnts) {
      *  // Do something with the points.
      * }
@@ -316,19 +320,14 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
     /**
      * Creates an instance of PotreePointCloud.
      *
-     * @param id - The unique identifier of this entity.
      * @param source - The data source.
      * @example
      * const source = new PotreeSource('http://example.com', 'cloud.js');
-     * const cloud = new PotreePointCloud('myCloud', source);
+     * const cloud = new PotreePointCloud(source);
      */
-    constructor(id: string, source: PotreeSource) {
-        super(id, new Group());
+    constructor(source: PotreeSource) {
+        super(new Group());
         this.source = source;
-        /**
-         * Read-only flag to check if a given object is of type PotreePointCloud.
-         */
-        this.type = 'PotreePointCloud';
 
         this._queue = DefaultQueue;
         this._opCounter = new OperationCounter();

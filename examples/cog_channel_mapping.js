@@ -39,7 +39,7 @@ controls.target.set(center.x, center.y + 1, center.z);
 instance.useTHREEControls(controls);
 
 // Construct a map and add it to the instance
-const map = new Map('planar', { extent });
+const map = new Map({ extent });
 instance.add(map);
 
 // Data coming from the same source as

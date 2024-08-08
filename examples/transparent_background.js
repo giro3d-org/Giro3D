@@ -32,7 +32,7 @@ const instance = new Instance(viewerDiv, {
     },
 });
 
-const map = new Map('planar', {
+const map = new Map({
     extent,
     hillshading: true,
     doubleSided: true,

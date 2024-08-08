@@ -49,6 +49,14 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
     extends Entity<TEventMap & Entity3DEventMap, TUserData>
     implements Pickable, MemoryUsage, RenderingContextHandler
 {
+    readonly type: string = 'Entity3D' as const;
+
+    readonly isPickable = true;
+    /**
+     * Read-only flag to check if a given object is of type Entity3D.
+     */
+    readonly isEntity3D: boolean = true as const;
+
     protected _instance: Instance;
     private _visible: boolean;
     private _opacity: number;
@@ -60,20 +68,13 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
     private _clippingPlanes: Plane[];
     private _renderOrder: number;
 
-    readonly isPickable = true;
-    /**
-     * Read-only flag to check if a given object is of type Entity3D.
-     */
-    readonly isEntity3D: boolean = true;
-
     /**
      * Creates a Entity3D with the specified parameters.
      *
-     * @param id - the unique identifier of this entity
      * @param object3d - the root Three.js of this entity
      */
-    constructor(id: string, object3d: Object3D) {
-        super(id);
+    constructor(object3d: Object3D) {
+        super();
         if (!object3d || !object3d.isObject3D) {
             throw new Error(
                 'Missing/Invalid object3d parameter (must be a three.js Object3D instance)',
@@ -82,10 +83,9 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
         this._instance = null; // will be filled when we add the object to an instance
 
         if (object3d.type === 'Group' && object3d.name === '') {
-            object3d.name = id;
+            object3d.name = this.id;
         }
 
-        this.type = 'Entity3D';
         this._visible = true;
         this._opacity = 1;
         this._object3d = object3d;

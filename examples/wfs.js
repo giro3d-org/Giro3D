@@ -38,7 +38,7 @@ const instance = new Instance(viewerDiv, {
     },
 });
 
-const map = new Map('map', { extent });
+const map = new Map({ extent });
 instance.add(map);
 
 // Adds a WMS imagery layer

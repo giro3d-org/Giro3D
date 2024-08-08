@@ -35,7 +35,7 @@ const mainInstance = new Instance(viewerDiv, {
 
 // create a map
 const extent = new Extent('EPSG:2154', -111629.52, 1275028.84, 5976033.79, 7230161.64);
-const map = new Map('planar', {
+const map = new Map({
     extent,
     backgroundColor: 'gray',
     hillshading: {
@@ -149,7 +149,7 @@ const minimapCamera = new OrthographicCamera(
 minimapInstance.view.camera = minimapCamera;
 
 // Let's create our minimap map with the same extent than the main map.
-const minimap = new Map('minimap', {
+const minimap = new Map({
     extent: map.extent,
     // Since the map is flat (no terrain applied), we can use 1 segment per tile.
     segments: 1,

@@ -31,7 +31,7 @@ const instance = new Instance(viewerDiv, {
     },
 });
 
-const map = new Map('planar', { extent, maxSubdivisionLevel: 15 });
+const map = new Map({ extent, maxSubdivisionLevel: 15 });
 instance.add(map);
 
 // Instantiates camera

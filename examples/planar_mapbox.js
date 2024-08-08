@@ -29,7 +29,7 @@ const viewerDiv = document.getElementById('viewerDiv');
 const instance = new Instance(viewerDiv, { crs: 'EPSG:3857' });
 
 // Adds the map that will contain the layers.
-const map = new Map('planar', { extent });
+const map = new Map({ extent });
 instance.add(map);
 
 function addLayers(key) {

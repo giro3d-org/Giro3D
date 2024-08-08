@@ -100,8 +100,6 @@ class ClippingPlanePanel extends Panel {
 }
 
 interface EntityInspectorOptions {
-    /** The title to display in the inspector. */
-    title?: string;
     /** Display the bounding box checkbox. */
     boundingBoxes?: boolean;
     /** Display the bounding box color checkbox. */
@@ -110,6 +108,13 @@ interface EntityInspectorOptions {
     opacity?: boolean;
     /** Display the visibility checkbox. */
     visibility?: boolean;
+}
+
+function getTitle(entity: Entity3D): string {
+    if (entity.name) {
+        return `${entity.name} (${entity.type})`;
+    }
+    return entity.type;
 }
 
 /**
@@ -143,7 +148,7 @@ class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
         entity: T,
         options: EntityInspectorOptions = {},
     ) {
-        super(parentGui, instance, options.title ?? entity.type);
+        super(parentGui, instance, getTitle(entity));
 
         this.entity = entity;
         this.rootObject = entity.object3d;

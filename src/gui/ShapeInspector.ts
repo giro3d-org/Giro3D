@@ -16,7 +16,6 @@ class ShapeInspector extends EntityInspector<Shape> {
      */
     constructor(parentGui: GUI, instance: Instance, entity: Shape) {
         super(parentGui, instance, entity, {
-            title: `${entity.type} ('${entity.id}')`,
             visibility: true,
             opacity: true,
         });

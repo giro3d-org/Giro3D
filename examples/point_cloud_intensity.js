@@ -60,7 +60,7 @@ let parameters = {
 const url = 'https://3d.oslandia.com/giro3d/3d-tiles/lidarhd_intensity/tileset.json';
 
 // Create the 3D tiles entity
-const pointcloud = new Tiles3D('pointcloud', new Tiles3DSource(url), {
+const pointcloud = new Tiles3D(new Tiles3DSource(url), {
     material,
 });
 

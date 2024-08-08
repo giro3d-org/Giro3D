@@ -1,11 +1,5 @@
-import {
-    AdditiveBlending,
-    BackSide,
-    EventDispatcher,
-    MathUtils,
-    MeshBasicMaterial,
-    Vector3,
-} from 'three';
+import { AdditiveBlending, BackSide, EventDispatcher, MeshBasicMaterial, Vector3 } from 'three';
+import type { Disposable } from '../core';
 import type Instance from '../core/Instance';
 import type PickResult from '../core/picking/PickResult';
 import type { ShapePickResult, VerticalLineLabelFormatter } from '../entities/Shape';
@@ -17,7 +11,6 @@ import Shape, {
 } from '../entities/Shape';
 import { ConstantSizeSphere } from '../renderer';
 import { AbortError } from '../utils/PromiseUtils';
-import type { Disposable } from '../core';
 
 const DEFAULT_MARKER_RADIUS = 5;
 const OPACITY_OVER_VERTEX = 0.4;
@@ -103,10 +96,6 @@ export type CreateShapeOptions = Partial<ShapeConstructorOptions> & {
      * An optional custom picking function to be used instead of the default one.
      */
     pick?: PickCallback;
-    /**
-     * The optional uuid to assign to the shape entity.
-     */
-    uuid?: string;
     /**
      * An optional list of permitted operations.
      */
@@ -505,9 +494,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
      * was cancelled.
      */
     createShape(options: CreateShapeOptions): Promise<Shape | null> {
-        const shape = new Shape<ShapeUserData>(options.uuid ?? MathUtils.generateUUID(), {
-            ...options,
-        });
+        const shape = new Shape<ShapeUserData>({ ...options });
 
         shape.userData.permissions = options.constraints;
 
@@ -640,7 +627,6 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
         },
     ): Promise<Shape | null> {
         return this.createShape({
-            uuid: `segment-${MathUtils.generateUUID()}`,
             ...options,
             minPoints: 2,
             maxPoints: 2,
@@ -666,7 +652,6 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
         },
     ): Promise<Shape | null> {
         return this.createShape({
-            uuid: `lineString-${MathUtils.generateUUID()}`,
             ...options,
             beforeRemovePoint: limitRemovePointHook(2),
             minPoints: 2,
@@ -733,7 +718,6 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
         };
 
         return this.createShape({
-            uuid: `verticalMeasure-${MathUtils.generateUUID()}`,
             showFloorLine: true,
             showVerticalLines: true,
             showFloorVertices: true,
@@ -764,7 +748,6 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
      */
     createPoint(options?: CreationOptions): Promise<Shape | null> {
         return this.createShape({
-            uuid: `point-${MathUtils.generateUUID()}`,
             ...options,
             minPoints: 1,
             maxPoints: 1,
@@ -779,7 +762,6 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
      */
     createMultiPoint(options?: CreationOptions): Promise<Shape | null> {
         return this.createShape({
-            uuid: `multipoint-${MathUtils.generateUUID()}`,
             showLine: false,
             ...options,
             beforeRemovePoint: limitRemovePointHook(1),
@@ -795,7 +777,6 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
      */
     createPolygon(options?: CreationOptions): Promise<Shape | null> {
         return this.createShape({
-            uuid: `polygon-${MathUtils.generateUUID()}`,
             showSurface: true,
             closeRing: true,
             ...options,
@@ -814,7 +795,6 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
      */
     createRing(options?: CreationOptions): Promise<Shape | null> {
         return this.createShape({
-            uuid: `ring-${MathUtils.generateUUID()}`,
             closeRing: true,
             ...options,
             minPoints: 3,
@@ -832,7 +812,6 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
      */
     createSector(options?: CreationOptions): Promise<Shape | null> {
         return this.createShape({
-            uuid: `sector-${MathUtils.generateUUID()}`,
             vertexLabelFormatter: angleFormatter,
             showVertexLabels: true,
             showSurface: true,

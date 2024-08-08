@@ -28,7 +28,7 @@ function buildViewer(viewerDiv, defaultRenderer = true) {
     }
     const instance = new Instance(viewerDiv, { renderer, crs: extent.crs() });
     // Creates a map that will contain the layer
-    const map = new Map('planar', { extent, maxSubdivisionLevel: 10 });
+    const map = new Map({ extent, maxSubdivisionLevel: 10 });
 
     instance.add(map);
 

@@ -8,26 +8,18 @@ import Tile from '../../../src/entities/3dtiles/Tile';
 import View from '../../../src/renderer/View';
 import Coordinates from '../../../src/core/geographic/Coordinates';
 import Tiles3DSource from '../../../src/sources/Tiles3DSource';
-import Entity3D from '../../../src/entities/Entity3D';
 
 describe('Tiles3D', () => {
     const defaultSource = new Tiles3DSource('http://example.com/tileset');
 
     describe('constructor', () => {
-        it('should throw on falsy identifier', () => {
-            expect(() => new Tiles3D()).toThrow(/Missing id parameter/);
-            expect(() => new Tiles3D(undefined)).toThrow(/Missing id parameter/);
-            expect(() => new Tiles3D('')).toThrow(/Missing id parameter/);
-            expect(() => new Tiles3D(null)).toThrow(/Missing id parameter/);
-        });
-
         it('should assign the source', () => {
-            const sut = new Tiles3D('foo', new Tiles3DSource('http://example.com/tileset'));
+            const sut = new Tiles3D(new Tiles3DSource('http://example.com/tileset'));
             expect(sut._url).toBe('http://example.com/tileset');
         });
 
         it('should assign default values if options do not provide them', () => {
-            const sut = new Tiles3D('foo', defaultSource);
+            const sut = new Tiles3D(defaultSource);
             expect(sut.sseThreshold).toBe(16);
             expect(sut.cleanupDelay).toBe(1000);
         });
@@ -153,7 +145,7 @@ describe('Tiles3D', () => {
                 tile.content.add(mesh);
             }
 
-            const tiles3D = new Tiles3D('foo', defaultSource);
+            const tiles3D = new Tiles3D(defaultSource);
 
             const result = tiles3D.getObjectToUpdateForAttachedLayers(tile);
             assert.ok(Array.isArray(result.elements));
@@ -164,7 +156,7 @@ describe('Tiles3D', () => {
     describe('updateOpacity', () => {
         it('should use this.opacity if set', () => {
             const material = new MeshBasicMaterial();
-            const entity = new Tiles3D('foo', defaultSource, { material });
+            const entity = new Tiles3D(defaultSource, { material });
 
             const o = new Group();
             o.add(new Mesh());
@@ -185,7 +177,7 @@ describe('Tiles3D', () => {
         });
 
         it("should honor object's original opacity if set when there is no material at the entity level", () => {
-            const entity = new Tiles3D('foo', defaultSource);
+            const entity = new Tiles3D(defaultSource);
 
             const o = new Group();
             const o1 = new Mesh();
@@ -212,7 +204,7 @@ describe('Tiles3D', () => {
 
     describe('onObjectCreated', () => {
         it('should set the opacity of the created object and its descendants to the current opacity value when they have no original opacity', () => {
-            const entity = new Tiles3D('foo', defaultSource);
+            const entity = new Tiles3D(defaultSource);
 
             const o = new Group();
             o.add(new Mesh());
@@ -233,7 +225,7 @@ describe('Tiles3D', () => {
         });
 
         it('should correctly set the opacity of the created object and its descendants when they come with their own opacity', () => {
-            const entity = new Tiles3D('foo', defaultSource);
+            const entity = new Tiles3D(defaultSource);
 
             const o = new Group();
             const o1 = new Mesh();
@@ -256,7 +248,7 @@ describe('Tiles3D', () => {
         });
 
         it('should correctly set the opacity of the created object and its descendants when they come with their own opacity and there is an opacity setup at the entity level', () => {
-            const entity = new Tiles3D('foo', defaultSource);
+            const entity = new Tiles3D(defaultSource);
 
             const o = new Group();
             const o1 = new Mesh();

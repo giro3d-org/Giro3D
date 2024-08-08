@@ -42,7 +42,7 @@ const instance = new Instance(viewerDiv, {
     },
 });
 
-const terrainMap = new Map('terrain', { extent, doubleSided: true, hillshading: true });
+const terrainMap = new Map({ extent, doubleSided: true, hillshading: true });
 instance.add(terrainMap);
 
 const min = 100;
@@ -74,7 +74,7 @@ const elevationLayer = new ElevationLayer({
 
 terrainMap.addLayer(elevationLayer);
 
-const orthophotoMap = new Map('orthophoto', { extent, doubleSided: true });
+const orthophotoMap = new Map({ extent, doubleSided: true });
 instance.add(orthophotoMap);
 
 const orthophotoLayer = new ColorLayer({
@@ -93,7 +93,7 @@ const orthophotoLayer = new ColorLayer({
 });
 orthophotoMap.addLayer(orthophotoLayer);
 
-const vectorMap = new Map('geojson', { extent, doubleSided: true, backgroundOpacity: 0 });
+const vectorMap = new Map({ extent, doubleSided: true, backgroundOpacity: 0 });
 instance.add(vectorMap);
 
 const geoJsonLayer = new ColorLayer({

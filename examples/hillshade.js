@@ -30,7 +30,7 @@ const viewerDiv = document.getElementById('viewerDiv');
 const instance = new Instance(viewerDiv, { crs: extent.crs() });
 
 // Adds the map that will contain the layers.
-const map = new Map('planar', {
+const map = new Map({
     extent,
     // Enables hillshading on this map
     hillshading: {

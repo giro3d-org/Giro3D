@@ -17,40 +17,35 @@ import Entity3D from 'src/entities/Entity3D';
  * @param obj3d - an optional object3d to inject
  */
 function sut(obj3d: Object3D = undefined) {
-    const id = 'foo';
     const object3d = obj3d ?? new Group();
 
-    const entity = new Entity3D(id, object3d);
+    const entity = new Entity3D(object3d);
     return entity;
 }
 
 describe('Entity3D', () => {
     describe('constructor', () => {
-        it('should throw on undefined id and object3d', () => {
-            assert.throws(() => new Entity3D(undefined, new Object3D()));
-            assert.throws(() => new Entity3D('foo', undefined));
+        it('should throw on undefined object3d', () => {
+            assert.throws(() => new Entity3D(undefined));
             // @ts-expect-error argument is not an Object3D
-            assert.throws(() => new Entity3D('foo', { isObject3D: false }));
+            assert.throws(() => new Entity3D({ isObject3D: false }));
         });
 
         it('should assign the provided properties', () => {
-            const id = 'foo';
             const obj3d = new Object3D();
 
-            const entity = new Entity3D(id, obj3d);
+            const entity = new Entity3D(obj3d);
 
             assert.strictEqual(entity.type, 'Entity3D');
             assert.strictEqual(entity.object3d, obj3d);
-            assert.strictEqual(entity.id, 'foo');
         });
 
         it('should assign the object3d.name with id if it is a group', () => {
-            const id = 'foo';
             const obj3d = new Group();
 
-            const entity = new Entity3D(id, obj3d);
+            const entity = new Entity3D(obj3d);
 
-            assert.strictEqual(entity.object3d.name, 'foo');
+            assert.strictEqual(entity.object3d.name, entity.id);
         });
 
         it('should define the "opacity" property with default value 1.0', () => {
@@ -274,6 +269,7 @@ describe('Entity3D', () => {
             o.add(new Object3D());
             o.add(new Object3D().add(new Object3D()));
 
+            // @ts-expect-error protected method
             entity.onObjectCreated(o);
 
             o.traverse(desc => {
@@ -291,6 +287,7 @@ describe('Entity3D', () => {
             o.add(new Mesh(new BoxGeometry(), new MeshStandardMaterial()));
             o.add(new Mesh(new BoxGeometry(), new MeshStandardMaterial()));
 
+            // @ts-expect-error protected method
             entity.onObjectCreated(o);
 
             for (const child of o.children) {
@@ -306,6 +303,7 @@ describe('Entity3D', () => {
             o.add(new Mesh(new BoxGeometry(), new MeshStandardMaterial()));
             o.add(new Mesh(new BoxGeometry(), new MeshStandardMaterial()));
             o.add(new Mesh(new BoxGeometry(), new MeshStandardMaterial()));
+            // @ts-expect-error protected method
             entity.onObjectCreated(o);
             for (const child of o.children) {
                 const mesh = child as Mesh<BoxGeometry, MeshStandardMaterial>;
@@ -314,6 +312,7 @@ describe('Entity3D', () => {
             }
 
             entity.opacity = 0.7;
+            // @ts-expect-error protected method
             entity.onObjectCreated(o);
             for (const child of o.children) {
                 const mesh = child as Mesh<BoxGeometry, MeshStandardMaterial>;
@@ -335,6 +334,7 @@ describe('Entity3D', () => {
                 done();
             });
 
+            // @ts-expect-error protected method
             entity.onObjectCreated(o);
         });
     });

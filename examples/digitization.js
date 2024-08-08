@@ -34,7 +34,7 @@ const instance = new Instance(viewerDiv, { crs: 'EPSG:2154', renderer: { clearCo
 // create a map
 const extent = Extent.fromCenterAndSize('EPSG:2154', { x: 895_055, y: 6_247_049 }, 20_000, 20_000);
 
-const map = new Map('planar', {
+const map = new Map({
     extent,
     backgroundColor: 'gray',
     hillshading: {

@@ -40,7 +40,7 @@ function init() {
     });
 
     // Creates a map that will contain the layer
-    map = new Map('planar', { extent, maxSubdivisionLevel: 10 });
+    map = new Map({ extent, maxSubdivisionLevel: 10 });
 
     instance.add(map);
 

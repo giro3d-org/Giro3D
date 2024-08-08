@@ -51,7 +51,7 @@ const instance = new Instance(viewerDiv, {
 // create a map
 const extent = Extent.fromCenterAndSize('EPSG:2154', { x: 972_027, y: 6_299_491 }, 10_000, 10_000);
 
-const map = new Map('planar', {
+const map = new Map({
     extent,
     backgroundColor: 'gray',
     hillshading: {
@@ -242,7 +242,7 @@ function fromGeoJSON(feature) {
 
     switch (feature.geometry.type) {
         case 'Point':
-            result = new Shape(uuid, {
+            result = new Shape({
                 showVertexLabels: true,
                 showLine: false,
                 showVertices: true,
@@ -252,7 +252,7 @@ function fromGeoJSON(feature) {
             result.setPoints([getPoint(feature.geometry.coordinates)]);
             break;
         case 'MultiPoint':
-            result = new Shape(uuid, {
+            result = new Shape({
                 showVertexLabels: true,
                 showLine: false,
                 showVertices: true,
@@ -262,7 +262,7 @@ function fromGeoJSON(feature) {
             result.setPoints(feature.geometry.coordinates.map(getPoint));
             break;
         case 'LineString':
-            result = new Shape(uuid, {
+            result = new Shape({
                 showVertexLabels: false,
                 showLine: true,
                 showVertices: true,
@@ -273,7 +273,7 @@ function fromGeoJSON(feature) {
             result.setPoints(feature.geometry.coordinates.map(getPoint));
             break;
         case 'Polygon':
-            result = new Shape(uuid, {
+            result = new Shape({
                 showVertexLabels: false,
                 showLine: true,
                 showVertices: true,

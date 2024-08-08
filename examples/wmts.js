@@ -29,7 +29,7 @@ const instance = new Instance(viewerDiv, {
 });
 
 // Creates a map that will contain the layer
-const map = new Map('planar', { extent });
+const map = new Map({ extent });
 
 instance.add(map);
 

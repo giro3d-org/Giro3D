@@ -60,7 +60,7 @@ material.classifications[66].color = new Color(0x00ff8d); // Classification "Poi
 const url =
     'https://3d.oslandia.com/giro3d/3d-tiles/LHD_FXX_0227_6877_PTS_C_LAMB93_IGN69/tileset.json';
 
-const pointcloud = new Tiles3D('pointcloud', new Tiles3DSource(url), {
+const pointcloud = new Tiles3D(new Tiles3DSource(url), {
     material,
 });
 

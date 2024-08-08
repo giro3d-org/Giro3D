@@ -10,7 +10,7 @@ describe('PotreePointCloud', () => {
         let entity;
 
         beforeEach(() => {
-            entity = new PotreePointCloud('a', 'http://example.com', 'cloud.js');
+            entity = new PotreePointCloud('http://example.com', 'cloud.js');
             entity.root = {};
         });
 
@@ -60,7 +60,7 @@ describe('PotreePointCloud', () => {
         let entity;
 
         beforeEach(() => {
-            entity = new PotreePointCloud('a', 'http://example.com', 'cloud.js');
+            entity = new PotreePointCloud('http://example.com', 'cloud.js');
         });
 
         it('should correctly no-parent for the root', () => {
@@ -85,7 +85,7 @@ describe('PotreePointCloud', () => {
 
     describe('parseMetadata', () => {
         it('should correctly parse normal information in metadata', () => {
-            const entity = new PotreePointCloud('a', 'http://example.com', 'cloud.js');
+            const entity = new PotreePointCloud('http://example.com', 'cloud.js');
 
             // no normals
             const metadata = {

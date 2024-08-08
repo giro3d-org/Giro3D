@@ -45,7 +45,7 @@ controls.saveState();
 
 instance.useTHREEControls(controls);
 
-const map = new Map('map', { extent });
+const map = new Map({ extent });
 instance.add(map);
 
 const fillColor = new Color('orange');

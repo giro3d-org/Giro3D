@@ -31,7 +31,7 @@ const viewerDiv = document.getElementById('viewerDiv');
 
 const instance = new Instance(viewerDiv, { crs: extent.crs() });
 
-const map = new Map('planar', { extent });
+const map = new Map({ extent });
 instance.add(map);
 
 // Function to look at an extent from top

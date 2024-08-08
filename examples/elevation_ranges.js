@@ -31,7 +31,7 @@ const instance = new Instance(viewerDiv, {
     },
 });
 
-const map = new Map('map', {
+const map = new Map({
     extent,
     elevationRange: { min: 500, max: 3000 },
 });
