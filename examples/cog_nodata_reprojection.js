@@ -103,6 +103,6 @@ StatusBar.bind(instance);
 const enableFillNoDataCheckbox = document.getElementById('enableFillNoData');
 enableFillNoDataCheckbox.oninput = function oninput() {
     const state = enableFillNoDataCheckbox.checked;
-    map.materialOptions.discardNoData = state;
+    map.discardNoData = state;
     instance.notifyChange(map);
 };

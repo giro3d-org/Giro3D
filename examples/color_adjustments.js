@@ -134,7 +134,7 @@ function bindLayerSliders(id, layer) {
 bindLayerSliders('satellite', colorLayer);
 bindLayerSliders('vector', geoJsonLayer);
 
-const mapParams = map.materialOptions.colorimetry;
+const mapParams = map.colorimetry;
 bindSlider('map-brightness', v => {
     mapParams.brightness = v;
 });

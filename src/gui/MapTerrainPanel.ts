@@ -19,7 +19,7 @@ class MapTerrainPanel extends Panel {
         this.map = map;
         this.segments = map.segments;
 
-        this.addController<boolean>(this.map.materialOptions.terrain, 'enabled')
+        this.addController<boolean>(this.map.terrain, 'enabled')
             .name('Deformation')
             .onChange(() => this.notify(map));
 
@@ -33,15 +33,13 @@ class MapTerrainPanel extends Panel {
             .max(128)
             .onChange(v => this.updateSegments(v));
 
-        this.addController<boolean>(this.map.materialOptions, 'showColliderMeshes')
+        this.addController<boolean>(this.map, 'showColliderMeshes')
             .name('Show collider meshes')
             .onChange(() => this.notify());
 
-        this.addController<boolean>(this.map.materialOptions.terrain, 'enableCPUTerrain').name(
-            'CPU terrain',
-        );
+        this.addController<boolean>(this.map.terrain, 'enableCPUTerrain').name('CPU terrain');
 
-        this.addController<boolean>(this.map.materialOptions.terrain, 'stitching')
+        this.addController<boolean>(this.map.terrain, 'stitching')
             .name('Stitching')
             .onChange(() => this.notify(map));
 

@@ -177,6 +177,6 @@ bindSlider('vector-opacity', o => {
     vectorMap.opacity = o;
 });
 bindSlider('vector-bg-opacity', o => {
-    vectorMap.materialOptions.backgroundOpacity = o;
+    vectorMap.backgroundOpacity = o;
     instance.notifyChange(vectorMap);
 });

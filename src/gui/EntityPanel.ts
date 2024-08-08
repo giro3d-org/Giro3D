@@ -9,8 +9,9 @@ import Panel from './Panel';
 import Tiles3dInspector from './Tiles3dInspector';
 import PotreePointCloudInspector from './PotreePointCloudInspector';
 import ShapeInspector from './ShapeInspector';
+import { isEntity3D } from '../entities/Entity3D';
 
-const customInspectors: Record<string, typeof EntityInspector> = {
+const customInspectors: Record<string, typeof EntityInspector<Entity3D>> = {
     Map: MapInspector,
     Tiles3D: Tiles3dInspector,
     PotreePointCloud: PotreePointCloudInspector,
@@ -54,10 +55,10 @@ class EntityPanel extends Panel {
         this.instance.removeEventListener('entity-added', this._createInspectorsCb);
         this.instance.removeEventListener('entity-removed', this._createInspectorsCb);
         while (this.folders.length > 0) {
-            this.folders.pop().destroy();
+            this.folders.pop()?.destroy();
         }
         while (this.inspectors.length > 0) {
-            this.inspectors.pop().dispose();
+            this.inspectors.pop()?.dispose();
         }
     }
 
@@ -79,15 +80,16 @@ class EntityPanel extends Panel {
 
     createInspectors() {
         while (this.folders.length > 0) {
-            this.folders.pop().destroy();
+            this.folders.pop()?.destroy();
         }
         while (this.inspectors.length > 0) {
-            this.inspectors.pop().dispose();
+            this.inspectors.pop()?.dispose();
         }
 
         this.instance
-            .getObjects(x => (x as Entity3D).isEntity3D)
-            .forEach((entity: Entity3D) => {
+            .getObjects(obj => isEntity3D(obj))
+            .forEach(obj => {
+                const entity = obj as Entity3D;
                 const type = entity.type;
                 if (customInspectors[type]) {
                     const inspector = new customInspectors[type](this.gui, this.instance, entity);

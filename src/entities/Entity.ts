@@ -301,7 +301,7 @@ class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserData = Enti
      * @returns New elements to update
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    update(context: Context, element: unknown): unknown[] | undefined {
+    update(context: Context, element: unknown): unknown[] | undefined | null {
         return undefined;
     }
 

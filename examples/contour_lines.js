@@ -85,7 +85,7 @@ checkbox.oninput = function oninput() {
     } else {
         document.getElementById('options').setAttribute('disabled', 'disabled');
     }
-    map.materialOptions.contourLines.enabled = state;
+    map.contourLines.enabled = state;
     instance.notifyChange(map);
 };
 
@@ -106,14 +106,14 @@ function bindDropDown(name, fn) {
 }
 
 bindDropDown('mainInterval', v => {
-    map.materialOptions.contourLines.interval = v;
+    map.contourLines.interval = v;
 });
 bindDropDown('secondaryInterval', v => {
-    map.materialOptions.contourLines.secondaryInterval = v;
+    map.contourLines.secondaryInterval = v;
 });
 bindSlider('opacitySlider', v => {
-    map.materialOptions.contourLines.opacity = v;
+    map.contourLines.opacity = v;
 });
 bindSlider('thicknessSlider', v => {
-    map.materialOptions.contourLines.thickness = v;
+    map.contourLines.thickness = v;
 });

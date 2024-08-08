@@ -4,9 +4,7 @@ import type Instance from '../core/Instance';
 import type PotreePointCloud from '../entities/PotreePointCloud';
 import EntityInspector from './EntityInspector';
 
-class PotreePointCloudInspector extends EntityInspector {
-    /** The inspected tileset. */
-    entity: PotreePointCloud;
+class PotreePointCloudInspector extends EntityInspector<PotreePointCloud> {
     /** The SSE of the entity. */
     sse: number;
     bboxRoot: Group;
@@ -28,7 +26,6 @@ class PotreePointCloudInspector extends EntityInspector {
             opacity: true,
         });
 
-        this.entity = entity;
         this.sse = entity.sseThreshold;
 
         this.bboxRoot = new Group();

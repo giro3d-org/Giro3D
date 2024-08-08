@@ -19,7 +19,6 @@ import type {
     TextureDataType,
     WebGLProgramParametersWithUniforms,
     Texture,
-    ColorRepresentation,
 } from 'three';
 import RenderingState from './RenderingState';
 import TileVS from './shader/TileVS.glsl';
@@ -211,7 +210,7 @@ export interface MaterialOptions {
      * The tile outline color.
      * @defaultValue {@link DEFAULT_OUTLINE_COLOR}
      */
-    tileOutlineColor?: ColorRepresentation;
+    tileOutlineColor?: Color;
     /**
      * Force using texture atlases even when not required by WebGL limitations.
      */

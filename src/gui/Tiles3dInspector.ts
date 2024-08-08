@@ -6,9 +6,7 @@ import Helpers from '../helpers/Helpers';
 import EntityInspector from './EntityInspector';
 import LayerInspector from './LayerInspector';
 
-class Tiles3dInspector extends EntityInspector {
-    /** The inspected tileset. */
-    entity: Tiles3D;
+class Tiles3dInspector extends EntityInspector<Tiles3D> {
     /** Toggle the wireframe rendering of the entity. */
     wireframe: boolean;
     /** The SSE of the entity. */
@@ -32,7 +30,6 @@ class Tiles3dInspector extends EntityInspector {
             opacity: true,
         });
 
-        this.entity = entity;
         this.wireframe = entity.wireframe ?? false;
         this.sse = entity.sseThreshold;
 

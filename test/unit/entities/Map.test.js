@@ -97,10 +97,10 @@ describe('Map', () => {
                 hillshading: true,
             });
 
-            expect(m.materialOptions.hillshading.enabled).toEqual(true);
-            expect(m.materialOptions.hillshading.elevationLayersOnly).toEqual(false);
-            expect(m.materialOptions.hillshading.zenith).toEqual(DEFAULT_ZENITH);
-            expect(m.materialOptions.hillshading.azimuth).toEqual(DEFAULT_AZIMUTH);
+            expect(m.hillshading.enabled).toEqual(true);
+            expect(m.hillshading.elevationLayersOnly).toEqual(false);
+            expect(m.hillshading.zenith).toEqual(DEFAULT_ZENITH);
+            expect(m.hillshading.azimuth).toEqual(DEFAULT_AZIMUTH);
         });
 
         it('should honor hillshading parameters', () => {
@@ -114,10 +114,10 @@ describe('Map', () => {
                 },
             });
 
-            expect(m1.materialOptions.hillshading.enabled).toEqual(true);
-            expect(m1.materialOptions.hillshading.elevationLayersOnly).toEqual(true);
-            expect(m1.materialOptions.hillshading.zenith).toEqual(32);
-            expect(m1.materialOptions.hillshading.azimuth).toEqual(98);
+            expect(m1.hillshading.enabled).toEqual(true);
+            expect(m1.hillshading.elevationLayersOnly).toEqual(true);
+            expect(m1.hillshading.zenith).toEqual(32);
+            expect(m1.hillshading.azimuth).toEqual(98);
 
             // Check if the map assigns default values to parameters
             const m2 = new Map('foo', {
@@ -128,10 +128,10 @@ describe('Map', () => {
                 },
             });
 
-            expect(m2.materialOptions.hillshading.enabled).toEqual(true);
-            expect(m2.materialOptions.hillshading.elevationLayersOnly).toEqual(false);
-            expect(m2.materialOptions.hillshading.zenith).toEqual(DEFAULT_ZENITH);
-            expect(m2.materialOptions.hillshading.azimuth).toEqual(98);
+            expect(m2.hillshading.enabled).toEqual(true);
+            expect(m2.hillshading.elevationLayersOnly).toEqual(false);
+            expect(m2.hillshading.zenith).toEqual(DEFAULT_ZENITH);
+            expect(m2.hillshading.azimuth).toEqual(98);
         });
 
         it('should honor contourLines parameter when contourLines is a boolean', () => {
@@ -140,10 +140,10 @@ describe('Map', () => {
                 contourLines: true,
             });
 
-            expect(m.materialOptions.contourLines.enabled).toEqual(true);
-            expect(m.materialOptions.contourLines.interval).toEqual(100);
-            expect(m.materialOptions.contourLines.secondaryInterval).toEqual(20);
-            expect(m.materialOptions.contourLines.opacity).toEqual(1);
+            expect(m.contourLines.enabled).toEqual(true);
+            expect(m.contourLines.interval).toEqual(100);
+            expect(m.contourLines.secondaryInterval).toEqual(20);
+            expect(m.contourLines.opacity).toEqual(1);
         });
 
         it('should honor contour line parameters', () => {
@@ -158,11 +158,11 @@ describe('Map', () => {
                 },
             });
 
-            expect(m1.materialOptions.contourLines.enabled).toEqual(true);
-            expect(m1.materialOptions.contourLines.opacity).toEqual(0.8);
-            expect(m1.materialOptions.contourLines.interval).toEqual(250);
-            expect(m1.materialOptions.contourLines.secondaryInterval).toEqual(22);
-            expect(m1.materialOptions.contourLines.color).toEqual(new Color('red'));
+            expect(m1.contourLines.enabled).toEqual(true);
+            expect(m1.contourLines.opacity).toEqual(0.8);
+            expect(m1.contourLines.interval).toEqual(250);
+            expect(m1.contourLines.secondaryInterval).toEqual(22);
+            expect(m1.contourLines.color).toEqual(new Color('red'));
 
             // Check if the map assigns default values to parameters
             const m2 = new Map('foo', {
@@ -173,11 +173,11 @@ describe('Map', () => {
                 },
             });
 
-            expect(m2.materialOptions.contourLines.enabled).toEqual(true);
-            expect(m2.materialOptions.contourLines.opacity).toEqual(0.1);
-            expect(m2.materialOptions.contourLines.interval).toEqual(100);
-            expect(m2.materialOptions.contourLines.secondaryInterval).toEqual(20);
-            expect(m2.materialOptions.contourLines.color).toEqual(new Color('black'));
+            expect(m2.contourLines.enabled).toEqual(true);
+            expect(m2.contourLines.opacity).toEqual(0.1);
+            expect(m2.contourLines.interval).toEqual(100);
+            expect(m2.contourLines.secondaryInterval).toEqual(20);
+            expect(m2.contourLines.color).toEqual(new Color('black'));
         });
 
         it.each([true, false], 'should honor terrain parameters when terrain is a boolean', b => {
@@ -186,8 +186,8 @@ describe('Map', () => {
                 terrain: b,
             });
 
-            expect(m.materialOptions.terrain.enabled).toEqual(b);
-            expect(m.materialOptions.terrain.stitching).toEqual(true);
+            expect(m.terrain.enabled).toEqual(b);
+            expect(m.terrain.stitching).toEqual(true);
         });
 
         it('should honor terrain parameters', () => {
@@ -199,8 +199,8 @@ describe('Map', () => {
                 },
             });
 
-            expect(m1.materialOptions.terrain.enabled).toEqual(true);
-            expect(m1.materialOptions.terrain.stitching).toEqual(false);
+            expect(m1.terrain.enabled).toEqual(true);
+            expect(m1.terrain.stitching).toEqual(false);
 
             // Check if the map assigns default values to parameters
             const m2 = new Map('foo', {
@@ -210,11 +210,11 @@ describe('Map', () => {
                 },
             });
 
-            expect(m2.materialOptions.terrain.enabled).toEqual(true);
-            expect(m2.materialOptions.terrain.stitching).toEqual(true);
+            expect(m2.terrain.enabled).toEqual(true);
+            expect(m2.terrain.stitching).toEqual(true);
         });
 
-        it.each([true, false])('should assign the correct materialOptions', b => {
+        it.each([true, false])('should assign the correct', b => {
             const opts = {
                 extent,
                 doubleSided: b,
@@ -223,10 +223,10 @@ describe('Map', () => {
             };
             const m = new Map('foo', opts);
 
-            expect(m.materialOptions).toBeDefined();
-            expect(m.materialOptions.discardNoData).toEqual(opts.discardNoData);
-            expect(m.materialOptions.discardNoData).toEqual(opts.doubleSided);
-            expect(m.materialOptions.backgroundColor).toEqual(new Color('red'));
+            expect(m).toBeDefined();
+            expect(m.discardNoData).toEqual(opts.discardNoData);
+            expect(m.discardNoData).toEqual(opts.doubleSided);
+            expect(m.backgroundColor).toEqual(new Color('red'));
         });
 
         it('should assign passed values', () => {

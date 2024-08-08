@@ -116,9 +116,9 @@ interface EntityInspectorOptions {
  * Base class for entity inspectors. To implement a custom inspector
  * for an entity type, you can inherit this class.
  */
-class EntityInspector extends Panel {
+class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
     /** The inspected entity. */
-    entity: Entity3D;
+    entity: T;
     /** The root object of the entity's hierarchy. */
     rootObject: Object3D;
     /** Toggle the visibility of the entity. */
@@ -140,7 +140,7 @@ class EntityInspector extends Panel {
     constructor(
         parentGui: GUI,
         instance: Instance,
-        entity: Entity3D,
+        entity: T,
         options: EntityInspectorOptions = {},
     ) {
         super(parentGui, instance, options.title ?? entity.type);

@@ -5,9 +5,7 @@ import EntityInspector from './EntityInspector';
 import type AxisGrid from '../entities/AxisGrid';
 import { TickOrigin } from '../entities/AxisGrid';
 
-class AxisGridInspector extends EntityInspector {
-    /** The inspected grid. */
-    grid: AxisGrid;
+class AxisGridInspector extends EntityInspector<AxisGrid> {
     absoluteTicks: boolean;
 
     /**
@@ -24,66 +22,64 @@ class AxisGridInspector extends EntityInspector {
             opacity: true,
         });
 
-        this.grid = grid;
+        this.absoluteTicks = this.entity.origin === TickOrigin.Absolute;
 
-        this.absoluteTicks = this.grid.origin === TickOrigin.Absolute;
-
-        this.addColorController(this.grid, 'color')
+        this.addColorController(this.entity, 'color')
             .name('Grid color')
             .onChange(v => this.updateGridColor(v));
-        this.addController<number>(this.grid.style, 'fontSize', 1, 20, 1)
+        this.addController<number>(this.entity.style, 'fontSize', 1, 20, 1)
             .name('Font size')
             .onChange(() => this._rebuild());
-        this.addController<boolean>(this.grid, 'showHelpers')
+        this.addController<boolean>(this.entity, 'showHelpers')
             .name('Show debug helpers')
-            .onChange(() => this.notify(this.grid));
-        this.addController<boolean>(this.grid, 'showLabels')
+            .onChange(() => this.notify(this.entity));
+        this.addController<boolean>(this.entity, 'showLabels')
             .name('Show labels')
-            .onChange(() => this.notify(this.grid));
+            .onChange(() => this.notify(this.entity));
         this.addController<boolean>(this, 'absoluteTicks')
             .name('Absolute ticks')
             .onChange(v => this.updateTickOrigin(v));
-        this.addController<boolean>(this.grid, 'showFloorGrid')
+        this.addController<boolean>(this.entity, 'showFloorGrid')
             .name('Show floor grid')
-            .onChange(() => this.notify(this.grid));
-        this.addController<boolean>(this.grid, 'showCeilingGrid')
+            .onChange(() => this.notify(this.entity));
+        this.addController<boolean>(this.entity, 'showCeilingGrid')
             .name('Show ceiling grid')
-            .onChange(() => this.notify(this.grid));
-        this.addController<boolean>(this.grid, 'showSideGrids')
+            .onChange(() => this.notify(this.entity));
+        this.addController<boolean>(this.entity, 'showSideGrids')
             .name('Show side grids')
-            .onChange(() => this.notify(this.grid));
+            .onChange(() => this.notify(this.entity));
 
-        this.addController<number>(this.grid.volume, 'floor')
+        this.addController<number>(this.entity.volume, 'floor')
             .name('Floor elevation')
             .onChange(() => this._rebuild());
-        this.addController<number>(this.grid.volume, 'ceiling')
+        this.addController<number>(this.entity.volume, 'ceiling')
             .name('Ceiling elevation')
             .onChange(() => this._rebuild());
-        this.addController<number>(this.grid.ticks, 'x')
+        this.addController<number>(this.entity.ticks, 'x')
             .name('X ticks')
             .onChange(() => this._rebuild());
-        this.addController<number>(this.grid.ticks, 'y')
+        this.addController<number>(this.entity.ticks, 'y')
             .name('Y ticks')
             .onChange(() => this._rebuild());
-        this.addController<number>(this.grid.ticks, 'z')
+        this.addController<number>(this.entity.ticks, 'z')
             .name('Z ticks')
             .onChange(() => this._rebuild());
     }
 
     _rebuild() {
-        this.grid.refresh();
-        this.notify(this.grid);
+        this.entity.refresh();
+        this.notify(this.entity);
     }
 
     updateTickOrigin(v: boolean) {
-        this.grid.origin = v ? TickOrigin.Absolute : TickOrigin.Relative;
-        this.grid.refresh();
-        this.notify(this.grid);
+        this.entity.origin = v ? TickOrigin.Absolute : TickOrigin.Relative;
+        this.entity.refresh();
+        this.notify(this.entity);
     }
 
     updateGridColor(v: Color) {
-        this.grid.color = v;
-        this.notify(this.grid);
+        this.entity.color = v;
+        this.notify(this.entity);
     }
 }
 
