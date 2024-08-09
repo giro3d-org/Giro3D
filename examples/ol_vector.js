@@ -13,6 +13,7 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { Color } from 'three';
 
 // Defines geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent(
@@ -22,6 +23,8 @@ const extent = new Extent(
     -20037508.342789244,
     20037508.342789244,
 );
+
+let time = 0;
 
 // `viewerDiv` will contain Giro3D' rendering area (the canvas element)
 const viewerDiv = document.getElementById('viewerDiv');
@@ -50,8 +53,12 @@ const map = new Map('planar', { extent, backgroundColor: '#135D66' });
 instance.add(map);
 
 const ecoRegionLayerStyle = feature => {
-    const color = feature.get('COLOR') || '#eeeeee';
+    const brightness = Math.sin((time / 1000) * 6) * 0.2;
+    const featureColor = new Color(feature.get('COLOR') || '#eeeeee');
     const highlight = feature.get('highlight');
+
+    const color = highlight ? new Color(featureColor).offsetHSL(0, 0, brightness) : featureColor;
+
     const stroke = highlight
         ? new Stroke({
               color: 'white',
@@ -62,7 +69,7 @@ const ecoRegionLayerStyle = feature => {
     return new Style({
         zIndex: highlight ? 1 : 0,
         fill: new Fill({
-            color,
+            color: `#${color.getHexString()}`,
         }),
         stroke,
     });
@@ -233,6 +240,16 @@ function pickFeatures(mouseEvent) {
         resetPickedFeatures();
     }
 }
+
+function update(t) {
+    time = t;
+    if (previousFeature != null) {
+        ecoRegionLayer.source.updateFeature(previousFeature);
+    }
+    requestAnimationFrame(update);
+}
+
+update(0);
 
 instance.domElement.addEventListener('mousemove', pickFeatures);
 Inspector.attach(document.getElementById('panelDiv'), instance);
