@@ -919,7 +919,12 @@ abstract class Layer<
         const targets = this.getSortedTargets();
         for (const t of targets) {
             const otherExtent = t.geometryExtent;
-            if (t !== target && extent.isInside(otherExtent) && t.state === TargetState.Complete) {
+            if (
+                t !== target &&
+                extent.isInside(otherExtent) &&
+                t.state === TargetState.Complete &&
+                t.renderTarget != null
+            ) {
                 return t;
             }
         }
