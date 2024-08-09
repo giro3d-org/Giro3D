@@ -89,6 +89,14 @@ class MainLoop {
     private _updateLoopRestarted: boolean;
     private readonly _changeSources: Set<unknown>;
     private readonly _clock = new Clock();
+    private _frame = 0;
+
+    /**
+     * The number of frames processed.
+     */
+    get frameCount() {
+        return this._frame;
+    }
 
     /**
      * Toggles automatic camera clipping plane computation.
@@ -152,6 +160,8 @@ class MainLoop {
             instance.view.resetPlanes();
         }
 
+        const frame = this._frame;
+
         // We can't just use camera.updateProjectionMatrix() because part of
         // the update process use camera._viewMatrix, and this matrix depends
         // on near/far values.
@@ -162,6 +172,7 @@ class MainLoop {
             if (entity.shouldCheckForUpdate()) {
                 instance.dispatchEvent({
                     type: 'before-entity-update',
+                    frame,
                     entity,
                     dt,
                     updateLoopRestarted: this._updateLoopRestarted,
@@ -190,6 +201,7 @@ class MainLoop {
 
                 instance.dispatchEvent({
                     type: 'after-entity-update',
+                    frame,
                     entity,
                     dt,
                     updateLoopRestarted: this._updateLoopRestarted,
@@ -223,10 +235,13 @@ class MainLoop {
     }
 
     private step(instance: Instance) {
-        const dt = this._clock.getDelta();
+        const dt = this._clock.getDelta() * 1000;
+
+        const frame = this._frame++;
 
         instance.dispatchEvent({
             type: 'update-start',
+            frame,
             dt,
             updateLoopRestarted: this._updateLoopRestarted,
         });
@@ -242,6 +257,7 @@ class MainLoop {
 
         instance.dispatchEvent({
             type: 'before-camera-update',
+            frame,
             camera: instance.view,
             dt,
             updateLoopRestarted: this._updateLoopRestarted,
@@ -249,6 +265,7 @@ class MainLoop {
         instance.execCameraUpdate();
         instance.dispatchEvent({
             type: 'after-camera-update',
+            frame,
             camera: instance.view,
             dt,
             updateLoopRestarted: this._updateLoopRestarted,
@@ -275,12 +292,14 @@ class MainLoop {
         if (willRedraw) {
             instance.dispatchEvent({
                 type: 'before-render',
+                frame,
                 dt,
                 updateLoopRestarted: this._updateLoopRestarted,
             });
             instance.render();
             instance.dispatchEvent({
                 type: 'after-render',
+                frame,
                 dt,
                 updateLoopRestarted: this._updateLoopRestarted,
             });
@@ -293,6 +312,7 @@ class MainLoop {
 
         instance.dispatchEvent({
             type: 'update-end',
+            frame,
             dt,
             updateLoopRestarted: this._updateLoopRestarted,
         });

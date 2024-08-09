@@ -13,7 +13,6 @@ class FrameDuration extends ChartPanel {
     chart: Chart;
     updateStart: number;
     renderStart: number;
-    frame: number;
 
     constructor(parentGui: GUI, instance: Instance) {
         super(parentGui, instance, 'Frame duration (ms)');
@@ -86,18 +85,16 @@ class FrameDuration extends ChartPanel {
 
         this.updateStart = -1;
         this.renderStart = -1;
-        this.frame = 0;
 
         instance.addEventListener('update-start', () => {
-            this.frame++;
             this.updateStart = performance.now();
         });
 
-        instance.addEventListener('update-end', () => {
+        instance.addEventListener('update-end', e => {
             const now = performance.now();
             pushTrim(
                 totalFrameLength.data,
-                { x: this.frame, y: now - this.updateStart },
+                { x: e.frame, y: now - this.updateStart },
                 MAX_DATA_POINTS,
             );
 
@@ -108,13 +105,9 @@ class FrameDuration extends ChartPanel {
             this.renderStart = performance.now();
         });
 
-        instance.addEventListener('after-render', () => {
+        instance.addEventListener('after-render', e => {
             const now = performance.now();
-            pushTrim(
-                renderTime.data,
-                { x: this.frame, y: now - this.renderStart },
-                MAX_DATA_POINTS,
-            );
+            pushTrim(renderTime.data, { x: e.frame, y: now - this.renderStart }, MAX_DATA_POINTS);
         });
     }
 
