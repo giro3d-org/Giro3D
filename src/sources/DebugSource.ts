@@ -55,7 +55,7 @@ class DebugSource extends ImageSource {
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
-        const context = canvas.getContext('2d');
+        const context = canvas.getContext('2d', { willReadFrequently: true });
         const prefix = id.substring(0, 10);
 
         context.fillStyle = `#${this._color.getHexString()}`;
@@ -90,8 +90,8 @@ class DebugSource extends ImageSource {
 
         const requests = [];
 
-        const w = width / subdivs;
-        const h = height / subdivs;
+        const w = Math.round(width / subdivs);
+        const h = Math.round(height / subdivs);
 
         for (const ex of extents) {
             const imageId = `${id}-${MathUtils.generateUUID()}`;
