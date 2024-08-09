@@ -30,6 +30,7 @@ class InstanceInspector extends Panel {
 
         this.addController<string>(this, 'cpuMemoryUsage').name('Memory usage (CPU)');
         this.addController<string>(this, 'gpuMemoryUsage').name('Memory usage (GPU)');
+        this.addController<number>(this.instance.mainLoop, 'frameCount').name('Frames');
 
         this.clearColor = this.instance.renderer.getClearColor(new Color()).convertLinearToSRGB();
         this.addColorController(this, 'clearColor')

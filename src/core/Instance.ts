@@ -44,6 +44,8 @@ const vectors = {
 
 /** Frame event payload */
 export type FrameEventPayload = {
+    /** The frame number. */
+    frame: number;
     /** Time elapsed since previous update loop, in milliseconds */
     dt: number;
     /** `true` if the update loop restarted */
