@@ -530,7 +530,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         );
     }
 
-    private _updateColorLayerUniforms() {
+    private updateColorLayerUniforms() {
         const useAtlas = this.defines.USE_ATLAS_TEXTURE === 1;
 
         this.sortLayersIfNecessary();
@@ -631,7 +631,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
     }
 
     onBeforeRender() {
-        this._updateOpacityParameters(this.opacity);
+        this.updateOpacityParameters(this.opacity);
 
         if (this.defines.USE_ATLAS_TEXTURE && this._needsAtlasRepaint) {
             this.repaintAtlas();
@@ -640,7 +640,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
 
         this.updateColorWrite();
 
-        this._updateColorLayerUniforms();
+        this.updateColorLayerUniforms();
     }
 
     /**
@@ -721,6 +721,8 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         }
 
         this._needsAtlasRepaint = true;
+
+        this.reorderLayers();
     }
 
     pushElevationLayer(layer: ElevationLayer) {
@@ -794,6 +796,8 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         this.updateColorLayerCount();
 
         this.updateColorMaps();
+
+        this.reorderLayers();
 
         this.needsUpdate = true;
     }
@@ -1104,13 +1108,13 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         }
 
         this.uniforms.renderingState.value = state;
-        this._updateOpacityParameters(this.opacity);
-        this._updateBlendingMode();
+        this.updateOpacityParameters(this.opacity);
+        this.updateBlendingMode();
 
         this.needsUpdate = true;
     }
 
-    _updateBlendingMode() {
+    private updateBlendingMode() {
         const state = this.uniforms.renderingState.value;
         if (state === RenderingState.FINAL) {
             this.transparent = this.opacity < 1 || this._options.backgroundOpacity < 1;
@@ -1137,9 +1141,9 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         return this._colorLayers.indexOf(layer);
     }
 
-    private _updateOpacityParameters(opacity: number) {
+    private updateOpacityParameters(opacity: number) {
         this.uniforms.opacity.value = opacity;
-        this._updateBlendingMode();
+        this.updateBlendingMode();
     }
 
     setLayerOpacity(layer: ColorLayer, opacity: number) {
