@@ -23,7 +23,7 @@ import { GlobalCache } from './Cache';
 import { isDisposable } from './Disposable';
 import MainLoop from './MainLoop';
 import {
-    createEmptyReport,
+    aggregateMemoryUsage,
     getObject3DMemoryUsage,
     type GetMemoryUsageContext,
     type MemoryUsageReport,
@@ -932,24 +932,24 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
     getMemoryUsage(): MemoryUsageReport {
         const context: GetMemoryUsageContext = {
             renderer: this.renderer,
+            objects: new globalThis.Map(),
         };
-        const result = createEmptyReport();
 
         for (const entity of this._entities) {
             if (isEntity3D(entity)) {
-                entity.getMemoryUsage(context, result);
+                entity.getMemoryUsage(context);
             }
         }
 
         this.threeObjects.traverse(obj => {
-            getObject3DMemoryUsage(obj, context, result);
+            getObject3DMemoryUsage(context, obj);
         });
 
-        GlobalRenderTargetPool.getMemoryUsage(context, result);
+        GlobalRenderTargetPool.getMemoryUsage(context);
 
-        GlobalCache.getMemoryUsage(context, result);
+        GlobalCache.getMemoryUsage(context);
 
-        return result;
+        return aggregateMemoryUsage(context);
     }
 
     /**

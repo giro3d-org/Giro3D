@@ -42,11 +42,7 @@ import {
     type WebGLRenderer,
 } from 'three';
 import Interpretation, { Mode } from '../core/layer/Interpretation';
-import {
-    createEmptyReport,
-    type GetMemoryUsageContext,
-    type MemoryUsageReport,
-} from '../core/MemoryUsage';
+import { type GetMemoryUsageContext, type MemoryUsageReport } from '../core/MemoryUsage';
 import Rect from '../core/Rect';
 import Capabilities from '../core/system/Capabilities';
 import WebGLComposer from '../renderer/composition/WebGLComposer';
@@ -738,20 +734,19 @@ function isEmptyTexture(texture: Texture) {
     }
 }
 
-function getTextureMemoryUsage(texture: Texture, target?: MemoryUsageReport): MemoryUsageReport {
-    const result = target ?? createEmptyReport();
-
-    if (!texture || isEmptyTexture(texture)) {
-        return result;
+function getTextureMemoryUsage(context: GetMemoryUsageContext, texture: Texture) {
+    if (!texture) {
+        return;
     }
 
-    if (texture.userData?.memoryUsage) {
+    if (isEmptyTexture(texture)) {
+        context.objects.set(texture.id, { gpuMemory: 0, cpuMemory: 0 });
+    } else if (texture.userData?.memoryUsage) {
         const existing: MemoryUsageReport = texture.userData.memoryUsage;
-        result.cpuMemory += existing.cpuMemory;
-        result.gpuMemory += existing.gpuMemory;
+        context.objects.set(texture.id, existing);
     } else if (isCanvasTexture(texture)) {
         const { width, height } = texture.source.data;
-        result.gpuMemory += width * height * 4;
+        context.objects.set(texture.id, { gpuMemory: width * height * 4, cpuMemory: 0 });
     } else {
         const { width, height } = texture.image;
 
@@ -760,30 +755,19 @@ function getTextureMemoryUsage(texture: Texture, target?: MemoryUsageReport): Me
 
         if (texture.isRenderTargetTexture) {
             // RenderTargets do not exist in CPU memory.
-            result.gpuMemory += bytes;
+            context.objects.set(texture.id, { gpuMemory: bytes, cpuMemory: 0 });
         } else {
-            result.cpuMemory += bytes;
-            result.gpuMemory += bytes;
+            context.objects.set(texture.id, { gpuMemory: bytes, cpuMemory: bytes });
         }
     }
-
-    return result;
 }
 
-function getDepthBufferMemoryUsage(
-    renderTarget: RenderTarget,
-    renderer: WebGLRenderer,
-    target?: MemoryUsageReport,
-): MemoryUsageReport {
-    const gl = renderer.getContext();
+function getDepthBufferMemoryUsage(context: GetMemoryUsageContext, renderTarget: RenderTarget) {
+    const gl = context.renderer.getContext();
     const bpp = gl.getParameter(gl.DEPTH_BITS);
     const bytes = renderTarget.width * renderTarget.height * (bpp / 8);
 
-    const result = target ?? createEmptyReport();
-
-    result.gpuMemory += bytes;
-
-    return result;
+    context.objects.set(renderTarget.texture.id, { gpuMemory: bytes, cpuMemory: 0 });
 }
 
 /**
@@ -852,27 +836,19 @@ function readRGRenderTargetIntoRGBAU8Buffer(options: {
     return buffer;
 }
 
-function getMemoryUsage(
-    texture: Texture | RenderTarget,
-    context: GetMemoryUsageContext,
-    target?: MemoryUsageReport,
-): MemoryUsageReport {
-    const result = target ?? createEmptyReport();
-
+function getMemoryUsage(context: GetMemoryUsageContext, texture: Texture | RenderTarget) {
     if (isTexture(texture)) {
-        return getTextureMemoryUsage(texture, result);
+        getTextureMemoryUsage(context, texture);
     } else if (isRenderTarget(texture)) {
         if (texture.depthBuffer) {
             if (texture.depthTexture) {
-                getTextureMemoryUsage(texture.depthTexture, result);
+                getTextureMemoryUsage(context, texture.depthTexture);
             } else {
-                getDepthBufferMemoryUsage(texture, context.renderer, result);
+                getDepthBufferMemoryUsage(context, texture);
             }
         }
-        getTextureMemoryUsage(texture.texture, result);
+        getTextureMemoryUsage(context, texture.texture);
     }
-
-    return result;
 }
 
 function getImageData(

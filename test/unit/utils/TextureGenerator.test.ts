@@ -1,10 +1,13 @@
 import Interpretation from 'src/core/layer/Interpretation';
+import type { GetMemoryUsageContext } from 'src/core/MemoryUsage';
+import { aggregateMemoryUsage } from 'src/core/MemoryUsage';
 import TextureGenerator, {
     DEFAULT_NODATA,
     OPAQUE_BYTE,
     OPAQUE_FLOAT,
     TRANSPARENT,
 } from 'src/utils/TextureGenerator';
+import type { WebGLRenderer } from 'three';
 import {
     CanvasTexture,
     Color,
@@ -423,85 +426,91 @@ describe('TextureGenerator', () => {
         });
     });
     describe('getTextureMemoryUsage', () => {
+        let context: GetMemoryUsageContext;
+
+        beforeEach(() => {
+            context = {
+                objects: new Map(),
+                renderer: {} as WebGLRenderer,
+            };
+        });
+
         it('should return zero for null textures', () => {
-            const memUsage = TextureGenerator.getMemoryUsage(null, null);
+            TextureGenerator.getMemoryUsage(context, null);
+
+            const memUsage = aggregateMemoryUsage(context);
 
             expect(memUsage.cpuMemory).toEqual(0);
             expect(memUsage.gpuMemory).toEqual(0);
         });
         it('should return zero for empty textures', () => {
             const empty = new Texture();
-            const memUsage = TextureGenerator.getMemoryUsage(empty, null);
+            TextureGenerator.getMemoryUsage(context, empty);
 
+            const memUsage = aggregateMemoryUsage(context);
             expect(memUsage.cpuMemory).toEqual(0);
             expect(memUsage.gpuMemory).toEqual(0);
         });
         it('should return width * height * 4 bytes of GPU memory usage for canvas textures', () => {
             const empty = new CanvasTexture({ width: 34, height: 111 } as HTMLCanvasElement);
-            const memUsage = TextureGenerator.getMemoryUsage(empty, null);
+            TextureGenerator.getMemoryUsage(context, empty);
 
+            const memUsage = aggregateMemoryUsage(context);
             expect(memUsage.cpuMemory).toEqual(0);
             expect(memUsage.gpuMemory).toEqual(34 * 111 * 4);
         });
         it('[FloatType, RGFormat] should return correct GPU memory usage for render target textures', () => {
-            const memUsage = TextureGenerator.getMemoryUsage(
-                {
-                    isTexture: true,
-                    isRenderTargetTexture: true,
-                    image: {
-                        width: 102,
-                        height: 456,
-                    },
-                    type: FloatType,
-                    format: RGFormat,
-                } as Texture,
-                null,
-            );
+            TextureGenerator.getMemoryUsage(context, {
+                isTexture: true,
+                isRenderTargetTexture: true,
+                image: {
+                    width: 102,
+                    height: 456,
+                },
+                type: FloatType,
+                format: RGFormat,
+            } as Texture);
 
             const channelCount = 2; // RG
             const bytesPerChannel = 4; // Float
             const bytePerPixel = bytesPerChannel * channelCount;
 
+            const memUsage = aggregateMemoryUsage(context);
             expect(memUsage.cpuMemory).toEqual(0);
             expect(memUsage.gpuMemory).toEqual(102 * 456 * bytePerPixel);
         });
         it('[UnsignedByteType, RGBAFormat] should return correct GPU memory usage for render target textures', () => {
-            const memUsage = TextureGenerator.getMemoryUsage(
-                {
-                    isTexture: true,
-                    isRenderTargetTexture: true,
-                    image: {
-                        width: 102,
-                        height: 456,
-                    },
-                    type: UnsignedByteType,
-                    format: RGBAFormat,
-                } as Texture,
-                null,
-            );
+            TextureGenerator.getMemoryUsage(context, {
+                isTexture: true,
+                isRenderTargetTexture: true,
+                image: {
+                    width: 102,
+                    height: 456,
+                },
+                type: UnsignedByteType,
+                format: RGBAFormat,
+            } as Texture);
 
             const channelCount = 4; // RGBA
             const bytesPerChannel = 1; // UnsignedByte
             const bytePerPixel = bytesPerChannel * channelCount;
 
+            const memUsage = aggregateMemoryUsage(context);
             expect(memUsage.cpuMemory).toEqual(0);
             expect(memUsage.gpuMemory).toEqual(102 * 456 * bytePerPixel);
         });
         it('[UnsignedByteType, RGFormat] should return correct GPU and CPU memory usage for data textures', () => {
-            const memUsage = TextureGenerator.getMemoryUsage(
-                {
-                    isTexture: true,
-                    isDataTexture: true,
-                    image: {
-                        data: new Uint8ClampedArray(10),
-                        width: 102,
-                        height: 456,
-                    },
-                    type: UnsignedByteType,
-                    format: RGBAFormat,
-                } as unknown as DataTexture,
-                null,
-            );
+            TextureGenerator.getMemoryUsage(context, {
+                isTexture: true,
+                isDataTexture: true,
+                image: {
+                    data: new Uint8ClampedArray(10),
+                    width: 102,
+                    height: 456,
+                },
+                type: UnsignedByteType,
+                format: RGBAFormat,
+            } as unknown as DataTexture);
 
             const channelCount = 4; // RGBA
             const bytesPerChannel = 1; // UnsignedByte
@@ -509,6 +518,7 @@ describe('TextureGenerator', () => {
 
             const expected = 102 * 456 * bytePerPixel;
 
+            const memUsage = aggregateMemoryUsage(context);
             expect(memUsage.cpuMemory).toEqual(expected);
             expect(memUsage.gpuMemory).toEqual(expected);
         });

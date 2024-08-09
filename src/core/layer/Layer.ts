@@ -26,11 +26,7 @@ import type ElevationRange from '../ElevationRange';
 import type Extent from '../geographic/Extent';
 import type Instance from '../Instance';
 import type MemoryUsage from '../MemoryUsage';
-import {
-    createEmptyReport,
-    type GetMemoryUsageContext,
-    type MemoryUsageReport,
-} from '../MemoryUsage';
+import { type GetMemoryUsageContext } from '../MemoryUsage';
 import type OffsetScale from '../OffsetScale';
 import OperationCounter from '../OperationCounter';
 import type Progress from '../Progress.js';
@@ -131,6 +127,7 @@ function shouldCancel(node: LayerNode): boolean {
 }
 
 export class Target implements MemoryUsage {
+    readonly isMemoryUsage = true as const;
     node: LayerNode;
     pitch: OffsetScale;
     extent: Extent;
@@ -149,11 +146,10 @@ export class Target implements MemoryUsage {
         return this.node.disposed || this._disposed;
     }
 
-    getMemoryUsage(context: GetMemoryUsageContext, target?: MemoryUsageReport): MemoryUsageReport {
+    getMemoryUsage(context: GetMemoryUsageContext) {
         if (this.renderTarget) {
-            return TextureGenerator.getMemoryUsage(this.renderTarget, context, target);
+            return TextureGenerator.getMemoryUsage(context, this.renderTarget);
         }
-        return target ?? createEmptyReport();
     }
 
     constructor(options: {
@@ -362,6 +358,8 @@ abstract class Layer<
     extends EventDispatcher<TEvents & LayerEvents>
     implements Progress, MemoryUsage, RenderingContextHandler
 {
+    readonly isMemoryUsage = true as const;
+
     /**
      * Optional name of this layer.
      */
@@ -421,18 +419,14 @@ abstract class Layer<
         return this._ready;
     }
 
-    getMemoryUsage(context: GetMemoryUsageContext, target?: MemoryUsageReport): MemoryUsageReport {
-        const result = target ?? createEmptyReport();
-
-        this._targets.forEach(target => target.getMemoryUsage(context, result));
+    getMemoryUsage(context: GetMemoryUsageContext) {
+        this._targets.forEach(target => target.getMemoryUsage(context));
 
         if (this.composer) {
-            this.composer.getMemoryUsage(context, result);
+            this.composer.getMemoryUsage(context);
         }
 
-        this.source.getMemoryUsage(context, result);
-
-        return result;
+        this.source.getMemoryUsage(context);
     }
 
     /**
@@ -1311,7 +1305,6 @@ abstract class Layer<
         for (const target of this._targets.values()) {
             target.abort();
             this.unregisterNode(target.node);
-            target.renderTarget?.dispose();
         }
     }
 }

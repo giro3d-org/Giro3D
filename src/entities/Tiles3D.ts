@@ -1,25 +1,11 @@
-import {
-    Group,
-    MathUtils,
-    Matrix4,
-    Vector2,
-    Vector3,
-    type BufferGeometry,
-    type Material,
-    type Object3D,
-} from 'three';
+import { Group, MathUtils, Matrix4, Vector2, Vector3, type Material, type Object3D } from 'three';
 import { GlobalCache } from '../core/Cache';
 import type Context from '../core/Context';
 import type Extent from '../core/geographic/Extent';
 import type { ColorLayer, Layer, LayerEvents } from '../core/layer';
 import type HasLayers from '../core/layer/HasLayers';
 import { type ObjectToUpdate } from '../core/MainLoop';
-import {
-    createEmptyReport,
-    getGeometryMemoryUsage,
-    type GetMemoryUsageContext,
-    type MemoryUsageReport,
-} from '../core/MemoryUsage';
+import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../core/MemoryUsage';
 import OperationCounter from '../core/OperationCounter';
 import type Pickable from '../core/picking/Pickable';
 import pickObjectsAt from '../core/picking/PickObjectsAt';
@@ -32,6 +18,7 @@ import { DefaultQueue } from '../core/RequestQueue';
 import PointCloudMaterial from '../renderer/PointCloudMaterial';
 import type Tiles3DSource from '../sources/Tiles3DSource';
 import Fetcher from '../utils/Fetcher';
+import { isBufferGeometry } from '../utils/predicates';
 import utf8Decoder from '../utils/Utf8Decoder';
 import $3dTilesIndex, { type ProcessedTile } from './3dtiles/3dTilesIndex';
 import $3dTilesLoader from './3dtiles/3dTilesLoader';
@@ -121,6 +108,7 @@ class Tiles3D<
 {
     readonly type = 'Tiles3D' as const;
     readonly hasLayers = true as const;
+    readonly isMemoryUsage = true as const;
     /** Read-only flag to check if a given object is of type Tiles3D. */
     readonly isTiles3D = true as const;
     private readonly _url: string;
@@ -197,22 +185,18 @@ class Tiles3D<
         this._instance.notifyChange(this);
     }
 
-    getMemoryUsage(context: GetMemoryUsageContext, target?: MemoryUsageReport) {
-        const result = target ?? createEmptyReport();
-
+    getMemoryUsage(context: GetMemoryUsageContext) {
         this.traverse(obj => {
-            if ('geometry' in obj) {
-                getGeometryMemoryUsage(obj.geometry as BufferGeometry, result);
+            if ('geometry' in obj && isBufferGeometry(obj.geometry)) {
+                getGeometryMemoryUsage(context, obj.geometry);
             }
         });
 
         if (this.layerCount > 0) {
             this.forEachLayer(layer => {
-                layer.getMemoryUsage(context, result);
+                layer.getMemoryUsage(context);
             });
         }
-
-        return result;
     }
 
     async attach(colorLayer: ColorLayer) {

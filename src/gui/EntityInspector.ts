@@ -208,7 +208,12 @@ class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
     }
 
     updateValues() {
-        const memUsage = this.entity.getMemoryUsage({ renderer: this.instance.renderer });
+        const ctx: MemoryUsage.GetMemoryUsageContext = {
+            renderer: this.instance.renderer,
+            objects: new Map(),
+        };
+        this.entity.getMemoryUsage(ctx);
+        const memUsage = MemoryUsage.aggregateMemoryUsage(ctx);
         this.cpuMemoryUsage = MemoryUsage.format(memUsage.cpuMemory);
         this.gpuMemoryUsage = MemoryUsage.format(memUsage.gpuMemory);
         this.state = this.entity.loading

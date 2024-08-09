@@ -19,11 +19,7 @@ import ProjUtils from '../../utils/ProjUtils';
 import TextureGenerator from '../../utils/TextureGenerator';
 import type Extent from '../geographic/Extent';
 import type MemoryUsage from '../MemoryUsage';
-import {
-    createEmptyReport,
-    type GetMemoryUsageContext,
-    type MemoryUsageReport,
-} from '../MemoryUsage';
+import { type GetMemoryUsageContext, type MemoryUsageReport } from '../MemoryUsage';
 import Rect from '../Rect';
 import Interpretation from './Interpretation';
 
@@ -85,7 +81,10 @@ function processMinMax(
     }
 }
 
+const tmpMemoryUsageMap = new Map<string | number, MemoryUsageReport>();
+
 class Image implements MemoryUsage {
+    readonly isMemoryUsage = true as const;
     readonly id: string;
     readonly mesh: Mesh;
     readonly extent: Extent;
@@ -97,8 +96,8 @@ class Image implements MemoryUsage {
     disposed: boolean;
     readonly owners: Set<number>;
 
-    getMemoryUsage(context: GetMemoryUsageContext, target?: MemoryUsageReport) {
-        return TextureGenerator.getMemoryUsage(this.texture, context, target);
+    getMemoryUsage(context: GetMemoryUsageContext) {
+        return TextureGenerator.getMemoryUsage(context, this.texture);
     }
 
     constructor(options: {
@@ -152,6 +151,7 @@ class Image implements MemoryUsage {
 }
 
 class LayerComposer implements MemoryUsage {
+    readonly isMemoryUsage = true as const;
     readonly computeMinMax: boolean;
     readonly extent: Extent;
     readonly dimensions: Vector2;
@@ -172,12 +172,8 @@ class LayerComposer implements MemoryUsage {
 
     private _needsCleanup: boolean;
 
-    getMemoryUsage(context: GetMemoryUsageContext, target?: MemoryUsageReport): MemoryUsageReport {
-        const result = target ?? createEmptyReport();
-
-        this.images.forEach(img => img.getMemoryUsage(context, target));
-
-        return result;
+    getMemoryUsage(context: GetMemoryUsageContext) {
+        this.images.forEach(img => img.getMemoryUsage(context));
     }
 
     /**
@@ -479,9 +475,16 @@ class LayerComposer implements MemoryUsage {
             MemoryTracker.track(actualTexture, `LayerComposer - texture ${id}`);
         }
 
-        const memoryUsage: MemoryUsageReport = TextureGenerator.getMemoryUsage(texture, {
-            renderer: this.webGLRenderer,
-        });
+        tmpMemoryUsageMap.clear();
+        TextureGenerator.getMemoryUsage(
+            {
+                renderer: this.webGLRenderer,
+                objects: tmpMemoryUsageMap,
+            },
+            actualTexture,
+        );
+
+        const memoryUsage = tmpMemoryUsageMap.get(actualTexture.id);
         // Since we are deleting the CPU-side data.
         memoryUsage.cpuMemory = 0;
         actualTexture.userData.memoryUsage = memoryUsage;
@@ -792,9 +795,7 @@ class LayerComposer implements MemoryUsage {
      * Disposes the composer.
      */
     dispose() {
-        this.images.forEach(img => img.texture.dispose());
-        this.images.clear();
-        this.composer.dispose();
+        this.clear();
     }
 }
 

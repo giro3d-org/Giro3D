@@ -15,11 +15,7 @@ import type QuickLRU from 'quick-lru';
 
 import { GlobalCache, type Cache } from '../core/Cache';
 import Extent from '../core/geographic/Extent';
-import {
-    createEmptyReport,
-    type GetMemoryUsageContext,
-    type MemoryUsageReport,
-} from '../core/MemoryUsage';
+import { type GetMemoryUsageContext } from '../core/MemoryUsage';
 import Fetcher from '../utils/Fetcher';
 import PromiseUtils from '../utils/PromiseUtils';
 import TextureGenerator, { type NumberArray } from '../utils/TextureGenerator';
@@ -270,11 +266,9 @@ class CogSource extends ImageSource {
         this._cacheOptions = options.cacheOptions;
     }
 
-    getMemoryUsage(_: GetMemoryUsageContext, target?: MemoryUsageReport): MemoryUsageReport {
-        const result = target ?? createEmptyReport();
-
+    getMemoryUsage(context: GetMemoryUsageContext) {
         if (!this._tiffImage) {
-            return result;
+            return;
         }
         const source = this._tiffImage.source as { blockCache: QuickLRU<number, CachedBlock> };
         const cache = source.blockCache;
@@ -285,9 +279,7 @@ class CogSource extends ImageSource {
             bytes += block.data.byteLength;
         });
 
-        result.cpuMemory += bytes;
-
-        return result;
+        context.objects.set(`${this.type}-${this._cacheId}`, { cpuMemory: bytes, gpuMemory: 0 });
     }
 
     getExtent() {

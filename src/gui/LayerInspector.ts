@@ -214,7 +214,14 @@ class LayerInspector extends Panel {
                 this.minmax.max = elevationLayer.minmax.max;
             }
         }
-        const memUsage = this.layer.getMemoryUsage({ renderer: this.instance.renderer });
+        const ctx: MemoryUsage.GetMemoryUsageContext = {
+            renderer: this.instance.renderer,
+            objects: new Map(),
+        };
+
+        this.layer.getMemoryUsage(ctx);
+
+        const memUsage = MemoryUsage.aggregateMemoryUsage(ctx);
         this.cpuMemoryUsage = MemoryUsage.format(memUsage.cpuMemory);
         this.gpuMemoryUsage = MemoryUsage.format(memUsage.gpuMemory);
 
