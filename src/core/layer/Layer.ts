@@ -185,6 +185,17 @@ export class Target implements MemoryUsage {
     }
 }
 
+type FetchImagesOptions = {
+    /** The request extent. */
+    extent: Extent;
+    /** The request width, in pixels. */
+    width: number;
+    /** The request height, in pixels. */
+    height: number;
+    /** The target of the images. */
+    target: Target;
+};
+
 export interface LayerEvents {
     /**
      * Fires when layer visibility changes.
@@ -688,20 +699,61 @@ abstract class Layer<
         // Implemented in derived classes.
     }
 
+    private fetchImagesSync(options: FetchImagesOptions): void {
+        const { extent, width, height, target } = options;
+
+        const node = target.node;
+
+        const results = this.source.getImages({
+            id: `${target.node.id}`,
+            extent: extent.clone().as(this.source.getCrs()),
+            width,
+            height,
+            signal: target.controller.signal,
+            createReadableTextures: this._createReadableTextures,
+        });
+
+        if (results.length === 0) {
+            // No new image to generate
+            return;
+        }
+
+        // Register the ids on the tile
+        results.forEach(r => {
+            target.imageIds.add(r.id);
+        });
+
+        if (this.shouldCancelRequest(node)) {
+            target.abortAndThrow();
+        }
+
+        for (const { id, request } of results) {
+            if (!request || this._composer.has(id)) {
+                continue;
+            }
+
+            try {
+                const image = request() as ImageResult;
+
+                if (!this.disposed) {
+                    this.addToComposer(image, false);
+                    if (!this.shouldCancelRequest(node)) {
+                        this._composer.lock(id, node.id);
+                    }
+                }
+            } catch (e) {
+                if (e.name !== 'AbortError') {
+                    console.error(e);
+                }
+            }
+        }
+    }
+
     /**
      * @param options - Options.
      * @returns A promise that is settled when all images have been fetched.
      */
-    private async fetchImages(options: {
-        /** The request extent. */
-        extent: Extent;
-        /** The request width, in pixels. */
-        width: number;
-        /** The request height, in pixels. */
-        height: number;
-        /** The target of the images. */
-        target: Target;
-    }): Promise<void> {
+    private async fetchImages(options: FetchImagesOptions): Promise<void> {
         const { extent, width, height, target } = options;
 
         const node = target.node;
@@ -747,7 +799,7 @@ abstract class Layer<
             const p = this._queue
                 .enqueue({
                     id: requestId,
-                    request,
+                    request: request as () => Promise<ImageResult>,
                     priority,
                     shouldExecute,
                 })
@@ -867,7 +919,12 @@ abstract class Layer<
         const targets = this.getSortedTargets();
         for (const t of targets) {
             const otherExtent = t.geometryExtent;
-            if (t !== target && extent.isInside(otherExtent) && t.state === TargetState.Complete) {
+            if (
+                t !== target &&
+                extent.isInside(otherExtent) &&
+                t.state === TargetState.Complete &&
+                t.renderTarget != null
+            ) {
                 return t;
             }
         }
@@ -948,7 +1005,6 @@ abstract class Layer<
         const extent = target.extent;
         const width = target.width;
         const height = target.height;
-        const pitch = target.pitch;
 
         // Fetch adequate images from the source...
         const isContained = this.contains(extent);
@@ -965,51 +1021,71 @@ abstract class Layer<
 
             target.state = TargetState.Processing;
 
-            this.fetchImages({
-                extent,
-                width,
-                height,
-                target,
-            })
-                .then(() => {
-                    if (target.isDisposed()) {
-                        return;
-                    }
-
-                    const { isLastRender } = this._composer.render({
-                        extent,
-                        width,
-                        height,
-                        target: target.renderTarget,
-                        imageIds: target.imageIds,
-                    });
-
-                    if (isLastRender) {
-                        target.state = TargetState.Complete;
-                    } else {
-                        target.state = TargetState.Pending;
-                    }
-
-                    target.paintCount++;
-
-                    const texture = target.renderTarget.texture;
-                    this.applyTextureToNode({ texture, pitch }, target, isLastRender);
-                    this._instance.notifyChange(this, { immediate: true });
+            // If the source is synchronous, the whole pipeline is also synchronous.
+            if (this.source.synchronous) {
+                try {
+                    this.fetchImagesSync({ extent, width, height, target });
+                    this.paintTarget(target);
+                } catch (e) {
+                    console.error(e);
+                    target.state = TargetState.Pending;
+                }
+            } else {
+                this.fetchImages({
+                    extent,
+                    width,
+                    height,
+                    target,
                 })
-                .catch(err => {
-                    // Abort errors are perfectly normal, so we don't need to log them.
-                    // However any other error implies an abnormal termination of the processing.
-                    if (err.name !== 'AbortError') {
-                        console.error(err);
-                        target.state = TargetState.Complete;
-                    } else {
-                        target.state = TargetState.Pending;
-                    }
-                });
+                    .then(() => {
+                        this.paintTarget(target);
+                    })
+                    .catch(err => {
+                        // Abort errors are perfectly normal, so we don't need to log them.
+                        // However any other error implies an abnormal termination of the processing.
+                        if (err.name !== 'AbortError') {
+                            console.error(err);
+                            target.state = TargetState.Complete;
+                        } else {
+                            target.state = TargetState.Pending;
+                        }
+                    });
+            }
         } else {
             target.state = TargetState.Complete;
             this.applyEmptyTextureToNode(target);
         }
+    }
+
+    private paintTarget(target: Target) {
+        if (target.isDisposed()) {
+            return;
+        }
+
+        const extent = target.extent;
+        const width = target.width;
+        const height = target.height;
+        const pitch = target.pitch;
+
+        const { isLastRender } = this._composer.render({
+            extent,
+            width,
+            height,
+            target: target.renderTarget,
+            imageIds: target.imageIds,
+        });
+
+        if (isLastRender) {
+            target.state = TargetState.Complete;
+        } else {
+            target.state = TargetState.Pending;
+        }
+
+        target.paintCount++;
+
+        const texture = target.renderTarget.texture;
+        this.applyTextureToNode({ texture, pitch }, target, isLastRender);
+        this._instance.notifyChange(this, { immediate: true });
     }
 
     /**

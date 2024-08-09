@@ -186,7 +186,7 @@ class VectorSource extends ImageSource {
      * @param options - Options.
      */
     constructor(options: VectorSourceOptions) {
-        super(options);
+        super({ ...options, synchronous: true });
         if (options.data == null) {
             throw new Error('"data" parameter is required');
         }
@@ -481,7 +481,7 @@ class VectorSource extends ImageSource {
         const { extent, width, height, id } = options;
 
         const size = new Vector2(width, height);
-        const request = () => Promise.resolve(this.createImage(id, extent, size));
+        const request = () => this.createImage(id, extent, size);
 
         return [{ id, request }];
     }

@@ -72,8 +72,14 @@ export interface GetImageOptions {
 }
 
 export interface ImageResponse {
+    /**
+     * The id of the response, used to deduplicate requests.
+     */
     id: string;
-    request: () => Promise<ImageResult>;
+    /**
+     * The request that will generate the image.
+     */
+    request: (() => Promise<ImageResult>) | (() => ImageResult);
 }
 
 export interface ImageSourceOptions {
@@ -99,6 +105,10 @@ export interface ImageSourceOptions {
      * color space, otherwise `NoColorSpace`.
      */
     colorSpace?: ColorSpace;
+    /**
+     * Is this source able to generate images synchronously ?
+     */
+    synchronous?: boolean;
 }
 
 export interface ImageSourceEvents {
@@ -129,6 +139,10 @@ abstract class ImageSource<Events extends ImageSourceEvents = ImageSourceEvents>
     datatype: TextureDataType;
     version: number;
     readonly containsFn: CustomContainsFn;
+    /**
+     * If `true`, this source can immediately generate images without any delay.
+     */
+    readonly synchronous: boolean = false;
 
     /**
      * @param options - Options.
@@ -146,6 +160,8 @@ abstract class ImageSource<Events extends ImageSourceEvents = ImageSourceEvents>
         this.version = 0;
 
         this.containsFn = options.containsFn;
+
+        this.synchronous = options?.synchronous ?? false;
     }
 
     getMemoryUsage(_context: GetMemoryUsageContext, target?: MemoryUsageReport): MemoryUsageReport {

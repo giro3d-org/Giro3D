@@ -21,8 +21,9 @@ import Interpretation from '../../core/layer/Interpretation';
 
 import Rect from '../../core/Rect';
 import MemoryTracker from '../MemoryTracker';
-import ComposerTileMaterial from './ComposerTileMaterial';
+import ComposerTileMaterial, { isComposerTileMaterial } from './ComposerTileMaterial';
 import TextureGenerator from '../../utils/TextureGenerator';
+import { isMesh } from '../../utils/predicates';
 
 let SHARED_PLANE_GEOMETRY: PlaneGeometry = null;
 
@@ -302,19 +303,19 @@ class WebGLComposer {
     /**
      * Resets the composer to a blank state.
      */
-    reset() {
-        this._removeTextures();
+    clear() {
+        this.removeTextures();
         this.removeObjects();
     }
 
     private removeObjects() {
-        const childrenCopy = [...this._scene.children];
-        for (const child of childrenCopy) {
-            if ((child as Mesh).isMesh) {
-                ComposerTileMaterial.release((child as Mesh).material as ComposerTileMaterial);
+        this._scene.traverse(obj => {
+            if (isMesh(obj) && isComposerTileMaterial(obj.material)) {
+                ComposerTileMaterial.release(obj.material);
             }
-            this._scene.remove(child);
-        }
+        });
+
+        this._scene.clear();
     }
 
     private saveState(): SaveState {
@@ -430,7 +431,7 @@ class WebGLComposer {
         return target.texture;
     }
 
-    private _removeTextures() {
+    private removeTextures() {
         this._ownedTextures.forEach(t => t.dispose());
         this._ownedTextures.length = 0;
     }
@@ -439,7 +440,7 @@ class WebGLComposer {
      * Disposes all unmanaged resources in this composer.
      */
     dispose() {
-        this._removeTextures();
+        this.removeTextures();
         this.removeObjects();
         if (this._renderTarget) {
             this._renderTarget.dispose();

@@ -659,7 +659,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
     repaintAtlas() {
         this.rebuildAtlasIfNecessary();
 
-        this._composer.reset();
+        this._composer.clear();
 
         // Redraw all visible color layers on the canvas
         for (const l of this._colorLayers) {
