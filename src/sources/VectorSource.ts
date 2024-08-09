@@ -280,6 +280,10 @@ class VectorSource extends ImageSource {
         });
     }
 
+    get featureCount() {
+        return this.getFeatures().length;
+    }
+
     /**
      * Returns an array with the feature in this source.
      *
