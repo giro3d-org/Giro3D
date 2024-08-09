@@ -98,6 +98,10 @@ class MaskLayer<UserData extends LayerUserData = LayerUserData> extends ColorLay
     }
 }
 
+function isMaskLayer(obj: unknown): obj is MaskLayer {
+    return (obj as MaskLayer)?.isMaskLayer;
+}
+
 export default MaskLayer;
 
-export { MaskMode };
+export { MaskMode, isMaskLayer };
