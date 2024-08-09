@@ -40,7 +40,7 @@ function createGridTexture() {
     const w = canvas.width;
     const h = canvas.height;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
     ctx.strokeStyle = 'yellow';
     ctx.lineWidth = 4;
