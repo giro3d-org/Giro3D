@@ -170,6 +170,7 @@ class LayerInspector extends Panel {
 
     disposeLayer() {
         this.layer.dispose();
+        this.notify(this.layer);
     }
 
     updateExtentColor() {
