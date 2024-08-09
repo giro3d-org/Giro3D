@@ -218,4 +218,8 @@ class ComposerTileMaterial extends ShaderMaterial {
     }
 }
 
+export function isComposerTileMaterial(obj: unknown): obj is ComposerTileMaterial {
+    return (obj as ComposerTileMaterial)?.isComposerTileMaterial;
+}
+
 export default ComposerTileMaterial;
