@@ -1,4 +1,4 @@
-import { Object3D, Box3, Sphere, Vector3, type Camera as ThreeCamera } from 'three';
+import { Box3, Object3D, Sphere, Vector3, type Camera as ThreeCamera } from 'three';
 import ScreenSpaceError from '../../core/ScreenSpaceError';
 import type View from '../../renderer/View';
 import { type ProcessedTile } from './3dTilesIndex';

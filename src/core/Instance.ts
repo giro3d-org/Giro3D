@@ -1,39 +1,39 @@
+import { register } from 'ol/proj/proj4.js';
+import proj4 from 'proj4';
 import {
-    Scene,
-    Group,
+    Clock,
     EventDispatcher,
+    Group,
+    Object3D,
+    Scene,
     Vector2,
     Vector3,
-    Object3D,
     type Box3,
     type WebGLRenderer,
-    Clock,
 } from 'three';
-import proj4 from 'proj4';
-import { register } from 'ol/proj/proj4.js';
-import View, { type CameraOptions } from '../renderer/View';
-import C3DEngine, { type RendererOptions } from '../renderer/c3DEngine';
-import type RenderingOptions from '../renderer/RenderingOptions';
-import MainLoop from './MainLoop';
 import type Entity from '../entities/Entity';
 import { isEntity } from '../entities/Entity';
 import Entity3D, { isEntity3D } from '../entities/Entity3D';
 import Map from '../entities/Map';
-import type PickOptions from './picking/PickOptions';
-import type PickResult from './picking/PickResult';
-import type Progress from './Progress';
-import pickObjectsAt from './picking/PickObjectsAt';
-import { isPickable } from './picking/Pickable';
-import { isPickableFeatures } from './picking/PickableFeatures';
+import C3DEngine, { type RendererOptions } from '../renderer/c3DEngine';
+import type RenderingOptions from '../renderer/RenderingOptions';
+import { GlobalRenderTargetPool } from '../renderer/RenderTargetPool';
+import View, { type CameraOptions } from '../renderer/View';
+import { GlobalCache } from './Cache';
 import { isDisposable } from './Disposable';
+import MainLoop from './MainLoop';
 import {
     createEmptyReport,
     getObject3DMemoryUsage,
     type GetMemoryUsageContext,
     type MemoryUsageReport,
 } from './MemoryUsage';
-import { GlobalRenderTargetPool } from '../renderer/RenderTargetPool';
-import { GlobalCache } from './Cache';
+import { isPickable } from './picking/Pickable';
+import { isPickableFeatures } from './picking/PickableFeatures';
+import pickObjectsAt from './picking/PickObjectsAt';
+import type PickOptions from './picking/PickOptions';
+import type PickResult from './picking/PickResult';
+import type Progress from './Progress';
 
 const vectors = {
     pos: new Vector3(),

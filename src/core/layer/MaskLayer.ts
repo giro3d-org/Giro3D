@@ -1,9 +1,9 @@
-import { Texture, type TextureDataType, UnsignedByteType } from 'three';
 import { type Feature } from 'ol';
 import { type Geometry } from 'ol/geom';
+import { Texture, UnsignedByteType, type TextureDataType } from 'three';
+import OffsetScale from '../OffsetScale';
 import ColorLayer from './ColorLayer';
 import type { LayerOptions, LayerUserData, Target } from './Layer';
-import OffsetScale from '../OffsetScale';
 
 /**
  * Modes of the mask layer.

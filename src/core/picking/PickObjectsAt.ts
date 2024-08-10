@@ -1,9 +1,9 @@
-import { Color, type Object3D, Raycaster, type TypedArray, Vector2 } from 'three';
-import type Instance from '../Instance';
+import { Color, Raycaster, Vector2, type Object3D, type TypedArray } from 'three';
 import type Entity3D from '../../entities/Entity3D';
-import type PickResult from './PickResult';
-import type PickOptions from './PickOptions';
+import type Instance from '../Instance';
 import traversePickingCircle from './PickingCircle';
+import type PickOptions from './PickOptions';
+import type PickResult from './PickResult';
 
 const BLACK = new Color(0, 0, 0);
 const raycaster = new Raycaster();

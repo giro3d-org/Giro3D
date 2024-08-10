@@ -1,12 +1,12 @@
-import type { Material, Object3D, Mesh, RawShaderMaterial, Group } from 'three';
+import type { Group, Material, Mesh, Object3D, RawShaderMaterial } from 'three';
 import { Matrix4, MeshLambertMaterial } from 'three';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
-import BatchTableParser, { type BatchTable } from './BatchTableParser';
 import Capabilities from '../core/system/Capabilities';
 import shaderUtils from '../renderer/shader/ShaderUtils';
 import utf8Decoder from '../utils/Utf8Decoder';
+import BatchTableParser, { type BatchTable } from './BatchTableParser';
 
 const matrixChangeUpVectorZtoY = new Matrix4().makeRotationX(Math.PI / 2);
 // For gltf rotation

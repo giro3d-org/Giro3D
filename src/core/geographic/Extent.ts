@@ -1,12 +1,12 @@
 import type { TypedArray } from 'three';
 import { Box3, Vector2, Vector3 } from 'three';
-import Coordinates, {
-    crsIsGeographic,
-    assertCrsIsValid,
-    is4326,
-    crsIsGeocentric,
-} from './Coordinates';
 import OffsetScale from '../OffsetScale';
+import Coordinates, {
+    assertCrsIsValid,
+    crsIsGeocentric,
+    crsIsGeographic,
+    is4326,
+} from './Coordinates';
 
 const tmpXY = new Vector2();
 

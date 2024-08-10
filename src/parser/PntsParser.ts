@@ -1,22 +1,22 @@
 import {
-    Vector3,
-    type BufferAttribute,
     BufferGeometry,
-    type TypedArray,
     Float32BufferAttribute,
-    Uint8ClampedBufferAttribute,
-    Int8BufferAttribute,
-    Uint16BufferAttribute,
+    FloatType,
     Int16BufferAttribute,
     Int32BufferAttribute,
+    Int8BufferAttribute,
+    IntType,
+    Uint16BufferAttribute,
     Uint32BufferAttribute,
     Uint8BufferAttribute,
-    IntType,
-    FloatType,
+    Uint8ClampedBufferAttribute,
+    Vector3,
+    type BufferAttribute,
+    type TypedArray,
 } from 'three';
+import utf8Decoder from '../utils/Utf8Decoder';
 import type { Accessor, BatchTable } from './BatchTableParser';
 import BatchTableParser from './BatchTableParser';
-import utf8Decoder from '../utils/Utf8Decoder';
 
 export type Pnts = {
     point: {

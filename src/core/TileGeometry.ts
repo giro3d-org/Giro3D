@@ -1,12 +1,12 @@
 import type { Vector2 } from 'three';
 import { BufferAttribute, BufferGeometry } from 'three';
+import type HeightMap from './HeightMap';
 import type MemoryUsage from './MemoryUsage';
 import {
     createEmptyReport,
     type GetMemoryUsageContext,
     type MemoryUsageReport,
 } from './MemoryUsage';
-import type HeightMap from './HeightMap';
 
 export interface TileGeometryOptions {
     dimensions: Vector2;

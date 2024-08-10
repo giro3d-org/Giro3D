@@ -1,33 +1,33 @@
 import {
+    BufferGeometry,
+    Color,
+    Float32BufferAttribute,
+    Group,
+    LineBasicMaterial,
+    LineSegments,
     MathUtils,
+    Sphere,
     Vector2,
     Vector3,
-    Group,
-    type Camera,
-    Color,
-    LineBasicMaterial,
-    BufferGeometry,
-    LineSegments,
-    Float32BufferAttribute,
-    Sphere,
     type Box3,
+    type Camera,
 } from 'three';
 
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
-import type { Entity3DEventMap } from './Entity3D';
-import Entity3D from './Entity3D';
-import type Extent from '../core/geographic/Extent';
 import type Context from '../core/Context';
-import { UNIT, crsToUnit } from '../core/geographic/Coordinates';
-import Helpers from '../helpers/Helpers';
-import type { EntityUserData } from './Entity';
+import { crsToUnit, UNIT } from '../core/geographic/Coordinates';
+import type Extent from '../core/geographic/Extent';
 import {
     createEmptyReport,
     getGeometryMemoryUsage,
     type GetMemoryUsageContext,
     type MemoryUsageReport,
 } from '../core/MemoryUsage';
+import Helpers from '../helpers/Helpers';
+import type { EntityUserData } from './Entity';
+import type { Entity3DEventMap } from './Entity3D';
+import Entity3D from './Entity3D';
 
 const mod = MathUtils.euclideanModulo;
 

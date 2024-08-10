@@ -1,20 +1,20 @@
-import { Box3, type Vector2, type Material, type Mesh, type Object3D, type Plane } from 'three';
+import { Box3, type Material, type Mesh, type Object3D, type Plane, type Vector2 } from 'three';
 
-import Entity, { type EntityUserData, type EntityEventMap } from './Entity';
-import type Instance from '../core/Instance';
 import type Context from '../core/Context';
+import type Instance from '../core/Instance';
 import { type ObjectToUpdate } from '../core/MainLoop';
-import type Pickable from '../core/picking/Pickable';
-import pickObjectsAt from '../core/picking/PickObjectsAt';
-import type PickResult from '../core/picking/PickResult';
-import type PickOptions from '../core/picking/PickOptions';
 import type MemoryUsage from '../core/MemoryUsage';
 import {
     createEmptyReport,
     type GetMemoryUsageContext,
     type MemoryUsageReport,
 } from '../core/MemoryUsage';
+import type Pickable from '../core/picking/Pickable';
+import pickObjectsAt from '../core/picking/PickObjectsAt';
+import type PickOptions from '../core/picking/PickOptions';
+import type PickResult from '../core/picking/PickResult';
 import type RenderingContextHandler from '../renderer/RenderingContextHandler';
+import Entity, { type EntityEventMap, type EntityUserData } from './Entity';
 
 export interface Entity3DEventMap extends EntityEventMap {
     /**

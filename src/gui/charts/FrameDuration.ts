@@ -2,8 +2,8 @@ import type { ChartData, ScatterDataPoint } from 'chart.js';
 import { Chart } from 'chart.js';
 import type GUI from 'lil-gui';
 import type { WebGLInfo } from 'three';
-import ChartPanel, { pushTrim } from './ChartPanel';
 import type Instance from '../../core/Instance';
+import ChartPanel, { pushTrim } from './ChartPanel';
 
 const MAX_DATA_POINTS = 30;
 

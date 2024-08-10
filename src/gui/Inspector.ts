@@ -1,13 +1,13 @@
 import GUI from 'lil-gui';
-import type Instance from '../core/Instance';
-import ViewInspector from './ViewInspector';
-import EntityPanel from './EntityPanel';
-import Outliner from './outliner/Outliner';
-import ProcessingInspector from './ProcessingInspector';
-import type Panel from './Panel';
-import PackageInfoInspector from './PackageInfoInspector';
-import InstanceInspector from './InstanceInspector';
 import { isDisposable } from '../core/Disposable';
+import type Instance from '../core/Instance';
+import EntityPanel from './EntityPanel';
+import InstanceInspector from './InstanceInspector';
+import Outliner from './outliner/Outliner';
+import PackageInfoInspector from './PackageInfoInspector';
+import type Panel from './Panel';
+import ProcessingInspector from './ProcessingInspector';
+import ViewInspector from './ViewInspector';
 
 // Here follows the style adaptation to lil-gui
 const styles = `

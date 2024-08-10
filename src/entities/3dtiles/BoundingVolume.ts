@@ -1,8 +1,8 @@
-import { Vector3, Box3, type Matrix4, Sphere } from 'three';
-import type OBB from '../../core/OBB';
-import { type ProcessedTile } from './3dTilesIndex';
-import type View from '../../renderer/View';
+import { Box3, Sphere, Vector3, type Matrix4 } from 'three';
 import Extent from '../../core/geographic/Extent';
+import type OBB from '../../core/OBB';
+import type View from '../../renderer/View';
+import { type ProcessedTile } from './3dTilesIndex';
 import Tile from './Tile';
 
 export interface BoundingVolume {

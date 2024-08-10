@@ -1,10 +1,10 @@
 import {
     BufferAttribute,
     BufferGeometry,
-    type Color,
     LineBasicMaterial,
     LineSegments,
     Vector3,
+    type Color,
 } from 'three';
 import type OBB from '../core/OBB';
 

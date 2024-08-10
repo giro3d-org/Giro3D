@@ -1,9 +1,8 @@
-import '../setup.js';
-import * as THREE from 'three';
+import Context from 'src/core/Context';
 import Extent from 'src/core/geographic/Extent';
 import AxisGrid, { type Volume } from 'src/entities/AxisGrid';
-import Context from 'src/core/Context';
 import View from 'src/renderer/View';
+import * as THREE from 'three';
 
 const DEFAULT_EXTENT = new Extent('EPSG:3857', -10, 10, -10, 10);
 const defaultVolume: Volume = {

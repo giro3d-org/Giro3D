@@ -6,8 +6,8 @@ import type { ShapePickResult, VerticalLineLabelFormatter } from '../entities/Sh
 import Shape, {
     angleFormatter,
     isShape,
-    type ShapeConstructorOptions,
     slopeSegmentFormatter,
+    type ShapeConstructorOptions,
 } from '../entities/Shape';
 import { ConstantSizeSphere } from '../renderer';
 import { AbortError } from '../utils/PromiseUtils';

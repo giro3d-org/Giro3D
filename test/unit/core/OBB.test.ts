@@ -1,6 +1,6 @@
-import { Matrix4, Vector3 } from 'three';
-import proj4 from 'proj4';
 import assert from 'assert';
+import proj4 from 'proj4';
+import { Matrix4, Vector3 } from 'three';
 import { randFloat } from 'three/src/math/MathUtils';
 import Extent from '../../../src/core/geographic/Extent';
 import OBB from '../../../src/core/OBB';

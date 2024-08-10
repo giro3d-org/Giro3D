@@ -1,7 +1,7 @@
 import { Box3, Matrix4, Sphere, Vector3 } from 'three';
-import type Tile from './Tile';
 import { type BoundingVolume } from './BoundingVolume';
-import type { $3dTilesTileset, $3dTilesTile, $3dTilesBoundingVolume } from './types';
+import type Tile from './Tile';
+import type { $3dTilesBoundingVolume, $3dTilesTile, $3dTilesTileset } from './types';
 
 /** Processed tile metadata */
 export interface ProcessedTile extends $3dTilesTile {

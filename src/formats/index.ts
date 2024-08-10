@@ -1,6 +1,6 @@
-import ImageFormat, { type DecodeOptions } from './ImageFormat';
 import BilFormat from './BilFormat';
 import GeoTIFFFormat from './GeoTIFFFormat';
+import ImageFormat, { type DecodeOptions } from './ImageFormat';
 import MapboxTerrainFormat from './MapboxTerrainFormat';
 
 /**

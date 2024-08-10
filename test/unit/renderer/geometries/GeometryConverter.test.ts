@@ -1,15 +1,15 @@
-import { Point, MultiPoint, Polygon, MultiPolygon, LineString, MultiLineString } from 'ol/geom';
+import { LineString, MultiLineString, MultiPoint, MultiPolygon, Point, Polygon } from 'ol/geom';
 
-import { Color, type MeshBasicMaterial, Vector3 } from 'three';
+import { Color, Vector3, type MeshBasicMaterial } from 'three';
 
-import GeometryConverter from 'src/renderer/geometries/GeometryConverter';
 import { getFullFillStyle, getFullPointStyle, getFullStrokeStyle } from 'src/core/FeatureTypes';
-import type PointMesh from 'src/renderer/geometries/PointMesh';
-import { isPointMesh } from 'src/renderer/geometries/PointMesh';
-import type PolygonMesh from 'src/renderer/geometries/PolygonMesh';
+import GeometryConverter from 'src/renderer/geometries/GeometryConverter';
 import type LineStringMesh from 'src/renderer/geometries/LineStringMesh';
 import type MultiLineStringMesh from 'src/renderer/geometries/MultiLineStringMesh';
 import type MultiPolygonMesh from 'src/renderer/geometries/MultiPolygonMesh';
+import type PointMesh from 'src/renderer/geometries/PointMesh';
+import { isPointMesh } from 'src/renderer/geometries/PointMesh';
+import type PolygonMesh from 'src/renderer/geometries/PolygonMesh';
 
 const SIMPLE_SQUARE = [
     [

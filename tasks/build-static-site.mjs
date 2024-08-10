@@ -1,16 +1,16 @@
-import esMain from 'es-main';
-import fse from 'fs-extra';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
 import chokidar from 'chokidar';
 import { program } from 'commander';
-import glob from 'glob';
 import ejs from 'ejs';
+import esMain from 'es-main';
+import fse from 'fs-extra';
+import glob from 'glob';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-import { createStaticServer } from './serve.mjs';
 import { getGitVersion, getPackageVersion } from './prepare-package.mjs';
-import { log, logWatched, logOk } from './utils.mjs';
+import { createStaticServer } from './serve.mjs';
+import { log, logOk, logWatched } from './utils.mjs';
 
 const baseDir = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.join(baseDir, '..');

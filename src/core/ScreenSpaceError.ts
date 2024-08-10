@@ -1,5 +1,5 @@
 import type { Sphere } from 'three';
-import { Matrix4, Vector3, ShapeUtils, Box3 } from 'three';
+import { Box3, Matrix4, ShapeUtils, Vector3 } from 'three';
 
 import type View from '../renderer/View';
 import { isPerspectiveCamera } from '../renderer/View';

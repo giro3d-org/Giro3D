@@ -4,12 +4,18 @@
     "printWidth": 100,
     "arrowParens": "avoid",
     "vueIndentScriptAndStyle": true,
-    "plugins": ["prettier-plugin-ejs"],
+    "plugins": ["prettier-plugin-ejs", "prettier-plugin-organize-imports"],
     "overrides": [
         {
             "files": ["*.json", "*.jsonc"],
             "options": {
                 "trailingComma": "none"
+            }
+        },
+        {
+            "files": ["examples/**/*.*"],
+            "options": {
+                "plugins": ["prettier-plugin-ejs"]
             }
         }
     ]

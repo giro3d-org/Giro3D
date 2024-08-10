@@ -1,46 +1,46 @@
 import {
     Color,
-    type ColorRepresentation,
     EventDispatcher,
     LinearFilter,
-    type Material,
     MathUtils,
-    type Texture,
     Vector2,
-    type WebGLRenderTarget,
-    type PixelFormat,
-    type TextureDataType,
+    type ColorRepresentation,
+    type Material,
     type Object3D,
     type Object3DEventMap,
+    type PixelFormat,
     type RenderTargetOptions,
+    type Texture,
+    type TextureDataType,
+    type WebGLRenderTarget,
 } from 'three';
 
-import type ColorMap from './ColorMap';
-import Interpretation from './Interpretation';
-import type Extent from '../geographic/Extent';
-import LayerComposer from './LayerComposer';
-import PromiseUtils, { PromiseStatus } from '../../utils/PromiseUtils';
 import MemoryTracker from '../../renderer/MemoryTracker';
 import type RenderingContextHandler from '../../renderer/RenderingContextHandler';
-import type Instance from '../Instance';
-import ImageSource, { type ImageResult } from '../../sources/ImageSource';
-import type RequestQueue from '../RequestQueue';
-import { DefaultQueue } from '../RequestQueue';
-import OperationCounter from '../OperationCounter';
-import type Context from '../Context';
-import type Progress from '../Progress.js';
-import type NoDataOptions from './NoDataOptions';
 import { GlobalRenderTargetPool } from '../../renderer/RenderTargetPool';
-import type MemoryUsage from '../MemoryUsage';
+import ImageSource, { type ImageResult } from '../../sources/ImageSource';
+import PromiseUtils, { PromiseStatus } from '../../utils/PromiseUtils';
 import TextureGenerator from '../../utils/TextureGenerator';
+import type Context from '../Context';
+import type ElevationRange from '../ElevationRange';
+import type Extent from '../geographic/Extent';
+import type Instance from '../Instance';
+import type MemoryUsage from '../MemoryUsage';
 import {
     createEmptyReport,
     type GetMemoryUsageContext,
     type MemoryUsageReport,
 } from '../MemoryUsage';
 import type OffsetScale from '../OffsetScale';
+import OperationCounter from '../OperationCounter';
+import type Progress from '../Progress.js';
+import type RequestQueue from '../RequestQueue';
+import { DefaultQueue } from '../RequestQueue';
 import type ColorLayer from './ColorLayer';
-import type ElevationRange from '../ElevationRange';
+import type ColorMap from './ColorMap';
+import Interpretation from './Interpretation';
+import LayerComposer from './LayerComposer';
+import type NoDataOptions from './NoDataOptions';
 
 export interface TextureAndPitch {
     texture: Texture;

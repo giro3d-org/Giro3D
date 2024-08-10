@@ -1,57 +1,57 @@
-import {
-    Color,
-    ShaderMaterial,
-    Uniform,
-    Vector2,
-    Vector4,
-    DoubleSide,
-    FrontSide,
-    NormalBlending,
-    NoBlending,
-    Vector3,
-    GLSL3,
-    RGBAFormat,
-    UnsignedByteType,
-} from 'three';
 import type {
     IUniform,
-    WebGLRenderer,
+    Texture,
     TextureDataType,
     WebGLProgramParametersWithUniforms,
-    Texture,
+    WebGLRenderer,
 } from 'three';
-import RenderingState from './RenderingState';
-import TileVS from './shader/TileVS.glsl';
-import TileFS from './shader/TileFS.glsl';
-import WebGLComposer from './composition/WebGLComposer';
-import Rect from '../core/Rect';
-import MemoryTracker from './MemoryTracker';
-import MaterialUtils from './MaterialUtils';
-import type { TextureAndPitch } from '../core/layer/Layer';
-import type Layer from '../core/layer/Layer';
-import type MaskLayer from '../core/layer/MaskLayer';
-import type ContourLineOptions from '../core/ContourLineOptions';
-import type TerrainOptions from '../core/TerrainOptions';
-import type HillshadingOptions from '../core/HillshadingOptions';
-import type GraticuleOptions from '../core/GraticuleOptions';
+import {
+    Color,
+    DoubleSide,
+    FrontSide,
+    GLSL3,
+    NoBlending,
+    NormalBlending,
+    RGBAFormat,
+    ShaderMaterial,
+    Uniform,
+    UnsignedByteType,
+    Vector2,
+    Vector3,
+    Vector4,
+} from 'three';
 import type ColorimetryOptions from '../core/ColorimetryOptions';
-import type ElevationLayer from '../core/layer/ElevationLayer';
-import type ColorLayer from '../core/layer/ColorLayer';
+import type ContourLineOptions from '../core/ContourLineOptions';
 import type ElevationRange from '../core/ElevationRange';
 import type Extent from '../core/geographic/Extent';
-import type ColorMapAtlas from './ColorMapAtlas';
-import type { AtlasInfo, LayerAtlasInfo } from './AtlasBuilder';
-import TextureGenerator from '../utils/TextureGenerator';
-import type { MaskMode } from '../core/layer/MaskLayer';
+import type GraticuleOptions from '../core/GraticuleOptions';
+import type HillshadingOptions from '../core/HillshadingOptions';
 import type { ColorMapMode } from '../core/layer';
+import type ColorLayer from '../core/layer/ColorLayer';
+import type ElevationLayer from '../core/layer/ElevationLayer';
+import type Layer from '../core/layer/Layer';
+import type { TextureAndPitch } from '../core/layer/Layer';
+import type MaskLayer from '../core/layer/MaskLayer';
+import type { MaskMode } from '../core/layer/MaskLayer';
+import type MemoryUsage from '../core/MemoryUsage';
 import {
     createEmptyReport,
     type GetMemoryUsageContext,
     type MemoryUsageReport,
 } from '../core/MemoryUsage';
-import type MemoryUsage from '../core/MemoryUsage';
-import EmptyTexture from './EmptyTexture';
 import OffsetScale from '../core/OffsetScale';
+import Rect from '../core/Rect';
+import type TerrainOptions from '../core/TerrainOptions';
+import TextureGenerator from '../utils/TextureGenerator';
+import type { AtlasInfo, LayerAtlasInfo } from './AtlasBuilder';
+import type ColorMapAtlas from './ColorMapAtlas';
+import WebGLComposer from './composition/WebGLComposer';
+import EmptyTexture from './EmptyTexture';
+import MaterialUtils from './MaterialUtils';
+import MemoryTracker from './MemoryTracker';
+import RenderingState from './RenderingState';
+import TileFS from './shader/TileFS.glsl';
+import TileVS from './shader/TileVS.glsl';
 
 const EMPTY_IMAGE_SIZE = 16;
 

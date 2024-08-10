@@ -1,21 +1,21 @@
-import { type Texture, UnsignedByteType, Vector2 } from 'three';
 import { TileRange } from 'ol';
-import type UrlTile from 'ol/source/UrlTile';
-import type TileGrid from 'ol/tilegrid/TileGrid.js';
 import type Projection from 'ol/proj/Projection';
-import type Extent from '../core/geographic/Extent';
-import OpenLayersUtils from '../utils/OpenLayersUtils';
-import TextureGenerator from '../utils/TextureGenerator';
-import ImageSource, {
-    type GetImageOptions,
-    ImageResult,
-    type ImageSourceOptions,
-} from './ImageSource';
-import type ImageFormat from '../formats/ImageFormat';
+import type UrlTile from 'ol/source/UrlTile';
 import type { TileCoord } from 'ol/tilecoord';
-import ConcurrentDownloader from './ConcurrentDownloader';
+import type TileGrid from 'ol/tilegrid/TileGrid.js';
+import { UnsignedByteType, Vector2, type Texture } from 'three';
+import type Extent from '../core/geographic/Extent';
+import type ImageFormat from '../formats/ImageFormat';
 import { MemoryTracker } from '../renderer';
 import EmptyTexture from '../renderer/EmptyTexture';
+import OpenLayersUtils from '../utils/OpenLayersUtils';
+import TextureGenerator from '../utils/TextureGenerator';
+import ConcurrentDownloader from './ConcurrentDownloader';
+import ImageSource, {
+    ImageResult,
+    type GetImageOptions,
+    type ImageSourceOptions,
+} from './ImageSource';
 
 const MIN_LEVEL_THRESHOLD = 2;
 const DEFAULT_RETRIES = 3;

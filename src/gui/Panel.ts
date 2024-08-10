@@ -1,5 +1,5 @@
-import type { Controller } from 'lil-gui';
 import type GUI from 'lil-gui';
+import type { Controller } from 'lil-gui';
 import type { Color } from 'three';
 import type Instance from '../core/Instance';
 

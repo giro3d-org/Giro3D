@@ -1,30 +1,34 @@
 import {
-    Mesh,
-    Vector2,
-    Vector4,
-    type WebGLRenderTarget,
-    type Object3DEventMap,
-    type Texture,
-    type Object3D,
-    UnsignedByteType,
-    RGBAFormat,
-    MeshBasicMaterial,
-    type Intersection,
-    type Raycaster,
-    Ray,
-    Matrix4,
     Box3,
+    Matrix4,
+    Mesh,
+    MeshBasicMaterial,
+    Ray,
+    RGBAFormat,
+    UnsignedByteType,
+    Vector2,
     Vector3,
+    Vector4,
+    type Intersection,
+    type Object3D,
+    type Object3DEventMap,
+    type Raycaster,
+    type Texture,
+    type WebGLRenderTarget,
 } from 'three';
 
-import MemoryTracker from '../renderer/MemoryTracker';
+import type GetElevationOptions from '../entities/GetElevationOptions';
 import type LayeredMaterial from '../renderer/LayeredMaterial';
 import type { MaterialOptions } from '../renderer/LayeredMaterial';
-import type Extent from './geographic/Extent';
-import TileGeometry from './TileGeometry';
+import MemoryTracker from '../renderer/MemoryTracker';
 import type RenderingState from '../renderer/RenderingState';
-import ElevationLayer from './layer/ElevationLayer';
+import TextureGenerator from '../utils/TextureGenerator';
 import type Disposable from './Disposable';
+import type Extent from './geographic/Extent';
+import HeightMap from './HeightMap';
+import type Instance from './Instance';
+import ElevationLayer from './layer/ElevationLayer';
+import type Layer from './layer/Layer';
 import type MemoryUsage from './MemoryUsage';
 import {
     createEmptyReport,
@@ -32,14 +36,10 @@ import {
     type MemoryUsageReport,
 } from './MemoryUsage';
 import type OffsetScale from './OffsetScale';
-import type Instance from './Instance';
-import HeightMap from './HeightMap';
-import type Layer from './layer/Layer';
+import TileGeometry from './TileGeometry';
+import { type NeighbourList } from './TileIndex';
 import type UniqueOwner from './UniqueOwner';
 import { intoUniqueOwner } from './UniqueOwner';
-import TextureGenerator from '../utils/TextureGenerator';
-import type GetElevationOptions from '../entities/GetElevationOptions';
-import { type NeighbourList } from './TileIndex';
 
 const ray = new Ray();
 const inverseMatrix = new Matrix4();

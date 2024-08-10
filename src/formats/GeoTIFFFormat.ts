@@ -1,22 +1,22 @@
 import { fromBlob, Pool } from 'geotiff';
 import {
-    type Texture,
     DataTexture,
-    UnsignedByteType,
     FloatType,
-    RGBAFormat,
     LinearFilter,
-    type PixelFormat,
+    RGBAFormat,
     RGFormat,
+    UnsignedByteType,
+    type PixelFormat,
+    type Texture,
 } from 'three';
+import EmptyTexture from '../renderer/EmptyTexture';
 import TextureGenerator, {
-    type NumberArray,
     OPAQUE_BYTE,
     OPAQUE_FLOAT,
+    type NumberArray,
 } from '../utils/TextureGenerator';
 import type { DecodeOptions } from './ImageFormat';
 import ImageFormat from './ImageFormat';
-import EmptyTexture from '../renderer/EmptyTexture';
 
 let geotiffWorkerPool: Pool;
 

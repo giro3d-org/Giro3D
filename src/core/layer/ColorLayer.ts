@@ -1,26 +1,26 @@
-import { type PixelFormat, type TextureDataType, RGBAFormat, FloatType } from 'three';
 import { type Feature } from 'ol';
+import { FloatType, RGBAFormat, type PixelFormat, type TextureDataType } from 'three';
+import type VectorSource from '../../sources/VectorSource';
+import OpenLayersUtils from '../../utils/OpenLayersUtils';
+import type ColorimetryOptions from '../ColorimetryOptions';
+import { defaultColorimetryOptions } from '../ColorimetryOptions';
+import type ElevationRange from '../ElevationRange';
+import type Coordinates from '../geographic/Coordinates';
+import Extent from '../geographic/Extent';
+import type PickableFeatures from '../picking/PickableFeatures';
+import type PickOptions from '../picking/PickOptions';
+import { type VectorPickFeature } from '../picking/PickResult';
+import { type MapPickResult } from '../picking/PickTilesAt';
+import { Mode as InterpretationMode } from './Interpretation';
 import Layer, {
-    type LayerOptions,
     type LayerEvents,
     type LayerNode,
     type LayerNodeMaterial,
-    type TextureAndPitch,
+    type LayerOptions,
     type LayerUserData,
     type Target,
+    type TextureAndPitch,
 } from './Layer';
-import type Coordinates from '../geographic/Coordinates';
-import Extent from '../geographic/Extent';
-import type ElevationRange from '../ElevationRange';
-import { Mode as InterpretationMode } from './Interpretation';
-import type VectorSource from '../../sources/VectorSource';
-import type PickOptions from '../picking/PickOptions';
-import { type MapPickResult } from '../picking/PickTilesAt';
-import { type VectorPickFeature } from '../picking/PickResult';
-import OpenLayersUtils from '../../utils/OpenLayersUtils';
-import type PickableFeatures from '../picking/PickableFeatures';
-import type ColorimetryOptions from '../ColorimetryOptions';
-import { defaultColorimetryOptions } from '../ColorimetryOptions';
 
 export interface ColorLayerEvents extends LayerEvents {
     /** When the layer opacity changes */

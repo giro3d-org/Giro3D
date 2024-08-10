@@ -3,13 +3,13 @@ import {
     DEFAULT_LINE_WIDTH,
     DEFAULT_POINT_COLOR,
     DEFAULT_POINT_SIZE,
-    type FillStyle,
-    type PointStyle,
-    type StrokeStyle,
     getFullFillStyle,
     getFullPointStyle,
     getFullStrokeStyle,
     hashStyle,
+    type FillStyle,
+    type PointStyle,
+    type StrokeStyle,
 } from 'src/core/FeatureTypes';
 import { Color } from 'three';
 

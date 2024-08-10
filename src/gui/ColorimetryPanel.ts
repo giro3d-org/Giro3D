@@ -1,7 +1,7 @@
 import type GUI from 'lil-gui';
-import Panel from './Panel';
-import type Instance from '../core/Instance';
 import type ColorimetryOptions from '../core/ColorimetryOptions';
+import type Instance from '../core/Instance';
+import Panel from './Panel';
 
 class ColorimetryPanel extends Panel {
     private readonly _options: ColorimetryOptions;

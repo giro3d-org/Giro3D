@@ -1,7 +1,7 @@
 import type GUI from 'lil-gui';
-import Panel from './Panel';
-import type Instance from '../core/Instance';
 import type HillshadingOptions from '../core/HillshadingOptions';
+import type Instance from '../core/Instance';
+import Panel from './Panel';
 
 class HillshadingPanel extends Panel {
     /**

@@ -1,16 +1,16 @@
 import {
     Points,
+    type BufferAttribute,
     type BufferGeometry,
     type EventDispatcher,
-    type Vector2,
-    type Object3DEventMap,
     type Material,
-    type BufferAttribute,
+    type Object3DEventMap,
+    type Vector2,
 } from 'three';
-import PointCloudMaterial from '../renderer/PointCloudMaterial';
-import type Extent from './geographic/Extent.js';
-import type Disposable from './Disposable';
 import MaterialUtils from '../renderer/MaterialUtils';
+import PointCloudMaterial from '../renderer/PointCloudMaterial';
+import type Disposable from './Disposable';
+import type Extent from './geographic/Extent.js';
 
 export interface PointCloudEventMap extends Object3DEventMap {
     'visibility-changed': {

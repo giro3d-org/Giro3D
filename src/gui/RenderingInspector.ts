@@ -1,6 +1,6 @@
 import type GUI from 'lil-gui';
-import Panel from './Panel';
 import type Instance from '../core/Instance';
+import Panel from './Panel';
 
 class RenderingInspector extends Panel {
     /**

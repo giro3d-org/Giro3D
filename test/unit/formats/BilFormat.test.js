@@ -1,7 +1,7 @@
 import fs from 'fs';
+import { Blob } from 'node:buffer';
 import path from 'path';
 import { cwd } from 'process';
-import { Blob } from 'node:buffer';
 import BilFormat from '../../../src/formats/BilFormat';
 
 describe('BilFormat', () => {

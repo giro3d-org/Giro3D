@@ -1,7 +1,7 @@
 import { Plane, Vector3 } from 'three';
+import type Entity from '../entities/Entity';
 import type View from '../renderer/View';
 import type Instance from './Instance';
-import type Entity from '../entities/Entity';
 
 /**
  * Contains the render/update loop context.

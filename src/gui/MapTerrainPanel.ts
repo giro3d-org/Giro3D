@@ -1,8 +1,8 @@
 import type GUI from 'lil-gui';
-import Panel from './Panel';
+import { MathUtils } from 'three';
 import type Instance from '../core/Instance';
 import type Map from '../entities/Map';
-import { MathUtils } from 'three';
+import Panel from './Panel';
 
 class MapTerrainPanel extends Panel {
     map: Map;

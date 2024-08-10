@@ -1,15 +1,15 @@
-import View from './View';
 import { type RendererOptions } from './c3DEngine';
+import ConstantSizeSphere from './ConstantSizeSphere';
+import * as simpleGeometries from './geometries';
 import MemoryTracker from './MemoryTracker';
 import PointCloudMaterial, {
-    Classification,
     ASPRS_CLASSIFICATIONS,
+    Classification,
     type PointCloudMaterialOptions,
 } from './PointCloudMaterial';
-import ConstantSizeSphere from './ConstantSizeSphere';
-import type RenderingOptions from './RenderingOptions';
 import type RenderingContextHandler from './RenderingContextHandler';
-import * as simpleGeometries from './geometries';
+import type RenderingOptions from './RenderingOptions';
+import View from './View';
 
 export {
     View,

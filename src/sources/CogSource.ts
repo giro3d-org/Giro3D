@@ -1,30 +1,30 @@
 import { FloatType, MathUtils, Texture, UnsignedByteType, Vector2 } from 'three';
 
 import {
-    fromCustomClient,
     BaseClient,
     BaseResponse,
-    type TypedArray,
-    type GeoTIFFImage,
+    fromCustomClient,
+    globals as geotiffGlobals,
     Pool,
     type GeoTIFF,
+    type GeoTIFFImage,
     type ReadRasterResult,
-    globals as geotiffGlobals,
+    type TypedArray,
 } from 'geotiff';
 import type QuickLRU from 'quick-lru';
 
-import Fetcher from '../utils/Fetcher';
+import { GlobalCache, type Cache } from '../core/Cache';
 import Extent from '../core/geographic/Extent';
-import TextureGenerator, { type NumberArray } from '../utils/TextureGenerator';
-import PromiseUtils from '../utils/PromiseUtils';
-import ImageSource, { ImageResult, type ImageSourceOptions } from './ImageSource';
-import { type Cache, GlobalCache } from '../core/Cache';
 import {
     createEmptyReport,
     type GetMemoryUsageContext,
     type MemoryUsageReport,
 } from '../core/MemoryUsage';
+import Fetcher from '../utils/Fetcher';
+import PromiseUtils from '../utils/PromiseUtils';
+import TextureGenerator, { type NumberArray } from '../utils/TextureGenerator';
 import ConcurrentDownloader from './ConcurrentDownloader';
+import ImageSource, { ImageResult, type ImageSourceOptions } from './ImageSource';
 
 const tmpDim = new Vector2();
 

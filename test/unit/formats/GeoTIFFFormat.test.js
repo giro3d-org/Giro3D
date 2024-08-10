@@ -1,7 +1,7 @@
-import { TextEncoder, TextDecoder } from 'util';
 import fs from 'fs';
 import path from 'path';
 import { cwd } from 'process';
+import { TextDecoder, TextEncoder } from 'util';
 import GeoTIFFFormat from '../../../src/formats/GeoTIFFFormat';
 
 // Necessary for geotiff.js

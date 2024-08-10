@@ -4,10 +4,10 @@ import type PickableFeatures from './PickableFeatures';
 import { isPickableFeatures } from './PickableFeatures';
 import type PickOptions from './PickOptions';
 import type { PickFilterCallback } from './PickOptions';
+import { isPointsPickResult, type PointsPickResult } from './PickPointsAt';
 import type PickResult from './PickResult';
-import { type VectorPickFeature, isVectorPickFeature } from './PickResult';
-import { type PointsPickResult, isPointsPickResult } from './PickPointsAt';
-import { type MapPickResult, isMapPickResult } from './PickTilesAt';
+import { isVectorPickFeature, type VectorPickFeature } from './PickResult';
+import { isMapPickResult, type MapPickResult } from './PickTilesAt';
 
 export {
     Pickable,

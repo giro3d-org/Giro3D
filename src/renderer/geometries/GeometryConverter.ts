@@ -1,56 +1,56 @@
+import Earcut from 'earcut';
 import type { Coordinate } from 'ol/coordinate';
 import {
+    LineString,
     type Geometry,
     type LinearRing,
-    LineString,
     type MultiLineString,
     type MultiPoint,
     type MultiPolygon,
     type Point,
     type Polygon,
 } from 'ol/geom';
-import Earcut from 'earcut';
 import {
-    type Material,
-    MeshBasicMaterial,
-    type Object3D,
-    type Texture,
     BufferAttribute,
     BufferGeometry,
-    EventDispatcher,
-    SRGBColorSpace,
-    MeshLambertMaterial,
     DoubleSide,
+    EventDispatcher,
+    MeshBasicMaterial,
+    MeshLambertMaterial,
     SpriteMaterial,
+    SRGBColorSpace,
     Vector3,
+    type Material,
+    type Object3D,
+    type Texture,
 } from 'three';
 
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
 import {
-    type BaseStyle,
-    type StrokeStyle,
-    type PointStyle,
-    type FillStyle,
-    getFullPointStyle,
-    hashStyle,
-    getFullStrokeStyle,
     getFullFillStyle,
-    type SurfaceMaterialGenerator,
+    getFullPointStyle,
+    getFullStrokeStyle,
+    hashStyle,
+    type BaseStyle,
+    type FillStyle,
     type LineMaterialGenerator,
     type PointMaterialGenerator,
+    type PointStyle,
+    type StrokeStyle,
+    type SurfaceMaterialGenerator,
 } from '../../core/FeatureTypes';
+import RequestQueue from '../../core/RequestQueue';
 import { Fetcher } from '../../utils';
 import LineStringMesh from './LineStringMesh';
 import MultiLineStringMesh from './MultiLineStringMesh';
-import SurfaceMesh from './SurfaceMesh';
-import PolygonMesh from './PolygonMesh';
+import MultiPointMesh from './MultiPointMesh';
 import MultiPolygonMesh from './MultiPolygonMesh';
 import PointMesh from './PointMesh';
-import RequestQueue from '../../core/RequestQueue';
-import type { DefaultUserData } from './SimpleGeometryMesh';
-import MultiPointMesh from './MultiPointMesh';
+import PolygonMesh from './PolygonMesh';
 import type SimpleGeometryMesh from './SimpleGeometryMesh';
+import type { DefaultUserData } from './SimpleGeometryMesh';
+import SurfaceMesh from './SurfaceMesh';
 
 const VERT_STRIDE = 3; // 3 elements per vertex position (X, Y, Z)
 const X = 0;

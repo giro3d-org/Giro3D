@@ -1,29 +1,29 @@
 import {
-    WebGLRenderTarget,
-    OrthographicCamera,
-    Scene,
-    Mesh,
-    Texture,
-    PlaneGeometry,
-    type WebGLRenderer,
     ClampToEdgeWrapping,
-    LinearFilter,
     Color,
-    Vector4,
+    LinearFilter,
     MathUtils,
+    Mesh,
+    OrthographicCamera,
+    PlaneGeometry,
+    Scene,
+    Texture,
+    Vector4,
+    WebGLRenderTarget,
     type ColorRepresentation,
-    type TextureDataType,
-    type MinificationTextureFilter,
     type MagnificationTextureFilter,
+    type MinificationTextureFilter,
     type PixelFormat,
+    type TextureDataType,
+    type WebGLRenderer,
 } from 'three';
 import Interpretation from '../../core/layer/Interpretation';
 
 import Rect from '../../core/Rect';
+import { isMesh } from '../../utils/predicates';
+import TextureGenerator from '../../utils/TextureGenerator';
 import MemoryTracker from '../MemoryTracker';
 import ComposerTileMaterial, { isComposerTileMaterial } from './ComposerTileMaterial';
-import TextureGenerator from '../../utils/TextureGenerator';
-import { isMesh } from '../../utils/predicates';
 
 let SHARED_PLANE_GEOMETRY: PlaneGeometry = null;
 

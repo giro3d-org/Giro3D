@@ -1,9 +1,9 @@
 import { CanvasTexture, MathUtils, Texture } from 'three';
 import type { Extent } from '../core/geographic';
+import EmptyTexture from '../renderer/EmptyTexture';
 import { Fetcher } from '../utils';
 import type { GetImageOptions, ImageResponse, ImageSourceEvents } from './ImageSource';
 import ImageSource, { ImageResult } from './ImageSource';
-import EmptyTexture from '../renderer/EmptyTexture';
 
 /**
  * Options for the {@link StaticImageSource} constructor.

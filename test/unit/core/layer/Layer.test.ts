@@ -1,8 +1,8 @@
-import type { LayerEvents, LayerUserData, LayerNode, TextureAndPitch } from 'src/core/layer/Layer';
-import Layer from 'src/core/layer/Layer';
 import Extent from 'src/core/geographic/Extent';
-import NullSource from 'src/sources/NullSource';
+import type { LayerEvents, LayerNode, LayerUserData, TextureAndPitch } from 'src/core/layer/Layer';
+import Layer from 'src/core/layer/Layer';
 import type RequestQueue from 'src/core/RequestQueue';
+import NullSource from 'src/sources/NullSource';
 import { setupGlobalMocks } from '../../mocks.js';
 
 // @ts-expect-error missing implementations of abstract superclass

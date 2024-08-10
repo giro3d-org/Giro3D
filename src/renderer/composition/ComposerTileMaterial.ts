@@ -1,19 +1,19 @@
 import {
-    Uniform,
-    type Texture,
-    FloatType,
     CanvasTexture,
-    type TextureDataType,
-    type AnyPixelFormat,
+    FloatType,
     GLSL3,
     ShaderMaterial,
+    Uniform,
+    type AnyPixelFormat,
     type IUniform,
+    type Texture,
+    type TextureDataType,
 } from 'three';
 
-import FragmentShader from './ComposerTileFS.glsl';
-import VertexShader from './ComposerTileVS.glsl';
 import Interpretation, { Mode, type InterpretationUniform } from '../../core/layer/Interpretation';
 import TextureGenerator from '../../utils/TextureGenerator';
+import FragmentShader from './ComposerTileFS.glsl';
+import VertexShader from './ComposerTileVS.glsl';
 // Matches the NoDataOptions struct in the shader
 interface NoDataOptions {
     replacementAlpha?: number;

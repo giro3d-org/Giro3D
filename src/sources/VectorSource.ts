@@ -6,13 +6,19 @@ import { CanvasTexture, Vector2 } from 'three';
 // The mechanism was altered following
 // https://github.com/openlayers/openlayers/issues/9215
 // to make it work
+import type BaseEvent from 'ol/events/Event';
+import type Feature from 'ol/Feature.js';
+import type FeatureFormat from 'ol/format/Feature.js';
+import type { Geometry } from 'ol/geom';
 import CanvasBuilderGroup from 'ol/render/canvas/BuilderGroup.js';
 import ExecutorGroup from 'ol/render/canvas/ExecutorGroup.js';
 import {
     getSquaredTolerance as getSquaredRenderTolerance,
     renderFeature as renderVectorFeature,
 } from 'ol/renderer/vector.js';
+import Vector from 'ol/source/Vector.js';
 import type { Style } from 'ol/style.js';
+import type { StyleFunction } from 'ol/style/Style';
 import type { Transform } from 'ol/transform.js';
 import {
     create as createTransform,
@@ -20,18 +26,12 @@ import {
     scale as scaleTransform,
     translate as translateTransform,
 } from 'ol/transform.js';
-import type Feature from 'ol/Feature.js';
-import Vector from 'ol/source/Vector.js';
-import type FeatureFormat from 'ol/format/Feature.js';
-import type BaseEvent from 'ol/events/Event';
-import type { StyleFunction } from 'ol/style/Style';
-import type { Geometry } from 'ol/geom';
+import type Extent from '../core/geographic/Extent';
+import EmptyTexture from '../renderer/EmptyTexture';
+import Fetcher from '../utils/Fetcher';
+import OpenLayersUtils from '../utils/OpenLayersUtils';
 import type { GetImageOptions, ImageSourceOptions } from './ImageSource';
 import ImageSource, { ImageResult } from './ImageSource';
-import OpenLayersUtils from '../utils/OpenLayersUtils';
-import type Extent from '../core/geographic/Extent';
-import Fetcher from '../utils/Fetcher';
-import EmptyTexture from '../renderer/EmptyTexture';
 
 const tmpExtent = new Array(4);
 

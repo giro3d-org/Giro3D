@@ -1,27 +1,27 @@
 import {
-    Color,
+    ArrowHelper,
+    AxesHelper,
     Box3,
-    Vector3,
     Box3Helper,
-    BufferGeometry,
     BufferAttribute,
+    BufferGeometry,
+    Color,
+    GridHelper,
     LineBasicMaterial,
     LineSegments,
-    SphereGeometry,
-    Mesh,
     Matrix4,
+    Mesh,
     MeshBasicMaterial,
-    AxesHelper,
-    GridHelper,
-    ArrowHelper,
+    SphereGeometry,
+    Vector3,
+    type Material,
     type Object3D,
     type Sphere,
-    type Material,
 } from 'three';
-import type Tiles3D from '../entities/Tiles3D';
 import type OBB from '../core/OBB.js';
-import OBBHelper from './OBBHelper';
 import type { ProcessedTile } from '../entities/3dtiles/3dTilesIndex';
+import type Tiles3D from '../entities/Tiles3D';
+import OBBHelper from './OBBHelper';
 
 export class VolumeHelper extends OBBHelper {
     readonly isvolumeHelper = true;

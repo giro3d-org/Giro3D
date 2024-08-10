@@ -1,12 +1,12 @@
 import { LoaderUtils } from 'three';
-import type Tiles3D from '../Tiles3D';
+import { preparePointGeometryForPicking } from '../../core/picking/PickPointsAt';
+import PointCloud from '../../core/PointCloud';
 import B3dmParser from '../../parser/B3dmParser';
 import PntsParser from '../../parser/PntsParser';
 import PointCloudMaterial from '../../renderer/PointCloudMaterial';
-import PointCloud from '../../core/PointCloud';
-import type { $3dTilesTileset } from './types';
 import utf8Decoder from '../../utils/Utf8Decoder';
-import { preparePointGeometryForPicking } from '../../core/picking/PickPointsAt';
+import type Tiles3D from '../Tiles3D';
+import type { $3dTilesTileset } from './types';
 
 async function b3dmToMesh(data: ArrayBuffer, entity: Tiles3D, url: string) {
     const urlBase = LoaderUtils.extractUrlBase(url);

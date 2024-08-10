@@ -1,15 +1,15 @@
+import chalk from 'chalk';
+import { program } from 'commander';
 import esMain from 'es-main';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { program } from 'commander';
-import chalk from 'chalk';
 
-import { buildStaticSite } from './build-static-site.mjs';
 import { buildApidoc } from './build-apidoc.mjs';
 import { buildExamples } from './build-examples.mjs';
+import { buildStaticSite } from './build-static-site.mjs';
 import { buildTutorials } from './build-tutorials.mjs';
 import { createStaticServer } from './serve.mjs';
-import { log, logOk, logWarning, logError } from './utils.mjs';
+import { log, logError, logOk, logWarning } from './utils.mjs';
 
 const baseDir = dirname(fileURLToPath(import.meta.url));
 

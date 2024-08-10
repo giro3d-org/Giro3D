@@ -1,15 +1,15 @@
 import type GUI from 'lil-gui';
 import type Instance from '../core/Instance';
 import type Entity3D from '../entities/Entity3D';
+import { isEntity3D } from '../entities/Entity3D';
+import AxisGridInspector from './AxisGridInspector';
 import type EntityInspector from './EntityInspector';
 import FeatureCollectionInspector from './FeatureCollectionInspector';
 import MapInspector from './MapInspector';
-import AxisGridInspector from './AxisGridInspector';
 import Panel from './Panel';
-import Tiles3dInspector from './Tiles3dInspector';
 import PotreePointCloudInspector from './PotreePointCloudInspector';
 import ShapeInspector from './ShapeInspector';
-import { isEntity3D } from '../entities/Entity3D';
+import Tiles3dInspector from './Tiles3dInspector';
 
 const customInspectors: Record<string, typeof EntityInspector<Entity3D>> = {
     Map: MapInspector,

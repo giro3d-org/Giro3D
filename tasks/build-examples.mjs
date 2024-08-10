@@ -1,15 +1,15 @@
-import esMain from 'es-main';
-import fse from 'fs-extra';
-import ejs from 'ejs';
-import path, { dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { program } from 'commander';
 import chokidar from 'chokidar';
+import { program } from 'commander';
+import CopyPlugin from 'copy-webpack-plugin';
+import ejs from 'ejs';
+import esMain from 'es-main';
+import frontMatter from 'front-matter';
+import fse from 'fs-extra';
+import path, { dirname } from 'path';
+import shiki from 'shiki';
+import { fileURLToPath } from 'url';
 import webpack from 'webpack';
 import webpackDevServer from 'webpack-dev-server';
-import CopyPlugin from 'copy-webpack-plugin';
-import frontMatter from 'front-matter';
-import shiki from 'shiki';
 
 import { handleModification } from '../observer.mjs';
 import { copyAssets } from './build-static-site.mjs';

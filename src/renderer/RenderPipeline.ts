@@ -8,11 +8,11 @@ import {
     WebGLRenderTarget,
 } from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
-import { TexturePass } from 'three/examples/jsm/postprocessing/TexturePass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { TexturePass } from 'three/examples/jsm/postprocessing/TexturePass.js';
+import type PointCloud from '../core/PointCloud';
 import PointCloudRenderer from './PointCloudRenderer';
 import type RenderingOptions from './RenderingOptions';
-import type PointCloud from '../core/PointCloud';
 
 const BUCKETS = {
     OPAQUE: 0,

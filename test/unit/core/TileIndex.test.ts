@@ -1,14 +1,14 @@
 import TileIndex, {
-    TOP,
-    TOP_RIGHT,
-    RIGHT,
-    BOTTOM_RIGHT,
     BOTTOM,
     BOTTOM_LEFT,
+    BOTTOM_RIGHT,
     LEFT,
+    RIGHT,
+    TOP,
     TOP_LEFT,
-    type Tile,
+    TOP_RIGHT,
     type NeighbourList,
+    type Tile,
 } from '../../../src/core/TileIndex';
 
 class MockWeakRef<T extends WeakKey> implements WeakRef<T> {

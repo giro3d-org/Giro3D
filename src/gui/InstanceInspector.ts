@@ -1,10 +1,10 @@
 import type GUI from 'lil-gui';
 import { Color } from 'three';
-import Panel from './Panel';
 import type Instance from '../core/Instance';
+import * as MemoryUsage from '../core/MemoryUsage';
+import Panel from './Panel';
 import RenderingInspector from './RenderingInspector';
 import WebGLRendererInspector from './WebGLRendererInspector';
-import * as MemoryUsage from '../core/MemoryUsage';
 
 class InstanceInspector extends Panel {
     /** Store the CRS code of the instance */

@@ -1,45 +1,45 @@
 import {
-    Vector2,
-    MathUtils,
     Group,
+    MathUtils,
     Matrix4,
-    type Object3D,
-    type Material,
+    Vector2,
     Vector3,
     type BufferGeometry,
+    type Material,
+    type Object3D,
 } from 'three';
-import type Extent from '../core/geographic/Extent';
-import Entity3D, { type Entity3DEventMap } from './Entity3D';
-import OperationCounter from '../core/OperationCounter';
-import $3dTilesIndex, { type ProcessedTile } from './3dtiles/3dTilesIndex';
-import Fetcher from '../utils/Fetcher';
-import utf8Decoder from '../utils/Utf8Decoder';
 import { GlobalCache } from '../core/Cache';
-import type RequestQueue from '../core/RequestQueue';
-import { DefaultQueue } from '../core/RequestQueue';
-import type Tiles3DSource from '../sources/Tiles3DSource';
-import { type ObjectToUpdate } from '../core/MainLoop';
 import type Context from '../core/Context';
-import type PointCloud from '../core/PointCloud';
-import Tile from './3dtiles/Tile';
-import { boundingVolumeToExtent, cullingTest } from './3dtiles/BoundingVolume';
-import type { $3dTilesTileset, $3dTilesTile, $3dTilesAsset } from './3dtiles/types';
-import $3dTilesLoader from './3dtiles/3dTilesLoader';
-import PointCloudMaterial from '../renderer/PointCloudMaterial';
-import type Pickable from '../core/picking/Pickable';
-import type PickOptions from '../core/picking/PickOptions';
-import type PickResult from '../core/picking/PickResult';
-import pickObjectsAt from '../core/picking/PickObjectsAt';
-import pickPointsAt, { type PointsPickResult } from '../core/picking/PickPointsAt';
+import type Extent from '../core/geographic/Extent';
 import type { ColorLayer, Layer, LayerEvents } from '../core/layer';
 import type HasLayers from '../core/layer/HasLayers';
-import { type EntityUserData } from './Entity';
+import { type ObjectToUpdate } from '../core/MainLoop';
 import {
     createEmptyReport,
     getGeometryMemoryUsage,
     type GetMemoryUsageContext,
     type MemoryUsageReport,
 } from '../core/MemoryUsage';
+import OperationCounter from '../core/OperationCounter';
+import type Pickable from '../core/picking/Pickable';
+import pickObjectsAt from '../core/picking/PickObjectsAt';
+import type PickOptions from '../core/picking/PickOptions';
+import pickPointsAt, { type PointsPickResult } from '../core/picking/PickPointsAt';
+import type PickResult from '../core/picking/PickResult';
+import type PointCloud from '../core/PointCloud';
+import type RequestQueue from '../core/RequestQueue';
+import { DefaultQueue } from '../core/RequestQueue';
+import PointCloudMaterial from '../renderer/PointCloudMaterial';
+import type Tiles3DSource from '../sources/Tiles3DSource';
+import Fetcher from '../utils/Fetcher';
+import utf8Decoder from '../utils/Utf8Decoder';
+import $3dTilesIndex, { type ProcessedTile } from './3dtiles/3dTilesIndex';
+import $3dTilesLoader from './3dtiles/3dTilesLoader';
+import { boundingVolumeToExtent, cullingTest } from './3dtiles/BoundingVolume';
+import Tile from './3dtiles/Tile';
+import type { $3dTilesAsset, $3dTilesTile, $3dTilesTileset } from './3dtiles/types';
+import { type EntityUserData } from './Entity';
+import Entity3D, { type Entity3DEventMap } from './Entity3D';
 
 /** Options to create a Tiles3D object. */
 export interface Tiles3DOptions<TMaterial extends Material> {

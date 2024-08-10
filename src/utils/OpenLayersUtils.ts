@@ -1,9 +1,9 @@
 import type { Feature } from 'ol';
-import type { Extent as OLExtent } from 'ol/extent';
 import type { Color as OLColor } from 'ol/color';
-import Extent from '../core/geographic/Extent';
-import { Color } from 'three';
 import type { ColorLike } from 'ol/colorlike';
+import type { Extent as OLExtent } from 'ol/extent';
+import { Color } from 'three';
+import Extent from '../core/geographic/Extent';
 
 function fromOLExtent(extent: OLExtent, projectionCode: string) {
     return new Extent(projectionCode, extent[0], extent[2], extent[1], extent[3]);
