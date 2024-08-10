@@ -1,10 +1,10 @@
 import type { PixelFormat, Texture, TextureDataType } from 'three';
 import { FloatType, NoColorSpace, RGFormat } from 'three';
-import type { LayerEvents, LayerOptions, LayerUserData, Target, TextureAndPitch } from './Layer';
-import Layer from './Layer';
+import type ElevationRange from '../ElevationRange.js';
 import type Extent from '../geographic/Extent.js';
 import type TileMesh from '../TileMesh';
-import type ElevationRange from '../ElevationRange.js';
+import type { LayerEvents, LayerOptions, LayerUserData, Target, TextureAndPitch } from './Layer';
+import Layer from './Layer';
 
 interface TextureWithMinMax extends Texture {
     min?: number;

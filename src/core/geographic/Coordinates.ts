@@ -1,6 +1,6 @@
-import { Vector3, MathUtils, Vector2 } from 'three';
-import proj4 from 'proj4';
 import { register } from 'ol/proj/proj4';
+import proj4 from 'proj4';
+import { MathUtils, Vector2, Vector3 } from 'three';
 
 const projectionCache: Map<string, Map<string, proj4.Converter>> = new Map();
 

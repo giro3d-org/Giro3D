@@ -1,12 +1,12 @@
 import {
     EventDispatcher,
-    type Texture,
-    UnsignedByteType,
     FloatType,
-    type TextureDataType,
-    type ColorSpace,
-    SRGBColorSpace,
     LinearSRGBColorSpace,
+    SRGBColorSpace,
+    UnsignedByteType,
+    type ColorSpace,
+    type Texture,
+    type TextureDataType,
 } from 'three';
 import type Extent from '../core/geographic/Extent';
 import type MemoryUsage from '../core/MemoryUsage';

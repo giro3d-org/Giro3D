@@ -17,11 +17,11 @@ import {
     WebGLRenderTarget,
 } from 'three';
 import BasicVS from './shader/BasicVS.glsl';
-import EDLPassZeroFS from './shader/pointcloud/EDLPassZeroFS.glsl';
 import EDLPassOneFS from './shader/pointcloud/EDLPassOneFS.glsl';
 import EDLPassTwoFS from './shader/pointcloud/EDLPassTwoFS.glsl';
-import OcclusionFS from './shader/pointcloud/OcclusionFS.glsl';
+import EDLPassZeroFS from './shader/pointcloud/EDLPassZeroFS.glsl';
 import InpaintingFS from './shader/pointcloud/InpaintingFS.glsl';
+import OcclusionFS from './shader/pointcloud/OcclusionFS.glsl';
 
 const RT = {
     FULL_RES_0: 0,

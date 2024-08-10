@@ -1,8 +1,8 @@
 import { EventDispatcher, type EventListener, type Texture } from 'three';
 import HttpConfiguration from './HttpConfiguration';
-import TextureGenerator from './TextureGenerator';
 import HttpQueue from './HttpQueue';
 import PromiseUtils from './PromiseUtils';
+import TextureGenerator from './TextureGenerator';
 
 const DEFAULT_RETRY_DELAY_MS = 1000;
 

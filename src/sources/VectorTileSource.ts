@@ -1,16 +1,16 @@
-import { type Texture, CanvasTexture, MathUtils, Vector2 } from 'three';
 import OLVectorTileSourcce from 'ol/source/VectorTile.js';
-import VectorTile from 'ol/VectorTile.js';
 import type { Style } from 'ol/style.js';
+import VectorTile from 'ol/VectorTile.js';
+import { CanvasTexture, MathUtils, Vector2, type Texture } from 'three';
 
 import TileState from 'ol/TileState.js';
 
 import { listen, unlistenByKey } from 'ol/events.js';
 import {
-    createEmpty as createEmptyExtent,
-    getIntersection,
-    equals,
     buffer,
+    createEmpty as createEmptyExtent,
+    equals,
+    getIntersection,
     intersects,
 } from 'ol/extent.js';
 
@@ -25,11 +25,13 @@ import {
 import CanvasBuilderGroup from 'ol/render/canvas/BuilderGroup.js';
 import CanvasExecutorGroup from 'ol/render/canvas/ExecutorGroup.js';
 
+import type { Tile, VectorRenderTile } from 'ol';
+import type Feature from 'ol/Feature.js';
 import {
     getSquaredTolerance as getSquaredRenderTolerance,
     renderFeature as renderVectorFeature,
 } from 'ol/renderer/vector.js';
-import type { Tile, VectorRenderTile } from 'ol';
+import type TileGrid from 'ol/tilegrid/TileGrid.js';
 import type { Transform } from 'ol/transform.js';
 import {
     create as createTransform,
@@ -37,21 +39,19 @@ import {
     scale as scaleTransform,
     translate as translateTransform,
 } from 'ol/transform.js';
-import type TileGrid from 'ol/tilegrid/TileGrid.js';
-import type Feature from 'ol/Feature.js';
 
 import { MVT } from 'ol/format.js';
 import type FeatureFormat from 'ol/format/Feature.js';
-import type { StyleFunction } from 'ol/style/Style';
+import type { Geometry } from 'ol/geom';
 import type { Projection } from 'ol/proj';
 import type { OrderFunction } from 'ol/render';
-import type { Geometry } from 'ol/geom';
+import type { StyleFunction } from 'ol/style/Style';
+import type Extent from '../core/geographic/Extent';
+import EmptyTexture from '../renderer/EmptyTexture';
+import Fetcher from '../utils/Fetcher.js';
+import OpenLayersUtils from '../utils/OpenLayersUtils';
 import type { GetImageOptions, ImageResponse, ImageSourceOptions } from './ImageSource';
 import ImageSource, { ImageResult } from './ImageSource';
-import OpenLayersUtils from '../utils/OpenLayersUtils';
-import type Extent from '../core/geographic/Extent';
-import Fetcher from '../utils/Fetcher.js';
-import EmptyTexture from '../renderer/EmptyTexture';
 
 const tmpTransform: Transform = createTransform();
 const MIN_LEVEL_THRESHOLD = 2;

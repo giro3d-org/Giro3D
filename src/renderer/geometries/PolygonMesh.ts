@@ -1,9 +1,9 @@
+import type { Polygon } from 'ol/geom';
 import { Object3D } from 'three';
 import type LineStringMesh from './LineStringMesh';
-import type SurfaceMesh from './SurfaceMesh';
 import type SimpleGeometryMesh from './SimpleGeometryMesh';
 import type { DefaultUserData, SimpleGeometryMeshEventMap } from './SimpleGeometryMesh';
-import type { Polygon } from 'ol/geom';
+import type SurfaceMesh from './SurfaceMesh';
 
 /**
  * Represents a single polygon geometry, including the surface and the rings.

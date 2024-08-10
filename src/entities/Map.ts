@@ -8,11 +8,11 @@ import {
     UnsignedByteType,
     Vector2,
     Vector3,
+    type Camera as ThreeCamera,
     type ColorRepresentation,
     type Intersection,
     type Object3D,
     type TextureDataType,
-    type Camera as ThreeCamera,
 } from 'three';
 
 import type ColorimetryOptions from '../core/ColorimetryOptions';

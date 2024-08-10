@@ -1,10 +1,10 @@
-import type GUI from 'lil-gui';
 import type { ChartData, ChartDataset, ScatterDataPoint } from 'chart.js';
 import { Chart } from 'chart.js';
+import type GUI from 'lil-gui';
 import type { WebGLInfo } from 'three';
 import type Instance from '../../core/Instance';
-import ChartPanel, { pushTrim } from './ChartPanel';
 import { GlobalRenderTargetPool } from '../../renderer/RenderTargetPool';
+import ChartPanel, { pushTrim } from './ChartPanel';
 
 const MAX_DATA_POINTS = 20;
 

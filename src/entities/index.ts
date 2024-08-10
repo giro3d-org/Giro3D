@@ -4,24 +4,23 @@ import AxisGrid, {
     type Ticks as AxisGridTicks,
     type Volume as AxisGridVolume,
 } from './AxisGrid';
-import Map, {
-    type MapConstructorOptions,
-    type LayerCompareFn,
-    type MapEventMap,
-    DEFAULT_MAP_BACKGROUND_COLOR,
-    DEFAULT_MAP_SEGMENTS,
-    DEFAULT_SUBDIVISION_THRESHOLD,
-} from './Map';
-import PotreePointCloud from './PotreePointCloud';
+import type ElevationSample from './ElevationSample';
 import Entity, { type EntityEventMap, type EntityUserData } from './Entity';
 import Entity3D, { type Entity3DEventMap } from './Entity3D';
-import Tiles3D, { type Tiles3DOptions, type Tiles3DPickResult } from './Tiles3D';
 import FeatureCollection, { type MeshUserData } from './FeatureCollection';
 import type GetElevationOptions from './GetElevationOptions';
 import type GetElevationResult from './GetElevationResult';
-import type ElevationSample from './ElevationSample';
-import Shape from './Shape';
-import * as shape from './Shape';
+import Map, {
+    DEFAULT_MAP_BACKGROUND_COLOR,
+    DEFAULT_MAP_SEGMENTS,
+    DEFAULT_SUBDIVISION_THRESHOLD,
+    type LayerCompareFn,
+    type MapConstructorOptions,
+    type MapEventMap,
+} from './Map';
+import PotreePointCloud from './PotreePointCloud';
+import Shape, * as shape from './Shape';
+import Tiles3D, { type Tiles3DOptions, type Tiles3DPickResult } from './Tiles3D';
 
 export {
     Entity,

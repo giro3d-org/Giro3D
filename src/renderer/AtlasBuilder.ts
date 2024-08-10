@@ -1,5 +1,5 @@
 import { type Vector2 } from 'three';
-import fit, { type Node, type Block } from './Packer';
+import fit, { type Block, type Node } from './Packer';
 
 /**
  * An atlas image.

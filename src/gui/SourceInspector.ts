@@ -1,12 +1,12 @@
 import type GUI from 'lil-gui';
-import UrlTile from 'ol/source/UrlTile.js';
 import type TileSource from 'ol/source/Tile.js';
+import UrlTile from 'ol/source/UrlTile.js';
 import type Instance from '../core/Instance';
-import Panel from './Panel';
-import CogSource from '../sources/CogSource';
-import TiledImageSource from '../sources/TiledImageSource';
 import * as MemoryUsage from '../core/MemoryUsage';
 import type { ImageSource } from '../sources';
+import CogSource from '../sources/CogSource';
+import TiledImageSource from '../sources/TiledImageSource';
+import Panel from './Panel';
 
 /**
  * Inspector for a source.

@@ -11,8 +11,8 @@ import {
     Title,
 } from 'chart.js';
 import type GUI from 'lil-gui';
-import Panel from '../Panel';
 import type Instance from '../../core/Instance';
+import Panel from '../Panel';
 
 /**
  * Pushes the value in the array, removing old values in array length exceeds MAX_DATA_POINTS.

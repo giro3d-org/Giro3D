@@ -1,10 +1,10 @@
 import * as core from './core';
-import * as sources from './sources';
 import * as entities from './entities';
-import * as utils from './utils';
-import * as renderer from './renderer';
 import * as formats from './formats';
-import * as interactions from './interactions';
 import * as helpers from './helpers';
+import * as interactions from './interactions';
+import * as renderer from './renderer';
+import * as sources from './sources';
+import * as utils from './utils';
 
 export { core, sources, formats, entities, utils, renderer, helpers, interactions };

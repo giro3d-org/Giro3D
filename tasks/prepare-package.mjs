@@ -1,8 +1,8 @@
+import { execSync } from 'child_process';
 import esMain from 'es-main';
 import fse from 'fs-extra';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { execSync } from 'child_process';
 
 const baseDir = dirname(fileURLToPath(import.meta.url));
 const buildDir = path.resolve(baseDir, '../build/giro3d');

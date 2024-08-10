@@ -1,12 +1,12 @@
 import {
     NearestFilter,
+    RGBAFormat,
     UnsignedByteType,
     type Texture,
     type WebGLRenderer,
-    RGBAFormat,
 } from 'three';
-import Rect from '../core/Rect';
 import type ColorMap from '../core/layer/ColorMap';
+import Rect from '../core/Rect';
 import WebGLComposer from './composition/WebGLComposer';
 
 /**

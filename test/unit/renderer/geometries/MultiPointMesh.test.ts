@@ -1,7 +1,7 @@
+import MultiPointMesh, { isMultiPointMesh } from 'src/renderer/geometries/MultiPointMesh';
+import PointMesh from 'src/renderer/geometries/PointMesh';
 import { isSimpleGeometryMesh } from 'src/renderer/geometries/SimpleGeometryMesh';
 import { SpriteMaterial } from 'three';
-import PointMesh from 'src/renderer/geometries/PointMesh';
-import MultiPointMesh, { isMultiPointMesh } from 'src/renderer/geometries/MultiPointMesh';
 
 function makeDefaultObjects(options?: { material?: SpriteMaterial; opacity?: number }) {
     const material = options?.material ?? new SpriteMaterial();

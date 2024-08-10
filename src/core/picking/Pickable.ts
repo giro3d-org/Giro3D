@@ -1,6 +1,6 @@
 import type { Vector2 } from 'three';
-import type PickResult from './PickResult';
 import type PickOptions from './PickOptions';
+import type PickResult from './PickResult';
 
 /**
  * Interface for an {@link entities.Entity3D | Entity3D} that implements picking.

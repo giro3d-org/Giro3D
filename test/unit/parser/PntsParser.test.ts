@@ -1,7 +1,7 @@
+import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
 import { cwd } from 'process';
-import assert from 'assert';
 import PntsParser, { type Pnts } from 'src/parser/PntsParser';
 import { Uint8BufferAttribute } from 'three';
 

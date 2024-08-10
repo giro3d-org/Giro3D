@@ -1,7 +1,7 @@
-import { type Camera, EventDispatcher, MathUtils } from 'three';
+import { EventDispatcher, MathUtils, type Camera } from 'three';
 import type Context from '../core/Context';
-import { type ObjectToUpdate } from '../core/MainLoop';
 import type Disposable from '../core/Disposable';
+import { type ObjectToUpdate } from '../core/MainLoop';
 
 /* eslint no-unused-vars: 0 */
 /* eslint class-methods-use-this: 0 */

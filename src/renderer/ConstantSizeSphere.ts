@@ -1,17 +1,17 @@
 import {
-    type Camera,
-    type Intersection,
-    type Material,
     MathUtils,
     Mesh,
     MeshStandardMaterial,
+    SphereGeometry,
+    Vector2,
+    Vector3,
+    type Camera,
+    type Intersection,
+    type Material,
     type OrthographicCamera,
     type PerspectiveCamera,
     type Raycaster,
     type Scene,
-    SphereGeometry,
-    Vector2,
-    Vector3,
     type WebGLRenderer,
 } from 'three';
 

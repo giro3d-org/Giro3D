@@ -1,15 +1,15 @@
 import assert from 'assert';
+import Entity3D from 'src/entities/Entity3D';
 import {
     BoxGeometry,
     BufferGeometry,
     Group,
-    type Material,
     Mesh,
     MeshStandardMaterial,
     Object3D,
     Plane,
+    type Material,
 } from 'three';
-import Entity3D from 'src/entities/Entity3D';
 
 /**
  * Creates a valid {@link Entity3D} for unit testing.

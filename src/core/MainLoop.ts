@@ -1,8 +1,8 @@
-import { MathUtils as ThreeMath, Sphere, Clock } from 'three';
-import Context from './Context';
-import type C3DEngine from '../renderer/c3DEngine';
-import type Instance from './Instance';
+import { Clock, MathUtils as ThreeMath, Sphere } from 'three';
 import Entity from '../entities/Entity';
+import type C3DEngine from '../renderer/c3DEngine';
+import Context from './Context';
+import type Instance from './Instance';
 import { hasLayers } from './layer/HasLayers';
 
 /** Rendering state */

@@ -1,7 +1,7 @@
-import { Object3D } from 'three';
 import type GUI from 'lil-gui';
-import Panel from '../Panel';
+import { Object3D } from 'three';
 import type Instance from '../../core/Instance';
+import Panel from '../Panel';
 
 class OutlinerPropertyView extends Panel {
     protected _folders: GUI[];

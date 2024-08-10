@@ -1,4 +1,4 @@
-import { ClampToEdgeWrapping, type Color, type DataTexture, MathUtils, NearestFilter } from 'three';
+import { ClampToEdgeWrapping, MathUtils, NearestFilter, type Color, type DataTexture } from 'three';
 import TextureGenerator from '../../utils/TextureGenerator';
 import ColorMapMode from './ColorMapMode';
 

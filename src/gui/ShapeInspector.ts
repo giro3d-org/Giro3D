@@ -1,8 +1,8 @@
 import type GUI from 'lil-gui';
-import type Instance from '../core/Instance';
-import EntityInspector from './EntityInspector';
-import type Shape from '../entities/Shape';
 import { Color } from 'three';
+import type Instance from '../core/Instance';
+import type Shape from '../entities/Shape';
+import EntityInspector from './EntityInspector';
 
 class ShapeInspector extends EntityInspector<Shape> {
     color: string;

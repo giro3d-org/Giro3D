@@ -7,45 +7,45 @@ import earcut from 'earcut';
 import {
     BufferGeometry,
     Color,
-    type ColorRepresentation,
     CurvePath,
     DoubleSide,
     Float32BufferAttribute,
     FrontSide,
     Group,
-    type Intersection,
     Line3,
     LineCurve3,
-    type Material,
     MathUtils,
     Mesh,
     MeshBasicMaterial,
-    type Object3D,
     Raycaster,
     Sphere,
     Triangle,
     Vector2,
     Vector3,
+    type ColorRepresentation,
+    type Intersection,
+    type Material,
+    type Object3D,
     type WebGLRenderer,
 } from 'three';
 
 import { Line2 } from 'three/examples/jsm/lines/Line2';
-import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry';
+import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer';
 
-import type { PickOptions, PickResult } from '../core/picking';
-import ConstantSizeSphere, { getWorldSpaceRadius } from '../renderer/ConstantSizeSphere';
-import Entity3D, { type Entity3DEventMap } from './Entity3D';
 import {
     createEmptyReport,
     getGeometryMemoryUsage,
     type GetMemoryUsageContext,
     type MemoryUsageReport,
 } from '../core/MemoryUsage';
+import type { PickOptions, PickResult } from '../core/picking';
+import ConstantSizeSphere, { getWorldSpaceRadius } from '../renderer/ConstantSizeSphere';
 import { getContrastColor } from '../utils/ColorUtils';
 import GeoJSONUtils from '../utils/GeoJSONUtils';
 import { type EntityUserData } from './Entity';
+import Entity3D, { type Entity3DEventMap } from './Entity3D';
 
 const tmpMidPoint = new Vector3();
 const tmpNDC = new Vector2();

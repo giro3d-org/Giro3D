@@ -1,10 +1,10 @@
 import type GUI from 'lil-gui';
-import { Object3D, Color, Plane, Vector3, PlaneHelper, type ColorRepresentation } from 'three';
-import Panel from './Panel';
+import { Color, Object3D, Plane, PlaneHelper, Vector3, type ColorRepresentation } from 'three';
 import type Instance from '../core/Instance';
+import * as MemoryUsage from '../core/MemoryUsage';
 import type Entity3D from '../entities/Entity3D';
 import Helpers from '../helpers/Helpers';
-import * as MemoryUsage from '../core/MemoryUsage';
+import Panel from './Panel';
 
 const _tempArray: Object3D[] = [];
 

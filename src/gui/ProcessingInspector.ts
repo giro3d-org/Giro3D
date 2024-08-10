@@ -1,13 +1,13 @@
 import type GUI from 'lil-gui';
-import Panel from './Panel';
 import type Instance from '../core/Instance';
-import FrameDuration from './charts/FrameDuration';
-import MemoryUsage from './charts/MemoryUsage';
 import MemoryTracker from '../renderer/MemoryTracker';
 import CachePanel from './CachePanel';
-import FetcherPanel from './FetcherPanel';
-import RequestQueueChart from './charts/RequestQueueChart';
+import FrameDuration from './charts/FrameDuration';
+import MemoryUsage from './charts/MemoryUsage';
 import PickingDuration from './charts/PickingDuration';
+import RequestQueueChart from './charts/RequestQueueChart';
+import FetcherPanel from './FetcherPanel';
+import Panel from './Panel';
 
 class ProcessingInspector extends Panel {
     charts: Panel[];

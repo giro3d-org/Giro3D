@@ -1,23 +1,23 @@
-import CogSource, { type CogSourceOptions, type CogCacheOptions } from './CogSource';
+import CogSource, { type CogCacheOptions, type CogSourceOptions } from './CogSource';
 import ImageSource, {
-    type GetImageOptions,
-    type ImageSourceOptions,
-    type ImageResponse,
     type CustomContainsFn,
+    type GetImageOptions,
+    type ImageResponse,
     type ImageResult,
     type ImageSourceEvents,
+    type ImageSourceOptions,
 } from './ImageSource';
+import PotreeSource from './PotreeSource';
+import StaticImageSource, {
+    type StaticImageSourceEvents,
+    type StaticImageSourceOptions,
+} from './StaticImageSource';
 import TiledImageSource, { type TiledImageSourceOptions } from './TiledImageSource';
 import Tiles3DSource from './Tiles3DSource';
 import VectorSource, { type VectorSourceOptions } from './VectorSource';
 import VectorTileSource, { type VectorTileSourceOptions } from './VectorTileSource';
-import PotreeSource from './PotreeSource';
-import WmtsSource, { type WmtsSourceOptions, type WmtsFromCapabilitiesOptions } from './WmtsSource';
 import WmsSource, { type WmsSourceOptions } from './WmsSource';
-import StaticImageSource, {
-    type StaticImageSourceOptions,
-    type StaticImageSourceEvents,
-} from './StaticImageSource';
+import WmtsSource, { type WmtsFromCapabilitiesOptions, type WmtsSourceOptions } from './WmtsSource';
 
 /**
  * Data sources.

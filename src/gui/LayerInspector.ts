@@ -1,17 +1,17 @@
 import type GUI from 'lil-gui';
 import { Color } from 'three';
 import type Instance from '../core/Instance';
-import type Layer from '../core/layer/Layer';
-import Panel from './Panel';
-import ColorMapInspector from './ColorMapInspector';
-import type { BoundingBoxHelper } from '../helpers/Helpers';
-import Helpers from '../helpers/Helpers';
-import SourceInspector from './SourceInspector';
 import type { ColorLayer, ElevationLayer } from '../core/layer';
-import ColorimetryPanel from './ColorimetryPanel';
+import type Layer from '../core/layer/Layer';
 import * as MemoryUsage from '../core/MemoryUsage';
 import type { Entity3D } from '../entities';
 import { isMap } from '../entities/Map';
+import type { BoundingBoxHelper } from '../helpers/Helpers';
+import Helpers from '../helpers/Helpers';
+import ColorimetryPanel from './ColorimetryPanel';
+import ColorMapInspector from './ColorMapInspector';
+import Panel from './Panel';
+import SourceInspector from './SourceInspector';
 
 /**
  * Inspector for a {@link Layer}.

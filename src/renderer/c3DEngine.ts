@@ -1,22 +1,22 @@
-import type { Object3D, Camera, Scene, TextureDataType, ColorRepresentation } from 'three';
+import type { Camera, ColorRepresentation, Object3D, Scene, TextureDataType } from 'three';
 import {
     DepthTexture,
     LinearFilter,
     NearestFilter,
+    RGBAFormat,
+    UnsignedByteType,
     UnsignedShortType,
     Vector2,
     WebGLRenderer,
     WebGLRenderTarget,
-    RGBAFormat,
-    UnsignedByteType,
 } from 'three';
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 import Capabilities from '../core/system/Capabilities';
-import RenderPipeline from './RenderPipeline';
 import RenderingOptions from './RenderingOptions';
+import RenderPipeline from './RenderPipeline';
 
-import registerChunks from './shader/chunk/registerChunks';
 import TextureGenerator from '../utils/TextureGenerator';
+import registerChunks from './shader/chunk/registerChunks';
 
 const tmpVec2 = new Vector2();
 

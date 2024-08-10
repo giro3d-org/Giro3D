@@ -1,11 +1,11 @@
 import assert from 'assert';
 import proj4 from 'proj4';
 import { Group, Matrix4, Mesh, MeshBasicMaterial } from 'three';
-import Tiles3D from '../../../src/entities/Tiles3D';
+import Coordinates from '../../../src/core/geographic/Coordinates';
 import $3dTilesIndex from '../../../src/entities/3dtiles/3dTilesIndex';
 import Tile from '../../../src/entities/3dtiles/Tile';
+import Tiles3D from '../../../src/entities/Tiles3D';
 import View from '../../../src/renderer/View';
-import Coordinates from '../../../src/core/geographic/Coordinates';
 import Tiles3DSource from '../../../src/sources/Tiles3DSource';
 
 describe('Tiles3D', () => {

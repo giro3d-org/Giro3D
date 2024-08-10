@@ -1,9 +1,9 @@
+import { program } from 'commander';
 import esMain from 'es-main';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import webpack from 'webpack';
 import webpackDevServer from 'webpack-dev-server';
-import { program } from 'commander';
 
 const baseDir = dirname(fileURLToPath(import.meta.url));
 

@@ -1,7 +1,7 @@
 import { FloatType } from 'three';
+import TextureGenerator from '../utils/TextureGenerator';
 import type { DecodeOptions } from './ImageFormat';
 import ImageFormat from './ImageFormat';
-import TextureGenerator from '../utils/TextureGenerator';
 
 /**
  * Decoder for [BIL](https://desktop.arcgis.com/en/arcmap/10.3/manage-data/raster-and-images/bil-bip-and-bsq-raster-files.htm) images.

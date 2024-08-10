@@ -1,5 +1,5 @@
-import type { Vector3, Object3D, Intersection } from 'three';
 import type Feature from 'ol/Feature';
+import type { Intersection, Object3D, Vector3 } from 'three';
 import type Entity3D from '../../entities/Entity3D';
 import type ColorLayer from '../layer/ColorLayer';
 

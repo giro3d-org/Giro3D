@@ -7,13 +7,13 @@ import TileMesh from '../core/TileMesh';
 import type Map from '../entities/Map';
 import type { BoundingBoxHelper } from '../helpers/Helpers';
 import Helpers from '../helpers/Helpers';
-import EntityInspector from './EntityInspector';
 import RenderingState from '../renderer/RenderingState';
-import LayerInspector from './LayerInspector';
-import HillshadingPanel from './HillshadingPanel';
-import ContourLinePanel from './ContourLinePanel';
 import ColorimetryPanel from './ColorimetryPanel';
+import ContourLinePanel from './ContourLinePanel';
+import EntityInspector from './EntityInspector';
 import GraticulePanel from './GraticulePanel';
+import HillshadingPanel from './HillshadingPanel';
+import LayerInspector from './LayerInspector';
 import MapTerrainPanel from './MapTerrainPanel';
 
 function createTileLabel() {

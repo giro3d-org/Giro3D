@@ -1,7 +1,7 @@
 import { FloatType } from 'three';
+import TextureGenerator from '../utils/TextureGenerator';
 import type { DecodeOptions } from './ImageFormat';
 import ImageFormat from './ImageFormat';
-import TextureGenerator from '../utils/TextureGenerator';
 
 /**
  * Decoder for [Mapbox Terrain](https://docs.mapbox.com/data/tilesets/reference/mapbox-terrain-dem-v1/) images.

@@ -1,15 +1,14 @@
 import { Color, Group, Object3D } from 'three';
 import Extent from '../../../src/core/geographic/Extent';
 import Instance from '../../../src/core/Instance';
-import Map from '../../../src/entities/Map';
-import Layer from '../../../src/core/layer/Layer';
-import MainLoop from '../../../src/core/MainLoop';
-import { setupGlobalMocks } from '../mocks.js';
-import ElevationLayer from '../../../src/core/layer/ElevationLayer';
-import RenderingState from '../../../src/renderer/RenderingState';
 import ColorLayer from '../../../src/core/layer/ColorLayer';
-import NullSource from '../../../src/sources/NullSource';
+import ElevationLayer from '../../../src/core/layer/ElevationLayer';
+import MainLoop from '../../../src/core/MainLoop';
+import Map from '../../../src/entities/Map';
 import { DEFAULT_AZIMUTH, DEFAULT_ZENITH } from '../../../src/renderer/LayeredMaterial';
+import RenderingState from '../../../src/renderer/RenderingState';
+import NullSource from '../../../src/sources/NullSource';
+import { setupGlobalMocks } from '../mocks.js';
 
 const nullSource = new NullSource({ extent: new Extent('EPSG:3857', -10, 10, -10, 10) });
 

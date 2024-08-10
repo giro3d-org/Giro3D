@@ -1,31 +1,31 @@
 import {
-    type CanvasTexture,
-    type DataTexture,
-    type Material,
     MathUtils,
     Mesh,
     PlaneGeometry,
-    type Texture,
     Vector2,
+    type CanvasTexture,
+    type DataTexture,
+    type Material,
+    type PixelFormat,
+    type Texture,
+    type TextureDataType,
     type WebGLRenderer,
     type WebGLRenderTarget,
-    type PixelFormat,
-    type TextureDataType,
 } from 'three';
-import type Extent from '../geographic/Extent';
-import Interpretation from './Interpretation';
 import WebGLComposer, { type DrawOptions } from '../../renderer/composition/WebGLComposer';
-import Rect from '../Rect';
+import { isEmptyTexture } from '../../renderer/EmptyTexture';
 import MemoryTracker from '../../renderer/MemoryTracker';
-import TextureGenerator from '../../utils/TextureGenerator';
 import ProjUtils from '../../utils/ProjUtils';
+import TextureGenerator from '../../utils/TextureGenerator';
+import type Extent from '../geographic/Extent';
 import type MemoryUsage from '../MemoryUsage';
 import {
     createEmptyReport,
     type GetMemoryUsageContext,
     type MemoryUsageReport,
 } from '../MemoryUsage';
-import { isEmptyTexture } from '../../renderer/EmptyTexture';
+import Rect from '../Rect';
+import Interpretation from './Interpretation';
 
 const tmpVec1 = new Vector2();
 const tmpVec2 = new Vector2();

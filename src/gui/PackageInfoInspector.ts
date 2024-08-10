@@ -1,8 +1,8 @@
 import type GUI from 'lil-gui';
 import { VERSION as olversion } from 'ol/util.js';
 import type Instance from '../core/Instance';
-import Panel from './Panel';
 import VERSION from '../version';
+import Panel from './Panel';
 
 class PackageInfoInspector extends Panel {
     olversion: string;

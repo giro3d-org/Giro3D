@@ -1,56 +1,56 @@
 // Number.isNan is quite slow, so we use n !== n
 /* eslint-disable no-self-compare */
 import {
-    Texture,
-    DataTexture,
-    FloatType,
     AlphaFormat,
+    ByteType,
+    ClampToEdgeWrapping,
+    DataTexture,
+    DepthFormat,
+    DepthStencilFormat,
+    FloatType,
+    HalfFloatType,
+    IntType,
+    LinearFilter,
     LuminanceAlphaFormat,
     LuminanceFormat,
-    HalfFloatType,
-    DepthFormat,
+    MathUtils,
+    NearestFilter,
     RedFormat,
     RedIntegerFormat,
-    RGFormat,
-    DepthStencilFormat,
-    RGIntegerFormat,
-    RGBAIntegerFormat,
     RGBAFormat,
-    UnsignedByteType,
+    RGBAIntegerFormat,
+    RGFormat,
+    RGIntegerFormat,
     ShortType,
-    UnsignedShortType,
-    IntType,
-    ByteType,
-    UnsignedShort4444Type,
+    Texture,
+    UnsignedByteType,
     UnsignedInt248Type,
     UnsignedIntType,
+    UnsignedShort4444Type,
     UnsignedShort5551Type,
-    ClampToEdgeWrapping,
-    NearestFilter,
-    LinearFilter,
-    MathUtils,
+    UnsignedShortType,
     WebGLRenderTarget,
     type AnyPixelFormat,
-    type TextureDataType,
-    type WebGLRenderer,
-    type Color,
-    type PixelFormat,
     type CanvasTexture,
-    type TypedArray,
-    type RenderTarget,
-    type MinificationTextureFilter,
+    type Color,
     type MagnificationTextureFilter,
+    type MinificationTextureFilter,
+    type PixelFormat,
+    type RenderTarget,
+    type TextureDataType,
+    type TypedArray,
+    type WebGLRenderer,
 } from 'three';
+import Interpretation, { Mode } from '../core/layer/Interpretation';
 import {
     createEmptyReport,
     type GetMemoryUsageContext,
     type MemoryUsageReport,
 } from '../core/MemoryUsage';
-import Interpretation, { Mode } from '../core/layer/Interpretation';
-import EmptyTexture from '../renderer/EmptyTexture';
-import WebGLComposer from '../renderer/composition/WebGLComposer';
 import Rect from '../core/Rect';
 import Capabilities from '../core/system/Capabilities';
+import WebGLComposer from '../renderer/composition/WebGLComposer';
+import EmptyTexture from '../renderer/EmptyTexture';
 
 export const OPAQUE_BYTE = 255;
 export const OPAQUE_FLOAT = 1.0;

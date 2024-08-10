@@ -2,8 +2,8 @@ import type GUI from 'lil-gui';
 import type Instance from '../core/Instance';
 import type ColorMap from '../core/layer/ColorMap';
 import { ColorMapMode } from '../core/layer/ColorMap';
-import Panel from './Panel';
 import type Layer from '../core/layer/Layer';
+import Panel from './Panel';
 
 /**
  * Inspector for a {@link ColorMap}.

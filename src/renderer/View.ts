@@ -3,10 +3,10 @@ import {
     Frustum,
     MathUtils,
     Matrix4,
-    type Sphere,
-    type OrthographicCamera,
     PerspectiveCamera,
     Vector3,
+    type OrthographicCamera,
+    type Sphere,
 } from 'three';
 import Coordinates from '../core/geographic/Coordinates';
 

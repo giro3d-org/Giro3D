@@ -1,8 +1,8 @@
 import {
     EventDispatcher,
-    type WebGLRenderer,
     WebGLRenderTarget,
     type RenderTargetOptions,
+    type WebGLRenderer,
 } from 'three';
 import type MemoryUsage from '../core/MemoryUsage';
 import {

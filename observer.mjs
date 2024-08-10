@@ -1,9 +1,9 @@
+import * as babel from '@babel/core';
+import chokidar from 'chokidar';
+import esMain from 'es-main';
 import fs from 'fs';
 import glob from 'glob';
 import path from 'path';
-import esMain from 'es-main';
-import chokidar from 'chokidar';
-import * as babel from '@babel/core';
 
 function usage() {
     console.log('observer.js <source> <dest>');

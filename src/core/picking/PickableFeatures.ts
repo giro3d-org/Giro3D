@@ -1,5 +1,5 @@
-import type PickResult from './PickResult';
 import type PickOptions from './PickOptions';
+import type PickResult from './PickResult';
 
 /**
  * Interface for {@link entities.Entity3D | Entity3D}s or Object3Ds implementing feature picking.

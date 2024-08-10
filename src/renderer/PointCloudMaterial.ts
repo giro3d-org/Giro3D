@@ -1,25 +1,25 @@
 import type { ColorRepresentation, IUniform, Texture } from 'three';
 import {
-    Matrix4,
     Color,
-    Vector2,
-    Vector3,
-    Vector4,
-    Uniform,
+    GLSL3,
+    Matrix4,
     NoBlending,
     NormalBlending,
     ShaderMaterial,
-    GLSL3,
+    Uniform,
+    Vector2,
+    Vector3,
+    Vector4,
 } from 'three';
-import PointsVS from './shader/PointsVS.glsl';
-import PointsFS from './shader/PointsFS.glsl';
-import Capabilities from '../core/system/Capabilities';
-import type ColorLayer from '../core/layer/ColorLayer';
 import type Extent from '../core/geographic/Extent';
+import type ColorLayer from '../core/layer/ColorLayer';
+import ColorMap from '../core/layer/ColorMap';
 import type { TextureAndPitch } from '../core/layer/Layer';
 import OffsetScale from '../core/OffsetScale';
+import Capabilities from '../core/system/Capabilities';
 import MaterialUtils, { type VertexAttributeType } from './MaterialUtils';
-import ColorMap from '../core/layer/ColorMap';
+import PointsFS from './shader/PointsFS.glsl';
+import PointsVS from './shader/PointsVS.glsl';
 
 const tmpDims = new Vector2();
 

@@ -1,3 +1,10 @@
+import Interpretation from 'src/core/layer/Interpretation';
+import TextureGenerator, {
+    DEFAULT_NODATA,
+    OPAQUE_BYTE,
+    OPAQUE_FLOAT,
+    TRANSPARENT,
+} from 'src/utils/TextureGenerator';
 import {
     CanvasTexture,
     Color,
@@ -9,13 +16,6 @@ import {
     Texture,
     UnsignedByteType,
 } from 'three';
-import TextureGenerator, {
-    OPAQUE_BYTE,
-    OPAQUE_FLOAT,
-    TRANSPARENT,
-    DEFAULT_NODATA,
-} from 'src/utils/TextureGenerator';
-import Interpretation from 'src/core/layer/Interpretation';
 
 describe('TextureGenerator', () => {
     describe('createDataTexture', () => {

@@ -1,16 +1,16 @@
-import esMain from 'es-main';
-import ejs from 'ejs';
-import fse from 'fs-extra';
-import docco from 'docco-next';
-import path, { dirname } from 'path';
-import { fileURLToPath } from 'url';
 import chokidar from 'chokidar';
 import { program } from 'commander';
+import docco from 'docco-next';
+import ejs from 'ejs';
+import esMain from 'es-main';
+import fse from 'fs-extra';
+import path, { dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-import { parseExample, parseCss } from './build-examples.mjs';
-import { createStaticServer } from './serve.mjs';
+import { parseCss, parseExample } from './build-examples.mjs';
 import { getGitVersion, getPackageVersion } from './prepare-package.mjs';
-import { log, logWatched, logOk } from './utils.mjs';
+import { createStaticServer } from './serve.mjs';
+import { log, logOk, logWatched } from './utils.mjs';
 
 const baseDir = dirname(fileURLToPath(import.meta.url));
 const rootDir = path.join(baseDir, '..');

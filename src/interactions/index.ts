@@ -1,10 +1,10 @@
 import type DrawTool from './DrawTool';
 import type {
-    PickCallback,
-    DrawToolEventMap,
     CreateShapeOptions,
     CreationOptions,
+    DrawToolEventMap,
     MouseCallback,
+    PickCallback,
 } from './DrawTool';
 
 export {

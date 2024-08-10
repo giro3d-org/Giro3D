@@ -1,9 +1,9 @@
+import type { WebGLRenderer } from 'three';
 import { Line2 } from 'three/examples/jsm/lines/Line2';
-import type SimpleGeometryMesh from './SimpleGeometryMesh';
-import { type DefaultUserData } from './SimpleGeometryMesh';
 import type { LineGeometry } from 'three/examples/jsm/lines/LineGeometry';
 import type { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
-import type { WebGLRenderer } from 'three';
+import type SimpleGeometryMesh from './SimpleGeometryMesh';
+import { type DefaultUserData } from './SimpleGeometryMesh';
 
 export default class LineStringMesh<UserData extends DefaultUserData = DefaultUserData>
     extends Line2
