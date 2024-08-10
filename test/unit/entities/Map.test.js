@@ -1,4 +1,3 @@
-import '../setup.js';
 import { Color, Group, Object3D } from 'three';
 import Extent from '../../../src/core/geographic/Extent';
 import Instance from '../../../src/core/Instance';

@@ -1,4 +1,3 @@
-import '../setup.js';
 import fs from 'fs';
 import path from 'path';
 import { cwd } from 'process';

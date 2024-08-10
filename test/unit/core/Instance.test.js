@@ -1,4 +1,3 @@
-import '../setup.js';
 import { Group, Object3D, Vector2 } from 'three';
 import proj4 from 'proj4';
 import Extent from '../../../src/core/geographic/Extent';

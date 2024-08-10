@@ -1,4 +1,3 @@
-import '../setup.js';
 import * as THREE from 'three';
 import Extent from 'src/core/geographic/Extent';
 import AxisGrid, { type Volume } from 'src/entities/AxisGrid';

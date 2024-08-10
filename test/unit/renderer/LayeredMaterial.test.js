@@ -1,4 +1,3 @@
-import '../setup.js';
 import { DoubleSide, FrontSide, UnsignedByteType } from 'three';
 import LayeredMaterial from '../../../src/renderer/LayeredMaterial';
 

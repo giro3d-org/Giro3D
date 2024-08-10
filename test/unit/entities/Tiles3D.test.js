@@ -1,4 +1,3 @@
-import '../setup.js';
 import assert from 'assert';
 import proj4 from 'proj4';
 import { Group, Matrix4, Mesh, MeshBasicMaterial } from 'three';
