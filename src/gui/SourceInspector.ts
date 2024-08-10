@@ -6,7 +6,7 @@ import Panel from './Panel';
 import CogSource from '../sources/CogSource';
 import TiledImageSource from '../sources/TiledImageSource';
 import * as MemoryUsage from '../core/MemoryUsage';
-import type { ImageSource } from '../sources';
+import { VectorSource, type ImageSource } from '../sources';
 
 /**
  * Inspector for a source.
@@ -14,8 +14,6 @@ import type { ImageSource } from '../sources';
  */
 class SourceInspector extends Panel {
     source: ImageSource;
-    sourceType: string;
-    networkOptions: string;
     url?: string;
     cogChannels?: string;
     subtype?: string;
@@ -33,21 +31,27 @@ class SourceInspector extends Panel {
         super(gui, instance, 'Source');
 
         this.source = source;
-        this.sourceType = 'unknown';
-        this.networkOptions = '';
 
-        this._addControllers(source);
+        this.addControllers(source);
     }
 
-    _addControllers(source: object) {
+    private addControllers(source: ImageSource) {
+        const obj = { crs: source.getCrs() ?? 'unknown' };
+
+        this.addController<string>(source, 'type').name('Type');
+        this.addController<string>(source, 'colorSpace').name('Color space');
+        this.addController<number>(source, 'datatype').name('Data type');
+        this.addController<boolean>(source, 'flipY').name('Flip Y');
+        this.addController<boolean>(source, 'synchronous').name('Synchronous');
+        this.addController<string>(obj, 'crs').name('CRS');
+        this.addController(source, 'update').name('Update');
+
         this.addController<string>(this, 'cpuMemoryUsage').name('Memory usage (CPU)');
         this.addController<string>(this, 'gpuMemoryUsage').name('Memory usage (GPU)');
 
         if (source instanceof CogSource) {
             const cogSource = source as CogSource;
             this.url = cogSource.url.toString();
-            this.sourceType = 'CogSource';
-            this.addController<string>(this, 'sourceType').name('Type');
             this.addController<string>(this, 'url').name('URL');
             if (source.channels) {
                 this.cogChannels = JSON.stringify(source.channels);
@@ -60,9 +64,9 @@ class SourceInspector extends Panel {
                     });
             }
         } else if (source instanceof TiledImageSource) {
-            this.sourceType = 'TiledImageSource';
-            this.addController<string>(this, 'sourceType').name('Type');
             this.processOpenLayersSource(source.source);
+        } else if (source instanceof VectorSource) {
+            this.addController<number>(source, 'featureCount').name('Feature count');
         }
     }
 

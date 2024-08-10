@@ -1,4 +1,4 @@
-import { CanvasTexture, Color, MathUtils } from 'three';
+import { CanvasTexture, Color } from 'three';
 import type Extent from '../core/geographic/Extent';
 import PromiseUtils from '../utils/PromiseUtils';
 import type { CustomContainsFn, GetImageOptions } from './ImageSource';
@@ -93,8 +93,9 @@ class DebugSource extends ImageSource {
         const w = Math.round(width / subdivs);
         const h = Math.round(height / subdivs);
 
-        for (const ex of extents) {
-            const imageId = `${id}-${MathUtils.generateUUID()}`;
+        for (let i = 0; i < extents.length; i++) {
+            const ex = extents[i];
+            const imageId = `${id}-${i}`;
             const request = () =>
                 PromiseUtils.delay(this._delay()).then(() => {
                     signal?.throwIfAborted();

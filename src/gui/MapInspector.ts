@@ -218,7 +218,7 @@ class MapInspector extends EntityInspector {
     }
 
     getInfo(tile: TileMesh): string {
-        const layers = [];
+        const layers: string[] = [];
         for (const layer of this.map.getLayers()) {
             const info = layer.getInfo(tile);
             layers.push(
