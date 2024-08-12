@@ -23,7 +23,7 @@ import Rect from '../../core/Rect';
 import MemoryTracker from '../MemoryTracker';
 import ComposerTileMaterial, { isComposerTileMaterial } from './ComposerTileMaterial';
 import TextureGenerator from '../../utils/TextureGenerator';
-import { isMesh } from '../../utils/predicates';
+import { isMesh, isTexture } from '../../utils/predicates';
 
 let SHARED_PLANE_GEOMETRY: PlaneGeometry = null;
 
@@ -252,7 +252,7 @@ class WebGLComposer {
      */
     drawMesh(image: DrawableImage, mesh: Mesh, options: DrawOptions = {}): Mesh {
         let texture: Texture;
-        if (!(image as Texture).isTexture) {
+        if (!isTexture(image)) {
             texture = new Texture(image as HTMLImageElement);
             texture.needsUpdate = true;
             this._ownedTextures.push(texture);
