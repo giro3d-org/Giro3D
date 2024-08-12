@@ -721,8 +721,6 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         }
 
         this._needsAtlasRepaint = true;
-
-        this.reorderLayers();
     }
 
     pushElevationLayer(layer: ElevationLayer) {
@@ -796,8 +794,6 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         this.updateColorLayerCount();
 
         this.updateColorMaps();
-
-        this.reorderLayers();
 
         this.needsUpdate = true;
     }
