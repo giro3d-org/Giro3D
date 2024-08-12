@@ -516,6 +516,7 @@ abstract class Layer<
         if (this._visible !== v) {
             this._visible = v;
             this.dispatchEvent({ type: 'visible-property-changed', visible: v });
+            this._targets.forEach(t => this.updateMaterial(t.node.material));
         }
     }
 
