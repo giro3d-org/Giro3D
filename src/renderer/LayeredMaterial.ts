@@ -1027,7 +1027,12 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         if (MaterialUtils.setDefineValue(this, 'VISIBLE_COLOR_LAYER_COUNT', visibleColorLayers)) {
             this._mustUpdateUniforms = true;
             this._needsAtlasRepaint = true;
+            this.needsUpdate = true;
         }
+    }
+
+    customProgramCacheKey(): string {
+        return (this.defines.VISIBLE_COLOR_LAYER_COUNT ?? 0).toString();
     }
 
     createComposer() {
@@ -1156,6 +1161,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         const index = this.indexOfColorLayer(layer);
         this.texturesInfo.color.infos[index].visible = visible;
         this._mustUpdateUniforms = true;
+        this.needsUpdate = true;
         this.updateColorLayerCount();
     }
 
