@@ -1158,6 +1158,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         this.texturesInfo.color.infos[index].visible = visible;
         this._mustUpdateUniforms = true;
         this.needsUpdate = true;
+        this.reorderLayers();
         this.updateColorLayerCount();
     }
 
