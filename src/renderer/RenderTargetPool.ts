@@ -89,19 +89,23 @@ export default class RenderTargetPool
     release(obj: WebGLRenderTarget, renderer: WebGLRenderer) {
         const options = this._renderTargets.get(obj);
         if (options) {
-            const instancePool = this._perRendererPools.get(renderer);
-            if (instancePool) {
-                if (!instancePool.has(options)) {
-                    instancePool.set(options, []);
-                }
-                const pool = instancePool.get(options);
+            let instancePool = this._perRendererPools.get(renderer);
+            if (!instancePool) {
+                instancePool = new Map();
+                this._perRendererPools.set(renderer, instancePool);
+            }
 
-                if (pool.length < this._maxPoolSize) {
-                    pool.push(obj);
-                } else {
-                    obj.dispose();
-                    this._renderTargets.delete(obj);
-                }
+            let pool = instancePool.get(options);
+            if (!pool) {
+                pool = [];
+                instancePool.set(options, pool);
+            }
+
+            if (pool.length < this._maxPoolSize) {
+                pool.push(obj);
+            } else {
+                obj.dispose();
+                this._renderTargets.delete(obj);
             }
         }
 

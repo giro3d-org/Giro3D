@@ -393,7 +393,6 @@ abstract class Layer<
     private readonly _filter: (id: string) => boolean;
     /** @internal */
     protected readonly _queue: RequestQueue;
-    disposed: boolean;
     private readonly _opCounter: OperationCounter;
     private _sortedTargets: Target[];
     private _instance: Instance;
@@ -490,17 +489,11 @@ abstract class Layer<
 
         this._queue = DefaultQueue;
 
-        this.disposed = false;
-
         this._opCounter = new OperationCounter();
         this._sortedTargets = null;
     }
 
     private shouldCancelRequest(node: LayerNode) {
-        if (this.disposed) {
-            return true;
-        }
-
         return shouldCancel(node);
     }
 
@@ -768,11 +761,9 @@ abstract class Layer<
             try {
                 const image = request() as ImageResult;
 
-                if (!this.disposed) {
-                    this.addToComposer(image, false);
-                    if (!this.shouldCancelRequest(node)) {
-                        this._composer.lock(id, node.id);
-                    }
+                this.addToComposer(image, false);
+                if (!this.shouldCancelRequest(node)) {
+                    this._composer.lock(id, node.id);
                 }
             } catch (e) {
                 if (e.name !== 'AbortError') {
@@ -837,11 +828,9 @@ abstract class Layer<
                     shouldExecute,
                 })
                 .then((image: ImageResult) => {
-                    if (!this.disposed) {
-                        this.addToComposer(image, false);
-                        if (!this.shouldCancelRequest(node)) {
-                            this._composer.lock(id, node.id);
-                        }
+                    this.addToComposer(image, false);
+                    if (!this.shouldCancelRequest(node)) {
+                        this._composer.lock(id, node.id);
                     }
                 })
                 .catch(e => {
@@ -1128,10 +1117,6 @@ abstract class Layer<
      * @param node - the node to update
      */
     public update(context: Context, node: LayerNode): void {
-        if (this.disposed) {
-            throw new Error('the layer is disposed');
-        }
-
         if (!this.ready) {
             return;
         }
@@ -1291,10 +1276,6 @@ abstract class Layer<
     }
 
     postUpdate() {
-        if (this.disposed) {
-            throw new Error('the layer is disposed');
-        }
-
         this.deleteUnusedTargets();
 
         this._composer?.postUpdate();
@@ -1324,10 +1305,6 @@ abstract class Layer<
      * Disposes the layer. This releases all resources held by this layer.
      */
     public dispose(): void {
-        if (this.disposed) {
-            return;
-        }
-        this.disposed = true;
         this.source.dispose();
         this._composer?.dispose();
         for (const target of this._targets.values()) {

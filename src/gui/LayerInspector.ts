@@ -13,9 +13,12 @@ import ColorMapInspector from './ColorMapInspector';
 import Panel from './Panel';
 import SourceInspector from './SourceInspector';
 
+function getTitle(layer: Layer) {
+    return [layer.visible ? '👁️' : '❌', layer.type, `(${layer.name ?? layer.id})`].join(' ');
+}
+
 /**
  * Inspector for a {@link Layer}.
- *
  */
 class LayerInspector extends Panel {
     /** The inspected layer. */
@@ -45,7 +48,7 @@ class LayerInspector extends Panel {
      * @param layer - The layer to inspect
      */
     constructor(gui: GUI, instance: Instance, entity: Entity3D, layer: Layer) {
-        super(gui, instance, `${layer.type} ('${layer.name ?? layer.id}')`);
+        super(gui, instance, getTitle(layer));
 
         this.layer = layer;
 
@@ -68,6 +71,7 @@ class LayerInspector extends Panel {
         this.addController<boolean>(this.layer, 'visible')
             .name('Visible')
             .onChange(() => {
+                this.gui.title(getTitle(layer));
                 this.notify(entity);
             });
         this.addController<boolean>(this.layer, 'frozen')
@@ -142,6 +146,8 @@ class LayerInspector extends Panel {
         if (isMap(this.entity)) {
             this.addController<never>(this, 'removeLayer').name('Remove layer from map');
         }
+
+        layer.addEventListener('visible-property-changed', () => this.gui.title(getTitle(layer)));
     }
 
     repaint() {
@@ -164,6 +170,7 @@ class LayerInspector extends Panel {
 
     disposeLayer() {
         this.layer.dispose();
+        this.notify(this.layer);
     }
 
     updateExtentColor() {

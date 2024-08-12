@@ -172,8 +172,6 @@ class LayerComposer implements MemoryUsage {
 
     private _needsCleanup: boolean;
 
-    disposed: boolean;
-
     getMemoryUsage(context: GetMemoryUsageContext, target?: MemoryUsageReport): MemoryUsageReport {
         const result = target ?? createEmptyReport();
 
@@ -243,7 +241,6 @@ class LayerComposer implements MemoryUsage {
             showEmptyTextures: options.showEmptyTextures,
         });
 
-        this.disposed = false;
         this._needsCleanup = false;
     }
 
@@ -793,11 +790,6 @@ class LayerComposer implements MemoryUsage {
      * Disposes the composer.
      */
     dispose() {
-        if (this.disposed) {
-            return;
-        }
-
-        this.disposed = true;
         this.images.forEach(img => img.texture.dispose());
         this.images.clear();
         this.composer.dispose();
