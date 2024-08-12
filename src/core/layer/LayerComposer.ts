@@ -751,18 +751,22 @@ class LayerComposer implements MemoryUsage {
         return false;
     }
 
+    private disposeImage(img: Image) {
+        // In the case of reprojection, the mesh's geometry
+        // is owned by this layer composer.
+        if (this.needsReprojection) {
+            img.mesh.geometry.dispose();
+        }
+        this.composer.remove(img.mesh);
+        img.dispose();
+        this.images.delete(img.id);
+    }
+
     cleanup() {
         // Delete eligible images.
         for (const img of Array.from(this.images.values())) {
             if (img.canBeDeleted()) {
-                // In the case of reprojection, the mesh's geometry
-                // is owned by this layer composer.
-                if (this.needsReprojection) {
-                    img.mesh.geometry.dispose();
-                }
-                this.composer.remove(img.mesh);
-                img.dispose();
-                this.images.delete(img.id);
+                this.disposeImage(img);
             }
         }
     }
@@ -774,13 +778,11 @@ class LayerComposer implements MemoryUsage {
         if (extent) {
             [...this.images.values()].forEach(img => {
                 if (img.extent.intersectsExtent(extent)) {
-                    img.texture.dispose();
-                    img.mesh.removeFromParent();
-                    this.images.delete(img.id);
+                    this.disposeImage(img);
                 }
             });
         } else {
-            this.images.forEach(img => img.texture.dispose());
+            this.images.forEach(img => this.disposeImage(img));
             this.images.clear();
             this.composer.clear();
         }
