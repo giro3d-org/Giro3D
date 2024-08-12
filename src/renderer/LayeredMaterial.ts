@@ -65,14 +65,6 @@ interface ElevationTexture extends Texture {
 
 const emptyTexture = new EmptyTexture();
 
-function makeArray(size: number) {
-    const array = new Array(size);
-    for (let i = 0; i < size; i++) {
-        array[i] = {};
-    }
-    return array;
-}
-
 const COLORMAP_DISABLED = 0;
 
 const DISABLED_ELEVATION_RANGE = new Vector2(-999999, 999999);
@@ -720,8 +712,6 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         }
 
         this._needsAtlasRepaint = true;
-
-        this.reorderLayers();
     }
 
     pushElevationLayer(layer: ElevationLayer) {
@@ -796,8 +786,6 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
 
         this.updateColorMaps();
 
-        this.reorderLayers();
-
         this.needsUpdate = true;
     }
 
@@ -868,23 +856,28 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         }
 
         const colorLayers = this.texturesInfo.color.infos;
-        const colorMaps = makeArray(colorLayers.length);
+        const uniforms: ColorMapUniform[] = [];
 
         for (let i = 0; i < colorLayers.length; i++) {
             const texInfo = colorLayers[i];
-            const colorUniform = colorMaps[i];
-            const colorMap = texInfo.layer.colorMap;
-            if (colorMap?.active) {
-                colorUniform.mode = colorMap.mode;
-                colorUniform.min = colorMap.min ?? 0;
-                colorUniform.max = colorMap.max ?? 0;
-                colorUniform.offset = atlas?.getOffset(colorMap) || 0;
-            } else {
-                colorUniform.mode = COLORMAP_DISABLED;
+            if (!texInfo.layer.visible) {
+                continue;
             }
+
+            const colorMap = texInfo.layer.colorMap;
+
+            const uniform: ColorMapUniform = {
+                mode: colorMap?.active ? colorMap.mode : COLORMAP_DISABLED,
+                min: colorMap?.min ?? 0,
+                max: colorMap?.max ?? 0,
+                offset: atlas?.getOffset(colorMap) ?? 0,
+            };
+
+            uniforms.push(uniform);
         }
 
-        this.uniforms.layersColorMaps = new Uniform(colorMaps);
+        this.uniforms.layersColorMaps = new Uniform(uniforms);
+
         if (atlas?.texture) {
             const luts = atlas.texture || null;
             if (!this.uniforms.colorMapAtlas) {
@@ -1026,7 +1019,12 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         if (MaterialUtils.setDefineValue(this, 'VISIBLE_COLOR_LAYER_COUNT', visibleColorLayers)) {
             this._mustUpdateUniforms = true;
             this._needsAtlasRepaint = true;
+            this.needsUpdate = true;
         }
+    }
+
+    customProgramCacheKey(): string {
+        return (this.defines.VISIBLE_COLOR_LAYER_COUNT ?? 0).toString();
     }
 
     createComposer() {
@@ -1155,6 +1153,8 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         const index = this.indexOfColorLayer(layer);
         this.texturesInfo.color.infos[index].visible = visible;
         this._mustUpdateUniforms = true;
+        this.needsUpdate = true;
+        this.reorderLayers();
         this.updateColorLayerCount();
     }
 

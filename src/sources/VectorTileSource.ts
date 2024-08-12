@@ -256,7 +256,7 @@ class VectorTileSource extends ImageSource {
         const source = this.source;
         const tileGrid = source.getTileGridForProjection(source.getProjection());
         const resolution = tileGrid.getResolution(z);
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
         if (this.backgroundColor) {
             ctx.fillStyle = this.backgroundColor;

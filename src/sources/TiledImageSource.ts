@@ -327,7 +327,6 @@ export default class TiledImageSource extends ImageSource {
             texture.flipY = false;
         }
         texture.generateMipmaps = false;
-        texture.needsUpdate = true;
         texture.name = 'TiledImageSource - tile';
 
         MemoryTracker.track(texture, texture.name);

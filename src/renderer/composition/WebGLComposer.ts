@@ -20,7 +20,7 @@ import {
 import Interpretation from '../../core/layer/Interpretation';
 
 import Rect from '../../core/Rect';
-import { isMesh } from '../../utils/predicates';
+import { isMesh, isTexture } from '../../utils/predicates';
 import TextureGenerator from '../../utils/TextureGenerator';
 import MemoryTracker from '../MemoryTracker';
 import ComposerTileMaterial, { isComposerTileMaterial } from './ComposerTileMaterial';
@@ -252,7 +252,7 @@ class WebGLComposer {
      */
     drawMesh(image: DrawableImage, mesh: Mesh, options: DrawOptions = {}): Mesh {
         let texture: Texture;
-        if (!(image as Texture).isTexture) {
+        if (!isTexture(image)) {
             texture = new Texture(image as HTMLImageElement);
             texture.needsUpdate = true;
             this._ownedTextures.push(texture);
