@@ -18,12 +18,7 @@ import type HasLayers from '../core/layer/HasLayers';
 import type Layer from '../core/layer/Layer';
 import type { LayerEvents } from '../core/layer/Layer';
 import type { ObjectToUpdate } from '../core/MainLoop';
-import {
-    createEmptyReport,
-    getGeometryMemoryUsage,
-    type GetMemoryUsageContext,
-    type MemoryUsageReport,
-} from '../core/MemoryUsage';
+import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../core/MemoryUsage';
 import OperationCounter from '../core/OperationCounter';
 import type Pickable from '../core/picking/Pickable';
 import type PickOptions from '../core/picking/PickOptions';
@@ -40,6 +35,7 @@ import PointCloudMaterial, { MODE, type Mode } from '../renderer/PointCloudMater
 import { isOrthographicCamera, isPerspectiveCamera } from '../renderer/View';
 import type PotreeSource from '../sources/PotreeSource';
 import Fetcher from '../utils/Fetcher';
+import { isBufferGeometry } from '../utils/predicates';
 import { type EntityUserData } from './Entity';
 import Entity3D, { type Entity3DEventMap } from './Entity3D';
 
@@ -358,22 +354,18 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
         this.onPointsCreated = null;
     }
 
-    getMemoryUsage(context: GetMemoryUsageContext, target?: MemoryUsageReport) {
-        const result = target ?? createEmptyReport();
-
+    getMemoryUsage(context: GetMemoryUsageContext) {
         this.traverse(obj => {
-            if ('geometry' in obj) {
-                getGeometryMemoryUsage(obj.geometry as BufferGeometry, result);
+            if ('geometry' in obj && isBufferGeometry(obj.geometry)) {
+                getGeometryMemoryUsage(context, obj.geometry);
             }
         });
 
         if (this.layerCount > 0) {
             this.forEachLayer(layer => {
-                layer.getMemoryUsage(context, result);
+                layer.getMemoryUsage(context);
             });
         }
-
-        return result;
     }
 
     // eslint-disable-next-line class-methods-use-this

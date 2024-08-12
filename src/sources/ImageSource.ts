@@ -10,11 +10,7 @@ import {
 } from 'three';
 import type Extent from '../core/geographic/Extent';
 import type MemoryUsage from '../core/MemoryUsage';
-import {
-    createEmptyReport,
-    type GetMemoryUsageContext,
-    type MemoryUsageReport,
-} from '../core/MemoryUsage';
+import { type GetMemoryUsageContext } from '../core/MemoryUsage';
 
 class ImageResult {
     id: string;
@@ -126,6 +122,7 @@ abstract class ImageSource<Events extends ImageSourceEvents = ImageSourceEvents>
     extends EventDispatcher<Events & ImageSourceEvents>
     implements MemoryUsage
 {
+    readonly isMemoryUsage = true as const;
     readonly isImageSource: boolean = true;
     private readonly _customColorSpace: ColorSpace;
     type: string;
@@ -161,8 +158,8 @@ abstract class ImageSource<Events extends ImageSourceEvents = ImageSourceEvents>
         this.synchronous = options?.synchronous ?? false;
     }
 
-    getMemoryUsage(_context: GetMemoryUsageContext, target?: MemoryUsageReport): MemoryUsageReport {
-        return target ?? createEmptyReport();
+    getMemoryUsage(_context: GetMemoryUsageContext) {
+        // Implement this in derived classes to compute the memory usage of the source.
     }
 
     /**

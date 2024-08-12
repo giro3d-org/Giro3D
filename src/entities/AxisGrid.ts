@@ -18,13 +18,9 @@ import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 import type Context from '../core/Context';
 import { crsToUnit, UNIT } from '../core/geographic/Coordinates';
 import type Extent from '../core/geographic/Extent';
-import {
-    createEmptyReport,
-    getGeometryMemoryUsage,
-    type GetMemoryUsageContext,
-    type MemoryUsageReport,
-} from '../core/MemoryUsage';
+import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../core/MemoryUsage';
 import Helpers from '../helpers/Helpers';
+import { isBufferGeometry } from '../utils/predicates';
 import type { EntityUserData } from './Entity';
 import type { Entity3DEventMap } from './Entity3D';
 import Entity3D from './Entity3D';
@@ -260,16 +256,12 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
         this.refresh();
     }
 
-    getMemoryUsage(_context: GetMemoryUsageContext, target?: MemoryUsageReport): MemoryUsageReport {
-        const result = target ?? createEmptyReport();
-
+    getMemoryUsage(context: GetMemoryUsageContext) {
         this.traverse(obj => {
-            if ('geometry' in obj) {
-                getGeometryMemoryUsage(obj.geometry as BufferGeometry, result);
+            if ('geometry' in obj && isBufferGeometry(obj.geometry)) {
+                getGeometryMemoryUsage(context, obj.geometry);
             }
         });
-
-        return result;
     }
 
     updateOpacity() {

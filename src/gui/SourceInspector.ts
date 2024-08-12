@@ -71,7 +71,12 @@ class SourceInspector extends Panel {
     }
 
     updateValues(): void {
-        const memUsage = this.source.getMemoryUsage({ renderer: this.instance.renderer });
+        const ctx: MemoryUsage.GetMemoryUsageContext = {
+            renderer: this.instance.renderer,
+            objects: new Map(),
+        };
+        this.source.getMemoryUsage(ctx);
+        const memUsage = MemoryUsage.aggregateMemoryUsage(ctx);
         this.cpuMemoryUsage = MemoryUsage.format(memUsage.cpuMemory);
         this.gpuMemoryUsage = MemoryUsage.format(memUsage.gpuMemory);
 

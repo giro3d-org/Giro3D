@@ -1,10 +1,7 @@
 import { LRUCache } from 'lru-cache';
+import { MathUtils } from 'three';
 import type MemoryUsage from './MemoryUsage';
-import {
-    createEmptyReport,
-    type GetMemoryUsageContext,
-    type MemoryUsageReport,
-} from './MemoryUsage';
+import { isMemoryUsage, type GetMemoryUsageContext } from './MemoryUsage';
 
 /**
  * The options for a cache entry.
@@ -47,6 +44,8 @@ const DEFAULT_CAPACITY: number = 512 * 1024 * 1024;
  *
  */
 class Cache implements MemoryUsage {
+    readonly isMemoryUsage = true as const;
+    private readonly _id = MathUtils.generateUUID();
     private readonly _deleteHandlers: Map<string, (entry: unknown) => void>;
     private readonly _lru: LRUCache<string, unknown, unknown>;
     private _enabled: boolean;
@@ -89,12 +88,12 @@ class Cache implements MemoryUsage {
         });
     }
 
-    getMemoryUsage(_context: GetMemoryUsageContext, target?: MemoryUsageReport): MemoryUsageReport {
-        const result = target ?? createEmptyReport();
-
-        result.cpuMemory += this.size;
-
-        return result;
+    getMemoryUsage(context: GetMemoryUsageContext) {
+        this._lru.forEach(e => {
+            if (isMemoryUsage(e)) {
+                e.getMemoryUsage(context);
+            }
+        });
     }
 
     /**

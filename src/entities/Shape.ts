@@ -34,12 +34,7 @@ import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer';
 
-import {
-    createEmptyReport,
-    getGeometryMemoryUsage,
-    type GetMemoryUsageContext,
-    type MemoryUsageReport,
-} from '../core/MemoryUsage';
+import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../core/MemoryUsage';
 import type { PickOptions, PickResult } from '../core/picking';
 import ConstantSizeSphere, { getWorldSpaceRadius } from '../renderer/ConstantSizeSphere';
 import { getContrastColor } from '../utils/ColorUtils';
@@ -2573,14 +2568,10 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         return null;
     }
 
-    getMemoryUsage(_context: GetMemoryUsageContext, target?: MemoryUsageReport): MemoryUsageReport {
-        const result = target ?? createEmptyReport();
-
+    getMemoryUsage(context: GetMemoryUsageContext) {
         if (this._surface) {
-            getGeometryMemoryUsage(this._surface.geometry, result);
+            getGeometryMemoryUsage(context, this._surface.geometry);
         }
-
-        return result;
     }
 
     /**

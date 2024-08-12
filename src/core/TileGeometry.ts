@@ -2,11 +2,7 @@ import type { Vector2 } from 'three';
 import { BufferAttribute, BufferGeometry } from 'three';
 import type HeightMap from './HeightMap';
 import type MemoryUsage from './MemoryUsage';
-import {
-    createEmptyReport,
-    type GetMemoryUsageContext,
-    type MemoryUsageReport,
-} from './MemoryUsage';
+import { type GetMemoryUsageContext } from './MemoryUsage';
 
 export interface TileGeometryOptions {
     dimensions: Vector2;
@@ -46,27 +42,29 @@ interface TileGeometryProperties {
  * ```
  */
 class TileGeometry extends BufferGeometry implements MemoryUsage {
+    readonly isMemoryUsage = true as const;
     dimensions: Vector2;
     private _segments: number;
     props: TileGeometryProperties;
 
-    getMemoryUsage(_: GetMemoryUsageContext, target?: MemoryUsageReport): MemoryUsageReport {
-        const result = target ?? createEmptyReport();
+    getMemoryUsage(context: GetMemoryUsageContext) {
+        let cpuMemory = 0;
+        let gpuMemory = 0;
 
         for (const attribute of Object.values(this.attributes)) {
             const bytes = attribute.array.byteLength;
-            result.cpuMemory += bytes;
-            result.gpuMemory += bytes;
+            cpuMemory += bytes;
+            gpuMemory += bytes;
         }
 
         if (this.index) {
             const bytes = this.index.array.byteLength;
 
-            result.cpuMemory += bytes;
-            result.gpuMemory += bytes;
+            cpuMemory += bytes;
+            gpuMemory += bytes;
         }
 
-        return result;
+        context.objects.set(this.id, { cpuMemory, gpuMemory });
     }
 
     /**

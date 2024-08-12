@@ -9,24 +9,35 @@ export type MemoryUsageReport = {
 
 export type GetMemoryUsageContext = {
     renderer: WebGLRenderer;
+    objects: Map<number | string, MemoryUsageReport>;
 };
 
 /**
  * Trait of objects that can report their memory usage.
  */
 export default interface MemoryUsage {
+    isMemoryUsage: true;
     /**
      * Returns an approximation of the memory used by this object, in bytes.
      * @param context - The graphics context.
-     * @param target - If specified, the values computed during this call must be added to the existing
-     * values in the target. Otherwise, a new report must be built.
-     * @returns The memory usage report. If {@link target} is specified, then this must be returned.
      */
-    getMemoryUsage(context: GetMemoryUsageContext, target?: MemoryUsageReport): MemoryUsageReport;
+    getMemoryUsage(context: GetMemoryUsageContext): void;
 }
 
-export function createEmptyReport(): MemoryUsageReport {
-    return { gpuMemory: 0, cpuMemory: 0 };
+export function isMemoryUsage(obj: unknown): obj is MemoryUsage {
+    return (obj as MemoryUsage)?.isMemoryUsage;
+}
+
+export function aggregateMemoryUsage(context: GetMemoryUsageContext): MemoryUsageReport {
+    let cpuMemory = 0;
+    let gpuMemory = 0;
+
+    context.objects.forEach(v => {
+        cpuMemory += v.cpuMemory;
+        gpuMemory += v.gpuMemory;
+    });
+
+    return { gpuMemory, cpuMemory };
 }
 
 export const KILOBYTE = 1024;
@@ -86,63 +97,34 @@ function iterateMaterials(obj: unknown, callback: (material: Material) => void) 
     }
 }
 
-export function getObject3DMemoryUsage(
-    object3d: Object3D,
-    context: GetMemoryUsageContext,
-    target?: MemoryUsageReport,
-): MemoryUsageReport {
-    const result = target ?? createEmptyReport();
-
+export function getObject3DMemoryUsage(context: GetMemoryUsageContext, object3d: Object3D) {
     if ('geometry' in object3d && isBufferGeometry(object3d.geometry)) {
-        getGeometryMemoryUsage(object3d.geometry, result);
+        getGeometryMemoryUsage(context, object3d.geometry);
     }
 
     iterateMaterials(object3d, material => {
-        getMaterialMemoryUsage(material, context, result);
+        getMaterialMemoryUsage(context, material);
     });
-
-    return result;
 }
 
-export function getUniformMemoryUsage(
-    uniform: IUniform,
-    context: GetMemoryUsageContext,
-    target?: MemoryUsageReport,
-): MemoryUsageReport {
-    const result = target ?? createEmptyReport();
-
+export function getUniformMemoryUsage(context: GetMemoryUsageContext, uniform: IUniform) {
     const value = uniform.value;
 
     if (value instanceof Texture) {
-        TextureGenerator.getMemoryUsage(value, context, result);
+        TextureGenerator.getMemoryUsage(context, value);
     }
-
-    return result;
 }
 
-export function getMaterialMemoryUsage(
-    material: Material,
-    context: GetMemoryUsageContext,
-    target?: MemoryUsageReport,
-): MemoryUsageReport {
-    const result = target ?? createEmptyReport();
-
+export function getMaterialMemoryUsage(context: GetMemoryUsageContext, material: Material) {
     if (material instanceof ShaderMaterial) {
         for (const uniform of Object.values(material.uniforms)) {
-            getUniformMemoryUsage(uniform, context, result);
+            getUniformMemoryUsage(context, uniform);
         }
     }
     // TODO other kinds of materials
-
-    return result;
 }
 
-export function getGeometryMemoryUsage(
-    geometry: BufferGeometry,
-    target?: MemoryUsageReport,
-): MemoryUsageReport {
-    const result = target ?? createEmptyReport();
-
+export function getGeometryMemoryUsage(context: GetMemoryUsageContext, geometry: BufferGeometry) {
     let bytes = 0;
 
     for (const attributeName of Object.keys(geometry.attributes)) {
@@ -153,8 +135,8 @@ export function getGeometryMemoryUsage(
         bytes += geometry.index.array.byteLength;
     }
 
-    result.gpuMemory += bytes;
-    result.cpuMemory += bytes;
-
-    return result;
+    context.objects.set(geometry.id, {
+        cpuMemory: bytes,
+        gpuMemory: bytes,
+    });
 }

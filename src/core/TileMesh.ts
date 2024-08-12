@@ -30,11 +30,7 @@ import type Instance from './Instance';
 import ElevationLayer from './layer/ElevationLayer';
 import type Layer from './layer/Layer';
 import type MemoryUsage from './MemoryUsage';
-import {
-    createEmptyReport,
-    type GetMemoryUsageContext,
-    type MemoryUsageReport,
-} from './MemoryUsage';
+import { type GetMemoryUsageContext } from './MemoryUsage';
 import type OffsetScale from './OffsetScale';
 import TileGeometry from './TileGeometry';
 import { type NeighbourList } from './TileIndex';
@@ -170,6 +166,7 @@ class TileMesh
     extends Mesh<TileGeometry, LayeredMaterial, TileMeshEventMap>
     implements Disposable, MemoryUsage
 {
+    readonly isMemoryUsage = true as const;
     private readonly _pool: GeometryPool;
     private _segments: number;
     readonly type: string = 'TileMesh';
@@ -197,22 +194,21 @@ class TileMesh
     };
     private _helperMesh: Mesh<TileGeometry, MeshBasicMaterial, Object3DEventMap>;
 
-    getMemoryUsage(context: GetMemoryUsageContext, target?: MemoryUsageReport): MemoryUsageReport {
-        const result = target ?? createEmptyReport();
-
-        this.material?.getMemoryUsage(context, result);
+    getMemoryUsage(context: GetMemoryUsageContext) {
+        this.material?.getMemoryUsage(context);
 
         // We only count what we own, otherwise the same heightmap will be counted more than once.
         if (this._heightMap && this._heightMap.owner === this) {
-            result.cpuMemory += this._heightMap.payload.buffer.byteLength;
+            context.objects.set(`heightmap-${this._heightMap.owner.id}`, {
+                cpuMemory: this._heightMap.payload.buffer.byteLength,
+                gpuMemory: 0,
+            });
         }
         // If CPU terrain is enabled, then the geometry is owned by this mesh, rather than
         // shared with other meshes in the same map, so we have to count it.
         if (this._enableCPUTerrain) {
-            this.geometry.getMemoryUsage(context, result);
+            this.geometry.getMemoryUsage(context);
         }
-
-        return result;
     }
 
     get boundingBox(): Box3 {

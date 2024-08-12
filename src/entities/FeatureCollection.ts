@@ -26,12 +26,7 @@ import {
 } from '../core/FeatureTypes';
 import type Extent from '../core/geographic/Extent';
 import LayerUpdateState from '../core/layer/LayerUpdateState';
-import {
-    createEmptyReport,
-    getGeometryMemoryUsage,
-    type GetMemoryUsageContext,
-    type MemoryUsageReport,
-} from '../core/MemoryUsage';
+import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../core/MemoryUsage';
 import OperationCounter from '../core/OperationCounter';
 import { DefaultQueue } from '../core/RequestQueue';
 import ScreenSpaceError from '../core/ScreenSpaceError';
@@ -266,8 +261,6 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
     private readonly _ignoreZ: boolean;
     private _targetProjection: Projection;
 
-    private _cachedMemoryUsage: MemoryUsageReport;
-
     /**
      * The factor to drive the subdivision of feature nodes. The heigher, the bigger the nodes.
      */
@@ -403,22 +396,12 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         this._tileIdSet = new Set();
     }
 
-    getMemoryUsage(_context: GetMemoryUsageContext, target?: MemoryUsageReport): MemoryUsageReport {
-        const result = target ?? createEmptyReport();
-
-        if (!this._cachedMemoryUsage) {
-            this._cachedMemoryUsage = createEmptyReport();
-            this.traverse(obj => {
-                if ('geometry' in obj) {
-                    getGeometryMemoryUsage(obj.geometry as BufferGeometry, this._cachedMemoryUsage);
-                }
-            });
-        }
-
-        result.cpuMemory += this._cachedMemoryUsage.cpuMemory;
-        result.gpuMemory += this._cachedMemoryUsage.gpuMemory;
-
-        return result;
+    getMemoryUsage(context: GetMemoryUsageContext) {
+        this.traverse(obj => {
+            if ('geometry' in obj) {
+                getGeometryMemoryUsage(context, obj.geometry as BufferGeometry);
+            }
+        });
     }
 
     preprocess() {
@@ -822,7 +805,6 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
     private disposeTile(tile: FeatureTile) {
         tile.dispose(this._tileIdSet);
         this._rootMeshes.length = 0;
-        this._cachedMemoryUsage = null;
     }
 
     update(ctx: Context, tile: FeatureTile) {
@@ -915,7 +897,6 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
                 })
                 .finally(() => {
                     this._rootMeshes.length = 0;
-                    this._cachedMemoryUsage = null;
                     this._opCounter.decrement();
                 });
         }

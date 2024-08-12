@@ -4,11 +4,7 @@ import type Context from '../core/Context';
 import type Instance from '../core/Instance';
 import { type ObjectToUpdate } from '../core/MainLoop';
 import type MemoryUsage from '../core/MemoryUsage';
-import {
-    createEmptyReport,
-    type GetMemoryUsageContext,
-    type MemoryUsageReport,
-} from '../core/MemoryUsage';
+import { type GetMemoryUsageContext } from '../core/MemoryUsage';
 import type Pickable from '../core/picking/Pickable';
 import pickObjectsAt from '../core/picking/PickObjectsAt';
 import type PickOptions from '../core/picking/PickOptions';
@@ -49,6 +45,8 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
     extends Entity<TEventMap & Entity3DEventMap, TUserData>
     implements Pickable, MemoryUsage, RenderingContextHandler
 {
+    readonly isMemoryUsage = true as const;
+
     readonly type: string = 'Entity3D' as const;
 
     readonly isPickable = true;
@@ -100,8 +98,8 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
         this.onObjectCreated(object3d);
     }
 
-    getMemoryUsage(_context: GetMemoryUsageContext, target?: MemoryUsageReport): MemoryUsageReport {
-        return target ?? createEmptyReport();
+    getMemoryUsage(_context: GetMemoryUsageContext) {
+        // Do nothing
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

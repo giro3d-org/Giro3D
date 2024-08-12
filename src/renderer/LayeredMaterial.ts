@@ -34,11 +34,7 @@ import type { TextureAndPitch } from '../core/layer/Layer';
 import type MaskLayer from '../core/layer/MaskLayer';
 import type { MaskMode } from '../core/layer/MaskLayer';
 import type MemoryUsage from '../core/MemoryUsage';
-import {
-    createEmptyReport,
-    type GetMemoryUsageContext,
-    type MemoryUsageReport,
-} from '../core/MemoryUsage';
+import { type GetMemoryUsageContext } from '../core/MemoryUsage';
 import OffsetScale from '../core/OffsetScale';
 import Rect from '../core/Rect';
 import type TerrainOptions from '../core/TerrainOptions';
@@ -303,6 +299,7 @@ interface Uniforms {
 }
 
 class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
+    readonly isMemoryUsage = true as const;
     private readonly _getIndexFn: (arg0: Layer) => number;
     private readonly _renderer: WebGLRenderer;
     private readonly _colorLayers: ColorLayer[] = [];
@@ -336,15 +333,12 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
     private _options: MaterialOptions;
     private _hasElevationLayer: boolean;
 
-    getMemoryUsage(context: GetMemoryUsageContext, target?: MemoryUsageReport): MemoryUsageReport {
-        const result = target ?? createEmptyReport();
-
+    getMemoryUsage(context: GetMemoryUsageContext) {
         // We only consider textures that this material owns. That excludes layer textures.
         const atlas = this.texturesInfo.color.atlasTexture;
         if (atlas) {
-            TextureGenerator.getMemoryUsage(atlas, context, result);
+            TextureGenerator.getMemoryUsage(context, atlas);
         }
-        return result;
     }
 
     constructor({

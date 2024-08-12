@@ -30,11 +30,7 @@ import ElevationLayer, { isElevationLayer } from '../core/layer/ElevationLayer';
 import type HasLayers from '../core/layer/HasLayers';
 import Layer from '../core/layer/Layer';
 import type MemoryUsage from '../core/MemoryUsage';
-import {
-    createEmptyReport,
-    type GetMemoryUsageContext,
-    type MemoryUsageReport,
-} from '../core/MemoryUsage';
+import { type GetMemoryUsageContext } from '../core/MemoryUsage';
 import type Pickable from '../core/picking/Pickable';
 import type PickableFeatures from '../core/picking/PickableFeatures';
 import { isPickableFeatures } from '../core/picking/PickableFeatures';
@@ -547,14 +543,10 @@ class Map<UserData extends EntityUserData = EntityUserData>
      */
     wireframe: boolean;
 
-    getMemoryUsage(context: GetMemoryUsageContext, target?: MemoryUsageReport): MemoryUsageReport {
-        const result = target ?? createEmptyReport();
-
-        this._layers.forEach(layer => layer.getMemoryUsage(context, result));
-        this.geometryPool.forEach(geometry => geometry.getMemoryUsage(context, result));
-        this.allTiles.forEach(tile => tile.getMemoryUsage(context, result));
-
-        return result;
+    getMemoryUsage(context: GetMemoryUsageContext) {
+        this._layers.forEach(layer => layer.getMemoryUsage(context));
+        this.geometryPool.forEach(geometry => geometry.getMemoryUsage(context));
+        this.allTiles.forEach(tile => tile.getMemoryUsage(context));
     }
 
     /**
