@@ -50,6 +50,7 @@ import type Extent from '../core/geographic/Extent';
 import EmptyTexture from '../renderer/EmptyTexture';
 import Fetcher from '../utils/Fetcher.js';
 import OpenLayersUtils from '../utils/OpenLayersUtils';
+import { nonNull } from '../utils/tsutils';
 import type { GetImageOptions, ImageResponse, ImageSourceOptions } from './ImageSource';
 import ImageSource, { ImageResult } from './ImageSource';
 
@@ -169,12 +170,14 @@ export interface VectorTileSourceOptions extends ImageSourceOptions {
  * \});
  */
 class VectorTileSource extends ImageSource {
-    readonly isVectorTileSource: boolean = true;
+    readonly isVectorTileSource: boolean = true as const;
+    readonly type = 'VectorTileSource' as const;
+
     readonly source: OLVectorTileSourcce;
     readonly style: Style | StyleFunction;
-    readonly backgroundColor: string;
+    readonly backgroundColor: string | undefined;
     private _sourceProjection: Projection;
-    private _extent: Extent;
+    private _extent: Extent | undefined;
     private readonly _tileGrid: TileGrid;
     private readonly _crs: string;
     private readonly _olUID = MathUtils.generateUUID();
@@ -187,9 +190,6 @@ class VectorTileSource extends ImageSource {
         if (!options.url) {
             throw new Error('missing parameter: url');
         }
-
-        this.isVectorTileSource = true;
-        this.type = 'VectorTileSource';
 
         this.source = new OLVectorTileSourcce({
             url: options.url,
@@ -214,9 +214,12 @@ class VectorTileSource extends ImageSource {
 
         this.style = options.style;
         this.backgroundColor = options.backgroundColor;
-        this._sourceProjection = null;
 
-        const projection = this.source.getProjection();
+        const projection = nonNull(
+            this.source.getProjection(),
+            'could not get projection from source',
+        );
+
         this._crs = projection.getCode();
         const tileGrid = this.source.getTileGridForProjection(projection);
         this._tileGrid = tileGrid;
@@ -254,9 +257,13 @@ class VectorTileSource extends ImageSource {
 
         const z = tileCoord[0];
         const source = this.source;
-        const tileGrid = source.getTileGridForProjection(source.getProjection());
+        const tileGrid = source.getTileGridForProjection(this._sourceProjection);
         const resolution = tileGrid.getResolution(z);
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+        if (!ctx) {
+            throw new Error('could not acquire 2d context');
+        }
 
         if (this.backgroundColor) {
             ctx.fillStyle = this.backgroundColor;
@@ -296,12 +303,12 @@ class VectorTileSource extends ImageSource {
         // @ts-expect-error this is not assignable to getReplayState()
         const replayState = tile.getReplayState(this);
         const source = this.source;
-        const sourceTileGrid = source.getTileGrid();
-        const sourceProjection = source.getProjection();
+        const sourceTileGrid = nonNull(source.getTileGrid(), 'could not get tile grid from source');
+        const sourceProjection = this._sourceProjection;
         const tileGrid = source.getTileGridForProjection(sourceProjection);
         const resolution = tileGrid.getResolution(tile.getTileCoord()[0]);
         const tileExtent = tileGrid.getTileCoordExtent(tile.wrappedTileCoord);
-        const renderOrder: OrderFunction = null;
+        const renderOrder: OrderFunction | null = null;
         const pixelRatio = 1;
 
         const tmpExtent2 = createEmptyExtent();
@@ -347,11 +354,10 @@ class VectorTileSource extends ImageSource {
             }
 
             for (let i = 0, ii = features.length; i < ii; ++i) {
-                const feature = features[i];
-                if (
-                    !bufferedExtent ||
-                    intersects(bufferedExtent, feature.getGeometry().getExtent())
-                ) {
+                const feature = features[i] as Feature;
+                const geom = feature.getGeometry();
+
+                if (geom && (!bufferedExtent || intersects(bufferedExtent, geom.getExtent()))) {
                     render.call(this, feature);
                 }
                 empty = false;

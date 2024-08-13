@@ -19,14 +19,15 @@ import { type GetMemoryUsageContext } from '../core/MemoryUsage';
 import Fetcher from '../utils/Fetcher';
 import PromiseUtils from '../utils/PromiseUtils';
 import TextureGenerator, { type NumberArray } from '../utils/TextureGenerator';
+import { nonNull } from '../utils/tsutils';
 import ConcurrentDownloader from './ConcurrentDownloader';
 import ImageSource, { ImageResult, type ImageSourceOptions } from './ImageSource';
 
 const tmpDim = new Vector2();
 
-let sharedPool: Pool = null;
+let sharedPool: Pool | undefined = undefined;
 
-function getPool(): Pool {
+function getPool(): Pool | undefined {
     if (!sharedPool && window.Worker) {
         sharedPool = new Pool();
     }
@@ -95,7 +96,7 @@ export class FetcherResponse extends BaseResponse {
     }
 
     getHeader(name: string) {
-        return this.response.headers.get(name);
+        return this.response.headers.get(name) as string;
     }
 
     // @ts-expect-error (incorrectly typed base method, should be a Promise, but is an ArrayBuffer)
@@ -223,28 +224,31 @@ export interface CogSourceOptions extends ImageSourceOptions {
  * Provides data from a Cloud Optimized GeoTIFF (COG).
  */
 class CogSource extends ImageSource {
-    readonly isCogSource: boolean = true;
+    readonly isCogSource: boolean = true as const;
+    readonly type = 'CogSource' as const;
 
     readonly url: string;
     readonly crs: string;
+
+    private readonly _cacheId: string = MathUtils.generateUUID();
+    private readonly _cacheOptions?: CogCacheOptions;
     private readonly _cache: Cache = GlobalCache;
-    private _tiffImage: GeoTIFF;
-    private readonly _pool: Pool;
+    private readonly _pool: Pool | undefined;
+
     private _imageCount: number;
-    private _extent: Extent;
-    private _dimensions: Vector2;
     private _images: Level[];
     private _masks: Level[];
-    private _sampleCount: number;
-    private _channels: number[];
-    private _initialized: boolean;
-    private _origin: number[];
-    private _nodata: number;
-    private _format: number;
-    private _bps: number;
-    private _initializePromise: Promise<void>;
-    private readonly _cacheId: string = MathUtils.generateUUID();
-    private readonly _cacheOptions: CogCacheOptions;
+    private _channels?: number[];
+
+    // Fields available after initialization
+    private _tiffImage?: GeoTIFF;
+    private _extent?: Extent;
+    private _dimensions?: Vector2;
+    private _sampleCount?: number;
+    private _initialized?: boolean;
+    private _origin?: number[];
+    private _nodata?: number | null;
+    private _initializePromise?: Promise<void>;
 
     /**
      * Creates a COG source.
@@ -253,8 +257,6 @@ class CogSource extends ImageSource {
      */
     constructor(options: CogSourceOptions) {
         super({ ...options, flipY: options.flipY ?? true });
-
-        this.type = 'CogSource';
 
         this.url = options.url;
         this.crs = options.crs;
@@ -266,24 +268,37 @@ class CogSource extends ImageSource {
         this._cacheOptions = options.cacheOptions;
     }
 
+    private getInternalCache(): QuickLRU<number, CachedBlock> | undefined {
+        if (!this._tiffImage) {
+            return undefined;
+        }
+
+        const source = this._tiffImage.source as { blockCache: QuickLRU<number, CachedBlock> };
+        return source.blockCache;
+    }
+
     getMemoryUsage(context: GetMemoryUsageContext) {
         if (!this._tiffImage) {
             return;
         }
-        const source = this._tiffImage.source as { blockCache: QuickLRU<number, CachedBlock> };
-        const cache = source.blockCache;
+        const cache = this.getInternalCache();
 
-        let bytes = 0;
+        if (cache) {
+            let bytes = 0;
 
-        cache.forEach((block: CachedBlock) => {
-            bytes += block.data.byteLength;
-        });
+            cache.forEach((block: CachedBlock) => {
+                bytes += block.data.byteLength;
+            });
 
-        context.objects.set(`${this.type}-${this._cacheId}`, { cpuMemory: bytes, gpuMemory: 0 });
+            context.objects.set(`${this.type}-${this._cacheId}`, {
+                cpuMemory: bytes,
+                gpuMemory: 0,
+            });
+        }
     }
 
     getExtent() {
-        return this._extent;
+        return nonNull(this._extent);
     }
 
     getCrs() {
@@ -318,8 +333,10 @@ class CogSource extends ImageSource {
     ) {
         const { image } = this.selectLevel(requestExtent, requestWidth, requestHeight);
 
-        const pixelWidth = this._dimensions.x / image.width;
-        const pixelHeight = this._dimensions.y / image.height;
+        const dims = nonNull(this._dimensions);
+
+        const pixelWidth = dims.x / image.width;
+        const pixelHeight = dims.y / image.height;
 
         const marginExtent = requestExtent.withMargin(pixelWidth * margin, pixelHeight * margin);
 
@@ -395,9 +412,10 @@ class CogSource extends ImageSource {
 
         this._nodata = firstImage.getGDALNoData();
 
-        this._format = firstImage.getSampleFormat();
-        this._bps = firstImage.getBitsPerSample();
-        this.datatype = selectDataType(this._format, this._bps);
+        const format = firstImage.getSampleFormat();
+        const bps = firstImage.getBitsPerSample();
+
+        this.datatype = selectDataType(format, bps);
 
         function makeLevel(image: GeoTIFFImage, resolution: number[]): Level {
             return {
@@ -441,7 +459,7 @@ class CogSource extends ImageSource {
      * @returns The window.
      */
     private makeWindowFromExtent(extent: Extent, resolution: number[]) {
-        const [oX, oY] = this._origin;
+        const [oX, oY] = nonNull(this._origin);
         const [imageResX, imageResY] = resolution;
         const ext = extent.values;
 
@@ -485,7 +503,7 @@ class CogSource extends ImageSource {
             {
                 width,
                 height,
-                nodata: this._nodata,
+                nodata: this._nodata ?? undefined,
             },
             dataType,
             ...buffers,
@@ -506,7 +524,7 @@ class CogSource extends ImageSource {
     private selectLevel(requestExtent: Extent, requestWidth: number, requestHeight: number) {
         // Number of images  = original + overviews if any
         const imageCount = this._imageCount;
-        const cropped = requestExtent.clone().intersect(this._extent);
+        const cropped = requestExtent.clone().intersect(nonNull(this._extent));
         // Dimensions of the requested extent
         const extentDimension = cropped.dimensions(tmpDim);
 
@@ -515,18 +533,17 @@ class CogSource extends ImageSource {
             extentDimension.y / requestHeight,
         );
 
-        let image: Level;
-        let mask: Level;
+        let image: Level = this._images[imageCount - 1];
+        let mask: Level = this._masks[imageCount - 1];
 
         // Select the image with the best resolution for our needs
         for (let i = imageCount - 1; i >= 0; i--) {
             image = this._images[i];
             mask = this._masks[i];
 
-            const sourceResolution = Math.min(
-                this._dimensions.x / image.width,
-                this._dimensions.y / image.height,
-            );
+            const dims = nonNull(this._dimensions);
+
+            const sourceResolution = Math.min(dims.x / image.width, dims.y / image.height);
 
             if (targetResolution >= sourceResolution) {
                 break;
@@ -539,7 +556,7 @@ class CogSource extends ImageSource {
     /**
      * Gets the channel mapping.
      */
-    get channels() {
+    get channels(): number[] | undefined {
         return this._channels;
     }
 
@@ -559,14 +576,14 @@ class CogSource extends ImageSource {
 
         const { image, mask } = this.selectLevel(extent, width, height);
 
-        const adjusted = extent.fitToGrid(this._extent, image.width, image.height, 8, 8);
+        const adjusted = extent.fitToGrid(nonNull(this._extent), image.width, image.height, 8, 8);
 
         const actualExtent = adjusted.extent;
 
         const buffers = await this.getRegionBuffers(
             actualExtent,
             image,
-            this._channels,
+            nonNull(this._channels),
             signal,
             id,
         );
@@ -574,8 +591,9 @@ class CogSource extends ImageSource {
         signal?.throwIfAborted();
 
         let texture: Texture;
-        let min: number;
-        let max: number;
+        let min: number | undefined = undefined;
+        let max: number | undefined = undefined;
+
         if (buffers == null) {
             texture = new Texture();
         } else {
@@ -600,7 +618,7 @@ class CogSource extends ImageSource {
     private async processTransparencyMask(
         mask: Level,
         extent: Extent,
-        signal: AbortSignal,
+        signal: AbortSignal | undefined,
         id: string,
     ) {
         const bufs = await this.getRegionBuffers(extent, mask, [0], signal, id);
@@ -645,7 +663,7 @@ class CogSource extends ImageSource {
         // We would create more textures, but it could be worth it.
         const buf = await image.readRasters({
             pool: this._pool,
-            fillValue: this._nodata,
+            fillValue: this._nodata ?? undefined,
             samples: channels,
             window,
             signal,
@@ -665,24 +683,28 @@ class CogSource extends ImageSource {
         window: number[],
         channels: number[],
         signal?: AbortSignal,
-    ): Promise<TypedArray | TypedArray[]> {
+    ): Promise<TypedArray | TypedArray[] | null> {
         signal?.throwIfAborted();
 
         try {
             return await this.readWindow(image, window, channels, signal);
         } catch (e) {
-            if (e.toString() === 'AggregateError: Request failed') {
-                // Problem with the source that is blocked by another fetch
-                // (request failed in readRasters). See the conversations in
-                // https://github.com/geotiffjs/geotiff.js/issues/218
-                // https://github.com/geotiffjs/geotiff.js/issues/221
-                // https://github.com/geotiffjs/geotiff.js/pull/224
-                // Retry until it is not blocked.
-                // TODO retry counter
-                await PromiseUtils.delay(100);
-                return this.fetchBuffer(image, window, channels, signal);
-            }
-            if (e.name !== 'AbortError') {
+            if (e instanceof Error) {
+                if (e.toString() === 'AggregateError: Request failed') {
+                    // Problem with the source that is blocked by another fetch
+                    // (request failed in readRasters). See the conversations in
+                    // https://github.com/geotiffjs/geotiff.js/issues/218
+                    // https://github.com/geotiffjs/geotiff.js/issues/221
+                    // https://github.com/geotiffjs/geotiff.js/pull/224
+                    // Retry until it is not blocked.
+                    // TODO retry counter
+                    await PromiseUtils.delay(100);
+                    return this.fetchBuffer(image, window, channels, signal);
+                }
+                if (e.name !== 'AbortError') {
+                    console.error(e);
+                }
+            } else {
                 console.error(e);
             }
             return null;
@@ -702,7 +724,7 @@ class CogSource extends ImageSource {
         extent: Extent,
         imageInfo: Level,
         channels: number[],
-        signal: AbortSignal,
+        signal: AbortSignal | undefined,
         id: string,
     ): Promise<TypedArray[] | null> {
         const window = this.makeWindowFromExtent(extent, imageInfo.resolution);
@@ -750,6 +772,10 @@ class CogSource extends ImageSource {
         const request = () => this.loadImage(opts);
 
         return [{ id, request }];
+    }
+
+    dispose(): void {
+        this.getInternalCache()?.clear();
     }
 }
 

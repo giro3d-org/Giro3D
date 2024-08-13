@@ -5,7 +5,8 @@ import type { CustomContainsFn, GetImageOptions } from './ImageSource';
 import ImageSource, { ImageResult } from './ImageSource';
 
 class DebugSource extends ImageSource {
-    readonly isDebugSource: boolean = true;
+    readonly isDebugSource: boolean = true as const;
+    readonly type = 'DebugSource' as const;
 
     private readonly _delay: () => number;
     private readonly _extent: Extent;
@@ -32,17 +33,18 @@ class DebugSource extends ImageSource {
     }) {
         super(options);
         const { delay, subdivisions, opacity, extent, color } = options;
+
         if (delay) {
             if (typeof delay === 'function') {
                 this._delay = delay;
             } else if (typeof delay === 'number') {
                 this._delay = () => delay;
+            } else {
+                this._delay = () => 0;
             }
         } else {
             this._delay = () => 0;
         }
-
-        this.type = 'DebugSource';
 
         this._extent = options.extent;
         this._opacity = opacity ?? 1;
@@ -56,6 +58,11 @@ class DebugSource extends ImageSource {
         canvas.width = width;
         canvas.height = height;
         const context = canvas.getContext('2d', { willReadFrequently: true });
+
+        if (!context) {
+            throw new Error('could not acquire 2d context');
+        }
+
         const prefix = id.substring(0, 10);
 
         context.fillStyle = `#${this._color.getHexString()}`;

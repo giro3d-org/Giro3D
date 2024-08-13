@@ -71,9 +71,6 @@ async function getCapabilities(url: string): Promise<unknown> {
  * ```
  */
 export default class WmtsSource extends TiledImageSource {
-    readonly type: string = 'WmtsSource';
-    readonly isWmtsSource = true;
-
     // Note: constructor is private because currently the only way to build a WMTS layer
     // is from the capabilities.
     private constructor(options: TiledImageSourceOptions) {
@@ -112,11 +109,9 @@ export default class WmtsSource extends TiledImageSource {
         const config: Record<string, unknown> = {
             layer: options.layer,
         };
-        delete options.layer;
 
         if (options.matrixSet) {
             config.matrixSet = options.matrixSet;
-            delete options.matrixSet;
         }
         if (options.imageFormat) {
             config.format = options.imageFormat;
@@ -124,6 +119,10 @@ export default class WmtsSource extends TiledImageSource {
         }
 
         const olOptions = optionsFromCapabilities(capabilities, config);
+
+        if (!olOptions) {
+            throw new Error('layer was not found');
+        }
 
         return new WmtsSource({
             source: new WMTS(olOptions),
