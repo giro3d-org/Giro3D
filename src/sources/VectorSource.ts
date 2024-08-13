@@ -30,6 +30,7 @@ import type Extent from '../core/geographic/Extent';
 import EmptyTexture from '../renderer/EmptyTexture';
 import Fetcher from '../utils/Fetcher';
 import OpenLayersUtils from '../utils/OpenLayersUtils';
+import { nonNull } from '../utils/tsutils';
 import type { GetImageOptions, ImageSourceOptions } from './ImageSource';
 import ImageSource, { ImageResult } from './ImageSource';
 
@@ -95,6 +96,10 @@ function rasterizeBuilderGroup(
     const resX = extent.dimensions().x / size.width;
     const resY = extent.dimensions().y / size.height;
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+    if (!ctx) {
+        throw new Error('could not acquire 2d context');
+    }
 
     const transform = resetTransform(tmpTransform);
     scaleTransform(transform, pixelRatio / resX, -pixelRatio / resY);
@@ -168,13 +173,17 @@ export interface VectorSourceOptions extends ImageSourceOptions {
  * \});
  */
 class VectorSource extends ImageSource {
-    readonly isVectorSource: boolean = true;
-    readonly format: FeatureFormat;
-    readonly data: string | object | Feature[];
-    readonly source: Vector;
-    readonly dataProjection: string;
+    readonly isVectorSource = true as const;
+    readonly type = 'VectorSource' as const;
 
-    private _targetProjection: string;
+    readonly format: FeatureFormat | undefined;
+    readonly data: string | object | Feature[];
+    readonly dataProjection: string | undefined;
+
+    readonly source: Vector;
+
+    // After initialization
+    private _targetProjection: string | undefined;
 
     /**
      * The current style.
@@ -193,9 +202,6 @@ class VectorSource extends ImageSource {
         if (!options.format && typeof options.data == 'string') {
             throw new Error('format required if features are not passed directly.');
         }
-
-        this.isVectorSource = true;
-        this.type = 'VectorSource';
 
         this.data = options.data;
         this.format = options.format;
@@ -241,7 +247,7 @@ class VectorSource extends ImageSource {
                 }
             }
 
-            features = this.format.readFeatures(content) as Feature[];
+            features = nonNull(this.format).readFeatures(content) as Feature[];
         }
 
         this.source.addFeatures(features);
@@ -253,7 +259,7 @@ class VectorSource extends ImageSource {
      * @param feature - The feature to reproject.
      */
     reproject(feature: Feature) {
-        feature.getGeometry().transform(this.dataProjection, this._targetProjection);
+        feature.getGeometry()?.transform(this.dataProjection, this._targetProjection);
     }
 
     async initialize(opts: { targetProjection: string }) {
@@ -272,11 +278,13 @@ class VectorSource extends ImageSource {
         this.source.on('addfeature', evt => {
             const feature = evt.feature;
 
-            if (shouldReproject) {
-                this.reproject(feature);
-            }
+            if (feature) {
+                if (shouldReproject) {
+                    this.reproject(feature);
+                }
 
-            this.updateFeature(feature);
+                this.updateFeature(feature);
+            }
         });
     }
 
@@ -340,26 +348,34 @@ class VectorSource extends ImageSource {
             return;
         }
 
-        let extent: Extent;
+        let extent: Extent | undefined;
+        const crs = nonNull(this._targetProjection);
+
         if (feature.length === 1) {
-            extent = OpenLayersUtils.getFeatureExtent(feature[0], this._targetProjection);
+            extent = OpenLayersUtils.getFeatureExtent(feature[0], crs);
         } else {
             feature = feature.filter(f => f != null);
 
             if (feature.length > 0) {
-                extent = OpenLayersUtils.getFeatureExtent(feature[0], this._targetProjection);
+                const extents = feature
+                    .map(f => (f != null ? OpenLayersUtils.getFeatureExtent(f, crs) : null))
+                    .filter(e => e != null);
 
-                for (let i = 1; i < feature.length; i++) {
-                    const f = feature[i];
-                    if (f != null) {
-                        const e = OpenLayersUtils.getFeatureExtent(f, this._targetProjection);
-                        extent.union(e);
+                if (extents.length > 0) {
+                    extent = extents[0];
+
+                    if (extents.length > 1) {
+                        for (let i = 1; i < extents.length; i++) {
+                            extent.union(extents[i]);
+                        }
                     }
                 }
             }
         }
 
-        this.update(extent);
+        if (extent) {
+            this.update(extent);
+        }
     }
 
     /**
@@ -368,7 +384,7 @@ class VectorSource extends ImageSource {
      * @param id - The feature id.
      * @returns The feature.
      */
-    getFeatureById(id: string | number): Feature {
+    getFeatureById(id: string | number): Feature | null {
         return this.source.getFeatureById(id);
     }
 
@@ -385,11 +401,14 @@ class VectorSource extends ImageSource {
         // Note that since we are reprojecting vector _inside_ the source,
         // the source projection is the same as the target projection, indicating
         // that no projection needs to be done on images produced by this source.
-        return this._targetProjection;
+        return nonNull(this._targetProjection);
     }
 
     getExtent() {
-        return this.getCurrentExtent();
+        return nonNull(
+            this.getCurrentExtent(),
+            'could not compute the extent of this source because it does not contain any feature',
+        );
     }
 
     getCurrentExtent() {
@@ -397,7 +416,7 @@ class VectorSource extends ImageSource {
         if (!Number.isFinite(sourceExtent[0])) {
             return null;
         }
-        return OpenLayersUtils.fromOLExtent(sourceExtent, this._targetProjection);
+        return OpenLayersUtils.fromOLExtent(sourceExtent, nonNull(this._targetProjection));
     }
 
     /**

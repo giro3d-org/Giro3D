@@ -5,7 +5,7 @@ class Tiles3DSource {
     readonly isTiles3DSource: boolean = true;
     readonly type: string = 'Tiles3DSource';
     readonly url: string;
-    readonly networkOptions: RequestInit;
+    readonly networkOptions: RequestInit | undefined;
 
     /**
      * @param url - The URL to the root tileset.

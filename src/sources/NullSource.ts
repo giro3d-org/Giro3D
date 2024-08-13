@@ -6,14 +6,12 @@ import ImageSource from './ImageSource';
  * An image source that produces nothing. Mainly for debugging/testing purposes.
  */
 class NullSource extends ImageSource {
-    readonly isNullSource: boolean = true;
+    readonly isNullSource = true as const;
+    readonly type = 'NullSource' as const;
     private readonly _extent: Extent;
 
     constructor(options: { extent?: Extent } = {}) {
         super();
-
-        this.isNullSource = true;
-        this.type = 'NullSource';
 
         this._extent = options?.extent ?? new Extent('EPSG:3857', 0, 10, 0, 10);
     }

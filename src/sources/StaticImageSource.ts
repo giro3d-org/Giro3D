@@ -52,7 +52,7 @@ export default class StaticImageSource extends ImageSource<StaticImageSourceEven
     private readonly _source: string | HTMLImageElement | HTMLCanvasElement | Texture;
     private readonly _id = MathUtils.generateUUID();
 
-    private _promise: Promise<ImageResult>;
+    private _promise: Promise<ImageResult> | undefined;
 
     /**
      * Create a {@link StaticImageSource}.

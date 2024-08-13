@@ -2,8 +2,8 @@
  * The data source for a [Potree](https://github.com/potree/potree) point cloud.
  */
 class PotreeSource {
-    readonly isPotreeSource: boolean = true;
-    readonly type: string = 'PotreeSource';
+    readonly isPotreeSource = true as const;
+    readonly type = 'PotreeSource' as const;
     readonly url: string;
     readonly filename: string;
     readonly networkOptions: object;

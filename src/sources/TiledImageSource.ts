@@ -1,7 +1,7 @@
 import { TileRange } from 'ol';
 import type Projection from 'ol/proj/Projection';
 import type UrlTile from 'ol/source/UrlTile';
-import type { TileCoord } from 'ol/tilecoord';
+import type { UrlFunction } from 'ol/Tile';
 import type TileGrid from 'ol/tilegrid/TileGrid.js';
 import { UnsignedByteType, Vector2, type Texture } from 'three';
 import type Extent from '../core/geographic/Extent';
@@ -10,6 +10,7 @@ import { MemoryTracker } from '../renderer';
 import EmptyTexture from '../renderer/EmptyTexture';
 import OpenLayersUtils from '../utils/OpenLayersUtils';
 import TextureGenerator from '../utils/TextureGenerator';
+import { nonNull } from '../utils/tsutils';
 import ConcurrentDownloader from './ConcurrentDownloader';
 import ImageSource, {
     ImageResult,
@@ -90,13 +91,15 @@ export interface TiledImageSourceOptions extends ImageSourceOptions {
  * \});
  */
 export default class TiledImageSource extends ImageSource {
-    readonly isTiledImageSource: boolean = true;
+    readonly isTiledImageSource = true as const;
+    readonly type = 'TiledImageSource' as const;
+
     readonly source: UrlTile;
-    readonly format: ImageFormat;
+    readonly format: ImageFormat | undefined;
     readonly olprojection: Projection;
-    readonly noDataValue: number;
+    readonly noDataValue: number | undefined;
     private readonly _tileGrid: TileGrid;
-    private readonly _getTileUrl: (coord: TileCoord, _: number, proj: Projection) => string;
+    private readonly _getTileUrl: UrlFunction;
     private readonly _sourceExtent: Extent;
     private readonly _downloader: ConcurrentDownloader;
 
@@ -112,9 +115,6 @@ export default class TiledImageSource extends ImageSource {
                 (options.format?.dataType ?? UnsignedByteType) === UnsignedByteType,
         });
 
-        this.isTiledImageSource = true;
-        this.type = 'TiledImageSource';
-
         this.source = options.source;
         this.format = options.format;
         this._downloader = new ConcurrentDownloader({
@@ -122,7 +122,10 @@ export default class TiledImageSource extends ImageSource {
             timeout: options.httpTimeout ?? DEFAULT_TIMEOUT,
         });
 
-        const projection = this.source.getProjection();
+        const projection = nonNull(
+            this.source.getProjection(),
+            'could not get projection froms source',
+        );
         this.olprojection = projection;
         const tileGrid: TileGrid = this.source.getTileGridForProjection(projection);
         // Cache the tilegrid because it is constant
@@ -149,7 +152,7 @@ export default class TiledImageSource extends ImageSource {
         margin = 0,
     ): { extent: Extent; width: number; height: number } {
         const size = Math.min(requestWidth, requestHeight);
-        const zoom = this.getZoomLevel(requestExtent, size);
+        const zoom = this.getZoomLevel(requestExtent, size) ?? this._tileGrid.getMinZoom();
 
         const resolution = this._tileGrid.getResolution(zoom);
 
@@ -178,7 +181,7 @@ export default class TiledImageSource extends ImageSource {
      * @param size - The size in pixels of the target extent.
      * @returns The ideal zoom level for this particular extent.
      */
-    private getZoomLevel(extent: Extent, size: number): number {
+    private getZoomLevel(extent: Extent, size: number): number | null {
         const minZoom = this._tileGrid.getMinZoom();
         const maxZoom = this._tileGrid.getMaxZoom();
 
@@ -250,7 +253,7 @@ export default class TiledImageSource extends ImageSource {
         return images;
     }
 
-    private async fetchData(url: string, signal: AbortSignal) {
+    private async fetchData(url: string, signal: AbortSignal | undefined) {
         try {
             const response = await this._downloader.fetch(url, { signal });
 
@@ -265,7 +268,7 @@ export default class TiledImageSource extends ImageSource {
 
             return blob;
         } catch (e) {
-            if (e?.name === 'AbortError') {
+            if (e instanceof Error && e.name === 'AbortError') {
                 throw e;
             }
             console.error(e);
@@ -287,7 +290,7 @@ export default class TiledImageSource extends ImageSource {
         url: string,
         extent: Extent,
         createDataTexture: boolean,
-        signal: AbortSignal,
+        signal: AbortSignal | undefined,
     ) {
         const blob = await this.fetchData(url, signal);
 
@@ -303,13 +306,10 @@ export default class TiledImageSource extends ImageSource {
         let min;
         let max;
         if (this.format) {
-            let width: number;
-            let height: number;
-            if (this._tileGrid) {
-                const tileSize = this._tileGrid.getTileSize(0);
-                width = tileSize as number;
-                height = tileSize as number;
-            }
+            const tileSize = this._tileGrid.getTileSize(0);
+            const width = tileSize as number;
+            const height = tileSize as number;
+
             const decoded = await this.format.decode(blob, {
                 noDataValue: this.noDataValue,
                 width,
@@ -370,7 +370,7 @@ export default class TiledImageSource extends ImageSource {
         crs: string,
         zoom: number,
         createDataTexture: boolean,
-        signal: AbortSignal,
+        signal: AbortSignal | undefined,
     ) {
         const source = this.source;
         const tileGrid = this._tileGrid;
@@ -384,17 +384,23 @@ export default class TiledImageSource extends ImageSource {
                 if (!fullTileRange.containsXY(i, j)) {
                     continue;
                 }
-                const tile = source.getTile(zoom, i, j, undefined, undefined);
+
+                const tile = source.getTile(zoom, i, j, 1, this.olprojection);
                 const coord = tile.tileCoord;
                 const olExtent = tileGrid.getTileCoordExtent(coord);
                 const tileExtent = OpenLayersUtils.fromOLExtent(olExtent, crs);
                 const id = `${coord[0]}-${coord[1]}-${coord[2]}`;
+
                 // Don't bother loading tiles that are not in the layer
                 if (this.shouldLoad(tileExtent)) {
                     const url = this._getTileUrl(coord, 1, this.olprojection);
-                    const request = () =>
-                        this.loadTile(id, url, tileExtent, createDataTexture, signal);
-                    promises.push({ id, request });
+
+                    if (url) {
+                        const request = () =>
+                            this.loadTile(id, url, tileExtent, createDataTexture, signal);
+
+                        promises.push({ id, request });
+                    }
                 }
             }
         }

@@ -139,7 +139,7 @@ export default class ConcurrentDownloader {
 
         const data: RequestData = {
             abortController,
-            signals: [signal],
+            signals: signal ? [signal] : [],
             promise: this._fetch(url, {
                 ...options,
                 signal: abortController.signal,
