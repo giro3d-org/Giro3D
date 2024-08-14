@@ -511,6 +511,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     private _subdivisions: { x: number; y: number };
     private _colorAtlasDataType: TextureDataType = UnsignedByteType;
     private _imageSize: Vector2;
+    private _wireframe = false;
     private readonly _layers: Layer[] = [];
     private readonly _onLayerVisibilityChanged: (event: { target: Layer }) => void;
     private readonly _onTileElevationChanged: (tile: TileMesh) => void;
@@ -538,11 +539,6 @@ class Map<UserData extends EntityUserData = EntityUserData>
      */
     subdivisionThreshold: number;
 
-    /**
-     * Displays the map tiles in wireframe.
-     */
-    wireframe: boolean;
-
     getMemoryUsage(context: GetMemoryUsageContext) {
         this._layers.forEach(layer => layer.getMemoryUsage(context));
         this.geometryPool.forEach(geometry => geometry.getMemoryUsage(context));
@@ -558,8 +554,6 @@ class Map<UserData extends EntityUserData = EntityUserData>
         super(options.object3d || new Group());
 
         this.level0Nodes = [];
-
-        this.wireframe = false;
 
         this.geometryPool = new window.Map();
 
@@ -777,6 +771,22 @@ class Map<UserData extends EntityUserData = EntityUserData>
                     'invalid segments. Must be a power of two between 1 and 128 included',
                 );
             }
+        }
+    }
+
+    /**
+     * Displays the map tiles in wireframe.
+     */
+    get wireframe(): boolean {
+        return this._wireframe;
+    }
+
+    set wireframe(v: boolean) {
+        if (v !== this._wireframe) {
+            this._wireframe = v;
+            this.traverseTiles(tile => {
+                tile.material.wireframe = v;
+            });
         }
     }
 
