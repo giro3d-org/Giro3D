@@ -36,7 +36,7 @@ abstract class ImageFormat {
      */
     abstract decode(
         blob: Blob,
-        options?: DecodeOptions,
+        options: DecodeOptions,
     ): Promise<{
         texture: Texture;
         min?: number;
