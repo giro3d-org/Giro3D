@@ -53,17 +53,6 @@ export const OPAQUE_FLOAT = 1.0;
 export const TRANSPARENT = 0;
 export const DEFAULT_NODATA = 0;
 
-export type NumberArray =
-    | Uint8ClampedArray
-    | Uint8Array
-    | Int8Array
-    | Uint16Array
-    | Int16Array
-    | Uint32Array
-    | Int32Array
-    | Float32Array
-    | Float64Array;
-
 function isTexture(obj: unknown): obj is Texture {
     return (obj as Texture)?.isTexture;
 }
@@ -174,7 +163,6 @@ function fillBuffer<T extends TypedArray>(options: FillBufferOptions<T>): FillBu
                 break;
             default:
                 throw new Error('unrecognized buffer type: ' + options.dataType);
-                break;
         }
     } else {
         console.error('missing values');
@@ -510,7 +498,7 @@ function createDataTexture(
         nodata?: number;
     },
     sourceDataType: TextureDataType,
-    ...pixelData: NumberArray[]
+    ...pixelData: TypedArray[]
 ): CreateDataTextureResult {
     const width = options.width;
     const height = options.height;
@@ -610,7 +598,7 @@ function create1DTexture(colors: Color[], alpha?: number[]): DataTexture {
  * @returns The computed min/max.
  */
 function computeMinMaxFromBuffer(
-    buffer: NumberArray,
+    buffer: TypedArray,
     nodata?: number,
     interpretation: Interpretation = Interpretation.Raw,
     channelCount = 4,

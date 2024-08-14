@@ -1,4 +1,5 @@
 import { fromBlob, Pool } from 'geotiff';
+import type { TypedArray } from 'three';
 import {
     DataTexture,
     FloatType,
@@ -10,11 +11,7 @@ import {
     type Texture,
 } from 'three';
 import EmptyTexture from '../renderer/EmptyTexture';
-import TextureGenerator, {
-    OPAQUE_BYTE,
-    OPAQUE_FLOAT,
-    type NumberArray,
-} from '../utils/TextureGenerator';
+import TextureGenerator, { OPAQUE_BYTE, OPAQUE_FLOAT } from '../utils/TextureGenerator';
 import type { DecodeOptions } from './ImageFormat';
 import ImageFormat from './ImageFormat';
 
@@ -42,7 +39,7 @@ class GeoTIFFFormat extends ImageFormat {
      * @param options - the decoding options
      */
     // eslint-disable-next-line class-methods-use-this
-    async decode(blob: Blob, options?: DecodeOptions) {
+    async decode(blob: Blob, options: DecodeOptions) {
         const tiff = await fromBlob(blob);
         const image = await tiff.getImage();
 
@@ -70,7 +67,7 @@ class GeoTIFFFormat extends ImageFormat {
 
         let format: PixelFormat;
         let bufferSize: number;
-        let inputBuffers: NumberArray[];
+        let inputBuffers: TypedArray[];
 
         switch (spp) {
             case 1:
@@ -78,7 +75,7 @@ class GeoTIFFFormat extends ImageFormat {
                     // grayscale
                     const [v] = (await image.readRasters({
                         pool: geotiffWorkerPool,
-                    })) as NumberArray[];
+                    })) as TypedArray[];
                     format = RGFormat;
                     bufferSize = width * height * 2;
                     inputBuffers = [v];
@@ -89,7 +86,7 @@ class GeoTIFFFormat extends ImageFormat {
                     // grayscale with alpha
                     const [v, a] = (await image.readRasters({
                         pool: geotiffWorkerPool,
-                    })) as NumberArray[];
+                    })) as TypedArray[];
                     format = RGFormat;
                     bufferSize = width * height * 2;
                     inputBuffers = [v, a];
@@ -100,7 +97,7 @@ class GeoTIFFFormat extends ImageFormat {
                     // RGB
                     const [r, g, b] = (await image.readRasters({
                         pool: geotiffWorkerPool,
-                    })) as NumberArray[];
+                    })) as TypedArray[];
                     format = RGBAFormat;
                     bufferSize = width * height * 4;
                     inputBuffers = [r, g, b];
@@ -111,7 +108,7 @@ class GeoTIFFFormat extends ImageFormat {
                     // RGBA
                     const [r, g, b, a] = (await image.readRasters({
                         pool: geotiffWorkerPool,
-                    })) as NumberArray[];
+                    })) as TypedArray[];
                     format = RGBAFormat;
                     bufferSize = width * height * 4;
                     inputBuffers = [r, g, b, a];
