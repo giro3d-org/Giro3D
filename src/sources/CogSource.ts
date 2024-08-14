@@ -1,3 +1,4 @@
+import type { TypedArray } from 'three';
 import { FloatType, MathUtils, Texture, UnsignedByteType, Vector2 } from 'three';
 
 import {
@@ -9,7 +10,6 @@ import {
     type GeoTIFF,
     type GeoTIFFImage,
     type ReadRasterResult,
-    type TypedArray,
 } from 'geotiff';
 import type QuickLRU from 'quick-lru';
 
@@ -18,7 +18,7 @@ import Extent from '../core/geographic/Extent';
 import { type GetMemoryUsageContext } from '../core/MemoryUsage';
 import Fetcher from '../utils/Fetcher';
 import PromiseUtils from '../utils/PromiseUtils';
-import TextureGenerator, { type NumberArray } from '../utils/TextureGenerator';
+import TextureGenerator from '../utils/TextureGenerator';
 import { nonNull } from '../utils/tsutils';
 import ConcurrentDownloader from './ConcurrentDownloader';
 import ImageSource, { ImageResult, type ImageSourceOptions } from './ImageSource';
@@ -492,10 +492,10 @@ class CogSource extends ImageSource {
      * @param buffers - The buffers (one buffer per band)
      * @returns The generated texture.
      */
-    private createTexture(buffers: SizedArray<NumberArray>) {
+    private createTexture(buffers: SizedArray<TypedArray>) {
         // Width and height in pixels of the returned data.
         // The geotiff.js patches the arrays with the width and height properties.
-        const { width, height }: SizedArray<NumberArray> = buffers;
+        const { width, height }: SizedArray<TypedArray> = buffers;
 
         const dataType = this.datatype;
 
@@ -604,7 +604,7 @@ class CogSource extends ImageSource {
                 }
             }
 
-            const result = this.createTexture(buffers as SizedArray<NumberArray>);
+            const result = this.createTexture(buffers as SizedArray<TypedArray>);
             texture = result.texture;
             min = result.min;
             max = result.max;
