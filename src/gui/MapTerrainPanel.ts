@@ -25,7 +25,7 @@ class MapTerrainPanel extends Panel {
 
         this.addController<boolean>(this.map, 'wireframe')
             .name('Wireframe')
-            .onChange(v => this.toggleWireframe(v));
+            .onChange(() => this.notify());
 
         this.addController<number>(this, 'segments')
             .name('Tile subdivisions')
@@ -54,14 +54,6 @@ class MapTerrainPanel extends Panel {
             this.map.segments = val;
             this.notify(this.map);
         }
-    }
-
-    toggleWireframe(value: boolean) {
-        this.map.wireframe = value;
-        this.map.traverseTiles(tile => {
-            tile.material.wireframe = value;
-        });
-        this.notify(this.map);
     }
 }
 
