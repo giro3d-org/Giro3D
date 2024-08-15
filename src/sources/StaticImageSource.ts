@@ -1,7 +1,7 @@
 import { CanvasTexture, MathUtils, Texture } from 'three';
-import type { Extent } from '../core/geographic';
+import type Extent from '../core/geographic/Extent';
 import EmptyTexture from '../renderer/EmptyTexture';
-import { Fetcher } from '../utils';
+import Fetcher from '../utils/Fetcher';
 import type { GetImageOptions, ImageResponse, ImageSourceEvents } from './ImageSource';
 import ImageSource, { ImageResult } from './ImageSource';
 

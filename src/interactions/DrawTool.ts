@@ -1,5 +1,5 @@
 import { AdditiveBlending, BackSide, EventDispatcher, MeshBasicMaterial, Vector3 } from 'three';
-import type { Disposable } from '../core';
+import type Disposable from '../core/Disposable';
 import type Instance from '../core/Instance';
 import type PickResult from '../core/picking/PickResult';
 import type { ShapePickResult, VerticalLineLabelFormatter } from '../entities/Shape';
@@ -9,7 +9,7 @@ import Shape, {
     slopeSegmentFormatter,
     type ShapeConstructorOptions,
 } from '../entities/Shape';
-import { ConstantSizeSphere } from '../renderer';
+import ConstantSizeSphere from '../renderer/ConstantSizeSphere';
 import { AbortError } from '../utils/PromiseUtils';
 
 const DEFAULT_MARKER_RADIUS = 5;

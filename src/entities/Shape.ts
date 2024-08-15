@@ -35,7 +35,8 @@ import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer';
 
 import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../core/MemoryUsage';
-import type { PickOptions, PickResult } from '../core/picking';
+import type PickOptions from '../core/picking/PickOptions';
+import type PickResult from '../core/picking/PickResult';
 import ConstantSizeSphere, { getWorldSpaceRadius } from '../renderer/ConstantSizeSphere';
 import { getContrastColor } from '../utils/ColorUtils';
 import GeoJSONUtils from '../utils/GeoJSONUtils';
