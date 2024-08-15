@@ -401,7 +401,7 @@ class VectorSource extends ImageSource {
         // Note that since we are reprojecting vector _inside_ the source,
         // the source projection is the same as the target projection, indicating
         // that no projection needs to be done on images produced by this source.
-        return nonNull(this._targetProjection);
+        return this._targetProjection as string;
     }
 
     getExtent() {
