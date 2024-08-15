@@ -16,7 +16,7 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import ColorMap from '@giro3d/giro3d/core/layer/ColorMap.js';
 import ColorMapMode from '@giro3d/giro3d/core/layer/ColorMapMode.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
-import { ColorLayer } from '@giro3d/giro3d/core/layer/index.js';
+import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
