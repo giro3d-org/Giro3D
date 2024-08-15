@@ -1,4 +1,4 @@
-import Rect from '../../../src/core/Rect';
+import Rect from 'src/core/Rect';
 
 describe('Rect', () => {
     describe('constructor', () => {
