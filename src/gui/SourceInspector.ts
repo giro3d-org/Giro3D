@@ -3,9 +3,10 @@ import type TileSource from 'ol/source/Tile.js';
 import UrlTile from 'ol/source/UrlTile.js';
 import type Instance from '../core/Instance';
 import * as MemoryUsage from '../core/MemoryUsage';
-import { VectorSource, type ImageSource } from '../sources';
 import CogSource from '../sources/CogSource';
+import type ImageSource from '../sources/ImageSource';
 import TiledImageSource from '../sources/TiledImageSource';
+import VectorSource from '../sources/VectorSource';
 import Panel from './Panel';
 
 /**

@@ -41,7 +41,7 @@ import {
     type SurfaceMaterialGenerator,
 } from '../../core/FeatureTypes';
 import RequestQueue from '../../core/RequestQueue';
-import { Fetcher } from '../../utils';
+import Fetcher from '../../utils/Fetcher';
 import LineStringMesh from './LineStringMesh';
 import MultiLineStringMesh from './MultiLineStringMesh';
 import MultiPointMesh from './MultiPointMesh';

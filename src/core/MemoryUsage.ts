@@ -1,5 +1,6 @@
 import type { BufferGeometry, IUniform, Object3D, WebGLRenderer } from 'three';
 import { Material, ShaderMaterial, Texture } from 'three';
+import { isBufferGeometry } from '../utils/predicates';
 import TextureGenerator from '../utils/TextureGenerator';
 
 export type MemoryUsageReport = {
@@ -73,10 +74,6 @@ export function format(bytes: number, locale: string = undefined): string {
     }
 
     return `${numberFormat.format(value)} ${unit}`;
-}
-
-function isBufferGeometry(obj: unknown): obj is BufferGeometry {
-    return (obj as BufferGeometry)?.isBufferGeometry;
 }
 
 function iterateMaterials(obj: unknown, callback: (material: Material) => void) {
