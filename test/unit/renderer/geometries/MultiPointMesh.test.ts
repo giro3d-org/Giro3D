@@ -1,6 +1,8 @@
-import MultiPointMesh, { isMultiPointMesh } from 'src/renderer/geometries/MultiPointMesh';
-import PointMesh from 'src/renderer/geometries/PointMesh';
-import { isSimpleGeometryMesh } from 'src/renderer/geometries/SimpleGeometryMesh';
+import MultiPointMesh, {
+    isMultiPointMesh,
+} from '@giro3d/giro3d/renderer/geometries/MultiPointMesh';
+import PointMesh from '@giro3d/giro3d/renderer/geometries/PointMesh';
+import { isSimpleGeometryMesh } from '@giro3d/giro3d/renderer/geometries/SimpleGeometryMesh';
 import { SpriteMaterial } from 'three';
 
 function makeDefaultObjects(options?: { material?: SpriteMaterial; opacity?: number }) {

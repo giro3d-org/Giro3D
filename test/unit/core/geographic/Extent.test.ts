@@ -1,6 +1,6 @@
-import Coordinates from 'src/core/geographic/Coordinates';
-import Extent from 'src/core/geographic/Extent';
-import OffsetScale from 'src/core/OffsetScale';
+import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';
+import Extent from '@giro3d/giro3d/core/geographic/Extent';
+import OffsetScale from '@giro3d/giro3d/core/OffsetScale';
 import { Box3, Vector2, Vector3 } from 'three';
 
 const BOUNDS_EPSG4326 = new Extent('EPSG:4326', {

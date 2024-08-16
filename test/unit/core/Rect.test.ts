@@ -1,4 +1,4 @@
-import Rect from 'src/core/Rect';
+import Rect from '@giro3d/giro3d/core/Rect';
 
 describe('Rect', () => {
     describe('constructor', () => {

@@ -1,8 +1,13 @@
-import Extent from 'src/core/geographic/Extent';
-import type { LayerEvents, LayerNode, LayerUserData, TextureAndPitch } from 'src/core/layer/Layer';
-import Layer from 'src/core/layer/Layer';
-import type RequestQueue from 'src/core/RequestQueue';
-import NullSource from 'src/sources/NullSource';
+import Extent from '@giro3d/giro3d/core/geographic/Extent';
+import type {
+    LayerEvents,
+    LayerNode,
+    LayerUserData,
+    TextureAndPitch,
+} from '@giro3d/giro3d/core/layer/Layer';
+import Layer from '@giro3d/giro3d/core/layer/Layer';
+import type RequestQueue from '@giro3d/giro3d/core/RequestQueue';
+import NullSource from '@giro3d/giro3d/sources/NullSource';
 import { setupGlobalMocks } from '../../mocks';
 
 // @ts-expect-error missing implementations of abstract superclass

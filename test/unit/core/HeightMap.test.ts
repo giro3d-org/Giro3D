@@ -1,5 +1,5 @@
-import HeightMap from 'src/core/HeightMap';
-import OffsetScale from 'src/core/OffsetScale';
+import HeightMap from '@giro3d/giro3d/core/HeightMap';
+import OffsetScale from '@giro3d/giro3d/core/OffsetScale';
 import {
     FloatType,
     RedFormat,

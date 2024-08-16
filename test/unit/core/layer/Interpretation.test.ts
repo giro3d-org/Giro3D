@@ -1,4 +1,4 @@
-import Interpretation, { Mode } from 'src/core/layer/Interpretation';
+import Interpretation, { Mode } from '@giro3d/giro3d/core/layer/Interpretation';
 
 describe('Interpretation', () => {
     describe('constructor', () => {

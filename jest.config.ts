@@ -12,7 +12,7 @@ const jestConfig: JestConfigWithTsJest = {
     // Used to avoid relative import paths to the source files:
     // import ""../../../src/foo.js" can be simplified to import "src/foo.js"
     moduleNameMapper: {
-        '^src(.*)$': '<rootDir>/src$1',
+        '^@giro3d/giro3d/(.*)$': '<rootDir>/src/$1',
     },
 };
 

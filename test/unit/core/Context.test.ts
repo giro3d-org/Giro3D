@@ -1,8 +1,8 @@
 import { PerspectiveCamera, Plane, Vector3 } from 'three';
 
-import Context from 'src/core/Context';
-import type Instance from 'src/core/Instance';
-import type View from 'src/renderer/View';
+import Context from '@giro3d/giro3d/core/Context';
+import type Instance from '@giro3d/giro3d/core/Instance';
+import type View from '@giro3d/giro3d/renderer/View';
 
 describe('Context', () => {
     const threeCamera = new PerspectiveCamera(75);

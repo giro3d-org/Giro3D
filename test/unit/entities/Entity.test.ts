@@ -1,4 +1,4 @@
-import Entity from 'src/entities/Entity';
+import Entity from '@giro3d/giro3d/entities/Entity';
 
 describe('Entity', () => {
     let entity: Entity;

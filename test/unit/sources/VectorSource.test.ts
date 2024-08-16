@@ -1,6 +1,6 @@
+import VectorSource from '@giro3d/giro3d/sources/VectorSource';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import { Style } from 'ol/style.js';
-import VectorSource from 'src/sources/VectorSource';
 
 describe('VectorSource', () => {
     describe('setStyle', () => {

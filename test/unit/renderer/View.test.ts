@@ -1,4 +1,4 @@
-import View from 'src/renderer/View';
+import View from '@giro3d/giro3d/renderer/View';
 import { PerspectiveCamera } from 'three';
 
 const DEFAULT_CRS = 'EPSG:1234';

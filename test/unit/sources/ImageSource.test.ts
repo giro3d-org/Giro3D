@@ -1,6 +1,10 @@
-import Extent from 'src/core/geographic/Extent';
-import type { CustomContainsFn, GetImageOptions, ImageResponse } from 'src/sources/ImageSource';
-import ImageSource from 'src/sources/ImageSource';
+import Extent from '@giro3d/giro3d/core/geographic/Extent';
+import type {
+    CustomContainsFn,
+    GetImageOptions,
+    ImageResponse,
+} from '@giro3d/giro3d/sources/ImageSource';
+import ImageSource from '@giro3d/giro3d/sources/ImageSource';
 
 class TestSource extends ImageSource {
     extent: Extent;

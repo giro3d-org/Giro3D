@@ -1,7 +1,7 @@
-import Extent from 'src/core/geographic/Extent';
-import HeightMap from 'src/core/HeightMap';
-import OffsetScale from 'src/core/OffsetScale';
-import TileGeometry from 'src/core/TileGeometry';
+import Extent from '@giro3d/giro3d/core/geographic/Extent';
+import HeightMap from '@giro3d/giro3d/core/HeightMap';
+import OffsetScale from '@giro3d/giro3d/core/OffsetScale';
+import TileGeometry from '@giro3d/giro3d/core/TileGeometry';
 import { FloatType, RGFormat } from 'three';
 
 const dimensions = new Extent('EPSG:3857', -100, 100, -100, 100).dimensions();

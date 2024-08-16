@@ -1,4 +1,4 @@
-import RequestQueue from 'src/core/RequestQueue';
+import RequestQueue from '@giro3d/giro3d/core/RequestQueue';
 
 describe('RequestQueue', () => {
     describe('progress & loading', () => {

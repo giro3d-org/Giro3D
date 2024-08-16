@@ -1,5 +1,5 @@
-import Extent from 'src/core/geographic/Extent';
-import OpenLayersUtils from 'src/utils/OpenLayersUtils';
+import Extent from '@giro3d/giro3d/core/geographic/Extent';
+import OpenLayersUtils from '@giro3d/giro3d/utils/OpenLayersUtils';
 
 describe('OpenLayersUtils', () => {
     describe('toOLExtent/fromOLExtent', () => {

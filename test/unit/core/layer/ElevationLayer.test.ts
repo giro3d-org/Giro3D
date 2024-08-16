@@ -1,6 +1,6 @@
-import ElevationLayer from 'src/core/layer/ElevationLayer';
-import Interpretation from 'src/core/layer/Interpretation';
-import NullSource from 'src/sources/NullSource';
+import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer';
+import Interpretation from '@giro3d/giro3d/core/layer/Interpretation';
+import NullSource from '@giro3d/giro3d/sources/NullSource';
 
 describe('ElevationLayer', () => {
     describe('constructor', () => {

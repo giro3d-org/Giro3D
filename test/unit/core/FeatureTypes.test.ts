@@ -10,7 +10,7 @@ import {
     type FillStyle,
     type PointStyle,
     type StrokeStyle,
-} from 'src/core/FeatureTypes';
+} from '@giro3d/giro3d/core/FeatureTypes';
 import { Color } from 'three';
 
 describe('getFullStrokeStyle', () => {

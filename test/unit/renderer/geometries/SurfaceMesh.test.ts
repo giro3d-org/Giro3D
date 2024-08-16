@@ -1,4 +1,4 @@
-import SurfaceMesh, { isSurfaceMesh } from 'src/renderer/geometries/SurfaceMesh';
+import SurfaceMesh, { isSurfaceMesh } from '@giro3d/giro3d/renderer/geometries/SurfaceMesh';
 import { MeshLambertMaterial } from 'three';
 import { makeSurfaceGeometry } from './PolygonMesh.test';
 

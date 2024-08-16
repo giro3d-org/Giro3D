@@ -1,4 +1,4 @@
-import GeoJSONUtils from 'src/utils/GeoJSONUtils';
+import GeoJSONUtils from '@giro3d/giro3d/utils/GeoJSONUtils';
 
 describe('GeoJSONUtils', () => {
     const dataSet = [

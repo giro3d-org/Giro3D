@@ -6,7 +6,7 @@
     "exclude": ["node_modules/**/*"],
     "compilerOptions": {
         "paths": {
-            "src/*": ["../src/*"]
+            "@giro3d/giro3d/*": ["../src/*"]
         },
         "allowJs": true
     }

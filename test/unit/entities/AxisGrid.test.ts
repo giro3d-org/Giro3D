@@ -1,7 +1,7 @@
-import Context from 'src/core/Context';
-import Extent from 'src/core/geographic/Extent';
-import AxisGrid, { type Volume } from 'src/entities/AxisGrid';
-import View from 'src/renderer/View';
+import Context from '@giro3d/giro3d/core/Context';
+import Extent from '@giro3d/giro3d/core/geographic/Extent';
+import AxisGrid, { type Volume } from '@giro3d/giro3d/entities/AxisGrid';
+import View from '@giro3d/giro3d/renderer/View';
 import * as THREE from 'three';
 
 const DEFAULT_EXTENT = new Extent('EPSG:3857', -10, 10, -10, 10);

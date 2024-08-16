@@ -1,5 +1,5 @@
+import Entity3D from '@giro3d/giro3d/entities/Entity3D';
 import assert from 'assert';
-import Entity3D from 'src/entities/Entity3D';
 import {
     BoxGeometry,
     BufferGeometry,

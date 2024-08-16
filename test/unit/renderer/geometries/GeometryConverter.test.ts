@@ -2,14 +2,18 @@ import { LineString, MultiLineString, MultiPoint, MultiPolygon, Point, Polygon }
 
 import { Color, Vector3, type MeshBasicMaterial } from 'three';
 
-import { getFullFillStyle, getFullPointStyle, getFullStrokeStyle } from 'src/core/FeatureTypes';
-import GeometryConverter from 'src/renderer/geometries/GeometryConverter';
-import type LineStringMesh from 'src/renderer/geometries/LineStringMesh';
-import type MultiLineStringMesh from 'src/renderer/geometries/MultiLineStringMesh';
-import type MultiPolygonMesh from 'src/renderer/geometries/MultiPolygonMesh';
-import type PointMesh from 'src/renderer/geometries/PointMesh';
-import { isPointMesh } from 'src/renderer/geometries/PointMesh';
-import type PolygonMesh from 'src/renderer/geometries/PolygonMesh';
+import {
+    getFullFillStyle,
+    getFullPointStyle,
+    getFullStrokeStyle,
+} from '@giro3d/giro3d/core/FeatureTypes';
+import GeometryConverter from '@giro3d/giro3d/renderer/geometries/GeometryConverter';
+import type LineStringMesh from '@giro3d/giro3d/renderer/geometries/LineStringMesh';
+import type MultiLineStringMesh from '@giro3d/giro3d/renderer/geometries/MultiLineStringMesh';
+import type MultiPolygonMesh from '@giro3d/giro3d/renderer/geometries/MultiPolygonMesh';
+import type PointMesh from '@giro3d/giro3d/renderer/geometries/PointMesh';
+import { isPointMesh } from '@giro3d/giro3d/renderer/geometries/PointMesh';
+import type PolygonMesh from '@giro3d/giro3d/renderer/geometries/PolygonMesh';
 
 const SIMPLE_SQUARE = [
     [

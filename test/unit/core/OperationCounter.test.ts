@@ -1,4 +1,4 @@
-import OperationCounter from 'src/core/OperationCounter';
+import OperationCounter from '@giro3d/giro3d/core/OperationCounter';
 
 describe('OperationCounter', () => {
     let counter: OperationCounter;

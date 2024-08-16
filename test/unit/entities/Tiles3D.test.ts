@@ -1,11 +1,11 @@
+import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';
+import $3dTilesIndex from '@giro3d/giro3d/entities/3dtiles/3dTilesIndex';
+import Tile from '@giro3d/giro3d/entities/3dtiles/Tile';
+import type { $3dTilesTileset } from '@giro3d/giro3d/entities/3dtiles/types';
+import Tiles3D from '@giro3d/giro3d/entities/Tiles3D';
+import View from '@giro3d/giro3d/renderer/View';
+import Tiles3DSource from '@giro3d/giro3d/sources/Tiles3DSource';
 import proj4 from 'proj4';
-import Coordinates from 'src/core/geographic/Coordinates';
-import $3dTilesIndex from 'src/entities/3dtiles/3dTilesIndex';
-import Tile from 'src/entities/3dtiles/Tile';
-import type { $3dTilesTileset } from 'src/entities/3dtiles/types';
-import Tiles3D from 'src/entities/Tiles3D';
-import View from 'src/renderer/View';
-import Tiles3DSource from 'src/sources/Tiles3DSource';
 import type { BufferGeometry, Material } from 'three';
 import { Group, Matrix4, Mesh, MeshBasicMaterial } from 'three';
 

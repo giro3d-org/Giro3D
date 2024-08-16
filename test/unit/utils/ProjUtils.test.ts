@@ -1,4 +1,4 @@
-import ProjUtils from 'src/utils/ProjUtils';
+import ProjUtils from '@giro3d/giro3d/utils/ProjUtils';
 import { Vector2 } from 'three';
 
 describe('transformBufferInPlace', () => {
