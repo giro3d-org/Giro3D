@@ -32,10 +32,9 @@ import { DefaultQueue } from '../core/RequestQueue';
 import PotreeBinParser from '../parser/PotreeBinParser';
 import PotreeCinParser from '../parser/PotreeCinParser';
 import PointCloudMaterial, { MODE, type Mode } from '../renderer/PointCloudMaterial';
-import { isOrthographicCamera, isPerspectiveCamera } from '../renderer/View';
 import type PotreeSource from '../sources/PotreeSource';
 import Fetcher from '../utils/Fetcher';
-import { isBufferGeometry } from '../utils/predicates';
+import { isBufferGeometry, isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
 import { type EntityUserData } from './Entity';
 import Entity3D, { type Entity3DEventMap } from './Entity3D';
 

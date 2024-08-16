@@ -1,4 +1,4 @@
-import type { Camera, Object3D, WebGLRenderer } from 'three';
+import type { Camera, Object3D, PerspectiveCamera, WebGLRenderer } from 'three';
 import {
     BufferGeometry,
     DepthTexture,
@@ -16,6 +16,7 @@ import {
     Vector2,
     WebGLRenderTarget,
 } from 'three';
+import { isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
 import BasicVS from './shader/BasicVS.glsl';
 import EDLPassOneFS from './shader/pointcloud/EDLPassOneFS.glsl';
 import EDLPassTwoFS from './shader/pointcloud/EDLPassTwoFS.glsl';
@@ -30,7 +31,7 @@ const RT = {
     EDL_ZERO: 3,
 };
 
-interface Stage<TParams extends object> {
+interface Stage<TParams = unknown> {
     /** The render passes of this stage. */
     passes: ShaderMaterial[];
     /** The parameters of this stage. */
@@ -43,7 +44,7 @@ interface Stage<TParams extends object> {
         renderer: PointCloudRenderer;
         input: WebGLRenderTarget;
         passIdx: number;
-        camera: Camera;
+        camera: PerspectiveCamera | OrthographicCamera;
     }) => {
         material?: ShaderMaterial;
         output?: WebGLRenderTarget;
@@ -193,8 +194,8 @@ class PointCloudRenderer {
                 if (passIdx === 1) {
                     uniforms.depthTexture.value = renderer.renderTargets[RT.EDL_ZERO].depthTexture;
                     uniforms.resolution.value.set(input.width, input.height);
-                    uniforms.cameraNear.value = (camera as any).near;
-                    uniforms.cameraFar.value = (camera as any).far;
+                    uniforms.cameraNear.value = camera.near;
+                    uniforms.cameraFar.value = camera.far;
                     uniforms.radius.value = this.parameters.radius;
                     uniforms.strength.value = this.parameters.strength;
                     uniforms.directions.value = this.parameters.directions;
@@ -242,8 +243,8 @@ class PointCloudRenderer {
             },
             setup({ input, camera }) {
                 const m = this.passes[0];
-                const n = (camera as any).near;
-                const f = (camera as any).far;
+                const n = camera.near;
+                const f = camera.far;
                 const m43 = -(2 * f * n) / (f - n);
                 const m33 = -(f + n) / (f - n);
                 const mat = new Matrix4();
@@ -299,8 +300,8 @@ class PointCloudRenderer {
             },
             setup({ input, camera }) {
                 const m = this.passes[0];
-                const n = (camera as any).near;
-                const f = (camera as any).far;
+                const n = camera.near;
+                const f = camera.far;
                 const m43 = -(2 * f * n) / (f - n);
                 const m33 = -(f + n) / (f - n);
 
@@ -371,9 +372,13 @@ class PointCloudRenderer {
     render(scene: Object3D, camera: Camera, renderTarget: WebGLRenderTarget) {
         this.updateRenderTargets(renderTarget);
 
+        if (!isPerspectiveCamera(camera) && !isOrthographicCamera(camera)) {
+            throw new Error('invalid camera');
+        }
+
         const r = this.renderer;
 
-        const stages: Stage<any>[] = [];
+        const stages: Stage[] = [];
 
         stages.push(this.classic);
 
@@ -384,7 +389,7 @@ class PointCloudRenderer {
             stages.push(this.occlusion);
         }
         if (this.inpainting.enabled && cameraHasFarNear) {
-            const fill_steps = (this.inpainting.parameters as any).fill_steps as number;
+            const fill_steps = this.inpainting.parameters.fill_steps as number;
             for (let i = 0; i < fill_steps; i++) {
                 stages.push(this.inpainting);
             }

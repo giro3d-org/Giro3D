@@ -2,7 +2,7 @@ import type { PerspectiveCamera } from 'three';
 import { Euler, MathUtils, Quaternion, Vector2, Vector3 } from 'three';
 import type Instance from '../core/Instance';
 import { type InstanceEvents } from '../core/Instance';
-import { isPerspectiveCamera } from '../renderer/View';
+import { isPerspectiveCamera } from '../utils/predicates';
 
 // Note: we could use existing js controls (like
 // https://github.com/mrdoob/js/blob/dev/examples/js/controls/FirstPersonControls.js) but

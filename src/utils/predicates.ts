@@ -4,6 +4,8 @@ import type {
     DataTexture,
     Mesh,
     Object3D,
+    OrthographicCamera,
+    PerspectiveCamera,
     RenderTarget,
     Texture,
 } from 'three';
@@ -35,4 +37,10 @@ export function isDataTexture(obj: unknown): obj is DataTexture {
 }
 export function isCanvasTexture(obj: unknown): obj is CanvasTexture {
     return (obj as CanvasTexture)?.isCanvasTexture;
+}
+export function isPerspectiveCamera(obj: unknown): obj is PerspectiveCamera {
+    return (obj as PerspectiveCamera)?.isPerspectiveCamera;
+}
+export function isOrthographicCamera(obj: unknown): obj is OrthographicCamera {
+    return (obj as OrthographicCamera)?.isOrthographicCamera;
 }

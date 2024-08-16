@@ -9,6 +9,7 @@ import {
     type Sphere,
 } from 'three';
 import Coordinates from '../core/geographic/Coordinates';
+import { isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
 
 const ndcBox3 = new Box3(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
 
@@ -36,14 +37,6 @@ export interface CameraOptions {
 
 export const DEFAULT_MIN_NEAR_PLANE = 2;
 export const DEFAULT_MAX_NEAR_PLANE = 2000000000;
-
-export function isPerspectiveCamera(obj: unknown): obj is PerspectiveCamera {
-    return (obj as PerspectiveCamera)?.isPerspectiveCamera;
-}
-
-export function isOrthographicCamera(obj: unknown): obj is OrthographicCamera {
-    return (obj as OrthographicCamera)?.isOrthographicCamera;
-}
 
 /**
  * Adds geospatial capabilities to three.js cameras.
