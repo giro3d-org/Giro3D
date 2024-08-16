@@ -1,16 +1,20 @@
 import assert from 'assert';
+import type Context from 'src/core/Context';
+import type { OctreeItem, PotreeMetadata } from 'src/entities/PotreePointCloud';
+import PotreePointCloud from 'src/entities/PotreePointCloud';
+import PotreeSource from 'src/sources/PotreeSource';
 import { PerspectiveCamera } from 'three';
-import PotreePointCloud from '../../../src/entities/PotreePointCloud';
 
-const context = { view: { height: 1, camera: new PerspectiveCamera() } };
+// @ts-expect-error incomplete
+const context: Context = { view: { height: 1, camera: new PerspectiveCamera() } };
 
 describe('PotreePointCloud', () => {
     describe('preUpdate', () => {
-        /** @type {PotreePointCloud} */
-        let entity;
+        let entity: PotreePointCloud;
 
         beforeEach(() => {
-            entity = new PotreePointCloud('http://example.com', 'cloud.js');
+            entity = new PotreePointCloud(new PotreeSource('http://example.com', 'cloud.js'));
+            // @ts-expect-error invalid
             entity.root = {};
         });
 
@@ -36,8 +40,9 @@ describe('PotreePointCloud', () => {
             sources.add(elt1);
             sources.add(elt2);
             sources.add(elt3);
-            entity.root.findChildrenByName = name => {
+            entity.root.findChildrenByName = (node, name) => {
                 expect(name).toEqual('12');
+                return node;
             };
             entity.preUpdate(context, sources);
         });
@@ -48,32 +53,33 @@ describe('PotreePointCloud', () => {
             const sources = new Set();
             sources.add(elt1);
             sources.add(elt2);
-            entity.root.findChildrenByName = name => {
+            entity.root.findChildrenByName = (node, name) => {
                 expect(name).toEqual('12');
+                return node;
             };
             entity.preUpdate(context, sources);
         });
     });
 
     describe('getObjectToUpdateForAttachedLayers', () => {
-        /** @type {PotreePointCloud} */
-        let entity;
+        let entity: PotreePointCloud;
 
         beforeEach(() => {
-            entity = new PotreePointCloud('http://example.com', 'cloud.js');
+            entity = new PotreePointCloud(new PotreeSource('http://example.com', 'cloud.js'));
         });
 
         it('should correctly no-parent for the root', () => {
-            const meta = {
-                obj: 'a',
-            };
+            // @ts-expect-error invalid
+            const meta: OctreeItem = { obj: 'a' };
             const result = entity.getObjectToUpdateForAttachedLayers(meta);
             expect(result.element).toEqual('a');
         });
         it('should correctly return the element and its parent', () => {
-            const meta = {
+            const meta: OctreeItem = {
+                // @ts-expect-error invalid
                 obj: 'a',
                 parent: {
+                    // @ts-expect-error invalid
                     obj: 'b',
                 },
             };
@@ -85,15 +91,18 @@ describe('PotreePointCloud', () => {
 
     describe('parseMetadata', () => {
         it('should correctly parse normal information in metadata', () => {
-            const entity = new PotreePointCloud('http://example.com', 'cloud.js');
+            const entity = new PotreePointCloud(new PotreeSource('http://example.com', 'cloud.js'));
 
             // no normals
-            const metadata = {
+            const metadata: PotreeMetadata = {
+                version: '0',
                 boundingBox: {
                     lx: 0,
                     ly: 1,
                     ux: 2,
                     uy: 3,
+                    lz: 0,
+                    uz: 5,
                 },
                 scale: 1.0,
                 pointAttributes: ['POSITION', 'RGB'],
@@ -108,20 +117,22 @@ describe('PotreePointCloud', () => {
 
             // normals as vector
             metadata.pointAttributes = ['POSITION', 'NORMAL', 'CLASSIFICATION'];
-            entity.parseMetadata(metadata, entity);
+            entity.parseMetadata(metadata);
             assert.ok(entity.material.defines.NORMAL);
             assert.ok(!entity.material.defines.NORMAL_SPHEREMAPPED);
             assert.ok(!entity.material.defines.NORMAL_OCT16);
 
             // spheremapped normals
+            // @ts-expect-error invalid
             entity.material = { defines: {} };
             metadata.pointAttributes = ['POSITION', 'COLOR_PACKED', 'NORMAL_SPHEREMAPPED'];
-            entity.parseMetadata(metadata, entity);
+            entity.parseMetadata(metadata);
             assert.ok(!entity.material.defines.NORMAL);
             assert.ok(entity.material.defines.NORMAL_SPHEREMAPPED);
             assert.ok(!entity.material.defines.NORMAL_OCT16);
 
             // oct16 normals
+            // @ts-expect-error invalid
             entity.material = { defines: {} };
             metadata.pointAttributes = [
                 'POSITION',
@@ -129,7 +140,7 @@ describe('PotreePointCloud', () => {
                 'CLASSIFICATION',
                 'NORMAL_OCT16',
             ];
-            entity.parseMetadata(metadata, entity);
+            entity.parseMetadata(metadata);
             assert.ok(!entity.material.defines.NORMAL);
             assert.ok(!entity.material.defines.NORMAL_SPHEREMAPPED);
             assert.ok(entity.material.defines.NORMAL_OCT16);

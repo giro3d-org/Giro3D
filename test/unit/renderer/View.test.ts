@@ -1,5 +1,5 @@
+import View from 'src/renderer/View';
 import { PerspectiveCamera } from 'three';
-import View from '../../../src/renderer/View';
 
 const DEFAULT_CRS = 'EPSG:1234';
 

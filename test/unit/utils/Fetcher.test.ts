@@ -1,6 +1,6 @@
-import Fetcher from '../../../src/utils/Fetcher';
-import HttpConfiguration from '../../../src/utils/HttpConfiguration';
-import TextureGenerator from '../../../src/utils/TextureGenerator';
+import Fetcher from 'src/utils/Fetcher';
+import HttpConfiguration from 'src/utils/HttpConfiguration';
+import TextureGenerator from 'src/utils/TextureGenerator';
 
 describe('Fetcher', () => {
     beforeAll(() => {

@@ -2,7 +2,7 @@ import fs from 'fs';
 import { Blob } from 'node:buffer';
 import path from 'path';
 import { cwd } from 'process';
-import BilFormat from '../../../src/formats/BilFormat';
+import BilFormat from 'src/formats/BilFormat';
 
 describe('BilFormat', () => {
     const format = new BilFormat();
@@ -27,6 +27,7 @@ describe('BilFormat', () => {
                 width: 4,
                 height: 4,
             };
+            // @ts-expect-error not the same Blob type
             const { texture } = await format.decode(blob, options);
 
             expect(texture.image.data).toEqual(
@@ -49,6 +50,7 @@ describe('BilFormat', () => {
                 width: 4,
                 height: 4,
             };
+            // @ts-expect-error not the same Blob type
             const { texture } = await format.decode(blob, options);
 
             expect(texture.image.data).toEqual(

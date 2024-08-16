@@ -1,8 +1,7 @@
-import { Cache } from '../../../../src/core/Cache';
+import { Cache } from 'src/core/Cache';
 
 let now = 0;
-/** @type {Cache} */
-let cache;
+let cache: Cache;
 
 describe('Cache', () => {
     beforeEach(() => {

@@ -3,7 +3,7 @@ import type { LayerEvents, LayerNode, LayerUserData, TextureAndPitch } from 'src
 import Layer from 'src/core/layer/Layer';
 import type RequestQueue from 'src/core/RequestQueue';
 import NullSource from 'src/sources/NullSource';
-import { setupGlobalMocks } from '../../mocks.js';
+import { setupGlobalMocks } from '../../mocks';
 
 // @ts-expect-error missing implementations of abstract superclass
 class TestLayer<T, U> extends Layer<T, U> {
@@ -12,7 +12,7 @@ class TestLayer<T, U> extends Layer<T, U> {
         /** empty */
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars, class-methods-use-this
+    // @ts-expect-error invalid
     protected applyTextureToNode(
         _texture: TextureAndPitch,
         _node: LayerNode,
@@ -21,7 +21,7 @@ class TestLayer<T, U> extends Layer<T, U> {
         /** empty */
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars, class-methods-use-this
+    // @ts-expect-error invalid
     protected applyEmptyTextureToNode(_node: LayerNode): void {
         /** empty */
     }

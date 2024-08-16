@@ -23,7 +23,6 @@ import {
 import type ColorimetryOptions from '../core/ColorimetryOptions';
 import type ContourLineOptions from '../core/ContourLineOptions';
 import type ElevationRange from '../core/ElevationRange';
-import type Extent from '../core/geographic/Extent';
 import type GraticuleOptions from '../core/GraticuleOptions';
 import type HillshadingOptions from '../core/HillshadingOptions';
 import type ColorLayer from '../core/layer/ColorLayer';
@@ -691,7 +690,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
     setColorTextures(layer: ColorLayer, textureAndPitch: TextureAndPitch) {
         const index = this.indexOfColorLayer(layer);
         if (index < 0) {
-            this.pushColorLayer(layer, null);
+            this.pushColorLayer(layer);
         }
 
         const { pitch, texture } = textureAndPitch;
@@ -748,7 +747,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    pushColorLayer(newLayer: ColorLayer, _extent: Extent) {
+    pushColorLayer(newLayer: ColorLayer) {
         if (this._colorLayers.includes(newLayer)) {
             return;
         }

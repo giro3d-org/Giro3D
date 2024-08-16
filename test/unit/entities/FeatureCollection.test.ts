@@ -1,6 +1,6 @@
 import VectorSource from 'ol/source/Vector';
-import Extent from '../../../src/core/geographic/Extent';
-import FeatureCollection from '../../../src/entities/FeatureCollection';
+import Extent from 'src/core/geographic/Extent';
+import FeatureCollection from 'src/entities/FeatureCollection';
 
 describe('FeatureCollection', () => {
     describe('constructor', () => {
