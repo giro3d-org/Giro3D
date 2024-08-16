@@ -1,14 +1,16 @@
-/* eslint-disable class-methods-use-this */
+export const resizeObservers: ResizeObserver[] = [];
 
-export const resizeObservers = [];
+class ResizeObserverMock {
+    readonly observe: jest.Mock;
+    readonly unobserve: jest.Mock;
+    readonly disconnect: jest.Mock;
 
-class ResizeObserver {
     constructor() {
         this.observe = jest.fn();
         this.unobserve = jest.fn();
         this.disconnect = jest.fn();
 
-        resizeObservers.push(this);
+        resizeObservers.push(this as ResizeObserver);
     }
 }
 
@@ -17,6 +19,6 @@ class ResizeObserver {
  * with the `window` object.
  */
 export function setupGlobalMocks() {
-    window.ResizeObserver = ResizeObserver;
+    window.ResizeObserver = ResizeObserverMock;
     window.fetch = jest.fn();
 }

@@ -9,7 +9,7 @@ import TileIndex, {
     TOP_RIGHT,
     type NeighbourList,
     type Tile,
-} from '../../../src/core/TileIndex';
+} from 'src/core/TileIndex';
 
 class MockWeakRef<T extends WeakKey> implements WeakRef<T> {
     obj: T;

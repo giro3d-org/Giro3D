@@ -1,29 +1,36 @@
-import { Color, Group, Object3D } from 'three';
-import Extent from '../../../src/core/geographic/Extent';
-import Instance from '../../../src/core/Instance';
-import ColorLayer from '../../../src/core/layer/ColorLayer';
-import ElevationLayer from '../../../src/core/layer/ElevationLayer';
-import MainLoop from '../../../src/core/MainLoop';
-import Map from '../../../src/entities/Map';
-import { DEFAULT_AZIMUTH, DEFAULT_ZENITH } from '../../../src/renderer/LayeredMaterial';
-import RenderingState from '../../../src/renderer/RenderingState';
-import NullSource from '../../../src/sources/NullSource';
-import { setupGlobalMocks } from '../mocks.js';
+import Extent from 'src/core/geographic/Extent';
+import Instance from 'src/core/Instance';
+import ColorLayer, { isColorLayer } from 'src/core/layer/ColorLayer';
+import ElevationLayer, { isElevationLayer } from 'src/core/layer/ElevationLayer';
+import type MainLoop from 'src/core/MainLoop';
+import type TileMesh from 'src/core/TileMesh.js';
+import Map from 'src/entities/Map';
+import { DEFAULT_AZIMUTH, DEFAULT_ZENITH } from 'src/renderer/LayeredMaterial';
+import RenderingState from 'src/renderer/RenderingState';
+import NullSource from 'src/sources/NullSource';
+import { Color, Group } from 'three';
+import { setupGlobalMocks } from '../mocks';
 
 const nullSource = new NullSource({ extent: new Extent('EPSG:3857', -10, 10, -10, 10) });
 
+function makeTile(patch?: (tile: TileMesh) => void): TileMesh {
+    // @ts-expect-error invalid
+    const tile: TileMesh = new Group();
+    // @ts-expect-error invalid
+    tile.isTileMesh = true;
+
+    if (patch) {
+        patch(tile);
+    }
+
+    return tile;
+}
+
 describe('Map', () => {
-    /** @type {HTMLDivElement} */
-    let viewerDiv;
-
-    /** @type {Instance} */
-    let instance;
-
-    /** @type {MainLoop} */
-    let mainLoop;
-
-    /** @type {Map} */
-    let map;
+    let viewerDiv: HTMLDivElement;
+    let instance: Instance;
+    let mainLoop: MainLoop;
+    let map: Map;
 
     const extent = new Extent('EPSG:4326', {
         west: 0,
@@ -37,9 +44,11 @@ describe('Map', () => {
         viewerDiv = document.createElement('div');
         mainLoop = {
             gfxEngine: {
+                // @ts-expect-error invalid
                 getWindowSize: jest.fn,
+                // @ts-expect-error invalid
                 renderer: {
-                    domElement: viewerDiv,
+                    domElement: document.createElement('canvas'),
                     getContext: jest.fn(),
                     getClearAlpha: jest.fn(),
                     setClearAlpha: jest.fn(),
@@ -71,6 +80,7 @@ describe('Map', () => {
     });
 
     function checkLayerIndices() {
+        // @ts-expect-error private property
         const indices = map._layers.map(lyr => map.getIndex(lyr));
         for (let i = 0; i < indices.length; i++) {
             expect(indices[i]).toEqual(i);
@@ -174,7 +184,7 @@ describe('Map', () => {
             expect(m2.contourLines.color).toEqual(new Color('black'));
         });
 
-        it.each([true, false], 'should honor terrain parameters when terrain is a boolean', b => {
+        it.each([true, false])('should honor terrain parameters when terrain is a boolean', b => {
             const m = new Map({
                 extent,
                 terrain: b,
@@ -260,6 +270,7 @@ describe('Map', () => {
             const horizontalExtent = new Extent('EPSG:3857', -250, 250, -100, 100);
             const horizontalMap = new Map({ extent: horizontalExtent });
 
+            // @ts-expect-error private property
             horizontalMap._instance = { referenceCrs: 'EPSG:3857' };
 
             await horizontalMap.preprocess();
@@ -271,6 +282,7 @@ describe('Map', () => {
             const verticalExtent = new Extent('EPSG:3857', -100, 100, -250, 250);
             const verticalMap = new Map({ extent: verticalExtent });
 
+            // @ts-expect-error private property
             verticalMap._instance = { referenceCrs: 'EPSG:3857' };
 
             await verticalMap.preprocess();
@@ -287,6 +299,7 @@ describe('Map', () => {
                 '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
             );
 
+            // @ts-expect-error private property
             verticalMap._instance = { referenceCrs: 'EPSG:3946' };
 
             await verticalMap.preprocess();
@@ -317,20 +330,23 @@ describe('Map', () => {
             await map.addLayer(col2);
             await map.addLayer(elev1);
 
-            expect(map.getLayers(l => l.isColorLayer).map(l => l.id)).toEqual([col1.id, col2.id]);
-            expect(map.getLayers(l => l.isElevationLayer).map(l => l.id)).toEqual([elev1.id]);
+            expect(map.getLayers(l => isColorLayer(l)).map(l => l.id)).toEqual([col1.id, col2.id]);
+            expect(map.getLayers(l => isElevationLayer(l)).map(l => l.id)).toEqual([elev1.id]);
         });
     });
 
     describe('addLayers', () => {
         it('should accept only Layer object', async () => {
+            // @ts-expect-error missing parameter
             await expect(map.addLayer()).rejects.toThrowError('layer is not an instance of Layer');
             await expect(map.addLayer(null)).rejects.toThrowError(
                 'layer is not an instance of Layer',
             );
+            // @ts-expect-error invalid parameter
             await expect(map.addLayer([])).rejects.toThrowError(
                 'layer is not an instance of Layer',
             );
+            // @ts-expect-error invalid parameter
             await expect(map.addLayer(map)).rejects.toThrowError(
                 'layer is not an instance of Layer',
             );
@@ -341,6 +357,7 @@ describe('Map', () => {
         it('should add a layer', () => {
             const layer = new ColorLayer({ source: nullSource });
 
+            // @ts-expect-error private property
             map._instance = { referenceCrs: 'EPSG:3857', notifyChange: jest.fn() };
 
             map.addLayer(layer).then(() => {
@@ -410,7 +427,7 @@ describe('Map', () => {
             await map.addLayer(layer1);
             await map.addLayer(layer2);
 
-            const called = [];
+            const called: string[] = [];
 
             map.forEachLayer(l => {
                 called.push(l.id);
@@ -424,77 +441,84 @@ describe('Map', () => {
 
     describe('insertLayerAfter', () => {
         it('should throw if the layer is not present', () => {
-            const absent = { id: 'a' };
-            const present = { id: 'b' };
+            const absent = { id: 'a' } as ColorLayer;
+            const present = { id: 'b' } as ColorLayer;
+            // @ts-expect-error private property
             map._layers.push(present);
             expect(() => map.insertLayerAfter(absent, present)).toThrow(/The layer is not present/);
         });
 
         it('should move the layer at the beginning of the list if target is null', () => {
-            const a = { id: 'a' };
-            const b = { id: 'b' };
-            const c = { id: 'c' };
-            const d = { id: 'd' };
+            const a = { id: 'a' } as ColorLayer;
+            const b = { id: 'b' } as ColorLayer;
+            const c = { id: 'c' } as ColorLayer;
+            const d = { id: 'd' } as ColorLayer;
 
-            map._layers.push(a);
-            map._layers.push(b);
-            map._layers.push(c);
-            map._layers.push(d);
+            // @ts-expect-error private property
+            const layers = map._layers;
+
+            layers.push(a);
+            layers.push(b);
+            layers.push(c);
+            layers.push(d);
 
             map.insertLayerAfter(d, null);
-            expect(map._layers).toStrictEqual([d, a, b, c]);
+            expect(layers).toStrictEqual([d, a, b, c]);
         });
 
         it('should move the layer just after the target', () => {
-            const a = { id: 'a' };
-            const b = { id: 'b' };
-            const c = { id: 'c' };
-            const d = { id: 'd' };
+            const a = { id: 'a' } as ColorLayer;
+            const b = { id: 'b' } as ColorLayer;
+            const c = { id: 'c' } as ColorLayer;
+            const d = { id: 'd' } as ColorLayer;
 
-            map._layers.push(a);
-            map._layers.push(b);
-            map._layers.push(c);
-            map._layers.push(d);
+            // @ts-expect-error private property
+            const layers = map._layers;
+
+            layers.push(a);
+            layers.push(b);
+            layers.push(c);
+            layers.push(d);
 
             map.insertLayerAfter(a, d);
 
-            expect(map._layers).toStrictEqual([b, c, d, a]);
+            expect(layers).toStrictEqual([b, c, d, a]);
             checkLayerIndices();
 
             map.insertLayerAfter(d, a);
 
-            expect(map._layers).toStrictEqual([b, c, a, d]);
+            expect(layers).toStrictEqual([b, c, a, d]);
             checkLayerIndices();
 
             map.insertLayerAfter(c, b);
 
-            expect(map._layers).toStrictEqual([b, c, a, d]);
+            expect(layers).toStrictEqual([b, c, a, d]);
             checkLayerIndices();
 
             map.insertLayerAfter(a, b);
 
             checkLayerIndices();
-            expect(map._layers).toStrictEqual([b, a, c, d]);
+            expect(layers).toStrictEqual([b, a, c, d]);
         });
 
         it('should signal the order change to tiles', () => {
-            const tile = new Group();
-            tile.isTileMesh = true;
-            tile.reorderLayers = jest.fn();
-            tile.layer = map;
+            const tile = makeTile(t => (t.reorderLayers = jest.fn()));
 
             map.object3d.add(tile);
             map.level0Nodes.push(tile);
 
-            const a = { id: 'a' };
-            const b = { id: 'b' };
-            const c = { id: 'c' };
-            const d = { id: 'd' };
+            const a = { id: 'a' } as ColorLayer;
+            const b = { id: 'b' } as ColorLayer;
+            const c = { id: 'c' } as ColorLayer;
+            const d = { id: 'd' } as ColorLayer;
 
-            map._layers.push(a);
-            map._layers.push(b);
-            map._layers.push(c);
-            map._layers.push(d);
+            // @ts-expect-error private property
+            const layers = map._layers;
+
+            layers.push(a);
+            layers.push(b);
+            layers.push(c);
+            layers.push(d);
 
             expect(tile.reorderLayers).not.toHaveBeenCalled();
 
@@ -511,15 +535,15 @@ describe('Map', () => {
     });
 
     describe('sortColorLayers', () => {
-        function mkColorLayer(key) {
+        function mkColorLayer(key: number) {
             const layer = new ColorLayer({ name: `${key}`, source: nullSource });
-            layer.key = key;
+            layer.userData.key = key;
             return layer;
         }
 
-        function mkElevationLayer(key) {
+        function mkElevationLayer(key: number) {
             const layer = new ElevationLayer({ name: `${key}`, source: nullSource });
-            layer.key = key;
+            layer.userData.key = key;
             return layer;
         }
 
@@ -535,13 +559,16 @@ describe('Map', () => {
             const d = mkColorLayer(0);
             const elev = mkElevationLayer(999);
 
-            map._layers.push(a);
-            map._layers.push(b);
-            map._layers.push(elev);
-            map._layers.push(c);
-            map._layers.push(d);
+            // @ts-expect-error private property
+            const layers = map._layers;
 
-            map.sortColorLayers((l1, l2) => (l1.key < l2.key ? -1 : 1));
+            layers.push(a);
+            layers.push(b);
+            layers.push(elev);
+            layers.push(c);
+            layers.push(d);
+
+            map.sortColorLayers((l1, l2) => (l1.userData.key < l2.userData.key ? -1 : 1));
 
             // Ensure that elevation layers are by convention put at the start
             // of the layer list
@@ -554,10 +581,7 @@ describe('Map', () => {
         });
 
         it('should signal the order change to tiles', () => {
-            const tile = new Group();
-            tile.isTileMesh = true;
-            tile.reorderLayers = jest.fn();
-            tile.layer = map;
+            const tile = makeTile(tile => (tile.reorderLayers = jest.fn()));
 
             map.object3d.add(tile);
             map.level0Nodes.push(tile);
@@ -567,14 +591,17 @@ describe('Map', () => {
             const c = mkColorLayer(6);
             const d = mkColorLayer(0);
 
-            map._layers.push(a);
-            map._layers.push(b);
-            map._layers.push(c);
-            map._layers.push(d);
+            // @ts-expect-error private property
+            const layers = map._layers;
+
+            layers.push(a);
+            layers.push(b);
+            layers.push(c);
+            layers.push(d);
 
             expect(tile.reorderLayers).not.toHaveBeenCalled();
 
-            map.sortColorLayers((l1, l2) => (l1.key < l2.key ? -1 : 1));
+            map.sortColorLayers((l1, l2) => (l1.userData.key < l2.userData.key ? -1 : 1));
 
             expect(tile.reorderLayers).toHaveBeenCalled();
         });
@@ -582,27 +609,27 @@ describe('Map', () => {
 
     describe('moveLayerUp', () => {
         it('should throw if the layer is not present', () => {
-            expect(() => map.moveLayerUp({})).toThrow(/layer is not present/);
+            expect(() => map.moveLayerUp({} as ColorLayer)).toThrow(/layer is not present/);
         });
 
         it('should signal the order change to tiles', () => {
-            const tile = new Group();
-            tile.isTileMesh = true;
-            tile.reorderLayers = jest.fn();
-            tile.layer = map;
+            const tile = makeTile(tile => (tile.reorderLayers = jest.fn()));
 
             map.object3d.add(tile);
             map.level0Nodes.push(tile);
 
-            const a = { id: 'a' };
-            const b = { id: 'b' };
-            const c = { id: 'c' };
-            const d = { id: 'd' };
+            const a = { id: 'a' } as ColorLayer;
+            const b = { id: 'b' } as ColorLayer;
+            const c = { id: 'c' } as ColorLayer;
+            const d = { id: 'd' } as ColorLayer;
 
-            map._layers.push(a);
-            map._layers.push(b);
-            map._layers.push(c);
-            map._layers.push(d);
+            // @ts-expect-error private property
+            const layers = map._layers;
+
+            layers.push(a);
+            layers.push(b);
+            layers.push(c);
+            layers.push(d);
 
             expect(tile.reorderLayers).not.toHaveBeenCalled();
 
@@ -612,57 +639,60 @@ describe('Map', () => {
         });
 
         it('should move the layer one step to the foreground/top', () => {
-            const a = { id: 'a' };
-            const b = { id: 'b' };
-            const c = { id: 'c' };
-            const d = { id: 'd' };
+            const a = { id: 'a' } as ColorLayer;
+            const b = { id: 'b' } as ColorLayer;
+            const c = { id: 'c' } as ColorLayer;
+            const d = { id: 'd' } as ColorLayer;
 
-            map._layers.push(a);
-            map._layers.push(b);
-            map._layers.push(c);
-            map._layers.push(d);
+            // @ts-expect-error private property
+            const layers = map._layers;
+
+            layers.push(a);
+            layers.push(b);
+            layers.push(c);
+            layers.push(d);
 
             map.moveLayerUp(a);
-            expect(map._layers).toStrictEqual([b, a, c, d]);
+            expect(layers).toStrictEqual([b, a, c, d]);
             checkLayerIndices();
 
             map.moveLayerUp(a);
-            expect(map._layers).toStrictEqual([b, c, a, d]);
+            expect(layers).toStrictEqual([b, c, a, d]);
             checkLayerIndices();
 
             map.moveLayerUp(a);
-            expect(map._layers).toStrictEqual([b, c, d, a]);
+            expect(layers).toStrictEqual([b, c, d, a]);
             checkLayerIndices();
 
             map.moveLayerUp(a);
-            expect(map._layers).toStrictEqual([b, c, d, a]);
+            expect(layers).toStrictEqual([b, c, d, a]);
             checkLayerIndices();
         });
     });
 
     describe('moveLayerDown', () => {
         it('should throw if the layer is not present', () => {
-            expect(() => map.moveLayerDown({})).toThrow(/layer is not present/);
+            expect(() => map.moveLayerDown({} as ColorLayer)).toThrow(/layer is not present/);
         });
 
         it('should signal the order change to tiles', () => {
-            const tile = new Group();
-            tile.isTileMesh = true;
-            tile.reorderLayers = jest.fn();
-            tile.layer = map;
+            const tile = makeTile(tile => (tile.reorderLayers = jest.fn()));
 
             map.object3d.add(tile);
             map.level0Nodes.push(tile);
 
-            const a = { id: 'a' };
-            const b = { id: 'b' };
-            const c = { id: 'c' };
-            const d = { id: 'd' };
+            const a = { id: 'a' } as ColorLayer;
+            const b = { id: 'b' } as ColorLayer;
+            const c = { id: 'c' } as ColorLayer;
+            const d = { id: 'd' } as ColorLayer;
 
-            map._layers.push(a);
-            map._layers.push(b);
-            map._layers.push(c);
-            map._layers.push(d);
+            // @ts-expect-error private property
+            const layers = map._layers;
+
+            layers.push(a);
+            layers.push(b);
+            layers.push(c);
+            layers.push(d);
 
             expect(tile.reorderLayers).not.toHaveBeenCalled();
 
@@ -672,30 +702,33 @@ describe('Map', () => {
         });
 
         it('should move the layer one step to the foreground/top', () => {
-            const a = { id: 'a' };
-            const b = { id: 'b' };
-            const c = { id: 'c' };
-            const d = { id: 'd' };
+            const a = { id: 'a' } as ColorLayer;
+            const b = { id: 'b' } as ColorLayer;
+            const c = { id: 'c' } as ColorLayer;
+            const d = { id: 'd' } as ColorLayer;
 
-            map._layers.push(a);
-            map._layers.push(b);
-            map._layers.push(c);
-            map._layers.push(d);
+            // @ts-expect-error private property
+            const layers = map._layers;
+
+            layers.push(a);
+            layers.push(b);
+            layers.push(c);
+            layers.push(d);
 
             map.moveLayerDown(d);
-            expect(map._layers).toStrictEqual([a, b, d, c]);
+            expect(layers).toStrictEqual([a, b, d, c]);
             checkLayerIndices();
 
             map.moveLayerDown(d);
-            expect(map._layers).toStrictEqual([a, d, b, c]);
+            expect(layers).toStrictEqual([a, d, b, c]);
             checkLayerIndices();
 
             map.moveLayerDown(d);
-            expect(map._layers).toStrictEqual([d, a, b, c]);
+            expect(layers).toStrictEqual([d, a, b, c]);
             checkLayerIndices();
 
             map.moveLayerDown(d);
-            expect(map._layers).toStrictEqual([d, a, b, c]);
+            expect(layers).toStrictEqual([d, a, b, c]);
             checkLayerIndices();
         });
     });
@@ -936,14 +969,15 @@ describe('Map', () => {
         });
 
         it('should dispose all tiles', () => {
-            const tile1 = new Object3D();
-            const tile2 = new Object3D();
-            tile1.isTileMesh = true;
-            tile2.isTileMesh = true;
-            tile1.traverseTiles = callback => callback(tile1);
-            tile2.traverseTiles = callback => callback(tile2);
-            tile1.dispose = jest.fn();
-            tile2.dispose = jest.fn();
+            const tile1 = makeTile(tile => {
+                tile.traverseTiles = callback => callback(tile);
+                tile.dispose = jest.fn();
+            });
+
+            const tile2 = makeTile(tile => {
+                tile.traverseTiles = callback => callback(tile);
+                tile.dispose = jest.fn();
+            });
 
             map.object3d.add(tile1);
             map.object3d.add(tile2);
@@ -994,14 +1028,14 @@ describe('Map', () => {
                 n.pushRenderState = fn;
             });
 
-            const state = RenderingState.DEPTH;
+            const state = RenderingState.PICKING;
             map.setRenderState(state);
 
             expect(fn).toHaveBeenCalledWith(state);
         });
 
         it('should return a function that restores the previous state', () => {
-            const restoreFuncs = [];
+            const restoreFuncs: (() => () => void)[] = [];
 
             map.level0Nodes.forEach(n => {
                 const fn = jest.fn();
@@ -1009,7 +1043,7 @@ describe('Map', () => {
                 restoreFuncs.push(fn);
             });
 
-            const restore = map.setRenderState(RenderingState.DEPTH);
+            const restore = map.setRenderState(RenderingState.PICKING);
 
             restore();
 

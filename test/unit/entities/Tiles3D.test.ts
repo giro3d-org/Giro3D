@@ -1,12 +1,13 @@
-import assert from 'assert';
 import proj4 from 'proj4';
+import Coordinates from 'src/core/geographic/Coordinates';
+import $3dTilesIndex from 'src/entities/3dtiles/3dTilesIndex';
+import Tile from 'src/entities/3dtiles/Tile';
+import type { $3dTilesTileset } from 'src/entities/3dtiles/types';
+import Tiles3D from 'src/entities/Tiles3D';
+import View from 'src/renderer/View';
+import Tiles3DSource from 'src/sources/Tiles3DSource';
+import type { BufferGeometry, Material } from 'three';
 import { Group, Matrix4, Mesh, MeshBasicMaterial } from 'three';
-import Coordinates from '../../../src/core/geographic/Coordinates';
-import $3dTilesIndex from '../../../src/entities/3dtiles/3dTilesIndex';
-import Tile from '../../../src/entities/3dtiles/Tile';
-import Tiles3D from '../../../src/entities/Tiles3D';
-import View from '../../../src/renderer/View';
-import Tiles3DSource from '../../../src/sources/Tiles3DSource';
 
 describe('Tiles3D', () => {
     const defaultSource = new Tiles3DSource('http://example.com/tileset');
@@ -14,7 +15,7 @@ describe('Tiles3D', () => {
     describe('constructor', () => {
         it('should assign the source', () => {
             const sut = new Tiles3D(new Tiles3DSource('http://example.com/tileset'));
-            expect(sut._url).toBe('http://example.com/tileset');
+            expect(sut.url).toBe('http://example.com/tileset');
         });
 
         it('should assign default values if options do not provide them', () => {
@@ -24,28 +25,30 @@ describe('Tiles3D', () => {
         });
     });
 
-    function tilesetWithBox(transformMatrix) {
-        const tileset = {
+    function tilesetWithBox(transformMatrix?: Matrix4) {
+        const tileset: $3dTilesTileset = {
             root: {
+                geometricError: 10,
                 boundingVolume: {
                     box: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
                 },
             },
-        };
+        } as $3dTilesTileset;
         if (transformMatrix) {
             tileset.root.transform = transformMatrix.elements;
         }
         return tileset;
     }
 
-    function tilesetWithSphere(transformMatrix) {
-        const tileset = {
+    function tilesetWithSphere(transformMatrix?: Matrix4) {
+        const tileset: $3dTilesTileset = {
             root: {
+                geometricError: 10,
                 boundingVolume: {
                     sphere: [0, 0, 0, 1],
                 },
             },
-        };
+        } as $3dTilesTileset;
         if (transformMatrix) {
             tileset.root.transform = transformMatrix.elements;
         }
@@ -133,7 +136,8 @@ describe('Tiles3D', () => {
     describe('getObjectToUpdateForAttachedLayers', () => {
         it('should correctly return all children', () => {
             const parentEntity = {};
-            const tile = {
+            // @ts-expect-error invalid
+            const tile: Tile = {
                 content: new Group(),
                 userData: { parentEntity },
             };
@@ -147,8 +151,8 @@ describe('Tiles3D', () => {
             const tiles3D = new Tiles3D(defaultSource);
 
             const result = tiles3D.getObjectToUpdateForAttachedLayers(tile);
-            assert.ok(Array.isArray(result.elements));
-            assert.ok(result.elements.length, 3);
+            expect(Array.isArray(result.elements)).toBe(true);
+            expect(result.elements).toHaveLength(3);
         });
     });
 
@@ -163,13 +167,15 @@ describe('Tiles3D', () => {
             o.add(new Mesh());
             entity.object3d.add(o);
 
-            for (const mesh of o.children) {
+            for (const obj of o.children) {
+                const mesh = obj as Mesh<BufferGeometry, Material>;
                 expect(mesh.material.opacity).toBe(1);
                 expect(mesh.material.transparent).toBe(false);
             }
             entity.opacity = 0.7;
             expect(entity.material.opacity).toBe(0.7);
-            for (const mesh of o.children) {
+            for (const obj of o.children) {
+                const mesh = obj as Mesh<BufferGeometry, Material>;
                 expect(mesh.material.opacity).toBe(0.7);
                 expect(mesh.material.transparent).toBe(true);
             }
@@ -179,16 +185,17 @@ describe('Tiles3D', () => {
             const entity = new Tiles3D(defaultSource);
 
             const o = new Group();
-            const o1 = new Mesh();
+            const o1 = new Mesh<BufferGeometry, Material>();
             o1.material.opacity = 1;
             o.add(o1);
-            const o2 = new Mesh();
+            const o2 = new Mesh<BufferGeometry, Material>();
             o2.material.opacity = 0.1;
             o.add(o2);
-            const o3 = new Mesh();
+            const o3 = new Mesh<BufferGeometry, Material>();
             o3.material.opacity = 0.9;
             o.add(o3);
             entity.object3d.add(o);
+            // @ts-expect-error protected
             entity.onObjectCreated(o);
 
             entity.opacity = 0.7;
@@ -209,15 +216,19 @@ describe('Tiles3D', () => {
             o.add(new Mesh());
             o.add(new Mesh());
             o.add(new Mesh());
+            // @ts-expect-error protected
             entity.onObjectCreated(o);
-            for (const mesh of o.children) {
+            for (const obj of o.children) {
+                const mesh = obj as Mesh<BufferGeometry, Material>;
                 expect(mesh.material.opacity).toBe(1);
                 expect(mesh.material.transparent).toBe(false);
             }
 
             entity.opacity = 0.7;
+            // @ts-expect-error protected
             entity.onObjectCreated(o);
-            for (const mesh of o.children) {
+            for (const obj of o.children) {
+                const mesh = obj as Mesh<BufferGeometry, Material>;
                 expect(mesh.material.opacity).toBe(0.7);
                 expect(mesh.material.transparent).toBe(true);
             }
@@ -227,15 +238,16 @@ describe('Tiles3D', () => {
             const entity = new Tiles3D(defaultSource);
 
             const o = new Group();
-            const o1 = new Mesh();
+            const o1 = new Mesh<BufferGeometry, Material>();
             o.add(o1);
-            const o2 = new Mesh();
+            const o2 = new Mesh<BufferGeometry, Material>();
             o2.material.opacity = 0.1;
             o.add(o2);
-            const o3 = new Mesh();
+            const o3 = new Mesh<BufferGeometry, Material>();
             o3.material.opacity = 0.9;
             o.add(o3);
 
+            // @ts-expect-error protected
             entity.onObjectCreated(o);
 
             expect(o1.material.opacity).toBe(1);
@@ -250,16 +262,17 @@ describe('Tiles3D', () => {
             const entity = new Tiles3D(defaultSource);
 
             const o = new Group();
-            const o1 = new Mesh();
+            const o1 = new Mesh<BufferGeometry, Material>();
             o.add(o1);
-            const o2 = new Mesh();
+            const o2 = new Mesh<BufferGeometry, Material>();
             o2.material.opacity = 0.1;
             o.add(o2);
-            const o3 = new Mesh();
+            const o3 = new Mesh<BufferGeometry, Material>();
             o3.material.opacity = 0.9;
             o.add(o3);
 
             entity.opacity = 0.5;
+            // @ts-expect-error protected
             entity.onObjectCreated(o);
             expect(o1.material.opacity).toBe(0.5);
             expect(o1.material.transparent).toBe(true);

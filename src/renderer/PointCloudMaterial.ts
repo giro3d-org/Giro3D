@@ -168,6 +168,7 @@ interface Uniforms {
 }
 
 export type Defines = {
+    NORMAL?: 1;
     CLASSIFICATION?: 1;
     DEFORMATION_SUPPORT?: 1;
     NUM_TRANSFO?: number;

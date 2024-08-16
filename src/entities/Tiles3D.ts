@@ -114,6 +114,11 @@ class Tiles3D<
     private readonly _url: string;
     private _networkOptions: RequestInit;
     private _colorLayer: ColorLayer;
+
+    get url() {
+        return this._url;
+    }
+
     /**
      * Network options of the source.
      *

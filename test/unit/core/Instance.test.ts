@@ -1,30 +1,55 @@
 import proj4 from 'proj4';
+import Extent from 'src/core/geographic/Extent';
+import Instance from 'src/core/Instance';
+import MainLoop from 'src/core/MainLoop';
+import Map from 'src/entities/Map';
+import Tiles3D from 'src/entities/Tiles3D';
+import type C3DEngine from 'src/renderer/c3DEngine.js';
+import Tiles3DSource from 'src/sources/Tiles3DSource';
+import Fetcher from 'src/utils/Fetcher';
 import { Group, Object3D, Vector2 } from 'three';
-import Extent from '../../../src/core/geographic/Extent';
-import Instance from '../../../src/core/Instance';
-import MainLoop from '../../../src/core/MainLoop';
-import Map from '../../../src/entities/Map';
-import Tiles3D from '../../../src/entities/Tiles3D';
-import Tiles3DSource from '../../../src/sources/Tiles3DSource';
-import Fetcher from '../../../src/utils/Fetcher';
-import { resizeObservers, setupGlobalMocks } from '../mocks.js';
+import { resizeObservers, setupGlobalMocks } from '../mocks';
 
 describe('Instance', () => {
-    /** @type {HTMLDivElement} */
-    let viewerDiv;
-
-    /** @type {Instance} */
-    let instance;
+    let viewerDiv: HTMLDivElement;
+    let instance: Instance;
+    let mouseEvent: MouseEvent;
+    let touchEvent: TouchEvent;
 
     beforeEach(() => {
         setupGlobalMocks();
         viewerDiv = document.createElement('div');
-        const gfxEngine = {
-            getWindowSize: () => ({ x: 1200, y: 800 }),
+        const gfxEngine: C3DEngine = {
+            getWindowSize: () => new Vector2(1200, 800),
+            // @ts-expect-error missing properties
             renderer: {
-                domElement: viewerDiv,
+                domElement: document.createElement('canvas'),
             },
         };
+        mouseEvent = new MouseEvent('foo', {
+            // @ts-expect-error incorrect
+            target: viewerDiv,
+            offsetX: 10,
+            offsetY: 10,
+        });
+        touchEvent = new TouchEvent('foo', {
+            touches: [
+                {
+                    clientX: 10,
+                    clientY: 10,
+                    force: 0,
+                    identifier: 0,
+                    pageX: 0,
+                    pageY: 0,
+                    radiusX: 0,
+                    radiusY: 0,
+                    rotationAngle: 0,
+                    screenX: 0,
+                    screenY: 0,
+                    target: undefined,
+                },
+            ],
+        });
         const options = { crs: 'EPSG:3857', mainLoop: new MainLoop(gfxEngine) };
         instance = new Instance(viewerDiv, options);
         Fetcher.json = jest.fn();
@@ -59,35 +84,18 @@ describe('Instance', () => {
         it('should return the passed target, using TouchEvent', () => {
             if (window.TouchEvent) {
                 const target = new Vector2();
-                const event = new TouchEvent('foo', {
-                    touches: [
-                        {
-                            clientX: 10,
-                            clientY: 10,
-                        },
-                    ],
-                });
-                const result = instance.eventToNormalizedCoords(event, target);
+                const result = instance.eventToNormalizedCoords(touchEvent, target);
                 expect(result).toBe(target);
             }
         });
         it('should return the passed target, using MouseEvent on domElement', () => {
             const target = new Vector2();
-            const event = new MouseEvent('foo', {
-                target: viewerDiv,
-                offsetX: 10,
-                offsetY: 10,
-            });
-            const result = instance.eventToNormalizedCoords(event, target);
+            const result = instance.eventToNormalizedCoords(mouseEvent, target);
             expect(result).toBe(target);
         });
         it('should return the passed target, using MouseEvent on other element', () => {
             const target = new Vector2();
-            const event = new MouseEvent('foo', {
-                clientX: 10,
-                clientY: 10,
-            });
-            const result = instance.eventToNormalizedCoords(event, target);
+            const result = instance.eventToNormalizedCoords(mouseEvent, target);
             expect(result).toBe(target);
         });
     });
@@ -96,43 +104,27 @@ describe('Instance', () => {
         it('should return the passed target', () => {
             if (window.TouchEvent) {
                 const target = new Vector2();
-                const event = new TouchEvent('foo', {
-                    touches: [
-                        {
-                            clientX: 10,
-                            clientY: 10,
-                        },
-                    ],
-                });
-                const result = instance.eventToCanvasCoords(event, target);
+                const result = instance.eventToCanvasCoords(touchEvent, target);
                 expect(result).toBe(target);
             }
         });
         it('should return the passed target, using MouseEvent on domElement', () => {
             const target = new Vector2();
-            const event = new MouseEvent('foo', {
-                target: viewerDiv,
-                offsetX: 10,
-                offsetY: 10,
-            });
-            const result = instance.eventToCanvasCoords(event, target);
+            const result = instance.eventToCanvasCoords(mouseEvent, target);
             expect(result).toBe(target);
         });
         it('should return the passed target, using MouseEvent on other element', () => {
             const target = new Vector2();
-            const event = new MouseEvent('foo', {
-                clientX: 10,
-                clientY: 10,
-            });
-            const result = instance.eventToCanvasCoords(event, target);
+            const result = instance.eventToCanvasCoords(mouseEvent, target);
             expect(result).toBe(target);
         });
     });
 
     describe('add', () => {
         it('should return a rejected promise if not of correct type', async () => {
-            const layer = {};
-            await expect(instance.add(layer)).rejects.toThrowError(
+            const invalid = {};
+            // @ts-expect-error invalid type
+            await expect(instance.add(invalid)).rejects.toThrowError(
                 'object is not an instance of THREE.Object3D or Giro3D.Entity',
             );
         });
@@ -166,6 +158,7 @@ describe('Instance', () => {
                 },
                 geometricError: 50,
             };
+            // @ts-expect-error mockResolvedValue does not exist
             Fetcher.json.mockResolvedValue(tileset);
             const tiles3d = new Tiles3D(new Tiles3DSource('https://domain.tld/tileset.json'));
             return instance.add(tiles3d).then(() => {

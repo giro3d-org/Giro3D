@@ -1,6 +1,8 @@
 import { PerspectiveCamera, Plane, Vector3 } from 'three';
 
-import Context from '../../../src/core/Context';
+import Context from 'src/core/Context';
+import type Instance from 'src/core/Instance';
+import type View from 'src/renderer/View';
 
 describe('Context', () => {
     const threeCamera = new PerspectiveCamera(75);
@@ -13,8 +15,8 @@ describe('Context', () => {
         it('should assigns properties', () => {
             const view = {
                 camera: threeCamera,
-            };
-            const instance = {};
+            } as View;
+            const instance = {} as Instance;
 
             const context = new Context(view, instance);
 

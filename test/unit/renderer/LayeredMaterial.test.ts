@@ -1,17 +1,24 @@
+import type { ColorLayer } from 'src/core/layer';
+import type { AtlasInfo } from 'src/renderer/AtlasBuilder';
+import LayeredMaterial from 'src/renderer/LayeredMaterial';
+import type { WebGLRenderer } from 'three';
 import { DoubleSide, FrontSide, UnsignedByteType } from 'three';
-import LayeredMaterial from '../../../src/renderer/LayeredMaterial';
 
-const defaultAtlasInfo = { minX: 0, maxX: 1 };
-const defaultRenderer = {};
+// @ts-expect-error invalid definition
+const defaultAtlasInfo: AtlasInfo = { minX: 0, maxX: 1 };
+// @ts-expect-error invalid definition
+const defaultRenderer: WebGLRenderer = {};
 
 describe('LayeredMaterial', () => {
     describe('constructor', () => {
         it('should assign the correct side', () => {
+            // @ts-expect-error invalid
             const normal = new LayeredMaterial({
                 options: {},
                 renderer: defaultRenderer,
                 atlasInfo: defaultAtlasInfo,
             });
+            // @ts-expect-error invalid
             const ds = new LayeredMaterial({
                 options: { doubleSided: true },
                 renderer: defaultRenderer,
@@ -23,6 +30,7 @@ describe('LayeredMaterial', () => {
         });
 
         it('should enable the ENABLE_ELEVATION_RANGE define if options has an elevation range', () => {
+            // @ts-expect-error invalid
             const enabled = new LayeredMaterial({
                 options: { elevationRange: { min: 0, max: 100 } },
                 renderer: defaultRenderer,
@@ -31,6 +39,7 @@ describe('LayeredMaterial', () => {
 
             expect(enabled.defines.ENABLE_ELEVATION_RANGE).toBeDefined();
 
+            // @ts-expect-error invalid
             const disabled = new LayeredMaterial({
                 options: {},
                 renderer: defaultRenderer,
@@ -41,6 +50,7 @@ describe('LayeredMaterial', () => {
         });
 
         it('should enable the STITCHING define if options has stitching enabled', () => {
+            // @ts-expect-error invalid
             const enabled = new LayeredMaterial({
                 options: {
                     terrain: {
@@ -54,6 +64,7 @@ describe('LayeredMaterial', () => {
 
             expect(enabled.defines.STITCHING).toBeDefined();
 
+            // @ts-expect-error invalid
             const disabled = new LayeredMaterial({
                 options: {
                     terrain: {
@@ -69,6 +80,7 @@ describe('LayeredMaterial', () => {
         });
 
         it('should enable the TERRAIN_DEFORMATION define if options has it enabled', () => {
+            // @ts-expect-error invalid
             const enabled = new LayeredMaterial({
                 options: {
                     terrain: {
@@ -81,6 +93,7 @@ describe('LayeredMaterial', () => {
 
             expect(enabled.defines.TERRAIN_DEFORMATION).toBeDefined();
 
+            // @ts-expect-error invalid
             const disabled = new LayeredMaterial({
                 options: {
                     terrain: {
@@ -97,6 +110,7 @@ describe('LayeredMaterial', () => {
 
     describe('setLayerElevationRange', () => {
         it('should enable the ENABLE_ELEVATION_RANGE define', () => {
+            // @ts-expect-error invalid
             const mat = new LayeredMaterial({
                 renderer: defaultRenderer,
                 atlasInfo: defaultAtlasInfo,
@@ -104,7 +118,8 @@ describe('LayeredMaterial', () => {
             });
             expect(mat.defines.ENABLE_ELEVATION_RANGE).not.toBeDefined();
 
-            const layer = {
+            // @ts-expect-error invalid
+            const layer: ColorLayer = {
                 getRenderTargetDataType: () => UnsignedByteType,
             };
             mat.pushColorLayer(layer);

@@ -1,12 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import { cwd } from 'process';
-import { TextDecoder, TextEncoder } from 'util';
-import GeoTIFFFormat from '../../../src/formats/GeoTIFFFormat';
-
-// Necessary for geotiff.js
-global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder;
+import GeoTIFFFormat from 'src/formats/GeoTIFFFormat';
+import type { Texture } from 'three';
 
 describe('GeoTIFFFormat', () => {
     const decoder = new GeoTIFFFormat();
@@ -18,12 +14,19 @@ describe('GeoTIFFFormat', () => {
     });
 
     describe('decode', () => {
-        function readFile(dataPath) {
+        function readFile(dataPath: string) {
             const buf = fs.readFileSync(path.join(cwd(), 'test/data', dataPath));
             return new Blob([buf], { type: 'image/tiff' });
         }
 
-        function verifyRGBA(texture, pixelIndex, r, g, b, a) {
+        function verifyRGBA(
+            texture: Texture,
+            pixelIndex: number,
+            r: number,
+            g: number,
+            b: number,
+            a: number,
+        ) {
             const pixels = texture.image.data;
             const offset = pixelIndex * 4;
             expect(pixels[offset + 0]).toEqual(r);
@@ -32,7 +35,7 @@ describe('GeoTIFFFormat', () => {
             expect(pixels[offset + 3]).toEqual(a);
         }
 
-        function verifyRG(texture, pixelIndex, r, g) {
+        function verifyRG(texture: Texture, pixelIndex: number, r: number, g: number) {
             const pixels = texture.image.data;
             const offset = pixelIndex * 2;
             expect(pixels[offset + 0]).toEqual(r);

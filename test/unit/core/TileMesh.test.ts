@@ -1,30 +1,23 @@
-import Extent from '../../../src/core/geographic/Extent';
-import TileMesh from '../../../src/core/TileMesh';
+import Extent from 'src/core/geographic/Extent';
+import TileMesh from 'src/core/TileMesh';
+import type LayeredMaterial from 'src/renderer/LayeredMaterial';
+import { MathUtils } from 'three';
 
 const extent = new Extent('EPSG:3857', 0, 1, 0, 1);
 
 describe('TileMesh', () => {
-    let defaultMaterial;
-
-    beforeEach(() => {
-        defaultMaterial = {
-            dispose: jest.fn(),
-            setUuid: jest.fn(),
-            uniforms: {
-                tileDimensions: { value: { set: jest.fn() } },
-            },
-        };
-    });
-
     describe('dispose', () => {
         it('should dispose the material but NOT the geometry', () => {
+            // @ts-expect-error incomplete definition
             const material = {
                 dispose: jest.fn(),
                 setUuid: jest.fn(),
                 uniforms: {
                     tileDimensions: { value: { set: jest.fn() } },
                 },
-            };
+            } as LayeredMaterial;
+
+            // @ts-expect-error incomplete definition
             const mesh = new TileMesh({
                 geometryPool: new Map(),
                 material,
@@ -46,18 +39,24 @@ describe('TileMesh', () => {
         });
     });
 
-    describe('findCommonAncestor', () => {
-        // It is relatively long to create TileMesh on the go (in term of code), so we
-        // emulate a fake one with the necessary informations in it.
-        function FakeTileMesh(level, parent) {
-            this.id = Math.random().toString(36);
+    // It is relatively long to create TileMesh on the go (in term of code), so we
+    // emulate a fake one with the necessary informations in it.
+    class FakeTileMesh {
+        readonly id: string;
+        readonly level: number;
+        readonly parent: unknown;
+        readonly findCommonAncestor: (tile: TileMesh) => TileMesh;
+
+        constructor(level: number, parent: unknown = undefined) {
+            this.id = MathUtils.generateUUID();
             this.level = level;
             this.parent = parent;
-        }
-        FakeTileMesh.prototype = Object.create({});
-        FakeTileMesh.prototype.constructor = FakeTileMesh;
-        FakeTileMesh.prototype.findCommonAncestor = TileMesh.prototype.findCommonAncestor;
 
+            this.findCommonAncestor = TileMesh.prototype.findCommonAncestor;
+        }
+    }
+
+    describe('findCommonAncestor', () => {
         const tree = [[new FakeTileMesh(0)]];
 
         beforeAll(() => {
@@ -73,21 +72,25 @@ describe('TileMesh', () => {
         });
 
         it('should find the correct common ancestor between two tiles of same level', () => {
+            // @ts-expect-error invalid
             const res = tree[2][0].findCommonAncestor(tree[2][1]);
             expect(res).toEqual(tree[1][0]);
         });
 
         it('should find the correct common ancestor between two tiles of different level', () => {
+            // @ts-expect-error invalid
             const res = tree[2][0].findCommonAncestor(tree[3][4]);
             expect(res).toEqual(tree[1][0]);
         });
 
         it('should find the correct common ancestor between two tiles to be the first one', () => {
+            // @ts-expect-error invalid
             const res = tree[2][0].findCommonAncestor(tree[3][0]);
             expect(res).toEqual(tree[2][0]);
         });
 
         it('should find the correct common ancestor between two tiles to be the root', () => {
+            // @ts-expect-error invalid
             const res = tree[3][60].findCommonAncestor(tree[2][0]);
             expect(res).toEqual(tree[0][0]);
         });
