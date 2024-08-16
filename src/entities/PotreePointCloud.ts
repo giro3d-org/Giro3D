@@ -134,7 +134,7 @@ export interface PotreeMetadata {
     octreeDir?: string;
     boundingBox?: PotreeBoundingBox;
     tightBoundingBox?: PotreeBoundingBox;
-    pointAttributes?: any;
+    pointAttributes?: string | string[];
     spacing?: number;
     scale?: number;
     hierarchyStepSize?: number;
@@ -300,7 +300,7 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
     onPointsCreated: OnPointsCreatedCallback | null;
     metadata?: PotreeMetadata;
     table?: string;
-    parse?: (data: ArrayBuffer, pointAttributes: object) => Promise<BufferGeometry>;
+    parse?: (data: ArrayBuffer, pointAttributes: string | string[]) => Promise<BufferGeometry>;
     extension?: 'cin' | 'bin';
     supportsProgressiveDisplay?: boolean;
     root?: OctreeItem;

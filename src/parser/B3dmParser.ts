@@ -89,7 +89,15 @@ export default {
         const view = new DataView(buffer, 4); // starts after magic
 
         let byteOffset = 0;
-        const b3dmHeader: any = {};
+        const b3dmHeader: Partial<{
+            magic: string;
+            version: number;
+            byteLength: number;
+            FTJSONLength: number;
+            FTBinaryLength: number;
+            BTJSONLength: number;
+            BTBinaryLength: number;
+        }> = {};
 
         // Magic type is unsigned char [4]
         b3dmHeader.magic = utf8Decoder.decode(new Uint8Array(buffer, 0, 4));
