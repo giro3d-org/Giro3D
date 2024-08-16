@@ -18,11 +18,11 @@ import {
 } from 'three';
 
 import type GetElevationOptions from '../entities/GetElevationOptions';
+import { readRGRenderTargetIntoRGBAU8Buffer } from '../renderer/composition/WebGLComposer';
 import type LayeredMaterial from '../renderer/LayeredMaterial';
 import type { MaterialOptions } from '../renderer/LayeredMaterial';
 import MemoryTracker from '../renderer/MemoryTracker';
 import type RenderingState from '../renderer/RenderingState';
-import TextureGenerator from '../utils/TextureGenerator';
 import type Disposable from './Disposable';
 import type Extent from './geographic/Extent';
 import HeightMap from './HeightMap';
@@ -621,7 +621,7 @@ class TileMesh
         // To ensure that all values are positive before encoding
         const offset = -this._minmax.min;
 
-        const buffer = TextureGenerator.readRGRenderTargetIntoRGBAU8Buffer({
+        const buffer = readRGRenderTargetIntoRGBAU8Buffer({
             renderTarget,
             renderer: this._instance.renderer,
             outputWidth,

@@ -1,4 +1,5 @@
 import chokidar from 'chokidar';
+import CircularDependencyPlugin from 'circular-dependency-plugin';
 import { program } from 'commander';
 import CopyPlugin from 'copy-webpack-plugin';
 import ejs from 'ejs';
@@ -314,6 +315,7 @@ export async function getWebpackConfig(parameters) {
         });
     }
 
+    /** @type {webpack.Configuration} */
     const webpackConfig = {
         mode: parameters.mode,
         watchOptions: {
@@ -369,6 +371,17 @@ export async function getWebpackConfig(parameters) {
             ],
         },
         plugins: [
+            new CircularDependencyPlugin({
+                // exclude detection of files based on a RegExp
+                exclude: /node_modules/,
+                // add errors to webpack instead of warnings
+                failOnError: true,
+                // allow import cycles that include an asyncronous import,
+                // e.g. via import(/* webpackMode: "weak" */ './file.js')
+                allowAsyncCycles: false,
+                // set the current working directory for displaying module paths
+                cwd: process.cwd(),
+            }),
             new CopyPlugin({
                 patterns: [
                     {

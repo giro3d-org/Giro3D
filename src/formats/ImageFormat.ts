@@ -14,7 +14,8 @@ export type DecodeOptions = {
  *
  */
 abstract class ImageFormat {
-    readonly isImageFormat: boolean = true;
+    readonly isImageFormat = true as const;
+
     type: string;
     readonly flipY: boolean;
     readonly dataType: TextureDataType;
