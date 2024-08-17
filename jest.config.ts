@@ -8,11 +8,11 @@ const jestConfig: JestConfigWithTsJest = {
         // We must use Babel to transform files because of the inlined GLSL files
         '\\.[jt]sx?$': 'babel-jest',
     },
-    setupFilesAfterEnv: ['<rootDir>/test/unit/setup.js'],
+    setupFilesAfterEnv: ['<rootDir>/jest-setup.js'],
     // Used to avoid relative import paths to the source files:
     // import ""../../../src/foo.js" can be simplified to import "src/foo.js"
     moduleNameMapper: {
-        '^src(.*)$': '<rootDir>/src$1',
+        '^@giro3d/giro3d/(.*)$': '<rootDir>/src/$1',
     },
 };
 

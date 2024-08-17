@@ -1,4 +1,4 @@
-import PotreeSource from 'src/sources/PotreeSource';
+import PotreeSource from '@giro3d/giro3d/sources/PotreeSource';
 
 describe('PotreeSource', () => {
     describe('constructor', () => {

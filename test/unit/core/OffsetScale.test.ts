@@ -1,4 +1,4 @@
-import OffsetScale from 'src/core/OffsetScale';
+import OffsetScale from '@giro3d/giro3d/core/OffsetScale';
 import { Vector2 } from 'three';
 
 describe('OffsetScale', () => {

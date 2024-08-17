@@ -1,5 +1,5 @@
+import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';
 import * as proj4 from 'proj4';
-import Coordinates from 'src/core/geographic/Coordinates';
 import { Vector2, Vector3 } from 'three';
 
 // Define projection that we will use (taken from https://epsg.io/3946, Proj4js section)

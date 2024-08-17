@@ -1,5 +1,5 @@
+import PotreeBinParser from '@giro3d/giro3d/parser/PotreeBinParser';
 import assert from 'assert';
-import PotreeBinParser from 'src/parser/PotreeBinParser';
 
 describe('PotreeBinParser', () => {
     it('should correctly parse position buffer', () => {

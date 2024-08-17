@@ -1,5 +1,5 @@
-import PointMesh, { isPointMesh } from 'src/renderer/geometries/PointMesh';
-import { isSimpleGeometryMesh } from 'src/renderer/geometries/SimpleGeometryMesh';
+import PointMesh, { isPointMesh } from '@giro3d/giro3d/renderer/geometries/PointMesh';
+import { isSimpleGeometryMesh } from '@giro3d/giro3d/renderer/geometries/SimpleGeometryMesh';
 import { SpriteMaterial } from 'three';
 
 describe('constructor', () => {

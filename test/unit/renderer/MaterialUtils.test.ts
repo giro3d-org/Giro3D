@@ -1,4 +1,4 @@
-import MaterialUtils from 'src/renderer/MaterialUtils';
+import MaterialUtils from '@giro3d/giro3d/renderer/MaterialUtils';
 import type { Material } from 'three';
 
 describe('setDefine', () => {

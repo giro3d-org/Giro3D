@@ -1,6 +1,6 @@
-import type { FetchCallback } from 'src/sources/ConcurrentDownloader';
-import ConcurrentDownloader from 'src/sources/ConcurrentDownloader';
-import PromiseUtils from 'src/utils/PromiseUtils';
+import type { FetchCallback } from '@giro3d/giro3d/sources/ConcurrentDownloader';
+import ConcurrentDownloader from '@giro3d/giro3d/sources/ConcurrentDownloader';
+import PromiseUtils from '@giro3d/giro3d/utils/PromiseUtils';
 
 const URL = 'http://example.com/foo';
 

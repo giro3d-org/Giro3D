@@ -1,8 +1,8 @@
+import LineStringMesh from '@giro3d/giro3d/renderer/geometries/LineStringMesh';
+import PolygonMesh, { isPolygonMesh } from '@giro3d/giro3d/renderer/geometries/PolygonMesh';
+import { isSimpleGeometryMesh } from '@giro3d/giro3d/renderer/geometries/SimpleGeometryMesh';
+import SurfaceMesh from '@giro3d/giro3d/renderer/geometries/SurfaceMesh';
 import { Polygon } from 'ol/geom';
-import LineStringMesh from 'src/renderer/geometries/LineStringMesh';
-import PolygonMesh, { isPolygonMesh } from 'src/renderer/geometries/PolygonMesh';
-import { isSimpleGeometryMesh } from 'src/renderer/geometries/SimpleGeometryMesh';
-import SurfaceMesh from 'src/renderer/geometries/SurfaceMesh';
 import { BufferGeometry, MeshBasicMaterial, Vector3 } from 'three';
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';

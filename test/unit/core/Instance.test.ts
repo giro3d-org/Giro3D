@@ -1,12 +1,12 @@
+import Extent from '@giro3d/giro3d/core/geographic/Extent';
+import Instance from '@giro3d/giro3d/core/Instance';
+import MainLoop from '@giro3d/giro3d/core/MainLoop';
+import Map from '@giro3d/giro3d/entities/Map';
+import Tiles3D from '@giro3d/giro3d/entities/Tiles3D';
+import type C3DEngine from '@giro3d/giro3d/renderer/c3DEngine.js';
+import Tiles3DSource from '@giro3d/giro3d/sources/Tiles3DSource';
+import Fetcher from '@giro3d/giro3d/utils/Fetcher';
 import proj4 from 'proj4';
-import Extent from 'src/core/geographic/Extent';
-import Instance from 'src/core/Instance';
-import MainLoop from 'src/core/MainLoop';
-import Map from 'src/entities/Map';
-import Tiles3D from 'src/entities/Tiles3D';
-import type C3DEngine from 'src/renderer/c3DEngine.js';
-import Tiles3DSource from 'src/sources/Tiles3DSource';
-import Fetcher from 'src/utils/Fetcher';
 import { Group, Object3D, Vector2 } from 'three';
 import { resizeObservers, setupGlobalMocks } from '../mocks';
 

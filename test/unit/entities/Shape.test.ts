@@ -1,4 +1,4 @@
-import Shape from 'src/entities/Shape';
+import Shape from '@giro3d/giro3d/entities/Shape';
 
 describe('Shape', () => {
     describe('constructor', () => {

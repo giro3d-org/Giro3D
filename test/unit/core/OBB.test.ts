@@ -1,7 +1,7 @@
+import Extent from '@giro3d/giro3d/core/geographic/Extent';
+import OBB from '@giro3d/giro3d/core/OBB';
 import assert from 'assert';
 import proj4 from 'proj4';
-import Extent from 'src/core/geographic/Extent';
-import OBB from 'src/core/OBB';
 import { Matrix4, Vector3 } from 'three';
 import { randFloat } from 'three/src/math/MathUtils';
 

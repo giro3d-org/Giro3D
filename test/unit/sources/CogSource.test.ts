@@ -1,6 +1,6 @@
+import Extent from '@giro3d/giro3d/core/geographic/Extent';
+import CogSource from '@giro3d/giro3d/sources/CogSource';
 import type { GeoTIFFImage } from 'geotiff';
-import Extent from 'src/core/geographic/Extent';
-import CogSource from 'src/sources/CogSource';
 
 describe('CogSource', () => {
     describe('constructor', () => {

@@ -1,6 +1,6 @@
-import type { ColorLayer } from 'src/core/layer';
-import type { AtlasInfo } from 'src/renderer/AtlasBuilder';
-import LayeredMaterial from 'src/renderer/LayeredMaterial';
+import type { ColorLayer } from '@giro3d/giro3d/core/layer';
+import type { AtlasInfo } from '@giro3d/giro3d/renderer/AtlasBuilder';
+import LayeredMaterial from '@giro3d/giro3d/renderer/LayeredMaterial';
 import type { WebGLRenderer } from 'three';
 import { DoubleSide, FrontSide, UnsignedByteType } from 'three';
 

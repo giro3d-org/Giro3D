@@ -1,4 +1,4 @@
-import { Cache } from 'src/core/Cache';
+import { Cache } from '@giro3d/giro3d/core/Cache';
 
 let now = 0;
 let cache: Cache;

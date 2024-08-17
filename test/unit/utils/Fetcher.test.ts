@@ -1,6 +1,6 @@
-import Fetcher from 'src/utils/Fetcher';
-import HttpConfiguration from 'src/utils/HttpConfiguration';
-import TextureGenerator from 'src/utils/TextureGenerator';
+import Fetcher from '@giro3d/giro3d/utils/Fetcher';
+import HttpConfiguration from '@giro3d/giro3d/utils/HttpConfiguration';
+import TextureGenerator from '@giro3d/giro3d/utils/TextureGenerator';
 
 describe('Fetcher', () => {
     beforeAll(() => {

@@ -1,4 +1,4 @@
-import HttpConfiguration from 'src/utils/HttpConfiguration';
+import HttpConfiguration from '@giro3d/giro3d/utils/HttpConfiguration';
 
 describe('HttpConfiguration', () => {
     beforeEach(() => {

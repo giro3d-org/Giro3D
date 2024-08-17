@@ -1,6 +1,8 @@
-import MultiPolygonMesh, { isMultiPolygonMesh } from 'src/renderer/geometries/MultiPolygonMesh';
-import type PolygonMesh from 'src/renderer/geometries/PolygonMesh';
-import { isSimpleGeometryMesh } from 'src/renderer/geometries/SimpleGeometryMesh';
+import MultiPolygonMesh, {
+    isMultiPolygonMesh,
+} from '@giro3d/giro3d/renderer/geometries/MultiPolygonMesh';
+import type PolygonMesh from '@giro3d/giro3d/renderer/geometries/PolygonMesh';
+import { isSimpleGeometryMesh } from '@giro3d/giro3d/renderer/geometries/SimpleGeometryMesh';
 import { MeshBasicMaterial } from 'three';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
 import { makePolygonMesh } from './PolygonMesh.test';

@@ -1,6 +1,6 @@
-import Extent from 'src/core/geographic/Extent';
-import TileMesh from 'src/core/TileMesh';
-import type LayeredMaterial from 'src/renderer/LayeredMaterial';
+import Extent from '@giro3d/giro3d/core/geographic/Extent';
+import TileMesh from '@giro3d/giro3d/core/TileMesh';
+import type LayeredMaterial from '@giro3d/giro3d/renderer/LayeredMaterial';
 import { MathUtils } from 'three';
 
 const extent = new Extent('EPSG:3857', 0, 1, 0, 1);

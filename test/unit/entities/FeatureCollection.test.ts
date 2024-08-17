@@ -1,6 +1,6 @@
+import Extent from '@giro3d/giro3d/core/geographic/Extent';
+import FeatureCollection from '@giro3d/giro3d/entities/FeatureCollection';
 import VectorSource from 'ol/source/Vector';
-import Extent from 'src/core/geographic/Extent';
-import FeatureCollection from 'src/entities/FeatureCollection';
 
 describe('FeatureCollection', () => {
     describe('constructor', () => {

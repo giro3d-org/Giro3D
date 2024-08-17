@@ -1,13 +1,13 @@
-import Extent from 'src/core/geographic/Extent';
-import Instance from 'src/core/Instance';
-import ColorLayer, { isColorLayer } from 'src/core/layer/ColorLayer';
-import ElevationLayer, { isElevationLayer } from 'src/core/layer/ElevationLayer';
-import type MainLoop from 'src/core/MainLoop';
-import type TileMesh from 'src/core/TileMesh.js';
-import Map from 'src/entities/Map';
-import { DEFAULT_AZIMUTH, DEFAULT_ZENITH } from 'src/renderer/LayeredMaterial';
-import RenderingState from 'src/renderer/RenderingState';
-import NullSource from 'src/sources/NullSource';
+import Extent from '@giro3d/giro3d/core/geographic/Extent';
+import Instance from '@giro3d/giro3d/core/Instance';
+import ColorLayer, { isColorLayer } from '@giro3d/giro3d/core/layer/ColorLayer';
+import ElevationLayer, { isElevationLayer } from '@giro3d/giro3d/core/layer/ElevationLayer';
+import type MainLoop from '@giro3d/giro3d/core/MainLoop';
+import type TileMesh from '@giro3d/giro3d/core/TileMesh.js';
+import Map from '@giro3d/giro3d/entities/Map';
+import { DEFAULT_AZIMUTH, DEFAULT_ZENITH } from '@giro3d/giro3d/renderer/LayeredMaterial';
+import RenderingState from '@giro3d/giro3d/renderer/RenderingState';
+import NullSource from '@giro3d/giro3d/sources/NullSource';
 import { Color, Group } from 'three';
 import { setupGlobalMocks } from '../mocks';
 

@@ -1,7 +1,7 @@
+import GeoTIFFFormat from '@giro3d/giro3d/formats/GeoTIFFFormat';
 import fs from 'fs';
 import path from 'path';
 import { cwd } from 'process';
-import GeoTIFFFormat from 'src/formats/GeoTIFFFormat';
 import type { Texture } from 'three';
 
 describe('GeoTIFFFormat', () => {

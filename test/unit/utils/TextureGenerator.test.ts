@@ -1,12 +1,12 @@
-import Interpretation from 'src/core/layer/Interpretation';
-import type { GetMemoryUsageContext } from 'src/core/MemoryUsage';
-import { aggregateMemoryUsage } from 'src/core/MemoryUsage';
+import Interpretation from '@giro3d/giro3d/core/layer/Interpretation';
+import type { GetMemoryUsageContext } from '@giro3d/giro3d/core/MemoryUsage';
+import { aggregateMemoryUsage } from '@giro3d/giro3d/core/MemoryUsage';
 import TextureGenerator, {
     DEFAULT_NODATA,
     OPAQUE_BYTE,
     OPAQUE_FLOAT,
     TRANSPARENT,
-} from 'src/utils/TextureGenerator';
+} from '@giro3d/giro3d/utils/TextureGenerator';
 import type { WebGLRenderer } from 'three';
 import {
     CanvasTexture,

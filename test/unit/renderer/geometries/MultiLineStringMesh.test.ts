@@ -1,8 +1,8 @@
-import LineStringMesh from 'src/renderer/geometries/LineStringMesh';
+import LineStringMesh from '@giro3d/giro3d/renderer/geometries/LineStringMesh';
 import MultiLineStringMesh, {
     isMultiLineStringMesh,
-} from 'src/renderer/geometries/MultiLineStringMesh';
-import { isSimpleGeometryMesh } from 'src/renderer/geometries/SimpleGeometryMesh';
+} from '@giro3d/giro3d/renderer/geometries/MultiLineStringMesh';
+import { isSimpleGeometryMesh } from '@giro3d/giro3d/renderer/geometries/SimpleGeometryMesh';
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
 

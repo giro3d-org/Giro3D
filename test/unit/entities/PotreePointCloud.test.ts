@@ -1,8 +1,8 @@
+import type Context from '@giro3d/giro3d/core/Context';
+import type { OctreeItem, PotreeMetadata } from '@giro3d/giro3d/entities/PotreePointCloud';
+import PotreePointCloud from '@giro3d/giro3d/entities/PotreePointCloud';
+import PotreeSource from '@giro3d/giro3d/sources/PotreeSource';
 import assert from 'assert';
-import type Context from 'src/core/Context';
-import type { OctreeItem, PotreeMetadata } from 'src/entities/PotreePointCloud';
-import PotreePointCloud from 'src/entities/PotreePointCloud';
-import PotreeSource from 'src/sources/PotreeSource';
 import { PerspectiveCamera } from 'three';
 
 // @ts-expect-error incomplete

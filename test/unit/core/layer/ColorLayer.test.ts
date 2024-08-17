@@ -1,5 +1,5 @@
-import ColorLayer from 'src/core/layer/ColorLayer';
-import NullSource from 'src/sources/NullSource';
+import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer';
+import NullSource from '@giro3d/giro3d/sources/NullSource';
 
 describe('ColorLayer', () => {
     describe('constructor', () => {

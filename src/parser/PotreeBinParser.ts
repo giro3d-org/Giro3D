@@ -3,7 +3,7 @@ import { BufferAttribute, BufferGeometry } from 'three';
 interface Attribute {
     numElements: number;
     numByte?: number;
-    ArrayType: any;
+    ArrayType: Float32ArrayConstructor | Uint8ArrayConstructor;
     attributeName: string;
     normalized?: boolean;
     potreeName?: string;

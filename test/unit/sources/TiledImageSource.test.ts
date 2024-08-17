@@ -1,6 +1,6 @@
+import GeoTIFFFormat from '@giro3d/giro3d/formats/GeoTIFFFormat';
+import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource';
 import StadiaMaps from 'ol/source/StadiaMaps.js';
-import GeoTIFFFormat from 'src/formats/GeoTIFFFormat';
-import TiledImageSource from 'src/sources/TiledImageSource';
 import { UnsignedByteType } from 'three';
 
 describe('TiledImageSource', () => {

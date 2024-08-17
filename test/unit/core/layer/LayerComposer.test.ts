@@ -1,5 +1,5 @@
-import Extent from 'src/core/geographic/Extent';
-import LayerComposer from 'src/core/layer/LayerComposer';
+import Extent from '@giro3d/giro3d/core/geographic/Extent';
+import LayerComposer from '@giro3d/giro3d/core/layer/LayerComposer';
 
 describe('LayerComposer', () => {
     describe('getMinMax', () => {
