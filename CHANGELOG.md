@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.38.3 (2024-08-19)
+
+This release fixes an issue related to colormap computation in layers that would happen in some rare cases.
+
+### Fix
+
+-   **LayeredMaterial**: add missing `updateColorMap()` in `onBeforeRender()`
+-   **Layer**: remove immediate notification when target is painted
+
 ## v0.38.2 (2024-08-12)
 
 This release brings performance improvements,and many fixes to layers.
