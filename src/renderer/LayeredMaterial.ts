@@ -633,6 +633,8 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         this.updateColorWrite();
 
         this.updateColorLayerUniforms();
+
+        this.updateColorMaps();
     }
 
     /**
