@@ -76,6 +76,6 @@ function updateSource(name) {
 Inspector.attach(document.getElementById('panelDiv'), instance);
 StatusBar.bind(instance);
 
-const sourceSelector = document.getElementById('source');
+const sourceSelector = document.getElementById('source-file');
 sourceSelector.onchange = () => updateSource(sourceSelector.value);
 updateSource(sourceSelector.value);
