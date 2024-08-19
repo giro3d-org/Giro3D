@@ -955,7 +955,7 @@ abstract class Layer<
 
         const texture = target.renderTarget.texture;
         this.applyTextureToNode({ texture, pitch: target.pitch }, target, false);
-        this._instance.notifyChange(this, { immediate: true });
+        this._instance.notifyChange(this);
         target.paintCount++;
     }
 
@@ -1075,7 +1075,7 @@ abstract class Layer<
 
         const texture = target.renderTarget.texture;
         this.applyTextureToNode({ texture, pitch }, target, isLastRender);
-        this._instance.notifyChange(this, { immediate: true });
+        this._instance.notifyChange(this);
     }
 
     /**
