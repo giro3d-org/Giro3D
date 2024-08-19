@@ -880,10 +880,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         this.uniforms.layersColorMaps = new Uniform(uniforms);
 
         if (atlas?.texture) {
-            const luts = atlas.texture || null;
-            if (!this.uniforms.colorMapAtlas) {
-                this.uniforms.colorMapAtlas = new Uniform(luts);
-            }
+            const luts = atlas.texture ?? null;
             this.uniforms.colorMapAtlas.value = luts;
         }
     }
