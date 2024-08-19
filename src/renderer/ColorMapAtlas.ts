@@ -18,7 +18,6 @@ class ColorMapAtlas {
     private _colorMaps: Map<ColorMap, { offset: number; texture: string }>;
     private _texture: Texture;
     private _dirty: boolean;
-    private _atlas: WebGLComposer;
     private _disposed: boolean;
 
     /**
@@ -80,7 +79,7 @@ class ColorMapAtlas {
         // tightly packed 1-pixel textures.
         const atlasHeight = this._colorMaps.size * 3;
 
-        this._atlas = new WebGLComposer({
+        const atlas = new WebGLComposer({
             extent: new Rect(0, 1, 0, 1),
             width: atlasWidth,
             height: atlasHeight,
@@ -103,7 +102,7 @@ class ColorMapAtlas {
             const rect = new Rect(0, 1, yMin, yMax);
 
             const texture = colorMap.getTexture();
-            this._atlas.draw(colorMap.getTexture(), rect);
+            atlas.draw(colorMap.getTexture(), rect);
 
             // The offset lies right in the middle pixel of the stripe.
             info.offset = rect.centerY;
@@ -111,9 +110,9 @@ class ColorMapAtlas {
             yMin = yMax;
         }
 
-        this._texture = this._atlas.render();
+        this._texture = atlas.render();
         this._texture.name = 'ColorMapAtlas';
-        this._atlas.dispose();
+        atlas.dispose();
         this._dirty = false;
     }
 
@@ -145,7 +144,6 @@ class ColorMapAtlas {
             return;
         }
         this._disposed = true;
-        this._atlas?.dispose();
         this._texture?.dispose();
         this._colorMaps.clear();
     }

@@ -303,7 +303,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
     private readonly _renderer: WebGLRenderer;
     private readonly _colorLayers: ColorLayer[] = [];
 
-    readonly texturesInfo: {
+    private readonly _texturesInfo: {
         color: {
             infos: TextureInfo[];
             atlasTexture: Texture;
@@ -334,7 +334,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
 
     getMemoryUsage(context: GetMemoryUsageContext) {
         // We only consider textures that this material owns. That excludes layer textures.
-        const atlas = this.texturesInfo.color.atlasTexture;
+        const atlas = this._texturesInfo.color.atlasTexture;
         if (atlas) {
             TextureGenerator.getMemoryUsage(context, atlas);
         }
@@ -427,7 +427,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         this.fragmentShader = TileFS;
         this.vertexShader = TileVS;
 
-        this.texturesInfo = {
+        this._texturesInfo = {
             color: {
                 infos: [],
                 atlasTexture: null,
@@ -450,7 +450,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         }
 
         // Elevation texture
-        const elevInfo = this.texturesInfo.elevation;
+        const elevInfo = this._texturesInfo.elevation;
         this.uniforms.elevationTexture = new Uniform(elevInfo.texture);
         this.uniforms.elevationLayer = new Uniform({
             brightnessContrastSaturation: null,
@@ -462,7 +462,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         });
 
         // Color textures's layer
-        this.uniforms.atlasTexture = new Uniform(this.texturesInfo.color.atlasTexture);
+        this.uniforms.atlasTexture = new Uniform(this._texturesInfo.color.atlasTexture);
 
         this.uniforms.colorTextures = new Uniform([]);
 
@@ -521,7 +521,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
 
         if (this._mustUpdateUniforms) {
             const layersUniform = [];
-            const infos = this.texturesInfo.color.infos;
+            const infos = this._texturesInfo.color.infos;
             const textureUniforms = this.uniforms.colorTextures.value;
             textureUniforms.length = 0;
 
@@ -576,12 +576,12 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
             if (index === -1) {
                 continue;
             }
-            delete this.texturesInfo.color.infos[index];
+            delete this._texturesInfo.color.infos[index];
         }
 
         this._colorLayers.length = 0;
         this._composer?.dispose();
-        this.texturesInfo.color.atlasTexture?.dispose();
+        this._texturesInfo.color.atlasTexture?.dispose();
     }
 
     getColorTexture(layer: ColorLayer) {
@@ -590,7 +590,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         if (index === -1) {
             return null;
         }
-        return this.texturesInfo.color.infos[index].texture;
+        return this._texturesInfo.color.infos[index].texture;
     }
 
     private countIndividualTextures() {
@@ -625,13 +625,15 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         this.updateColorWrite();
 
         this.updateColorLayerUniforms();
+
+        this.updateColorMaps();
     }
 
     /**
      * Determine if this material should write to the color buffer.
      */
     private updateColorWrite() {
-        if (this.texturesInfo.elevation.texture == null && this.defines.DISCARD_NODATA_ELEVATION) {
+        if (this._texturesInfo.elevation.texture == null && this.defines.DISCARD_NODATA_ELEVATION) {
             // No elevation texture means that every single fragment will be discarded,
             // which is an illegal operation in WebGL (raising warnings).
             this.colorWrite = false;
@@ -654,7 +656,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
             const idx = this.indexOfColorLayer(l);
             const atlas = this._atlasInfo.atlas[l.id];
 
-            const layerTexture = this.texturesInfo.color.infos[idx].texture;
+            const layerTexture = this._texturesInfo.color.infos[idx].texture;
 
             const w = layerTexture?.image?.width || EMPTY_IMAGE_SIZE;
             const h = layerTexture?.image?.height || EMPTY_IMAGE_SIZE;
@@ -662,10 +664,10 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
             updateOffsetScale(
                 new Vector2(w, h),
                 this._atlasInfo.atlas[l.id],
-                this.texturesInfo.color.infos[idx].originalOffsetScale,
+                this._texturesInfo.color.infos[idx].originalOffsetScale,
                 this._composer.width,
                 this._composer.height,
-                this.texturesInfo.color.infos[idx].offsetScale,
+                this._texturesInfo.color.infos[idx].offsetScale,
             );
 
             if (layerTexture) {
@@ -680,11 +682,11 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
 
         // Even though we asked the composer to reuse the same texture, sometimes it has
         // to recreate a new texture when some parameters change, such as pixel format.
-        if (rendered.uuid !== this.texturesInfo.color.atlasTexture?.uuid) {
+        if (rendered.uuid !== this._texturesInfo.color.atlasTexture?.uuid) {
             this.rebuildAtlasTexture(rendered);
         }
 
-        this.uniforms.atlasTexture.value = this.texturesInfo.color.atlasTexture;
+        this.uniforms.atlasTexture.value = this._texturesInfo.color.atlasTexture;
     }
 
     setColorTextures(layer: ColorLayer, textureAndPitch: TextureAndPitch) {
@@ -694,8 +696,8 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         }
 
         const { pitch, texture } = textureAndPitch;
-        this.texturesInfo.color.infos[index].originalOffsetScale.copy(pitch);
-        this.texturesInfo.color.infos[index].texture = texture;
+        this._texturesInfo.color.infos[index].originalOffsetScale.copy(pitch);
+        this._texturesInfo.color.infos[index].texture = texture;
 
         const currentSize = TextureGenerator.getBytesPerChannel(this._composerDataType);
         const textureSize = TextureGenerator.getBytesPerChannel(texture.type);
@@ -715,7 +717,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
     removeElevationLayer() {
         this._elevationLayer = null;
         this.uniforms.elevationTexture.value = null;
-        this.texturesInfo.elevation.texture = null;
+        this._texturesInfo.elevation.texture = null;
         this._hasElevationLayer = false;
         MaterialUtils.setDefine(this, 'ELEVATION_LAYER', false);
     }
@@ -730,9 +732,9 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         MaterialUtils.setDefine(this, 'ELEVATION_LAYER', true);
 
         this.uniforms.elevationTexture.value = texture;
-        this.texturesInfo.elevation.texture = texture as ElevationTexture;
+        this._texturesInfo.elevation.texture = texture as ElevationTexture;
         (texture as ElevationTexture).isFinal = isFinal;
-        this.texturesInfo.elevation.offsetScale.copy(pitch);
+        this._texturesInfo.elevation.offsetScale.copy(pitch);
 
         const uniform = this.uniforms.elevationLayer.value;
         uniform.offsetScale = pitch;
@@ -773,7 +775,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
             info.elevationRange = new Vector2(min, max);
         }
 
-        this.texturesInfo.color.infos.push(info);
+        this._texturesInfo.color.infos.push(info);
 
         this.updateColorLayerCount();
 
@@ -801,7 +803,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         const idx = this._getIndexFn;
         if (this._needsSorting) {
             this._colorLayers.sort((a, b) => idx(a) - idx(b));
-            this.texturesInfo.color.infos.sort((a, b) => idx(a.layer) - idx(b.layer));
+            this._texturesInfo.color.infos.sort((a, b) => idx(a.layer) - idx(b.layer));
             this._needsSorting = false;
         }
     }
@@ -812,7 +814,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
             return;
         }
         // NOTE: we cannot dispose the texture here, because it might be cached for later.
-        this.texturesInfo.color.infos.splice(index, 1);
+        this._texturesInfo.color.infos.splice(index, 1);
         this._colorLayers.splice(index, 1);
 
         this.updateColorMaps();
@@ -848,7 +850,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
             elevationUniform.value.max = 0;
         }
 
-        const colorLayers = this.texturesInfo.color.infos;
+        const colorLayers = this._texturesInfo.color.infos;
         const uniforms: ColorMapUniform[] = [];
 
         for (let i = 0; i < colorLayers.length; i++) {
@@ -872,10 +874,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         this.uniforms.layersColorMaps = new Uniform(uniforms);
 
         if (atlas?.texture) {
-            const luts = atlas.texture || null;
-            if (!this.uniforms.colorMapAtlas) {
-                this.uniforms.colorMapAtlas = new Uniform(luts);
-            }
+            const luts = atlas.texture ?? null;
             this.uniforms.colorMapAtlas.value = luts;
         }
     }
@@ -1044,7 +1043,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
 
             let newTexture;
 
-            const currentTexture = this.texturesInfo.color.atlasTexture;
+            const currentTexture = this._texturesInfo.color.atlasTexture;
 
             if (this._composer && currentTexture && this._composer.width > 0) {
                 // repaint the old canvas into the new one.
@@ -1062,15 +1061,15 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
             for (let i = 0; i < this._colorLayers.length; i++) {
                 const layer = this._colorLayers[i];
                 const atlas = this._atlasInfo.atlas[layer.id];
-                const pitch = this.texturesInfo.color.infos[i].originalOffsetScale;
-                const texture = this.texturesInfo.color.infos[i].texture;
+                const pitch = this._texturesInfo.color.infos[i].originalOffsetScale;
+                const texture = this._texturesInfo.color.infos[i].texture;
 
                 // compute offset / scale
                 const w = texture?.image?.width || EMPTY_IMAGE_SIZE;
                 const h = texture?.image?.height || EMPTY_IMAGE_SIZE;
                 const xRatio = w / this._composer.width;
                 const yRatio = h / this._composer.height;
-                this.texturesInfo.color.infos[i].offsetScale = new OffsetScale(
+                this._texturesInfo.color.infos[i].offsetScale = new OffsetScale(
                     atlas.x / this._composer.width + pitch.x * xRatio,
                     (atlas.y + atlas.offset) / this._composer.height + pitch.y * yRatio,
                     pitch.z * xRatio,
@@ -1087,9 +1086,9 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         if (newTexture) {
             newTexture.name = 'LayeredMaterial - Atlas';
         }
-        this.texturesInfo.color.atlasTexture?.dispose();
-        this.texturesInfo.color.atlasTexture = newTexture;
-        this.uniforms.atlasTexture.value = this.texturesInfo.color.atlasTexture;
+        this._texturesInfo.color.atlasTexture?.dispose();
+        this._texturesInfo.color.atlasTexture = newTexture;
+        this.uniforms.atlasTexture.value = this._texturesInfo.color.atlasTexture;
     }
 
     changeState(state: RenderingState) {
@@ -1138,13 +1137,13 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
 
     setLayerOpacity(layer: ColorLayer, opacity: number) {
         const index = this.indexOfColorLayer(layer);
-        this.texturesInfo.color.infos[index].opacity = opacity;
+        this._texturesInfo.color.infos[index].opacity = opacity;
         this._mustUpdateUniforms = true;
     }
 
     setLayerVisibility(layer: ColorLayer, visible: boolean) {
         const index = this.indexOfColorLayer(layer);
-        this.texturesInfo.color.infos[index].visible = visible;
+        this._texturesInfo.color.infos[index].visible = visible;
         this._mustUpdateUniforms = true;
         this.needsUpdate = true;
         this.reorderLayers();
@@ -1157,13 +1156,13 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         }
         const index = this.indexOfColorLayer(layer);
         const value = range ? new Vector2(range.min, range.max) : DISABLED_ELEVATION_RANGE;
-        this.texturesInfo.color.infos[index].elevationRange = value;
+        this._texturesInfo.color.infos[index].elevationRange = value;
         this._mustUpdateUniforms = true;
     }
 
     setColorimetry(layer: ColorLayer, brightness: number, contrast: number, saturation: number) {
         const index = this.indexOfColorLayer(layer);
-        this.texturesInfo.color.infos[index].brightnessContrastSaturation.set(
+        this._texturesInfo.color.infos[index].brightnessContrastSaturation.set(
             brightness,
             contrast,
             saturation,
@@ -1184,12 +1183,16 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         if (!this._hasElevationLayer) {
             return true;
         }
-        const texture = this.texturesInfo.elevation.texture;
+        const texture = this._texturesInfo.elevation.texture;
         return texture != null && texture.isFinal === true;
     }
 
     getElevationTexture(): Texture {
-        return this.texturesInfo.elevation.texture;
+        return this._texturesInfo.elevation.texture;
+    }
+
+    getElevationOffsetScale(): OffsetScale {
+        return this._texturesInfo.elevation.offsetScale;
     }
 
     isColorLayerTextureLoaded(layer: ColorLayer) {
@@ -1197,7 +1200,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         if (index < 0) {
             return null;
         }
-        return this.texturesInfo.color.infos[index].texture !== emptyTexture;
+        return this._texturesInfo.color.infos[index].texture !== emptyTexture;
     }
 
     /**

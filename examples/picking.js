@@ -22,6 +22,8 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 import PointCloudMaterial from '@giro3d/giro3d/renderer/PointCloudMaterial.js';
 
+import StatusBar from './widgets/StatusBar';
+
 // Defines projection that we will use (taken from https://epsg.io/2154, Proj4js section)
 Instance.registerCRS(
     'EPSG:2154',
@@ -346,3 +348,5 @@ instance.domElement.addEventListener('click', onMouseClick);
 instance.scene.updateMatrixWorld(true);
 
 instance.notifyChange();
+
+StatusBar.bind(instance);

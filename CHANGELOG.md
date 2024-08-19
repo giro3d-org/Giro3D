@@ -1,5 +1,45 @@
 # Changelog
 
+## v0.38.3 (2024-08-19)
+
+This release fixes an issue related to colormap computation in layers that would happen in some rare cases.
+
+### Fix
+
+-   **LayeredMaterial**: add missing `updateColorMap()` in `onBeforeRender()`
+-   **Layer**: remove immediate notification when target is painted
+
+## v0.38.2 (2024-08-12)
+
+This release brings performance improvements,and many fixes to layers.
+
+### Feat
+
+-   **Layer**: `dispose()` can be called idempotently to free memory
+-   **SourceInspector**: add info for `VectorSource`
+-   **VectorSource**: add `featureCount` getter
+-   **MapInspector**: add emoji in front of layer name to see if layer is visible
+
+### Fix
+
+-   **LayeredMaterial**: ignore non-visible layers for colormap atlas computation
+-   **VectorTileSource**: use `willReadFrequently: true` on canvas
+-   **LayeredMaterial**: reorder color layers on visibility change
+-   **LayeredMaterial**: remove useless `reorderLayers()` calls
+-   **LayeredMaterial**: ensure that the number of visible layers is properly updated
+-   **TiledImageSource**: remove warning-generating `needsUpdate` on texture
+-   **LayeredMaterial**: fix invalid layer ordering when a layer is added mid-lifetime
+-   **DebugSource**: assign consistent image IDs
+-   **RenderTargetPool**: fix memory leak
+-   **ComposerTileMaterial**: use `willReadFrequently: true` on grid canvas
+-   **DebugSource**: use `willReadFrequently: true` on canvas context
+-   **Layer**: fix possible null exception when looking for ancestor
+
+### Perf
+
+-   **WebGLComposer**: simplify removing objects from the scene
+-   **Layer**: add support for synchronous image sources (#493)
+
 ## v0.38.1 (2024-08-08)
 
 A minor release that brings performance improvements on layers and some fixes.

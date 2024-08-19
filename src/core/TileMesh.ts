@@ -440,14 +440,15 @@ class TileMesh
         const diff = neighbour.level - this.level;
 
         const uniform = this.material.uniforms.neighbours.value[location];
-        const neighbourElevation = neighbour.material.texturesInfo.elevation;
+        const neighbourTexture = neighbour.material.getElevationTexture();
+        const neighbourOffsetScale = neighbour.material.getElevationOffsetScale();
 
         const offsetScale = this.extent.offsetToParent(neighbour.extent);
-        const nOffsetScale = neighbourElevation.offsetScale.combine(offsetScale);
+        const nOffsetScale = neighbourOffsetScale.combine(offsetScale);
 
         uniform.offsetScale = nOffsetScale;
         uniform.diffLevel = diff;
-        uniform.elevationTexture = neighbourElevation.texture;
+        uniform.elevationTexture = neighbourTexture;
     }
 
     /**
