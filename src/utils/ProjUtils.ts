@@ -1,5 +1,7 @@
 import proj from 'proj4';
-import { Vector2, type TypedArray } from 'three';
+import type { Vector3 } from 'three';
+import { MathUtils, Vector2, type TypedArray } from 'three';
+import { getConverter } from '../core/geographic/ProjectionCache';
 
 const ZERO = new Vector2(0, 0);
 
@@ -50,6 +52,31 @@ function transformBufferInPlace(
     }
 }
 
+/**
+ * Transforms the vector array _in place_, from the source to the destination CRS.
+ */
+function transformVectors<T extends Vector2 | Vector3>(
+    srcCrs: string,
+    dstCrs: string,
+    points: T[],
+): void {
+    const converter = getConverter(srcCrs, dstCrs);
+
+    // The mercator projection does not work at poles
+    const shouldClamp = srcCrs === 'EPSG:4326' && dstCrs === 'EPSG:3857';
+
+    for (let i = 0; i < points.length; i++) {
+        const pt0 = points[i];
+        if (shouldClamp) {
+            pt0.setY(MathUtils.clamp(pt0.y, -89.999999, 89.999999));
+        }
+        const pt1 = converter.forward(pt0);
+        // @ts-expect-error weird error
+        points[i].copy(pt1);
+    }
+}
+
 export default {
     transformBufferInPlace,
+    transformVectors,
 };

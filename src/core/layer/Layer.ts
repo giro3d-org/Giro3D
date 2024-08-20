@@ -1002,10 +1002,14 @@ abstract class Layer<
             if (!target.renderTarget) {
                 target.renderTarget = this.acquireRenderTarget(width, height);
 
-                this.applyDefaultTexture(target);
+                // If the source is not synchronous, we need a default texture
+                // to avoid seeing a blank texture on the tile.
+                if (!this.source.synchronous) {
+                    this.applyDefaultTexture(target);
+                }
             }
 
-            if (!this.canFetchImages(target)) {
+            if (!this.source.synchronous && !this.canFetchImages(target)) {
                 return;
             }
 
@@ -1042,6 +1046,7 @@ abstract class Layer<
                     });
             }
         } else {
+            // The layer does not overlap with this tile, let's apply an empty texture.
             target.state = TargetState.Complete;
             this.applyEmptyTextureToNode(target);
         }
