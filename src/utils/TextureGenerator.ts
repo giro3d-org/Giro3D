@@ -147,7 +147,6 @@ export type FillBufferOptions<Buf extends TypedArray | ArrayBuffer = TypedArray>
     dataType: TextureDataType;
     nodata?: number;
     opaqueValue: number;
-    scaling?: { min: number; max: number };
 };
 
 export type FillBufferResult<Buf extends TypedArray | ArrayBuffer = TypedArray> = {
@@ -163,8 +162,6 @@ export type FillBufferResult<Buf extends TypedArray | ArrayBuffer = TypedArray> 
 // Note: we don't use Number.isNan(x) in the loops as it slows down the loop due to function
 // invocation. Instead, we use x !== x, as a NaN is never equal to itself.
 function fillBuffer<T extends TypedArray>(options: FillBufferOptions<T>): FillBufferResult<T> {
-    let getValue: (arg0: number) => number;
-
     const pixelData = options.input;
     const opaqueValue = options.opaqueValue;
     let buf: TypedArray;
@@ -188,13 +185,6 @@ function fillBuffer<T extends TypedArray>(options: FillBufferOptions<T>): FillBu
     let min = +Infinity;
     let max = -Infinity;
 
-    if (options.scaling) {
-        const { min, max } = options.scaling;
-        getValue = x => Math.floor(MathUtils.mapLinear(x, min, max, 0, 255));
-    } else {
-        getValue = x => x;
-    }
-
     let isTransparent = true;
 
     if (pixelData.length === 1) {
@@ -202,14 +192,14 @@ function fillBuffer<T extends TypedArray>(options: FillBufferOptions<T>): FillBu
         const length = v.length;
         for (let i = 0; i < length; i++) {
             const idx = i * 2;
-            let value;
-            let a;
+            let value: number;
+            let a: number;
             const raw = v[i];
             if (raw !== raw || raw === options.nodata) {
                 value = DEFAULT_NODATA;
                 a = TRANSPARENT;
             } else {
-                value = getValue(raw);
+                value = raw;
                 a = opaqueValue;
                 isTransparent = false;
             }
@@ -226,14 +216,14 @@ function fillBuffer<T extends TypedArray>(options: FillBufferOptions<T>): FillBu
         const length = v.length;
         for (let i = 0; i < length; i++) {
             const idx = i * 2;
-            let value;
+            let value: number;
             const raw = v[i];
             const alpha = a[i];
 
             if (raw !== raw || raw === options.nodata) {
                 value = DEFAULT_NODATA;
             } else {
-                value = getValue(raw);
+                value = raw;
             }
 
             if (alpha > 0) {
@@ -270,9 +260,6 @@ function fillBuffer<T extends TypedArray>(options: FillBufferOptions<T>): FillBu
                 b = DEFAULT_NODATA;
                 a = TRANSPARENT;
             } else {
-                r = getValue(r);
-                g = getValue(g);
-                b = getValue(b);
                 a = opaqueValue;
                 isTransparent = false;
             }
@@ -306,9 +293,6 @@ function fillBuffer<T extends TypedArray>(options: FillBufferOptions<T>): FillBu
                 b = DEFAULT_NODATA;
                 a = TRANSPARENT;
             } else {
-                r = getValue(r);
-                g = getValue(g);
-                b = getValue(b);
                 if (a > 0) {
                     isTransparent = false;
                 }
@@ -501,11 +485,6 @@ function createDataTexture(
         /** The texture height */
         height: number;
         /**
-         * Indicates that the input data must be scaled into 8-bit values,
-         * using the provided min and max values for scaling.
-         */
-        scaling?: { min: number; max: number };
-        /**
          * The no-data value. If specified, if a pixel has this value,
          * then the alpha value will be transparent. Otherwise it will be opaque.
          * If unspecified, the alpha will be opaque. This only applies to 1-channel data.
@@ -520,8 +499,7 @@ function createDataTexture(
     const height = options.height;
     const pixelCount = width * height;
 
-    // If we apply scaling, it means that we force a 8-bit output.
-    const targetDataType = options.scaling === undefined ? sourceDataType : UnsignedByteType;
+    const targetDataType = sourceDataType;
 
     let format: PixelFormat;
     let channelCount: number;
@@ -553,7 +531,6 @@ function createDataTexture(
         dataType: targetDataType,
         input: pixelData,
         opaqueValue,
-        scaling: options.scaling,
         nodata: options.nodata,
     });
 
