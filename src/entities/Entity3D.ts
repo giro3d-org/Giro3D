@@ -10,6 +10,7 @@ import pickObjectsAt from '../core/picking/PickObjectsAt';
 import type PickOptions from '../core/picking/PickOptions';
 import type PickResult from '../core/picking/PickResult';
 import type RenderingContextHandler from '../renderer/RenderingContextHandler';
+import { isMaterial } from '../utils/predicates';
 import Entity, { type EntityEventMap, type EntityUserData } from './Entity';
 
 export interface Entity3DEventMap extends EntityEventMap {
@@ -374,11 +375,17 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
      * object of this entity.
      */
     traverseMaterials(callback: (arg0: Material) => void, root: Object3D = undefined) {
-        this.traverse((o: any) => {
-            if (Array.isArray(o.material)) {
-                o.material.forEach((m: Material) => callback(m));
-            } else if (o.material) {
-                callback(o.material as Material);
+        this.traverse(o => {
+            if ('material' in o) {
+                if (Array.isArray(o.material)) {
+                    o.material.forEach(m => {
+                        if (isMaterial(m)) {
+                            callback(m);
+                        }
+                    });
+                } else if (isMaterial(o.material)) {
+                    callback(o.material as Material);
+                }
             }
         }, root);
     }
