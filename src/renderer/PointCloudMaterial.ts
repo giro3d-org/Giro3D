@@ -317,6 +317,11 @@ class PointCloudMaterial extends ShaderMaterial {
             }
         }
 
+        if (!this.uniforms.classifications) {
+            // Initialize with default values
+            this.uniforms.classifications = new Uniform(actual);
+        }
+
         this.uniforms.classifications.value = actual;
     }
 
