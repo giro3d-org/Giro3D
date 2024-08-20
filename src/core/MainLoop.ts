@@ -3,7 +3,6 @@ import Entity from '../entities/Entity';
 import type C3DEngine from '../renderer/c3DEngine';
 import Context from './Context';
 import type Instance from './Instance';
-import { hasLayers } from './layer/HasLayers';
 
 /** Rendering state */
 export enum RenderingState {
@@ -15,20 +14,6 @@ export enum RenderingState {
 
 const tmpSphere = new Sphere();
 
-/**
- * Objects to update from an entity.
- *
- * TODO: This is a mess and requires some clean-up.
- *
- * @internal
- */
-export interface ObjectToUpdate {
-    element?: any;
-    parent?: any;
-    elements?: any[];
-}
-
-// TODO: clean this up
 function updateElements(context: Context, entity: Entity, elements?: unknown[]) {
     if (!elements) {
         return;
@@ -36,38 +21,6 @@ function updateElements(context: Context, entity: Entity, elements?: unknown[]) 
     for (const element of elements) {
         // update element
         const newElementsToUpdate = entity.update(context, element);
-
-        const sub = entity.getObjectToUpdateForAttachedLayers(element);
-
-        if (sub) {
-            if (sub.element) {
-                // update attached layers
-                if (hasLayers(entity)) {
-                    entity.forEachLayer(attachedLayer => {
-                        if (attachedLayer.ready) {
-                            attachedLayer.update(context, sub.element);
-                        }
-                    });
-                }
-            } else if (sub.elements) {
-                for (let i = 0; i < sub.elements.length; i++) {
-                    if (!sub.elements[i].isObject3D) {
-                        throw new Error(`
-                            Invalid object for attached layer to update.
-                            Must be a THREE.Object and have a THREE.Material`);
-                    }
-
-                    // update attached layers
-                    if (hasLayers(entity)) {
-                        entity.forEachLayer(attachedLayer => {
-                            if (attachedLayer.ready) {
-                                attachedLayer.update(context, sub.elements[i]);
-                            }
-                        });
-                    }
-                }
-            }
-        }
         updateElements(context, entity, newElementsToUpdate);
     }
 }
