@@ -24,6 +24,7 @@ import MemoryTracker from '../MemoryTracker';
 import ComposerTileMaterial, { isComposerTileMaterial } from './ComposerTileMaterial';
 import TextureGenerator from '../../utils/TextureGenerator';
 import { isMesh, isTexture } from '../../utils/predicates';
+import Capabilities from '../../core/system/Capabilities';
 
 let SHARED_PLANE_GEOMETRY: PlaneGeometry = null;
 
@@ -200,7 +201,7 @@ class WebGLComposer {
     ) {
         const result = new WebGLRenderTarget(width, height, {
             format,
-            anisotropy: this._renderer.capabilities.getMaxAnisotropy(),
+            anisotropy: Capabilities.getMaxAnisotropy(),
             magFilter: this._magFilter,
             minFilter: this._minFilter,
             type,
