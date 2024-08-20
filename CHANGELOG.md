@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.38.5 (2024-08-20)
+
+### Feat
+
+-   **Inspector**: display number of allocated WebGLPrograms in memory usage panel
+
+### Fix
+
+-   **PointCloudMaterial**: create classification uniforms if not existing
+
+### Perf
+
+-   **Capabilities**: cache max anisotropy value
+-   **TextureGenerator**: remove expensive and unused scaling option
+-   **Extent**: optimize .as() for speed and memory allocation
+-   **Layer**: don't apply a temporary default texture if source is synchronous
+
 ## v0.38.3 (2024-08-19)
 
 This release fixes an issue related to colormap computation in layers that would happen in some rare cases.
