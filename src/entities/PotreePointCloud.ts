@@ -670,21 +670,7 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
             // only load geometry if this elements has points
             if (elt.numPoints > 0) {
                 if (elt.obj) {
-                    if (PointCloudMaterial.isPointCloudMaterial(elt.obj.material)) {
-                        elt.obj.material.update(this.material);
-                    } else {
-                        elt.obj.material.copy(this.material);
-                    }
-                    // if (__DEBUG__) {
-                    //     if (this.bboxes.visible) {
-                    //         if (!elt.obj.boxHelper) {
-                    //             this.initBoundingBox(elt);
-                    //         }
-                    //         elt.obj.boxHelper.visible = true;
-                    //         elt.obj.boxHelper.material.color.r = 1 - elt.sse;
-                    //         elt.obj.boxHelper.material.color.g = elt.sse;
-                    //     }
-                    // }
+                    elt.obj.material.update(this.material);
                 } else if (!elt.promise) {
                     // Increase priority of nearest node
                     const priority =
@@ -864,6 +850,7 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
             geometry,
             material: this.material.clone(),
             textureSize: this.imageSize,
+            extent: Extent.fromBox3(this._instance.referenceCrs, metadata.bbox),
         });
         points.name = `r${metadata.name}.${this.extension}`;
         if (PointCloudMaterial.isPointCloudMaterial(points.material)) {
@@ -875,7 +862,6 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
         points.scale.set(this.metadata.scale, this.metadata.scale, this.metadata.scale);
         points.updateMatrix();
         points.tightbbox = geometry.boundingBox.applyMatrix4(points.matrix);
-        points.extent = Extent.fromBox3(this._instance.referenceCrs, metadata.bbox);
         points.userData.metadata = metadata;
         this.onObjectCreated(points);
         return points;
