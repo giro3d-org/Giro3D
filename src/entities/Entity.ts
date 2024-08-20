@@ -332,7 +332,7 @@ abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserDa
 }
 
 export function isEntity(o: unknown): o is Entity {
-    return (o as Entity).isEntity;
+    return (o as Entity)?.isEntity;
 }
 
 export default Entity;
