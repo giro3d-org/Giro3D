@@ -405,10 +405,7 @@ class VectorSource extends ImageSource {
     }
 
     getExtent() {
-        return nonNull(
-            this.getCurrentExtent(),
-            'could not compute the extent of this source because it does not contain any feature',
-        );
+        return this.getCurrentExtent() as Extent;
     }
 
     getCurrentExtent() {
