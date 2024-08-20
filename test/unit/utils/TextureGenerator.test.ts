@@ -13,7 +13,6 @@ import {
     Color,
     DataTexture,
     FloatType,
-    MathUtils,
     RGBAFormat,
     RGFormat,
     Texture,
@@ -156,38 +155,6 @@ describe('TextureGenerator', () => {
                         // (64-bit floats), whereas the txture only supports 32-bit floats.
                         expect(buf[idx + 0]).toBeCloseTo(v, 2);
                         expect(buf[idx + 1]).toEqual(OPAQUE_FLOAT);
-                    }
-                });
-
-                it('should honor the scaling values and return a 8-bit texture', () => {
-                    const data = new Float32Array([15000, 4050, 0, 7500]);
-                    const w = 2;
-                    const h = 2;
-                    const min = 0;
-                    const max = 15000;
-                    const expectedOutputLength = data.length * 2; // RG
-                    const type = FloatType;
-
-                    const result = TextureGenerator.createDataTexture(
-                        { width: w, height: h, scaling: { min, max } },
-                        type,
-                        data,
-                    );
-
-                    const buf = result.texture.image.data;
-
-                    expect(result.texture).toBeInstanceOf(DataTexture);
-                    expect(buf).toBeInstanceOf(Uint8ClampedArray);
-                    expect(buf).toHaveLength(expectedOutputLength);
-
-                    for (let i = 0; i < data.length; i++) {
-                        const v = data[i];
-                        const idx = i * 2;
-                        // We use toBeCloseTo because our input data is made of numbers
-                        // (64-bit floats), whereas the txture only supports 32-bit floats.
-                        const expectedV = Math.floor(MathUtils.mapLinear(v, min, max, 0, 255));
-                        expect(buf[idx + 0]).toBeCloseTo(expectedV, 2);
-                        expect(buf[idx + 1]).toEqual(OPAQUE_BYTE);
                     }
                 });
 

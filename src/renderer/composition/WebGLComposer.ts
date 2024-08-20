@@ -22,6 +22,7 @@ import {
 import Interpretation from '../../core/layer/Interpretation';
 
 import Rect from '../../core/Rect';
+import Capabilities from '../../core/system/Capabilities';
 import { isMesh, isTexture } from '../../utils/predicates';
 import TextureGenerator from '../../utils/TextureGenerator';
 import MemoryTracker from '../MemoryTracker';
@@ -202,7 +203,7 @@ class WebGLComposer {
     ) {
         const result = new WebGLRenderTarget(width, height, {
             format,
-            anisotropy: this._renderer.capabilities.getMaxAnisotropy(),
+            anisotropy: Capabilities.getMaxAnisotropy(),
             magFilter: this._magFilter,
             minFilter: this._minFilter,
             type,

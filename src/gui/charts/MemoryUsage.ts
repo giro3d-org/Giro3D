@@ -15,6 +15,7 @@ class MemoryUsage extends ChartPanel {
     textures: ChartDataset<'line', ScatterDataPoint[]>;
     geometries: ChartDataset<'line', ScatterDataPoint[]>;
     renderTargets: ChartDataset<'line', ScatterDataPoint[]>;
+    programs: ChartDataset<'line', ScatterDataPoint[]>;
     data: ChartData<'line', ScatterDataPoint[], string>;
     private _onRenderTargetPoolCleanup: () => void;
     chart: Chart;
@@ -56,6 +57,17 @@ class MemoryUsage extends ChartPanel {
             yAxisID: 'y',
         };
 
+        this.programs = {
+            label: 'WebGLProgram',
+            data: [],
+            fill: false,
+            borderWidth: 2,
+            pointRadius: 0,
+            backgroundColor: '#F0F25030',
+            borderColor: '#F0F250FF',
+            yAxisID: 'y',
+        };
+
         this.geometries = {
             label: 'Geometries',
             data: [],
@@ -69,7 +81,7 @@ class MemoryUsage extends ChartPanel {
 
         this.data = {
             labels: this.labels,
-            datasets: [this.textures, this.geometries, this.renderTargets],
+            datasets: [this.textures, this.geometries, this.renderTargets, this.programs],
         };
 
         this.chart = new Chart(this.ctx, {
@@ -128,6 +140,11 @@ class MemoryUsage extends ChartPanel {
         const frame = this.render.frame;
         pushTrim(this.textures.data, { x: frame, y: this.memory.textures }, MAX_DATA_POINTS);
         pushTrim(this.geometries.data, { x: frame, y: this.memory.geometries }, MAX_DATA_POINTS);
+        pushTrim(
+            this.programs.data,
+            { x: frame, y: this.instance.renderer.info.programs?.length ?? 0 },
+            MAX_DATA_POINTS,
+        );
         pushTrim(
             this.renderTargets.data,
             { x: frame, y: GlobalRenderTargetPool.count },

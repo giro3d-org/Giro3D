@@ -1,5 +1,6 @@
 import type { TypedArray } from 'three';
 import { Box3, Vector2, Vector3 } from 'three';
+import ProjUtils from '../../utils/ProjUtils';
 import OffsetScale from '../OffsetScale';
 import Coordinates, {
     assertCrsIsValid,
@@ -23,6 +24,17 @@ export function reasonnableEpsilonForCRS(crs: string, width: number, height: num
     }
     return 0.01 * Math.min(width, height);
 }
+
+const cardinals: Vector2[] = [
+    new Vector2(),
+    new Vector2(),
+    new Vector2(),
+    new Vector2(),
+    new Vector2(),
+    new Vector2(),
+    new Vector2(),
+    new Vector2(),
+];
 
 /**
  * Possible values to define an extent.
@@ -214,35 +226,43 @@ class Extent {
      * @param crs - the new CRS
      * @returns the converted extent.
      */
-    as(crs: string) {
+    as(crs: string): this | Extent {
         assertCrsIsValid(crs);
 
         if (this._crs !== crs && !(is4326(this._crs) && is4326(crs))) {
             // Compute min/max in x/y by projecting 8 cardinal points,
             // and then taking the min/max of each coordinates.
-            const cardinals: Coordinates[] = [];
-            const c = this.center();
-            cardinals.push(new Coordinates(this._crs, this.west(), this.north()));
-            cardinals.push(new Coordinates(this._crs, c.values[0], this.north()));
-            cardinals.push(new Coordinates(this._crs, this.east(), this.north()));
-            cardinals.push(new Coordinates(this._crs, this.east(), c.values[1]));
-            cardinals.push(new Coordinates(this._crs, this.east(), this.south()));
-            cardinals.push(new Coordinates(this._crs, c.values[0], this.south()));
-            cardinals.push(new Coordinates(this._crs, this.west(), this.south()));
-            cardinals.push(new Coordinates(this._crs, this.west(), c.values[1]));
+            const c = this.centerAsVector2(tmpXY);
+            const cx = c.x;
+            const cy = c.y;
+            const e = this.east();
+            const w = this.west();
+            const n = this.north();
+            const s = this.south();
+
+            cardinals[0].set(w, n);
+            cardinals[1].set(cx, n);
+            cardinals[2].set(e, n);
+            cardinals[3].set(e, cy);
+            cardinals[4].set(e, s);
+            cardinals[5].set(cx, s);
+            cardinals[6].set(w, s);
+            cardinals[7].set(w, cy);
 
             let north = -Infinity;
             let south = Infinity;
             let east = -Infinity;
             let west = Infinity;
+
+            // convert the coordinates
+            ProjUtils.transformVectors(this._crs, crs, cardinals);
+
             // loop over the coordinates
             for (let i = 0; i < cardinals.length; i++) {
-                // convert the coordinate.
-                cardinals[i] = cardinals[i].as(crs);
-                north = Math.max(north, cardinals[i].values[1]);
-                south = Math.min(south, cardinals[i].values[1]);
-                east = Math.max(east, cardinals[i].values[0]);
-                west = Math.min(west, cardinals[i].values[0]);
+                north = Math.max(north, cardinals[i].y);
+                south = Math.min(south, cardinals[i].y);
+                east = Math.max(east, cardinals[i].x);
+                west = Math.min(west, cardinals[i].x);
             }
             return new Extent(crs, {
                 north,
