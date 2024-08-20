@@ -1,7 +1,6 @@
 import { Vector3, MathUtils, Vector2 } from 'three';
 import proj4 from 'proj4';
-
-const projectionCache: Map<string, Map<string, proj4.Converter>> = new Map();
+import { getConverter } from './ProjectionCache';
 
 export const UNIT = {
     DEGREE: 1,
@@ -95,20 +94,6 @@ function assertIsGeocentric(crs: string) {
     if (!crsIsGeocentric(crs)) {
         throw new Error(`Can't query crs ${crs} x/y/z`);
     }
-}
-
-function instanceProj4(crsIn: string, crsOut: string): proj4.Converter {
-    if (projectionCache.has(crsIn)) {
-        const p = projectionCache.get(crsIn);
-        if (p.has(crsOut)) {
-            return p.get(crsOut);
-        }
-    } else {
-        projectionCache.set(crsIn, new Map());
-    }
-    const p = proj4(crsIn, crsOut);
-    projectionCache.get(crsIn).set(crsOut, p);
-    return p;
 }
 
 export function is4326(crs: string) {
@@ -482,11 +467,11 @@ class Coordinates {
             // the workaround is to use an intermediate projection, like EPSG:4326
             if (is4326(crsIn) && newCrs === 'EPSG:3857') {
                 val1 = MathUtils.clamp(val1, -89.999999, 89.999999);
-                const p = instanceProj4(crsIn, newCrs).forward([val0, val1]);
+                const p = getConverter(crsIn, newCrs).forward([val0, val1]);
                 return target.set(newCrs, p[0], p[1], this._values[2]);
             }
             // here is the normal case with proj4
-            const p = instanceProj4(crsIn, newCrs).forward([val0, val1]);
+            const p = getConverter(crsIn, newCrs).forward([val0, val1]);
             return target.set(newCrs, p[0], p[1], this._values[2]);
         }
 
