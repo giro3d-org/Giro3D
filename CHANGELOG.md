@@ -1,8 +1,6 @@
 # Changelog
 
-## v0.38.4 (2024-08-20)
-
-This release brings additional performance optimizations and fixes.
+## v0.38.5 (2024-08-20)
 
 ### Feat
 
@@ -12,15 +10,11 @@ This release brings additional performance optimizations and fixes.
 
 -   **PointCloudMaterial**: create classification uniforms if not existing
 
-### Refactor
-
--   **Coordinates**: extract projection cache in its own file
-
 ### Perf
 
 -   **Capabilities**: cache max anisotropy value
 -   **TextureGenerator**: remove expensive and unused scaling option
--   **Extent**: optimize `.as()` for speed and memory allocation
+-   **Extent**: optimize .as() for speed and memory allocation
 -   **Layer**: don't apply a temporary default texture if source is synchronous
 
 ## v0.38.3 (2024-08-19)
