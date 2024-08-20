@@ -4,7 +4,6 @@ import type Context from '../core/Context';
 import type Extent from '../core/geographic/Extent';
 import type { ColorLayer, Layer, LayerEvents } from '../core/layer';
 import type HasLayers from '../core/layer/HasLayers';
-import { type ObjectToUpdate } from '../core/MainLoop';
 import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../core/MemoryUsage';
 import OperationCounter from '../core/OperationCounter';
 import type Pickable from '../core/picking/Pickable';
@@ -12,7 +11,7 @@ import pickObjectsAt from '../core/picking/PickObjectsAt';
 import type PickOptions from '../core/picking/PickOptions';
 import pickPointsAt, { type PointsPickResult } from '../core/picking/PickPointsAt';
 import type PickResult from '../core/picking/PickResult';
-import type PointCloud from '../core/PointCloud';
+import PointCloud from '../core/PointCloud';
 import type RequestQueue from '../core/RequestQueue';
 import { DefaultQueue } from '../core/RequestQueue';
 import PointCloudMaterial from '../renderer/PointCloudMaterial';
@@ -316,33 +315,6 @@ class Tiles3D<
         );
     }
 
-    /* eslint-disable class-methods-use-this */
-    getObjectToUpdateForAttachedLayers(meta: Tile): ObjectToUpdate | null {
-        if (!meta.content) {
-            return null;
-        }
-        const result: any[] = [];
-        meta.content.traverse((obj: any) => {
-            if (
-                obj.isObject3D &&
-                obj.material &&
-                obj.userData.parentEntity === meta.userData.parentEntity
-            ) {
-                result.push(obj);
-            }
-        });
-        const p = meta.parent;
-        if (p && p.content) {
-            return {
-                elements: result,
-                parent: p.content,
-            };
-        }
-        return {
-            elements: result,
-        };
-    }
-
     private async requestNewTile(
         metadata: ProcessedTile,
         parent?: Tile,
@@ -543,6 +515,19 @@ class Tiles3D<
         }
 
         return returnValue;
+    }
+
+    postUpdate(context: Context): void {
+        this.traverse(obj => {
+            if (
+                PointCloud.isPointCloud(obj) &&
+                PointCloudMaterial.isPointCloudMaterial(obj.material)
+            ) {
+                this.forEachLayer(layer => layer.update(context, obj));
+            }
+        });
+
+        this.forEachLayer(layer => layer.postUpdate());
     }
 
     protected markTileForDeletion(node: Tile) {

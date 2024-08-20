@@ -22,13 +22,14 @@ export interface PointCloudEventMap extends Object3DEventMap {
 }
 
 /** Options for constructing {@link PointCloud} */
-export interface PointCloudOptions {
+export interface PointCloudOptions<M extends Material = Material> {
     /** Geometry */
-    geometry?: BufferGeometry;
+    geometry: BufferGeometry;
     /** Material */
-    material?: Material;
+    material: M;
     /** Texture size */
-    textureSize?: Vector2;
+    textureSize: Vector2;
+    extent?: Extent;
 }
 
 function setupMaterial(material: PointCloudMaterial, geometry: BufferGeometry) {
@@ -48,13 +49,16 @@ function setupMaterial(material: PointCloudMaterial, geometry: BufferGeometry) {
  * A point cloud object with geospatial properties.
  *
  */
-class PointCloud extends Points implements EventDispatcher<PointCloudEventMap>, Disposable {
+class PointCloud<M extends PointCloudMaterial = PointCloudMaterial>
+    extends Points<BufferGeometry, M>
+    implements EventDispatcher<PointCloudEventMap>, Disposable
+{
     readonly isPointCloud: boolean = true;
     readonly type = 'PointCloud';
+
     extent?: Extent;
-    textureSize?: Vector2;
+    textureSize: Vector2;
     disposed: boolean;
-    material: Material;
 
     static isPointCloud(obj: unknown): obj is PointCloud {
         return (obj as PointCloud)?.isPointCloud;
@@ -68,10 +72,10 @@ class PointCloud extends Points implements EventDispatcher<PointCloudEventMap>, 
         }
     }
 
-    constructor({ geometry, material = new PointCloudMaterial(), textureSize }: PointCloudOptions) {
-        super(geometry, material);
+    constructor(opts: PointCloudOptions<M>) {
+        super(opts.geometry, opts.material);
         this.extent = undefined;
-        this.textureSize = textureSize;
+        this.textureSize = opts.textureSize;
         this.disposed = false;
 
         if (PointCloudMaterial.isPointCloudMaterial(this.material)) {

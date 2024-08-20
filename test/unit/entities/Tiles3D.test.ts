@@ -133,29 +133,6 @@ describe('Tiles3D', () => {
         });
     });
 
-    describe('getObjectToUpdateForAttachedLayers', () => {
-        it('should correctly return all children', () => {
-            const parentEntity = {};
-            // @ts-expect-error invalid
-            const tile: Tile = {
-                content: new Group(),
-                userData: { parentEntity },
-            };
-
-            for (let i = 0; i < 3; i++) {
-                const mesh = new Mesh();
-                mesh.userData.parentEntity = parentEntity;
-                tile.content.add(mesh);
-            }
-
-            const tiles3D = new Tiles3D(defaultSource);
-
-            const result = tiles3D.getObjectToUpdateForAttachedLayers(tile);
-            expect(Array.isArray(result.elements)).toBe(true);
-            expect(result.elements).toHaveLength(3);
-        });
-    });
-
     describe('updateOpacity', () => {
         it('should use this.opacity if set', () => {
             const material = new MeshBasicMaterial();

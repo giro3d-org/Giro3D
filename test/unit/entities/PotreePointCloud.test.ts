@@ -1,5 +1,5 @@
 import type Context from '@giro3d/giro3d/core/Context';
-import type { OctreeItem, PotreeMetadata } from '@giro3d/giro3d/entities/PotreePointCloud';
+import type { PotreeMetadata } from '@giro3d/giro3d/entities/PotreePointCloud';
 import PotreePointCloud from '@giro3d/giro3d/entities/PotreePointCloud';
 import PotreeSource from '@giro3d/giro3d/sources/PotreeSource';
 import assert from 'assert';
@@ -58,34 +58,6 @@ describe('PotreePointCloud', () => {
                 return node;
             };
             entity.preUpdate(context, sources);
-        });
-    });
-
-    describe('getObjectToUpdateForAttachedLayers', () => {
-        let entity: PotreePointCloud;
-
-        beforeEach(() => {
-            entity = new PotreePointCloud(new PotreeSource('http://example.com', 'cloud.js'));
-        });
-
-        it('should correctly no-parent for the root', () => {
-            // @ts-expect-error invalid
-            const meta: OctreeItem = { obj: 'a' };
-            const result = entity.getObjectToUpdateForAttachedLayers(meta);
-            expect(result.element).toEqual('a');
-        });
-        it('should correctly return the element and its parent', () => {
-            const meta: OctreeItem = {
-                // @ts-expect-error invalid
-                obj: 'a',
-                parent: {
-                    // @ts-expect-error invalid
-                    obj: 'b',
-                },
-            };
-            const result = entity.getObjectToUpdateForAttachedLayers(meta);
-            expect(result.element).toEqual('a');
-            expect(result.parent).toEqual('b');
         });
     });
 

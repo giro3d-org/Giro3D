@@ -17,7 +17,6 @@ import type ColorLayer from '../core/layer/ColorLayer';
 import type HasLayers from '../core/layer/HasLayers';
 import type Layer from '../core/layer/Layer';
 import type { LayerEvents } from '../core/layer/Layer';
-import type { ObjectToUpdate } from '../core/MainLoop';
 import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../core/MemoryUsage';
 import OperationCounter from '../core/OperationCounter';
 import type Pickable from '../core/picking/Pickable';
@@ -183,11 +182,6 @@ const tmp = {
 function markForDeletion(elt: OctreeItem) {
     if (elt.obj) {
         elt.obj.material.visible = false;
-        // if (__DEBUG__) {
-        //     if (elt.obj.boxHelper) {
-        //         elt.obj.boxHelper.material.visible = false;
-        //     }
-        // }
     }
 
     if (!elt.notVisibleSince) {
@@ -365,23 +359,6 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
                 layer.getMemoryUsage(context);
             });
         }
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    getObjectToUpdateForAttachedLayers(meta: OctreeItem): ObjectToUpdate | null {
-        if (!meta.obj) {
-            return null;
-        }
-        const p = meta.parent;
-        if (p && p.obj) {
-            return {
-                element: meta.obj,
-                parent: p.obj,
-            };
-        }
-        return {
-            element: meta.obj,
-        };
     }
 
     updateOpacity() {
@@ -670,21 +647,7 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
             // only load geometry if this elements has points
             if (elt.numPoints > 0) {
                 if (elt.obj) {
-                    if (PointCloudMaterial.isPointCloudMaterial(elt.obj.material)) {
-                        elt.obj.material.update(this.material);
-                    } else {
-                        elt.obj.material.copy(this.material);
-                    }
-                    // if (__DEBUG__) {
-                    //     if (this.bboxes.visible) {
-                    //         if (!elt.obj.boxHelper) {
-                    //             this.initBoundingBox(elt);
-                    //         }
-                    //         elt.obj.boxHelper.visible = true;
-                    //         elt.obj.boxHelper.material.color.r = 1 - elt.sse;
-                    //         elt.obj.boxHelper.material.color.g = elt.sse;
-                    //     }
-                    // }
+                    elt.obj.material.update(this.material);
                 } else if (!elt.promise) {
                     // Increase priority of nearest node
                     const priority =
@@ -783,10 +746,13 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
                 // so we can draw a percentage of each node and still get a correct
                 // representation
                 const reduction = this.pointBudget / this.displayedCount;
+
                 for (const obj3d of this.group.children) {
                     const pts = obj3d as PotreeTilePointCloud;
+
                     if (pts.material.visible) {
                         const count = Math.floor(pts.geometry.drawRange.count * reduction);
+
                         if (count > 0) {
                             pts.geometry.setDrawRange(0, count);
                         } else {
@@ -805,9 +771,11 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
 
                 let limitHit = false;
                 this.displayedCount = 0;
+
                 for (const obj3d of this.group.children) {
                     const pts = obj3d as PotreeTilePointCloud;
                     const { count } = pts.geometry.attributes.position;
+
                     if (limitHit || this.displayedCount + count > this.pointBudget) {
                         pts.material.visible = false;
                         limitHit = true;
@@ -821,10 +789,13 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
         const now = Date.now();
         for (let i = this.group.children.length - 1; i >= 0; i--) {
             const obj = this.group.children[i] as PotreeTilePointCloud;
+
             if (!obj.userData || !obj.userData.metadata) {
                 continue;
             }
+
             const notVisibleSince = obj.userData.metadata.notVisibleSince;
+
             if (!obj.material.visible && now - notVisibleSince > 10000) {
                 // remove from group
                 this.group.children.splice(i, 1);
@@ -832,20 +803,19 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
                 obj.material.dispose();
                 obj.geometry.dispose();
                 obj.userData.metadata.obj = null;
-
-                // if (__DEBUG__) {
-                //     if (obj.boxHelper) {
-                //         obj.boxHelper.removeMe = true;
-                //         obj.boxHelper.material.dispose();
-                //         obj.boxHelper.geometry.dispose();
-                //     }
-                // }
             }
         }
 
-        // if (__DEBUG__) {
-        //     this.bboxes.children = this.bboxes.children.filter((b: BoxHelper) => !b.removeMe);
-        // }
+        this.traverse(obj => {
+            if (
+                PointCloud.isPointCloud(obj) &&
+                PointCloudMaterial.isPointCloudMaterial(obj.material)
+            ) {
+                this.forEachLayer(layer => layer.update(context, obj));
+            }
+        });
+
+        this.forEachLayer(layer => layer.postUpdate());
     }
 
     async executeCommand(metadata: OctreeItem) {
@@ -864,6 +834,7 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
             geometry,
             material: this.material.clone(),
             textureSize: this.imageSize,
+            extent: Extent.fromBox3(this._instance.referenceCrs, metadata.bbox),
         });
         points.name = `r${metadata.name}.${this.extension}`;
         if (PointCloudMaterial.isPointCloudMaterial(points.material)) {
@@ -875,7 +846,6 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
         points.scale.set(this.metadata.scale, this.metadata.scale, this.metadata.scale);
         points.updateMatrix();
         points.tightbbox = geometry.boundingBox.applyMatrix4(points.matrix);
-        points.extent = Extent.fromBox3(this._instance.referenceCrs, metadata.bbox);
         points.userData.metadata = metadata;
         this.onObjectCreated(points);
         return points;

@@ -2,6 +2,7 @@ import type {
     BufferGeometry,
     CanvasTexture,
     DataTexture,
+    Material,
     Mesh,
     Object3D,
     OrthographicCamera,
@@ -43,4 +44,7 @@ export function isPerspectiveCamera(obj: unknown): obj is PerspectiveCamera {
 }
 export function isOrthographicCamera(obj: unknown): obj is OrthographicCamera {
     return (obj as OrthographicCamera)?.isOrthographicCamera;
+}
+export function isMaterial(obj: unknown): obj is Material {
+    return (obj as Material)?.isMaterial;
 }

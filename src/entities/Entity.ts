@@ -1,7 +1,6 @@
 import { EventDispatcher, MathUtils, type Camera } from 'three';
 import type Context from '../core/Context';
 import type Disposable from '../core/Disposable';
-import { type ObjectToUpdate } from '../core/MainLoop';
 
 /* eslint no-unused-vars: 0 */
 /* eslint class-methods-use-this: 0 */
@@ -272,21 +271,6 @@ abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserDa
     }
 
     /**
-     * Attached layers expect to receive the visual representation of a layer (= THREE object
-     * with a material).  So if a layer's update function don't process this kind of object, the
-     * layer must provide a getObjectToUpdateForAttachedLayers function that returns the correct
-     * object to update for attached layer from the objects returned by preUpdate.
-     *
-     * @param obj - the Mesh or the object containing a Mesh. These are the objects returned
-     * by preUpdate or update.
-     * @returns an object passed to the update function of attached layers.
-     */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    getObjectToUpdateForAttachedLayers(obj: unknown): ObjectToUpdate | null {
-        return null;
-    }
-
-    /**
      * Performs an update on an _element_ of the entity.
      *
      * Note: this method will be called for each element returned by `preUpdate()`.
@@ -332,7 +316,7 @@ abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserDa
 }
 
 export function isEntity(o: unknown): o is Entity {
-    return (o as Entity).isEntity;
+    return (o as Entity)?.isEntity;
 }
 
 export default Entity;

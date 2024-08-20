@@ -1323,7 +1323,12 @@ class Map<UserData extends EntityUserData = EntityUserData>
         return isVisible;
     }
 
-    postUpdate() {
+    postUpdate(context: Context) {
+        this.traverseTiles(tile => {
+            if (tile.visible && tile.material.visible) {
+                this._layers.forEach(layer => layer.update(context, tile));
+            }
+        });
         this._layers.forEach(l => l.postUpdate());
 
         const computeNeighbours =

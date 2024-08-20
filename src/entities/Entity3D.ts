@@ -2,7 +2,6 @@ import { Box3, type Material, type Mesh, type Object3D, type Plane, type Vector2
 
 import type Context from '../core/Context';
 import type Instance from '../core/Instance';
-import { type ObjectToUpdate } from '../core/MainLoop';
 import type MemoryUsage from '../core/MemoryUsage';
 import { type GetMemoryUsageContext } from '../core/MemoryUsage';
 import type Pickable from '../core/picking/Pickable';
@@ -10,6 +9,7 @@ import pickObjectsAt from '../core/picking/PickObjectsAt';
 import type PickOptions from '../core/picking/PickOptions';
 import type PickResult from '../core/picking/PickResult';
 import type RenderingContextHandler from '../renderer/RenderingContextHandler';
+import { isMaterial } from '../utils/predicates';
 import Entity, { type EntityEventMap, type EntityUserData } from './Entity';
 
 export interface Entity3DEventMap extends EntityEventMap {
@@ -331,26 +331,6 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
         this.dispatchEvent({ type: 'object-created', obj });
     }
 
-    /* eslint-disable class-methods-use-this */
-    /**
-     * Attached layers expect to receive the visual representation of a layer (= THREE object
-     * with a material).  So if a layer's update function don't process this kind of object, the
-     * layer must provide a getObjectToUpdateForAttachedLayers function that returns the correct
-     * object to update for attached layer from the objects returned by preUpdate.
-     *
-     * @param obj - the Mesh or the object containing a Mesh. These are the objects returned
-     * by preUpdate or update.
-     * @returns an object passed to the update function of attached layers.
-     */
-    getObjectToUpdateForAttachedLayers(obj: any): ObjectToUpdate | null {
-        if (!obj.parent || !obj.material) {
-            return null;
-        }
-        return {
-            element: obj,
-            parent: obj.parent,
-        };
-    }
     /* eslint-enable class-methods-use-this */
 
     /**
@@ -374,11 +354,17 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
      * object of this entity.
      */
     traverseMaterials(callback: (arg0: Material) => void, root: Object3D = undefined) {
-        this.traverse((o: any) => {
-            if (Array.isArray(o.material)) {
-                o.material.forEach((m: Material) => callback(m));
-            } else if (o.material) {
-                callback(o.material as Material);
+        this.traverse(o => {
+            if ('material' in o) {
+                if (Array.isArray(o.material)) {
+                    o.material.forEach(m => {
+                        if (isMaterial(m)) {
+                            callback(m);
+                        }
+                    });
+                } else if (isMaterial(o.material)) {
+                    callback(o.material as Material);
+                }
             }
         }, root);
     }
