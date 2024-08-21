@@ -362,14 +362,13 @@ class Coordinates {
     }
 
     /**
-     * Returns the equivalent `Vector3` of this coordinate. Coordinates must be in geocentric system
-     * (can be converted by using {@link as}).
+     * Returns the equivalent `Vector3` of this coordinate.
      *
      * ```js
      * const position = { x: 20885167, y: 849862, z: 23385912 };
      * // Geocentric system
      * const coordinates = new Coordinates('EPSG:4978', position.x, position.y, position.z);
-     * coordinates.toVector3();  // Geocentric system
+     * coordinates.toVector3();
      * // returns : Vector3
      * // x: 20885167
      * // y: 849862
@@ -379,34 +378,32 @@ class Coordinates {
      *
      * const position = { longitude: 2.33, latitude: 48.24, altitude: 24999549 };
      * // Geographic system
-     * const coords =
+     * const coordinates =
      *      new Coordinates('EPSG:4326', position.longitude, position.latitude, position.altitude);
-     * const coordinates = coords.as('EPSG:4978'); // Geocentric system
-     * coordinates.toVector3(); // Geocentric system
+     * coordinates.toVector3();
      * // returns : Vector3
-     * // x: 20885167
-     * // y: 849862
-     * // z: 23385912
+     * // x: 2.33
+     * // y: 48.24
+     * // z: 24999549
      * ```
      * @param target - the geocentric coordinate
      * @returns target position
      */
     toVector3(target?: Vector3): Vector3 {
-        assertIsGeocentric(this.crs);
         const v = target || new Vector3();
         v.fromArray(this._values);
         return v;
     }
 
     /**
-     * Returns the equivalent `Vector2` of this coordinate. Coordinates must be in geocentric system
-     * (can be converted by using {@link as}). Note that the Z component (elevation) is lost.
+     * Returns the equivalent `Vector2` of this coordinate. Note that the Z component (elevation) is
+     * lost.
      *
      * ```js     *
      * const position = { x: 20885167, y: 849862, z: 23385912 };
-     * // Geocentric system
-     * const coordinates = new Coordinates('EPSG:4978', position.x, position.y, position.z);
-     * coordinates.toVector2();  // Geocentric system
+     * // Metric system
+     * const coordinates = new Coordinates('EPSG:3857', position.x, position.y, position.z);
+     * coordinates.toVector2();
      * // returns : Vector2
      * // x: 20885167
      * // y: 849862
@@ -415,19 +412,17 @@ class Coordinates {
      *
      * const position = { longitude: 2.33, latitude: 48.24, altitude: 24999549 };
      * // Geographic system
-     * const coords =
+     * const coordinates =
      *      new Coordinates('EPSG:4326', position.longitude, position.latitude, position.altitude);
-     * const coordinates = coords.as('EPSG:4978'); // Geocentric system
-     * coordinates.toVector2(); // Geocentric system
+     * coordinates.toVector2();
      * // returns : Vector2
-     * // x: 20885167
-     * // y: 849862
+     * // x: 2.33
+     * // y: 48.24
      * ```
      * @param target - the geocentric coordinate
      * @returns target position
      */
     toVector2(target?: Vector2): Vector2 {
-        assertIsGeocentric(this.crs);
         const v = target || new Vector2();
         v.fromArray(this._values);
         return v;
