@@ -77,9 +77,15 @@ class Tiles3dInspector extends EntityInspector<Tiles3D> {
     }
 
     updateControllers(): void {
+        super.updateControllers();
         if (this.layers.length !== this.entity.layerCount) {
             this.fillLayers();
         }
+    }
+
+    updateValues(): void {
+        super.updateValues();
+        this.layers.forEach(panel => panel.updateValues());
     }
 
     fillLayers() {
