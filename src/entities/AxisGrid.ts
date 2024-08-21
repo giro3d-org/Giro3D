@@ -32,6 +32,11 @@ const RIGHT = new Vector2(1, 0);
 const tmpVec2 = new Vector2();
 const tmpVec3 = new Vector3();
 
+const tmpBl = new Vector2();
+const tmpBr = new Vector2();
+const tmpTl = new Vector2();
+const tmpTr = new Vector2();
+
 const tmp = {
     position: new Vector3(),
     planeNormal: new Vector3(),
@@ -541,10 +546,10 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
         const zmax = this.volume.ceiling;
         const zmin = this.volume.floor;
 
-        const br = e.bottomRight().toVector3();
-        const tr = e.topRight().toVector3();
-        const bl = e.bottomLeft().toVector3();
-        const tl = e.topLeft().toVector3();
+        const br = e.bottomRight().toVector2(tmpBr);
+        const tr = e.topRight().toVector2(tmpTr);
+        const bl = e.bottomLeft().toVector2(tmpBl);
+        const tl = e.topLeft().toVector2(tmpTl);
 
         const tlFloor = new Vector3(tl.x, tl.y, zmin);
         const trFloor = new Vector3(tr.x, tr.y, zmin);
