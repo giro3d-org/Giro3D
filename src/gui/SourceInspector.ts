@@ -22,6 +22,7 @@ class SourceInspector extends Panel {
     resolutions?: number;
     cpuMemoryUsage = 'unknown';
     gpuMemoryUsage = 'unknown';
+    loadedPercent = '';
 
     /**
      * @param gui - The GUI.
@@ -65,6 +66,7 @@ class SourceInspector extends Panel {
                     });
             }
         } else if (source instanceof TiledImageSource) {
+            this.addController(this, 'loadedPercent').name('Loaded/Requested');
             this.processOpenLayersSource(source.source);
         } else if (source instanceof VectorSource) {
             this.addController<number>(source, 'featureCount').name('Feature count');
@@ -80,6 +82,13 @@ class SourceInspector extends Panel {
         const memUsage = MemoryUsage.aggregateMemoryUsage(ctx);
         this.cpuMemoryUsage = MemoryUsage.format(memUsage.cpuMemory);
         this.gpuMemoryUsage = MemoryUsage.format(memUsage.gpuMemory);
+
+        if (this.source instanceof TiledImageSource) {
+            const loaded = this.source.info.loadedTiles;
+            const requested = this.source.info.requestedTiles;
+            const ratio = Math.ceil(100 * (loaded / requested));
+            this.loadedPercent = `${loaded}/${requested} (${ratio}%)`;
+        }
 
         this._controllers.forEach(c => c.updateDisplay());
     }
