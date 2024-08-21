@@ -93,11 +93,13 @@ function enqueue(req: Request) {
 function getInfo() {
     let pending = 0;
     let running = 0;
+    let complete = 0;
     hostQueues.forEach(queue => {
         pending += queue.size;
         running += queue.concurrentRequests;
+        complete += queue.completedRequests;
     });
-    return { pending, running };
+    return { pending, running, complete };
 }
 
 interface ErrorWithResponse extends Error {

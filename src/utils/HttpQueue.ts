@@ -18,6 +18,7 @@ class HttpQueue {
     private readonly _maxConcurrentRequests: number;
     private readonly _queue: Task[];
     private _concurrentRequests: number;
+    private _completedRequests = 0;
 
     /**
      * @param options - Options.
@@ -33,6 +34,10 @@ class HttpQueue {
 
     get concurrentRequests(): number {
         return this._concurrentRequests;
+    }
+
+    get completedRequests(): number {
+        return this._completedRequests;
     }
 
     /**
@@ -75,6 +80,7 @@ class HttpQueue {
             reject(e);
         } finally {
             this._concurrentRequests--;
+            this._completedRequests++;
             this.checkQueue();
         }
     }
