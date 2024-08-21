@@ -275,7 +275,7 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
         return this.box3SizeOnScreen(box3, matrixWorld).intersectsBox(ndcBox3);
     }
 
-    isSphereVisible(sphere: Sphere, matrixWorld: Matrix4) {
+    isSphereVisible(sphere: Sphere, matrixWorld?: Matrix4) {
         if (matrixWorld) {
             tmp.matrix.multiplyMatrices(this._viewMatrix, matrixWorld);
             tmp.frustum.setFromProjectionMatrix(tmp.matrix);
