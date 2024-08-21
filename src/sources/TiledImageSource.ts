@@ -9,6 +9,7 @@ import type ImageFormat from '../formats/ImageFormat';
 import EmptyTexture from '../renderer/EmptyTexture';
 import MemoryTracker from '../renderer/MemoryTracker';
 import OpenLayersUtils from '../utils/OpenLayersUtils';
+import PromiseUtils from '../utils/PromiseUtils';
 import TextureGenerator from '../utils/TextureGenerator';
 import { nonNull } from '../utils/tsutils';
 import ConcurrentDownloader from './ConcurrentDownloader';
@@ -102,6 +103,12 @@ export default class TiledImageSource extends ImageSource {
     private readonly _getTileUrl: UrlFunction;
     private readonly _sourceExtent: Extent;
     private readonly _downloader: ConcurrentDownloader;
+
+    /** @internal */
+    readonly info = {
+        requestedTiles: 0,
+        loadedTiles: 0,
+    };
 
     /**
      * @param options - The options.
@@ -292,6 +299,14 @@ export default class TiledImageSource extends ImageSource {
         createDataTexture: boolean,
         signal: AbortSignal | undefined,
     ) {
+        this.info.requestedTiles++;
+        if (signal != null) {
+            // Let's wait a "frame" to check if the request is really necessary
+            // This will potentially avoid a lot of unnecessary requests.
+            await PromiseUtils.delay(25);
+            signal.throwIfAborted();
+        }
+
         const blob = await this.fetchData(url, signal);
 
         if (!blob) {
@@ -330,6 +345,8 @@ export default class TiledImageSource extends ImageSource {
         texture.name = 'TiledImageSource - tile';
 
         MemoryTracker.track(texture, texture.name);
+
+        this.info.loadedTiles++;
 
         return new ImageResult({
             texture,
