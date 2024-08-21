@@ -102,8 +102,17 @@ function getInfo() {
     return { pending, running, complete };
 }
 
-interface ErrorWithResponse extends Error {
-    response: Response;
+/**
+ * An error raised whenever the received response does not have a 2XX status.
+ */
+export class HttpError extends Error {
+    readonly response: Response;
+
+    constructor(response: Response) {
+        super(`${response.status} ${response.statusText} - ${response.url}`);
+
+        this.response = response;
+    }
 }
 
 export type FetchOptions = RequestInit & {
@@ -151,10 +160,7 @@ async function fetchInternal(url: string, options?: FetchOptions): Promise<Respo
                 retries: retries - 1,
             });
         } else {
-            const error = new Error(
-                `${response.status} ${response.statusText} - ${response.url}`,
-            ) as ErrorWithResponse;
-            error.response = response;
+            const error = new HttpError(response);
             eventTarget.dispatchEvent({ type: 'error', error });
             throw error;
         }
