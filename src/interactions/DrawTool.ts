@@ -620,12 +620,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
      * @param options - The options.
      * @returns A promise that eventually returns the {@link Shape} or `null` if creation was cancelled.
      */
-    createSegment(
-        options: Partial<ShapeConstructorOptions> & {
-            signal: AbortSignal;
-            pick: PickCallback;
-        },
-    ): Promise<Shape | null> {
+    createSegment(options?: CreationOptions): Promise<Shape | null> {
         return this.createShape({
             ...options,
             minPoints: 2,
@@ -645,12 +640,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
      * @param options - The options.
      * @returns A promise that eventually returns the {@link Shape} or `null` if creation was cancelled.
      */
-    createLineString(
-        options: Partial<ShapeConstructorOptions> & {
-            signal: AbortSignal;
-            pick: PickCallback;
-        },
-    ): Promise<Shape | null> {
+    createLineString(options?: CreationOptions): Promise<Shape | null> {
         return this.createShape({
             ...options,
             beforeRemovePoint: limitRemovePointHook(2),
