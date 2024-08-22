@@ -7,7 +7,7 @@ function isTexture(o: unknown): o is Texture {
 class TextureState {
     readonly texture: Texture;
 
-    inGpuMemory: boolean;
+    inGpuMemory = false;
 
     constructor(texture: Texture) {
         this.texture = texture;
