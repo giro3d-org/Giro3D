@@ -1,6 +1,7 @@
-import { Clock, MathUtils as ThreeMath, Sphere } from 'three';
-import Entity from '../entities/Entity';
+import { Clock, MathUtils, Sphere } from 'three';
+import type Entity from '../entities/Entity';
 import type C3DEngine from '../renderer/c3DEngine';
+import { isBufferGeometry } from '../utils/predicates';
 import Context from './Context';
 import type Instance from './Instance';
 
@@ -120,7 +121,7 @@ class MainLoop {
         // on near/far values.
         instance.view.update();
 
-        for (const entity of instance.getObjects(o => o instanceof Entity) as Entity[]) {
+        for (const entity of instance.getEntities()) {
             context.resetForEntity(entity);
             if (entity.shouldCheckForUpdate()) {
                 instance.dispatchEvent({
@@ -164,20 +165,7 @@ class MainLoop {
 
         // TODO document the fact Object3D must be added through threeObjects
         // if they want to influence the near / far planes
-        instance.threeObjects.traverse(o => {
-            if (!o.visible) {
-                return;
-            }
-            const boundingSphere = ((o as any)?.geometry as any)?.boundingSphere as Sphere;
-            if (boundingSphere && !boundingSphere.isEmpty()) {
-                tmpSphere.copy(boundingSphere);
-                tmpSphere.applyMatrix4(o.matrixWorld);
-                const d = tmpSphere.distanceToPoint(context.view.camera.position);
-                context.distance.min = ThreeMath.clamp(d, 0, context.distance.min);
-
-                context.distance.max = Math.max(context.distance.max, d + 2 * tmpSphere.radius);
-            }
-        });
+        this.updateCameraPlanesFromObjects(context, instance);
 
         if (this.automaticCameraPlaneComputation) {
             instance.view.near = context.distance.min;
@@ -185,6 +173,28 @@ class MainLoop {
         }
 
         instance.view.update();
+    }
+
+    private updateCameraPlanesFromObjects(context: Context, instance: Instance) {
+        instance.threeObjects.traverse(o => {
+            if (!o.visible) {
+                return;
+            }
+
+            if ('geometry' in o && isBufferGeometry(o.geometry)) {
+                const boundingSphere = o.geometry.boundingSphere;
+
+                if (boundingSphere && !boundingSphere.isEmpty()) {
+                    tmpSphere.copy(boundingSphere);
+                    tmpSphere.applyMatrix4(o.matrixWorld);
+
+                    const d = tmpSphere.distanceToPoint(context.view.camera.position);
+
+                    context.distance.min = MathUtils.clamp(d, 0.01, context.distance.min);
+                    context.distance.max = Math.max(context.distance.max, d + 2 * tmpSphere.radius);
+                }
+            }
+        });
     }
 
     private step(instance: Instance) {
