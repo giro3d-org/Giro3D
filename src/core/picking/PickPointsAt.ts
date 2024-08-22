@@ -85,9 +85,13 @@ function pickPointsAt(
     // 12 bits reserved for the ids (= 4096 instances)
     const maxVisibleId = 1 << 12;
     entity.object3d.traverse(o => {
-        if (!('isPoints' in o) || !o.isPoints || !o.visible) return;
+        if (!('isPoints' in o) || !o.isPoints || !o.visible) {
+            return;
+        }
         const pts = o as Points;
-        if (!PointCloudMaterial.isPointCloudMaterial(pts.material)) return;
+        if (!PointCloudMaterial.isPointCloudMaterial(pts.material)) {
+            return;
+        }
 
         const mat = pts.material;
         if (mat.visible && mat.enablePicking) {
@@ -158,12 +162,18 @@ function pickPointsAt(
     });
 
     entity.object3d.traverse(o => {
-        if (!('isPoints' in o) || !o.isPoints || !o.visible) return;
+        if (!('isPoints' in o) || !o.isPoints || !o.visible) {
+            return;
+        }
         const pts = o as Points;
-        if (!PointCloudMaterial.isPointCloudMaterial(pts.material)) return;
+        if (!PointCloudMaterial.isPointCloudMaterial(pts.material)) {
+            return;
+        }
 
         const mat = pts.material;
-        if (!mat.visible) return;
+        if (!mat.visible) {
+            return;
+        }
 
         for (let i = 0; i < candidates.length; i++) {
             if (candidates[i].pickingId === mat.pickingId) {

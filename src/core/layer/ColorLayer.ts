@@ -322,7 +322,9 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
     getVectorFeaturesInExtent(extent: Extent): Feature[] {
         if ((this.source as VectorSource).isVectorSource && this.visible) {
             const layerProjection = this.getExtent()?.crs();
-            if (!layerProjection) return [];
+            if (!layerProjection) {
+                return [];
+            }
 
             const extentLayer = extent.as(layerProjection);
             const olExtent = OpenLayersUtils.toOLExtent(extentLayer);
