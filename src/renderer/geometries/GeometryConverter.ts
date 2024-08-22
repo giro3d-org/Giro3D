@@ -86,7 +86,7 @@ export type BaseOptions = {
     ignoreZ?: boolean;
 };
 
-type PointOptions = BaseOptions & PointStyle;
+type PointOptions = BaseOptions & Partial<PointStyle>;
 type PolygonOptions = BaseOptions & {
     fill?: FillStyle;
     stroke?: StrokeStyle;
@@ -108,6 +108,8 @@ function isTexture(o: unknown): o is Texture {
     return (o as Texture)?.isTexture ?? false;
 }
 
+const ZERO = new Vector3(0, 0, 0);
+
 /**
  * This methods prepares vertices for three.js with coordinates coming from openlayers.
  *
@@ -122,17 +124,20 @@ function isTexture(o: unknown): o is Texture {
  * the first/last point
  * @param elevation - The elevation.
  */
-function createFloorVertices(
-    coordinates: Array<Array<Array<number>>>,
-    stride: number,
-    offset: Vector3,
-    elevation: Array<number> | number,
-    ignoreZ: boolean,
-) {
+function createFloorVertices(params: {
+    coordinates: Array<Array<Array<number>>>;
+    stride: number;
+    offset: Vector3;
+    elevation?: Array<number> | number;
+    ignoreZ: boolean;
+}) {
     // iterate on polygon and holes
     const holesIndices = [];
     let currentIndex = 0;
     const positions = [];
+
+    const { coordinates, offset, ignoreZ, elevation, stride } = params;
+
     for (const ring of coordinates) {
         // NOTE: rings coming from openlayers are auto-closing, so we need to remove the last vertex
         // of each ring here
@@ -269,15 +274,15 @@ function createSurfaces(polygon: Polygon, options: PolygonOptions) {
 
     // First we compute the positions of the top vertices (that make the 'floor').
     // note that in some dataset, it's the roof and user needs to extrusionOffset down.
-    const polyCoords = polygon.getCoordinates();
+    const coordinates = polygon.getCoordinates();
 
-    const { flatCoordinates, holes } = createFloorVertices(
-        polyCoords,
+    const { flatCoordinates, holes } = createFloorVertices({
+        coordinates,
         stride,
-        options.origin,
-        options.elevation,
-        options.ignoreZ,
-    );
+        ignoreZ: options.ignoreZ ?? false,
+        offset: options.origin ?? ZERO,
+        elevation: options.elevation,
+    });
 
     const pointCount = flatCoordinates.length / 3;
 
@@ -371,7 +376,7 @@ export default class GeometryConverter<
     private readonly _unshadedSurfaceMaterialGenerator: SurfaceMaterialGenerator;
     private readonly _lineMaterialGenerator: LineMaterialGenerator;
     private readonly _pointMaterialGenerator: PointMaterialGenerator;
-    private _disposed: boolean;
+    private _disposed = false;
 
     constructor(options?: {
         shadedSurfaceMaterialGenerator?: SurfaceMaterialGenerator;
@@ -570,14 +575,12 @@ export default class GeometryConverter<
             // If the surface does not exist, we have to create it
             const surface = this.getSurfaceMesh(mesh.source, options);
             mesh.surface = surface;
-        } else if (mesh.surface) {
+        } else if (options.fill && mesh.surface) {
             const fill = getFullFillStyle(options.fill);
 
-            const surfacematerial = options.fill
-                ? mesh.isExtruded
-                    ? this._shadedSurfaceMaterialGenerator(fill)
-                    : this._unshadedSurfaceMaterialGenerator(fill)
-                : null;
+            const surfacematerial = mesh.isExtruded
+                ? this._shadedSurfaceMaterialGenerator(fill)
+                : this._unshadedSurfaceMaterialGenerator(fill);
 
             mesh.surface.update({
                 material: surfacematerial,
@@ -604,7 +607,7 @@ export default class GeometryConverter<
         });
     }
 
-    updatePointMesh(mesh: PointMesh, style: PointStyle) {
+    updatePointMesh(mesh: PointMesh, style: Partial<PointStyle>) {
         const fullStyle = getFullPointStyle(style);
         const material = this._pointMaterialGenerator(fullStyle);
         mesh.update({
@@ -711,21 +714,24 @@ export default class GeometryConverter<
         const ringCount = polygon.getLinearRingCount();
         const linearRings: LineStringMesh[] = [];
         for (let i = 0; i < ringCount; i++) {
-            const lineString = new LineString(polygon.getLinearRing(i).getCoordinates());
-            const ring = this.buildLineString(lineString, {
-                origin: options.origin,
-                ignoreZ: options.ignoreZ,
-                ...options.stroke,
-            });
-            linearRings.push(ring);
+            const inputRing = polygon.getLinearRing(i);
+            if (inputRing) {
+                const lineString = new LineString(inputRing.getCoordinates());
+                const ring = this.buildLineString(lineString, {
+                    origin: options.origin,
+                    ignoreZ: options.ignoreZ,
+                    ...options.stroke,
+                });
+                linearRings.push(ring);
+            }
         }
 
         return linearRings;
     }
 
     private buildPolygon(polygon: Polygon, options: PolygonOptions): PolygonMesh {
-        let surface: SurfaceMesh;
-        let linearRings: LineStringMesh[];
+        let surface: SurfaceMesh | undefined = undefined;
+        let linearRings: LineStringMesh[] | undefined = undefined;
 
         if (options.fill) {
             surface = this.getSurfaceMesh(polygon, options);
@@ -798,7 +804,7 @@ export default class GeometryConverter<
 
     private getShadedSurfaceMaterial(style: Required<FillStyle>): MeshLambertMaterial {
         if (!style) {
-            return null;
+            throw new Error('missing style');
         }
 
         const key = hashStyle('shaded-surface', style);
@@ -825,7 +831,7 @@ export default class GeometryConverter<
 
     private getUnshadedSurfaceMaterial(style: Required<FillStyle>): MeshBasicMaterial {
         if (!style) {
-            return null;
+            throw new Error('missing style');
         }
 
         const key = hashStyle('unshaded-surface', style);
@@ -852,7 +858,7 @@ export default class GeometryConverter<
 
     private getSpriteMaterial(style: Required<PointStyle>): SpriteMaterial {
         if (!style) {
-            return null;
+            throw new Error('missing style');
         }
 
         // TODO support point shapes
@@ -872,7 +878,12 @@ export default class GeometryConverter<
             sizeAttenuation,
             depthTest,
             depthWrite: depthTest,
-            map: isTexture(style.image) ? style.image : this.getCachedTexture(style.image),
+            map:
+                style.image != null
+                    ? isTexture(style.image)
+                        ? style.image
+                        : this.getCachedTexture(style.image)
+                    : null,
         });
 
         // Download image from URL
@@ -930,7 +941,7 @@ export default class GeometryConverter<
 
     private getLineMaterial(style: Required<StrokeStyle>): LineMaterial {
         if (!style) {
-            return null;
+            throw new Error('missing style');
         }
 
         const styleKey = hashStyle('line', style);

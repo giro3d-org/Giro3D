@@ -14,6 +14,7 @@ import type MultiPolygonMesh from '@giro3d/giro3d/renderer/geometries/MultiPolyg
 import type PointMesh from '@giro3d/giro3d/renderer/geometries/PointMesh';
 import { isPointMesh } from '@giro3d/giro3d/renderer/geometries/PointMesh';
 import type PolygonMesh from '@giro3d/giro3d/renderer/geometries/PolygonMesh';
+import { nonNull } from '@giro3d/giro3d/utils/tsutils';
 
 const SIMPLE_SQUARE = [
     [
@@ -172,10 +173,10 @@ describe('build', () => {
             const fill = getFullFillStyle();
             const mesh = generator.build(polygon, { fill });
             // NOTE: last (closing) vertex removed
-            expect(mesh.surface.geometry.getAttribute('position').array).toEqual(
+            expect(mesh.surface!.geometry.getAttribute('position').array).toEqual(
                 SIMPLE_SQUARE_VERTICES,
             );
-            expect(mesh.surface.geometry.index.array).toEqual(SIMPLE_SQUARE_INDICES);
+            expect(mesh.surface!.geometry.index!.array).toEqual(SIMPLE_SQUARE_INDICES);
         });
 
         it('should deal with a polygon with a hole', () => {
@@ -184,10 +185,10 @@ describe('build', () => {
             const fill = getFullFillStyle();
             const mesh = generator.build(polygon, { fill, origin: new Vector3(0, 0, 0) });
 
-            expect(mesh.surface.geometry.getAttribute('position').array).toEqual(
+            expect(mesh.surface!.geometry.getAttribute('position').array).toEqual(
                 SQUARE_WITH_HOLE_VERTICES,
             );
-            expect(mesh.surface.geometry.index.array).toEqual(SQUARE_WITH_HOLE_INDICES);
+            expect(mesh.surface!.geometry.index!.array).toEqual(SQUARE_WITH_HOLE_INDICES);
         });
 
         it('should deal with a polygon with simple extrusion', () => {
@@ -210,7 +211,7 @@ describe('build', () => {
             const fill = getFullFillStyle();
             const mesh = generator.build(polygon, { fill, extrusionOffset: 1 });
 
-            expect(mesh.surface.geometry.getAttribute('position').array).toEqual(
+            expect(nonNull(mesh.surface).geometry.getAttribute('position').array).toEqual(
                 EXTRUDED_SQUARE_WITH_HOLE_VERTICES,
             );
         });
@@ -233,8 +234,11 @@ describe('build', () => {
                 offsetPos[i + 1] -= origin.y;
                 offsetPos[i + 2] -= origin.z;
             }
-            expect(mesh.surface.geometry.getAttribute('position').array).toEqual(offsetPos);
-            expect(mesh.surface.geometry.index.array).toEqual(SIMPLE_SQUARE_INDICES);
+
+            const surface = nonNull(mesh.surface);
+
+            expect(surface.geometry.getAttribute('position').array).toEqual(offsetPos);
+            expect(surface.geometry.index!.array).toEqual(SIMPLE_SQUARE_INDICES);
         });
 
         it('should honor fill style', () => {
@@ -250,9 +254,9 @@ describe('build', () => {
 
             expect(mesh.isPolygonMesh).toEqual(true);
             expect(mesh.surface).toBeDefined();
-            expect(mesh.linearRings).toBeUndefined();
+            expect(mesh.linearRings).toBeNull();
 
-            const material = mesh.surface.material as MeshBasicMaterial;
+            const material = mesh.surface!.material as MeshBasicMaterial;
 
             expect(material.opacity).toEqual(0.1);
             expect(material.color).toEqual(new Color('green'));
@@ -274,10 +278,10 @@ describe('build', () => {
             const mesh = generator.build(polygon, { stroke });
 
             expect(mesh.isPolygonMesh).toEqual(true);
-            expect(mesh.surface).toBeUndefined();
+            expect(mesh.surface).toBeNull();
             expect(mesh.linearRings).toHaveLength(1);
 
-            const ring = mesh.linearRings[0];
+            const ring = mesh.linearRings![0];
 
             expect(ring.material.opacity).toEqual(0.4);
             expect(ring.material.worldUnits).toEqual(true);
@@ -310,15 +314,15 @@ describe('build', () => {
 
             function check(p: PolygonMesh) {
                 expect(p.surface).toBeDefined();
-                expect(p.linearRings).toBeUndefined();
+                expect(p.linearRings).toBeNull();
 
-                expect(p.surface.geometry.getAttribute('position').array).toEqual(
+                expect(p.surface!.geometry.getAttribute('position').array).toEqual(
                     SQUARE_WITH_HOLE_VERTICES,
                 );
 
-                expect(p.surface.geometry.index.array).toEqual(SQUARE_WITH_HOLE_INDICES);
+                expect(p.surface!.geometry.index!.array).toEqual(SQUARE_WITH_HOLE_INDICES);
 
-                const material = p.surface.material as MeshBasicMaterial;
+                const material = p.surface!.material as MeshBasicMaterial;
 
                 expect(material.opacity).toEqual(0.1);
                 expect(material.color).toEqual(new Color('green'));
@@ -344,7 +348,7 @@ describe('build', () => {
 
             const polygonMesh = mesh.children[0] as PolygonMesh;
 
-            expect(polygonMesh.surface.geometry.getAttribute('position').array).toEqual(
+            expect(polygonMesh.surface!.geometry.getAttribute('position').array).toEqual(
                 EXTRUDED_SQUARE_WITH_HOLE_VERTICES,
             );
         });
@@ -371,15 +375,15 @@ describe('build', () => {
 
             function check(p: PolygonMesh) {
                 expect(p.surface).toBeDefined();
-                expect(p.linearRings).toBeUndefined();
+                expect(p.linearRings).toBeNull();
 
-                expect(p.surface.geometry.getAttribute('position').array).toEqual(
+                expect(p.surface!.geometry.getAttribute('position').array).toEqual(
                     SIMPLE_SQUARE_VERTICES,
                 );
 
-                expect(p.surface.geometry.index.array).toEqual(SIMPLE_SQUARE_INDICES);
+                expect(p.surface!.geometry.index!.array).toEqual(SIMPLE_SQUARE_INDICES);
 
-                const material = p.surface.material as MeshBasicMaterial;
+                const material = p.surface!.material as MeshBasicMaterial;
 
                 expect(material.opacity).toEqual(0.1);
                 expect(material.color).toEqual(new Color('green'));
@@ -416,7 +420,7 @@ describe('build', () => {
             const p1 = mesh.children[0] as PolygonMesh;
 
             function check(polygonMesh: PolygonMesh) {
-                const ring = polygonMesh.linearRings[0];
+                const ring = polygonMesh.linearRings![0];
 
                 expect(ring.material.opacity).toEqual(0.4);
                 expect(ring.material.worldUnits).toEqual(true);
