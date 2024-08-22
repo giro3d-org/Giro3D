@@ -1,6 +1,7 @@
 import { Group, MathUtils, Matrix4, Vector2, Vector3, type Material, type Object3D } from 'three';
 import { GlobalCache } from '../core/Cache';
 import type Context from '../core/Context';
+import { isDisposable } from '../core/Disposable';
 import type Extent from '../core/geographic/Extent';
 import type { ColorLayer, Layer, LayerEvents } from '../core/layer';
 import type HasLayers from '../core/layer/HasLayers';
@@ -26,6 +27,8 @@ import Tile from './3dtiles/Tile';
 import type { $3dTilesAsset, $3dTilesTile, $3dTilesTileset } from './3dtiles/types';
 import { type EntityUserData } from './Entity';
 import Entity3D, { type Entity3DEventMap } from './Entity3D';
+
+type ObjectWithExtent = Object3D & { extent: Extent };
 
 /** Options to create a Tiles3D object. */
 export interface Tiles3DOptions<TMaterial extends Material> {
@@ -56,12 +59,6 @@ const tmpMatrix = new Matrix4();
 // This function is used to cleanup a Object3D hierarchy.
 // (no 3dtiles spectific code here because this is managed by cleanup3dTileset)
 function _cleanupObject3D(n: Object3D): void {
-    // // @ts-ignore
-    // if (__DEBUG__) {
-    //     if ((n as any).tileId) {
-    //         throw new Error(`_cleanupObject3D must not be called on a 3dtiles tile (tileId = ${(n as any).tileId})`);
-    //     }
-    // }
     // all children of 'n' are raw Object3D
     for (const child of n.children) {
         _cleanupObject3D(child);
@@ -71,8 +68,12 @@ function _cleanupObject3D(n: Object3D): void {
         n.dispose();
     } else {
         // free resources
-        (n as any)?.material?.dispose();
-        (n as any)?.geometry?.dispose();
+        if ('material' in n && isDisposable(n.material)) {
+            n.material.dispose();
+        }
+        if ('geometry' in n && isDisposable(n.geometry)) {
+            n.geometry.dispose();
+        }
     }
     n.remove(...n.children);
 }
@@ -635,7 +636,7 @@ class Tiles3D<
                             tile.boundingVolume,
                             tile.matrixWorld,
                         );
-                        tile.traverse((obj: any) => {
+                        tile.traverse((obj: ObjectWithExtent) => {
                             obj.extent = extent;
                         });
 
@@ -682,7 +683,7 @@ class Tiles3D<
                             tile.boundingVolume,
                             tile.matrixWorld,
                         );
-                        tile.traverse((obj: any) => {
+                        tile.traverse((obj: ObjectWithExtent) => {
                             obj.extent = extent;
                         });
                     }
@@ -760,7 +761,7 @@ class Tiles3D<
             }
         }
 
-        const setupObject = (obj: any) => {
+        const setupObject = (obj: Object3D) => {
             this.onObjectCreated(obj);
         };
         if (path) {
