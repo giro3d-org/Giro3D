@@ -107,6 +107,11 @@ export default class RenderPipeline {
             // Final pass to output to the canvas (including colorspace transformation).
             this.effectComposer.addPass(new OutputPass());
         }
+
+        return {
+            composer: this.effectComposer as EffectComposer,
+            target: this.sceneRenderTarget as WebGLRenderTarget,
+        };
     }
 
     /**
@@ -125,7 +130,7 @@ export default class RenderPipeline {
     ) {
         const renderer = this.renderer;
 
-        this.prepareRenderTargets(width, height);
+        const { composer, target } = this.prepareRenderTargets(width, height);
 
         renderer.setRenderTarget(this.sceneRenderTarget);
 
@@ -142,12 +147,12 @@ export default class RenderPipeline {
         // Point cloud rendering adds special effects. To avoid applying those effects
         // to all objects in the scene, we separate the meshes into buckets, and
         // render those buckets separately.
-        this.renderPointClouds(scene, camera, this.buckets[BUCKETS.POINT_CLOUD], options);
+        this.renderPointClouds(scene, camera, target, this.buckets[BUCKETS.POINT_CLOUD], options);
 
         this.renderMeshes(scene, camera, this.buckets[BUCKETS.TRANSPARENT]);
 
         // Finally, render to the canvas via the EffectComposer.
-        this.effectComposer.render();
+        composer.render();
 
         this.onAfterRender();
     }
@@ -161,6 +166,7 @@ export default class RenderPipeline {
     renderPointClouds(
         scene: Object3D,
         camera: Camera,
+        target: WebGLRenderTarget,
         meshes: Object3DWithMaterial[],
         opts: RenderingOptions,
     ) {
@@ -184,7 +190,7 @@ export default class RenderPipeline {
 
         setVisibility(meshes, true);
 
-        pcr.render(scene, camera, this.sceneRenderTarget);
+        pcr.render(scene, camera, target);
 
         setVisibility(meshes, false);
     }
@@ -217,7 +223,7 @@ export default class RenderPipeline {
     }
 
     dispose() {
-        this.effectComposer.dispose();
+        this.effectComposer?.dispose();
         this.sceneRenderTarget?.dispose();
         this.pointCloudRenderer?.dispose();
     }
