@@ -1,3 +1,4 @@
+import type { Object3D } from 'three';
 import {
     BufferGeometry,
     Color,
@@ -21,6 +22,7 @@ import type Extent from '../core/geographic/Extent';
 import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../core/MemoryUsage';
 import Helpers from '../helpers/Helpers';
 import { isBufferGeometry } from '../utils/predicates';
+import { nonNull } from '../utils/tsutils';
 import type { EntityUserData } from './Entity';
 import type { Entity3DEventMap } from './Entity3D';
 import Entity3D from './Entity3D';
@@ -103,13 +105,19 @@ export enum TickOrigin {
 }
 
 class Side extends LineSegments {
-    logicalVisibility: boolean;
+    logicalVisibility = false;
 }
 
 class Edge extends Group {
-    readonly isEdge = true;
-    side1: Side;
-    side2: Side;
+    readonly isEdge = true as const;
+    readonly side1: Side;
+    readonly side2: Side;
+
+    constructor(side1: Side, side2: Side) {
+        super();
+        this.side1 = side1;
+        this.side2 = side2;
+    }
 }
 
 function getCssColor(color: Color) {
@@ -185,21 +193,22 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
     private _showFloorGrid: boolean;
     private _showCeilingGrid: boolean;
     private _showSideGrids: boolean;
-    private _volume: Volume;
     private _disposed = false;
-    private _lastCamera: Camera;
-    private _boundingBox: Box3;
-    private _dimensions: Vector2;
-    private _arrowRoot: Group;
-    private _floor: Side;
-    private _ceiling: Side;
-    private _front: Side;
-    private _back: Side;
-    private _left: Side;
-    private _right: Side;
-    private _height: number;
-    private _midHeight: number;
-    private _needsRebuild: boolean;
+
+    private _volume: Volume;
+    private _lastCamera: Camera | null = null;
+    private _boundingBox: Box3 | null = null;
+    private _dimensions: Vector2 | null = null;
+    private _arrowRoot: Group | null = null;
+    private _floor: Side | null = null;
+    private _ceiling: Side | null = null;
+    private _front: Side | null = null;
+    private _back: Side | null = null;
+    private _left: Side | null = null;
+    private _right: Side | null = null;
+    private _height: number | null = null;
+    private _midHeight: number | null = null;
+    private _needsRebuild: boolean | null = null;
 
     showHelpers: boolean;
 
@@ -231,7 +240,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
             throw new Error('options.volume is undefined');
         }
 
-        this.volume = options.volume;
+        this._volume = options.volume;
         this._ticks = options.ticks || { x: 100, y: 100, z: 100 };
         this._origin = options.origin || TickOrigin.Relative;
 
@@ -502,10 +511,8 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
             suffix: string,
             tick: number,
         ) => {
-            const g = new Edge();
+            const g = new Edge(side1, side2);
             g.name = `${side1.name}-${side2.name}`;
-            g.side1 = side1;
-            g.side2 = side2;
             const edgeCenter = v.lerpVectors(start, end, 0.5).clone();
             edgeCenter.sub(origin);
             g.position.copy(edgeCenter);
@@ -561,12 +568,12 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
         const brCeil = new Vector3(br.x, br.y, zmax);
         const blCeil = new Vector3(bl.x, bl.y, zmax);
 
-        const floor = this._floor;
-        const ceil = this._ceiling;
-        const front = this._front;
-        const back = this._back;
-        const left = this._left;
-        const right = this._right;
+        const floor = nonNull(this._floor);
+        const ceil = nonNull(this._ceiling);
+        const front = nonNull(this._front);
+        const back = nonNull(this._back);
+        const left = nonNull(this._left);
+        const right = nonNull(this._right);
 
         const relative = this.origin === TickOrigin.Relative;
 
@@ -601,7 +608,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
     private deleteSides() {
         const root = this._root;
 
-        function remove(obj: LineSegments) {
+        function remove(obj: LineSegments | null) {
             if (obj) {
                 obj.geometry.dispose();
                 root.remove(obj);
@@ -760,7 +767,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
         if (!this._arrowRoot) {
             this._arrowRoot = new Group();
             this.onObjectCreated(this._arrowRoot);
-            this._root.parent.add(this._arrowRoot);
+            nonNull(this._root.parent).add(this._arrowRoot);
         }
 
         const arrow = Helpers.createArrow(start.clone(), end.clone());
@@ -782,12 +789,16 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
         endPoint.updateMatrixWorld(true);
     }
 
-    private updateLabelsVisibility(camera: Camera) {
+    private updateLabelsVisibility(camera: Camera | null) {
         this._lastCamera = camera;
 
         this.deleteArrowHelpers();
 
-        this._labelRoot.children.forEach(o => this.updateLabelEdgeVisibility(camera, o as Edge));
+        if (camera) {
+            this._labelRoot.children.forEach(o =>
+                this.updateLabelEdgeVisibility(camera, o as Edge),
+            );
+        }
     }
 
     private deleteArrowHelpers() {
@@ -889,8 +900,8 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
 
         const showHelpers = this.showHelpers;
 
-        edge.traverse((c: CSS2DObject) => {
-            if (c.element) {
+        edge.traverse((c: Object3D) => {
+            if (c instanceof CSS2DObject && c.element) {
                 c.visible = visible;
                 if (visible) {
                     const style = c.element.style;
@@ -919,12 +930,12 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
         }
 
         // Only display sides that are facing toward the camera
-        updateSideVisibility(this._front, this._showSideGrids, this._cameraForward);
-        updateSideVisibility(this._back, this._showSideGrids, this._cameraForward);
-        updateSideVisibility(this._right, this._showSideGrids, this._cameraForward);
-        updateSideVisibility(this._left, this._showSideGrids, this._cameraForward);
-        updateSideVisibility(this._ceiling, this._showCeilingGrid, this._cameraForward);
-        updateSideVisibility(this._floor, this._showFloorGrid, this._cameraForward);
+        updateSideVisibility(nonNull(this._front), this._showSideGrids, this._cameraForward);
+        updateSideVisibility(nonNull(this._back), this._showSideGrids, this._cameraForward);
+        updateSideVisibility(nonNull(this._right), this._showSideGrids, this._cameraForward);
+        updateSideVisibility(nonNull(this._left), this._showSideGrids, this._cameraForward);
+        updateSideVisibility(nonNull(this._ceiling), this._showCeilingGrid, this._cameraForward);
+        updateSideVisibility(nonNull(this._floor), this._showFloorGrid, this._cameraForward);
 
         this.updateLabelsVisibility(camera);
     }
