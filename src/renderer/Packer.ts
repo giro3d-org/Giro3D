@@ -15,15 +15,22 @@ export interface Node {
     used?: boolean;
 }
 
+export interface UsedNode extends Node {
+    used: true;
+    right: Node;
+    down: Node;
+}
+
 export interface Block {
     w: number;
     h: number;
-    fit?: Node;
+    fit: Node;
 }
 
-function findNode(root: Node, w: number, h: number): Node {
+function findNode(root: Node, w: number, h: number): Node | null {
     if (root.used) {
-        return findNode(root.right, w, h) || findNode(root.down, w, h);
+        const used = root as UsedNode;
+        return findNode(used.right, w, h) || findNode(used.down, w, h);
     }
     if (w <= root.w && h <= root.h) {
         return root;
@@ -53,7 +60,7 @@ function fit(
     blocks: Block[],
     w: number,
     h: number,
-    previousRoot: Node,
+    previousRoot: Node | null,
 ): {
     maxX: number;
     maxY: number;
