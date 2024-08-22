@@ -24,7 +24,7 @@ export interface Entity3DEventMap extends EntityEventMap {
     /**
      * Fired when the entity's clipping planes have changed.
      */
-    'clippingPlanes-property-changed': { clippingPlanes: Plane[] };
+    'clippingPlanes-property-changed': { clippingPlanes: Plane[] | null };
     /**
      * Fired when the entity render order changed.
      */
@@ -63,7 +63,7 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
     public get distance(): { min: number; max: number } {
         return { min: this._distance.min, max: this._distance.max };
     }
-    private _clippingPlanes: Plane[];
+    private _clippingPlanes: Plane[] | null;
     private _renderOrder: number;
 
     /**
@@ -176,7 +176,7 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
         return this._clippingPlanes;
     }
 
-    set clippingPlanes(planes: Plane[]) {
+    set clippingPlanes(planes: Plane[] | null) {
         this._clippingPlanes = planes;
         this.updateClippingPlanes();
         this.dispatchEvent({ type: 'clippingPlanes-property-changed', clippingPlanes: planes });
