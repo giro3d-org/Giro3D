@@ -37,6 +37,7 @@ describe('Instance', () => {
                     rotationAngle: 0,
                     screenX: 0,
                     screenY: 0,
+                    // @ts-expect-error incorrect
                     target: undefined,
                 },
             ],
@@ -395,9 +396,11 @@ describe('Instance', () => {
 
     describe('registerCRS', () => {
         it('should throw if name or value is undefined', () => {
+            // @ts-expect-error invalid parameter
             expect(() => Instance.registerCRS(undefined, '')).toThrow(/missing CRS name/);
             expect(() => Instance.registerCRS('', '')).toThrow(/missing CRS name/);
             expect(() => Instance.registerCRS('EPSG:foo', '')).toThrow(/missing CRS PROJ string/);
+            // @ts-expect-error invalid parameter
             expect(() => Instance.registerCRS('EPSG:foo', undefined)).toThrow(
                 /missing CRS PROJ string/,
             );

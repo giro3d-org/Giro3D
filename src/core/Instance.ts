@@ -238,7 +238,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
     private _resizeTimeout?: string | number | NodeJS.Timeout;
     private _controls?: CustomCameraControls;
     private _controlFunctions?: ControlFunctions;
-    private _isDisposing: boolean;
+    private _disposed = false;
 
     /**
      * Constructs a Giro3D Instance
@@ -318,7 +318,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
             this._resizeObserver.observe(viewerDiv);
         }
 
-        this._controls = null;
+        this._controls = undefined;
         this._pickingClock = new Clock(false);
 
         this._onContextRestored = this.onContextRestored.bind(this);
@@ -438,7 +438,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * Sets custom camera controls.
      * Prefer {@link Instance.useTHREEControls} when possible.
      */
-    set controls(controls: CustomCameraControls) {
+    set controls(controls: CustomCameraControls | undefined) {
         this._controls = controls;
     }
 
@@ -472,10 +472,10 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      *
      */
     dispose(): void {
-        if (this._isDisposing) {
+        if (this._disposed) {
             return;
         }
-        this._isDisposing = true;
+        this._disposed = true;
 
         this.domElement.removeEventListener('webglcontextlost', this._onContextLost);
         this.domElement.removeEventListener('webglcontextrestored', this._onContextRestored);
@@ -510,13 +510,16 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
             throw new Error('object is undefined');
         }
 
-        if (!(object as Object3D).isObject3D && !(object as Entity).isEntity) {
+        if (!isObject3D(object) && !isEntity(object)) {
             throw new Error('object is not an instance of THREE.Object3D or Giro3D.Entity');
         }
-        // @ts-expect-error _instance does not exist on objects and entities // FIXME
-        object._instance = this;
 
-        if ((object as Object3D).isObject3D) {
+        if (isEntity3D(object)) {
+            // @ts-expect-error private property. TODO assign it cleanly (maybe in entity constructor ?)
+            object._instance = this;
+        }
+
+        if (isObject3D(object)) {
             // case of a simple THREE.js object3D
             const object3d = object as Object3D;
             this._threeObjects.add(object3d);
@@ -535,6 +538,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         entity.startPreprocess();
 
         this._entities.add(entity);
+
         await entity.whenReady;
 
         if (
@@ -987,7 +991,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * Removes a THREE controls previously added. The controls won't be disable.
      */
     removeTHREEControls(): void {
-        if (!this._controls) {
+        if (!this._controls || !this._controlFunctions) {
             return;
         }
 
@@ -999,8 +1003,8 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
             this.removeEventListener('before-camera-update', this._controlFunctions.update);
         }
 
-        this._controls = null;
-        this._controlFunctions = null;
+        this._controls = undefined;
+        this._controlFunctions = undefined;
     }
 
     private updateControls() {
