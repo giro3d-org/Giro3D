@@ -51,13 +51,13 @@ const tmpIntersection = new Vector3();
 
 const DEFAULT_PICKING_RADIUS = 6;
 
-function toNumberArray(vectors: Vector3[]): ArrayLike<number> {
+function toNumberArray(vectors: Vector3[], origin: Vector3): ArrayLike<number> {
     const result = new Float32Array(vectors.length * 3);
     for (let i = 0; i < vectors.length; i++) {
         const v = vectors[i];
-        result[i * 3 + 0] = v.x;
-        result[i * 3 + 1] = v.y;
-        result[i * 3 + 2] = v.z;
+        result[i * 3 + 0] = v.x - origin.x;
+        result[i * 3 + 1] = v.y - origin.y;
+        result[i * 3 + 2] = v.z - origin.z;
     }
 
     return result;
@@ -489,14 +489,21 @@ function getClosedPolygon(points: Vector3[]): Vector3[] {
     return points;
 }
 
-function computeArea(points: Vector3[]): { area?: number; geometry?: BufferGeometry } {
+function computeArea(points: Vector3[]): {
+    area?: number;
+    geometry?: BufferGeometry;
+    origin?: Vector3;
+} {
     if (points.length < 2) {
         return { area: undefined, geometry: undefined };
     }
 
+    // Let's have relative point to avoid jittering
+    const origin = points[0];
+
     const closedPolygon = getClosedPolygon(points);
-    const coordinateAsNumbers = toNumberArray(closedPolygon);
-    const indices = earcut(toNumberArray(points), undefined, 3);
+    const coordinateAsNumbers = toNumberArray(closedPolygon, origin);
+    const indices = earcut(toNumberArray(points, origin), undefined, 3);
 
     const geometry = new BufferGeometry();
     geometry.setAttribute('position', new Float32BufferAttribute(coordinateAsNumbers, 3));
@@ -520,7 +527,7 @@ function computeArea(points: Vector3[]): { area?: number; geometry?: BufferGeome
         area += triangle.getArea();
     }
 
-    return { area, geometry };
+    return { area, geometry, origin };
 }
 
 export const DEFAULT_SURFACE_OPACITY = 0.35;
@@ -2215,11 +2222,12 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         }
 
         if (this._showSurface) {
-            const { geometry } = computeArea(this._points);
-            if (geometry) {
+            const { geometry, origin } = computeArea(this._points);
+            if (geometry && origin) {
                 this._surface = new Mesh(geometry, this._surfaceMaterial);
                 this._surface.name = 'surface';
                 this.object3d.add(this._surface);
+                this._surface.position.copy(origin);
                 this._surface.updateMatrixWorld(true);
             }
         }
