@@ -1,6 +1,7 @@
 import GUI from 'lil-gui';
 import { isDisposable } from '../core/Disposable';
 import type Instance from '../core/Instance';
+import DrawToolPanel from './DrawToolPanel';
 import EntityPanel from './EntityPanel';
 import InstanceInspector from './InstanceInspector';
 import Outliner from './outliner/Outliner';
@@ -76,6 +77,7 @@ class Inspector {
         this.addPanel(new PackageInfoInspector(this.gui, instance));
         this.addPanel(new InstanceInspector(this.gui, instance));
         this.addPanel(new ViewInspector(this.gui, instance));
+        this.addPanel(new DrawToolPanel(this.gui, instance));
         this.addPanel(new ProcessingInspector(this.gui, instance));
         this.addPanel(new EntityPanel(this.gui, instance));
         this.addPanel(new Outliner(this.gui, instance));
