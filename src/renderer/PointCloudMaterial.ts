@@ -149,7 +149,7 @@ interface Uniforms {
     pickingId: IUniform<number>;
     overlayColor: IUniform<Vector4>;
     hasOverlayTexture: IUniform<number>;
-    overlayTexture: IUniform<Texture>;
+    overlayTexture: IUniform<Texture | null>;
     offsetScale: IUniform<OffsetScale>;
     extentBottomLeft: IUniform<Vector2>;
     extentSize: IUniform<Vector2>;
@@ -193,7 +193,7 @@ class PointCloudMaterial extends ShaderMaterial {
     readonly isPointCloudMaterial = true;
 
     colorLayer: ColorLayer | null;
-    disposed: boolean;
+    disposed = false;
 
     private _colorMap: ColorMap = createDefaultColorMap();
 
@@ -364,6 +364,16 @@ class PointCloudMaterial extends ShaderMaterial {
         this.vertexShader = PointsVS;
         this.fragmentShader = PointsFS;
 
+        // Default
+        this.defines = {
+            INTENSITY_TYPE: 'uint',
+        };
+
+        if (Capabilities.isLogDepthBufferSupported()) {
+            this.defines.USE_LOGDEPTHBUF = 1;
+            this.defines.USE_LOGDEPTHBUF_EXT = 1;
+        }
+
         for (const key of Object.keys(MODE)) {
             if (Object.prototype.hasOwnProperty.call(MODE, key)) {
                 // @ts-expect-error a weird pattern indeed
@@ -371,47 +381,40 @@ class PointCloudMaterial extends ShaderMaterial {
             }
         }
 
-        // Default
-        this.defines.INTENSITY_TYPE = 'uint';
-
-        this.uniforms.fogDensity = new Uniform(0.00025);
-        this.uniforms.fogNear = new Uniform(1);
-        this.uniforms.fogFar = new Uniform(2000);
-        this.uniforms.fogColor = new Uniform(new Color(0xffffff));
-
-        // Texture-related uniforms
-        this.uniforms.extentBottomLeft = new Uniform(new Vector2(0, 0));
-        this.uniforms.extentSize = new Uniform(new Vector2(0, 0));
-        this.uniforms.overlayTexture = new Uniform(undefined);
-        this.uniforms.hasOverlayTexture = new Uniform(0);
-        this.uniforms.offsetScale = new Uniform(new OffsetScale(0, 0, 1, 1));
-
         this.fog = true;
-
-        this.disposed = false;
-
-        this.uniforms.colorMap = new Uniform({
-            lut: this.colorMap.getTexture(),
-            min: this.colorMap.min,
-            max: this.colorMap.max,
-        });
-        this.uniforms.size = new Uniform(options.size ?? 0);
-        this.uniforms.mode = new Uniform(options.mode ?? MODE.COLOR);
-        this.uniforms.pickingId = new Uniform(0);
-        this.uniforms.opacity = new Uniform(this.opacity);
-        this.uniforms.overlayColor = new Uniform(options.overlayColor ?? new Vector4(0, 0, 0, 0));
-        this.uniforms.overlayTexture = new Uniform(undefined);
-        this.uniforms.hasOverlayTexture = new Uniform(0);
-        this.uniforms.brightnessContrastSaturation = new Uniform(new Vector3(0, 1, 1));
-
-        if (Capabilities.isLogDepthBufferSupported()) {
-            this.defines.USE_LOGDEPTHBUF = 1;
-            this.defines.USE_LOGDEPTHBUF_EXT = 1;
-        }
         this.extensions.fragDepth = true;
+        this.colorLayer = null;
+        this.needsUpdate = true;
 
-        this.uniforms.enableDeformations = new Uniform(false);
-        this.uniforms.deformations = new Uniform([]);
+        this.uniforms = {
+            fogDensity: new Uniform(0.00025),
+            fogNear: new Uniform(1),
+            fogFar: new Uniform(2000),
+            fogColor: new Uniform(new Color(0xffffff)),
+            classifications: new Uniform(ASPRS_CLASSIFICATIONS),
+
+            // Texture-related uniforms
+            extentBottomLeft: new Uniform(new Vector2(0, 0)),
+            extentSize: new Uniform(new Vector2(0, 0)),
+            overlayTexture: new Uniform(null),
+            hasOverlayTexture: new Uniform(0),
+            offsetScale: new Uniform(new OffsetScale(0, 0, 1, 1)),
+
+            colorMap: new Uniform({
+                lut: this.colorMap.getTexture(),
+                min: this.colorMap.min,
+                max: this.colorMap.max,
+            }),
+            size: new Uniform(options.size ?? 0),
+            mode: new Uniform(options.mode ?? MODE.COLOR),
+            pickingId: new Uniform(0),
+            opacity: new Uniform(this.opacity),
+            overlayColor: new Uniform(options.overlayColor ?? new Vector4(0, 0, 0, 0)),
+            brightnessContrastSaturation: new Uniform(new Vector3(0, 1, 1)),
+
+            enableDeformations: new Uniform(false),
+            deformations: new Uniform([]),
+        };
 
         for (let i = 0; i < NUM_TRANSFO; i++) {
             this.uniforms.deformations.value.push({
@@ -422,10 +425,6 @@ class PointCloudMaterial extends ShaderMaterial {
                 color: new Color(),
             });
         }
-
-        this.colorLayer = null;
-
-        this.needsUpdate = true;
     }
 
     dispose() {
