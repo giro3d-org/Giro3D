@@ -14,26 +14,6 @@ const matrixChangeUpVectorZtoX = new Matrix4().makeRotationZ(-Math.PI / 2);
 
 const glTFLoader = new GLTFLoader();
 
-function filterUnsupportedSemantics(obj: Object3D) {
-    // see GLTFLoader GLTFShader.prototype.update function
-    const supported = ['MODELVIEW', 'MODELVIEWINVERSETRANSPOSE', 'PROJECTION', 'JOINTMATRIX'];
-
-    const gltfShader = (obj as any).gltfShader;
-
-    if (gltfShader) {
-        const names = [];
-        // eslint-disable-next-line guard-for-in
-        for (const name of Object.keys(gltfShader.boundUniforms)) {
-            names.push(name);
-        }
-        for (const name of names) {
-            const { semantic } = gltfShader.boundUniforms[name];
-            if (supported.indexOf(semantic) < 0) {
-                delete gltfShader.boundUniforms[name];
-            }
-        }
-    }
-}
 // parse for RTC values
 function applyOptionalCesiumRTC(data: ArrayBuffer, gltf: Group) {
     const headerView = new DataView(data, 0, 20);
@@ -141,9 +121,6 @@ export default {
                 new Promise(resolve => {
                     const onerror = (error: ErrorEvent) => console.error(error);
                     const onload = (gltf: GLTF) => {
-                        for (const scene of gltf.scenes) {
-                            scene.traverse(filterUnsupportedSemantics);
-                        }
                         // Rotation managed
                         if (gltfUpAxis === undefined || gltfUpAxis === 'Y') {
                             gltf.scene.applyMatrix4(matrixChangeUpVectorZtoY);
@@ -214,7 +191,7 @@ export default {
                 }),
             );
             return Promise.all(promises).then(values => ({
-                gltf: values[1] as any,
+                gltf: values[1] as { scene: Object3D },
                 batchTable: values[0] as BatchTable,
             }));
         }
