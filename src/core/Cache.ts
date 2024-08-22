@@ -46,8 +46,8 @@ const DEFAULT_CAPACITY: number = 512 * 1024 * 1024;
 class Cache implements MemoryUsage {
     readonly isMemoryUsage = true as const;
     private readonly _id = MathUtils.generateUUID();
-    private readonly _deleteHandlers: Map<string, (entry: unknown) => void>;
-    private readonly _lru: LRUCache<string, unknown, unknown>;
+    private readonly _deleteHandlers: Map<string, (entry: object) => void>;
+    private readonly _lru: LRUCache<string, object>;
     private _enabled: boolean;
 
     /**
@@ -153,8 +153,8 @@ class Cache implements MemoryUsage {
         return [...this._lru.entries()];
     }
 
-    private onDisposed(key: string, value: unknown) {
-        const handler: (entry: unknown) => void = this._deleteHandlers.get(key);
+    private onDisposed(key: string, value: object) {
+        const handler = this._deleteHandlers.get(key);
         if (handler) {
             this._deleteHandlers.delete(key);
             handler(value);
@@ -189,7 +189,7 @@ class Cache implements MemoryUsage {
      * @param value - The value.
      * @param options - The options.
      */
-    set(key: string, value: unknown, options: CacheOptions = {}) {
+    set(key: string, value: object, options: CacheOptions = {}) {
         if (!this.enabled) {
             return value;
         }

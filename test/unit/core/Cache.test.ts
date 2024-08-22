@@ -3,6 +3,10 @@ import { Cache } from '@giro3d/giro3d/core/Cache';
 let now = 0;
 let cache: Cache;
 
+function value(v: number): { value: number } {
+    return { value: v };
+}
+
 describe('Cache', () => {
     beforeEach(() => {
         performance.now = () => now;
@@ -11,8 +15,8 @@ describe('Cache', () => {
 
     describe('clear()', () => {
         it('should remove all entries', () => {
-            cache.set('foo', 1);
-            cache.set('bar', 2);
+            cache.set('foo', value(1));
+            cache.set('bar', value(2));
 
             cache.clear();
 
@@ -24,9 +28,9 @@ describe('Cache', () => {
             const onDelete1 = jest.fn();
             const onDelete2 = jest.fn();
 
-            cache.set('foo', 1, { ttl: 0, onDelete: onDelete1 });
-            cache.set('bar', 2);
-            cache.set('baz', 3, { ttl: 0, onDelete: onDelete2 });
+            cache.set('foo', value(1), { ttl: 0, onDelete: onDelete1 });
+            cache.set('bar', value(2));
+            cache.set('baz', value(3), { ttl: 0, onDelete: onDelete2 });
 
             cache.clear();
 
@@ -45,14 +49,14 @@ describe('Cache', () => {
         });
 
         it('should remove the entry if the key is present', () => {
-            cache.set('foo', 1);
+            cache.set('foo', value(1));
             cache.delete('foo');
             expect(cache.get('foo')).toBeUndefined();
         });
 
         it('should call the onDelete callback if present', () => {
             const onDelete = jest.fn();
-            cache.set('foo', 1, { onDelete });
+            cache.set('foo', value(1), { onDelete });
             cache.delete('foo');
             expect(cache.get('foo')).toBeUndefined();
             expect(onDelete).toHaveBeenCalledTimes(1);
@@ -61,11 +65,11 @@ describe('Cache', () => {
 
     describe('enable', () => {
         it('should enable/disable getting/setting entries', () => {
-            cache.set('foo', 1);
+            cache.set('foo', value(1));
             cache.enabled = false;
             expect(cache.get('foo')).toBeUndefined();
 
-            cache.set('bar', 4);
+            cache.set('bar', value(4));
             cache.enabled = true;
             expect(cache.get('bar')).toBeUndefined();
         });
@@ -73,32 +77,32 @@ describe('Cache', () => {
 
     describe('set', () => {
         it('should add the entry if not present', () => {
-            cache.set('foo', 1);
-            expect(cache.get('foo')).toEqual(1);
+            cache.set('foo', value(1));
+            expect(cache.get('foo')).toEqual(value(1));
         });
 
         it('should replace an existing entry with the same key', () => {
-            cache.set('foo', 1);
-            cache.set('foo', 2);
+            cache.set('foo', value(1));
+            cache.set('foo', value(2));
 
-            expect(cache.get('foo')).toEqual(2);
+            expect(cache.get('foo')).toEqual(value(2));
         });
 
         it('should call onDelete on the replaced entry', () => {
             const onDelete1 = jest.fn();
             const onDelete2 = jest.fn();
 
-            cache.set('foo', 1, { ttl: 0, onDelete: onDelete1 });
-            cache.set('foo', 2, { ttl: 0, onDelete: onDelete2 });
+            cache.set('foo', value(1), { ttl: 0, onDelete: onDelete1 });
+            cache.set('foo', value(2), { ttl: 0, onDelete: onDelete2 });
 
-            expect(cache.get('foo')).toEqual(2);
+            expect(cache.get('foo')).toEqual(value(2));
             expect(onDelete1).toHaveBeenCalledTimes(1);
             expect(onDelete2).not.toHaveBeenCalled();
         });
 
         it('should honor the specified lifetime', () => {
             now = 12;
-            cache.set('foo', 1, { ttl: 150 });
+            cache.set('foo', value(1), { ttl: 150 });
 
             now = 200;
             expect(cache.get('foo')).toBeUndefined();
@@ -107,7 +111,7 @@ describe('Cache', () => {
         it('should call onDelete on expired entries', () => {
             now = 12;
             const onDelete = jest.fn();
-            cache.set('foo', 1, { ttl: 150, onDelete });
+            cache.set('foo', value(1), { ttl: 150, onDelete });
 
             now = 200;
             expect(cache.get('foo')).toBeUndefined();
