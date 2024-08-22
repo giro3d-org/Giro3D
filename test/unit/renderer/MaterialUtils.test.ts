@@ -1,11 +1,12 @@
 import MaterialUtils from '@giro3d/giro3d/renderer/MaterialUtils';
-import type { Material } from 'three';
+
+type MockMaterial = { defines: { FOO?: 1 }; needsUpdate: boolean };
 
 describe('setDefine', () => {
-    let material: Material;
+    let material: MockMaterial;
 
     beforeEach(() => {
-        material = { defines: {}, needsUpdate: false } as Material;
+        material = { defines: {}, needsUpdate: false };
     });
 
     it('should set the define value to 1 if condition is true', () => {
@@ -33,10 +34,10 @@ describe('setDefine', () => {
 });
 
 describe('setDefineValue', () => {
-    let material: Material;
+    let material: MockMaterial;
 
     beforeEach(() => {
-        material = { defines: {}, needsUpdate: false } as Material;
+        material = { defines: {}, needsUpdate: false };
     });
 
     it('should set the define value to 1 if condition is true', () => {
