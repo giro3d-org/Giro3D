@@ -618,6 +618,9 @@ export default class GeometryConverter<
     }
 
     updateSurfaceMesh(mesh: SurfaceMesh, options: PolygonOptions) {
+        if (mesh.parent == null) {
+            throw new Error('mesh has no parent polygon');
+        }
         this.updatePolygonMesh(mesh.parent, options);
     }
 

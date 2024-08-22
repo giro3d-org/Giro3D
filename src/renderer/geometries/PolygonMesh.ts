@@ -19,17 +19,17 @@ export default class PolygonMesh<UserData extends DefaultUserData = DefaultUserD
     readonly isExtruded: boolean = false;
 
     private _featureOpacity = 1;
-    private _surface: SurfaceMesh;
-    private _linearRings: LineStringMesh[];
+    private _surface: SurfaceMesh | null = null;
+    private _linearRings: LineStringMesh<UserData>[] | null = null;
     readonly source: Polygon;
 
-    userData: UserData;
+    override userData: Partial<UserData> = {};
 
-    get surface(): SurfaceMesh {
+    get surface(): SurfaceMesh | null {
         return this._surface;
     }
 
-    set surface(newSurface: SurfaceMesh) {
+    set surface(newSurface: SurfaceMesh | null) {
         this._surface?.dispose();
         this._surface?.removeFromParent();
         this._surface = newSurface;
@@ -41,11 +41,11 @@ export default class PolygonMesh<UserData extends DefaultUserData = DefaultUserD
         }
     }
 
-    get linearRings() {
+    get linearRings(): LineStringMesh<UserData>[] | null {
         return this._linearRings;
     }
 
-    set linearRings(newRings: LineStringMesh[]) {
+    set linearRings(newRings: LineStringMesh<UserData>[] | null) {
         this._linearRings?.forEach(ring => {
             ring.removeFromParent();
             ring.dispose();
@@ -71,7 +71,7 @@ export default class PolygonMesh<UserData extends DefaultUserData = DefaultUserD
     constructor(options: {
         source: Polygon;
         surface?: SurfaceMesh;
-        linearRings?: LineStringMesh[];
+        linearRings?: LineStringMesh<UserData>[];
         isExtruded?: boolean;
     }) {
         super();
@@ -79,8 +79,8 @@ export default class PolygonMesh<UserData extends DefaultUserData = DefaultUserD
         this.matrixAutoUpdate = false;
 
         this.source = options.source;
-        this._surface = options.surface;
-        this._linearRings = options.linearRings;
+        this._surface = options.surface ?? null;
+        this._linearRings = options.linearRings ?? null;
         this.isExtruded = options.isExtruded ?? false;
 
         if (this._surface) {

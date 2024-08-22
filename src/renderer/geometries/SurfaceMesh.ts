@@ -14,9 +14,9 @@ export default class SurfaceMesh<UserData extends DefaultUserData = DefaultUserD
     private _featureOpacity = 1;
     private _styleOpacity = 1;
 
-    userData: UserData;
+    override userData: Partial<UserData> = {};
 
-    parent: PolygonMesh<UserData>;
+    parent: PolygonMesh<UserData> | null = null;
 
     constructor(params: { geometry: BufferGeometry; material: Material; opacity: number }) {
         super(params.geometry, params.material);

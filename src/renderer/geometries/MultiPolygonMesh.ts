@@ -12,7 +12,7 @@ export default class MultiPolygonMesh<UserData extends DefaultUserData = Default
     readonly isMultiPolygonMesh = true as const;
     readonly type = 'MultiPolygonMesh' as const;
 
-    userData: UserData;
+    override userData: Partial<UserData> = {};
 
     set opacity(opacity: number) {
         this.traversePolygons(p => (p.opacity = opacity));
