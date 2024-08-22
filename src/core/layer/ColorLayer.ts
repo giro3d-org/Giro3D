@@ -213,8 +213,14 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
     }
 
     pickFeaturesFrom(pickedResult: MapPickResult, options?: PickOptions): VectorPickFeature[] {
-        const vectorOptions: any = {
+        const vectorOptions: {
+            radius: number;
+            xTileRes: number;
+            yTileRes: number;
+        } = {
             radius: options.radius ?? 0,
+            xTileRes: 0,
+            yTileRes: 0,
         };
 
         if (vectorOptions.radius > 0) {
