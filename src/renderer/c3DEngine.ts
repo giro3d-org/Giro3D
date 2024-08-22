@@ -211,7 +211,11 @@ class C3DEngine {
             const msg = 'Failed to create WebGLRenderer';
             console.error(msg, error);
             viewerDiv.appendChild(createErrorMessage());
-            throw new Error(`${msg}: ${error.message}`);
+            if (error instanceof Error) {
+                throw new Error(`${msg}: ${error.message}`);
+            } else {
+                throw new Error(msg);
+            }
         }
 
         // Don't verify shaders by default (it is very costly)
