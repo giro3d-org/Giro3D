@@ -8,6 +8,7 @@ import type Map from '../entities/Map';
 import type { BoundingBoxHelper } from '../helpers/Helpers';
 import Helpers from '../helpers/Helpers';
 import RenderingState from '../renderer/RenderingState';
+import { isMaterial } from '../utils/predicates';
 import ColorimetryPanel from './ColorimetryPanel';
 import ContourLinePanel from './ContourLinePanel';
 import EntityInspector from './EntityInspector';
@@ -271,7 +272,9 @@ class MapInspector extends EntityInspector<Map> {
     updateExtentColor() {
         if (this.extentHelper) {
             this.instance.threeObjects.remove(this.extentHelper);
-            this.extentHelper.material.dispose();
+            if (isMaterial(this.extentHelper.material)) {
+                this.extentHelper.material.dispose();
+            }
             this.extentHelper.geometry.dispose();
             this.extentHelper = null;
         }

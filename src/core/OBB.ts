@@ -1,8 +1,8 @@
 import { Box3, Object3D, Vector3 } from 'three';
 
 class OBB extends Object3D {
-    readonly isHelper: boolean = true;
-    readonly type: string | 'OBB';
+    readonly isHelper = true as const;
+    readonly type = 'OBB' as const;
     readonly box3D: Box3;
     readonly natBox: Box3;
     z: { min: number; max: number };
