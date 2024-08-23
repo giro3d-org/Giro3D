@@ -1,8 +1,9 @@
-import { Clock, MathUtils, Sphere } from 'three';
+import { Clock, MathUtils, Plane, Sphere, Vector3 } from 'three';
 import type Entity from '../entities/Entity';
 import type C3DEngine from '../renderer/c3DEngine';
+import type View from '../renderer/View';
 import { isBufferGeometry } from '../utils/predicates';
-import Context from './Context';
+import type Context from './Context';
 import type Instance from './Instance';
 
 /** Rendering state */
@@ -13,9 +14,31 @@ export enum RenderingState {
     RENDERING_SCHEDULED = 1,
 }
 
+class ContextImpl implements Context {
+    readonly view: View;
+    readonly distance: {
+        plane: Plane;
+        min: number;
+        max: number;
+    };
+
+    constructor(view: View) {
+        this.view = view;
+
+        this.distance = {
+            plane: new Plane().setFromNormalAndCoplanarPoint(
+                view.camera.getWorldDirection(new Vector3()),
+                view.camera.position,
+            ),
+            min: Infinity,
+            max: 0,
+        };
+    }
+}
+
 const tmpSphere = new Sphere();
 
-function updateElements(context: Context, entity: Entity, elements?: unknown[]) {
+function updateElements(context: Context, entity: Entity, elements?: unknown[] | null) {
     if (!elements) {
         return;
     }
@@ -105,8 +128,6 @@ class MainLoop {
     }
 
     private update(instance: Instance, updateSources: Set<unknown>, dt: number) {
-        const context = new Context(instance.view, instance);
-
         if (this.automaticCameraPlaneComputation) {
             // Reset near/far to default value to allow update function to test
             // visibility using camera's frustum; without depending on the near/far
@@ -121,8 +142,9 @@ class MainLoop {
         // on near/far values.
         instance.view.update();
 
+        const context = new ContextImpl(instance.view);
+
         for (const entity of instance.getEntities()) {
-            context.resetForEntity(entity);
             if (entity.shouldCheckForUpdate()) {
                 instance.dispatchEvent({
                     type: 'before-entity-update',

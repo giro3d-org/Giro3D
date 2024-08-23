@@ -825,7 +825,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
                 child.updateMatrixWorld(true);
                 i++;
             }
-            context.instance.notifyChange(node);
+            this._instance.notifyChange(node);
         }
     }
 

@@ -272,6 +272,7 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
     source: PotreeSource;
     private readonly _queue: RequestQueue;
     private _opCounter: OperationCounter;
+    private _fastUpdateHint: string | null = null;
     group: Group;
     bboxes: Group;
     octreeDepthLimit: number;
@@ -545,7 +546,8 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
         }
 
         // lookup lowest common ancestor of changeSources
-        let commonAncestorName: string;
+        let commonAncestorName: string | undefined = undefined;
+
         for (const source of changeSources.values()) {
             if ((source as Camera).isCamera || source === this) {
                 // if the change is caused by a camera move, no need to bother
@@ -581,7 +583,7 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
             }
         }
         if (commonAncestorName) {
-            context.fastUpdateHint = commonAncestorName;
+            this._fastUpdateHint = commonAncestorName;
         }
 
         // Start updating from hierarchy root
@@ -628,7 +630,7 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
         // pick the best bounding box
         const bbox = elt.tightbbox ? elt.tightbbox : elt.bbox;
 
-        if (context.fastUpdateHint && !elt.name.startsWith(context.fastUpdateHint as string)) {
+        if (this._fastUpdateHint && !elt.name.startsWith(this._fastUpdateHint)) {
             if (!elt.visible) {
                 return null;
             }
