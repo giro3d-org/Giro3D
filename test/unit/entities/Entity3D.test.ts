@@ -16,7 +16,7 @@ import {
  *
  * @param obj3d - an optional object3d to inject
  */
-function sut(obj3d: Object3D = undefined) {
+function sut(obj3d: Object3D | undefined = undefined) {
     const object3d = obj3d ?? new Group();
 
     const entity = new Entity3D(object3d);
@@ -26,6 +26,7 @@ function sut(obj3d: Object3D = undefined) {
 describe('Entity3D', () => {
     describe('constructor', () => {
         it('should throw on undefined object3d', () => {
+            // @ts-expect-error argument is not an Object3D
             assert.throws(() => new Entity3D(undefined));
             // @ts-expect-error argument is not an Object3D
             assert.throws(() => new Entity3D({ isObject3D: false }));

@@ -55,7 +55,8 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
      */
     readonly isEntity3D: boolean = true as const;
 
-    protected _instance: Instance;
+    // @ts-expect-error we should fix this. The instance should be known since the beginning to avoid issues.
+    protected _instance: Instance = null;
     private _visible: boolean;
     private _opacity: number;
     private _object3d: Object3D;
@@ -78,8 +79,6 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
                 'Missing/Invalid object3d parameter (must be a three.js Object3D instance)',
             );
         }
-        this._instance = null; // will be filled when we add the object to an instance
-
         if (object3d.type === 'Group' && object3d.name === '') {
             object3d.name = this.id;
         }
@@ -353,7 +352,7 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
      * @param root - The traversal root. If undefined, the traversal starts at the root
      * object of this entity.
      */
-    traverseMaterials(callback: (arg0: Material) => void, root: Object3D = undefined) {
+    traverseMaterials(callback: (arg0: Material) => void, root: Object3D | undefined = undefined) {
         this.traverse(o => {
             if ('material' in o) {
                 if (Array.isArray(o.material)) {
@@ -376,7 +375,7 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
      * @param root - The raversal root. If undefined, the traversal starts at the root
      * object of this entity.
      */
-    traverseMeshes(callback: (arg0: Mesh) => void, root: Object3D = undefined) {
+    traverseMeshes(callback: (arg0: Mesh) => void, root: Object3D | undefined = undefined) {
         const origin = root ?? this.object3d;
 
         if (origin) {
@@ -395,7 +394,7 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
      * @param root - The traversal root. If undefined, the traversal starts at the root
      * object of this entity.
      */
-    traverse(callback: (arg0: Object3D) => void, root: Object3D = undefined) {
+    traverse(callback: (arg0: Object3D) => void, root: Object3D | undefined = undefined) {
         const origin = root ?? this.object3d;
 
         if (origin) {
