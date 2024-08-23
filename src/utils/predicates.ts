@@ -1,6 +1,7 @@
 import type {
     BufferGeometry,
     CanvasTexture,
+    ColorRepresentation,
     DataTexture,
     Material,
     Mesh,
@@ -10,6 +11,7 @@ import type {
     RenderTarget,
     Texture,
 } from 'three';
+import { Color } from 'three';
 
 export function has<T>(obj: unknown, prop: keyof T): obj is T {
     if (obj == null) {
@@ -47,4 +49,21 @@ export function isOrthographicCamera(obj: unknown): obj is OrthographicCamera {
 }
 export function isMaterial(obj: unknown): obj is Material {
     return (obj as Material)?.isMaterial;
+}
+export function isColor(obj: unknown): obj is Color {
+    return (obj as Color)?.isColor;
+}
+export function isFiniteNumber(obj: unknown): obj is number {
+    if (typeof obj === 'number' && Number.isFinite(obj)) {
+        return true;
+    }
+
+    return false;
+}
+export function getColor(input: ColorRepresentation): Color {
+    if (isColor(input)) {
+        return input;
+    }
+
+    return new Color(input);
 }
