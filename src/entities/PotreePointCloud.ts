@@ -295,7 +295,7 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
      * ```
      */
     onPointsCreated: OnPointsCreatedCallback | null;
-    metadata?: PotreeMetadata;
+    private _metadata?: PotreeMetadata;
     table?: string;
     extension?: 'cin' | 'bin';
     supportsProgressiveDisplay?: boolean;
@@ -367,7 +367,7 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
     }
 
     computeBbox() {
-        const entityBbox = nonNull(this.metadata?.boundingBox);
+        const entityBbox = nonNull(this._metadata?.boundingBox);
         const bbox = new Box3(
             new Vector3(entityBbox.lx, entityBbox.ly, entityBbox.lz),
             new Vector3(entityBbox.ux, entityBbox.uy, entityBbox.uz),
@@ -400,16 +400,16 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
     }
 
     parseMetadata(metadata: PotreeMetadata) {
-        this.metadata = metadata;
+        this._metadata = metadata;
 
         let customBinFormat = true;
 
         // PotreeConverter format
-        customBinFormat = this.metadata.pointAttributes === 'CIN';
+        customBinFormat = this._metadata.pointAttributes === 'CIN';
         // do we have normal information
         const normal =
-            Array.isArray(this.metadata.pointAttributes) &&
-            this.metadata.pointAttributes.find(elem => elem.startsWith('NORMAL'));
+            Array.isArray(this._metadata.pointAttributes) &&
+            this._metadata.pointAttributes.find(elem => elem.startsWith('NORMAL'));
         if (normal) {
             // @ts-expect-error the define is dynamically set
             this.material.defines[normal] = 1;
@@ -594,7 +594,7 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
         if (distance <= 0) {
             return Infinity;
         }
-        const pointSpacing = nonNull(this.metadata).spacing / 2 ** elt.name.length;
+        const pointSpacing = nonNull(this._metadata).spacing / 2 ** elt.name.length;
         // Estimate the onscreen distance between 2 points
         const onScreenSpacing = (context.view.preSSE * pointSpacing) / distance;
         // [  P1  ]--------------[   P2   ]
@@ -829,7 +829,7 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
     }
 
     async executeCommand(metadata: OctreeItem) {
-        const thisMetadata = nonNull(this.metadata);
+        const thisMetadata = nonNull(this._metadata);
 
         // Query HRC if we don't have children metadata yet.
         if (metadata.childrenBitField && metadata.children.length === 0) {
