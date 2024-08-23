@@ -51,7 +51,7 @@ class ColorMap {
     private _mode: ColorMapMode;
     private _colors: Color[];
     private _opacity: number[] | null;
-    private _cachedTexture: DataTexture;
+    private _cachedTexture: DataTexture | null;
     private _active: boolean;
     /**
      * Creates an instance of ColorMap.
@@ -223,8 +223,11 @@ class ColorMap {
      * @returns The resulting texture.
      */
     getTexture(): DataTexture {
-        if (this._cachedTexture === null) {
-            this._cachedTexture = TextureGenerator.create1DTexture(this._colors, this._opacity);
+        if (this._cachedTexture == null) {
+            this._cachedTexture = TextureGenerator.create1DTexture(
+                this._colors,
+                this._opacity ?? undefined,
+            );
             this._cachedTexture.minFilter = NearestFilter;
             this._cachedTexture.magFilter = NearestFilter;
             this._cachedTexture.wrapS = ClampToEdgeWrapping;
