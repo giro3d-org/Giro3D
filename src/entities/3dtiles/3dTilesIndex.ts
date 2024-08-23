@@ -15,7 +15,7 @@ export interface ProcessedTile extends $3dTilesTile {
     tileId: number;
     magic?: string;
 
-    obj?: Tile;
+    obj: Tile | undefined;
     children?: ProcessedTile[];
 }
 
@@ -61,10 +61,7 @@ function getBox(
         );
         return { sphere };
     } else {
-        // TODO we should probably do
-        // throw new Error('volume has neither region, nor box, nor sphere...');
-        // but as I'm just correcting linter errors here, let's keep the old behaviour for now
-        return null;
+        throw new Error('volume has neither region, nor box, nor sphere...');
     }
 }
 
@@ -134,6 +131,8 @@ class $3dTilesIndex {
                 try {
                     this._recurse(child, baseURL, indexedNode);
                 } catch (error) {
+                    // FIXME
+                    // @ts-expect-error invalid operation
                     indexedNode.children[node.children.indexOf(child)] = undefined;
                 }
             }
