@@ -14,6 +14,7 @@ import {
     type BufferAttribute,
     type TypedArray,
 } from 'three';
+import { nonNull } from '../utils/tsutils';
 import utf8Decoder from '../utils/Utf8Decoder';
 import type { Accessor, BatchTable } from './BatchTableParser';
 import BatchTableParser from './BatchTableParser';
@@ -269,12 +270,15 @@ export default {
                     byteOffset + pntsHeader.BTBinaryLength,
                 );
 
+                const pointCount = nonNull(point.count, 'missing point count');
+                const geometry = nonNull(point.geometry, 'missing point geometry');
+
                 for (const [name, accessor] of Object.entries(batchTable)) {
                     const attributeName = name.toLowerCase();
 
                     const attribute = getBufferAttribute(
                         name,
-                        point.count,
+                        pointCount,
                         accessor,
                         binaryBatchTable,
                     );
@@ -282,7 +286,7 @@ export default {
                     // Helpful mainly for debugging purposes
                     attribute.name = attributeName;
 
-                    point.geometry.setAttribute(attributeName, attribute);
+                    geometry.setAttribute(attributeName, attribute);
                 }
             }
         }
