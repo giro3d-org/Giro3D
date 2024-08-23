@@ -15,7 +15,7 @@ class ColorMapInspector extends Panel {
      * @param layer - The color map owner.
      * @param colorMap - The color map to inspect.
      */
-    constructor(gui: GUI, instance: Instance, layer: Layer, colorMap?: ColorMap) {
+    constructor(gui: GUI, instance: Instance, layer: Layer, colorMap: ColorMap | null) {
         super(gui, instance, 'Color map');
 
         if (colorMap != null) {
