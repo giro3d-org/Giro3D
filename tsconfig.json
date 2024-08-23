@@ -3,6 +3,7 @@
     "include": ["src/**/*"],
     "exclude": ["node_modules/**/*"],
     "compilerOptions": {
+        "strict": true,
         "target": "ES2021",
         "lib": ["ES2021"],
         // Tells TypeScript to read JS files, as
