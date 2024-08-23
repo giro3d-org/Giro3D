@@ -1,10 +1,11 @@
-import type { Group, Material, Mesh, Object3D, RawShaderMaterial } from 'three';
+import type { Group, Material, Object3D, RawShaderMaterial } from 'three';
 import { Matrix4, MeshLambertMaterial } from 'three';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 import Capabilities from '../core/system/Capabilities';
 import shaderUtils from '../renderer/shader/ShaderUtils';
+import { isMesh } from '../utils/predicates';
 import utf8Decoder from '../utils/Utf8Decoder';
 import BatchTableParser, { type BatchTable } from './BatchTableParser';
 
@@ -50,6 +51,15 @@ export interface B3dmParserOptions {
     overrideMaterials?: boolean | Material;
 }
 
+type Header = {
+    version: number;
+    byteLength: number;
+    FTJSONLength: number;
+    FTBinaryLength: number;
+    BTJSONLength: number;
+    BTBinaryLength: number;
+};
+
 export default {
     /**
      * Parse b3dm buffer and extract Scene and batch table
@@ -69,38 +79,32 @@ export default {
         const view = new DataView(buffer, 4); // starts after magic
 
         let byteOffset = 0;
-        const b3dmHeader: Partial<{
-            magic: string;
-            version: number;
-            byteLength: number;
-            FTJSONLength: number;
-            FTBinaryLength: number;
-            BTJSONLength: number;
-            BTBinaryLength: number;
-        }> = {};
+        const tmpHeader: Partial<Header> = {};
 
         // Magic type is unsigned char [4]
-        b3dmHeader.magic = utf8Decoder.decode(new Uint8Array(buffer, 0, 4));
-        if (b3dmHeader.magic) {
+        const magic = utf8Decoder.decode(new Uint8Array(buffer, 0, 4));
+        if (magic) {
             // Version, byteLength, batchTableJSONByteLength, batchTableBinaryByteLength and
             // batchTable types are uint32
-            b3dmHeader.version = view.getUint32(byteOffset, true);
+            tmpHeader.version = view.getUint32(byteOffset, true);
             byteOffset += Uint32Array.BYTES_PER_ELEMENT;
 
-            b3dmHeader.byteLength = view.getUint32(byteOffset, true);
+            tmpHeader.byteLength = view.getUint32(byteOffset, true);
             byteOffset += Uint32Array.BYTES_PER_ELEMENT;
 
-            b3dmHeader.FTJSONLength = view.getUint32(byteOffset, true);
+            tmpHeader.FTJSONLength = view.getUint32(byteOffset, true);
             byteOffset += Uint32Array.BYTES_PER_ELEMENT;
 
-            b3dmHeader.FTBinaryLength = view.getUint32(byteOffset, true);
+            tmpHeader.FTBinaryLength = view.getUint32(byteOffset, true);
             byteOffset += Uint32Array.BYTES_PER_ELEMENT;
 
-            b3dmHeader.BTJSONLength = view.getUint32(byteOffset, true);
+            tmpHeader.BTJSONLength = view.getUint32(byteOffset, true);
             byteOffset += Uint32Array.BYTES_PER_ELEMENT;
 
-            b3dmHeader.BTBinaryLength = view.getUint32(byteOffset, true);
+            tmpHeader.BTBinaryLength = view.getUint32(byteOffset, true);
             byteOffset += Uint32Array.BYTES_PER_ELEMENT;
+
+            const b3dmHeader = tmpHeader as Required<Header>;
 
             const promises = [];
             // Parse batch table
@@ -140,7 +144,11 @@ export default {
                             gltf.scene,
                         );
 
-                        const initMesh = function initFn(mesh: Mesh) {
+                        const initMesh = function initFn(obj: Object3D) {
+                            if (!isMesh(obj)) {
+                                return;
+                            }
+                            const mesh = obj;
                             mesh.frustumCulled = false;
                             if (!mesh.material || Array.isArray(mesh.material)) {
                                 return;
