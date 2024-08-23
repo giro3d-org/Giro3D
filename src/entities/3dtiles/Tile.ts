@@ -19,7 +19,7 @@ class Tile extends Object3D {
     readonly isTile: boolean = true;
     /** Parent tile */
     // eslint-disable-next-line no-use-before-define
-    parent: Tile;
+    parent: Tile | null = null;
     geometricError: number;
     tileId: number;
     additiveRefinement: boolean;
@@ -29,7 +29,7 @@ class Tile extends Object3D {
     content?: Object3D;
     batchTable?: BatchTable;
     // eslint-disable-next-line no-use-before-define
-    children: Tile[];
+    children: Tile[] = [];
     pendingSubdivision?: boolean;
     deleted?: number;
     cleanableSince?: number;
