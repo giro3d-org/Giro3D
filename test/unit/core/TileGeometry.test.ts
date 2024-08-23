@@ -37,15 +37,15 @@ describe('TileGeometry', () => {
 
         expect(geometry.attributes.position.array).toStrictEqual(positionsSquare);
         expect(geometry.attributes.uv.array).toStrictEqual(uvsSquare);
-        expect(geometry.index.array).toStrictEqual(indicesSquare);
+        expect(geometry.index!.array).toStrictEqual(indicesSquare);
     });
 
     it('should create an index buffer with 16bit numbers if possible', () => {
         const small = new TileGeometry({ dimensions, segments: 5 });
         const big = new TileGeometry({ dimensions, segments: 200 });
 
-        expect(small.getIndex().array.BYTES_PER_ELEMENT).toEqual(2);
-        expect(big.getIndex().array.BYTES_PER_ELEMENT).toEqual(4);
+        expect(small.getIndex()!.array.BYTES_PER_ELEMENT).toEqual(2);
+        expect(big.getIndex()!.array.BYTES_PER_ELEMENT).toEqual(4);
     });
 
     describe('resetHeights', () => {
