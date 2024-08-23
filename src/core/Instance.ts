@@ -11,6 +11,7 @@ import {
     type Box3,
     type WebGLRenderer,
 } from 'three';
+import type { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer';
 import type Entity from '../entities/Entity';
 import { isEntity } from '../entities/Entity';
 import Entity3D, { isEntity3D } from '../entities/Entity3D';
@@ -152,8 +153,6 @@ export interface InstanceOptions extends CameraOptions {
     scene3D?: Scene;
     /* Rendering options */
     renderer?: RendererOptions;
-    /* Main loop */
-    mainLoop?: MainLoop;
 }
 
 /**
@@ -274,25 +273,19 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         this._referenceCrs = options.crs;
         this._viewport = viewerDiv;
 
-        if (options.mainLoop) {
-            this._mainLoop = options.mainLoop;
-            this._engine = options.mainLoop.gfxEngine;
-        } else {
-            // viewerDiv may have padding/borders, which is annoying when retrieving its size
-            // Wrap our canvas in a new div so we make sure the display
-            // is correct whatever the page layout is
-            // (especially when skrinking so there is no scrollbar/bleading)
-            this._viewport = document.createElement('div');
-            this._viewport.style.position = 'relative';
-            this._viewport.style.overflow = 'hidden'; // Hide overflow during resizing
-            this._viewport.style.width = '100%'; // Make sure it fills the space
-            this._viewport.style.height = '100%';
-            viewerDiv.appendChild(this._viewport);
+        // viewerDiv may have padding/borders, which is annoying when retrieving its size
+        // Wrap our canvas in a new div so we make sure the display
+        // is correct whatever the page layout is
+        // (especially when skrinking so there is no scrollbar/bleading)
+        this._viewport = document.createElement('div');
+        this._viewport.style.position = 'relative';
+        this._viewport.style.overflow = 'hidden'; // Hide overflow during resizing
+        this._viewport.style.width = '100%'; // Make sure it fills the space
+        this._viewport.style.height = '100%';
+        viewerDiv.appendChild(this._viewport);
 
-            const engine = new C3DEngine(this._viewport, options.renderer);
-            this._mainLoop = new MainLoop(engine);
-            this._engine = engine;
-        }
+        this._engine = new C3DEngine(this._viewport, options.renderer);
+        this._mainLoop = new MainLoop();
 
         this._scene = options.scene3D || new Scene();
         // will contain simple three objects that need to be taken into
@@ -409,11 +402,16 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
 
     /**
      * Gets the underlying WebGL renderer.
-     *
-     * @readonly
      */
     get renderer(): WebGLRenderer {
         return this._engine.renderer;
+    }
+
+    /**
+     * Gets the underlying CSS2DRenderer.
+     */
+    get css2DRenderer(): CSS2DRenderer {
+        return this._engine.labelRenderer;
     }
 
     /** Gets the [3D Scene](https://threejs.org/docs/#api/en/scenes/Scene). */

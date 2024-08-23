@@ -2,14 +2,13 @@ import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import Instance from '@giro3d/giro3d/core/Instance';
 import ColorLayer, { isColorLayer } from '@giro3d/giro3d/core/layer/ColorLayer';
 import ElevationLayer, { isElevationLayer } from '@giro3d/giro3d/core/layer/ElevationLayer';
-import type MainLoop from '@giro3d/giro3d/core/MainLoop';
 import type TileMesh from '@giro3d/giro3d/core/TileMesh.js';
 import Map from '@giro3d/giro3d/entities/Map';
 import { DEFAULT_AZIMUTH, DEFAULT_ZENITH } from '@giro3d/giro3d/renderer/LayeredMaterial';
 import RenderingState from '@giro3d/giro3d/renderer/RenderingState';
 import NullSource from '@giro3d/giro3d/sources/NullSource';
 import { Color, Group } from 'three';
-import { setupGlobalMocks } from '../mocks';
+import { mockWebGLRenderer, setupGlobalMocks } from '../mocks';
 
 const nullSource = new NullSource({ extent: new Extent('EPSG:3857', -10, 10, -10, 10) });
 
@@ -29,10 +28,10 @@ function makeTile(patch?: (tile: TileMesh) => void): TileMesh {
 describe('Map', () => {
     let viewerDiv: HTMLDivElement;
     let instance: Instance;
-    let mainLoop: MainLoop;
     let map: Map;
+    const crs = 'EPSG:4326';
 
-    const extent = new Extent('EPSG:4326', {
+    const extent = new Extent(crs, {
         west: 0,
         east: 10,
         south: 0,
@@ -42,34 +41,12 @@ describe('Map', () => {
     beforeEach(() => {
         setupGlobalMocks();
         viewerDiv = document.createElement('div');
-        mainLoop = {
-            gfxEngine: {
-                // @ts-expect-error invalid
-                getWindowSize: jest.fn,
-                // @ts-expect-error invalid
-                renderer: {
-                    domElement: document.createElement('canvas'),
-                    getContext: jest.fn(),
-                    getClearAlpha: jest.fn(),
-                    setClearAlpha: jest.fn(),
-                    getRenderTarget: jest.fn(),
-                    setRenderTarget: jest.fn(),
-                    getScissorTest: jest.fn(),
-                    setScissorTest: jest.fn(),
-                    getScissor: jest.fn(),
-                    setScissor: jest.fn(),
-                    getClearColor: jest.fn(),
-                    setClearColor: jest.fn(),
-                    getViewport: jest.fn(),
-                    setViewport: jest.fn(),
-                    clear: jest.fn(),
-                    render: jest.fn(),
-                },
+        instance = new Instance(viewerDiv, {
+            crs,
+            renderer: {
+                renderer: mockWebGLRenderer(),
             },
-            scheduleUpdate: jest.fn,
-        };
-        const options = { mainLoop, crs: extent.crs() };
-        instance = new Instance(viewerDiv, options);
+        });
 
         map = new Map({
             extent,

@@ -1,6 +1,5 @@
 import { Clock, MathUtils, Plane, Sphere, Vector3 } from 'three';
 import type Entity from '../entities/Entity';
-import type C3DEngine from '../renderer/c3DEngine';
 import type View from '../renderer/View';
 import { isBufferGeometry } from '../utils/predicates';
 import type Context from './Context';
@@ -56,13 +55,6 @@ class MainLoop {
     }
     private _needsRedraw: boolean;
     private _automaticCameraPlaneComputation = true;
-    private readonly _gfxEngine: C3DEngine;
-    /**
-     * @deprecated Use {@link Instance.engine}
-     */
-    public get gfxEngine(): C3DEngine {
-        return this._gfxEngine;
-    }
     private _updateLoopRestarted: boolean;
     private readonly _changeSources: Set<unknown>;
     private readonly _clock = new Clock();
@@ -87,10 +79,9 @@ class MainLoop {
         this._automaticCameraPlaneComputation = v;
     }
 
-    constructor(engine: C3DEngine) {
+    constructor() {
         this._renderingState = RenderingState.RENDERING_PAUSED;
         this._needsRedraw = false;
-        this._gfxEngine = engine; // TODO: remove me
         this._updateLoopRestarted = true;
         this._changeSources = new Set<unknown>();
     }
