@@ -20,7 +20,7 @@ import BatchTableParser from './BatchTableParser';
 
 export type Pnts = {
     point: {
-        geometry?: BufferGeometry;
+        geometry: BufferGeometry;
         offset?: Vector3;
     };
     batchTable: BatchTable;
@@ -219,12 +219,6 @@ export default {
 
         let batchTable: BatchTable = {};
 
-        let point: {
-            count?: number;
-            geometry?: BufferGeometry;
-            offset?: Vector3;
-        } = {};
-
         // Magic type is unsigned char [4]
         const magic = utf8Decoder.decode(new Uint8Array(buffer, byteOffset, 4));
 
@@ -255,10 +249,11 @@ export default {
         byteOffset += Uint32Array.BYTES_PER_ELEMENT;
 
         // binary table
-        if (pntsHeader.FTBinaryLength > 0) {
-            point = parseFeatureBinary(buffer, byteOffset, pntsHeader.FTJSONLength);
-            byteOffset += pntsHeader.FTJSONLength + pntsHeader.FTBinaryLength;
+        if (pntsHeader.FTBinaryLength === 0) {
+            throw new Error('invalid feature table binary length');
         }
+        const point = parseFeatureBinary(buffer, byteOffset, pntsHeader.FTJSONLength);
+        byteOffset += pntsHeader.FTJSONLength + pntsHeader.FTBinaryLength;
 
         // batch table
         if (pntsHeader.BTJSONLength > 0) {
@@ -292,7 +287,7 @@ export default {
             }
         }
 
-        const pnts = { point, batchTable };
+        const pnts: Pnts = { point, batchTable };
 
         return Promise.resolve(pnts);
     },
