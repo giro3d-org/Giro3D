@@ -10,7 +10,7 @@ import type {
 } from 'ol/geom';
 import type VectorSource from 'ol/source/Vector';
 import type { BufferGeometry, Camera, Object3D, Plane } from 'three';
-import { Box3, Group, Vector3 } from 'three';
+import { Box3, Group, MathUtils, Vector3 } from 'three';
 
 import { Projection } from 'ol/proj';
 import { GlobalCache } from '../core/Cache';
@@ -29,6 +29,7 @@ import LayerUpdateState from '../core/layer/LayerUpdateState';
 import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../core/MemoryUsage';
 import OperationCounter from '../core/OperationCounter';
 import { DefaultQueue } from '../core/RequestQueue';
+import type { SSE } from '../core/ScreenSpaceError';
 import ScreenSpaceError from '../core/ScreenSpaceError';
 import type { BaseOptions } from '../renderer/geometries/GeometryConverter';
 import GeometryConverter from '../renderer/geometries/GeometryConverter';
@@ -44,6 +45,7 @@ import { isSimpleGeometryMesh } from '../renderer/geometries/SimpleGeometryMesh'
 import type SurfaceMesh from '../renderer/geometries/SurfaceMesh';
 import { isSurfaceMesh } from '../renderer/geometries/SurfaceMesh';
 import OLUtils from '../utils/OpenLayersUtils';
+import { nonNull } from '../utils/tsutils';
 import type { EntityUserData } from './Entity';
 import type { Entity3DEventMap } from './Entity3D';
 import Entity3D from './Entity3D';
@@ -69,8 +71,6 @@ export type MeshUserData = {
      */
     style: FeatureStyle;
 };
-
-type MeshOrSurface = SimpleGeometryMesh<MeshUserData> | SurfaceMesh<MeshUserData>;
 
 function isThreeCamera(obj: unknown): obj is Camera {
     return typeof obj === 'object' && (obj as Camera)?.isCamera;
@@ -101,27 +101,43 @@ function selectBestSubdivisions(extent: Extent) {
     return { x, y };
 }
 
+type FeatureTileUserData = {
+    parentEntity: Entity3D;
+    layerUpdateState: LayerUpdateState;
+    extent: Extent;
+    x: number;
+    y: number;
+    z: number;
+};
+
 class FeatureTile extends Group {
-    readonly isFeatureTile = true;
-    readonly type = 'FeatureTile';
-    origin: Vector3;
+    readonly isFeatureTile = true as const;
+    readonly type = 'FeatureTile' as const;
+    readonly origin: Vector3;
+    readonly boundingBox: Box3;
 
-    userData: {
-        parentEntity: Entity3D;
-        layerUpdateState?: LayerUpdateState;
-        extent: Extent;
-        x: number;
-        y: number;
-        z: number;
-    };
+    readonly userData: FeatureTileUserData;
 
-    boundingBox: Box3;
+    constructor(options: {
+        name: string;
+        origin: Vector3;
+        userData: FeatureTileUserData;
+        boundingBox: Box3;
+    }) {
+        super();
+        this.name = options.name;
+        this.origin = options.origin;
+        this.userData = options.userData;
+        this.boundingBox = options.boundingBox;
+    }
 
     dispose(set: Set<string | number>) {
         this.traverse(obj => {
             if (isSimpleGeometryMesh<MeshUserData>(obj)) {
                 obj.dispose();
-                set.delete(obj.userData.feature.getId());
+                const feature = nonNull(obj.userData.feature);
+                const id = nonNull(feature.getId());
+                set.delete(id);
             }
         });
 
@@ -232,7 +248,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
     /**
      * The projection code of the data source.
      */
-    readonly dataProjection: string;
+    readonly dataProjection: string | null;
 
     /**
      * The minimum LOD at which this entity is displayed.
@@ -255,11 +271,12 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
     private readonly _opCounter: OperationCounter;
     private readonly _tileIdSet: Set<string | number>;
     private readonly _source: VectorSource;
-    private readonly _style: FeatureStyle | FeatureStyleCallback;
-    private readonly _extrusionOffset: FeatureExtrusionOffsetCallback | number | Array<number>;
-    private readonly _elevation: FeatureElevationCallback | number | Array<number>;
+    private readonly _style: FeatureStyle | FeatureStyleCallback | null = null;
+    private readonly _extrusionOffset?: FeatureExtrusionOffsetCallback | number | Array<number>;
+    private readonly _elevation: FeatureElevationCallback | number | Array<number> | undefined;
     private readonly _ignoreZ: boolean;
-    private _targetProjection: Projection;
+
+    private _targetProjection?: Projection;
 
     /**
      * The factor to drive the subdivision of feature nodes. The heigher, the bigger the nodes.
@@ -369,8 +386,8 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         if (!options.source) {
             throw new Error('options.source is mandatory.');
         }
-        this._ignoreZ = options.ignoreZ;
-        this.dataProjection = options.dataProjection;
+        this._ignoreZ = options.ignoreZ ?? false;
+        this.dataProjection = options.dataProjection ?? null;
         this.extent = options.extent;
         this._subdivisions = selectBestSubdivisions(this.extent);
 
@@ -379,7 +396,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
 
         this._extrusionOffset = options.extrusionOffset;
         this._elevation = options.elevation;
-        this._style = options.style;
+        this._style = options.style ?? null;
 
         this.sseScale = 1;
 
@@ -448,30 +465,36 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         // create a simple square shape. We duplicate the top left and bottom right
         // vertices because each vertex needs to appear once per triangle.
         extent = extent.as(this._instance.referenceCrs);
-        const tile = new FeatureTile();
 
-        tile.origin = extent.centerAsVector3();
-        tile.name = `tile @ (z=${z}, x=${x}, y=${y})`;
+        const origin = extent.centerAsVector3();
+        const name = `tile @ (z=${z}, x=${x}, y=${y})`;
 
-        tile.userData = {
+        const userData: FeatureTileUserData = {
             parentEntity: this as Entity3D,
             extent,
             z,
             x,
             y,
+            layerUpdateState: new LayerUpdateState(),
         };
-
-        if (this.renderOrder !== undefined || this.renderOrder !== null) {
-            tile.renderOrder = this.renderOrder;
-        }
-        tile.visible = false;
 
         // we initialize it with fake z to avoid a degenerate bounding box
         // the culling test will be done considering x and y only anyway.
-        tile.boundingBox = new Box3(
+        const boundingBox = new Box3(
             new Vector3(extent.west(), extent.south(), -1),
             new Vector3(extent.east(), extent.north(), 1),
         );
+
+        const tile = new FeatureTile({
+            origin,
+            name,
+            userData,
+            boundingBox,
+        });
+        tile.visible = false;
+        if (this.renderOrder !== undefined || this.renderOrder !== null) {
+            tile.renderOrder = this.renderOrder;
+        }
 
         this.onObjectCreated(tile);
         return tile;
@@ -509,7 +532,10 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
     private getCachedList() {
         if (this._rootMeshes.length === 0) {
             this.traverse(obj => {
-                this._rootMeshes.push(getRootMesh(obj));
+                const root = getRootMesh(obj);
+                if (root != null) {
+                    this._rootMeshes.push(root);
+                }
             });
         }
 
@@ -539,7 +565,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         this._instance.notifyChange(this);
     }
 
-    private updateStyle(obj: SimpleGeometryMesh<MeshUserData>) {
+    private updateStyle(obj: SimpleGeometryMesh<MeshUserData> | null) {
         if (!obj) {
             return;
         }
@@ -581,7 +607,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
                     if (isPolygonMesh(obj)) {
                         this._geometryConverter.updatePolygonMesh(obj, options);
                     } else if (isMultiPolygonMesh(obj)) {
-                        this._geometryConverter.updateMultiPolygonMesh(obj, style);
+                        this._geometryConverter.updateMultiPolygonMesh(obj, options);
                     }
                 }
                 break;
@@ -624,8 +650,12 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         }
     }
 
-    private prepare(mesh: SimpleGeometryMesh<MeshUserData>, feature: Feature, style: FeatureStyle) {
-        mesh.traverse((obj: MeshOrSurface) => {
+    private prepare(
+        mesh: SimpleGeometryMesh<MeshUserData>,
+        feature: Feature,
+        style: FeatureStyle | null,
+    ) {
+        mesh.traverse(obj => {
             obj.userData.feature = feature;
             obj.userData.style = style;
 
@@ -633,7 +663,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         });
     }
 
-    private getStyle(feature: Feature): FeatureStyle {
+    private getStyle(feature: Feature): FeatureStyle | null {
         if (typeof this._style === 'function') {
             return this._style(feature);
         }
@@ -669,7 +699,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
     private processFeatures(
         features: Feature<Geometry>[],
         node: FeatureTile,
-    ): SimpleGeometryMesh<MeshUserData>[] {
+    ): SimpleGeometryMesh<MeshUserData>[] | null {
         // if the node is not visible any more, don't bother
         if (!node.visible) {
             return null;
@@ -687,22 +717,29 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         const meshes: SimpleGeometryMesh<MeshUserData>[] = [];
 
         for (const feature of features) {
-            if (this._tileIdSet.has(feature.getId())) {
+            let id = feature.getId();
+            if (id == null) {
+                id = MathUtils.generateUUID();
+                feature.setId(id);
+            }
+
+            if (this._tileIdSet.has(id)) {
                 continue;
             }
+
             const geom = feature.getGeometry();
-            const id = feature.getId();
+
+            if (!geom) {
+                continue;
+            }
+
             const style = typeof this._style === 'function' ? this._style(feature) : this._style;
-            const userData = {
-                id,
-                feature,
-            };
 
             const type = geom.getType();
 
-            let mesh: SimpleGeometryMesh<MeshUserData>;
+            let mesh: SimpleGeometryMesh<MeshUserData> | null = null;
 
-            const commonOptions = { ignoreZ: this._ignoreZ, userData };
+            const commonOptions = { ignoreZ: this._ignoreZ };
 
             switch (type) {
                 case 'Point':
@@ -766,7 +803,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         reject: (error: Error) => void,
     ) {
         const olExtent = OLUtils.toOLExtent(extent);
-        const resolution: number = undefined;
+        const resolution: number | undefined = undefined;
 
         // @ts-expect-error loader_ is private
         this._source.loader_(olExtent, resolution, this._targetProjection, resolve, reject);
@@ -774,7 +811,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
 
     private async getMeshesWithCache(
         node: FeatureTile,
-    ): Promise<SimpleGeometryMesh<MeshUserData>[]> {
+    ): Promise<SimpleGeometryMesh<MeshUserData>[] | null> {
         const cacheKey = this.getCacheKey(node);
         const cachedFeatures = GlobalCache.get(cacheKey) as SimpleGeometryMesh<MeshUserData>[];
 
@@ -812,11 +849,6 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
             this.disposeTile(tile);
 
             return null;
-        }
-
-        // initialisation
-        if (tile.userData.layerUpdateState == null) {
-            tile.userData.layerUpdateState = new LayerUpdateState();
         }
 
         // Are we visible ?
@@ -866,7 +898,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
                         }
 
                         for (const mesh of meshes) {
-                            const id = mesh.userData.feature.getId();
+                            const id = nonNull(mesh.userData.feature?.getId());
 
                             if (!this._tileIdSet.has(id) || id == null) {
                                 this._tileIdSet.add(id);
@@ -952,7 +984,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
                     child = this.buildNewTile(extent, z + 1, 2 * x + 0, 2 * y + 1);
                 } else if (i === 2) {
                     child = this.buildNewTile(extent, z + 1, 2 * x + 1, 2 * y + 0);
-                } else if (i === 3) {
+                } else {
                     child = this.buildNewTile(extent, z + 1, 2 * x + 1, 2 * y + 1);
                 }
                 node.add(child);
@@ -964,7 +996,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         }
     }
 
-    private testTileSSE(tile: Group, sse: { lengths: { x: number; y: number }; ratio: number }) {
+    private testTileSSE(tile: Group, sse: SSE | null) {
         if (this.maxLevel >= 0 && this.maxLevel <= tile.userData.z) {
             return false;
         }
