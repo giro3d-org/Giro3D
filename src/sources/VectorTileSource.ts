@@ -48,7 +48,7 @@ import type { OrderFunction } from 'ol/render';
 import type { StyleFunction } from 'ol/style/Style';
 import type Extent from '../core/geographic/Extent';
 import EmptyTexture from '../renderer/EmptyTexture';
-import Fetcher from '../utils/Fetcher.js';
+import Fetcher from '../utils/Fetcher';
 import OpenLayersUtils from '../utils/OpenLayersUtils';
 import { nonNull } from '../utils/tsutils';
 import type { GetImageOptions, ImageResponse, ImageSourceOptions } from './ImageSource';
