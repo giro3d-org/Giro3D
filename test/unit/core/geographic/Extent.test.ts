@@ -633,6 +633,24 @@ describe('Extent', () => {
         });
     });
 
+    describe('unionMany', () => {
+        it('should return the union of all extents', () => {
+            const crs = 'EPSG:3857';
+
+            const e0 = new Extent(crs, -123, 2, -5, 6660);
+            const e1 = new Extent(crs, 10, 24, -5, 525);
+            const e2 = new Extent(crs, 0, 100, -908, -100);
+
+            const union = Extent.unionMany(e0, e1, e2)!;
+
+            expect(union.crs()).toEqual(crs);
+            expect(union.west()).toEqual(-123);
+            expect(union.east()).toEqual(100);
+            expect(union.north()).toEqual(6660);
+            expect(union.south()).toEqual(-908);
+        });
+    });
+
     describe('fromCenterAndSize', () => {
         it('should return an extent center on the correct coordinate', () => {
             const center = { x: 2324, y: -23254 };
