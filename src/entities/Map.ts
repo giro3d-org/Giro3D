@@ -1714,7 +1714,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         return true;
     }
 
-    private testTileSSE(tile: TileMesh, sse: SSE) {
+    private testTileSSE(tile: TileMesh, sse: SSE | null) {
         if (this.maxSubdivisionLevel <= tile.level) {
             return false;
         }

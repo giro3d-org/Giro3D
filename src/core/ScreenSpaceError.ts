@@ -19,11 +19,11 @@ export interface SSE {
     origin: Vector3;
     x: Vector3;
     y: Vector3;
-    z: Vector3;
+    z: Vector3 | null;
     lengths: {
         x: number;
         y: number;
-        z: number;
+        z: number | null;
     };
     ratio: number;
     area: number;
@@ -158,7 +158,7 @@ export default {
         matrix: Matrix4,
         geometricError: number,
         mode: Mode,
-    ): SSE {
+    ): SSE | null {
         if (isPerspectiveCamera(camera.camera)) {
             const distance = findBox3Distance(camera, box3, matrix, mode === Mode.MODE_3D);
             if (distance <= geometricError) {
