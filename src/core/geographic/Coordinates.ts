@@ -18,7 +18,7 @@ export const UNIT = {
  * @param projunit - - the proj4 UoM string
  * @returns the unit of measure (see `UNIT`)
  */
-function unitFromProj4Unit(projunit: string) {
+function unitFromProj4Unit(projunit: string | undefined) {
     switch (projunit) {
         case 'deg':
         case 'degrees':
@@ -130,7 +130,6 @@ export type CoordinateParameters = [number, number] | [number, number, number] |
  */
 class Coordinates {
     private readonly _values: Float64Array;
-    private _normal: Vector3;
     crs: string;
 
     /**
@@ -144,6 +143,7 @@ class Coordinates {
      */
     constructor(crs: string, ...coordinates: CoordinateParameters) {
         this._values = new Float64Array(3);
+        this.crs = crs;
         this.set(crs, ...coordinates);
     }
 
@@ -177,7 +177,6 @@ class Coordinates {
                 this._values[i] = 0;
             }
         }
-        this._normal = undefined;
         return this;
     }
 
@@ -188,9 +187,6 @@ class Coordinates {
             r = target;
         } else {
             r = new Coordinates(this.crs, this._values[0], this._values[1], this._values[2]);
-        }
-        if (this._normal) {
-            r._normal = this._normal.clone();
         }
         return r;
     }
@@ -453,7 +449,7 @@ class Coordinates {
     }
 
     // Only support explicit conversions
-    private convert(newCrs: string, target: Coordinates) {
+    private convert(newCrs: string, target?: Coordinates) {
         target = target || new Coordinates(newCrs, 0, 0, 0);
         if (newCrs === this.crs) {
             return target.copy(this);
