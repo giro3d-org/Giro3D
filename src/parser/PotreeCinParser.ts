@@ -9,8 +9,7 @@ export default {
      * layer.metadata coming from cloud.js
      * @returns a promise that resolves with a BufferGeometry.
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    parse: function parse(buffer: ArrayBuffer, pointAttributes: string[]) {
+    parse: function parse(buffer: ArrayBuffer) {
         if (!buffer) {
             throw new Error('No array buffer provided.');
         }

@@ -40,7 +40,7 @@ describe('PotreePointCloud', () => {
             sources.add(elt1);
             sources.add(elt2);
             sources.add(elt3);
-            entity.root.findChildrenByName = (node, name) => {
+            entity.root!.findChildrenByName = (node, name) => {
                 expect(name).toEqual('12');
                 return node;
             };
@@ -53,7 +53,7 @@ describe('PotreePointCloud', () => {
             const sources = new Set();
             sources.add(elt1);
             sources.add(elt2);
-            entity.root.findChildrenByName = (node, name) => {
+            entity.root!.findChildrenByName = (node, name) => {
                 expect(name).toEqual('12');
                 return node;
             };
@@ -77,7 +77,9 @@ describe('PotreePointCloud', () => {
                     uz: 5,
                 },
                 scale: 1.0,
-                pointAttributes: ['POSITION', 'RGB'],
+                hierarchyStepSize: 1,
+                spacing: 1,
+                pointAttributes: [],
             };
 
             entity.parseMetadata(metadata);
@@ -88,7 +90,7 @@ describe('PotreePointCloud', () => {
             assert.ok(!normalDefined);
 
             // normals as vector
-            metadata.pointAttributes = ['POSITION', 'NORMAL', 'CLASSIFICATION'];
+            metadata.pointAttributes = ['NORMAL', 'CLASSIFICATION'];
             entity.parseMetadata(metadata);
             assert.ok(entity.material.defines.NORMAL);
             assert.ok(!entity.material.defines.NORMAL_SPHEREMAPPED);
@@ -97,7 +99,7 @@ describe('PotreePointCloud', () => {
             // spheremapped normals
             // @ts-expect-error invalid
             entity.material = { defines: {} };
-            metadata.pointAttributes = ['POSITION', 'COLOR_PACKED', 'NORMAL_SPHEREMAPPED'];
+            metadata.pointAttributes = ['COLOR_PACKED', 'NORMAL_SPHEREMAPPED'];
             entity.parseMetadata(metadata);
             assert.ok(!entity.material.defines.NORMAL);
             assert.ok(entity.material.defines.NORMAL_SPHEREMAPPED);
@@ -106,12 +108,7 @@ describe('PotreePointCloud', () => {
             // oct16 normals
             // @ts-expect-error invalid
             entity.material = { defines: {} };
-            metadata.pointAttributes = [
-                'POSITION',
-                'COLOR_PACKED',
-                'CLASSIFICATION',
-                'NORMAL_OCT16',
-            ];
+            metadata.pointAttributes = ['COLOR_PACKED', 'CLASSIFICATION', 'NORMAL_OCT16'];
             entity.parseMetadata(metadata);
             assert.ok(!entity.material.defines.NORMAL);
             assert.ok(!entity.material.defines.NORMAL_SPHEREMAPPED);
