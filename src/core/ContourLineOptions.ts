@@ -1,4 +1,4 @@
-import type { Color } from 'three';
+import type { ColorRepresentation } from 'three';
 
 /**
  * Option for contour lines.
@@ -27,5 +27,5 @@ export default interface ContourLineOptions {
     /**
      * The color of the lines.
      */
-    color?: Color;
+    color?: ColorRepresentation;
 }
