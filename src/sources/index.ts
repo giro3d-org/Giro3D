@@ -1,4 +1,8 @@
-import CogSource, { type CogCacheOptions, type CogSourceOptions } from './CogSource';
+import CogSource, {
+    type ChannelMapping,
+    type CogCacheOptions,
+    type CogSourceOptions,
+} from './CogSource';
 import ImageSource, {
     type CustomContainsFn,
     type GetImageOptions,
@@ -41,6 +45,7 @@ export {
     CogSource,
     CogSourceOptions,
     CogCacheOptions,
+    ChannelMapping,
     WmtsSource,
     WmtsSourceOptions,
     WmtsFromCapabilitiesOptions,

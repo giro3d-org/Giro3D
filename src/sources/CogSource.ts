@@ -27,6 +27,37 @@ const tmpDim = new Vector2();
 
 let sharedPool: Pool | undefined = undefined;
 
+/**
+ * How the samples in the GeoTIFF files (also
+ * known as bands), are mapped to the color channels of an RGB(A) image.
+ *
+ * Must be an array of either 1, 3 or 4 elements. Each element is the index of a sample in the
+ * source file. For example, to map the samples 0, 3, and 2 to the R, G, B colors, you can use
+ * `[0, 3, 2]`.
+ *
+ * - 1 element means the resulting image will be a grayscale image
+ * - 3 elements means the resulting image will be a RGB image
+ * - 4 elements means the resulting image will be a RGB image with an alpha channel.
+ *
+ * Note: if the channels is `undefined`, then they will be selected automatically with the
+ * following rules: if the image has 3 or more samples, the first 3 samples will be used,
+ * (i.e `[0, 1, 2]`). Otherwise, only the first sample will be used (i.e `[0]`). In any case,
+ * no transparency channel will be selected automatically, as there is no way to determine
+ * if a specific sample represents transparency.
+ *
+ * ## Examples
+ *
+ * - I have a color image, but I only want to see the blue channel (sample = 1): `[1]`
+ * - I have a grayscale image, with only 1 sample: `[0]`
+ * - I have a grayscale image with a transparency channel at index 1: `[0, 0, 0, 1]`
+ * - I have a color image without a transparency channel: `[0, 1, 2]`
+ * - I have a color image with a transparency channel at index 3: `[0, 1, 2, 3]`
+ * - I have a color image with transparency at index 3, but I only want to see the blue channel:
+ * `[1, 1, 1, 3]`
+ * - I have a color image but in the B, G, R order: `[2, 1, 0]`
+ */
+export type ChannelMapping = [number] | [number, number, number] | [number, number, number, number];
+
 function getPool(): Pool | undefined {
     if (!sharedPool && window.Worker) {
         sharedPool = new Pool();
@@ -184,35 +215,9 @@ export interface CogSourceOptions extends ImageSourceOptions {
      */
     crs: string;
     /**
-     * How the samples in the GeoTIFF files (also
-     * known as bands), are mapped to the color channels of an RGB(A) image.
-     *
-     * Must be an array of either 1, 3 or 4 elements. Each element is the index of a sample in the
-     * source file. For example, to map the samples 0, 3, and 2 to the R, G, B colors, you can use
-     * `[0, 3, 2]`.
-     *
-     * - 1 element means the resulting image will be a grayscale image
-     * - 3 elements means the resulting image will be a RGB image
-     * - 4 elements means the resulting image will be a RGB image with an alpha channel.
-     *
-     * Note: if the channels is `undefined`, then they will be selected automatically with the
-     * following rules: if the image has 3 or more samples, the first 3 samples will be used,
-     * (i.e `[0, 1, 2]`). Otherwise, only the first sample will be used (i.e `[0]`). In any case,
-     * no transparency channel will be selected automatically, as there is no way to determine
-     * if a specific sample represents transparency.
-     *
-     * ## Examples
-     *
-     * - I have a color image, but I only want to see the blue channel (sample = 1): `[1]`
-     * - I have a grayscale image, with only 1 sample: `[0]`
-     * - I have a grayscale image with a transparency channel at index 1: `[0, 0, 0, 1]`
-     * - I have a color image without a transparency channel: `[0, 1, 2]`
-     * - I have a color image with a transparency channel at index 3: `[0, 1, 2, 3]`
-     * - I have a color image with transparency at index 3, but I only want to see the blue channel:
-     * `[1, 1, 1, 3]`
-     * - I have a color image but in the B, G, R order: `[2, 1, 0]`
+     * How to map bands in the source GeoTIFF to color channels in Giro3D textures.
      */
-    channels?: number[];
+    channels?: ChannelMapping;
 
     /**
      * Advanced caching options.
@@ -238,7 +243,7 @@ class CogSource extends ImageSource {
     private _imageCount: number;
     private _images: Level[];
     private _masks: Level[];
-    private _channels?: number[];
+    private _channels: ChannelMapping = [0, 1, 2];
 
     // Fields available after initialization
     private _tiffImage?: GeoTIFF;
@@ -264,7 +269,7 @@ class CogSource extends ImageSource {
         this._imageCount = 0;
         this._images = [];
         this._masks = [];
-        this._channels = options.channels;
+        this._channels = options.channels ?? this._channels;
         this._cacheOptions = options.cacheOptions;
     }
 
@@ -402,12 +407,8 @@ class CogSource extends ImageSource {
         this._sampleCount = firstImage.getSamplesPerPixel();
 
         // Automatic selection of channels, if the user did not specify a mapping.
-        if (this._channels == null || this._channels.length === 0) {
-            if (this._sampleCount >= 3) {
-                this._channels = [0, 1, 2];
-            } else {
-                this._channels = [0];
-            }
+        if (this._sampleCount < this._channels.length) {
+            this._channels = [0];
         }
 
         this._nodata = firstImage.getGDALNoData();
@@ -554,13 +555,22 @@ class CogSource extends ImageSource {
     }
 
     /**
-     * Gets the channel mapping.
+     * Gets or sets the channel mapping.
      */
-    get channels(): number[] | undefined {
+    get channels(): ChannelMapping {
         return this._channels;
     }
 
-    set channels(value: number[]) {
+    set channels(value: ChannelMapping) {
+        if (value == null) {
+            throw new Error('expected non-null value');
+        }
+        const length = value.length;
+
+        if (!(length === 1 || length === 3 || length === 4)) {
+            throw new Error(`channels must be either a 1, 3 or 4 element array, got: ${length}`);
+        }
+
         this._channels = value;
         this.update();
     }
@@ -583,7 +593,7 @@ class CogSource extends ImageSource {
         const buffers = await this.getRegionBuffers(
             actualExtent,
             image,
-            nonNull(this._channels),
+            this._channels,
             signal,
             id,
         );
@@ -643,7 +653,7 @@ class CogSource extends ImageSource {
     private async readWindow(
         image: GeoTIFFImage,
         window: number[],
-        channels: number[],
+        channels: ChannelMapping,
         signal?: AbortSignal,
     ): Promise<ReadRasterResult> {
         if (canReadRGB(image)) {
@@ -681,7 +691,7 @@ class CogSource extends ImageSource {
     private async fetchBuffer(
         image: GeoTIFFImage,
         window: number[],
-        channels: number[],
+        channels: ChannelMapping,
         signal?: AbortSignal,
     ): Promise<TypedArray | TypedArray[] | null> {
         signal?.throwIfAborted();
@@ -723,7 +733,7 @@ class CogSource extends ImageSource {
     private async getRegionBuffers(
         extent: Extent,
         imageInfo: Level,
-        channels: number[],
+        channels: ChannelMapping,
         signal: AbortSignal | undefined,
         id: string,
     ): Promise<TypedArray[] | null> {
