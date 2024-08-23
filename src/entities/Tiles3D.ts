@@ -19,6 +19,7 @@ import PointCloudMaterial from '../renderer/PointCloudMaterial';
 import type Tiles3DSource from '../sources/Tiles3DSource';
 import Fetcher from '../utils/Fetcher';
 import { isBufferGeometry } from '../utils/predicates';
+import { nonNull } from '../utils/tsutils';
 import utf8Decoder from '../utils/Utf8Decoder';
 import $3dTilesIndex, { type ProcessedTile } from './3dtiles/3dTilesIndex';
 import $3dTilesLoader from './3dtiles/3dTilesLoader';
@@ -112,22 +113,13 @@ class Tiles3D<
     /** Read-only flag to check if a given object is of type Tiles3D. */
     readonly isTiles3D = true as const;
     private readonly _url: string;
-    private _networkOptions: RequestInit;
-    private _colorLayer: ColorLayer;
+    private _networkOptions?: RequestInit;
+    private _colorLayer?: ColorLayer;
 
     get url() {
         return this._url;
     }
 
-    /**
-     * Network options of the source.
-     *
-     * @deprecated Deprecated.
-     */
-    get networkOptions(): RequestInit {
-        // TODO: remove this
-        return this._networkOptions;
-    }
     /** The Screen Space Error (SSE) threshold to use for this tileset. */
     sseThreshold: number;
     /** The delay, in milliseconds, to cleanup unused objects. */
@@ -137,19 +129,16 @@ class Tiles3D<
     private _cleanableTiles: Tile[];
     private _opCounter: OperationCounter;
     private _queue: RequestQueue;
-    private _imageSize: Vector2;
-    get imageSize(): Vector2 {
-        return this._imageSize;
-    }
+    readonly imageSize = new Vector2(128, 128);
     private _tileset?: $3dTilesTileset;
     private _tileIndex?: $3dTilesIndex;
     private _asset?: $3dTilesAsset;
     get asset(): $3dTilesAsset {
-        return this._asset;
+        return nonNull(this._asset);
     }
     private _root?: Tile;
     public get root(): Tile {
-        return this._root;
+        return nonNull(this._root);
     }
     private _extent?: Extent;
     wireframe?: boolean;
@@ -210,7 +199,7 @@ class Tiles3D<
     }
 
     get loading() {
-        return this._opCounter.loading || this._colorLayer?.loading;
+        return this._opCounter.loading || (this._colorLayer?.loading ?? false);
     }
 
     get progress() {
@@ -265,8 +254,6 @@ class Tiles3D<
     }
 
     async preprocess(): Promise<void> {
-        this._imageSize = new Vector2(128, 128);
-
         // Download the root tileset to complete the preparation.
         const tileset = (await Fetcher.json(this._url, this._networkOptions)) as $3dTilesTileset;
         if (!tileset.root.refine) {
@@ -294,20 +281,17 @@ class Tiles3D<
         this._tileIndex = new $3dTilesIndex(tileset, urlPrefix);
         this._asset = tileset.asset;
 
-        const tile = await this.requestNewTile(
-            this._tileset.root as ProcessedTile,
-            undefined,
-            true,
-        );
-        if (tile === null) {
+        const tile = await this.requestNewTile(this._tileset.root as ProcessedTile);
+        if (tile == null) {
             throw new Error('Could not load root tile');
         }
+
         delete this._tileset;
 
         this.object3d.add(tile);
         tile.updateMatrixWorld();
 
-        this._tileIndex.get(tile).obj = tile;
+        nonNull(this._tileIndex).get(tile).obj = tile;
         this._root = tile;
         this._extent = boundingVolumeToExtent(
             this._instance.referenceCrs,
@@ -319,9 +303,7 @@ class Tiles3D<
     private async requestNewTile(
         metadata: ProcessedTile,
         parent?: Tile,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        _redraw = false,
-    ): Promise<Tile | null> {
+    ): Promise<Tile | undefined> {
         if (metadata.obj) {
             const tileset = metadata as ProcessedTile;
             this.unmarkTileForDeletion(tileset.obj);
@@ -335,7 +317,8 @@ class Tiles3D<
         if (!parent || parent.additiveRefinement) {
             // Additive refinement can be done independently for each child,
             // so we can compute a per child priority
-            const size = metadata.boundingVolumeObject.box
+            const box = nonNull(metadata.boundingVolumeObject.box);
+            const size = box
                 .clone()
                 .applyMatrix4(metadata.worldFromLocalTransform)
                 .getSize(tmpVector);
@@ -347,10 +330,8 @@ class Tiles3D<
             // and it will delay the display of its siblings.
             // So we compute a priority based on the size of the parent
             // TODO cache the computation of world bounding volume ?
-            const size = parent.boundingVolume.box
-                .clone()
-                .applyMatrix4(parent.matrixWorld)
-                .getSize(tmpVector);
+            const box = nonNull(parent.boundingVolume.box);
+            const size = box.clone().applyMatrix4(parent.matrixWorld).getSize(tmpVector);
             priority = size.x * size.y; // / this.tileIndex.index[parent.tileId].children.length;
         }
 
@@ -367,7 +348,7 @@ class Tiles3D<
             this._instance.notifyChange(this);
             return node;
         } catch (e) {
-            if (e.name !== 'AbortError') {
+            if (e instanceof Error && e.name !== 'AbortError') {
                 throw e;
             }
         } finally {
@@ -384,13 +365,13 @@ class Tiles3D<
         // Since we simply push in this array, the first item is always
         // the oldest one.
         const now = Date.now();
-        if (
-            this._cleanableTiles.length &&
-            now - this._cleanableTiles[0].cleanableSince > this.cleanupDelay
-        ) {
-            while (this._cleanableTiles.length) {
+        const cleanable = this._cleanableTiles;
+        const first = cleanable[0];
+
+        if (first && now - (first.cleanableSince as number) > this.cleanupDelay) {
+            while (cleanable.length > 0) {
                 const elt = this._cleanableTiles[0];
-                if (now - elt.cleanableSince > this.cleanupDelay) {
+                if (now - (elt.cleanableSince as number) > this.cleanupDelay) {
                     this.cleanup3dTileset(elt);
                 } else {
                     // later entries are younger
@@ -399,15 +380,17 @@ class Tiles3D<
             }
         }
 
-        return [this._root];
+        return [nonNull(this._root)];
     }
 
-    update(context: Context, node: Tile): Tile[] {
+    update(context: Context, node: Tile): Tile[] | undefined {
         // Remove deleted children (?)
         node.remove(...node.children.filter(c => c.deleted));
 
+        const parent = nonNull(node.parent);
+
         // early exit if parent's subdivision is in progress
-        if (node.parent.pendingSubdivision && !node.parent.additiveRefinement) {
+        if (parent.pendingSubdivision && !parent.additiveRefinement) {
             node.visible = false;
             return undefined;
         }
@@ -437,9 +420,9 @@ class Tiles3D<
                         // If one of our child is a tileset, this node must be displayed until this
                         // child content is ready, to avoid hiding our content too early (= when our
                         // child is loaded but its content is not)
-                        const subtilesets = this._tileIndex
-                            .get(node)
-                            .children.filter(tile => tile.isProcessedTile);
+                        const index = nonNull(this._tileIndex);
+                        const children = nonNull(index.get(node).children);
+                        const subtilesets = children.filter(tile => tile.isProcessedTile);
 
                         if (subtilesets.length) {
                             let allReady = true;
@@ -501,7 +484,7 @@ class Tiles3D<
                                     PointCloudMaterial.isPointCloudMaterial(this.material)
                                 ) {
                                     pointcloud.material.update(this.material);
-                                } else {
+                                } else if (this.material != null) {
                                     pointcloud.material.copy(this.material);
                                 }
                             }
@@ -538,8 +521,8 @@ class Tiles3D<
         }
     }
 
-    protected unmarkTileForDeletion(node: Tile) {
-        if (node.cleanableSince) {
+    protected unmarkTileForDeletion(node: Tile | undefined) {
+        if (node && node.cleanableSince) {
             this._cleanableTiles.splice(this._cleanableTiles.indexOf(node), 1);
             node.unmarkForDeletion();
         }
@@ -554,7 +537,7 @@ class Tiles3D<
     protected cleanup3dTileset(n: Tile, depth = 0): void {
         this.unmarkTileForDeletion(n);
 
-        const tileset = this._tileIndex.get(n);
+        const tileset = nonNull(this._tileIndex).get(n);
 
         if (tileset.obj) {
             tileset.obj.deleted = Date.now();
@@ -585,7 +568,7 @@ class Tiles3D<
     }
 
     protected subdivisionTest(context: Context, node: Tile): boolean {
-        const tileset = this._tileIndex.get(node);
+        const tileset = nonNull(this._tileIndex).get(node);
         if (tileset.children === undefined) {
             return false;
         }
@@ -600,7 +583,9 @@ class Tiles3D<
     }
 
     protected subdivideNodeAdditive(context: Context, node: Tile): void {
-        for (const child of this._tileIndex.get(node).children) {
+        const children = nonNull(nonNull(this._tileIndex).get(node).children);
+
+        for (const child of children) {
             // child being downloaded or already added => skip
             if (child.promise || node.children.filter(n => n.tileId === child.tileId).length > 0) {
                 continue;
@@ -623,7 +608,7 @@ class Tiles3D<
                 continue;
             }
 
-            child.promise = this.requestNewTile(child, node, true)
+            child.promise = this.requestNewTile(child, node)
                 .then(tile => {
                     if (!tile || !node.parent) {
                         // cancelled promise or node has been deleted
@@ -632,12 +617,12 @@ class Tiles3D<
                         tile.updateMatrixWorld();
 
                         const extent = boundingVolumeToExtent(
-                            this._extent.crs(),
+                            nonNull(this._extent).crs(),
                             tile.boundingVolume,
                             tile.matrixWorld,
                         );
-                        tile.traverse((obj: ObjectWithExtent) => {
-                            obj.extent = extent;
+                        tile.traverse(obj => {
+                            (obj as ObjectWithExtent).extent = extent;
                         });
 
                         this._instance.notifyChange(child);
@@ -659,8 +644,11 @@ class Tiles3D<
         if (node.getChildTiles().length > 0) {
             return;
         }
+
+        const index = nonNull(this._tileIndex);
+
         // No child => nothing to do either
-        const childrenTiles = this._tileIndex.get(node).children;
+        const childrenTiles = index.get(node).children;
         if (childrenTiles === undefined || childrenTiles.length === 0) {
             return;
         }
@@ -669,8 +657,8 @@ class Tiles3D<
 
         // Substractive (refine = 'REPLACE') is an all or nothing subdivision mode
         const promises: Promise<void>[] = [];
-        for (const child of this._tileIndex.get(node).children) {
-            const p = this.requestNewTile(child, node, false)
+        for (const child of childrenTiles) {
+            const p = this.requestNewTile(child, node)
                 .then(tile => {
                     if (!tile || !node.parent) {
                         // cancelled promise or node has been deleted
@@ -679,12 +667,12 @@ class Tiles3D<
                         tile.updateMatrixWorld();
 
                         const extent = boundingVolumeToExtent(
-                            this._extent.crs(),
+                            nonNull(this._extent).crs(),
                             tile.boundingVolume,
                             tile.matrixWorld,
                         );
-                        tile.traverse((obj: ObjectWithExtent) => {
-                            obj.extent = extent;
+                        tile.traverse(obj => {
+                            (obj as ObjectWithExtent).extent = extent;
                         });
                     }
                 })
@@ -750,12 +738,12 @@ class Tiles3D<
 
         // Patch for supporting 3D Tiles pre 1.0 (metadata.content.url) and 1.0
         // (metadata.content.uri)
-        let path: string;
+        let path: string | undefined = undefined;
         if (metadata.content) {
             if (metadata.content.url) {
                 // 3D Tiles pre 1.0 version
                 path = metadata.content.url;
-            } else {
+            } else if (metadata.content.uri) {
                 // 3D Tiles 1.0 version
                 path = metadata.content.uri;
             }
@@ -784,7 +772,7 @@ class Tiles3D<
                         this,
                         url,
                     );
-                    this._tileIndex.extendTileset(newTileset, metadata.tileId, newPrefix);
+                    nonNull(this._tileIndex).extendTileset(newTileset, metadata.tileId, newPrefix);
                 } else if (magic === 'b3dm') {
                     content = await $3dTilesLoader.b3dmToMesh(result, this, url);
                 } else if (magic === 'pnts') {
@@ -817,7 +805,7 @@ class Tiles3D<
      * @param node - The tile to evaluate;
      * @returns true if the request can continue, false if it must be cancelled.
      */
-    shouldExecute(node: Tile): boolean {
+    shouldExecute(node: Tile | undefined): boolean {
         if (!node) {
             return true;
         }
@@ -833,7 +821,7 @@ class Tiles3D<
         }
 
         // tile visible but doesn't need subdivision anymore
-        if (node.sse < this.sseThreshold) {
+        if (node.sse && node.sse < this.sseThreshold) {
             return false;
         }
 
