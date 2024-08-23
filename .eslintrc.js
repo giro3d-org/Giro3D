@@ -164,7 +164,4 @@ module.exports = {
             },
         },
     ],
-    globals: {
-        __DEBUG__: false,
-    },
 };
