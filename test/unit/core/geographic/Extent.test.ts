@@ -30,10 +30,10 @@ describe('Extent', () => {
                 new Coordinates('EPSG:4326', maxX, maxY),
             );
 
-            expect(minX).toEqual(withCoords.west());
-            expect(maxX).toEqual(withCoords.east());
-            expect(minY).toEqual(withCoords.south());
-            expect(maxY).toEqual(withCoords.north());
+            expect(minX).toEqual(withCoords.west);
+            expect(maxX).toEqual(withCoords.east);
+            expect(minY).toEqual(withCoords.south);
+            expect(maxY).toEqual(withCoords.north);
         });
 
         it('should build the expected extent using keywords', () => {
@@ -43,18 +43,18 @@ describe('Extent', () => {
                 north: maxY,
                 west: minX,
             });
-            expect(minX).toEqual(withKeywords.west());
-            expect(maxX).toEqual(withKeywords.east());
-            expect(minY).toEqual(withKeywords.south());
-            expect(maxY).toEqual(withKeywords.north());
+            expect(minX).toEqual(withKeywords.west);
+            expect(maxX).toEqual(withKeywords.east);
+            expect(minY).toEqual(withKeywords.south);
+            expect(maxY).toEqual(withKeywords.north);
         });
 
         it('should build the expected extent using values', () => {
             const withValues = new Extent('EPSG:4326', minX, maxX, minY, maxY);
-            expect(minX).toEqual(withValues.west());
-            expect(maxX).toEqual(withValues.east());
-            expect(minY).toEqual(withValues.south());
-            expect(maxY).toEqual(withValues.north());
+            expect(minX).toEqual(withValues.west);
+            expect(maxX).toEqual(withValues.east);
+            expect(minY).toEqual(withValues.south);
+            expect(maxY).toEqual(withValues.north);
         });
 
         it('should build the expected extent from box3', () => {
@@ -64,10 +64,10 @@ describe('Extent', () => {
             );
             const fromBox = Extent.fromBox3('EPSG:4978', box);
 
-            expect(fromBox.west()).toEqual(box.min.x);
-            expect(fromBox.east()).toEqual(box.max.x);
-            expect(fromBox.north()).toEqual(box.max.y);
-            expect(fromBox.south()).toEqual(box.min.y);
+            expect(fromBox.west).toEqual(box.min.x);
+            expect(fromBox.east).toEqual(box.max.x);
+            expect(fromBox.north).toEqual(box.max.y);
+            expect(fromBox.south).toEqual(box.min.y);
         });
     });
 
@@ -156,10 +156,10 @@ describe('Extent', () => {
 
             expect(copy).not.toBe(original);
 
-            expect(south).toEqual(copy.south());
-            expect(north).toEqual(copy.north());
-            expect(east).toEqual(copy.east());
-            expect(west).toEqual(copy.west());
+            expect(south).toEqual(copy.south);
+            expect(north).toEqual(copy.north);
+            expect(east).toEqual(copy.east);
+            expect(west).toEqual(copy.west);
         });
     });
 
@@ -400,10 +400,10 @@ describe('Extent', () => {
             const maxHeight = 400.3;
             const box = extent.toBox3(minHeight, maxHeight);
 
-            expect(box.min.x).toBe(extent.west());
-            expect(box.max.x).toBe(extent.east());
-            expect(box.min.y).toBe(extent.south());
-            expect(box.max.y).toBe(extent.north());
+            expect(box.min.x).toBe(extent.west);
+            expect(box.max.x).toBe(extent.east);
+            expect(box.min.y).toBe(extent.south);
+            expect(box.max.y).toBe(extent.north);
             expect(box.min.z).toBe(minHeight);
             expect(box.max.z).toBe(maxHeight);
         });
@@ -423,10 +423,10 @@ describe('Extent', () => {
             const extent = new Extent('EPSG:3857', 5, 1132, 4204.2, 10000.4);
             const result = extent.withMargin(xmargin, ymargin);
 
-            expect(result.west()).toEqual(extent.west() - xmargin);
-            expect(result.east()).toEqual(extent.east() + xmargin);
-            expect(result.south()).toEqual(extent.south() - ymargin);
-            expect(result.north()).toEqual(extent.north() + ymargin);
+            expect(result.west).toEqual(extent.west - xmargin);
+            expect(result.east).toEqual(extent.east + xmargin);
+            expect(result.south).toEqual(extent.south - ymargin);
+            expect(result.north).toEqual(extent.north + ymargin);
         });
     });
 
@@ -444,10 +444,10 @@ describe('Extent', () => {
             const extent = new Extent('EPSG:3857', 0, 100, 0, 200);
             const result = extent.withRelativeMargin(0.1);
 
-            expect(result.west()).toEqual(extent.west() - xmargin);
-            expect(result.east()).toEqual(extent.east() + xmargin);
-            expect(result.south()).toEqual(extent.south() - ymargin);
-            expect(result.north()).toEqual(extent.north() + ymargin);
+            expect(result.west).toEqual(extent.west - xmargin);
+            expect(result.east).toEqual(extent.east + xmargin);
+            expect(result.south).toEqual(extent.south - ymargin);
+            expect(result.north).toEqual(extent.north + ymargin);
         });
     });
 
@@ -458,10 +458,10 @@ describe('Extent', () => {
             const extent = Extent.fromBox3('EPSG:4326', box);
 
             expect(extent.crs()).toBe('EPSG:4326');
-            expect(extent.west()).toBe(box.min.x);
-            expect(extent.east()).toBe(box.max.x);
-            expect(extent.north()).toBe(box.max.y);
-            expect(extent.south()).toBe(box.min.y);
+            expect(extent.west).toBe(box.min.x);
+            expect(extent.east).toBe(box.max.x);
+            expect(extent.north).toBe(box.max.y);
+            expect(extent.south).toBe(box.min.y);
         });
     });
 
@@ -644,10 +644,10 @@ describe('Extent', () => {
             const union = Extent.unionMany(e0, e1, e2)!;
 
             expect(union.crs()).toEqual(crs);
-            expect(union.west()).toEqual(-123);
-            expect(union.east()).toEqual(100);
-            expect(union.north()).toEqual(6660);
-            expect(union.south()).toEqual(-908);
+            expect(union.west).toEqual(-123);
+            expect(union.east).toEqual(100);
+            expect(union.north).toEqual(6660);
+            expect(union.south).toEqual(-908);
         });
     });
 

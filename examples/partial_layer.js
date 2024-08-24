@@ -80,7 +80,7 @@ const elevationLayer = new ElevationLayer({
 map.addLayer(elevationLayer);
 
 // Sets the camera position
-instance.view.camera.position.set(extent.west(), extent.south(), 2000);
+instance.view.camera.position.set(extent.west, extent.south, 2000);
 
 // Creates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);

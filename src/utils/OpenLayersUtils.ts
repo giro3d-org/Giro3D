@@ -11,10 +11,10 @@ function fromOLExtent(extent: OLExtent, projectionCode: string) {
 
 function toOLExtent(extent: Extent, margin = 0): OLExtent {
     return [
-        extent.west() - margin,
-        extent.south() - margin,
-        extent.east() + margin,
-        extent.north() + margin,
+        extent.west - margin,
+        extent.south - margin,
+        extent.east + margin,
+        extent.north + margin,
     ];
 }
 
