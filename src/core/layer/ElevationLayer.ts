@@ -1,7 +1,9 @@
 import type { PixelFormat, Texture, TextureDataType } from 'three';
 import { FloatType, NoColorSpace, RGFormat } from 'three';
-import type ElevationRange from '../ElevationRange.js';
-import type Extent from '../geographic/Extent.js';
+import { isFiniteNumber } from '../../utils/predicates';
+import { nonNull } from '../../utils/tsutils';
+import type ElevationRange from '../ElevationRange';
+import type Extent from '../geographic/Extent';
 import type TileMesh from '../TileMesh';
 import type { LayerEvents, LayerOptions, LayerUserData, Target, TextureAndPitch } from './Layer';
 import Layer from './Layer';
@@ -90,7 +92,11 @@ class ElevationLayer<UserData extends LayerUserData = LayerUserData> extends Lay
         // Compute a min/max approximation using the background images that
         // are already present on the composer.
         if (!this.minmax || this.minmax.isDefault) {
-            const { min, max } = this._composer.getMinMax(this.getExtent());
+            const extent = nonNull(
+                this.getExtent(),
+                'neither this layer nor the source has an extent',
+            );
+            const { min, max } = nonNull(this._composer).getMinMax(extent);
             this.minmax = { min, max };
         }
     }
@@ -109,11 +115,9 @@ class ElevationLayer<UserData extends LayerUserData = LayerUserData> extends Lay
     }
 
     private getMinMax(texture: TextureWithMinMax) {
-        if (this.minmax == null) {
-            this.minmax = { min: texture.min, max: texture.max };
-        }
-        const min = Number.isFinite(texture.min) ? texture.min : this.minmax.min;
-        const max = Number.isFinite(texture.max) ? texture.max : this.minmax.max;
+        const min = isFiniteNumber(texture.min) ? texture.min : this.minmax.min;
+        const max = isFiniteNumber(texture.max) ? texture.max : this.minmax.max;
+
         // Refine the min/max values using the new texture.
         this.minmax.min = Math.min(min, this.minmax.min);
         this.minmax.max = Math.max(max, this.minmax.max);
@@ -144,7 +148,7 @@ class ElevationLayer<UserData extends LayerUserData = LayerUserData> extends Lay
 
         node.setElevationTexture(
             this,
-            { ...value, renderTarget: target.renderTarget },
+            { ...value, renderTarget: nonNull(target.renderTarget) },
             isLastRender,
         );
     }

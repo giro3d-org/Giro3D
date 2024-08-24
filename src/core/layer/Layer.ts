@@ -21,6 +21,7 @@ import { GlobalRenderTargetPool } from '../../renderer/RenderTargetPool';
 import ImageSource, { type ImageResult } from '../../sources/ImageSource';
 import PromiseUtils, { PromiseStatus } from '../../utils/PromiseUtils';
 import TextureGenerator from '../../utils/TextureGenerator';
+import { nonNull } from '../../utils/tsutils';
 import type Context from '../Context';
 import type ElevationRange from '../ElevationRange';
 import type Extent from '../geographic/Extent';
