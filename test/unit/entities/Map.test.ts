@@ -1,5 +1,6 @@
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import Instance from '@giro3d/giro3d/core/Instance';
+import type { LayerUserData } from '@giro3d/giro3d/core/layer';
 import ColorLayer, { isColorLayer } from '@giro3d/giro3d/core/layer/ColorLayer';
 import ElevationLayer, { isElevationLayer } from '@giro3d/giro3d/core/layer/ElevationLayer';
 import type TileMesh from '@giro3d/giro3d/core/TileMesh.js';
@@ -24,6 +25,10 @@ function makeTile(patch?: (tile: TileMesh) => void): TileMesh {
 
     return tile;
 }
+
+type TestUserData = LayerUserData & {
+    key: number;
+};
 
 describe('Map', () => {
     let viewerDiv: HTMLDivElement;
@@ -57,8 +62,7 @@ describe('Map', () => {
     });
 
     function checkLayerIndices() {
-        // @ts-expect-error private property
-        const indices = map._layers.map(lyr => map.getIndex(lyr));
+        const indices = map.getLayers().map(lyr => map.getIndex(lyr));
         for (let i = 0; i < indices.length; i++) {
             expect(indices[i]).toEqual(i);
         }
@@ -248,7 +252,7 @@ describe('Map', () => {
             const horizontalMap = new Map({ extent: horizontalExtent });
 
             // @ts-expect-error private property
-            horizontalMap._instance = { referenceCrs: 'EPSG:3857' };
+            horizontalMap._instance = { referenceCrs: 'EPSG:3857' } as Instance;
 
             await horizontalMap.preprocess();
 
@@ -260,7 +264,7 @@ describe('Map', () => {
             const verticalMap = new Map({ extent: verticalExtent });
 
             // @ts-expect-error private property
-            verticalMap._instance = { referenceCrs: 'EPSG:3857' };
+            verticalMap._instance = { referenceCrs: 'EPSG:3857' } as Instance;
 
             await verticalMap.preprocess();
 
@@ -277,7 +281,7 @@ describe('Map', () => {
             );
 
             // @ts-expect-error private property
-            verticalMap._instance = { referenceCrs: 'EPSG:3946' };
+            verticalMap._instance = { referenceCrs: 'EPSG:3946' } as Instance;
 
             await verticalMap.preprocess();
 
@@ -316,6 +320,7 @@ describe('Map', () => {
         it('should accept only Layer object', async () => {
             // @ts-expect-error missing parameter
             await expect(map.addLayer()).rejects.toThrowError('layer is not an instance of Layer');
+            // @ts-expect-error null parameter
             await expect(map.addLayer(null)).rejects.toThrowError(
                 'layer is not an instance of Layer',
             );
@@ -334,8 +339,8 @@ describe('Map', () => {
         it('should add a layer', () => {
             const layer = new ColorLayer({ source: nullSource });
 
-            // @ts-expect-error private property
-            map._instance = { referenceCrs: 'EPSG:3857', notifyChange: jest.fn() };
+            // @ts-expect-error invalid type
+            map._nullableInstance = { referenceCrs: 'EPSG:3857', notifyChange: jest.fn() };
 
             map.addLayer(layer).then(() => {
                 expect(map.getLayers()).toStrictEqual([layer]);
@@ -389,6 +394,7 @@ describe('Map', () => {
             await map.addLayer(layer1);
             await map.addLayer(layer2);
 
+            // @ts-expect-error missing argument
             map.postUpdate();
 
             expect(layer1.postUpdate).toHaveBeenCalledTimes(1);
@@ -507,25 +513,27 @@ describe('Map', () => {
 
     describe('Name of the group', () => {
         it('should register the newly created TileMesh to the index', () => {
-            expect(map.tileIndex.tiles.get('0,0,0').deref()).toEqual(map.level0Nodes[0]);
+            expect(map.tileIndex.tiles.get('0,0,0')!.deref()).toEqual(map.level0Nodes[0]);
         });
     });
 
     describe('sortColorLayers', () => {
         function mkColorLayer(key: number) {
-            const layer = new ColorLayer({ name: `${key}`, source: nullSource });
+            const layer = new ColorLayer<TestUserData>({ name: `${key}`, source: nullSource });
             layer.userData.key = key;
             return layer;
         }
 
         function mkElevationLayer(key: number) {
-            const layer = new ElevationLayer({ name: `${key}`, source: nullSource });
+            const layer = new ElevationLayer<TestUserData>({ name: `${key}`, source: nullSource });
             layer.userData.key = key;
             return layer;
         }
 
         it('should throw if the compareFn is null', () => {
+            // @ts-expect-error missing argument
             expect(() => map.sortColorLayers(null)).toThrow(/missing comparator/);
+            // @ts-expect-error missing argument
             expect(() => map.sortColorLayers(undefined)).toThrow(/missing comparator/);
         });
 
@@ -545,6 +553,7 @@ describe('Map', () => {
             layers.push(c);
             layers.push(d);
 
+            // @ts-expect-error untyped userData
             map.sortColorLayers((l1, l2) => (l1.userData.key < l2.userData.key ? -1 : 1));
 
             // Ensure that elevation layers are by convention put at the start
@@ -578,6 +587,7 @@ describe('Map', () => {
 
             expect(tile.reorderLayers).not.toHaveBeenCalled();
 
+            // @ts-expect-error untyped userData
             map.sortColorLayers((l1, l2) => (l1.userData.key < l2.userData.key ? -1 : 1));
 
             expect(tile.reorderLayers).toHaveBeenCalled();
@@ -814,7 +824,6 @@ describe('Map', () => {
 
         it('should return {0, 0} if an elevation layer is present, but has no minmax', async () => {
             const layer = new ElevationLayer({ source: new NullSource() });
-            layer.minmax = null;
 
             map.addLayer(layer);
 
