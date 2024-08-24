@@ -1,7 +1,8 @@
-import { Clock, MathUtils as ThreeMath, Sphere } from 'three';
-import Entity from '../entities/Entity';
-import type C3DEngine from '../renderer/c3DEngine';
-import Context from './Context';
+import { Clock, MathUtils, Plane, Sphere, Vector3 } from 'three';
+import type Entity from '../entities/Entity';
+import type View from '../renderer/View';
+import { isBufferGeometry } from '../utils/predicates';
+import type Context from './Context';
 import type Instance from './Instance';
 
 /** Rendering state */
@@ -12,9 +13,31 @@ export enum RenderingState {
     RENDERING_SCHEDULED = 1,
 }
 
+class ContextImpl implements Context {
+    readonly view: View;
+    readonly distance: {
+        plane: Plane;
+        min: number;
+        max: number;
+    };
+
+    constructor(view: View) {
+        this.view = view;
+
+        this.distance = {
+            plane: new Plane().setFromNormalAndCoplanarPoint(
+                view.camera.getWorldDirection(new Vector3()),
+                view.camera.position,
+            ),
+            min: Infinity,
+            max: 0,
+        };
+    }
+}
+
 const tmpSphere = new Sphere();
 
-function updateElements(context: Context, entity: Entity, elements?: unknown[]) {
+function updateElements(context: Context, entity: Entity, elements?: unknown[] | null) {
     if (!elements) {
         return;
     }
@@ -32,13 +55,6 @@ class MainLoop {
     }
     private _needsRedraw: boolean;
     private _automaticCameraPlaneComputation = true;
-    private readonly _gfxEngine: C3DEngine;
-    /**
-     * @deprecated Use {@link Instance.engine}
-     */
-    public get gfxEngine(): C3DEngine {
-        return this._gfxEngine;
-    }
     private _updateLoopRestarted: boolean;
     private readonly _changeSources: Set<unknown>;
     private readonly _clock = new Clock();
@@ -63,10 +79,9 @@ class MainLoop {
         this._automaticCameraPlaneComputation = v;
     }
 
-    constructor(engine: C3DEngine) {
+    constructor() {
         this._renderingState = RenderingState.RENDERING_PAUSED;
         this._needsRedraw = false;
-        this._gfxEngine = engine; // TODO: remove me
         this._updateLoopRestarted = true;
         this._changeSources = new Set<unknown>();
     }
@@ -104,8 +119,6 @@ class MainLoop {
     }
 
     private update(instance: Instance, updateSources: Set<unknown>, dt: number) {
-        const context = new Context(instance.view, instance);
-
         if (this.automaticCameraPlaneComputation) {
             // Reset near/far to default value to allow update function to test
             // visibility using camera's frustum; without depending on the near/far
@@ -120,8 +133,9 @@ class MainLoop {
         // on near/far values.
         instance.view.update();
 
-        for (const entity of instance.getObjects(o => o instanceof Entity) as Entity[]) {
-            context.resetForEntity(entity);
+        const context = new ContextImpl(instance.view);
+
+        for (const entity of instance.getEntities()) {
             if (entity.shouldCheckForUpdate()) {
                 instance.dispatchEvent({
                     type: 'before-entity-update',
@@ -164,20 +178,7 @@ class MainLoop {
 
         // TODO document the fact Object3D must be added through threeObjects
         // if they want to influence the near / far planes
-        instance.threeObjects.traverse(o => {
-            if (!o.visible) {
-                return;
-            }
-            const boundingSphere = ((o as any)?.geometry as any)?.boundingSphere as Sphere;
-            if (boundingSphere && !boundingSphere.isEmpty()) {
-                tmpSphere.copy(boundingSphere);
-                tmpSphere.applyMatrix4(o.matrixWorld);
-                const d = tmpSphere.distanceToPoint(context.view.camera.position);
-                context.distance.min = ThreeMath.clamp(d, 0, context.distance.min);
-
-                context.distance.max = Math.max(context.distance.max, d + 2 * tmpSphere.radius);
-            }
-        });
+        this.updateCameraPlanesFromObjects(context, instance);
 
         if (this.automaticCameraPlaneComputation) {
             instance.view.near = context.distance.min;
@@ -185,6 +186,28 @@ class MainLoop {
         }
 
         instance.view.update();
+    }
+
+    private updateCameraPlanesFromObjects(context: Context, instance: Instance) {
+        instance.threeObjects.traverse(o => {
+            if (!o.visible) {
+                return;
+            }
+
+            if ('geometry' in o && isBufferGeometry(o.geometry)) {
+                const boundingSphere = o.geometry.boundingSphere;
+
+                if (boundingSphere && !boundingSphere.isEmpty()) {
+                    tmpSphere.copy(boundingSphere);
+                    tmpSphere.applyMatrix4(o.matrixWorld);
+
+                    const d = tmpSphere.distanceToPoint(context.view.camera.position);
+
+                    context.distance.min = MathUtils.clamp(d, 0.01, context.distance.min);
+                    context.distance.max = Math.max(context.distance.max, d + 2 * tmpSphere.radius);
+                }
+            }
+        });
     }
 
     private step(instance: Instance) {

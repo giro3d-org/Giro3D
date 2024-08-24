@@ -733,7 +733,11 @@ function getDepthBufferMemoryUsage(context: GetMemoryUsageContext, renderTarget:
     context.objects.set(renderTarget.texture.id, { gpuMemory: bytes, cpuMemory: 0 });
 }
 
-function getMemoryUsage(context: GetMemoryUsageContext, texture: Texture | RenderTarget) {
+function getMemoryUsage(context: GetMemoryUsageContext, texture: Texture | RenderTarget | null) {
+    if (texture == null) {
+        return;
+    }
+
     if (isTexture(texture)) {
         getTextureMemoryUsage(context, texture);
     } else if (isRenderTarget(texture)) {

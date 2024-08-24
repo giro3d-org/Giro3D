@@ -30,7 +30,7 @@ interface SimpleGeometryMesh<
      */
     dispose(): void;
 
-    userData: UserData;
+    userData: Partial<UserData>;
 
     /**
      * Sets the opacity of the mesh. This opacity is combined with the opacity of the material.

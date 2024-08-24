@@ -12,7 +12,7 @@ export default class MultiLineStringMesh<UserData extends DefaultUserData = Defa
     readonly isMultiLineStringMesh = true as const;
     readonly type = 'MultiLineStringMesh' as const;
 
-    userData: UserData;
+    override userData: Partial<UserData> = {};
 
     set opacity(opacity: number) {
         this.traverseLineStrings(ls => (ls.opacity = opacity));

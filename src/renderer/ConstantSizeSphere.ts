@@ -101,6 +101,8 @@ export function getWorldSpaceRadius(
         fieldOfViewHeight = Math.tan(fovRads) * dist;
     } else if (isOrthographicCamera(camera)) {
         fieldOfViewHeight = Math.abs(camera.top - camera.bottom);
+    } else {
+        throw new Error('unsupported camera type');
     }
 
     const size = renderer.getSize(tmpSize);

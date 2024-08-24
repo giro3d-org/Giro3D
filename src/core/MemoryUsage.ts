@@ -51,7 +51,7 @@ export const GIGABYTE = 1024 * MEGABYTE;
  * @param locale - The locale parameter. Default is the current locale.
  * @returns A formatted string using either the specified locale, or the current locale.
  */
-export function format(bytes: number, locale: string = undefined): string {
+export function format(bytes: number, locale: string | undefined = undefined): string {
     const numberFormat = new Intl.NumberFormat(locale, {
         minimumFractionDigits: 0,
         maximumFractionDigits: 1,

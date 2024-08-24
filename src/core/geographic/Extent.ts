@@ -1,6 +1,7 @@
 import type { TypedArray } from 'three';
 import { Box3, Vector2, Vector3 } from 'three';
 import ProjUtils from '../../utils/ProjUtils';
+import { nonNull } from '../../utils/tsutils';
 import OffsetScale from '../OffsetScale';
 import Coordinates, {
     assertCrsIsValid,
@@ -88,6 +89,7 @@ class Extent {
      */
     constructor(crs: string, ...values: ExtentParameters) {
         this._values = new Float64Array(4);
+        this._crs = crs;
         this.set(crs, ...values);
     }
 
@@ -476,7 +478,7 @@ class Extent {
      * If this value is not provided, a reasonable epsilon will be computed.
      * @returns `true` if this extent is contained in the other extent.
      */
-    isInside(other: Extent, epsilon: number = null) {
+    isInside(other: Extent, epsilon: number | null = null) {
         const o = other.as(this._crs);
         // 0 is an acceptable value for epsilon:
         const dims = this.dimensions(tmpXY);
@@ -635,9 +637,59 @@ class Extent {
         return this;
     }
 
-    union(extent: Extent): void {
+    /** @internal */
+    static unionMany(...extents: Extent[]): Extent | null {
+        if (extents == null || extents.length === 0) {
+            return null;
+        }
+
+        if (extents.length === 1) {
+            return extents[0].clone();
+        }
+
+        let south = +Infinity;
+        let north = -Infinity;
+        let east = -Infinity;
+        let west = +Infinity;
+        let valid = false;
+        let crs: string | null = null;
+
+        for (let i = 0; i < extents.length; i++) {
+            const e = nonNull(extents[i]);
+
+            valid = true;
+            if (crs) {
+                if (crs !== e.crs()) {
+                    throw new Error(
+                        `Unsupported union between different CRSes (${e.crs()} and ${crs} differ)`,
+                    );
+                }
+            } else {
+                crs = e.crs();
+            }
+
+            south = Math.min(e.south(), south);
+            north = Math.max(e.north(), north);
+            east = Math.max(e.east(), east);
+            west = Math.min(e.west(), west);
+        }
+
+        if (valid) {
+            return new Extent(extents[0].crs(), west, east, south, north);
+        } else {
+            return null;
+        }
+    }
+
+    union(extent: Extent | null | undefined): void {
+        if (extent == null) {
+            return;
+        }
+
         if (extent.crs() !== this.crs()) {
-            throw new Error('unsupported union between 2 diff crs');
+            throw new Error(
+                `unsupported union between different CRSes (${extent.crs()} and ${this.crs()} differ)`,
+            );
         }
         const west = extent.west();
         if (west < this.west()) {

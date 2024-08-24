@@ -49,7 +49,7 @@ export type $3dTilesBoundingVolume = {
 export interface $3dTilesAsset {
     /** The 3D Tiles version */
     version: string;
-    gltfUpAxis?: any;
+    gltfUpAxis?: 'X' | 'Y' | 'Z';
 }
 
 /**

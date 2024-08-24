@@ -7,11 +7,14 @@ describe('Fetcher', () => {
         // @ts-expect-error property does not exist
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         window.Request = function Request(input: RequestInfo | URL, init?: RequestInit) {
+            // @ts-expect-error unknown property
             this.url = input;
+            // @ts-expect-error unknown property
             this.headers = init?.headers ?? {};
         };
     });
     afterEach(() => {
+        // @ts-expect-error cannot delete fetch
         delete global.fetch;
         // @ts-expect-error property does not exist
         Fetcher._eventTarget._listeners = {};

@@ -1,5 +1,6 @@
 import { Box3, Object3D, Sphere, Vector3, type Camera as ThreeCamera } from 'three';
 import ScreenSpaceError from '../../core/ScreenSpaceError';
+import type { BatchTable } from '../../parser/BatchTableParser';
 import type View from '../../renderer/View';
 import { type ProcessedTile } from './3dTilesIndex';
 import { type BoundingVolume } from './BoundingVolume';
@@ -18,7 +19,7 @@ class Tile extends Object3D {
     readonly isTile: boolean = true;
     /** Parent tile */
     // eslint-disable-next-line no-use-before-define
-    parent: Tile;
+    parent: Tile | null = null;
     geometricError: number;
     tileId: number;
     additiveRefinement: boolean;
@@ -26,9 +27,9 @@ class Tile extends Object3D {
     boundingVolume: BoundingVolume;
     distance: { min: number; max: number };
     content?: Object3D;
-    batchTable?: any;
+    batchTable?: BatchTable;
     // eslint-disable-next-line no-use-before-define
-    children: Tile[];
+    children: Tile[] = [];
     pendingSubdivision?: boolean;
     deleted?: number;
     cleanableSince?: number;

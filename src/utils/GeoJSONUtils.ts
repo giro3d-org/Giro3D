@@ -17,8 +17,9 @@ import {
  * @returns Flat coordinates
  */
 function toFlatCoordinates(geojson: GeoJSON.Geometry): number[] {
-    if (geojson.type === 'GeometryCollection')
+    if (geojson.type === 'GeometryCollection') {
         throw new Error(`GeoJSON type '${geojson.type}' is not supported`);
+    }
     return geojson.coordinates.flat(3);
 }
 
@@ -33,8 +34,9 @@ function fromFlat3Coordinates(
     flat3Coords: [number, number, number][],
     geometryType: GeoJSON.GeoJsonGeometryTypes,
 ): GeoJSON.Geometry {
-    if (geometryType === 'GeometryCollection')
+    if (geometryType === 'GeometryCollection') {
         throw new Error(`GeoJSON type '${geometryType}' is not supported`);
+    }
 
     switch (geometryType) {
         case 'Point':

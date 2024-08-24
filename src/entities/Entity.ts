@@ -78,7 +78,7 @@ abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserDa
     readonly id: string;
     private _frozen: boolean;
     public whenReady?: Promise<this>;
-    public ready?: boolean;
+    public ready = false;
 
     /**
      * The name of this entity.

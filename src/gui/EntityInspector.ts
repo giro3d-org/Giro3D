@@ -3,7 +3,8 @@ import { Color, Object3D, Plane, PlaneHelper, Vector3, type ColorRepresentation 
 import type Instance from '../core/Instance';
 import * as MemoryUsage from '../core/MemoryUsage';
 import type Entity3D from '../entities/Entity3D';
-import Helpers from '../helpers/Helpers';
+import Helpers, { hasVolumeHelper } from '../helpers/Helpers';
+import { isMaterial } from '../utils/predicates';
 import Panel from './Panel';
 
 const _tempArray: Object3D[] = [];
@@ -259,8 +260,10 @@ class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
     // eslint-disable-next-line class-methods-use-this
     addOrRemoveBoundingBox(obj: Object3D, add: boolean, color: Color) {
         if (add) {
-            if (obj.visible && (obj as any).material && (obj as any).material.visible) {
-                Helpers.addBoundingBox(obj, color);
+            if ('material' in obj && isMaterial(obj.material)) {
+                if (obj.visible && obj.material && obj.material.visible) {
+                    Helpers.addBoundingBox(obj, color);
+                }
             }
         } else {
             Helpers.removeBoundingBox(obj);
@@ -270,8 +273,8 @@ class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
     updateBoundingBoxColor(colorHex: ColorRepresentation) {
         const color = new Color(colorHex);
         this.rootObject.traverse(obj => {
-            if ((obj as any).volumeHelper) {
-                (obj as any).volumeHelper.material.color = color;
+            if (hasVolumeHelper(obj)) {
+                obj.volumeHelper.material.color = color;
             }
         });
 

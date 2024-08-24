@@ -137,7 +137,7 @@ describe('ColorLayer', () => {
         it('should return the correct value', () => {
             const layer = new ColorLayer({ source: new NullSource() });
 
-            expect(layer.elevationRange).toBeUndefined();
+            expect(layer.elevationRange).toBeNull();
 
             layer.elevationRange = { min: 1, max: 2 };
 

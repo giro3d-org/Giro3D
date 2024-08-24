@@ -37,13 +37,17 @@ export function boundingVolumeToExtent(
         const box = tmp.b.copy(volume.box).applyMatrix4(transform);
         return Extent.fromBox3(crs, box);
     }
-    const sphere = tmp.s.copy(volume.sphere).applyMatrix4(transform);
-    return new Extent(crs, {
-        west: sphere.center.x - sphere.radius,
-        east: sphere.center.x + sphere.radius,
-        south: sphere.center.y - sphere.radius,
-        north: sphere.center.y + sphere.radius,
-    });
+    if (volume.sphere) {
+        const sphere = tmp.s.copy(volume.sphere).applyMatrix4(transform);
+        return new Extent(crs, {
+            west: sphere.center.x - sphere.radius,
+            east: sphere.center.x + sphere.radius,
+            south: sphere.center.y - sphere.radius,
+            north: sphere.center.y + sphere.radius,
+        });
+    }
+
+    throw new Error('the volume property does not have neither a box, a region or a volume');
 }
 
 export function cullingTestViewer(

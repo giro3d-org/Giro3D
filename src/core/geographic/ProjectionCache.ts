@@ -1,20 +1,20 @@
 import proj4 from 'proj4';
+import type { CreateValueFn } from '../../utils/NestedMap';
+import NestedMap from '../../utils/NestedMap';
 
-const cache: Map<string, Map<string, proj4.Converter>> = new Map();
+type SrcCrs = string;
+type DstCrs = string;
+
+const createConverter: CreateValueFn<SrcCrs, DstCrs, proj4.Converter> = (
+    src: SrcCrs,
+    dst: DstCrs,
+) => proj4(src, dst);
+
+const cache: NestedMap<SrcCrs, DstCrs, proj4.Converter> = new NestedMap();
 
 /**
  * Returns a coordinate converter from the specified source and destination CRSes.
  */
 export function getConverter(crsIn: string, crsOut: string): proj4.Converter {
-    if (cache.has(crsIn)) {
-        const p = cache.get(crsIn);
-        if (p.has(crsOut)) {
-            return p.get(crsOut);
-        }
-    } else {
-        cache.set(crsIn, new Map());
-    }
-    const converter = proj4(crsIn, crsOut);
-    cache.get(crsIn).set(crsOut, converter);
-    return converter;
+    return cache.getOrCreate(crsIn, crsOut, createConverter);
 }

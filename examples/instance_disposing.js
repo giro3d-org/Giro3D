@@ -72,7 +72,9 @@ function init() {
 init();
 
 function reload() {
-    if (!instance) return;
+    if (!instance) {
+        return;
+    }
 
     map.getLayers().forEach(l => l.dispose());
     inspector.detach();

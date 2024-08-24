@@ -15,8 +15,10 @@ import {
 import WebGLComposer, { type DrawOptions } from '../../renderer/composition/WebGLComposer';
 import { isEmptyTexture } from '../../renderer/EmptyTexture';
 import MemoryTracker from '../../renderer/MemoryTracker';
+import { isFiniteNumber } from '../../utils/predicates';
 import ProjUtils from '../../utils/ProjUtils';
 import TextureGenerator from '../../utils/TextureGenerator';
+import { nonNull } from '../../utils/tsutils';
 import type Extent from '../geographic/Extent';
 import type MemoryUsage from '../MemoryUsage';
 import { type GetMemoryUsageContext, type MemoryUsageReport } from '../MemoryUsage';
@@ -91,8 +93,8 @@ class Image implements MemoryUsage {
     readonly texture: Texture;
     readonly alwaysVisible: boolean;
     readonly material: Material;
-    readonly min: number;
-    readonly max: number;
+    readonly min?: number;
+    readonly max?: number;
     disposed: boolean;
     readonly owners: Set<number>;
 
@@ -106,8 +108,8 @@ class Image implements MemoryUsage {
         texture: Texture;
         extent: Extent;
         alwaysVisible: boolean;
-        min: number;
-        max: number;
+        min?: number;
+        max?: number;
     }) {
         this.id = options.id;
         this.mesh = options.mesh;
@@ -153,8 +155,8 @@ class Image implements MemoryUsage {
 class LayerComposer implements MemoryUsage {
     readonly isMemoryUsage = true as const;
     readonly computeMinMax: boolean;
-    readonly extent: Extent;
-    readonly dimensions: Vector2;
+    readonly extent?: Extent;
+    readonly dimensions: Vector2 | null;
     readonly images: Map<string, Image>;
     readonly webGLRenderer: WebGLRenderer;
     readonly transparent: boolean;
@@ -164,9 +166,9 @@ class LayerComposer implements MemoryUsage {
     readonly needsReprojection: boolean;
     readonly interpretation: Interpretation;
     readonly composer: WebGLComposer;
-    readonly fillNoDataAlphaReplacement: number;
     readonly fillNoData: boolean;
-    readonly fillNoDataRadius: number;
+    readonly fillNoDataAlphaReplacement?: number;
+    readonly fillNoDataRadius?: number;
     readonly pixelFormat: PixelFormat;
     readonly textureDataType: TextureDataType;
 
@@ -191,7 +193,7 @@ class LayerComposer implements MemoryUsage {
         /** The CRS of the source. */
         sourceCrs: string;
         /** The extent. */
-        extent: Extent;
+        extent?: Extent;
         /** Show image outlines. */
         showImageOutlines: boolean;
         /** The target CRS of this composer. */
@@ -201,9 +203,9 @@ class LayerComposer implements MemoryUsage {
         /** Fill no-data values of the image. */
         fillNoData: boolean;
         /** Alpha value for no-data pixels (after replacement) */
-        fillNoDataAlphaReplacement: number;
+        fillNoDataAlphaReplacement?: number;
         /** Fill no-data maximum radius. */
-        fillNoDataRadius: number;
+        fillNoDataRadius?: number;
         /**  The pixel format of the output textures. */
         pixelFormat: PixelFormat;
         /** The type of the output textures. */
@@ -216,8 +218,8 @@ class LayerComposer implements MemoryUsage {
         this.dimensions = this.extent ? this.extent.dimensions() : null;
         this.images = new Map();
         this.webGLRenderer = options.renderer;
-        this.transparent = options.transparent;
-        this.noDataValue = options.noDataValue;
+        this.transparent = options.transparent ?? false;
+        this.noDataValue = options.noDataValue ?? 0;
         this.sourceCrs = options.sourceCrs;
         this.targetCrs = options.targetCrs;
         this.needsReprojection = this.sourceCrs !== this.targetCrs;
@@ -230,7 +232,7 @@ class LayerComposer implements MemoryUsage {
 
         this.composer = new WebGLComposer({
             webGLRenderer: options.renderer,
-            extent: this.extent ? Rect.fromExtent(this.extent) : null,
+            extent: this.extent ? Rect.fromExtent(this.extent) : undefined,
             showImageOutlines: options.showImageOutlines,
             pixelFormat: options.pixelFormat,
             textureDataType: options.textureDataType,
@@ -321,7 +323,11 @@ class LayerComposer implements MemoryUsage {
         // The fill no-data radius is expressed in CRS units in the API,
         // but in UV space in the shader. A conversion is necessary.
         let noDataRadiusInUVSpace = 1; // Default is no limit.
-        if (options.fillNoData && Number.isFinite(options.fillNoDataRadius)) {
+        if (
+            options.fillNoData &&
+            options.fillNoDataRadius != null &&
+            Number.isFinite(options.fillNoDataRadius)
+        ) {
             const dims = extent.dimensions(tmpVec2);
             noDataRadiusInUVSpace = options.fillNoDataRadius / dims.width;
         }
@@ -484,7 +490,7 @@ class LayerComposer implements MemoryUsage {
             actualTexture,
         );
 
-        const memoryUsage = tmpMemoryUsageMap.get(actualTexture.id);
+        const memoryUsage = nonNull(tmpMemoryUsageMap.get(actualTexture.id));
         // Since we are deleting the CPU-side data.
         memoryUsage.cpuMemory = 0;
         actualTexture.userData.memoryUsage = memoryUsage;
@@ -498,7 +504,7 @@ class LayerComposer implements MemoryUsage {
             mesh,
             texture: actualTexture,
             extent,
-            alwaysVisible: options.alwaysVisible,
+            alwaysVisible: options.alwaysVisible ?? false,
             min: options.min,
             max: options.max,
         });
@@ -550,8 +556,10 @@ class LayerComposer implements MemoryUsage {
 
             meshes.push(mesh);
 
-            min = Math.min(min, texture.min);
-            max = Math.max(max, texture.max);
+            if (texture.min != null && texture.max != null) {
+                min = Math.min(min, texture.min);
+                max = Math.max(max, texture.max);
+            }
         }
 
         // Ensure that other images are not visible: we are only
@@ -618,7 +626,7 @@ class LayerComposer implements MemoryUsage {
 
         this.images.forEach(image => {
             if (extent.intersectsExtent(image.extent)) {
-                if (Number.isFinite(image.min) && Number.isFinite(image.max)) {
+                if (isFiniteNumber(image.min) && isFiniteNumber(image.max)) {
                     min = Math.min(image.min, min);
                     max = Math.max(image.max, max);
                 }
@@ -688,9 +696,9 @@ class LayerComposer implements MemoryUsage {
                 image.opacity = 1;
             }
 
-            if (this.computeMinMax && isRequired) {
-                min = Math.min(image.min, min);
-                max = Math.max(image.max, max);
+            if (this.computeMinMax && isRequired && !isEmptyTexture(image.texture)) {
+                min = Math.min(nonNull(image.min), min);
+                max = Math.max(nonNull(image.max), max);
             }
         }
 
@@ -699,12 +707,12 @@ class LayerComposer implements MemoryUsage {
         if (
             this.computeMinMax &&
             isFallbackMode &&
-            (!Number.isFinite(min) || !Number.isFinite(max))
+            (!isFiniteNumber(min) || !isFiniteNumber(max))
         ) {
             for (const image of this.images.values()) {
-                if (extent.intersectsExtent(image.extent)) {
-                    min = Math.min(image.min, min);
-                    max = Math.max(image.max, max);
+                if (extent.intersectsExtent(image.extent) && !isEmptyTexture(image.texture)) {
+                    min = Math.min(nonNull(image.min), min);
+                    max = Math.max(nonNull(image.max), max);
                 }
             }
         }

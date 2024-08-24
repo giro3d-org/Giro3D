@@ -8,6 +8,7 @@ import type { Entity3D } from '../entities';
 import { isMap } from '../entities/Map';
 import type { BoundingBoxHelper } from '../helpers/Helpers';
 import Helpers from '../helpers/Helpers';
+import { isMaterial } from '../utils/predicates';
 import ColorimetryPanel from './ColorimetryPanel';
 import ColorMapInspector from './ColorMapInspector';
 import Panel from './Panel';
@@ -176,7 +177,9 @@ class LayerInspector extends Panel {
     updateExtentColor() {
         if (this.extentHelper) {
             this.instance.threeObjects.remove(this.extentHelper);
-            this.extentHelper.material.dispose();
+            if (isMaterial(this.extentHelper.material)) {
+                this.extentHelper.material.dispose();
+            }
             this.extentHelper.geometry.dispose();
             this.extentHelper = null;
         }

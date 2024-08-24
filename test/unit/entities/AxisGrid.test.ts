@@ -1,4 +1,4 @@
-import Context from '@giro3d/giro3d/core/Context';
+import type Context from '@giro3d/giro3d/core/Context';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import AxisGrid, { type Volume } from '@giro3d/giro3d/entities/AxisGrid';
 import View from '@giro3d/giro3d/renderer/View';
@@ -19,7 +19,14 @@ describe('AxisGrid', () => {
     beforeEach(() => {
         camera = new THREE.PerspectiveCamera(45);
         view = new View('foo', 1, 1, { camera: camera });
-        context = new Context(view, null);
+        context = {
+            view,
+            distance: {
+                plane: new THREE.Plane(),
+                min: 0,
+                max: 1,
+            },
+        };
     });
 
     describe('constructor', () => {
@@ -36,6 +43,7 @@ describe('AxisGrid', () => {
         });
 
         it('should throw if volume is undefined', () => {
+            // @ts-expect-error invalid parameter
             expect(() => new AxisGrid({ volume: undefined })).toThrow(/volume is undefined/);
         });
     });
@@ -91,14 +99,14 @@ describe('AxisGrid', () => {
             const vec = new THREE.Vector3();
 
             function testSide(sideIndex: number) {
-                sides[sideIndex].getWorldPosition(vec);
+                sides[sideIndex]!.getWorldPosition(vec);
                 camera.lookAt(vec);
                 camera.updateWorldMatrix(true, true);
 
                 grid.preUpdate(context);
 
                 for (let i = 0; i < 6; i++) {
-                    expect(sides[i].visible).toEqual(i === sideIndex);
+                    expect(sides[i]!.visible).toEqual(i === sideIndex);
                 }
             }
 

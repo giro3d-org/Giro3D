@@ -63,6 +63,7 @@ import LayeredMaterial, {
 } from '../renderer/LayeredMaterial';
 import type RenderingState from '../renderer/RenderingState';
 import TextureGenerator from '../utils/TextureGenerator';
+import { nonNull } from '../utils/tsutils';
 import type { EntityUserData } from './Entity';
 import Entity3D, { type Entity3DEventMap } from './Entity3D';
 import type GetElevationOptions from './GetElevationOptions';
@@ -116,9 +117,7 @@ const tmpSseSizes: [number, number] = [0, 0];
 const tmpIntersectList: Intersection<TileMesh>[] = [];
 const tmpNeighbours: NeighbourList<TileMesh> = [null, null, null, null, null, null, null, null];
 
-function getContourLineOptions(
-    input: boolean | undefined | ContourLineOptions,
-): ContourLineOptions {
+function getContourLineOptions(input?: boolean | ContourLineOptions): Required<ContourLineOptions> {
     if (!input) {
         // Default values
         return {
@@ -153,7 +152,7 @@ function getContourLineOptions(
     };
 }
 
-function getTerrainOptions(input?: boolean | TerrainOptions): TerrainOptions {
+function getTerrainOptions(input?: boolean | TerrainOptions): Required<TerrainOptions> {
     if (input == null) {
         // Default values
         return {
@@ -178,7 +177,7 @@ function getTerrainOptions(input?: boolean | TerrainOptions): TerrainOptions {
     };
 }
 
-function getGraticuleOptions(input?: boolean | GraticuleOptions): GraticuleOptions {
+function getGraticuleOptions(input?: boolean | GraticuleOptions): Required<GraticuleOptions> {
     if (input == null) {
         // Default values
         return {
@@ -222,7 +221,7 @@ function getColorimetryOptions(input?: ColorimetryOptions): ColorimetryOptions {
     return input ?? defaultColorimetryOptions();
 }
 
-function getHillshadingOptions(input?: boolean | HillshadingOptions): HillshadingOptions {
+function getHillshadingOptions(input?: boolean | HillshadingOptions): Required<HillshadingOptions> {
     if (!input) {
         // Default values
         return {
@@ -508,9 +507,9 @@ class Map<UserData extends EntityUserData = EntityUserData>
     private _segments: number;
     private _hasElevationLayer = false;
     private readonly _atlasInfo: AtlasInfo;
-    private _subdivisions: { x: number; y: number };
+    private _subdivisions: { x: number; y: number } | null = null;
     private _colorAtlasDataType: TextureDataType = UnsignedByteType;
-    private _imageSize: Vector2;
+    private _imageSize: Vector2 | null = null;
     private _wireframe = false;
     private readonly _layers: Layer[] = [];
     private readonly _onLayerVisibilityChanged: (event: { target: Layer }) => void;
@@ -526,8 +525,8 @@ class Map<UserData extends EntityUserData = EntityUserData>
     extent: Extent;
     readonly maxSubdivisionLevel: number;
     readonly isPickableFeatures = true;
-    private readonly _materialOptions: Required<MaterialOptions>;
-    readonly showOutline: boolean;
+    private readonly _materialOptions: MaterialOptions;
+    readonly showOutline = false;
     /** @internal */
     readonly tileIndex: TileIndex<TileMesh>;
     /**
@@ -577,7 +576,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
         this._materialOptions = {
             showColliderMeshes: false,
-            forceTextureAtlases: options.forceTextureAtlases,
+            forceTextureAtlases: options.forceTextureAtlases ?? false,
             hillshading: getHillshadingOptions(options.hillshading),
             contourLines: getContourLineOptions(options.contourLines),
             discardNoData: options.discardNoData ?? false,
@@ -588,7 +587,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
             graticule: getGraticuleOptions(options.graticule),
             segments: this.segments,
             colorMapAtlas: null,
-            elevationRange: options.elevationRange,
+            elevationRange: options.elevationRange ?? null,
             backgroundOpacity: options.backgroundOpacity ?? 1,
             tileOutlineColor: new Color(options.outlineColor ?? '#ff0000'),
             backgroundColor:
@@ -640,8 +639,8 @@ class Map<UserData extends EntityUserData = EntityUserData>
         return this._materialOptions.terrain;
     }
 
-    set terrain(opacity: TerrainOptions) {
-        this._materialOptions.terrain = opacity;
+    set terrain(terrain: TerrainOptions) {
+        this._materialOptions.terrain = getTerrainOptions(terrain);
     }
 
     /**
@@ -674,7 +673,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     set graticule(opts: GraticuleOptions) {
-        this._materialOptions.graticule = opts;
+        this._materialOptions.graticule = getGraticuleOptions(opts);
     }
 
     /**
@@ -685,7 +684,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     set hillshading(opts: HillshadingOptions) {
-        this._materialOptions.hillshading = opts;
+        this._materialOptions.hillshading = getHillshadingOptions(opts);
     }
 
     /**
@@ -702,11 +701,11 @@ class Map<UserData extends EntityUserData = EntityUserData>
     /**
      * Gets or sets elevation range.
      */
-    get elevationRange(): ElevationRange {
+    get elevationRange(): ElevationRange | null {
         return this._materialOptions.elevationRange;
     }
 
-    set elevationRange(range: ElevationRange) {
+    set elevationRange(range: ElevationRange | null) {
         this._materialOptions.elevationRange = range;
     }
 
@@ -740,7 +739,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     set contourLines(opts: ContourLineOptions) {
-        this._materialOptions.contourLines = opts;
+        this._materialOptions.contourLines = getContourLineOptions(opts);
     }
 
     /**
@@ -791,7 +790,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     get imageSize(): Vector2 {
-        return this._imageSize;
+        return this._imageSize as Vector2;
     }
 
     private subdivideNode(context: Context, node: TileMesh) {
@@ -800,15 +799,16 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
             let i = 0;
             const { x, y, z } = node;
+
             for (const extent of extents) {
-                let child;
+                let child: TileMesh;
                 if (i === 0) {
                     child = this.requestNewTile(extent, node, z + 1, 2 * x + 0, 2 * y + 0);
                 } else if (i === 1) {
                     child = this.requestNewTile(extent, node, z + 1, 2 * x + 0, 2 * y + 1);
                 } else if (i === 2) {
                     child = this.requestNewTile(extent, node, z + 1, 2 * x + 1, 2 * y + 0);
-                } else if (i === 3) {
+                } else {
                     child = this.requestNewTile(extent, node, z + 1, 2 * x + 1, 2 * y + 1);
                 }
 
@@ -825,7 +825,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
                 child.updateMatrixWorld(true);
                 i++;
             }
-            context.instance.notifyChange(node);
+            this._instance.notifyChange(node);
         }
     }
 
@@ -841,25 +841,27 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     get subdivisions(): { x: number; y: number } {
-        return this._subdivisions;
+        return this._subdivisions as Vector2;
     }
 
     preprocess() {
         this.extent = this.extent.as(this._instance.referenceCrs);
 
-        this._subdivisions = selectBestSubdivisions(this.extent);
+        const subdivs = selectBestSubdivisions(this.extent);
+
+        this._subdivisions = subdivs;
 
         // If the map is not square, we want to have more than a single
         // root tile to avoid elongated tiles that hurt visual quality and SSE computation.
-        const rootExtents = this.extent.split(this._subdivisions.x, this._subdivisions.y);
+        const rootExtents = this.extent.split(subdivs.x, subdivs.y);
 
         this._imageSize = computeImageSize(rootExtents[0]);
 
         let i = 0;
         for (const root of rootExtents) {
-            if (this._subdivisions.x > this._subdivisions.y) {
+            if (subdivs.x > subdivs.y) {
                 this.level0Nodes.push(this.requestNewTile(root, undefined, 0, i, 0));
-            } else if (this._subdivisions.y > this._subdivisions.x) {
+            } else if (subdivs.y > subdivs.x) {
                 this.level0Nodes.push(this.requestNewTile(root, undefined, 0, 0, i));
             } else {
                 this.level0Nodes.push(this.requestNewTile(root, undefined, 0, 0, 0));
@@ -874,11 +876,13 @@ class Map<UserData extends EntityUserData = EntityUserData>
         return Promise.resolve();
     }
 
-    private requestNewTile(extent: Extent, parent: TileMesh, level: number, x = 0, y = 0) {
-        if (parent && !parent.material) {
-            return null;
-        }
-
+    private requestNewTile(
+        extent: Extent,
+        parent: TileMesh | undefined,
+        level: number,
+        x = 0,
+        y = 0,
+    ): TileMesh {
         const quaternion = new Quaternion();
         const position = extent.centerAsVector3();
 
@@ -898,11 +902,11 @@ class Map<UserData extends EntityUserData = EntityUserData>
             instance: this._instance,
             material,
             extent,
-            textureSize: this._imageSize,
+            textureSize: nonNull(this._imageSize),
             segments: this.segments,
             coord: { level, x, y },
-            enableCPUTerrain: this._materialOptions.terrain.enableCPUTerrain,
-            enableTerrainDeformation: this._materialOptions.terrain.enabled,
+            enableCPUTerrain: this._materialOptions.terrain.enableCPUTerrain ?? true,
+            enableTerrainDeformation: this._materialOptions.terrain.enabled ?? true,
             onElevationChanged: this._onTileElevationChanged,
         });
 
@@ -965,7 +969,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     pick(coordinates: Vector2, options?: PickOptions): MapPickResult[] {
-        if (options.gpuPicking) {
+        if (options?.gpuPicking) {
             return pickTilesAt(this._instance, coordinates, this, options);
         } else {
             return this.pickUsingRaycast(coordinates, options);
@@ -974,8 +978,8 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
     private raycastAtCoordinate(
         coordinates: Vector2,
-        options: PickOptions,
         results: MapPickResult[],
+        options?: PickOptions,
     ) {
         const normalized = this._instance.canvasToNormalizedCoords(coordinates, tempNDC);
 
@@ -1011,15 +1015,17 @@ class Map<UserData extends EntityUserData = EntityUserData>
     private pickUsingRaycast(coordinates: Vector2, options?: PickOptions): MapPickResult[] {
         const results: MapPickResult[] = [];
 
-        if (!options.radius) {
-            this.raycastAtCoordinate(coordinates, options, results);
+        const radius = options?.radius;
+
+        if (!radius) {
+            this.raycastAtCoordinate(coordinates, results, options);
         } else {
             const originX = coordinates.x;
             const originY = coordinates.y;
 
-            traversePickingCircle(options.radius, (x, y) => {
+            traversePickingCircle(radius, (x, y) => {
                 tempCanvasCoords.set(originX + x, originY + y);
-                this.raycastAtCoordinate(tempCanvasCoords, options, results);
+                this.raycastAtCoordinate(tempCanvasCoords, results, options);
                 return null;
             });
         }
@@ -1064,7 +1070,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
             return this.level0Nodes;
         }
 
-        let commonAncestor: TileMesh;
+        let commonAncestor: TileMesh | null = null;
         for (const source of changeSources.values()) {
             if ((source as ThreeCamera).isCamera) {
                 // if the change is caused by a camera move, no need to bother
@@ -1082,7 +1088,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
                     }
                 }
                 if (commonAncestor.material == null) {
-                    commonAncestor = undefined;
+                    commonAncestor = null;
                 }
             }
         }
@@ -1176,9 +1182,9 @@ class Map<UserData extends EntityUserData = EntityUserData>
      * map.insertLayerAfter(foo, baz);
      * // Layers (back to front) : bar, baz, foo
      */
-    insertLayerAfter(layer: ColorLayer, target: ColorLayer) {
+    insertLayerAfter(layer: ColorLayer, target: ColorLayer | null) {
         const position = this._layers.indexOf(layer);
-        let afterPosition = this._layers.indexOf(target);
+        let afterPosition = target == null ? -1 : this._layers.indexOf(target);
 
         if (position === -1) {
             throw new Error('The layer is not present in the map.');
@@ -1189,7 +1195,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         }
 
         this._layers.splice(position, 1);
-        afterPosition = this._layers.indexOf(target);
+        afterPosition = target == null ? -1 : this._layers.indexOf(target);
         this._layers.splice(afterPosition + 1, 0, layer);
 
         this.reorderLayers();
@@ -1228,13 +1234,18 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     /**
-     * Returns the position of the layer in the layer list.
+     * Returns the position of the layer in the layer list, or -1 if it is not found.
      *
      * @param layer - The layer to search.
      * @returns The index of the layer.
      */
     getIndex(layer: Layer): number {
-        return this._layerIndices.get(layer.id);
+        const value = this._layerIndices.get(layer.id);
+        if (value == null) {
+            return -1;
+        }
+
+        return value;
     }
 
     private reorderLayers() {
@@ -1355,7 +1366,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         // We use a margin to prevent atlas bleeding.
         const margin = 1.1;
         const factor = layer.resolutionFactor * margin;
-        const { x, y } = this._imageSize;
+        const { x, y } = nonNull(this._imageSize);
         const size = new Vector2(Math.round(x * factor), Math.round(y * factor));
 
         const { atlas, maxX, maxY } = AtlasBuilder.pack(
@@ -1587,9 +1598,9 @@ class Map<UserData extends EntityUserData = EntityUserData>
             for (const layer of elevationLayers) {
                 const minmax = layer.minmax;
                 if (minmax) {
-                    if (min == null && max == null) {
-                        min = minmax.min;
-                        max = minmax.max;
+                    if (min == null || max == null) {
+                        min = min ?? minmax.min;
+                        max = max ?? minmax.max;
                     } else {
                         min = Math.min(min, minmax.min);
                         max = Math.max(max, minmax.max);
@@ -1669,7 +1680,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
      * @param root - The raversal root. If undefined, the traversal starts at the root
      * object of this entity.
      */
-    traverseTiles(callback: (arg0: TileMesh) => void, root: Object3D = undefined) {
+    traverseTiles(callback: (arg0: TileMesh) => void, root: Object3D | undefined = undefined) {
         const origin = root ?? this.object3d;
 
         if (origin) {
@@ -1714,7 +1725,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         return true;
     }
 
-    private testTileSSE(tile: TileMesh, sse: SSE) {
+    private testTileSSE(tile: TileMesh, sse: SSE | null) {
         if (this.maxSubdivisionLevel <= tile.level) {
             return false;
         }

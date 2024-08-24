@@ -103,7 +103,7 @@ export type PointStyle = BaseStyle & {
      * or a URL to a remote image file.
      * @defaultValue `undefined`
      */
-    image?: Texture | string;
+    image?: Texture | string | null;
     /**
      * The size of points, in pixels.
      * @defaultValue {@link DEFAULT_POINT_SIZE}
@@ -142,7 +142,7 @@ export function getFullPointStyle(style?: Partial<PointStyle>): Required<PointSt
     // Contrary to lines and surface, it makes sense to disable depth test by
     // default for floating symbols.
     const depthTest = style?.depthTest ?? false;
-    const image = style?.image ?? undefined;
+    const image = style?.image ?? null;
     const renderOrder = style?.renderOrder ?? 0;
 
     return {
@@ -171,8 +171,10 @@ export function getFullStrokeStyle(style?: Partial<StrokeStyle>): Required<Strok
     return { color, lineWidth, opacity, lineWidthUnits, depthTest, renderOrder };
 }
 
-function hash(obj: boolean | string | number | Texture | Color | undefined): string | number {
-    if (obj === undefined) {
+function hash(
+    obj: boolean | string | number | Texture | Color | undefined | null,
+): string | number {
+    if (obj == null) {
         return 'undefined';
     }
 

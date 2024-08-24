@@ -21,12 +21,15 @@ export type Atlas = Record<string, Node>;
 export interface AtlasInfo {
     maxX: number;
     maxY: number;
-    atlas: Atlas;
+    atlas: Atlas | null;
 }
 
-interface LayerBlock extends Block {
+type LayerBlock = {
     layerId: string;
-}
+    fit?: Node;
+    w: number;
+    h: number;
+};
 
 /**
  * Build a texture atlas from N images.
@@ -35,7 +38,7 @@ interface LayerBlock extends Block {
  * @param images - The images to pack.
  * @param oldAtlas - The previous atlas.
  */
-function pack(maxSize: number, images: Array<AtlasImage>, oldAtlas: Atlas): AtlasInfo {
+function pack(maxSize: number, images: Array<AtlasImage>, oldAtlas: Atlas | null): AtlasInfo {
     const blocks: LayerBlock[] = [];
 
     for (let i = 0; i < images.length; i++) {
@@ -56,10 +59,9 @@ function pack(maxSize: number, images: Array<AtlasImage>, oldAtlas: Atlas): Atla
     // @ts-expect-error (we ignore the typing error of casting booleans to numbers to maintain speed)
     blocks.sort((a, b) => Math.max(a.w, a.h) < Math.max(b.w, b.h));
 
-    let previousRoot: Node;
+    let previousRoot: Node | null = null;
     if (oldAtlas) {
         for (const k of Object.keys(oldAtlas)) {
-            // eslint-disable-line guard-for-in
             const fitResult = oldAtlas[k];
             if (fitResult.x === 0 && fitResult.y === 0) {
                 // Updating
@@ -69,15 +71,18 @@ function pack(maxSize: number, images: Array<AtlasImage>, oldAtlas: Atlas): Atla
         }
     }
     if (oldAtlas && !previousRoot) {
-        console.error('UH: oldAtlas is defined, but not previousRoot');
+        throw new Error('oldAtlas is defined, but not previousRoot');
     }
 
-    const { maxX, maxY } = fit(blocks, maxSize, maxSize, previousRoot);
+    const { maxX, maxY } = fit(blocks as Block[], maxSize, maxSize, previousRoot);
 
     const atlas = oldAtlas || {};
     for (let i = 0; i < blocks.length; i++) {
-        atlas[blocks[i].layerId] = blocks[i].fit;
-        atlas[blocks[i].layerId].offset = 0;
+        // @ts-expect-error invalid
+        atlas[blocks[i].layerId] = {
+            ...blocks[i].fit,
+            offset: 0,
+        };
     }
 
     return { atlas, maxX, maxY };

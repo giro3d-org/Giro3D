@@ -13,6 +13,7 @@ describe('FeatureCollection', () => {
         });
 
         it('should throw if the extent is not provided', () => {
+            // @ts-expect-error null parameter
             expect(() => new FeatureCollection({ source, extent: null })).toThrow(
                 /Error while initializing FeatureCollection: missing options.extent/,
             );
@@ -30,6 +31,7 @@ describe('FeatureCollection', () => {
         it('should throw if the source is not present', () => {
             // @ts-expect-error source is undefined
             expect(() => new FeatureCollection({ extent })).toThrow('options.source is mandatory.');
+            // @ts-expect-error source is null
             expect(() => new FeatureCollection({ extent, source: null })).toThrow(
                 'options.source is mandatory.',
             );

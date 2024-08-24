@@ -156,14 +156,17 @@ function pick(mouseEvent) {
  * @param {object} options The options.
  * @param {number} options.radius The radius of the picking.
  * @param {boolean} options.disableUrlUpdate Disable automatic URL update.
+ * @param {boolean} options.disableCoordinates Disable automatic coordinates update.
  * @param {[Instance] | Instance} options.additionalInstances Additional instances to track.
  */
 function bind(instance, options = {}) {
     pickingRadius = options.radius;
     currentInstance = instance;
-    // Bind events
-    coordinates = document.getElementById('coordinates');
-    instance.domElement.addEventListener('mousemove', pick);
+    if (!options.disableCoordinates) {
+        // Bind events
+        coordinates = document.getElementById('coordinates');
+        instance.domElement.addEventListener('mousemove', pick);
+    }
 
     progressBar = document.getElementById('progress-bar');
     percent = document.getElementById('loading-percent');

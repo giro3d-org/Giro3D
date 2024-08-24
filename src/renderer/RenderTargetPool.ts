@@ -6,6 +6,7 @@ import {
 } from 'three';
 import type MemoryUsage from '../core/MemoryUsage';
 import { type GetMemoryUsageContext } from '../core/MemoryUsage';
+import NestedMap from '../utils/NestedMap';
 import TextureGenerator from '../utils/TextureGenerator';
 
 export interface RenderTargetPoolEvents {
@@ -13,6 +14,8 @@ export interface RenderTargetPoolEvents {
         /** nothing */
     };
 }
+
+const createPool = () => [];
 
 /**
  * A pool that manages {@link RenderTarget}s.
@@ -23,13 +26,14 @@ export default class RenderTargetPool
 {
     readonly isMemoryUsage = true as const;
     // Note that we cannot share render targets between instances are they are tied to a single WebGLRenderer.
-    private readonly _perRendererPools: Map<
+    private readonly _globalPool: NestedMap<
         WebGLRenderer,
-        Map<RenderTargetOptions, WebGLRenderTarget[]>
-    > = new Map();
+        RenderTargetOptions,
+        WebGLRenderTarget[]
+    > = new NestedMap();
     private readonly _renderTargets: Map<WebGLRenderTarget, RenderTargetOptions> = new Map();
     private readonly _cleanupTimeoutMs: number;
-    private _timeout: NodeJS.Timeout;
+    private _timeout: NodeJS.Timeout | null = null;
     private _maxPoolSize: number;
 
     constructor(cleanupTimeoutMs: number, maxPoolSize: number) {
@@ -39,33 +43,22 @@ export default class RenderTargetPool
     }
 
     getMemoryUsage(context: GetMemoryUsageContext) {
-        if (this._perRendererPools.size === 0) {
+        if (this._globalPool.size === 0) {
             return;
         }
 
-        const pool = this._perRendererPools.get(context.renderer);
-
-        if (pool) {
-            pool.forEach(targets => {
+        this._globalPool.forEach((targets, renderer) => {
+            if (renderer === context.renderer) {
                 targets.forEach(target => TextureGenerator.getMemoryUsage(context, target));
-            });
-        }
+            }
+        });
     }
 
     acquire(renderer: WebGLRenderer, width: number, height: number, options: RenderTargetOptions) {
-        if (!this._perRendererPools.has(renderer)) {
-            this._perRendererPools.set(renderer, new Map());
-        }
-
-        const rendererPool = this._perRendererPools.get(renderer);
-        if (!rendererPool.has(options)) {
-            rendererPool.set(options, []);
-        }
-
-        const pool = rendererPool.get(options);
+        const pool = this._globalPool.getOrCreate(renderer, options, createPool);
 
         if (pool.length > 0) {
-            const cached = pool.pop();
+            const cached = pool.pop() as WebGLRenderTarget;
             cached.setSize(width, height);
             return cached;
         }
@@ -82,17 +75,7 @@ export default class RenderTargetPool
     release(obj: WebGLRenderTarget, renderer: WebGLRenderer) {
         const options = this._renderTargets.get(obj);
         if (options) {
-            let instancePool = this._perRendererPools.get(renderer);
-            if (!instancePool) {
-                instancePool = new Map();
-                this._perRendererPools.set(renderer, instancePool);
-            }
-
-            let pool = instancePool.get(options);
-            if (!pool) {
-                pool = [];
-                instancePool.set(options, pool);
-            }
+            const pool = this._globalPool.getOrCreate(renderer, options, createPool);
 
             if (pool.length < this._maxPoolSize) {
                 pool.push(obj);
@@ -111,15 +94,13 @@ export default class RenderTargetPool
     cleanup() {
         this._timeout = null;
 
-        this._perRendererPools.forEach(instancePool => {
-            instancePool.forEach(list => {
-                list.forEach(renderTarget => {
-                    renderTarget.dispose();
-                    this._renderTargets.delete(renderTarget);
-                });
+        this._globalPool.forEach(list => {
+            list.forEach(renderTarget => {
+                renderTarget.dispose();
+                this._renderTargets.delete(renderTarget);
             });
         });
-        this._perRendererPools.clear();
+        this._globalPool.clear();
 
         this.dispatchEvent({ type: 'cleanup' });
     }

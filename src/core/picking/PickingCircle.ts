@@ -9,7 +9,8 @@ function traversePickingCircle(radius: number, callback: PickingCircleCallback) 
     // 32123
     // -323
     // --3--
-    let prevSq;
+    let prevSq: number | undefined = undefined;
+
     for (let r = 0; r <= radius; r++) {
         const sq = r * r;
         for (let x = -r; x <= r; x++) {
@@ -21,7 +22,7 @@ function traversePickingCircle(radius: number, callback: PickingCircleCallback) 
                     continue;
                 }
                 // skip if belongs to previous
-                if (dist <= prevSq) {
+                if (prevSq != null && dist <= prevSq) {
                     continue;
                 }
 

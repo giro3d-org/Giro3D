@@ -15,18 +15,15 @@ import WebGLComposer from './composition/WebGLComposer';
  */
 class ColorMapAtlas {
     private readonly _renderer: WebGLRenderer;
-    private _colorMaps: Map<ColorMap, { offset: number; texture: string }>;
-    private _texture: Texture;
-    private _dirty: boolean;
-    private _disposed: boolean;
+    private readonly _colorMaps: Map<ColorMap, { offset: number; texture: string }> = new Map();
+    private _texture: Texture | null = null;
+    private _dirty = false;
+    private _disposed = false;
 
     /**
      * @param renderer - The renderer
      */
     constructor(renderer: WebGLRenderer) {
-        this._colorMaps = new Map();
-        this._texture = null;
-        this._dirty = false;
         this._renderer = renderer;
     }
 
@@ -132,7 +129,7 @@ class ColorMapAtlas {
      * @param colorMap - The color map.
      * @returns The offset.
      */
-    getOffset(colorMap: ColorMap): number {
+    getOffset(colorMap: ColorMap): number | undefined {
         if (this._dirty) {
             this.createTexture();
         }

@@ -1,4 +1,4 @@
-import type { BufferAttribute, Material } from 'three';
+import type { BufferAttribute } from 'three';
 
 import {
     Float16BufferAttribute,
@@ -11,6 +11,11 @@ import {
     Uint8BufferAttribute,
     Uint8ClampedBufferAttribute,
 } from 'three';
+
+type HasDefines = {
+    defines: Record<string, unknown>;
+    needsUpdate: boolean;
+};
 
 /**
  * Sets or unsets a define directive according to the condition.
@@ -25,11 +30,16 @@ import {
  * setDefine(mat, 'ENABLE_FOO', true); // material.needsUpdate === false;
  * setDefine(mat, 'ENABLE_FOO', false); // material.needsUpdate === true;
  */
-function setDefine<M extends Material, K extends keyof M['defines']>(
+function setDefine<M extends HasDefines, K extends keyof M['defines']>(
     material: M,
     name: K,
-    condition: boolean,
+    condition: boolean | undefined | null,
 ) {
+    condition = condition ?? false;
+    if (material.defines == null) {
+        throw new Error('material.defines is null');
+    }
+
     const key = name as string;
     if (material.defines[key] === undefined) {
         if (condition) {
@@ -56,11 +66,15 @@ function setDefine<M extends Material, K extends keyof M['defines']>(
  * setValueDefine(mat, 'FOO_COUNT', 5); // material.needsUpdate === false;
  * setValueDefine(mat, 'FOO_COUNT', 4); // material.needsUpdate === true;
  */
-function setDefineValue<M extends Material, K extends keyof M['defines']>(
+function setDefineValue<M extends HasDefines, K extends keyof M['defines']>(
     material: M,
     name: K,
     value?: number | string,
 ): boolean {
+    if (material.defines == null) {
+        throw new Error('material.defines is null');
+    }
+
     const key = name as string;
     const changed = material.defines[key] !== value;
 
@@ -104,6 +118,8 @@ function getVertexAttributeType(attribute: BufferAttribute): VertexAttributeType
     ) {
         return 'uint';
     }
+
+    throw new Error('unsupported vertex attribute type');
 }
 
 export default {

@@ -24,6 +24,7 @@ describe('PotreeSource', () => {
         });
 
         it('should throw if url is not provided', () => {
+            // @ts-expect-error missing argument
             expect(() => new PotreeSource(null)).toThrow(/missing url parameter/);
         });
     });

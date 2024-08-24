@@ -24,8 +24,8 @@ const points = [
  *
  */
 class OBBHelper extends LineSegments<BufferGeometry, LineBasicMaterial> {
-    override readonly type: string | 'OBBHelper';
-    readonly isHelper: true;
+    override readonly type = 'OBBHelper' as const;
+    readonly isHelper = true as const;
 
     constructor(OBB: OBB | undefined, color: Color) {
         const indices = new Uint16Array([

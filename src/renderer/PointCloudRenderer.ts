@@ -35,14 +35,13 @@ interface Stage<TParams = unknown> {
     /** The render passes of this stage. */
     passes: ShaderMaterial[];
     /** The parameters of this stage. */
-    parameters?: TParams;
+    parameters: TParams;
     /** Is the stage enabled ? */
     enabled: boolean;
     /** The setup function. */
     setup: (args: {
-        // eslint-disable-next-line no-use-before-define
-        renderer: PointCloudRenderer;
         input: WebGLRenderTarget;
+        targets: WebGLRenderTarget[];
         passIdx: number;
         camera: PerspectiveCamera | OrthographicCamera;
     }) => {
@@ -86,7 +85,7 @@ class PointCloudRenderer {
     scene: Scene;
     mesh: Mesh;
     camera: OrthographicCamera;
-    classic: Stage<never>;
+    classic: Stage;
     edl: Stage<EdlParams>;
     occlusion: Stage<OcclusionParams>;
     inpainting: Stage<InpaintingParams>;
@@ -107,6 +106,7 @@ class PointCloudRenderer {
         const uvs = [0, 0, 2, 0, 0, 2];
         geom.setAttribute('position', new Float32BufferAttribute(vertices, 3));
         geom.setAttribute('uv', new Float32BufferAttribute(uvs, 2));
+        // @ts-expect-error material is assigned later in the pipeline
         this.mesh = new Mesh(geom, null);
         this.mesh.frustumCulled = false;
         this.scene.add(this.mesh);
@@ -115,7 +115,10 @@ class PointCloudRenderer {
         this.camera = new OrthographicCamera(0, 1, 1, 0, 0, 10);
 
         this.classic = {
+            // FIXME
+            // @ts-expect-error undefined is not allowed
             passes: [undefined],
+            parameters: null,
             enabled: true,
             setup() {
                 return { material: undefined };
@@ -183,16 +186,16 @@ class PointCloudRenderer {
                 directions: 8,
                 n: 1,
             },
-            setup({ renderer, input, passIdx, camera }) {
+            setup({ targets, input, passIdx, camera }) {
                 const m = this.passes[passIdx];
                 const uniforms = m.uniforms;
                 if (passIdx === 0) {
                     // scale down depth texture
                     uniforms.depthTexture.value = input.depthTexture;
-                    return { material: m, output: renderer.renderTargets[RT.EDL_ZERO] };
+                    return { material: m, output: targets[RT.EDL_ZERO] };
                 }
                 if (passIdx === 1) {
-                    uniforms.depthTexture.value = renderer.renderTargets[RT.EDL_ZERO].depthTexture;
+                    uniforms.depthTexture.value = targets[RT.EDL_ZERO].depthTexture;
                     uniforms.resolution.value.set(input.width, input.height);
                     uniforms.cameraNear.value = camera.near;
                     uniforms.cameraFar.value = camera.far;
@@ -200,10 +203,10 @@ class PointCloudRenderer {
                     uniforms.strength.value = this.parameters.strength;
                     uniforms.directions.value = this.parameters.directions;
                     uniforms.n.value = this.parameters.n;
-                    return { material: m, output: renderer.renderTargets[RT.EDL_VALUES] };
+                    return { material: m, output: targets[RT.EDL_VALUES] };
                 }
                 uniforms.textureColor.value = input.texture;
-                uniforms.textureEDL.value = renderer.renderTargets[RT.EDL_VALUES].texture;
+                uniforms.textureEDL.value = targets[RT.EDL_VALUES].texture;
                 uniforms.depthTexture.value = input.depthTexture;
 
                 return { material: m };
@@ -337,6 +340,8 @@ class PointCloudRenderer {
             // build new ones
             this.renderTargets = this.createRenderTargets(renderTarget.width, renderTarget.height);
         }
+
+        return this.renderTargets;
     }
 
     createRenderTarget(width: number, height: number, depthBuffer: boolean) {
@@ -370,7 +375,7 @@ class PointCloudRenderer {
     }
 
     render(scene: Object3D, camera: Camera, renderTarget: WebGLRenderTarget) {
-        this.updateRenderTargets(renderTarget);
+        const targets = this.updateRenderTargets(renderTarget);
 
         if (!isPerspectiveCamera(camera) && !isOrthographicCamera(camera)) {
             throw new Error('invalid camera');
@@ -411,8 +416,8 @@ class PointCloudRenderer {
                 // prepare stage
                 // eslint-disable-next-line prefer-const
                 let { material, output } = stage.setup({
-                    renderer: this,
-                    input: this.renderTargets[previousStageOutput],
+                    targets,
+                    input: targets[previousStageOutput],
                     passIdx: j,
                     camera,
                 });
@@ -421,7 +426,7 @@ class PointCloudRenderer {
                 if (i === stages.length - 1 && j === stage.passes.length - 1) {
                     output = renderTarget ?? null;
                 } else if (!output) {
-                    output = this.renderTargets[stageOutput];
+                    output = targets[stageOutput];
                 }
 
                 // render stage
@@ -457,8 +462,10 @@ class PointCloudRenderer {
     }
 
     dispose() {
-        this.renderTargets.forEach(t => t.dispose());
-        this.renderTargets.length = 0;
+        if (this.renderTargets) {
+            this.renderTargets.forEach(t => t.dispose());
+            this.renderTargets.length = 0;
+        }
     }
 }
 

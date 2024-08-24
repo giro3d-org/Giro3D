@@ -2,6 +2,7 @@ import { type Feature } from 'ol';
 import { FloatType, RGBAFormat, type PixelFormat, type TextureDataType } from 'three';
 import type VectorSource from '../../sources/VectorSource';
 import OpenLayersUtils from '../../utils/OpenLayersUtils';
+import { isFiniteNumber } from '../../utils/predicates';
 import type ColorimetryOptions from '../ColorimetryOptions';
 import { defaultColorimetryOptions } from '../ColorimetryOptions';
 import type ElevationRange from '../ElevationRange';
@@ -32,7 +33,7 @@ export interface ColorLayerEvents extends LayerEvents {
     /** When the layer saturation changes */
     'saturation-property-changed': { saturation: number };
     /** When the layer elevationRange property changes */
-    'elevationRange-property-changed': { range: ElevationRange };
+    'elevationRange-property-changed': { range: ElevationRange | null };
 }
 
 export interface ColorLayerOptions extends LayerOptions {
@@ -60,7 +61,7 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
      */
     readonly isColorLayer: boolean = true;
     readonly isPickableFeatures = true;
-    private _elevationRange: ElevationRange;
+    private _elevationRange: ElevationRange | null = null;
     private _colorimetry: ColorimetryOptions = defaultColorimetryOptions();
 
     /**
@@ -72,14 +73,14 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
     constructor(options: ColorLayerOptions) {
         super(options);
         this.type = 'ColorLayer';
-        this._elevationRange = options.elevationRange;
+        this._elevationRange = options.elevationRange ?? null;
         this._opacity = options.opacity ?? 1;
     }
 
     /**
      * Gets the elevation range of this layer, if any.
      */
-    get elevationRange(): ElevationRange {
+    get elevationRange(): ElevationRange | null {
         return this._elevationRange;
     }
 
@@ -213,8 +214,14 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
     }
 
     pickFeaturesFrom(pickedResult: MapPickResult, options?: PickOptions): VectorPickFeature[] {
-        const vectorOptions: any = {
-            radius: options.radius ?? 0,
+        const vectorOptions: {
+            radius: number;
+            xTileRes: number;
+            yTileRes: number;
+        } = {
+            radius: options?.radius ?? 0,
+            xTileRes: 0,
+            yTileRes: 0,
         };
 
         if (vectorOptions.radius > 0) {
@@ -254,12 +261,17 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
         },
     ): Feature[] {
         const layerProjection = this.getExtent()?.crs();
-        if (!layerProjection) return [];
+
+        if (!layerProjection) {
+            return [];
+        }
 
         const radius = options?.radius ?? 0;
+        const xTileRes = options?.xTileRes;
+        const yTileRes = options?.yTileRes;
 
         if (radius > 0) {
-            if (!Number.isFinite(options.xTileRes) || !Number.isFinite(options.yTileRes)) {
+            if (!isFiniteNumber(xTileRes) || !isFiniteNumber(yTileRes)) {
                 console.warn(
                     'Calling getVectorFeaturesAtCoordinate with radius but no tile resolution, this will return nothing',
                 );
@@ -273,25 +285,31 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
             // We might get more features than wanted, so we'll need to filter them afterwards.
             const e = new Extent(
                 coordinate.crs,
-                coordinate.x - options.xTileRes * radius,
-                coordinate.x + options.xTileRes * radius,
-                coordinate.y - options.yTileRes * radius,
-                coordinate.y + options.yTileRes * radius,
+                coordinate.x - xTileRes * radius,
+                coordinate.x + xTileRes * radius,
+                coordinate.y - yTileRes * radius,
+                coordinate.y + yTileRes * radius,
             );
             const features = this.getVectorFeaturesInExtent(e);
 
             const coordinateLayer = coordinate.as(layerProjection);
             const coord = [coordinateLayer.x, coordinateLayer.y];
             for (const feat of features) {
+                const geometry = feat.getGeometry();
+
+                if (!geometry) {
+                    continue;
+                }
+
                 // Check the feature is really in the picking circle
-                if (feat.getGeometry().intersectsCoordinate(coord)) {
+                if (geometry.intersectsCoordinate(coord)) {
                     results.push(feat);
                     continue;
                 }
 
-                const closestPoint = feat.getGeometry().getClosestPoint(coord);
-                const distX = Math.abs(closestPoint[0] - coord[0]) / options.xTileRes;
-                const distY = Math.abs(closestPoint[1] - coord[1]) / options.yTileRes;
+                const closestPoint = geometry.getClosestPoint(coord);
+                const distX = Math.abs(closestPoint[0] - coord[0]) / xTileRes;
+                const distY = Math.abs(closestPoint[1] - coord[1]) / yTileRes;
                 const distSqr = distX ** 2 + distY ** 2;
                 if (distSqr <= radiusSqr) {
                     results.push(feat);
@@ -322,7 +340,9 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
     getVectorFeaturesInExtent(extent: Extent): Feature[] {
         if ((this.source as VectorSource).isVectorSource && this.visible) {
             const layerProjection = this.getExtent()?.crs();
-            if (!layerProjection) return [];
+            if (!layerProjection) {
+                return [];
+            }
 
             const extentLayer = extent.as(layerProjection);
             const olExtent = OpenLayersUtils.toOLExtent(extentLayer);

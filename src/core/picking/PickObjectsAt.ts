@@ -101,7 +101,9 @@ function pickObjectsAt(
             inter.entity = findEntityInParent(inter.object);
             if (!filter || filter(inter)) {
                 target.push(inter);
-                if (target.length >= limit) return false;
+                if (target.length >= limit) {
+                    return false;
+                }
             }
         }
 

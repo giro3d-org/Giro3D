@@ -77,7 +77,7 @@ class TileGeometry extends BufferGeometry implements MemoryUsage {
         this.dimensions = params.dimensions;
         // Compute properties of the grid, square or rectangular.
         this._segments = params.segments;
-        this.updateProps();
+        this.props = this.updateProps();
         this.computeBuffers(this.props);
         // Compute the Oriented Bounding Box for spatial operations
         this.computeBoundingBox();
@@ -103,6 +103,7 @@ class TileGeometry extends BufferGeometry implements MemoryUsage {
             triangles: this._segments * this._segments * 2,
             numVertices: width * height,
         };
+        return this.props;
     }
 
     get segments() {
@@ -148,7 +149,7 @@ class TileGeometry extends BufferGeometry implements MemoryUsage {
                 return 0;
             }
 
-            return heightMap.getValue(u, v, true);
+            return heightMap.getValue(u, v, true) ?? 0;
         }
 
         const segments = this._segments;

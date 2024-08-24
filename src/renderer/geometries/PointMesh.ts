@@ -18,7 +18,7 @@ export default class PointMesh<UserData extends DefaultUserData = DefaultUserDat
     private _styleOpacity = 1;
     private _pointSize: number;
 
-    userData: UserData;
+    override userData: Partial<UserData> = {};
 
     constructor(params: ConstructorParams) {
         super(params.material);
@@ -62,7 +62,7 @@ export default class PointMesh<UserData extends DefaultUserData = DefaultUserDat
         }
     }
 
-    update(options: ConstructorParams) {
+    update(options: Omit<ConstructorParams, 'material'> & { material: SpriteMaterial | null }) {
         if (options.material) {
             this.material = options.material;
             this._styleOpacity = options.opacity ?? 1;

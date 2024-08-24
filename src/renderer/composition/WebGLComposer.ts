@@ -28,7 +28,7 @@ import TextureGenerator from '../../utils/TextureGenerator';
 import MemoryTracker from '../MemoryTracker';
 import ComposerTileMaterial, { isComposerTileMaterial } from './ComposerTileMaterial';
 
-let SHARED_PLANE_GEOMETRY: PlaneGeometry = null;
+let SHARED_PLANE_GEOMETRY: PlaneGeometry | null = null;
 
 const IMAGE_Z = -10;
 const textureOwners = new Map<string, WebGLRenderTarget>();
@@ -53,7 +53,7 @@ function processTextureDisposal(event: { target: Texture }) {
 
 interface SaveState {
     clearAlpha: number;
-    renderTarget: WebGLRenderTarget;
+    renderTarget: WebGLRenderTarget | null;
     scissorTest: boolean;
     scissor: Vector4;
     clearColor: Color;
@@ -78,10 +78,10 @@ export interface DrawOptions {
 class WebGLComposer {
     private readonly _showImageOutlines: boolean;
     private readonly _showEmptyTextures: boolean;
-    private readonly _extent: Rect;
+    private readonly _extent?: Rect;
     private readonly _renderer: WebGLRenderer;
     private readonly _reuseTexture: boolean;
-    private readonly _clearColor: ColorRepresentation;
+    private readonly _clearColor?: ColorRepresentation;
     private readonly _minFilter: MinificationTextureFilter;
     private readonly _magFilter: MagnificationTextureFilter;
     private readonly _ownedTextures: Texture[];
@@ -89,13 +89,13 @@ class WebGLComposer {
     private readonly _camera: OrthographicCamera;
     private readonly _expandRGB: boolean;
 
-    private _renderTarget: WebGLRenderTarget;
+    private _renderTarget?: WebGLRenderTarget;
 
     readonly dataType: TextureDataType;
     readonly pixelFormat: PixelFormat;
 
-    readonly width: number;
-    readonly height: number;
+    readonly width?: number;
+    readonly height?: number;
 
     /**
      * Creates an instance of WebGLComposer.
@@ -136,13 +136,13 @@ class WebGLComposer {
          * to RGB by copying the R channel into the G and B channels. */
         expandRGB?: boolean;
     }) {
-        this._showImageOutlines = options.showImageOutlines;
-        this._showEmptyTextures = options.showEmptyTextures;
+        this._showImageOutlines = options.showImageOutlines ?? false;
+        this._showEmptyTextures = options.showEmptyTextures ?? false;
         this._extent = options.extent;
         this.width = options.width;
         this.height = options.height;
         this._renderer = options.webGLRenderer;
-        this._reuseTexture = options.reuseTexture;
+        this._reuseTexture = options.reuseTexture ?? false;
         this._clearColor = options.clearColor;
 
         const defaultFilter = TextureGenerator.getCompatibleTextureFilter(
@@ -233,6 +233,7 @@ class WebGLComposer {
      * @param options - The options.
      */
     draw(image: DrawableImage, extent: Rect, options: DrawOptions = {}) {
+        // @ts-expect-error the material is assigned just after
         const plane = new Mesh(SHARED_PLANE_GEOMETRY, null);
         MemoryTracker.track(plane, 'WebGLComposer - mesh');
         plane.scale.set(extent.width, extent.height, 1);
@@ -270,13 +271,13 @@ class WebGLComposer {
         const material = ComposerTileMaterial.acquire({
             texture,
             noDataOptions: {
-                enabled: options.fillNoData,
+                enabled: options.fillNoData ?? false,
                 radius: options.fillNoDataRadius,
                 replacementAlpha: options.fillNoDataAlphaReplacement,
             },
             interpretation,
-            flipY: options.flipY,
-            transparent: options.transparent,
+            flipY: options.flipY ?? false,
+            transparent: options.transparent ?? false,
             showEmptyTexture: this._showEmptyTextures,
             showImageOutlines: this._showImageOutlines,
             expandRGB: options.expandRGB ?? this._expandRGB,
@@ -286,7 +287,7 @@ class WebGLComposer {
 
         mesh.material = material;
 
-        mesh.renderOrder = options.renderOrder;
+        mesh.renderOrder = options.renderOrder ?? 0;
         mesh.position.setZ(IMAGE_Z);
 
         this._scene.add(mesh);
@@ -359,8 +360,14 @@ class WebGLComposer {
             target?: WebGLRenderTarget;
         } = {},
     ): Texture {
-        const width = opts.width ?? this.width;
-        const height = opts.height ?? this.height;
+        const width = opts.target?.width ?? opts.width ?? this.width;
+        const height = opts.target?.height ?? opts.height ?? this.height;
+
+        if (width == null || height == null) {
+            throw new Error(
+                'this composer does not have preset width/height and none was provided',
+            );
+        }
 
         // Should we reuse the same render target or create a new one ?
         let target;
@@ -371,6 +378,9 @@ class WebGLComposer {
             target = this.createRenderTarget(this.dataType, this.pixelFormat, width, height);
         } else {
             if (!this._renderTarget) {
+                if (this.width == null || this.height == null) {
+                    throw new Error('cannot reuse render target without height/width defined ');
+                }
                 this._renderTarget = this.createRenderTarget(
                     this.dataType,
                     this.pixelFormat,

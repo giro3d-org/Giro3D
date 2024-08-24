@@ -150,7 +150,7 @@ describe('Tiles3D', () => {
                 expect(mesh.material.transparent).toBe(false);
             }
             entity.opacity = 0.7;
-            expect(entity.material.opacity).toBe(0.7);
+            expect(entity.material!.opacity).toBe(0.7);
             for (const obj of o.children) {
                 const mesh = obj as Mesh<BufferGeometry, Material>;
                 expect(mesh.material.opacity).toBe(0.7);

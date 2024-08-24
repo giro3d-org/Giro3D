@@ -1,4 +1,4 @@
-import PriorityQueue from 'ol/structs/PriorityQueue.js';
+import PriorityQueue from 'ol/structs/PriorityQueue';
 import { EventDispatcher } from 'three';
 import PromiseUtils from '../utils/PromiseUtils';
 import OperationCounter from './OperationCounter';
@@ -11,7 +11,7 @@ function defaultShouldExecute() {
 class Task {
     readonly id: string;
     private readonly _priority: number;
-    private readonly _signal: AbortSignal;
+    private readonly _signal?: AbortSignal;
     private readonly _resolve: (arg: unknown) => void;
     private readonly _request: () => Promise<unknown>;
 
@@ -20,12 +20,12 @@ class Task {
 
     constructor(
         id: string,
-        signal: AbortSignal,
         priority: number,
         request: () => Promise<unknown>,
         resolve: (arg: unknown) => void,
         reject: (reason?: unknown) => void,
-        shouldExecute: () => boolean,
+        shouldExecute: (() => boolean) | undefined,
+        signal: AbortSignal | undefined,
     ) {
         this.id = id;
         this._priority = priority;
@@ -197,7 +197,7 @@ class RequestQueue extends EventDispatcher<RequestQueueEvents> implements Progre
         this._opCounter.increment();
 
         const promise = new Promise((resolve, reject) => {
-            const task = new Task(id, signal, priority, request, resolve, reject, shouldExecute);
+            const task = new Task(id, priority, request, resolve, reject, shouldExecute, signal);
             if (this._queue.isEmpty()) {
                 this._queue.enqueue(task);
                 this.onQueueAvailable();

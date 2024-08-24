@@ -26,7 +26,16 @@ export interface Tile {
     z: number;
 }
 
-export type NeighbourList<T extends Tile> = [T, T, T, T, T, T, T, T];
+export type NeighbourList<T extends Tile> = [
+    T | null,
+    T | null,
+    T | null,
+    T | null,
+    T | null,
+    T | null,
+    T | null,
+    T | null,
+];
 export type Predicate<T extends Tile> = (tile: T) => boolean;
 
 class TileIndex<T extends Tile> {
@@ -118,14 +127,14 @@ class TileIndex<T extends Tile> {
         const keys = [...this.tiles.keys()];
         for (const key of keys) {
             const entry = this.tiles.get(key);
-            if (!entry.deref()) {
+            if (entry && !entry.deref()) {
                 this.tiles.delete(key);
             }
         }
         const ids = [...this.tilesById.keys()];
         for (const key of ids) {
             const entry = this.tilesById.get(key);
-            if (!entry.deref()) {
+            if (entry && !entry.deref()) {
                 this.tilesById.delete(key);
             }
         }

@@ -16,7 +16,7 @@ export default class LineStringMesh<UserData extends DefaultUserData = DefaultUs
     private _featureOpacity = 1;
     private _styleOpacity = 1;
 
-    userData: UserData;
+    override userData: Partial<UserData> = {};
 
     constructor(geometry: LineGeometry, material: LineMaterial, opacity: number) {
         super(geometry, material);
@@ -33,7 +33,7 @@ export default class LineStringMesh<UserData extends DefaultUserData = DefaultUs
         this.dispatchEvent({ type: 'dispose' });
     }
 
-    update(options: { material: LineMaterial; opacity: number }) {
+    update(options: { material: LineMaterial | null; opacity: number }) {
         if (options.material) {
             this.material = options.material;
             this._styleOpacity = options.opacity;

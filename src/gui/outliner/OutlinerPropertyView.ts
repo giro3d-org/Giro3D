@@ -1,6 +1,7 @@
 import type GUI from 'lil-gui';
 import { Object3D } from 'three';
 import type Instance from '../../core/Instance';
+import { isBufferGeometry } from '../../utils/predicates';
 import Panel from '../Panel';
 
 class OutlinerPropertyView extends Panel {
@@ -18,17 +19,25 @@ class OutlinerPropertyView extends Panel {
         this.populateProperties(new Object3D());
     }
 
-    createControllers(obj: any, gui: GUI) {
+    createControllers(obj: object, gui: GUI) {
         if (!obj) {
             return;
         }
-        const keys = Object.keys(obj).sort();
-        keys.forEach(prop => {
-            const value = obj[prop];
-            if (value != null && !(value instanceof Object)) {
-                this._controllers.push(
-                    gui.add(obj, prop).onChange(() => this.instance.notifyChange()),
-                );
+
+        const notify = () => this.instance.notifyChange();
+
+        const entries = Object.entries(obj).sort((a, b) => a[0].localeCompare(b[0]));
+
+        entries.forEach(([name, value]) => {
+            switch (typeof value) {
+                case 'string':
+                case 'number':
+                case 'bigint':
+                case 'boolean':
+                    if (value != null) {
+                        this._controllers.push(gui.add(obj, name).onChange(notify));
+                    }
+                    break;
             }
         });
     }
@@ -78,14 +87,14 @@ class OutlinerPropertyView extends Panel {
             this.createControllers(obj.material, material);
         }
 
-        if ('geometry' in obj && obj.geometry) {
+        if ('geometry' in obj && isBufferGeometry(obj.geometry)) {
             const geometry = this.gui.addFolder('Geometry');
             this._folders.push(geometry);
             geometry.close();
             this.createControllers(obj.geometry, geometry);
 
-            if ((obj as any).geometry.attributes) {
-                const attrs = (obj as any).geometry.attributes;
+            if (obj.geometry.attributes) {
+                const attrs = obj.geometry.attributes;
                 const attributes = geometry.addFolder('Attributes');
                 Object.keys(attrs).forEach(p => {
                     const attrValue = attrs[p];

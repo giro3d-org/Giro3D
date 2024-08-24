@@ -12,7 +12,7 @@ export default class MultiPointMesh<UserData extends DefaultUserData = DefaultUs
     readonly isMultiPointMesh = true as const;
     readonly type = 'MultiPointMesh' as const;
 
-    userData: UserData;
+    override userData: Partial<UserData> = {};
 
     constructor(points: PointMesh[]) {
         super();

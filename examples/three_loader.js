@@ -82,7 +82,9 @@ instance.add(mesh);
 const loader = new GLTFLoader();
 loader.load('https://threejs.org/examples/models/gltf/Soldier.glb', gltf => {
     gltf.scene.traverse(object => {
-        if (object.isMesh) object.castShadow = true;
+        if (object.isMesh) {
+            object.castShadow = true;
+        }
     });
 
     // this code is virtually identical to this example:

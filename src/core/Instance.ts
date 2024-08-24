@@ -11,6 +11,7 @@ import {
     type Box3,
     type WebGLRenderer,
 } from 'three';
+import type { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer';
 import type Entity from '../entities/Entity';
 import { isEntity } from '../entities/Entity';
 import Entity3D, { isEntity3D } from '../entities/Entity3D';
@@ -152,8 +153,6 @@ export interface InstanceOptions extends CameraOptions {
     scene3D?: Scene;
     /* Rendering options */
     renderer?: RendererOptions;
-    /* Main loop */
-    mainLoop?: MainLoop;
 }
 
 /**
@@ -239,7 +238,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
     private _resizeTimeout?: string | number | NodeJS.Timeout;
     private _controls?: CustomCameraControls;
     private _controlFunctions?: ControlFunctions;
-    private _isDisposing: boolean;
+    private _disposed = false;
 
     /**
      * Constructs a Giro3D Instance
@@ -274,25 +273,19 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         this._referenceCrs = options.crs;
         this._viewport = viewerDiv;
 
-        if (options.mainLoop) {
-            this._mainLoop = options.mainLoop;
-            this._engine = options.mainLoop.gfxEngine;
-        } else {
-            // viewerDiv may have padding/borders, which is annoying when retrieving its size
-            // Wrap our canvas in a new div so we make sure the display
-            // is correct whatever the page layout is
-            // (especially when skrinking so there is no scrollbar/bleading)
-            this._viewport = document.createElement('div');
-            this._viewport.style.position = 'relative';
-            this._viewport.style.overflow = 'hidden'; // Hide overflow during resizing
-            this._viewport.style.width = '100%'; // Make sure it fills the space
-            this._viewport.style.height = '100%';
-            viewerDiv.appendChild(this._viewport);
+        // viewerDiv may have padding/borders, which is annoying when retrieving its size
+        // Wrap our canvas in a new div so we make sure the display
+        // is correct whatever the page layout is
+        // (especially when skrinking so there is no scrollbar/bleading)
+        this._viewport = document.createElement('div');
+        this._viewport.style.position = 'relative';
+        this._viewport.style.overflow = 'hidden'; // Hide overflow during resizing
+        this._viewport.style.width = '100%'; // Make sure it fills the space
+        this._viewport.style.height = '100%';
+        viewerDiv.appendChild(this._viewport);
 
-            const engine = new C3DEngine(this._viewport, options.renderer);
-            this._mainLoop = new MainLoop(engine);
-            this._engine = engine;
-        }
+        this._engine = new C3DEngine(this._viewport, options.renderer);
+        this._mainLoop = new MainLoop();
 
         this._scene = options.scene3D || new Scene();
         // will contain simple three objects that need to be taken into
@@ -325,7 +318,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
             this._resizeObserver.observe(viewerDiv);
         }
 
-        this._controls = null;
+        this._controls = undefined;
         this._pickingClock = new Clock(false);
 
         this._onContextRestored = this.onContextRestored.bind(this);
@@ -409,11 +402,16 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
 
     /**
      * Gets the underlying WebGL renderer.
-     *
-     * @readonly
      */
     get renderer(): WebGLRenderer {
         return this._engine.renderer;
+    }
+
+    /**
+     * Gets the underlying CSS2DRenderer.
+     */
+    get css2DRenderer(): CSS2DRenderer {
+        return this._engine.labelRenderer;
     }
 
     /** Gets the [3D Scene](https://threejs.org/docs/#api/en/scenes/Scene). */
@@ -440,7 +438,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * Sets custom camera controls.
      * Prefer {@link Instance.useTHREEControls} when possible.
      */
-    set controls(controls: CustomCameraControls) {
+    set controls(controls: CustomCameraControls | undefined) {
         this._controls = controls;
     }
 
@@ -474,10 +472,10 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      *
      */
     dispose(): void {
-        if (this._isDisposing) {
+        if (this._disposed) {
             return;
         }
-        this._isDisposing = true;
+        this._disposed = true;
 
         this.domElement.removeEventListener('webglcontextlost', this._onContextLost);
         this.domElement.removeEventListener('webglcontextrestored', this._onContextRestored);
@@ -512,13 +510,16 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
             throw new Error('object is undefined');
         }
 
-        if (!(object as Object3D).isObject3D && !(object as Entity).isEntity) {
+        if (!isObject3D(object) && !isEntity(object)) {
             throw new Error('object is not an instance of THREE.Object3D or Giro3D.Entity');
         }
-        // @ts-expect-error _instance does not exist on objects and entities // FIXME
-        object._instance = this;
 
-        if ((object as Object3D).isObject3D) {
+        if (isEntity3D(object)) {
+            // @ts-expect-error private property. TODO assign it cleanly (maybe in entity constructor ?)
+            object._instance = this;
+        }
+
+        if (isObject3D(object)) {
             // case of a simple THREE.js object3D
             const object3d = object as Object3D;
             this._threeObjects.add(object3d);
@@ -537,6 +538,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         entity.startPreprocess();
 
         this._entities.add(entity);
+
         await entity.whenReady;
 
         if (
@@ -989,7 +991,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * Removes a THREE controls previously added. The controls won't be disable.
      */
     removeTHREEControls(): void {
-        if (!this._controls) {
+        if (!this._controls || !this._controlFunctions) {
             return;
         }
 
@@ -1001,8 +1003,8 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
             this.removeEventListener('before-camera-update', this._controlFunctions.update);
         }
 
-        this._controls = null;
-        this._controlFunctions = null;
+        this._controls = undefined;
+        this._controlFunctions = undefined;
     }
 
     private updateControls() {

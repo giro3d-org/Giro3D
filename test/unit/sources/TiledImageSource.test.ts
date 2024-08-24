@@ -46,7 +46,7 @@ describe('TiledImageSource', () => {
                         format: {
                             flipY,
                             dataType: UnsignedByteType,
-                            isImageFormat: false,
+                            isImageFormat: true,
                             type: '',
                             decode: jest.fn(),
                         },

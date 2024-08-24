@@ -28,6 +28,7 @@ module.exports = {
         },
     },
     rules: {
+        curly: 'error',
         'jest/no-disabled-tests': 'warn',
         'jest/no-focused-tests': 'error',
         'jest/no-identical-title': 'error',
@@ -142,6 +143,7 @@ module.exports = {
             // sense, or because the Typescript compiler is a better tool to enforce them.
             files: ['**/*.ts'],
             rules: {
+                '@typescript-eslint/no-non-null-assertion': 'error',
                 '@typescript-eslint/consistent-type-imports': 'error',
                 '@typescript-eslint/no-unused-vars': [
                     'error', // or "error"
@@ -153,8 +155,13 @@ module.exports = {
                 ],
             },
         },
+        {
+            files: ['test/**/*.ts'],
+            rules: {
+                // Useful in tests where we already asserted that a value is non null
+                // However we should not use that in production code as it could lead to cryptic errors.
+                '@typescript-eslint/no-non-null-assertion': 'off',
+            },
+        },
     ],
-    globals: {
-        __DEBUG__: false,
-    },
 };

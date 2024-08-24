@@ -120,7 +120,7 @@ describe('surface', () => {
 
     describe('set', () => {
         it('should replace the current surface', () => {
-            const oldSurface = mesh.surface;
+            const oldSurface = mesh.surface!;
             oldSurface.dispose = jest.fn();
             const newSurface = makeFlatSurface();
 
@@ -160,7 +160,7 @@ describe('linearRings', () => {
         });
 
         it('should remove current rings', () => {
-            const currentRings = mesh.linearRings;
+            const currentRings = mesh.linearRings!;
             currentRings.forEach(ring => (ring.dispose = jest.fn()));
 
             const newRings = makeRings();
@@ -174,7 +174,7 @@ describe('linearRings', () => {
         });
 
         it('should set linearRings to new rings', () => {
-            const currentRings = mesh.linearRings;
+            const currentRings = mesh.linearRings!;
             currentRings.forEach(ring => (ring.dispose = jest.fn()));
 
             const newRings = makeRings();
@@ -186,7 +186,7 @@ describe('linearRings', () => {
         });
 
         it('should update the opacity of new rings', () => {
-            const currentRings = mesh.linearRings;
+            const currentRings = mesh.linearRings!;
             currentRings.forEach(ring => (ring.dispose = jest.fn()));
 
             const newRings = makeRings();
@@ -221,7 +221,7 @@ describe('opacity', () => {
     it('(surface only) should call opacity on surface', () => {
         const surfaceMaterial = new MeshBasicMaterial();
         const surface = makeFlatSurface({ material: surfaceMaterial, opacity: 0.7 });
-        const mesh = new PolygonMesh({ source: DEFAULT_POLYGON, surface, linearRings: null });
+        const mesh = new PolygonMesh({ source: DEFAULT_POLYGON, surface, linearRings: undefined });
 
         mesh.opacity = 0.33;
 
@@ -232,7 +232,7 @@ describe('opacity', () => {
         const ringMaterial = new LineMaterial();
         const linearRings = makeRings({ material: ringMaterial, opacity: 0.22 });
 
-        const mesh = new PolygonMesh({ source: DEFAULT_POLYGON, surface: null, linearRings });
+        const mesh = new PolygonMesh({ source: DEFAULT_POLYGON, surface: undefined, linearRings });
 
         mesh.opacity = 0.33;
 

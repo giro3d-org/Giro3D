@@ -211,12 +211,15 @@ class C3DEngine {
             const msg = 'Failed to create WebGLRenderer';
             console.error(msg, error);
             viewerDiv.appendChild(createErrorMessage());
-            throw new Error(`${msg}: ${error.message}`);
+            if (error instanceof Error) {
+                throw new Error(`${msg}: ${error.message}`);
+            } else {
+                throw new Error(msg);
+            }
         }
 
-        // Don't verify shaders if not debug (it is very costly)
-        // @ts-expect-error cannot find __DEBUG__
-        this.renderer.debug.checkShaderErrors = options.checkShaderErrors ?? __DEBUG__;
+        // Don't verify shaders by default (it is very costly)
+        this.renderer.debug.checkShaderErrors = options.checkShaderErrors ?? false;
         this.labelRenderer = new CSS2DRenderer();
 
         // Let's allow our canvas to take focus

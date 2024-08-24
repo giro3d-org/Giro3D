@@ -41,7 +41,7 @@ describe('getFullPointStyle', () => {
         expect(full.color).toEqual(DEFAULT_POINT_COLOR);
         expect(full.pointSize).toEqual(DEFAULT_POINT_SIZE);
         expect(full.sizeAttenuation).toEqual(false);
-        expect(full.image).toBeUndefined();
+        expect(full.image).toBeNull();
         expect(full.renderOrder).toEqual(0);
 
         expect(full).toEqual(defaultStyle);
@@ -138,7 +138,7 @@ describe('hashStyle', () => {
             sizeAttenuation: true,
             depthTest: true,
             renderOrder: 3,
-            image: undefined,
+            image: null,
         };
 
         const hashValue = hashStyle('prefix', style1);

@@ -9,8 +9,9 @@ import {
 } from 'three';
 import MaterialUtils from '../renderer/MaterialUtils';
 import PointCloudMaterial from '../renderer/PointCloudMaterial';
+import { nonNull } from '../utils/tsutils';
 import type Disposable from './Disposable';
-import type Extent from './geographic/Extent.js';
+import type Extent from './geographic/Extent';
 
 export interface PointCloudEventMap extends Object3DEventMap {
     'visibility-changed': {
@@ -119,7 +120,7 @@ class PointCloud<M extends PointCloudMaterial = PointCloudMaterial>
     }
 
     getExtent() {
-        return this.extent;
+        return nonNull(this.extent);
     }
 
     dispose() {

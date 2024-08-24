@@ -163,7 +163,9 @@ map.addLayer(geoJsonLayer).then(() => {
             text._over = false;
         });
         text.addEventListener('click', () => {
-            if (text._over) lookTopDownAt(giro3dExtent);
+            if (text._over) {
+                lookTopDownAt(giro3dExtent);
+            }
         });
     }
     instance.notifyChange(geoJsonLayer);

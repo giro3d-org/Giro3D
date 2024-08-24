@@ -9,9 +9,9 @@ import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
 function makeDefaultObjects() {
     const material = new LineMaterial();
     const geometry = new LineGeometry();
-    const a = new LineStringMesh(geometry, material);
-    const b = new LineStringMesh(geometry, material);
-    const c = new LineStringMesh(geometry, material);
+    const a = new LineStringMesh(geometry, material, 1);
+    const b = new LineStringMesh(geometry, material, 1);
+    const c = new LineStringMesh(geometry, material, 1);
     const lineStrings = [a, b, c];
     const mesh = new MultiLineStringMesh(lineStrings);
 
@@ -71,9 +71,9 @@ describe('dispose', () => {
     it('should dispatch dispose event', () => {
         const material = new LineMaterial();
         const geometry = new LineGeometry();
-        const a = new LineStringMesh(geometry, material);
-        const b = new LineStringMesh(geometry, material);
-        const c = new LineStringMesh(geometry, material);
+        const a = new LineStringMesh(geometry, material, 1);
+        const b = new LineStringMesh(geometry, material, 1);
+        const c = new LineStringMesh(geometry, material, 1);
         const lineStrings = [a, b, c];
         const mesh = new MultiLineStringMesh(lineStrings);
 

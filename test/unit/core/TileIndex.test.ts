@@ -13,13 +13,13 @@ import TileIndex, {
 
 class MockWeakRef<T extends WeakKey> implements WeakRef<T> {
     obj: T;
-    collected: boolean;
+    collected = false;
 
     constructor(obj: T) {
         this.obj = obj;
     }
 
-    [Symbol.toStringTag]: 'WeakRef';
+    readonly [Symbol.toStringTag] = 'WeakRef';
 
     collect() {
         this.collected = true;
@@ -58,7 +58,7 @@ describe('TileIndex', () => {
             const tile = makeTile(0, 0, 0);
             const tileIndex = new TileIndex();
             tileIndex.addTile(tile);
-            expect(tileIndex.tiles.get('0,0,0').deref()).toBe(tile);
+            expect(tileIndex.tiles.get('0,0,0')!.deref()).toBe(tile);
         });
 
         it('should keep a WeakRef in the tile by ID index at TileMesh creation', () => {
@@ -81,8 +81,8 @@ describe('TileIndex', () => {
             tileIndex.addTile(tile000);
             tileIndex.addTile(tile001);
 
-            const weakref000 = tileIndex.tiles.get('0,0,0');
-            const weakref001 = tileIndex.tiles.get('0,0,1');
+            const weakref000 = tileIndex.tiles.get('0,0,0')!;
+            const weakref001 = tileIndex.tiles.get('0,0,1')!;
             expect(weakref000.deref()).toBe(tile000);
             expect(weakref001.deref()).toBe(tile001);
             expect(tileIndex.getTile(141)).toBe(tile000);

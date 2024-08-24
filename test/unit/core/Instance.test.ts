@@ -1,14 +1,12 @@
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import Instance from '@giro3d/giro3d/core/Instance';
-import MainLoop from '@giro3d/giro3d/core/MainLoop';
 import Map from '@giro3d/giro3d/entities/Map';
 import Tiles3D from '@giro3d/giro3d/entities/Tiles3D';
-import type C3DEngine from '@giro3d/giro3d/renderer/c3DEngine.js';
 import Tiles3DSource from '@giro3d/giro3d/sources/Tiles3DSource';
 import Fetcher from '@giro3d/giro3d/utils/Fetcher';
 import proj4 from 'proj4';
 import { Group, Object3D, Vector2 } from 'three';
-import { resizeObservers, setupGlobalMocks } from '../mocks';
+import { mockWebGLRenderer, resizeObservers, setupGlobalMocks } from '../mocks';
 
 describe('Instance', () => {
     let viewerDiv: HTMLDivElement;
@@ -19,13 +17,6 @@ describe('Instance', () => {
     beforeEach(() => {
         setupGlobalMocks();
         viewerDiv = document.createElement('div');
-        const gfxEngine: C3DEngine = {
-            getWindowSize: () => new Vector2(1200, 800),
-            // @ts-expect-error missing properties
-            renderer: {
-                domElement: document.createElement('canvas'),
-            },
-        };
         mouseEvent = new MouseEvent('foo', {
             // @ts-expect-error incorrect
             target: viewerDiv,
@@ -46,12 +37,17 @@ describe('Instance', () => {
                     rotationAngle: 0,
                     screenX: 0,
                     screenY: 0,
+                    // @ts-expect-error incorrect
                     target: undefined,
                 },
             ],
         });
-        const options = { crs: 'EPSG:3857', mainLoop: new MainLoop(gfxEngine) };
-        instance = new Instance(viewerDiv, options);
+        instance = new Instance(viewerDiv, {
+            crs: 'EPSG:3857',
+            renderer: {
+                renderer: mockWebGLRenderer(),
+            },
+        });
         Fetcher.json = jest.fn();
     });
 
@@ -400,9 +396,11 @@ describe('Instance', () => {
 
     describe('registerCRS', () => {
         it('should throw if name or value is undefined', () => {
+            // @ts-expect-error invalid parameter
             expect(() => Instance.registerCRS(undefined, '')).toThrow(/missing CRS name/);
             expect(() => Instance.registerCRS('', '')).toThrow(/missing CRS name/);
             expect(() => Instance.registerCRS('EPSG:foo', '')).toThrow(/missing CRS PROJ string/);
+            // @ts-expect-error invalid parameter
             expect(() => Instance.registerCRS('EPSG:foo', undefined)).toThrow(
                 /missing CRS PROJ string/,
             );

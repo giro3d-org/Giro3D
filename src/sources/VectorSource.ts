@@ -26,7 +26,7 @@ import {
     scale as scaleTransform,
     translate as translateTransform,
 } from 'ol/transform.js';
-import type Extent from '../core/geographic/Extent';
+import Extent from '../core/geographic/Extent';
 import EmptyTexture from '../renderer/EmptyTexture';
 import Fetcher from '../utils/Fetcher';
 import OpenLayersUtils from '../utils/OpenLayersUtils';
@@ -348,28 +348,20 @@ class VectorSource extends ImageSource {
             return;
         }
 
-        let extent: Extent | undefined;
+        let extent: Extent | null = null;
         const crs = nonNull(this._targetProjection);
 
         if (feature.length === 1) {
-            extent = OpenLayersUtils.getFeatureExtent(feature[0], crs);
+            extent = OpenLayersUtils.getFeatureExtent(feature[0], crs) ?? null;
         } else {
             feature = feature.filter(f => f != null);
 
             if (feature.length > 0) {
                 const extents = feature
                     .map(f => (f != null ? OpenLayersUtils.getFeatureExtent(f, crs) : null))
-                    .filter(e => e != null);
+                    .filter(e => e != null) as Extent[];
 
-                if (extents.length > 0) {
-                    extent = extents[0];
-
-                    if (extents.length > 1) {
-                        for (let i = 1; i < extents.length; i++) {
-                            extent.union(extents[i]);
-                        }
-                    }
-                }
+                extent = Extent.unionMany(...extents);
             }
         }
 
