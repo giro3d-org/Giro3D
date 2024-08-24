@@ -349,4 +349,4 @@ instance.scene.updateMatrixWorld(true);
 
 instance.notifyChange();
 
-StatusBar.bind(instance);
+StatusBar.bind(instance, { disableCoordinates: true });
