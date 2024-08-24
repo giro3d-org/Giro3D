@@ -171,7 +171,7 @@ class TileMesh
     private _segments: number;
     readonly type: string = 'TileMesh';
     readonly isTileMesh: boolean = true;
-    private _minmax: { min: number; max: number };
+    private _minmax: { min: number; max: number } = { min: -Infinity, max: +Infinity };
     readonly extent: Extent;
     readonly textureSize: Vector2;
     private readonly _volume: TileVolume;
@@ -179,7 +179,7 @@ class TileMesh
     readonly x: number;
     readonly y: number;
     readonly z: number;
-    private _heightMap: UniqueOwner<HeightMap, this>;
+    private _heightMap: UniqueOwner<HeightMap, this> | null = null;
     disposed = false;
     private _enableTerrainDeformation: boolean;
     private readonly _enableCPUTerrain: boolean;
@@ -191,8 +191,8 @@ class TileMesh
         layer: ElevationLayer;
         offsetScale: OffsetScale;
         renderTarget: WebGLRenderTarget<Texture>;
-    };
-    private _helperMesh: Mesh<TileGeometry, MeshBasicMaterial, Object3DEventMap>;
+    } | null = null;
+    private _helperMesh: Mesh<TileGeometry, MeshBasicMaterial, Object3DEventMap> | null = null;
 
     getMemoryUsage(context: GetMemoryUsageContext) {
         this.material?.getMemoryUsage(context);
@@ -244,7 +244,7 @@ class TileMesh
         onElevationChanged,
     }: {
         /** The geometry pool to use. */
-        geometryPool?: GeometryPool;
+        geometryPool: GeometryPool;
         /** The tile material. */
         material: LayeredMaterial;
         /** The tile extent. */
@@ -281,11 +281,16 @@ class TileMesh
         this._enableCPUTerrain = enableCPUTerrain;
         this._enableTerrainDeformation = enableTerrainDeformation;
 
+        if (!this.geometry.boundingBox) {
+            this.geometry.computeBoundingBox();
+        }
+        const boundingBox = this.geometry.boundingBox as Box3;
+
         this._volume = new TileVolume({
             extent,
             owner: this,
-            min: this.geometry.boundingBox.min.z,
-            max: this.geometry.boundingBox.max.z,
+            min: boundingBox.min.z,
+            max: boundingBox.max.z,
         });
 
         this.name = `tile @ (z=${level}, x=${x}, y=${y})`;
@@ -463,7 +468,7 @@ class TileMesh
                 const uniform = this.material.uniforms.neighbours.value[i];
                 uniform.diffLevel = NO_NEIGHBOUR;
                 uniform.offsetScale = VECTOR4_ZERO;
-                uniform.elevationTexture = undefined;
+                uniform.elevationTexture = null;
             }
         }
     }
@@ -585,9 +590,9 @@ class TileMesh
         elevation: {
             texture: Texture;
             pitch: OffsetScale;
-            min: number;
-            max: number;
-            renderTarget?: WebGLRenderTarget;
+            min?: number;
+            max?: number;
+            renderTarget: WebGLRenderTarget;
         },
         isFinal = false,
     ) {
@@ -670,9 +675,9 @@ class TileMesh
         this._onElevationChanged(this);
     }
 
-    setBBoxZ(min: number, max: number) {
+    setBBoxZ(min: number | undefined, max: number | undefined) {
         // 0 is an acceptable value
-        if (min == null && max == null) {
+        if (min == null || max == null) {
             return;
         }
         this._minmax = { min, max };
@@ -761,9 +766,9 @@ class TileMesh
      * @param tile - the tile to evaluate
      * @returns the resulting common ancestor
      */
-    findCommonAncestor(tile: TileMesh): TileMesh {
+    findCommonAncestor(tile: TileMesh): TileMesh | null {
         if (!tile) {
-            return undefined;
+            return null;
         }
         if (tile.level === this.level) {
             if (tile.id === this.id) {
@@ -772,7 +777,7 @@ class TileMesh
             if (tile.level !== 0) {
                 return (this.parent as TileMesh).findCommonAncestor(tile.parent as TileMesh);
             }
-            return undefined;
+            return null;
         }
         if (tile.level < this.level) {
             return (this.parent as TileMesh).findCommonAncestor(tile);

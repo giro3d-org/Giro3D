@@ -45,7 +45,7 @@ describe('TileMesh', () => {
         readonly id: string;
         readonly level: number;
         readonly parent: unknown;
-        readonly findCommonAncestor: (tile: TileMesh) => TileMesh;
+        readonly findCommonAncestor: (tile: TileMesh) => TileMesh | null;
 
         constructor(level: number, parent: unknown = undefined) {
             this.id = MathUtils.generateUUID();
