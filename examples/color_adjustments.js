@@ -91,7 +91,7 @@ map.addLayer(geoJsonLayer);
 const camera = instance.view.camera;
 const cameraAltitude = 2000;
 
-const cameraPosition = new Vector3(extent.west(), extent.south(), cameraAltitude);
+const cameraPosition = new Vector3(extent.west, extent.south, cameraAltitude);
 camera.position.copy(cameraPosition);
 
 const controls = new MapControls(camera, instance.domElement);

@@ -99,11 +99,11 @@ button.onclick = () => {
 
     const dimensions = EPSG3857_BOUNDS.dimensions();
 
-    const west = EPSG3857_BOUNDS.west() + Math.min(x0, x1) * dimensions.x;
-    const east = EPSG3857_BOUNDS.west() + Math.max(x0, x1) * dimensions.x;
+    const west = EPSG3857_BOUNDS.west + Math.min(x0, x1) * dimensions.x;
+    const east = EPSG3857_BOUNDS.west + Math.max(x0, x1) * dimensions.x;
 
-    const north = EPSG3857_BOUNDS.south() + Math.max(y0, y1) * dimensions.y;
-    const south = EPSG3857_BOUNDS.south() + Math.min(y0, y1) * dimensions.y;
+    const north = EPSG3857_BOUNDS.south + Math.max(y0, y1) * dimensions.y;
+    const south = EPSG3857_BOUNDS.south + Math.min(y0, y1) * dimensions.y;
 
     const extent = new Extent('EPSG:3857', west, east, south, north);
 

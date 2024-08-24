@@ -65,7 +65,7 @@ const satellite = createMap(split[1], 'satellite');
 
 // Sets the camera position
 const center = extent.centerAsVector3();
-instance.view.camera.position.set(center.x, extent.north(), 10000);
+instance.view.camera.position.set(center.x, extent.north, 10000);
 
 // Creates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);

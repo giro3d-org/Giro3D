@@ -145,10 +145,10 @@ class Extent {
     isValid() {
         if (
             !(
-                Number.isFinite(this.west()) &&
-                Number.isFinite(this.east()) &&
-                Number.isFinite(this.south()) &&
-                Number.isFinite(this.north())
+                Number.isFinite(this.west) &&
+                Number.isFinite(this.east) &&
+                Number.isFinite(this.south) &&
+                Number.isFinite(this.north)
             )
         ) {
             return false;
@@ -157,12 +157,12 @@ class Extent {
         // Geographic coordinate systems may allow a greater "west" than "east"
         // to account for the wrap around the 180° longitude line.
         if (!crsIsGeographic(this.crs())) {
-            if (this.west() > this.east()) {
+            if (this.west > this.east) {
                 return false;
             }
         }
 
-        if (this.south() > this.north()) {
+        if (this.south > this.north) {
             return false;
         }
 
@@ -195,8 +195,8 @@ class Extent {
      * @returns a new extent with a specified margin applied.
      */
     withRelativeMargin(marginRatio: number) {
-        const w = Math.abs(this.west() - this.east());
-        const h = Math.abs(this.north() - this.south());
+        const w = Math.abs(this.west - this.east);
+        const h = Math.abs(this.north - this.south);
 
         return this.withMargin(marginRatio * w, marginRatio * h);
     }
@@ -213,10 +213,10 @@ class Extent {
      * @returns a new extent with a specified margin applied.
      */
     withMargin(x: number, y: number) {
-        const w = this.west() - x;
-        const e = this.east() + x;
-        const n = this.north() + y;
-        const s = this.south() - y;
+        const w = this.west - x;
+        const e = this.east + x;
+        const n = this.north + y;
+        const s = this.south - y;
 
         return new Extent(this.crs(), w, e, s, n);
     }
@@ -237,10 +237,10 @@ class Extent {
             const c = this.centerAsVector2(tmpXY);
             const cx = c.x;
             const cy = c.y;
-            const e = this.east();
-            const w = this.west();
-            const n = this.north();
-            const s = this.south();
+            const e = this.east;
+            const w = this.west;
+            const n = this.north;
+            const s = this.south;
 
             cardinals[0].set(w, n);
             cardinals[1].set(cx, n);
@@ -285,8 +285,8 @@ class Extent {
         const oDim = other.dimensions();
         const dim = this.dimensions();
 
-        const originX = Math.round((1000 * (this.west() - other.west())) / oDim.x) * 0.001;
-        const originY = Math.round((1000 * (this.south() - other.south())) / oDim.y) * 0.001;
+        const originX = Math.round((1000 * (this.west - other.west)) / oDim.x) * 0.001;
+        const originY = Math.round((1000 * (this.south - other.south)) / oDim.y) * 0.001;
 
         const scaleX = Math.round((1000 * dim.x) / oDim.x) * 0.001;
         const scaleY = Math.round((1000 * dim.y) / oDim.y) * 0.001;
@@ -297,28 +297,28 @@ class Extent {
     /**
      * @returns the horizontal coordinate of the westernmost side
      */
-    west() {
+    get west() {
         return this._values[CARDINAL.WEST];
     }
 
     /**
      * @returns the horizontal coordinate of the easternmost side
      */
-    east() {
+    get east() {
         return this._values[CARDINAL.EAST];
     }
 
     /**
      * @returns the horizontal coordinate of the northernmost side
      */
-    north() {
+    get north() {
         return this._values[CARDINAL.NORTH];
     }
 
     /**
      * @returns the horizontal coordinate of the southermost side
      */
-    south() {
+    get south() {
         return this._values[CARDINAL.SOUTH];
     }
 
@@ -326,28 +326,28 @@ class Extent {
      * @returns the coordinates of the top left corner
      */
     topLeft() {
-        return new Coordinates(this.crs(), this.west(), this.north(), 0);
+        return new Coordinates(this.crs(), this.west, this.north, 0);
     }
 
     /**
      * @returns the coordinates of the top right corner
      */
     topRight() {
-        return new Coordinates(this.crs(), this.east(), this.north(), 0);
+        return new Coordinates(this.crs(), this.east, this.north, 0);
     }
 
     /**
      * @returns the coordinates of the bottom right corner
      */
     bottomRight() {
-        return new Coordinates(this.crs(), this.east(), this.south(), 0);
+        return new Coordinates(this.crs(), this.east, this.south, 0);
     }
 
     /**
      * @returns the coordinates of the bottom right corner
      */
     bottomLeft() {
-        return new Coordinates(this.crs(), this.west(), this.south(), 0);
+        return new Coordinates(this.crs(), this.west, this.south, 0);
     }
 
     /**
@@ -439,8 +439,8 @@ class Extent {
      * or a new object if none was provided.
      */
     dimensions(target: Vector2 = new Vector2()): Vector2 {
-        target.x = Math.abs(this.east() - this.west());
-        target.y = Math.abs(this.north() - this.south());
+        target.x = Math.abs(this.east - this.west);
+        target.y = Math.abs(this.north - this.south);
         return target;
     }
 
@@ -456,17 +456,17 @@ class Extent {
         // TODO this ignores altitude
         if (crsIsGeographic(this.crs())) {
             return (
-                c.longitude <= this.east() + epsilon &&
-                c.longitude >= this.west() - epsilon &&
-                c.latitude <= this.north() + epsilon &&
-                c.latitude >= this.south() - epsilon
+                c.longitude <= this.east + epsilon &&
+                c.longitude >= this.west - epsilon &&
+                c.latitude <= this.north + epsilon &&
+                c.latitude >= this.south - epsilon
             );
         }
         return (
-            c.x <= this.east() + epsilon &&
-            c.x >= this.west() - epsilon &&
-            c.y <= this.north() + epsilon &&
-            c.y >= this.south() - epsilon
+            c.x <= this.east + epsilon &&
+            c.x >= this.west - epsilon &&
+            c.y <= this.north + epsilon &&
+            c.y >= this.south - epsilon
         );
     }
 
@@ -484,10 +484,10 @@ class Extent {
         const dims = this.dimensions(tmpXY);
         epsilon = epsilon == null ? reasonnableEpsilonForCRS(this._crs, dims.x, dims.y) : epsilon;
         return (
-            this.east() - o.east() <= epsilon &&
-            o.west() - this.west() <= epsilon &&
-            this.north() - o.north() <= epsilon &&
-            o.south() - this.south() <= epsilon
+            this.east - o.east <= epsilon &&
+            o.west - this.west <= epsilon &&
+            this.north - o.north <= epsilon &&
+            o.south - this.south <= epsilon
         );
     }
 
@@ -500,10 +500,10 @@ class Extent {
     intersectsExtent(bbox: Extent) {
         const other = bbox.as(this.crs());
         return !(
-            this.west() >= other.east() ||
-            this.east() <= other.west() ||
-            this.south() >= other.north() ||
-            this.north() <= other.south()
+            this.west >= other.east ||
+            this.east <= other.west ||
+            this.south >= other.north ||
+            this.north <= other.south
         );
     }
 
@@ -513,7 +513,7 @@ class Extent {
      * @param other - the bounding box to intersect
      * @returns the modified extent
      */
-    intersect(other: Extent) {
+    intersect(other: Extent): this {
         if (!this.intersectsExtent(other)) {
             this.set(this.crs(), 0, 0, 0, 0);
             return this;
@@ -524,10 +524,10 @@ class Extent {
         }
         this.set(
             this.crs(),
-            Math.max(this.west(), other.west()),
-            Math.min(this.east(), other.east()),
-            Math.max(this.south(), other.south()),
-            Math.min(this.north(), other.north()),
+            Math.max(this.west, other.west),
+            Math.min(this.east, other.east),
+            Math.max(this.south, other.south),
+            Math.min(this.north, other.north),
         );
 
         return this;
@@ -557,10 +557,10 @@ class Extent {
         const pixelWidth = gridDims.x / gridWidth;
         const pixelHeight = gridDims.y / gridHeight;
 
-        let leftPixels = (this.west() - gridExtent.west()) / pixelWidth;
-        let rightPixels = (this.east() - gridExtent.west()) / pixelWidth;
-        let bottomPixels = (this.south() - gridExtent.south()) / pixelHeight;
-        let topPixels = (this.north() - gridExtent.south()) / pixelHeight;
+        let leftPixels = (this.west - gridExtent.west) / pixelWidth;
+        let rightPixels = (this.east - gridExtent.west) / pixelWidth;
+        let bottomPixels = (this.south - gridExtent.south) / pixelHeight;
+        let topPixels = (this.north - gridExtent.south) / pixelHeight;
 
         if (minPixWidth !== undefined && minPixHeight !== undefined) {
             const pixelCountX = rightPixels - leftPixels;
@@ -582,10 +582,10 @@ class Extent {
         bottomPixels = Math.max(0, Math.floor(bottomPixels));
         topPixels = Math.min(gridHeight, Math.ceil(topPixels));
 
-        const west = gridExtent.west() + leftPixels * pixelWidth;
-        const east = gridExtent.west() + rightPixels * pixelWidth;
-        const south = gridExtent.south() + bottomPixels * pixelHeight;
-        const north = gridExtent.south() + topPixels * pixelHeight;
+        const west = gridExtent.west + leftPixels * pixelWidth;
+        const east = gridExtent.west + rightPixels * pixelWidth;
+        const south = gridExtent.south + bottomPixels * pixelHeight;
+        const north = gridExtent.south + topPixels * pixelHeight;
 
         return {
             extent: new Extent(this.crs(), west, east, south, north),
@@ -668,10 +668,10 @@ class Extent {
                 crs = e.crs();
             }
 
-            south = Math.min(e.south(), south);
-            north = Math.max(e.north(), north);
-            east = Math.max(e.east(), east);
-            west = Math.min(e.west(), west);
+            south = Math.min(e.south, south);
+            north = Math.max(e.north, north);
+            east = Math.max(e.east, east);
+            west = Math.min(e.west, west);
         }
 
         if (valid) {
@@ -691,23 +691,23 @@ class Extent {
                 `unsupported union between different CRSes (${extent.crs()} and ${this.crs()} differ)`,
             );
         }
-        const west = extent.west();
-        if (west < this.west()) {
+        const west = extent.west;
+        if (west < this.west) {
             this._values[CARDINAL.WEST] = west;
         }
 
-        const east = extent.east();
-        if (east > this.east()) {
+        const east = extent.east;
+        if (east > this.east) {
             this._values[CARDINAL.EAST] = east;
         }
 
-        const south = extent.south();
-        if (south < this.south()) {
+        const south = extent.south;
+        if (south < this.south) {
             this._values[CARDINAL.SOUTH] = south;
         }
 
-        const north = extent.north();
-        if (north > this.north()) {
+        const north = extent.north;
+        if (north > this.north) {
             this._values[CARDINAL.NORTH] = north;
         }
     }
@@ -720,17 +720,17 @@ class Extent {
     expandByPoint(coordinates: Coordinates): void {
         const coords = coordinates.as(this.crs());
         const we = coords.values[0];
-        if (we < this.west()) {
+        if (we < this.west) {
             this._values[CARDINAL.WEST] = we;
         }
-        if (we > this.east()) {
+        if (we > this.east) {
             this._values[CARDINAL.EAST] = we;
         }
         const sn = coords.values[1];
-        if (sn < this.south()) {
+        if (sn < this.south) {
             this._values[CARDINAL.SOUTH] = sn;
         }
-        if (sn > this.north()) {
+        if (sn > this.north) {
             this._values[CARDINAL.NORTH] = sn;
         }
     }
@@ -774,8 +774,8 @@ class Extent {
      * @returns The box.
      */
     toBox3(minHeight: number, maxHeight: number): Box3 {
-        const min = new Vector3(this.west(), this.south(), minHeight);
-        const max = new Vector3(this.east(), this.north(), maxHeight);
+        const min = new Vector3(this.west, this.south, minHeight);
+        const max = new Vector3(this.east, this.north, maxHeight);
         const box = new Box3(min, max);
         return box;
     }
@@ -796,14 +796,14 @@ class Extent {
             throw new Error('unsupported mix');
         }
 
-        const dimX = Math.abs(this.east() - this.west());
-        const dimY = Math.abs(this.north() - this.south());
+        const dimX = Math.abs(this.east - this.west);
+        const dimY = Math.abs(this.north - this.south);
 
         const x = crsIsGeocentric(coordinate.crs) ? coordinate.x : coordinate.longitude;
         const y = crsIsGeocentric(coordinate.crs) ? coordinate.y : coordinate.latitude;
 
-        const originX = (x - this.west()) / dimX;
-        const originY = (y - this.south()) / dimY;
+        const originX = (x - this.west) / dimX;
+        const originY = (y - this.south) / dimY;
 
         target.set(originX, originY);
         return target;
@@ -828,8 +828,8 @@ class Extent {
      */
     toGrid<T extends TypedArray>(xSubdivs: number, ySubdivs: number, target: T, stride: number): T {
         const dims = this.dimensions(tmpXY);
-        const west = this.west();
-        const north = this.north();
+        const west = this.west;
+        const north = this.north;
 
         // The size of an horizontal/vertical step
         const xStep = dims.x / xSubdivs;
@@ -879,8 +879,8 @@ class Extent {
         }
 
         const dims = this.dimensions();
-        const minX = this.west();
-        const minY = this.south();
+        const minX = this.west;
+        const minY = this.south;
         const w = dims.x / xSubdivs;
         const h = dims.y / ySubdivs;
         const crs = this.crs();
