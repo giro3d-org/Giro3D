@@ -43,7 +43,7 @@ describe('fetch', () => {
         } as Response;
 
         const fetch: FetchCallback = (url, options) => {
-            aggregateSignal = options.signal;
+            aggregateSignal = options!.signal!;
             return Promise.resolve(response);
         };
 
@@ -54,12 +54,12 @@ describe('fetch', () => {
         dl.fetch(URL);
         dl.fetch(URL);
 
-        expect(aggregateSignal.aborted).toEqual(false);
+        expect(aggregateSignal!.aborted).toEqual(false);
 
         await PromiseUtils.delay(timeout * 2);
 
-        expect(aggregateSignal.aborted).toEqual(true);
-        expect(aggregateSignal.reason).toEqual('timeout');
+        expect(aggregateSignal!.aborted).toEqual(true);
+        expect(aggregateSignal!.reason).toEqual('timeout');
     });
 
     it('should abort the deduplicated request when *all* requests are aborted', () => {
@@ -72,7 +72,7 @@ describe('fetch', () => {
         } as Response;
 
         const fetch: FetchCallback = (url, options) => {
-            aggregateSignal = options.signal;
+            aggregateSignal = options!.signal!;
             return Promise.resolve(response);
         };
 
@@ -86,20 +86,20 @@ describe('fetch', () => {
         dl.fetch(URL, { signal: abort2.signal });
         dl.fetch(URL, { signal: abort3.signal });
 
-        expect(aggregateSignal).not.toBe(abort1.signal);
-        expect(aggregateSignal).not.toBe(abort2.signal);
-        expect(aggregateSignal).not.toBe(abort3.signal);
+        expect(aggregateSignal!).not.toBe(abort1.signal);
+        expect(aggregateSignal!).not.toBe(abort2.signal);
+        expect(aggregateSignal!).not.toBe(abort3.signal);
 
-        expect(aggregateSignal.aborted).toEqual(false);
+        expect(aggregateSignal!.aborted).toEqual(false);
 
         abort1.abort();
-        expect(aggregateSignal.aborted).toEqual(false);
+        expect(aggregateSignal!.aborted).toEqual(false);
 
         abort2.abort();
-        expect(aggregateSignal.aborted).toEqual(false);
+        expect(aggregateSignal!.aborted).toEqual(false);
 
         abort3.abort();
-        expect(aggregateSignal.aborted).toEqual(true);
-        expect(aggregateSignal.reason.name).toEqual('AbortError');
+        expect(aggregateSignal!.aborted).toEqual(true);
+        expect(aggregateSignal!.reason.name).toEqual('AbortError');
     });
 });

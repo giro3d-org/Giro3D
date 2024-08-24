@@ -16,9 +16,9 @@ describe('HttpConfiguration', () => {
             const foobar = 'https://example.com/foo/bar';
 
             const notOpts = HttpConfiguration.applyConfiguration(not);
-            const rootOpts = HttpConfiguration.applyConfiguration(root);
-            const fooOpts = HttpConfiguration.applyConfiguration(foo, {});
-            const foobarOpts = HttpConfiguration.applyConfiguration(foobar, {});
+            const rootOpts = HttpConfiguration.applyConfiguration(root)!;
+            const fooOpts = HttpConfiguration.applyConfiguration(foo, {})!;
+            const foobarOpts = HttpConfiguration.applyConfiguration(foobar, {})!;
 
             expect(notOpts).toBeUndefined();
             expect((rootOpts.headers as Record<string, string>).Authorization).toEqual(
@@ -58,8 +58,8 @@ describe('HttpConfiguration', () => {
             const high = 'https://example.com/very/specific/prefix/resource/foo/bar/baz.html';
             const low = 'https://example.com/lower/prefix/some/resource.html';
 
-            const highOpts = HttpConfiguration.applyConfiguration(high, {});
-            const lowOpts = HttpConfiguration.applyConfiguration(low, {});
+            const highOpts = HttpConfiguration.applyConfiguration(high, {})!;
+            const lowOpts = HttpConfiguration.applyConfiguration(low, {})!;
 
             expect((highOpts.headers as Record<string, string>).Authorization).toEqual('HIGH');
             expect((lowOpts.headers as Record<string, string>).Authorization).toEqual('LOW');

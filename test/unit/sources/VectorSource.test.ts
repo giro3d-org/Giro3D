@@ -10,7 +10,7 @@ describe('VectorSource', () => {
             source = new VectorSource({
                 data: 'http://example.com/geojson',
                 format: new GeoJSON(),
-                style: null,
+                style: new Style(),
             });
         });
 
