@@ -21,13 +21,13 @@ class DebugSource extends ImageSource {
         /** The extent. */
         extent: Extent;
         /** The delay before loading the images. */
-        delay: number;
+        delay?: number;
         /** The opacity of the images. */
-        opacity: number;
+        opacity?: number;
         /** The color of the images. */
-        color: Color;
+        color?: Color;
         /** How many images per tile are served. */
-        subdivisions: number;
+        subdivisions?: number;
         /** The custom function to test if a given extent is contained in this source. */
         containsFn?: CustomContainsFn;
     }) {

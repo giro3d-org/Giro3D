@@ -10,7 +10,6 @@ import Interpretation from '@giro3d/giro3d/core/layer/Interpretation.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-// Define projection that we will use (taken from https://epsg.io/26910, Proj4js section)
 Instance.registerCRS(
     'EPSG:26910',
     '+proj=utm +zone=10 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
@@ -20,30 +19,23 @@ const extent = new Extent('EPSG:26910', 532622, 569790, 5114416, 5137240);
 
 const center = extent.centerAsVector3();
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
-// Instantiate Giro3D
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         clearColor: 'gray',
     },
 });
 
-// Instantiate the camera
 instance.view.camera.position.set(center.x, center.y - 1, 50000);
 
-// Instantiate the controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.target.set(center.x, center.y, center.z);
 instance.useTHREEControls(controls);
 
-// Use an elevation COG with nodata values
 const source = new CogSource({
-    // https://pubs.er.usgs.gov/publication/ds904
     url: 'https://3d.oslandia.com/dem/msh2009dem.tif',
     crs: extent.crs(),
 });
@@ -67,7 +59,6 @@ const layer = new ColorLayer({
 
 map.addLayer(layer);
 
-// Attach the inspector
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 StatusBar.bind(instance);

@@ -10,7 +10,6 @@ import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-// Defines geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent(
     'EPSG:3857',
     -20037508.342789244,
@@ -19,11 +18,8 @@ const extent = new Extent(
     20037508.342789244,
 );
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
-// Creates a Giro3D instance
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         clearColor: 0x0a3b59,
@@ -34,6 +30,7 @@ const instance = new Instance(viewerDiv, {
 const layer = new ColorLayer({
     name: 'osm',
     source: new TiledImageSource({
+        // @ts-expect-error missing properties (but they are actually optional)
         source: new StadiaMaps({ layer: 'stamen_watercolor', wrapX: false }),
     }),
 });
@@ -53,14 +50,12 @@ for (const ex of extent.split(8, 8)) {
 }
 
 Promise.allSettled(promises).then(() => {
-    // Instanciates camera
     instance.view.camera.position.set(0, 0, 25000000);
 
-    // Instanciates controls
     const controls = new MapControls(instance.view.camera, instance.domElement);
-
     instance.useTHREEControls(controls);
 
-    Inspector.attach(document.getElementById('panelDiv'), instance);
+    Inspector.attach('inspector', instance);
+
     StatusBar.bind(instance);
 });

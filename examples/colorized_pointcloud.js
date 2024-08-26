@@ -14,27 +14,25 @@ import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-function makeColorRamp(preset, nshades) {
-    const values = colormap({ colormap: preset, nshades });
-    const colors = values.map(v => new Color(v));
-
-    return colors;
-}
+import { bindToggle } from './widgets/bindToggle.js';
+import { bindSlider } from './widgets/bindSlider.js';
+import { bindColorMapBounds } from './widgets/bindColorMapBounds.js';
+import { makeColorRamp } from './widgets/makeColorRamp.js';
+import { bindDropDown } from './widgets/bindDropDown.js';
+import { bindNumericalDropDown } from './widgets/bindNumericalDropDown.js';
 
 const colorRamps = {};
 
 function makeColorRamps() {
-    const nshades = 256;
+    colorRamps.viridis = makeColorRamp('viridis');
+    colorRamps.jet = makeColorRamp('jet');
+    colorRamps.blackbody = makeColorRamp('blackbody');
+    colorRamps.earth = makeColorRamp('earth');
+    colorRamps.bathymetry = makeColorRamp('bathymetry');
+    colorRamps.magma = makeColorRamp('magma');
+    colorRamps.par = makeColorRamp('par');
 
-    colorRamps.viridis = makeColorRamp('viridis', nshades);
-    colorRamps.jet = makeColorRamp('jet', nshades);
-    colorRamps.blackbody = makeColorRamp('blackbody', nshades);
-    colorRamps.earth = makeColorRamp('earth', nshades);
-    colorRamps.bathymetry = makeColorRamp('bathymetry', nshades);
-    colorRamps.magma = makeColorRamp('magma', nshades);
-    colorRamps.par = makeColorRamp('par', nshades);
-
-    colorRamps.slope = makeColorRamp('RdBu', nshades);
+    colorRamps.slope = makeColorRamp('RdBu');
 }
 
 makeColorRamps();
@@ -47,9 +45,8 @@ Instance.registerCRS(
         '+y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
 );
 
-const viewerDiv = document.getElementById('viewerDiv');
-
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: 'EPSG:3946',
     renderer: {
         clearColor: 0xcccccc,
@@ -92,16 +89,16 @@ function placeCamera(position, lookAt) {
 
 // add pointcloud to scene
 function initializeCamera() {
-    const bbox = pointcloud.root.bbox
-        ? pointcloud.root.bbox
-        : pointcloud.root.boundingVolume.box.clone().applyMatrix4(pointcloud.root.matrixWorld);
+    const bbox = pointcloud.root.boundingVolume.box
+        .clone()
+        .applyMatrix4(pointcloud.root.matrixWorld);
 
     instance.view.camera.far = 2.0 * bbox.getSize(tmpVec3).length();
 
     const ratio = bbox.getSize(tmpVec3).x / bbox.getSize(tmpVec3).z;
     const position = bbox.min
         .clone()
-        .add(bbox.getSize(tmpVec3).multiply({ x: 0, y: 0, z: ratio * 0.5 }));
+        .add(bbox.getSize(tmpVec3).multiply(new Vector3(0, 0, ratio * 0.5)));
     const lookAt = bbox.getCenter(tmpVec3);
     lookAt.z = bbox.min.z;
 
@@ -133,7 +130,7 @@ function initializeCamera() {
 
 instance.add(pointcloud).then(initializeCamera);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 instance.domElement.addEventListener('dblclick', e =>
     console.log(
         instance.pickObjectsAt(e, {
@@ -150,91 +147,46 @@ instance.domElement.addEventListener('dblclick', e =>
 
 instance.notifyChange();
 
-function bindSlider(name, fn) {
-    const slider = document.getElementById(name);
-    slider.oninput = function oninput() {
-        fn(slider.value);
-        instance.notifyChange();
-    };
-}
-
-function bindToggle(name, action) {
-    const toggle = document.getElementById(name);
-    toggle.oninput = () => {
-        const state = toggle.checked;
-        action(state);
-        instance.notifyChange();
-    };
-}
-
 bindToggle('edl-enable', v => {
     instance.renderingOptions.enableEDL = v;
+    instance.notifyChange();
 });
 bindToggle('occlusion-enable', v => {
     instance.renderingOptions.enablePointCloudOcclusion = v;
+    instance.notifyChange();
 });
 bindToggle('inpainting-enable', v => {
     instance.renderingOptions.enableInpainting = v;
+    instance.notifyChange();
 });
 bindSlider('edl-radius', v => {
     instance.renderingOptions.EDLRadius = v;
+    instance.notifyChange();
 });
 bindSlider('edl-intensity', v => {
     instance.renderingOptions.EDLStrength = v;
+    instance.notifyChange();
 });
 bindSlider('inpainting-steps', v => {
     instance.renderingOptions.inpaintingSteps = v;
+    instance.notifyChange();
 });
 bindSlider('opacity', v => {
     pointcloud.opacity = v;
     document.getElementById('opacityLabel').innerText =
         `Point cloud opacity: ${Math.round(v * 100)}%`;
+    instance.notifyChange();
 });
-
-function bindColorMapBounds(callback) {
-    /** @type {HTMLInputElement} */
-    const lower = document.getElementById('min');
-
-    /** @type {HTMLInputElement} */
-    const upper = document.getElementById('max');
-
-    callback(lower.valueAsNumber, upper.valueAsNumber);
-
-    function updateLabels() {
-        document.getElementById('minLabel').innerText =
-            `Lower bound: ${Math.round(lower.valueAsNumber)}m`;
-        document.getElementById('maxLabel').innerText =
-            `Upper bound: ${Math.round(upper.valueAsNumber)}m`;
-    }
-
-    lower.oninput = function oninput() {
-        const rawValue = lower.valueAsNumber;
-        const clampedValue = MathUtils.clamp(rawValue, lower.min, upper.valueAsNumber - 1);
-        lower.valueAsNumber = clampedValue;
-        callback(lower.valueAsNumber, upper.valueAsNumber);
-        instance.notifyChange();
-        updateLabels();
-    };
-
-    upper.oninput = function oninput() {
-        const rawValue = upper.valueAsNumber;
-        const clampedValue = MathUtils.clamp(rawValue, lower.valueAsNumber + 1, upper.max);
-        upper.valueAsNumber = clampedValue;
-        callback(lower.valueAsNumber, upper.valueAsNumber);
-        instance.notifyChange();
-        updateLabels();
-    };
-}
 
 bindColorMapBounds((min, max) => {
     material.colorMap.min = min;
     material.colorMap.max = max;
+    instance.notifyChange();
 });
 
 const colorMapGroup = document.getElementById('colormapGroup');
 
-document.getElementById('pointcloud_mode').addEventListener('change', e => {
-    const newMode = parseInt(e.target.value, 10);
+bindNumericalDropDown('pointcloud_mode', newMode => {
     material.mode = newMode;
 
     if (newMode === MODE.ELEVATION) {
@@ -243,15 +195,14 @@ document.getElementById('pointcloud_mode').addEventListener('change', e => {
         colorMapGroup.classList.add('d-none');
     }
 
-    instance.notifyChange(pointcloud, true);
+    instance.notifyChange(pointcloud);
     if (colorLayer) {
         colorLayer.visible = newMode === MODE.TEXTURE;
-        instance.notifyChange(colorLayer, true);
+        instance.notifyChange(colorLayer);
     }
 });
 
-document.getElementById('colormap').addEventListener('change', e => {
-    const newRamp = e.target.value;
+bindDropDown('colormap', newRamp => {
     material.colorMap.colors = colorRamps[newRamp];
-    instance.notifyChange(pointcloud, true);
+    instance.notifyChange(pointcloud);
 });

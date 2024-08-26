@@ -11,8 +11,8 @@ import Helpers from '@giro3d/giro3d/helpers/Helpers.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { bindButton } from './widgets/bindButton.js';
 
-// Defines geographic extent: CRS, min/max X, min/max Y
 const EPSG3857_BOUNDS = new Extent(
     'EPSG:3857',
     -20037508.342789244,
@@ -23,24 +23,20 @@ const EPSG3857_BOUNDS = new Extent(
 
 let currentMap;
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
-// Creates a Giro3D instance
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: EPSG3857_BOUNDS.crs(),
     renderer: {
         clearColor: 0x0a3b59,
     },
 });
 
-// Instanciates controls
-const controls = new MapControls(instance.view.camera, instance.domElement);
 instance.view.camera.position.set(0, 0, 100000000);
 
+const controls = new MapControls(instance.view.camera, instance.domElement);
 instance.useTHREEControls(controls);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 instance.notifyChange();
 
@@ -59,8 +55,9 @@ function createMap(extent) {
     }
 
     mapCount++;
+
     const object3d = new Object3D();
-    // Creates a map that will contain the layer
+
     currentMap = new Map({
         extent,
         maxSubdivisionLevel: 10,
@@ -81,6 +78,7 @@ function createMap(extent) {
             new ColorLayer({
                 name: 'osm',
                 extent,
+                // @ts-expect-error missing properties (but they are actually optional)
                 source: new TiledImageSource({ source: new StadiaMaps({ layer, wrapX: false }) }),
             }),
         )
@@ -89,9 +87,7 @@ function createMap(extent) {
     instance.notifyChange();
 }
 
-const button = document.getElementById('createMap');
-
-button.onclick = () => {
+bindButton('createMap', () => {
     const x0 = Math.random();
     const x1 = Math.random();
     const y0 = Math.random();
@@ -108,6 +104,6 @@ button.onclick = () => {
     const extent = new Extent('EPSG:3857', west, east, south, north);
 
     createMap(extent);
-};
+});
 
 StatusBar.bind(instance);

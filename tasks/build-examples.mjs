@@ -7,6 +7,7 @@ import esMain from 'es-main';
 import frontMatter from 'front-matter';
 import fse from 'fs-extra';
 import path, { dirname } from 'path';
+import * as prettier from 'prettier';
 import shiki from 'shiki';
 import { fileURLToPath } from 'url';
 import webpack from 'webpack';
@@ -182,17 +183,24 @@ export async function generateExample(htmlFile, highlighter, parameters) {
     if (highlighter) {
         const htmlCodeTemplate = readTemplate('published_html.ejs');
 
-        const htmlCode = htmlCodeTemplate(variables).trim();
+        let htmlCode = htmlCodeTemplate(variables);
+
+        htmlCode = await prettier.format(htmlCode, { parser: 'html' });
+
         const packageJson = generatePackageJsonContent(variables).trim();
+
         let sourceCode = jsContent
-            .replaceAll(/import StatusBar from.*\n/gi, '')
-            .replaceAll(/StatusBar\.bind[^;]*;/gim, '')
-            .trim();
+            .replaceAll(/import StatusBar from.*\n/gi, '') // Remove StatusBar code that would not
+            .replaceAll(/StatusBar\.bind[^;]*;/gim, ''); // work out of the box (requires HTML code)
 
         sourceCode = inlineImports(sourceCode);
 
-        // Cleanup superfluous line breaks caused by text removal
-        sourceCode = sourceCode.replace(/\n\s*\n\s*\n/gs, '\n\n');
+        sourceCode = sourceCode
+            .replaceAll(/\/\*\*.*?\*\//gs, '') // remove JSDoc comments
+            .replaceAll(/^.*\/\/\s*@ts.*$/gim, ''); // Remove typescript-related comments
+
+        // Format the code with Prettier
+        sourceCode = await prettier.format(sourceCode, { parser: 'babel' });
 
         variables['highlightedJsCode'] = highlighter.codeToHtml(sourceCode, { lang: 'js' });
         variables['highlightedHtmlCode'] = highlighter.codeToHtml(htmlCode, { lang: 'html' });
@@ -430,9 +438,11 @@ export async function buildExamples(parameters) {
             console.log(stats.toString({ colors: true }));
 
             compiler.close(closeErr => {
-                if (closeErr) reject(closeErr);
-                else if (stats.hasErrors()) reject(new Error('Webpack failed'));
-                else {
+                if (closeErr) {
+                    reject(closeErr);
+                } else if (stats.hasErrors()) {
+                    reject(new Error('Webpack failed'));
+                } else {
                     logOk('examples', `Examples built at ${webpackConfig.output.path}`);
                     resolve();
                 }

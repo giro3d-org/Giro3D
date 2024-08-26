@@ -10,14 +10,13 @@ import StatusBar from './widgets/StatusBar.js';
 
 const tmpVec3 = new Vector3();
 
-const viewerDiv = document.getElementById('viewerDiv');
-
 Instance.registerCRS(
     'EPSG:2154',
     '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
 );
 
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: 'EPSG:2154',
     renderer: {
         clearColor: 0xcccccc,
@@ -32,12 +31,11 @@ const pointcloud = new Tiles3D(
 function placeCamera(position, lookAt) {
     instance.view.camera.position.set(position.x, position.y, position.z);
     instance.view.camera.lookAt(lookAt);
-    // create controls
+
     const controls = new MapControls(instance.view.camera, instance.domElement);
     controls.target.copy(lookAt);
     controls.enableDamping = true;
     controls.dampingFactor = 0.25;
-
     instance.useTHREEControls(controls);
 
     instance.notifyChange(instance.view.camera);
@@ -45,16 +43,16 @@ function placeCamera(position, lookAt) {
 
 // add pointcloud to scene
 function initializeCamera() {
-    const bbox = pointcloud.root.bbox
-        ? pointcloud.root.bbox
-        : pointcloud.root.boundingVolume.box.clone().applyMatrix4(pointcloud.root.matrixWorld);
+    const bbox = pointcloud.root.boundingVolume.box
+        .clone()
+        .applyMatrix4(pointcloud.root.matrixWorld);
 
     instance.view.camera.far = 2.0 * bbox.getSize(tmpVec3).length();
 
     const ratio = bbox.getSize(tmpVec3).x / bbox.getSize(tmpVec3).z;
     const position = bbox.min
         .clone()
-        .add(bbox.getSize(tmpVec3).multiply({ x: 0, y: 0, z: ratio * 0.5 }));
+        .add(bbox.getSize(tmpVec3).multiply(new Vector3(0, 0, ratio * 0.5)));
     const lookAt = bbox.getCenter(tmpVec3);
     lookAt.z = bbox.min.z;
     placeCamera(position, lookAt);
@@ -64,7 +62,7 @@ function initializeCamera() {
 
 instance.add(pointcloud).then(initializeCamera);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 const resultsTable = document.getElementById('results-body');
 const formatter = new Intl.NumberFormat();
@@ -76,7 +74,7 @@ function format(point) {
 }
 
 instance.domElement.addEventListener('dblclick', e => {
-    const picked = instance.pickObjectsAt(e, { radius: 5, limit: 10, where: ['pointcloud'] });
+    const picked = instance.pickObjectsAt(e, { radius: 5, limit: 10 });
 
     if (picked.length === 0) {
         const row = document.createElement('tr');

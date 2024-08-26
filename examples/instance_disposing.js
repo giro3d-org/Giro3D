@@ -10,8 +10,8 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { bindToggle } from './widgets/bindToggle.js';
 
-// Defines geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent(
     'EPSG:3857',
     -20037508.342789244,
@@ -21,9 +21,6 @@ const extent = new Extent(
 );
 const dimensions = extent.dimensions();
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
 let instance = null;
 let inspector = null;
 let controls = null;
@@ -31,16 +28,15 @@ let controls = null;
 let map = null;
 
 function init() {
-    // Creates a Giro3D instance
-    instance = new Instance(viewerDiv, {
+    instance = new Instance({
+        target: 'view',
         crs: extent.crs(),
         renderer: {
             clearColor: 0x0a3b59,
         },
     });
 
-    // Creates a map that will contain the layer
-    map = new Map({ extent, maxSubdivisionLevel: 10 });
+    map = new Map({ extent });
 
     instance.add(map);
 
@@ -49,24 +45,23 @@ function init() {
         new ColorLayer({
             name: 'osm',
             source: new TiledImageSource({
+                // @ts-expect-error missing properties (but they are actually optional)
                 source: new StadiaMaps({ layer: 'stamen_watercolor', wrapX: false }),
             }),
         }),
     ).catch(e => console.error(e));
 
-    // Instanciates camera
     instance.view.camera.position.set(
         (Math.random() - 0.5) * dimensions.x,
         (Math.random() - 0.5) * dimensions.y,
         25000000,
     );
 
-    // Instanciates controls
     controls = new MapControls(instance.view.camera, instance.domElement);
 
     instance.useTHREEControls(controls);
 
-    inspector = Inspector.attach(document.getElementById('panelDiv'), instance);
+    inspector = Inspector.attach('inspector', instance);
 }
 
 init();
@@ -88,17 +83,12 @@ function reload() {
 
 document.getElementById('load_once').addEventListener('click', reload);
 
-// we need to get the current state of the checkbox, as browsers remembers it
 let intervalId;
-const autoreloadCheckbox = document.getElementById('autoreload');
-if (autoreloadCheckbox.checked) {
-    intervalId = setInterval(reload, 2000);
-}
-autoreloadCheckbox.addEventListener('change', e => {
-    if (intervalId) {
-        clearInterval(intervalId);
-    }
-    if (e.target.checked) {
+
+bindToggle('autoreload', state => {
+    clearInterval(intervalId);
+
+    if (state) {
         intervalId = setInterval(reload, 2000);
     }
 });

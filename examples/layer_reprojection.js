@@ -15,6 +15,7 @@ import CogSource from '@giro3d/giro3d/sources/CogSource.js';
 import { crsToUnit } from '@giro3d/giro3d/core/geographic/Coordinates.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { bindButton } from './widgets/bindButton.js';
 
 /** @type {Instance} */
 let instance;
@@ -86,42 +87,34 @@ function createScene(crs, crsDef, extent) {
 
     Instance.registerCRS(crs, crsDef);
 
-    // `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-    const viewerDiv = document.getElementById('viewerDiv');
+    instance = new Instance({
+        target: 'view',
+        crs,
+        renderer: { clearColor: 'grey' },
+    });
 
-    // Creates a Giro3D instance
-    instance = new Instance(viewerDiv, { crs, renderer: { clearColor: 'grey' } });
-
-    // Adds the map that will contain the layers.
     map = new Map({ extent, hillshading: true });
 
     instance.add(map);
 
-    // Add a bunch of layers
     addMapboxLayer(extent);
 
     addCogLayer();
 
     addVectorLayer();
 
-    // Sets the camera position
     const center = extent.centerAsVector3();
     instance.view.camera.position.set(center.x, center.y - 1, extent.dimensions().y * 2);
 
-    // Creates controls
-    controls = new MapControls(instance.view.camera, viewerDiv);
-
-    // Then looks at extent's center
+    controls = new MapControls(instance.view.camera, instance.domElement);
     controls.target = center;
     controls.saveState();
-
     controls.enableDamping = true;
     controls.dampingFactor = 0.2;
     controls.maxPolarAngle = Math.PI / 2.3;
-
     instance.useTHREEControls(controls);
 
-    inspector = Inspector.attach(document.getElementById('panelDiv'), instance);
+    inspector = Inspector.attach('inspector', instance);
 
     StatusBar.bind(instance, { disableUrlUpdate: true });
 }
@@ -178,18 +171,18 @@ async function initialize(crs) {
 
         createScene(proj, def, extent);
     } catch (e) {
-        const msg = e.message;
-        const error = document.getElementById('errorMessage');
-        error.innerText = msg;
-        error.style.display = 'block';
+        if (e instanceof Error) {
+            const msg = e.message;
+            const error = document.getElementById('errorMessage');
+            error.innerText = msg;
+            error.style.display = 'block';
+        }
     }
 }
 
-/** @type {HTMLButtonElement} */
-const button = document.getElementById('createSceneBtn');
-
-button.onclick = () => {
+bindButton('createSceneBtn', () => {
     /** @type {HTMLInputElement} */
+    // @ts-expect-error conversion
     const epsgCodeElt = document.getElementById('epsgCode');
 
     const content = epsgCodeElt.value;
@@ -197,6 +190,6 @@ button.onclick = () => {
     if (content) {
         initialize(content);
     }
-};
+});
 
 initialize('EPSG:2154');

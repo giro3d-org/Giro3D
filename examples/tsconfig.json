@@ -10,6 +10,9 @@
         },
         "typeRoots": ["../build/giro3d/*"],
         "allowJs": true,
+        "checkJs": true,
+        "noImplicitAny": false,
+        "strictNullChecks": false,
         "lib": ["DOM", "ES2021"]
     }
 }

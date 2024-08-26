@@ -10,21 +10,20 @@ import StatusBar from './widgets/StatusBar.js';
 
 const tmpVec3 = new Vector3();
 
-const viewerDiv = document.getElementById('viewerDiv');
-
 Instance.registerCRS(
     'EPSG:2154',
     '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
 );
 
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: 'EPSG:2154',
     renderer: {
         clearColor: 0xcccccc,
     },
 });
 
-// add some lights
+// Add a sunlight
 const sun = new DirectionalLight('#ffffff', 1.4);
 sun.position.set(1, 0, 1).normalize();
 sun.updateMatrixWorld(true);
@@ -36,12 +35,11 @@ sun2.position.set(0, -1, 1);
 sun2.updateMatrixWorld();
 instance.scene.add(sun2);
 
-// ambient
+// Add ambient light
 const ambientLight = new AmbientLight(0xffffff, 1);
 instance.scene.add(ambientLight);
 instance.view.minNearPlane = 0.5;
 
-// Configure Point Cloud
 const ifc = new Tiles3D(
     new Tiles3DSource('https://3d.oslandia.com/3dtiles/19_rue_Marc_Antoine_Petit_ifc/tileset.json'),
 );
@@ -51,6 +49,7 @@ ifc.addEventListener('object-created', evt => {
     const obj = evt.obj;
     if (obj.userData?.class === 'IfcSpace') {
         obj.visible = false;
+        instance.notifyChange();
     }
 });
 
@@ -70,16 +69,14 @@ function placeCamera(position, lookAt) {
 
 // add pointcloud to scene
 function initializeCamera() {
-    const bbox = ifc.root.bbox
-        ? ifc.root.bbox
-        : ifc.root.boundingVolume.box.clone().applyMatrix4(ifc.root.matrixWorld);
+    const bbox = ifc.root.boundingVolume.box.clone().applyMatrix4(ifc.root.matrixWorld);
 
     // instance.view.camera.far = 2.0 * bbox.getSize(tmpVec3).length();
 
     const ratio = bbox.getSize(tmpVec3).x / bbox.getSize(tmpVec3).z;
     const position = bbox.min
         .clone()
-        .add(bbox.getSize(tmpVec3).multiply({ x: -2, y: -2, z: ratio }));
+        .add(bbox.getSize(tmpVec3).multiply(new Vector3(-2, -2, ratio)));
     const lookAt = bbox.getCenter(tmpVec3);
     lookAt.z = bbox.min.z;
     placeCamera(position, lookAt);
@@ -89,19 +86,14 @@ function initializeCamera() {
 
 instance.add(ifc).then(initializeCamera);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 const resultsTable = document.getElementById('results-body');
 const formatter = new Intl.NumberFormat();
 
-function format(point) {
-    return `x: ${formatter.format(point.x)}\n
-            y: ${formatter.format(point.y)}\n
-            z: ${formatter.format(point.z)}`;
-}
-
 let highlighted;
 let highlightColor = new Color(0xff7171);
+
 function highlight(evt) {
     const picked = instance.pickObjectsAt(evt, { radius: 5, limit: 10, where: [ifc] });
     if (highlighted) {
@@ -123,16 +115,22 @@ function highlight(evt) {
         resultsTable.replaceChildren(row);
     } else {
         const obj = picked[0].object;
+        // @ts-expect-error material is missing
+        const material = obj.material;
+
         // keep the old color to reset it later
-        if (!obj.material.userData.oldColor) {
-            obj.material.userData.oldColor = obj.material.color.clone();
+        if (!material.userData.oldColor) {
+            material.userData.oldColor = material.color.clone();
         }
-        obj.material.color.copy(highlightColor);
+
+        material.color.copy(highlightColor);
+
         instance.notifyChange(obj);
 
         highlighted = obj;
 
         const rows = [];
+
         for (const [name, value] of Object.entries(obj.userData)) {
             if (name !== 'oldColor' && name !== 'parentEntity') {
                 const row = document.createElement('tr');

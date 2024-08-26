@@ -30,7 +30,6 @@ import { bindSlider } from './widgets/bindSlider.js';
 import { bindColorPicker } from './widgets/bindColorPicker.js';
 import { bindDropDown } from './widgets/bindDropDown.js';
 
-// Defines projection that we will use (taken from https://epsg.io/2154, Proj4js section)
 Instance.registerCRS(
     'EPSG:2154',
     '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
@@ -40,15 +39,14 @@ Instance.registerCRS(
     'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]',
 );
 
-const viewerDiv = document.getElementById('viewerDiv');
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: 'EPSG:2154',
     renderer: {
         clearColor: false,
     },
 });
 
-// create a map
 const extent = Extent.fromCenterAndSize('EPSG:2154', { x: 972_027, y: 6_299_491 }, 10_000, 10_000);
 
 const map = new Map({
@@ -108,15 +106,14 @@ const lookAt = new Vector3(center.x, center.y, 200);
 instance.view.camera.lookAt(lookAt);
 instance.notifyChange(instance.view.camera);
 
-// Creates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.target.copy(lookAt);
 controls.saveState();
-
 instance.useTHREEControls(controls);
 
+/** @type {Shape[]} */
 const shapes = [];
 
 const options = {
@@ -130,11 +127,7 @@ const options = {
     surfaceOpacity: DEFAULT_SURFACE_OPACITY,
 };
 
-const tool = new DrawTool({
-    instance,
-    hoverColor: options.highlightColor,
-    dragColor: options.dragColor,
-});
+const tool = new DrawTool({ instance });
 
 let abortController;
 
@@ -321,14 +314,15 @@ bindButton('import', () => {
     const input = document.createElement('input');
     input.type = 'file';
 
-    input.onchange = e => {
-        const file = e.target.files[0];
+    input.onchange = () => {
+        const file = input.files[0];
 
         const reader = new FileReader();
         reader.readAsText(file);
 
         reader.onload = readerEvent => {
             const text = readerEvent.target.result;
+            // @ts-expect-error typing
             const json = JSON.parse(text);
             importGeoJSONFile(json);
         };
@@ -337,12 +331,11 @@ bindButton('import', () => {
     input.click();
 });
 
-let isCurrentlyDrawing = false;
-
 function disableDrawButtons(disabled) {
     const group = document.getElementById('draw-group');
     const buttons = group.getElementsByTagName('button');
-    for (const button of buttons) {
+    for (let i = 0; i < buttons.length; i++) {
+        const button = buttons.item(i);
         button.disabled = disabled;
     }
 }
@@ -359,8 +352,6 @@ function createShape(button, callback, specificOptions) {
     button.classList.add('btn-secondary');
 
     abortController = new AbortController();
-
-    isCurrentlyDrawing = true;
 
     callback
         .bind(tool)({
@@ -384,7 +375,6 @@ function createShape(button, callback, specificOptions) {
             disableDrawButtons(false);
             button.classList.add('btn-primary');
             button.classList.remove('btn-secondary');
-            isCurrentlyDrawing = false;
         });
 }
 
@@ -470,6 +460,7 @@ bindSlider('surface-opacity', v => {
     });
 });
 bindColorPicker('color', v => {
+    // @ts-expect-error conversion
     options.color = v;
     shapes.forEach(m => {
         m.color = v;
@@ -489,6 +480,8 @@ function dimLabels(mouseEvent) {
 
     if (pickResults.length > 0) {
         const picked = pickResults[0];
+        /** @type {Shape} */
+        // @ts-expect-error typing
         const shape = picked.entity;
 
         // Dim labels so the user can properly insert vertices on segments.
@@ -509,6 +502,6 @@ tool.addEventListener('end-drag', () => {
     controls.enabled = true;
 });
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 StatusBar.bind(instance);

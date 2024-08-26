@@ -25,15 +25,12 @@ import { bindSlider } from './widgets/bindSlider.js';
 import { bindDropDown } from './widgets/bindDropDown.js';
 import { bindButton } from './widgets/bindButton.js';
 import { makeColorRamp } from './widgets/makeColorRamp.js';
+import { bindColorMapBounds } from './widgets/bindColorMapBounds.js';
 
-// Defines geographic extent: CRS, min/max X, min/max Y
 const extent = Extent.fromCenterAndSize('EPSG:3857', { x: 697313, y: 5591324 }, 30000, 30000);
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
-// Creates the Giro3D instance
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         // To display the background style
@@ -41,20 +38,15 @@ const instance = new Instance(viewerDiv, {
     },
 });
 
-// Sets the camera position
 const cameraPosition = new Vector3(697119, 5543639, 53043);
+
 instance.view.camera.position.copy(cameraPosition);
 
-// Creates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
-
-// Then looks at extent's center
 controls.target = extent.centerAsVector3();
-controls.saveState();
-
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
-
+controls.saveState();
 instance.useTHREEControls(controls);
 
 const elevationMin = 780;
@@ -79,6 +71,8 @@ let parameters = {
 };
 
 function updatePreview(colors) {
+    /** @type {HTMLCanvasElement} */
+    // @ts-expect-error conversion
     const canvas = document.getElementById('gradient');
     const ctx = canvas.getContext('2d');
 
@@ -166,7 +160,7 @@ function updateColorRamp() {
     instance.notifyChange(map);
 }
 
-const setEnableColorMap = bindToggle('enable', v => {
+const [setEnableColorMap] = bindToggle('enable', v => {
     elevationLayer.visible = true;
     colorLayer.visible = true;
     backgroundLayer.visible = true;
@@ -178,19 +172,19 @@ const setEnableColorMap = bindToggle('enable', v => {
     }
     instance.notifyChange(map);
 });
-const setDiscrete = bindToggle('discrete', v => {
+const [setDiscrete] = bindToggle('discrete', v => {
     parameters.discrete = v;
     updateColorRamp();
 });
-const setInvert = bindToggle('invert', v => {
+const [setInvert] = bindToggle('invert', v => {
     parameters.invert = v;
     updateColorRamp();
 });
-const setMirror = bindToggle('mirror', v => {
+const [setMirror] = bindToggle('mirror', v => {
     parameters.mirror = v;
     updateColorRamp();
 });
-const setRamp = bindDropDown('ramp', v => {
+const [setRamp] = bindDropDown('ramp', v => {
     parameters.ramp = v;
     updateColorRamp();
 });
@@ -204,7 +198,7 @@ function setActiveLayers(...layers) {
     }
     activeLayer = layers[layers.length - 1];
 }
-const setLayerType = bindDropDown('layerType', v => {
+const [setLayerType] = bindDropDown('layerType', v => {
     switch (v) {
         case 'elevation':
             setActiveLayers(elevationLayer);
@@ -222,7 +216,7 @@ const setLayerType = bindDropDown('layerType', v => {
     updateColorRamp();
     instance.notifyChange(map);
 });
-const setBackgroundOpacity = bindSlider('backgroundOpacity', v => {
+const [setBackgroundOpacity] = bindSlider('backgroundOpacity', v => {
     map.backgroundOpacity = v;
     instance.notifyChange(map);
 });
@@ -234,25 +228,20 @@ const updateBounds = bindColorMapBounds((min, max) => {
     instance.notifyChange(map);
 });
 
-let suffix = 'm';
-
-const setMode = bindDropDown('mode', v => {
+const [setMode] = bindDropDown('mode', v => {
     const numerical = Number.parseInt(v);
     switch (numerical) {
         case ColorMapMode.Elevation:
             parameters.mode = ColorMapMode.Elevation;
             updateBounds(elevationMin, elevationMax);
-            suffix = 'm';
             break;
         case ColorMapMode.Slope:
             parameters.mode = ColorMapMode.Slope;
             updateBounds(0, 90);
-            suffix = '°';
             break;
         case ColorMapMode.Aspect:
             parameters.mode = ColorMapMode.Aspect;
             updateBounds(0, 360);
-            suffix = '°';
             break;
     }
 
@@ -260,53 +249,8 @@ const setMode = bindDropDown('mode', v => {
     instance.notifyChange(map);
 });
 
-function bindColorMapBounds(callback) {
-    /** @type {HTMLInputElement} */
-    const lower = document.getElementById('lower');
-
-    /** @type {HTMLInputElement} */
-    const upper = document.getElementById('upper');
-
-    callback(lower.valueAsNumber, upper.valueAsNumber);
-
-    function updateLabels() {
-        document.getElementById('minLabel').innerText =
-            `Lower bound: ${lower.valueAsNumber}${suffix}`;
-        document.getElementById('maxLabel').innerText =
-            `Upper bound: ${upper.valueAsNumber}${suffix}`;
-    }
-
-    lower.oninput = function oninput() {
-        const rawValue = lower.valueAsNumber;
-        const clampedValue = MathUtils.clamp(rawValue, lower.min, upper.valueAsNumber - 1);
-        lower.valueAsNumber = clampedValue;
-        callback(lower.valueAsNumber, upper.valueAsNumber);
-        instance.notifyChange(map);
-        updateLabels();
-    };
-
-    upper.oninput = function oninput() {
-        const rawValue = upper.valueAsNumber;
-        const clampedValue = MathUtils.clamp(rawValue, lower.valueAsNumber + 1, upper.max);
-        upper.valueAsNumber = clampedValue;
-        callback(lower.valueAsNumber, upper.valueAsNumber);
-        instance.notifyChange(map);
-        updateLabels();
-    };
-
-    return (min, max) => {
-        lower.min = min;
-        lower.max = max;
-        upper.min = min;
-        upper.max = max;
-        lower.valueAsNumber = min;
-        upper.valueAsNumber = max;
-        callback(lower.valueAsNumber, upper.valueAsNumber);
-        updateLabels();
-    };
-}
-
 const canvas = document.getElementById('curve');
+// @ts-expect-error conversion
 const widget = new FunctionCurveEditor.Widget(canvas);
 
 function updateTransparency() {
@@ -365,7 +309,7 @@ function applyPreset(preset) {
     instance.notifyChange(map);
 }
 
-const setPreset = bindDropDown('preset', preset => {
+const [setPreset] = bindDropDown('preset', preset => {
     switch (preset) {
         case 'elevation':
             applyPreset({
@@ -464,7 +408,8 @@ function resetToDefaults() {
 
 bindButton('reset', resetToDefaults);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
+
 StatusBar.bind(instance);
 
 // For some reason, not waiting a bit causes the curve editor to be blank on Firefox

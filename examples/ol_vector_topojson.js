@@ -21,7 +21,6 @@ Instance.registerCRS(
     '+proj=tmerc +lat_0=26 +lon_0=142 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=-146.414,507.337,680.507,0,0,0,0 +units=m +no_defs +type=crs',
 );
 
-// Defines geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent(
     'EPSG:30174',
     -201012.900985493,
@@ -30,29 +29,20 @@ const extent = new Extent(
     1071890.8856167798,
 );
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
-// Creates a Giro3D instance
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
 });
 
-// Instanciates camera
 const center = extent.centerAsVector2();
+
 instance.view.camera.position.set(center.x, center.y - 1, 2000);
 
-// Instanciates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.25;
-
-instance.useTHREEControls(controls);
-
-// target
 controls.target.set(center.x, center.y, 0);
-
-// Adds layers in a map
+instance.useTHREEControls(controls);
 
 const map = new Map({ extent, backgroundColor: '#135D66' });
 instance.add(map);
@@ -75,15 +65,17 @@ const buildingsStyle = feature => {
     });
 };
 
+const topoJsonSource = new VectorSource({
+    format: new TopoJSON(),
+    data: 'https://3d.oslandia.com/giro3d/vectors/tokyo_buildings.topojson',
+    dataProjection: 'EPSG:4326',
+    style: buildingsStyle,
+});
+
 const buildingsLayer = new ColorLayer({
     name: 'Buildings',
     extent,
-    source: new VectorSource({
-        format: new TopoJSON(),
-        data: 'https://3d.oslandia.com/giro3d/vectors/tokyo_buildings.topojson',
-        dataProjection: 'EPSG:4326',
-        style: buildingsStyle,
-    }),
+    source: topoJsonSource,
 });
 
 // Create the OpenStreetMap color layer using an OpenLayers source.
@@ -101,7 +93,7 @@ map.addLayer(buildingsLayer);
 StatusBar.bind(instance);
 
 const labelElement = document.createElement('span');
-labelElement.classList = 'badge rounded-pill text-bg-light';
+labelElement.classList.value = 'badge rounded-pill text-bg-light';
 labelElement.style.marginTop = '2rem';
 const label = new CSS2DObject(labelElement);
 
@@ -115,12 +107,12 @@ function pickFeatures(mouseEvent) {
         radius: 0,
     });
 
-    const picked = pickResult.at(0);
+    const picked = pickResult[0];
 
     function resetPickedFeatures() {
         if (previousFeature) {
             previousFeature.set('highlight', false);
-            buildingsLayer.source.updateFeature(previousFeature);
+            topoJsonSource.updateFeature(previousFeature);
         }
         if (label.visible) {
             label.visible = false;
@@ -141,7 +133,7 @@ function pickFeatures(mouseEvent) {
             firstFeature.set('highlight', true);
 
             if (previousFeature !== firstFeature) {
-                buildingsLayer.source.updateFeature(previousFeature, firstFeature);
+                topoJsonSource.updateFeature(previousFeature, firstFeature);
                 previousFeature = firstFeature;
             }
 
@@ -159,7 +151,8 @@ function pickFeatures(mouseEvent) {
 }
 
 instance.domElement.addEventListener('mousemove', pickFeatures);
-Inspector.attach(document.getElementById('panelDiv'), instance);
 instance.domElement.addEventListener('dblclick', e => console.log(instance.pickObjectsAt(e)));
+
+Inspector.attach('inspector', instance);
 
 instance.notifyChange(map);

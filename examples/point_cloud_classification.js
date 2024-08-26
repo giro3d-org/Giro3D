@@ -9,16 +9,17 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import PointCloudMaterial, { MODE } from '@giro3d/giro3d/renderer/PointCloudMaterial.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { bindSlider } from './widgets/bindSlider.js';
+import { bindToggle } from './widgets/bindToggle.js';
+import { bindColorPicker } from './widgets/bindColorPicker.js';
 
-// Defines projection that we will use (taken from https://epsg.io/2154, Proj4js section)
 Instance.registerCRS(
     'EPSG:2154',
     '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
 );
 
-const viewerDiv = document.getElementById('viewerDiv');
-
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: 'EPSG:2154',
     renderer: {
         clearColor: false, // To make the canvas transparent and show the actual CSS background
@@ -30,16 +31,13 @@ instance.renderingOptions.enableEDL = true;
 instance.renderingOptions.enableInpainting = true;
 instance.renderingOptions.enablePointCloudOcclusion = true;
 
-// Creates controls
+instance.view.camera.position.set(227137, 6876151, 128);
+
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
-
-instance.view.camera.position.set(227137, 6876151, 128);
 controls.target.set(227423, 6876442, 0);
-
 controls.saveState();
-
 instance.useTHREEControls(controls);
 
 // We create a PointCloudMaterial in CLASSIFICATION
@@ -64,13 +62,7 @@ const pointcloud = new Tiles3D(new Tiles3DSource(url), {
     material,
 });
 
-// add pointcloud to scene
 instance.add(pointcloud);
-
-Inspector.attach(document.getElementById('panelDiv'), instance);
-
-// Bind events
-StatusBar.bind(instance);
 
 const classificationNames = new Array(32);
 
@@ -111,30 +103,24 @@ function addClassification(number, name) {
     node.innerHTML = template;
     document.getElementById('classifications').appendChild(node);
 
-    const colorPicker = document.getElementById(`color-${number}`);
-
-    colorPicker.oninput = function oninput() {
-        // Let's change the classification color with the color picker value
-        const hexColor = colorPicker.value;
-
+    // Let's change the classification color with the color picker value
+    bindColorPicker(`color-${number}`, v => {
         // Parse it into a THREE.js color
-        const color = new Color(hexColor);
+        const color = new Color(v);
 
         material.classifications[number].color = color;
 
         instance.notifyChange();
-    };
+    });
 
     classificationNames[number] = name;
 
-    const toggle = document.getElementById(`class-${number}`);
-
-    toggle.oninput = function oninput() {
+    bindToggle(`class-${number}`, enabled => {
         // By toggling the .visible property of a classification,
         // all points that have this classification are hidden/shown.
-        material.classifications[number].visible = toggle.checked;
+        material.classifications[number].visible = enabled;
         instance.notifyChange();
-    };
+    });
 }
 
 // Standard ASPRS classifications found in the dataset
@@ -152,14 +138,14 @@ addClassification(65, 'Artifacts');
 addClassification(67, 'Virtual points');
 
 const labelElement = document.createElement('div');
-labelElement.classList = 'badge rounded-pill text-bg-light';
+labelElement.classList.value = 'badge rounded-pill text-bg-light';
 labelElement.style.marginTop = '2rem';
 
 const classifName = document.createElement('span');
 classifName.style.marginLeft = '0.5rem';
 
 const classifColor = document.createElement('span');
-classifColor.classList = 'badge rounded-pill';
+classifColor.classList.value = 'badge rounded-pill';
 classifColor.style.color = 'white';
 classifColor.style.background = 'red';
 classifColor.style.width = '1rem';
@@ -183,6 +169,7 @@ function updateLabel(mouseEvent) {
         for (const result of results) {
             const { object, point, index } = result;
 
+            // @ts-expect-error conversion
             const classificationIndex = object.getClassification(index);
 
             const classification = material.classifications[classificationIndex];
@@ -206,31 +193,20 @@ function updateLabel(mouseEvent) {
     instance.notifyChange();
 }
 
-function bindSlider(name, callback) {
-    const slider = document.getElementById(name);
-    slider.oninput = function oninput() {
-        callback(slider.valueAsNumber);
-        instance.notifyChange(pointcloud);
-    };
-}
-
 bindSlider('pointSize', v => {
     material.size = v;
+    instance.notifyChange(pointcloud);
 });
-
-function bindToggle(name, callback) {
-    const toggle = document.getElementById(name);
-    toggle.oninput = () => {
-        const state = toggle.checked;
-        callback(state);
-        instance.notifyChange(pointcloud);
-    };
-}
 
 bindToggle('postProcessingEffects', v => {
     instance.renderingOptions.enableEDL = v;
     instance.renderingOptions.enableInpainting = v;
     instance.renderingOptions.enablePointCloudOcclusion = v;
+    instance.notifyChange(pointcloud);
 });
 
 instance.domElement.addEventListener('mousemove', updateLabel);
+
+Inspector.attach('inspector', instance);
+
+StatusBar.bind(instance);

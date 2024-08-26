@@ -27,7 +27,6 @@ import FeatureCollection from '@giro3d/giro3d/entities/FeatureCollection.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-// Defines projection that we will use (taken from https://epsg.io/2154, Proj4js section)
 Instance.registerCRS(
     'EPSG:2154',
     '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
@@ -38,8 +37,12 @@ Instance.registerCRS(
 );
 
 const SKY_COLOR = new Color(0xf1e9c6);
-const viewerDiv = document.getElementById('viewerDiv');
-const instance = new Instance(viewerDiv, { crs: 'EPSG:2154', renderer: { clearColor: SKY_COLOR } });
+
+const instance = new Instance({
+    target: 'view',
+    crs: 'EPSG:2154',
+    renderer: { clearColor: SKY_COLOR },
+});
 
 const extent = new Extent('EPSG:2154', -111629.52, 1275028.84, 5976033.79, 7230161.64);
 
@@ -197,7 +200,7 @@ instance.add(featureCollection);
 map.renderOrder = 0;
 featureCollection.renderOrder = 1;
 
-// also add some lights
+// Add a sunlight
 const sun = new DirectionalLight('#ffffff', 2);
 sun.position.set(1, 0, 1).normalize();
 sun.updateMatrixWorld(true);
@@ -209,29 +212,20 @@ sun2.position.set(0, 1, 1);
 sun2.updateMatrixWorld();
 instance.scene.add(sun2);
 
-// ambient
+// Add an ambient light
 const ambientLight = new AmbientLight(0xffffff, 0.2);
 instance.scene.add(ambientLight);
 
-// place camera above Grenoble
 instance.view.camera.position.set(913349.2364044407, 6456426.459171033, 1706.0108044011636);
 
-// and look at the Bastille
 const lookAt = new Vector3(913896, 6459191, 200);
 instance.view.camera.lookAt(lookAt);
 
-// Notify Giro3D we've changed the three.js camera position directly
-instance.notifyChange(instance.view.camera);
-
-// Creates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.4;
-
-// you need to use these 2 lines each time you change the camera lookAt or position programatically
 controls.target.copy(lookAt);
 controls.saveState();
-
 instance.useTHREEControls(controls);
 
 // add a skybox background
@@ -247,8 +241,6 @@ const cubeTexture = cubeTextureLoader.load([
 ]);
 
 instance.scene.background = cubeTexture;
-
-Inspector.attach(document.getElementById('panelDiv'), instance);
 
 // information on click
 const resultTable = document.getElementById('results');
@@ -389,5 +381,6 @@ instance.addEventListener('after-camera-update', event =>
 
 processFogAndClippingPlanes(instance.view);
 
-// Bind events
+Inspector.attach('inspector', instance);
+
 StatusBar.bind(instance);

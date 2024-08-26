@@ -1,7 +1,7 @@
 <!-- Viewer -->
-<div id="viewerDiv" class="m-0 p-0 w-100 h-100"></div>
+<div id="view" class="m-0 p-0 w-100 h-100"></div>
 <!-- Inspector -->
-<div id="panelDiv" class="position-absolute top-0 start-0 mh-100 overflow-auto d-none"></div>
+<div id="inspector" class="position-absolute top-0 start-0 mh-100 overflow-auto d-none"></div>
 <!-- Optional additional content from the example (custom buttons, etc.) -->
 <div id="gui" class="gui-init"><%- content %></div>
 <!-- Status bar -->
@@ -126,7 +126,7 @@
     function toggleFullScreen() {
         if (!fullScreen) {
             document
-                .getElementById('viewerDiv')
+                .getElementById('view')
                 .parentElement.requestFullscreen()
                 .then(() => {
                     fullScreen = true;

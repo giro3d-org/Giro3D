@@ -28,7 +28,7 @@ export interface WmtsFromCapabilitiesOptions extends WmtsSourceOptions {
     /** The name of the layer. */
     layer: string;
     /** The tile matrix set identifier. */
-    matrixSet: string;
+    matrixSet?: string;
     /**
      * The image format (i.e its MIME type, like `image/png`).
      * Note that it is different from the format decoder (that uses the `format` property)

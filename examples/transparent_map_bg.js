@@ -11,7 +11,8 @@ import Instance from '@giro3d/giro3d/core/Instance.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 
-// Defines geographic extent: CRS, min/max X, min/max Y
+import { bindSlider } from './widgets/bindSlider';
+
 const extent = new Extent(
     'EPSG:3857',
     -4553934 - 1000000,
@@ -20,29 +21,24 @@ const extent = new Extent(
     -3910697 + 1000000,
 );
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
-// Creates a Giro3D instance
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         clearColor: false,
     },
 });
 
-// Instanciates camera
 instance.view.camera.position.set(-4553934, -3910697, 4600000);
 
-// Instanciates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.target = new Vector3(-4553934, -3910696, 0);
 controls.enableDamping = true;
 controls.dampingFactor = 0.25;
-
 instance.useTHREEControls(controls);
 
 const map = new Map({ extent, backgroundColor: 'green' });
+
 instance.add(map);
 
 const rectangle = {
@@ -102,28 +98,24 @@ const blueTriangle = makeGeoJSONLayer('blueTriangle', triangle, '#0000aa');
 map.addLayer(redSquare);
 map.addLayer(blueTriangle);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 instance.notifyChange(map);
 
 // GUI
-function bindSlider(id, action) {
-    const slider = document.getElementById(id);
-    slider.oninput = () => {
-        action(slider.value);
-        instance.notifyChange(map);
-    };
-}
-
 bindSlider('map-opacity', v => {
     map.opacity = v;
+    instance.notifyChange(map);
 });
 bindSlider('bg-opacity', v => {
     map.backgroundOpacity = v;
+    instance.notifyChange(map);
 });
 bindSlider('blue-opacity', v => {
     blueTriangle.opacity = v;
+    instance.notifyChange(map);
 });
 bindSlider('red-opacity', v => {
     redSquare.opacity = v;
+    instance.notifyChange(map);
 });

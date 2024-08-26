@@ -25,7 +25,6 @@ import { bindToggle } from './widgets/bindToggle.js';
 import { makeColorRamp } from './widgets/makeColorRamp.js';
 import { bindButton } from './widgets/bindButton.js';
 
-// Defines projection that we will use (taken from https://epsg.io/2154, Proj4js section)
 Instance.registerCRS(
     'EPSG:2154',
     '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
@@ -35,21 +34,16 @@ Instance.registerCRS(
     'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]',
 );
 
-// Defines geographic extent: CRS, min/max X, min/max Y
 const extent = Extent.fromCenterAndSize('EPSG:2154', { x: 674_675, y: 6_442_569 }, 30_000, 30_000);
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
-// Creates a Giro3D instance
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         clearColor: false,
     },
 });
 
-// Creates a map that will contain the layer
 const map = new Map({
     extent,
     hillshading: {
@@ -108,11 +102,8 @@ const center = extent.centerAsVector2();
 
 instance.view.camera.position.set(center.x - 4000, center.y - 4000, 7300);
 
-// Instanciates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
-
 controls.target.set(center.x, center.y, 300);
-
 instance.useTHREEControls(controls);
 
 // We use the DrawTool to draw the path on the map.
@@ -135,6 +126,8 @@ function updateMarkers(points) {
 
 let currentChart;
 
+/** @type {HTMLCanvasElement} */
+// @ts-expect-error conversion
 const canvas = document.getElementById('profileChart');
 const chartContainer = document.getElementById('chartContainer');
 
@@ -245,6 +238,7 @@ function computeElevationProfile() {
 
         // Then we need to sample this line according to the number of samples
         // selected by the user. We are using a THREE.js CurvePath for that.
+        /** @type {CurvePath<Vector2>} */
         const path = new CurvePath();
 
         const vertices = lineString.points;
@@ -254,12 +248,13 @@ function computeElevationProfile() {
             const v0 = vertices[i];
             const v1 = vertices[i + 1];
 
-            const line = new LineCurve(v0, v1);
+            const line = new LineCurve(new Vector2(v0.x, v0.y), new Vector2(v1.x, v1.y));
 
             path.add(line);
         }
 
         // And then we sample this curve to have our evenly spaced points
+        // @ts-expect-error conversion
         const sampleCount = document.getElementById('sampleCount').valueAsNumber;
         const points = path.getSpacedPoints(sampleCount - 1);
 
@@ -311,7 +306,7 @@ bindButton('closeChart', () => {
     chartContainer.style.display = 'none';
 });
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 StatusBar.bind(instance);
 
 const parameters = {
@@ -343,7 +338,7 @@ hoveredPoint.visible = false;
 const markerHtmlElement = document.createElement('div');
 markerHtmlElement.style.paddingBottom = '4rem';
 const span = document.createElement('span');
-span.classList = 'badge rounded-pill text-bg-primary';
+span.classList.value = 'badge rounded-pill text-bg-primary';
 span.innerText = '?';
 markerHtmlElement.appendChild(span);
 

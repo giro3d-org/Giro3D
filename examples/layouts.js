@@ -18,27 +18,26 @@ const extent = new Extent(
 );
 
 const source = new TiledImageSource({
+    // @ts-expect-error missing properties (but they are actually optional)
     source: new StadiaMaps({ layer: 'stamen_watercolor', wrapX: false }),
 });
 
-function buildViewer(viewerDiv, defaultRenderer = true) {
+function buildViewer(target, defaultRenderer = true) {
     const renderer = { clearColor: false };
     if (!defaultRenderer) {
         renderer.renderer = new WebGLRenderer({ antialias: true, alpha: true });
     }
-    const instance = new Instance(viewerDiv, { renderer, crs: extent.crs() });
-    // Creates a map that will contain the layer
+    const instance = new Instance({
+        target,
+        crs: extent.crs(),
+        renderer,
+    });
+
     const map = new Map({ extent, maxSubdivisionLevel: 10 });
 
     instance.add(map);
 
-    // Adds an TMS imagery layer
-    map.addLayer(
-        new ColorLayer({
-            name: 'osm',
-            source,
-        }),
-    ).catch(e => console.error(e));
+    map.addLayer(new ColorLayer({ source })).catch(e => console.error(e));
 
     instance.view.camera.position.set(0, 0, 25000000);
 
@@ -51,8 +50,8 @@ function buildViewer(viewerDiv, defaultRenderer = true) {
 }
 
 // Remove the pre-generated default HTML elements for this example
-document.getElementById('viewerDiv').remove();
-document.getElementById('panelDiv').remove();
+document.getElementById('view').remove();
+document.getElementById('inspector').remove();
 
 // Dynamically find all viewers we have to build
 const viewerDivs = document.getElementsByClassName('viewer');

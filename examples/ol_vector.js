@@ -1,3 +1,4 @@
+import { Color } from 'three';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import { Fill, Stroke, Style } from 'ol/style.js';
 
@@ -13,9 +14,7 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
 
 import StatusBar from './widgets/StatusBar.js';
-import { Color } from 'three';
 
-// Defines geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent(
     'EPSG:3857',
     -20037508.342789244,
@@ -26,30 +25,23 @@ const extent = new Extent(
 
 let time = 0;
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
-// Creates a Giro3D instance
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         clearColor: 0xffffff,
     },
 });
 
-// Instanciates camera
 instance.view.camera.position.set(0, 0, 10000000);
 
-// Instanciates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.25;
-
 instance.useTHREEControls(controls);
 
-// Adds layers in a map
-
 const map = new Map({ extent, backgroundColor: '#135D66' });
+
 instance.add(map);
 
 const ecoRegionLayerStyle = feature => {
@@ -75,15 +67,17 @@ const ecoRegionLayerStyle = feature => {
     });
 };
 
+const ecoRegionSource = new VectorSource({
+    format: new GeoJSON(),
+    data: 'https://openlayers.org/data/vector/ecoregions.json',
+    dataProjection: 'EPSG:4326',
+    style: ecoRegionLayerStyle,
+});
+
 const ecoRegionLayer = new ColorLayer({
     name: 'ecoregions',
     extent,
-    source: new VectorSource({
-        format: new GeoJSON(),
-        data: 'https://openlayers.org/data/vector/ecoregions.json',
-        dataProjection: 'EPSG:4326',
-        style: ecoRegionLayerStyle,
-    }),
+    source: ecoRegionSource,
 });
 
 map.addLayer(ecoRegionLayer);
@@ -184,10 +178,8 @@ const customVectorLayer = new ColorLayer({
 
 map.addLayer(customVectorLayer);
 
-StatusBar.bind(instance);
-
 const labelElement = document.createElement('span');
-labelElement.classList = 'badge rounded-pill text-bg-light';
+labelElement.classList.value = 'badge rounded-pill text-bg-light';
 labelElement.style.marginTop = '2rem';
 const label = new CSS2DObject(labelElement);
 
@@ -199,12 +191,12 @@ let previousFeature;
 function pickFeatures(mouseEvent) {
     const pickResult = instance.pickObjectsAt(mouseEvent);
 
-    const picked = pickResult.at(0);
+    const picked = pickResult[0];
 
     function resetPickedFeatures() {
         if (previousFeature) {
             previousFeature.set('highlight', false);
-            ecoRegionLayer.source.updateFeature(previousFeature);
+            ecoRegionSource.updateFeature(previousFeature);
         }
         if (label.visible) {
             label.visible = false;
@@ -225,7 +217,7 @@ function pickFeatures(mouseEvent) {
             firstFeature.set('highlight', true);
 
             if (previousFeature !== firstFeature) {
-                ecoRegionLayer.source.updateFeature(previousFeature, firstFeature);
+                ecoRegionSource.updateFeature(previousFeature, firstFeature);
                 previousFeature = firstFeature;
             }
 
@@ -244,7 +236,7 @@ function pickFeatures(mouseEvent) {
 function update(t) {
     time = t;
     if (previousFeature != null) {
-        ecoRegionLayer.source.updateFeature(previousFeature);
+        ecoRegionSource.updateFeature(previousFeature);
     }
     requestAnimationFrame(update);
 }
@@ -252,4 +244,7 @@ function update(t) {
 update(0);
 
 instance.domElement.addEventListener('mousemove', pickFeatures);
-Inspector.attach(document.getElementById('panelDiv'), instance);
+
+Inspector.attach('inspector', instance);
+
+StatusBar.bind(instance);

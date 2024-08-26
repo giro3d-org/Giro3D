@@ -9,8 +9,9 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import DebugSource from '@giro3d/giro3d/sources/DebugSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { bindSlider } from './widgets/bindSlider.js';
+import { bindToggle } from './widgets/bindToggle.js';
 
-// Defines geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent(
     'EPSG:3857',
     -20037508.342789244,
@@ -19,42 +20,23 @@ const extent = new Extent(
     20037508.342789244,
 );
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
-// Creates a Giro3D instance
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         clearColor: 0x0a3b59,
     },
 });
 
-// Instanciates camera
 instance.view.camera.position.set(0, 0, 25000000);
 
-// Instanciates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 
 instance.useTHREEControls(controls);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
+
 StatusBar.bind(instance);
-
-function bindSlider(name, callback) {
-    const slider = document.getElementById(name);
-    slider.oninput = function oninput() {
-        callback(slider.value);
-    };
-}
-
-function bindToggle(name, callback) {
-    const toggle = document.getElementById(name);
-    toggle.oninput = () => {
-        const state = toggle.checked;
-        callback(state);
-    };
-}
 
 function createColorLayer() {
     const source = new DebugSource({
@@ -79,7 +61,6 @@ function buildMapAndLayers() {
         instance.remove(map);
     }
 
-    // Creates a map that will contain the layer
     map = new Map({ extent, forceTextureAtlases });
 
     instance.add(map);

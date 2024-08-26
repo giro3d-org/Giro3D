@@ -13,18 +13,19 @@ import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import ColorMap from '@giro3d/giro3d/core/layer/ColorMap.js';
+import MapboxTerrainFormat from '@giro3d/giro3d/formats/MapboxTerrainFormat.js';
 
 import StatusBar from './widgets/StatusBar.js';
-import MapboxTerrainFormat from '@giro3d/giro3d/formats/MapboxTerrainFormat.js';
+import { bindSlider } from './widgets/bindSlider.js';
+import { bindToggle } from './widgets/bindToggle.js';
+import { makeColorRamp } from './widgets/makeColorRamp.js';
 
 const center = { x: -13601505, y: 5812315 };
 
 const extent = Extent.fromCenterAndSize('EPSG:3857', center, 20000, 20000);
 
-const viewerDiv = document.getElementById('viewerDiv');
-
-// Creates a Giro3D instance
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         clearColor: false,
@@ -37,13 +38,6 @@ const map = new Map({
 });
 
 instance.add(map);
-
-function makeColorRamp(preset) {
-    const values = colormap({ colormap: preset, nshades: 256 });
-    const colors = values.map(v => new Color(v));
-
-    return colors;
-}
 
 const colorRamp = makeColorRamp('viridis');
 
@@ -83,64 +77,50 @@ map.addLayer(colorLayer);
 // Sets the camera position
 instance.view.camera.position.set(-13615016, 5835706, 14797);
 
-// Creates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
-
-// Then looks at extent's center
 controls.target = new Vector3(-13603869, 5814829, 0);
 controls.saveState();
-
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.maxPolarAngle = Math.PI / 2.3;
-
 instance.useTHREEControls(controls);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 StatusBar.bind(instance);
 
-function bindSlider(name, fn) {
-    const slider = document.getElementById(name);
-    slider.oninput = function oninput() {
-        fn(slider.value);
-        instance.notifyChange(map);
-    };
-}
+let colorLayerRange = colorLayer.elevationRange;
 
-function bindToggle(name, action) {
-    const toggle = document.getElementById(`toggle-${name}`);
-    toggle.oninput = () => {
-        const state = toggle.checked;
-        action(state);
-        instance.notifyChange(map);
-    };
-}
-
-let colorLayerRange = null;
-
-bindToggle('colorlayer-range', enabled => {
+bindToggle('toggle-colorlayer-range', enabled => {
     if (enabled) {
         colorLayer.elevationRange = colorLayerRange;
     } else {
         colorLayer.elevationRange = null;
     }
 
+    // @ts-expect-error typing
     document.getElementById('layerMin').disabled = !enabled;
+    // @ts-expect-error typing
     document.getElementById('layerMax').disabled = !enabled;
+
+    instance.notifyChange(map);
 });
 
 bindSlider('mapMin', v => {
     map.elevationRange.min = v;
+    instance.notifyChange(map);
 });
 bindSlider('mapMax', v => {
     map.elevationRange.max = v;
+    instance.notifyChange(map);
 });
 bindSlider('layerMin', v => {
     colorLayer.elevationRange = { min: v, max: colorLayer.elevationRange.max };
     colorLayerRange = colorLayer.elevationRange;
+    instance.notifyChange(map);
 });
 bindSlider('layerMax', v => {
     colorLayer.elevationRange = { min: colorLayer.elevationRange.min, max: v };
     colorLayerRange = colorLayer.elevationRange;
+    instance.notifyChange(map);
 });

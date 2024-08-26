@@ -45,43 +45,38 @@ Instance.registerCRS(
         '+y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
 );
 
-const viewerDiv = document.getElementById('viewerDiv');
-const instance = new Instance(viewerDiv, { crs: 'EPSG:3946' });
+const instance = new Instance({
+    target: 'view',
+    crs: 'EPSG:3946',
+});
 
 const material = new PointCloudMaterial({ size: 4, mode: MODE.TEXTURE });
+
 const pointcloud = new Tiles3D(
     new Tiles3DSource('https://3d.oslandia.com/3dtiles/lyon.3dtiles/tileset.json'),
     { material },
 );
 
-const colorize = new WmsSource({
+const source = new WmsSource({
     url: 'https://data.geopf.fr/wms-r',
     projection: 'EPSG:3946',
     layer: 'HR.ORTHOIMAGERY.ORTHOPHOTOS',
     imageFormat: 'image/jpeg',
 });
 
-const colorLayer = new ColorLayer({
-    name: 'wms_imagery',
-    source: colorize,
-});
+const colorLayer = new ColorLayer({ source });
 
 instance.add(pointcloud).then(pc => pc.attach(colorLayer));
 
 // Configure our controls
-// eslint-disable-next-line no-undef
 const controls = new CameraControls(instance.view.camera, instance.domElement);
+
 controls.dollyToCursor = true;
-controls.enableDamping = true;
 controls.verticalDragToForward = true;
 
-// eslint-disable-next-line no-undef
 controls.mouseButtons.left = CameraControls.ACTION.TRUCK;
-// eslint-disable-next-line no-undef
 controls.mouseButtons.right = CameraControls.ACTION.ROTATE;
-// eslint-disable-next-line no-undef
 controls.mouseButtons.wheel = CameraControls.ACTION.DOLLY;
-// eslint-disable-next-line no-undef
 controls.mouseButtons.middle = CameraControls.ACTION.DOLLY;
 
 // Giro3D integration
@@ -166,17 +161,14 @@ instance.domElement.addEventListener('keydown', e => {
 
 // Make rotation around where the user clicked
 instance.domElement.addEventListener('contextmenu', e => {
-    const picked = instance
-        .pickObjectsAt(e, {
-            limit: 1,
-            radius: 20,
-            filter: p =>
-                // Make sure we pick a valid point
-                Number.isFinite(p.point.x) &&
-                Number.isFinite(p.point.y) &&
-                Number.isFinite(p.point.z),
-        })
-        .at(0);
+    const picked = instance.pickObjectsAt(e, {
+        limit: 1,
+        radius: 20,
+        filter: p =>
+            // Make sure we pick a valid point
+            Number.isFinite(p.point.x) && Number.isFinite(p.point.y) && Number.isFinite(p.point.z),
+    })[0];
+
     if (picked) {
         controls.setOrbitPoint(picked.point.x, picked.point.y, picked.point.z);
     }
@@ -196,7 +188,7 @@ const cubeTexture = cubeTextureLoader.load([
 
 instance.scene.background = cubeTexture;
 
-const inspector = Inspector.attach(document.getElementById('panelDiv'), instance);
+const inspector = Inspector.attach('inspector', instance);
 
 class ControlsInspector extends Panel {
     constructor(gui, _instance, _controls) {

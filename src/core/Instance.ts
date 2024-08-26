@@ -141,6 +141,11 @@ export const INSTANCE_EVENTS: Record<string, keyof InstanceEvents> = {
 /** Options for creating Instance */
 export interface InstanceOptions extends CameraOptions {
     /**
+     * The container for the instance. May be either the `id` of an existing `<div>` element,
+     * or the element itself.
+     */
+    target: string | HTMLDivElement;
+    /**
      * The coordinate reference system of the scene.
      * Must be a cartesian system.
      * Must first be registered via {@link Instance.registerCRS}
@@ -186,10 +191,8 @@ export interface CustomCameraControls {
     enabled: boolean;
 }
 
-export interface ThreeControls extends CustomCameraControls {
+export interface ThreeControls extends CustomCameraControls, EventDispatcher {
     update: () => void;
-    addEventListener: (event: string, callback: unknown) => void;
-    removeEventListener: (event: string, callback: unknown) => void;
 }
 
 interface ControlFunctions {
@@ -243,27 +246,34 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
     /**
      * Constructs a Giro3D Instance
      *
-     * @param viewerDiv - Where to instanciate the Three.js scene in the DOM
      * @param options - Options
      *
      * ```js
-     * const opts = {
-     *  crs = exent.crs()
-     * };
-     * const instance = new Instance(viewerDiv, opts);
-     * const map = new Map(...);
-     * instance.add(map);
+     * const instance = new Instance({
+     *   target: 'parentElement', // The id of the <div> to attach the instance
+     *   crs: 'EPSG:3857',
+     * });
      * ```
      */
-    constructor(viewerDiv: HTMLDivElement, options: InstanceOptions) {
+    constructor(options: InstanceOptions) {
         super();
         Object3D.DEFAULT_UP.set(0, 0, 1);
+
+        const target = options.target;
+        let viewerDiv: HTMLElement | null = null;
+
+        if (typeof target === 'string') {
+            viewerDiv = document.getElementById(target);
+        } else if (options.target instanceof HTMLElement) {
+            viewerDiv = options.target;
+        }
+
         if (!viewerDiv || !(viewerDiv instanceof HTMLDivElement)) {
-            throw new Error('Invalid viewerDiv parameter (must be a valid Element)');
+            throw new Error('Invalid target parameter (must be a valid <div>)');
         }
         if (viewerDiv.childElementCount > 0) {
             console.warn(
-                'viewerDiv has children; Giro3D expects an empty element - this can lead to unexpected behaviors',
+                'Target element has children; Giro3D expects an empty element - this can lead to unexpected behaviors',
             );
         }
 
@@ -505,7 +515,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * @returns a promise resolved with the new layer object when it is fully initialized
      * or rejected if any error occurred.
      */
-    async add(object: Object3D | Entity): Promise<Object3D | Entity> {
+    async add<T extends Object3D | Entity>(object: T): Promise<T> {
         if (!object) {
             throw new Error('object is undefined');
         }
@@ -524,7 +534,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
             const object3d = object as Object3D;
             this._threeObjects.add(object3d);
             this.notifyChange(object3d);
-            return object3d;
+            return object3d as T;
         }
 
         // We know it's an Entity

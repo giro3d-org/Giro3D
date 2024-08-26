@@ -11,30 +11,25 @@ import StatusBar from './widgets/StatusBar.js';
 
 const extent = Extent.fromCenterAndSize('EPSG:3857', { x: -13555565, y: 5919254 }, 20000, 20000);
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
-// Instantiate Giro3D
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
 });
 
-// Instantiate the camera
 instance.view.camera.position.set(-13577183, 5907053, 45050);
 
-// Instantiate the controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.target.set(-13557038, 5920026, 0);
 instance.useTHREEControls(controls);
 
-// Construct a map and add it to the instance
 const map = new Map({
     extent,
     backgroundColor: 'gray',
     hillshading: true,
 });
+
 instance.add(map);
 
 // Use an elevation COG with nodata values
@@ -57,7 +52,6 @@ map.addLayer(
     }),
 );
 
-// Attach the inspector
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 StatusBar.bind(instance);

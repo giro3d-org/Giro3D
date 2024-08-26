@@ -16,9 +16,8 @@ import { makeColorRamp } from './widgets/makeColorRamp.js';
 
 const extent = new Extent('EPSG:3857', 2285900, 2444000, 4230900, 4386100);
 
-const viewerDiv = document.getElementById('viewerDiv');
-
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: 'EPSG:3857',
     renderer: {
         clearColor: false,
@@ -79,12 +78,12 @@ controls.target.set(center.x, center.y, min);
 instance.useTHREEControls(controls);
 
 // Attach the inspector
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 StatusBar.bind(instance);
 
 const labelElement = document.createElement('span');
-labelElement.classList = 'badge rounded-pill text-bg-light';
+labelElement.classList.value = 'badge rounded-pill text-bg-light';
 labelElement.style.marginTop = '2rem';
 const label = new CSS2DObject(labelElement);
 

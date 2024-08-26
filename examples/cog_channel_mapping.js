@@ -9,37 +9,31 @@ import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { bindNumericalDropDown } from './widgets/bindNumericalDropDown.js';
 
 Instance.registerCRS('EPSG:32611', '+proj=utm +zone=11 +datum=WGS84 +units=m +no_defs +type=crs');
 
-// Define geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent('EPSG:32611', 666285, 668533.5, 3997174, 3998444);
 const center = extent.centerAsVector3();
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
-// Instantiate Giro3D
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         clearColor: 0x0a3b59,
     },
 });
 
-// Instantiate the camera
 instance.view.camera.position.set(center.x, center.y, 2500);
 
-// Instantiate the controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.target.set(center.x, center.y + 1, center.z);
-
 instance.useTHREEControls(controls);
 
-// Construct a map and add it to the instance
 const map = new Map({ extent });
+
 instance.add(map);
 
 // Data coming from the same source as
@@ -59,25 +53,18 @@ const layer = new ColorLayer({
 
 map.addLayer(layer);
 
-function bindDropdown(id, action) {
-    document.getElementById(id).addEventListener('change', e => {
-        const value = parseInt(e.target.value, 10);
-        action(value);
-    });
-}
-
-bindDropdown('r-channel', v => {
+bindNumericalDropDown('r-channel', v => {
     source.channels[0] = v;
     source.update();
 });
-bindDropdown('g-channel', v => {
+bindNumericalDropDown('g-channel', v => {
     source.channels[1] = v;
     source.update();
 });
-bindDropdown('b-channel', v => {
+bindNumericalDropDown('b-channel', v => {
     source.channels[2] = v;
     source.update();
 });
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 StatusBar.bind(instance);

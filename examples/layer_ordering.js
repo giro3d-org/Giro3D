@@ -11,15 +11,16 @@ import StatusBar from './widgets/StatusBar.js';
 
 const crs = 'EPSG:3857';
 const mapExtent = Extent.fromCenterAndSize(crs, { x: 256227, y: 5882214 }, 2000000, 2000000);
-const viewerDiv = document.getElementById('viewerDiv');
 
-// Creates a Giro3D instance
-const instance = new Instance(viewerDiv, { crs });
+const instance = new Instance({
+    target: 'view',
+    crs,
+});
 
-// Instanciates camera
 instance.view.camera.position.set(256227, 5882214, 4000000);
 
 const map = new Map({ extent: mapExtent, backgroundOpacity: 0 });
+
 instance.add(map);
 
 const layerSize = 1000000;
@@ -28,6 +29,7 @@ const watercolor = new ColorLayer({
     name: 'watercolor',
     extent: Extent.fromCenterAndSize(crs, { x: -100000, y: 6169226 }, layerSize, layerSize),
     source: new TiledImageSource({
+        // @ts-expect-error missing properties (but they are actually optional)
         source: new StadiaMaps({ layer: 'stamen_watercolor', wrapX: false }),
     }),
 });
@@ -36,6 +38,7 @@ const toner = new ColorLayer({
     name: 'toner',
     extent: Extent.fromCenterAndSize(crs, { x: 500000, y: 5669226 }, layerSize, layerSize),
     source: new TiledImageSource({
+        // @ts-expect-error missing properties (but they are actually optional)
         source: new StadiaMaps({ layer: 'stamen_toner', wrapX: false }),
     }),
 });
@@ -44,6 +47,7 @@ const terrain = new ColorLayer({
     name: 'terrain',
     extent: Extent.fromCenterAndSize(crs, { x: 900000, y: 5169226 }, layerSize, layerSize),
     source: new TiledImageSource({
+        // @ts-expect-error missing properties (but they are actually optional)
         source: new StadiaMaps({ layer: 'stamen_terrain', wrapX: false }),
     }),
 });
@@ -52,7 +56,8 @@ map.addLayer(watercolor);
 map.addLayer(toner);
 map.addLayer(terrain);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
+
 StatusBar.bind(instance);
 
 const layers = {

@@ -18,14 +18,15 @@ import { bindSlider } from './widgets/bindSlider.js';
 import { bindToggle } from './widgets/bindToggle.js';
 import { bindButton } from './widgets/bindButton.js';
 
-const viewerDiv = document.getElementById('viewerDiv');
-
-const instance = new Instance(viewerDiv, { crs: 'EPSG:3857', renderer: { clearColor: false } });
+const instance = new Instance({
+    target: 'view',
+    crs: 'EPSG:3857',
+    renderer: { clearColor: false },
+});
 
 const minAltitude = -1531;
 const maxAltitude = 2388;
 
-// create a map
 const extent = new Extent(
     instance.referenceCrs,
     -13576103.933,
@@ -52,9 +53,7 @@ map.subdivisionThreshold = 0.75;
 
 instance.add(map);
 
-// Use an elevation COG with nodata values
 const source = new CogSource({
-    // https://www.sciencebase.gov/catalog/item/632a9a9ad34e71c6d67b95a3
     url: 'https://3d.oslandia.com/giro3d/rasters/topobathy.cog.tiff',
     crs: extent.crs(),
 });
@@ -91,18 +90,14 @@ instance.view.camera.lookAt(lookAt);
 
 instance.notifyChange(instance.view.camera);
 
-// Creates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
-
-// you need to use these 2 lines each time you change the camera lookAt or position programatically
 controls.target.copy(lookAt);
 controls.saveState();
-
 instance.useTHREEControls(controls);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 const sphere = new Mesh(new SphereGeometry(1), new MeshBasicMaterial({ color: 'red' }));
 
@@ -207,20 +202,19 @@ function updateMeasurements(mouseEvent) {
 
 instance.domElement.addEventListener('mousemove', updateMeasurements);
 
-// Bind events
 StatusBar.bind(instance);
 
-const showColliders = bindToggle('show-colliders', v => {
+const [showColliders] = bindToggle('show-colliders', v => {
     map.showColliderMeshes = v;
     instance.notifyChange(map);
 });
 
-const showGrid = bindToggle('show-grid', v => {
+const [showGrid] = bindToggle('show-grid', v => {
     axisGrid.visible = v;
     instance.notifyChange();
 });
 
-const setGeometricResolution = bindSlider('geometric-resolution', v => {
+const [setGeometricResolution] = bindSlider('geometric-resolution', v => {
     map.segments = 2 ** v;
     instance.notifyChange(map);
 
@@ -228,13 +222,12 @@ const setGeometricResolution = bindSlider('geometric-resolution', v => {
         `Terrain mesh resolution: ${map.segments}`;
 });
 
-const setWireframe = bindToggle('wireframe', v => {
+const [setWireframe] = bindToggle('wireframe', v => {
     map.wireframe = v;
-    map.traverseMaterials(m => (m.wireframe = v));
     instance.notifyChange(map);
 });
 
-const setVerticalExaggeration = bindSlider('vertical-exaggeration', v => {
+const [setVerticalExaggeration] = bindSlider('vertical-exaggeration', v => {
     // Vertical exaggerations simply means that the entire scene is scaled vertically.
     instance.scene.scale.setZ(v);
 

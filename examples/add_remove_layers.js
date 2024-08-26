@@ -11,6 +11,7 @@ import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { bindToggle } from './widgets/bindToggle.js';
 
 Instance.registerCRS(
     'EPSG:2154',
@@ -22,26 +23,21 @@ Instance.registerCRS(
 );
 const extent = new Extent('EPSG:2154', -111629.52, 1275028.84, 5976033.79, 7230161.64);
 
-// `viewerDiv` will contain giro3d' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
-// Creates a Giro3D instance
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         clearColor: 0x000000,
     },
 });
 
-// Instanciates camera
 const camPos = new Vector3(220295, 6810219, 409065);
 instance.view.camera.position.set(camPos.x, camPos.y, camPos.z);
 
-// Instanciates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
+instance.useTHREEControls(controls);
 
 controls.target.set(camPos.x, camPos.y + 1, 0);
-instance.useTHREEControls(controls);
 
 const map = new Map({
     extent,
@@ -113,23 +109,22 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
     })
     .catch(console.error);
 
-function bindToggle(layerName) {
-    const toggle = document.getElementById(layerName);
-    toggle.oninput = () => {
-        const state = toggle.checked;
+function bindLayerToggle(layerName) {
+    bindToggle(layerName, state => {
         if (state) {
             map.addLayer(layers[layerName]);
         } else {
             map.removeLayer(layers[layerName]);
         }
+        // @ts-expect-error untyped zOrder
         map.sortColorLayers((a, b) => a.userData.zOrder - b.userData.zOrder);
         instance.notifyChange(map);
-    };
+    });
 }
 
-bindToggle('terrain');
-bindToggle('plan');
-bindToggle('orthophotos');
+bindLayerToggle('terrain');
+bindLayerToggle('plan');
+bindLayerToggle('orthophotos');
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 StatusBar.bind(instance);

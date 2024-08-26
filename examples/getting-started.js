@@ -32,9 +32,6 @@ import StatusBar from './widgets/StatusBar.js';
 
 // The instance is the entry point of a Giro3D context. It needs a DOM element to render its scene.
 
-// We will use the `viewerDiv` element from our HTML page to initialize the instance.
-const viewer = document.getElementById('viewerDiv');
-
 // #### Register the custom CRS
 
 // Our map uses the [EPSG:3946](https://epsg.io/3946) French coordinate reference system (CRS) that
@@ -49,7 +46,11 @@ Instance.registerCRS(
 
 // Now we are ready to create our instance. Note that the `crs` parameter is necessary to determine
 // the interpretation of coordinates from the 3D scene.
-const instance = new Instance(viewer, { crs: 'EPSG:3946' });
+// We will use the `view` element from our HTML page to initialize the instance.
+const instance = new Instance({
+    target: 'view',
+    crs: 'EPSG:3946',
+});
 
 // ### Create the Map
 
@@ -204,7 +205,7 @@ instance.useTHREEControls(controls);
 
 // This supposes that we have a `div` ready to host our inspector.
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 // Initialize the coordinate bar widget on our instance.
 StatusBar.bind(instance);

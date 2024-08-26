@@ -8,34 +8,27 @@ import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { bindDropDown } from './widgets/bindDropDown.js';
 
-// Define geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent('EPSG:3857', 1818329.448, 1987320.77, 6062229.082, 6231700.791);
 const center = extent.centerAsVector3();
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
-// Instantiate Giro3D
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         clearColor: 0x0a3b59,
     },
 });
 
-// Instantiate the camera
 instance.view.camera.position.set(center.x, center.y, 250000);
 
-// Instantiate the controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.target.set(center.x, center.y + 1, center.z);
-
 instance.useTHREEControls(controls);
 
-// Construct a map and add it to the instance
 const map = new Map({ extent: extent.withRelativeMargin(0.1) });
 instance.add(map);
 
@@ -73,9 +66,9 @@ function updateSource(name) {
     map.addLayer(layer);
 }
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 StatusBar.bind(instance);
 
-const sourceSelector = document.getElementById('source-file');
-sourceSelector.onchange = () => updateSource(sourceSelector.value);
-updateSource(sourceSelector.value);
+bindDropDown('source-file', updateSource);
+
+updateSource('rgb');

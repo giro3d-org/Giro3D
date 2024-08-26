@@ -21,10 +21,12 @@ import { bindSlider } from './widgets/bindSlider.js';
 import { makeColorRamp } from './widgets/makeColorRamp.js';
 import { bindDropDown } from './widgets/bindDropDown.js';
 
-const viewerDiv = document.getElementById('viewerDiv');
-const instance = new Instance(viewerDiv, { crs: 'EPSG:3857', renderer: { clearColor: false } });
+const instance = new Instance({
+    target: 'view',
+    crs: 'EPSG:3857',
+    renderer: { clearColor: false },
+});
 
-// Define the extent of the vector in the web mercator projection.
 const extent = new Extent(
     'EPSG:3857',
     -20037508.342789244,
@@ -32,8 +34,6 @@ const extent = new Extent(
     -20037508.342789244,
     20037508.342789244,
 );
-
-const hoverColor = new Color('yellow');
 
 const colors = {
     'North America': '#b5a98f',
@@ -171,21 +171,14 @@ instance.view.camera.position.set(0, 5500000, 50000000);
 const lookAt = new Vector3(0, 5500000 + 1, 0);
 instance.view.camera.lookAt(lookAt);
 
-// Notify Giro3D we've changed the three.js camera position directly
-instance.notifyChange(instance.view.camera);
-
-// Creates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.4;
-
-// you need to use these 2 lines each time you change the camera lookAt or position programatically
 controls.target.copy(lookAt);
 controls.saveState();
-
 instance.useTHREEControls(controls);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 // information on click
 const resultTable = document.getElementById('results');
@@ -320,7 +313,7 @@ instance.domElement.addEventListener('click', click);
 
 for (const continent of Object.keys(colors)) {
     let timeout;
-    const setColor = bindColorPicker(continent, c => {
+    const [setColor] = bindColorPicker(continent, c => {
         colors[continent] = c;
         if (timeout) {
             clearTimeout(timeout);
@@ -330,28 +323,28 @@ for (const continent of Object.keys(colors)) {
     setColor(colors[continent]);
 }
 
-const setLineWidth = bindSlider('line-width', v => {
+const [setLineWidth] = bindSlider('line-width', v => {
     lineWidth = v;
     countries.updateStyles();
 });
 
 setLineWidth(lineWidth);
 
-const setStrokeOpacity = bindSlider('stroke-opacity', v => {
+const [setStrokeOpacity] = bindSlider('stroke-opacity', v => {
     strokeOpacity = v;
     countries.updateStyles();
 });
 
 setStrokeOpacity(strokeOpacity);
 
-const setFillOpacity = bindSlider('fill-opacity', v => {
+const [setFillOpacity] = bindSlider('fill-opacity', v => {
     fillOpacity = v;
     countries.updateStyles();
 });
 
 setFillOpacity(fillOpacity);
 
-const setImageSize = bindSlider('image-size', v => {
+const [setImageSize] = bindSlider('image-size', v => {
     imageSize = v;
     capitals.updateStyles();
 });

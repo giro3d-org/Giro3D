@@ -14,28 +14,24 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/layer/ColorMap.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { makeColorRamp } from './widgets/makeColorRamp.js';
+import { bindDropDown } from './widgets/bindDropDown.js';
 
 const extent = new Extent('EPSG:3857', -13581040.085, -13469591.026, 5780261.83, 5942165.048);
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
-// Instantiate Giro3D
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
 });
 
-// Instantiate the camera
 instance.view.camera.position.set(-13656319, 5735451, 88934);
 
-// Instantiate the controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.target.set(-13545408, 5837154, 0);
 instance.useTHREEControls(controls);
 
-// Construct a map and add it to the instance
 const map = new Map({
     extent,
     backgroundColor: 'gray',
@@ -50,19 +46,15 @@ const source = new CogSource({
     crs: extent.crs(),
 });
 
-function makeColorMap(name) {
-    return colormap({ colormap: name, nshades: 256 }).map(v => new Color(v));
-}
-
 const min = 263;
 const max = 4347;
 
 // Display it as elevation and color
-const viridis = new ColorMap(makeColorMap('viridis'), min, max, ColorMapMode.Elevation);
-const magma = new ColorMap(makeColorMap('magma'), min, max, ColorMapMode.Elevation);
+const viridis = new ColorMap(makeColorRamp('viridis'), min, max, ColorMapMode.Elevation);
+const magma = new ColorMap(makeColorRamp('magma'), min, max, ColorMapMode.Elevation);
 
 // Attach the inspector
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 StatusBar.bind(instance);
 
@@ -118,6 +110,6 @@ function updateMode(value) {
     instance.notifyChange(map);
 }
 
-const mode = document.getElementById('mode');
-mode.onchange = () => updateMode(mode.value);
-updateMode(mode.value);
+bindDropDown('mode', updateMode);
+
+updateMode('elevation');

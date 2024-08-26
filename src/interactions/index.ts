@@ -1,5 +1,6 @@
 import type DrawTool from './DrawTool';
 import type {
+    CommonCreationOptions,
     CreateShapeOptions,
     CreationOptions,
     DrawToolEventMap,
@@ -13,5 +14,6 @@ export {
     DrawToolEventMap,
     CreateShapeOptions,
     CreationOptions,
+    CommonCreationOptions,
     MouseCallback,
 };

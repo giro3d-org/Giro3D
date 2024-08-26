@@ -6,6 +6,12 @@
  */
 export function bindButton(id, onClick) {
     const element = document.getElementById(id);
+    if (!(element instanceof HTMLButtonElement)) {
+        throw new Error(
+            'invalid binding element: expected HTMLButtonElement, got: ' + element.constructor.name,
+        );
+    }
+
     element.onclick = () => {
         onClick(element);
     };

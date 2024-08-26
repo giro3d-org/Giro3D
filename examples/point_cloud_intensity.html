@@ -75,7 +75,7 @@ tags: ['point cloud', '3d tiles', intensity]
 
             <!-- Bound sliders -->
             <div class="input-group border rounded p-2">
-                <label for="lower" id="minLabel" class="form-label">Lower bound</label>
+                <label for="min" id="minLabel" class="form-label">Lower bound</label>
                 <div class="input-group">
                     <input
                         type="range"
@@ -83,12 +83,12 @@ tags: ['point cloud', '3d tiles', intensity]
                         max="30"
                         value="0"
                         class="form-range"
-                        id="lower"
+                        id="min"
                         autocomplete="off"
                     />
                 </div>
 
-                <label for="upper" id="maxLabel" class="form-label">Upper bound</label>
+                <label for="max" id="maxLabel" class="form-label">Upper bound</label>
                 <div class="input-group">
                     <input
                         type="range"
@@ -96,7 +96,7 @@ tags: ['point cloud', '3d tiles', intensity]
                         max="30"
                         value="30"
                         class="form-range"
-                        id="upper"
+                        id="max"
                         autocomplete="off"
                     />
                 </div>

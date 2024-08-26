@@ -1,18 +1,30 @@
 /**
+ * @typedef {(v: number) => void} NumericalDropDownCallback
+ */
+
+/**
  * Binds a numerical dropdown.
  * @param {string} id The id of the <input> element.
- * @param {(v: number) => void} onChange The callback when the dropdown value changes.
- * @returns {(v: number) => void} The function to update the value from outside.
+ * @param {NumericalDropDownCallback} onChange The callback when the dropdown value changes.
+ * @returns {[NumericalDropDownCallback, number, HTMLSelectElement]} An array with 3 elements: the
+ * callback to set the value from outside, the initial value, and the HTML element;
  */
 export function bindNumericalDropDown(id, onChange) {
-    /** @type {HTMLInputElement} */
     const element = document.getElementById(id);
+    if (!(element instanceof HTMLSelectElement)) {
+        throw new Error(
+            'invalid binding element: expected HTMLSelectElement, got: ' + element.constructor.name,
+        );
+    }
+
     element.onchange = () => {
         onChange(parseInt(element.value));
     };
 
-    return v => {
+    const callback = v => {
         element.value = v.toString();
         onChange(parseInt(element.value));
     };
+
+    return [callback, parseInt(element.value), element];
 }

@@ -1,3 +1,4 @@
+import { MathUtils } from 'three/src/math/MathUtils.js';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import VectorSource from 'ol/source/Vector.js';
 import { createXYZ } from 'ol/tilegrid.js';
@@ -13,19 +14,20 @@ import FeatureCollection from '@giro3d/giro3d/entities/FeatureCollection.js';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';
 
 import StatusBar from './widgets/StatusBar.js';
-import { MathUtils } from 'three/src/math/MathUtils.js';
 
-// Defines projection that we will use (taken from https://epsg.io/2154, Proj4js section)
 Instance.registerCRS(
     'EPSG:2154',
     '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
 );
 
-const viewerDiv = document.getElementById('viewerDiv');
 const extent = new Extent('EPSG:2154', -111629.52, 1275028.84, 5976033.79, 7230161.64);
-const instance = new Instance(viewerDiv, { crs: extent.crs() });
 
-// This is a geojson with the default crs EPSG:4326
+const instance = new Instance({
+    target: 'view',
+    crs: extent.crs(),
+});
+
+// This is a GeoJSON with the default crs EPSG:4326
 const arrondissementSource = new VectorSource({
     format: new GeoJSON(),
     url: './data/paris_arrondissements.geojson',
@@ -39,7 +41,7 @@ function getHue(area) {
     return MathUtils.clamp(hue, 0, 1);
 }
 
-// feat get automatically reprojected
+// Creates the entity. The features will automatically be reprojected before being displayed.
 const arrondissements = new FeatureCollection({
     source: arrondissementSource,
     extent,
@@ -72,12 +74,15 @@ const arrondissements = new FeatureCollection({
 arrondissements.name = 'arrondissements';
 instance.add(arrondissements);
 
-// another geojson in 3857 (openlayers, and thus Giro3D, supports the non-official yet supported
-// everywhere way of specifying the crs in the geojson file itself)
+// Another GeoJSON in EPSG:3857
+// Although this is non-standard in recent versions of
+// the GeoJSON specification, OpenLayers and Giro3D still
+// support GeoJSON files that have a different CRS than EPSG:4326.
 const perimeterqaaSource = new VectorSource({
     format: new GeoJSON(),
     url: './data/perimetreqaa.geojson',
 });
+
 const perimeterqaa = new FeatureCollection({
     source: perimeterqaaSource,
     extent,
@@ -105,7 +110,7 @@ const perimeterqaa = new FeatureCollection({
 perimeterqaa.name = 'perimeterqaa';
 instance.add(perimeterqaa);
 
-// a WFS source in 3857
+// A WFS source in EPSG:3857
 const bdTopoSource = new VectorSource({
     format: new GeoJSON(),
     url: function url(bbox) {
@@ -163,24 +168,17 @@ const buildings = new FeatureCollection({
 buildings.name = 'buildings';
 instance.add(buildings);
 
-// place camera above paris
 const position = new Coordinates('EPSG:2154', 652212.5, 6860754.1, 27717.3);
 const lookAtCoords = new Coordinates('EPSG:2154', 652338.3, 6862087.1, 200);
 const lookAt = new Vector3(lookAtCoords.x, lookAtCoords.y, lookAtCoords.z);
 instance.view.camera.position.set(position.x, position.y, position.z);
 instance.view.camera.lookAt(lookAt);
-// Notify Giro3D we've changed the three.js camera position directly
-instance.notifyChange(instance.view.camera);
 
-// Creates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
-
-// you need to use these 2 lines each time you change the camera lookAt or position programatically
 controls.target.copy(lookAt);
 controls.saveState();
-
 instance.useTHREEControls(controls);
 
 // information on click
@@ -244,6 +242,6 @@ function pick(e) {
 
 instance.domElement.addEventListener('mousemove', pick);
 
-// Bind events
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
+
 StatusBar.bind(instance);

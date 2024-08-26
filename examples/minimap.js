@@ -16,7 +16,6 @@ import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-// Defines projection that we will use (taken from https://epsg.io/2154, Proj4js section)
 Instance.registerCRS(
     'EPSG:2154',
     '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
@@ -27,8 +26,8 @@ Instance.registerCRS(
 );
 
 const SKY_COLOR = new Color(0xf1e9c6);
-const viewerDiv = document.getElementById('viewerDiv');
-const mainInstance = new Instance(viewerDiv, {
+const mainInstance = new Instance({
+    target: 'view',
     crs: 'EPSG:2154',
     renderer: { clearColor: SKY_COLOR },
 });
@@ -88,26 +87,18 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
     })
     .catch(console.error);
 
-// place camera above grenoble
 mainInstance.view.camera.position.set(913349.2364044407, 6456426.459171033, 1706.0108044011636);
-// and look at the Bastille
 const lookAt = new Vector3(913896, 6459191, 200);
 mainInstance.view.camera.lookAt(lookAt);
-// Notify Giro3D we've changed the three.js camera position directly
 mainInstance.notifyChange(mainInstance.view.camera);
 
-// Creates controls
 const controls = new MapControls(mainInstance.view.camera, mainInstance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
-
-// you need to use these 2 lines each time you change the camera lookAt or position programatically
 controls.target.copy(lookAt);
 controls.saveState();
-
 mainInstance.useTHREEControls(controls);
 
-// add a skybox background
 const cubeTextureLoader = new CubeTextureLoader();
 cubeTextureLoader.setPath('image/skyboxsun25deg_zup/');
 const cubeTexture = cubeTextureLoader.load([
@@ -128,9 +119,8 @@ mainInstance.scene.background = cubeTexture;
 // differences related to the camera and navigation.
 
 // Create our minimap instance and attach it to the 'minimap' <div> element.
-const minimapDiv = document.getElementById('minimap');
-
-const minimapInstance = new Instance(minimapDiv, {
+const minimapInstance = new Instance({
+    target: 'minimap',
     crs: 'EPSG:3857', // Contrary to the main view, this minimap uses the Web mercator projection
 });
 
@@ -169,6 +159,7 @@ const osmLayer = new ColorLayer({
 minimap.addLayer(osmLayer);
 
 function synchronizeCameras() {
+    // @ts-expect-error typing
     const target = mainInstance.controls.target;
 
     // Since our minimap does not use the same projection as the main view (EPSG:2154),
@@ -213,7 +204,7 @@ function handleMouseWheel(event) {
 // We use the 'wheel' event (careful not to use the non-standard 'mousewheel' event).
 minimapInstance.domElement.addEventListener('wheel', handleMouseWheel);
 
-Inspector.attach(document.getElementById('panelDiv'), mainInstance, { title: 'main' });
-Inspector.attach(document.getElementById('panelDiv'), minimapInstance, { title: 'minimap' });
+Inspector.attach('inspector', mainInstance, { title: 'main' });
+Inspector.attach('inspector', minimapInstance, { title: 'minimap' });
 
 StatusBar.bind(mainInstance, { additionalInstances: minimapInstance });

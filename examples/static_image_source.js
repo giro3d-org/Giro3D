@@ -1,3 +1,4 @@
+import { AdditiveBlending, Mesh, MeshBasicMaterial, PlaneGeometry, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import OSM from 'ol/source/OSM.js';
@@ -8,14 +9,12 @@ import Map from '@giro3d/giro3d/entities/Map.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
+import StaticImageSource from '@giro3d/giro3d/sources/StaticImageSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 import { bindTextInput } from './widgets/bindTextInput.js';
 import { bindButton } from './widgets/bindButton.js';
-import { AdditiveBlending, Mesh, MeshBasicMaterial, PlaneGeometry, Vector3 } from 'three';
-import StaticImageSource from '@giro3d/giro3d/sources/StaticImageSource.js';
 
-// Define the extent of the map in the web mercator projection.
 const extent = new Extent(
     'EPSG:3857',
     -20037508.342789244,
@@ -24,18 +23,14 @@ const extent = new Extent(
     20037508.342789244,
 );
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
-// Creates a Giro3D instance
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         clearColor: 0x0a3b59,
     },
 });
 
-// Creates a map that will contain the layer
 const map = new Map({ extent, backgroundColor: 'white' });
 
 instance.add(map);
@@ -58,7 +53,7 @@ controls.enableRotate = false;
 
 instance.useTHREEControls(controls);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 StatusBar.bind(instance);
 
 let url = null;
@@ -154,7 +149,7 @@ const startButton = bindButton('draw', button => {
 
     drawExtent().then(extent => {
         if (currentImage) {
-            map.removeLayer(currentImage, { disposLayer: true });
+            map.removeLayer(currentImage, { disposeLayer: true });
         }
         const source = new StaticImageSource({
             extent,
@@ -175,10 +170,9 @@ const startButton = bindButton('draw', button => {
     });
 });
 
-const [currentUrl, setUrl] = bindTextInput('url', v => {
+const [setCurrentUrl, currentUrl] = bindTextInput('url', v => {
     url = v;
     startButton.disabled = !url;
 });
 
-url = currentUrl;
-startButton.disabled = !url;
+setCurrentUrl(currentUrl);

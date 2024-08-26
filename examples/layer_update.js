@@ -18,28 +18,21 @@ import { bindButton } from './widgets/bindButton.js';
 import { bindToggle } from './widgets/bindToggle.js';
 import { bindSlider } from './widgets/bindSlider.js';
 
-// Defines geographic extent: CRS, min/max X, min/max Y
 const extent = Extent.fromCenterAndSize('EPSG:3857', { x: 11393552, y: 44035 }, 1000000, 500000);
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
-// Creates a Giro3D instance
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         clearColor: 0xffffff,
     },
 });
 
-// Instanciates camera
 const center = extent.centerAsVector3();
 instance.view.camera.position.set(center.x, center.y - 1, 1000000);
 
-// Creates controls
-const controls = new MapControls(instance.view.camera, viewerDiv);
+const controls = new MapControls(instance.view.camera, instance.domElement);
 
-// Then looks at extent's center
 controls.target = center;
 controls.saveState();
 
@@ -112,24 +105,24 @@ map.addLayer(layer);
 
 StatusBar.bind(instance);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 instance.notifyChange(map);
 
 source.addFeatures([point, line, polygon]);
 
-const setStrokeWidth = bindSlider('stroke-width', v => {
+const [setStrokeWidth] = bindSlider('stroke-width', v => {
     style.getStroke().setWidth(v);
     style.getImage().getStroke().setWidth(v);
     style.getImage().setRadius(style.getImage().getRadius());
     source.update();
 });
-const setPointRadius = bindSlider('point-radius', v => {
+const [setPointRadius] = bindSlider('point-radius', v => {
     style.getImage().setRadius(v);
     style.setImage(style.getImage());
     source.update();
 });
-const setOpacity = bindSlider('style-opacity', v => {
+const [setOpacity] = bindSlider('style-opacity', v => {
     style
         .getImage()
         .getStroke()

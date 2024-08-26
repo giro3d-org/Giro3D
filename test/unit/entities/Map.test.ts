@@ -46,7 +46,8 @@ describe('Map', () => {
     beforeEach(() => {
         setupGlobalMocks();
         viewerDiv = document.createElement('div');
-        instance = new Instance(viewerDiv, {
+        instance = new Instance({
+            target: viewerDiv,
             crs,
             renderer: {
                 renderer: mockWebGLRenderer(),

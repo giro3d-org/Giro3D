@@ -14,8 +14,6 @@ import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-// # Planar (EPSG:3946) viewer
-
 const wmsLayers = [
     'fpc_fond_plan_communaut.fpcilot',
     'pvo_patrimoine_voirie.pvochausseetrottoir',
@@ -61,13 +59,11 @@ Instance.registerCRS(
 // Define geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent('EPSG:3946', 1837900, 1837900 + 8000, 5170100, 5170100 + 8000);
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
 const scale = new Vector3(1, 1, 1).divideScalar(extent.dimensions().x);
 
 // Instantiate Giro3D
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         clearColor: 0x999999,
@@ -147,7 +143,7 @@ instance.view.camera.position.set(3, 2, 3);
 instance.view.camera.updateMatrixWorld(true);
 instance.view.camera.lookAt(new Vector3(0, 0, 0));
 
-const controls = new OrbitControls(instance.view.camera, viewerDiv);
+const controls = new OrbitControls(instance.view.camera, instance.domElement);
 controls.minDistance = 1;
 
 instance.useTHREEControls(controls);
@@ -155,5 +151,5 @@ instance.useTHREEControls(controls);
 // Request redraw
 instance.notifyChange();
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 StatusBar.bind(instance);

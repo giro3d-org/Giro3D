@@ -14,8 +14,10 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/layer/ColorMap.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { bindNumericalDropDown } from './widgets/bindNumericalDropDown.js';
+import { bindToggle } from './widgets/bindToggle.js';
+import { bindSlider } from './widgets/bindSlider.js';
 
-// Define projection that we will use (taken from https://epsg.io/26910, Proj4js section)
 Instance.registerCRS(
     'EPSG:26910',
     '+proj=utm +zone=10 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
@@ -25,21 +27,16 @@ const extent = new Extent('EPSG:26910', 532622, 569790, 5114416, 5137240);
 
 const center = extent.centerAsVector3();
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
-// Instantiate Giro3D
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         clearColor: false,
     },
 });
 
-// Instantiate the camera
 instance.view.camera.position.set(center.x, center.y - 1, 50000);
 
-// Instantiate the controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
@@ -149,56 +146,36 @@ function buildLayers() {
     instance.notifyChange(map);
 }
 
-// Attach the inspector
-Inspector.attach(document.getElementById('panelDiv'), instance);
-
-const alphaReplacementInput = document.getElementById('alphaReplacement');
-
-alphaReplacementInput.addEventListener('change', e => {
-    const value = parseInt(e.target.value, 10);
+const [, , alphaReplacementInput] = bindNumericalDropDown('alphaReplacement', value => {
     noDataOptions.alpha = value;
+    instance.notifyChange(map);
 });
 
-const radiusSlider = document.getElementById('maxDistanceSlider');
-radiusSlider.oninput = function oninput() {
-    noDataOptions.maxSearchDistance = radiusSlider.valueAsNumber;
-};
+const [, , radiusSlider] = bindSlider('maxDistanceSlider', v => {
+    noDataOptions.maxSearchDistance = v;
+});
 
-const enableFillNoDataCheckbox = document.getElementById('enableFillNoData');
-
-enableFillNoDataCheckbox.oninput = function oninput() {
-    const state = enableFillNoDataCheckbox.checked;
+bindToggle('enableFillNoData', state => {
     noDataOptions.replaceNoData = state;
     if (!state) {
-        radiusSlider.setAttribute('disabled', !state);
-        alphaReplacementInput.setAttribute('disabled', !state);
+        radiusSlider.setAttribute('disabled', '');
+        alphaReplacementInput.setAttribute('disabled', '');
     } else {
         radiusSlider.removeAttribute('disabled');
         alphaReplacementInput.removeAttribute('disabled');
     }
-};
+});
 
-function bindDropdown(id, action) {
-    document.getElementById(id).addEventListener('change', e => {
-        const value = parseInt(e.target.value, 10);
-        action(value);
-        instance.notifyChange(map);
-    });
-}
-
-bindDropdown('noDataLayerSource', v => {
+bindNumericalDropDown('noDataLayerSource', v => {
     activeLayer = v;
 });
-
-bindDropdown('alphaReplacement', v => {
-    noDataOptions.value = v;
-});
-
-// Bind events
-StatusBar.bind(instance);
 
 buildLayers();
 
 document.getElementById('applyChanges').onclick = function onclick() {
     buildLayers();
 };
+
+Inspector.attach('inspector', instance);
+
+StatusBar.bind(instance);

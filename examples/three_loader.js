@@ -9,7 +9,6 @@ import {
     MeshPhongMaterial,
     PlaneGeometry,
     Vector3,
-    WebGLRenderer,
 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -19,27 +18,20 @@ import Instance from '@giro3d/giro3d/core/Instance.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { bindNumericalDropDown } from './widgets/bindNumericalDropDown.js';
 
-const viewerDiv = document.getElementById('viewerDiv');
-
-// we can customize the renderer THREE will use
-// Here, this is necessary to render the glb correctly.
-// Giro3D will handle:
-// - adding it in the DOM within viewerDiv
-// - resizing it when the window or viewerDiv is resized
-const renderer = new WebGLRenderer({ antialias: true });
-renderer.shadowMap.enabled = true;
-
-// Create the Giro3D instance
-const instance = new Instance(viewerDiv, { crs: 'EPSG:3857', renderer: { renderer } });
+const instance = new Instance({
+    target: 'view',
+    crs: 'EPSG:3857',
+    renderer: { antialias: true },
+});
 const camera = instance.view.camera;
 
-// Creates controls
+instance.renderer.shadowMap.enabled = true;
+
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
-
-// and setup our instance to use them.
 instance.useTHREEControls(controls);
 
 const clock = new Clock();
@@ -82,6 +74,7 @@ instance.add(mesh);
 const loader = new GLTFLoader();
 loader.load('https://threejs.org/examples/models/gltf/Soldier.glb', gltf => {
     gltf.scene.traverse(object => {
+        // @ts-expect-error typing
         if (object.isMesh) {
             object.castShadow = true;
         }
@@ -142,8 +135,7 @@ loader.load('https://threejs.org/examples/models/gltf/Soldier.glb', gltf => {
     instance.notifyChange();
 
     let where = models;
-    document.getElementById('pick_source').addEventListener('change', e => {
-        const newMode = parseInt(e.target.value, 10);
+    bindNumericalDropDown('pick_source', newMode => {
         if (newMode === 1) {
             where = [model1];
         } else if (newMode === 2) {
@@ -175,5 +167,6 @@ loader.load('https://threejs.org/examples/models/gltf/Soldier.glb', gltf => {
     });
 });
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
+
 StatusBar.bind(instance);

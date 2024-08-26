@@ -18,7 +18,6 @@ import StatusBar from './widgets/StatusBar.js';
 
 import { bindButton } from './widgets/bindButton.js';
 
-// Defines projection that we will use (taken from https://epsg.io/2154, Proj4js section)
 Instance.registerCRS(
     'EPSG:2154',
     '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
@@ -28,10 +27,12 @@ Instance.registerCRS(
     'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]',
 );
 
-const viewerDiv = document.getElementById('viewerDiv');
-const instance = new Instance(viewerDiv, { crs: 'EPSG:2154', renderer: { clearColor: false } });
+const instance = new Instance({
+    target: 'view',
+    crs: 'EPSG:2154',
+    renderer: { clearColor: false },
+});
 
-// create a map
 const extent = Extent.fromCenterAndSize('EPSG:2154', { x: 895_055, y: 6_247_049 }, 20_000, 20_000);
 
 const map = new Map({
@@ -135,21 +136,15 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
 instance.view.camera.position.set(892_342, 6_246_816, 3000);
 const lookAt = new Vector3(892_342, 6_246_816 + 1, 50);
 instance.view.camera.lookAt(lookAt);
-// Notify Giro3D we've changed the three.js camera position directly
-instance.notifyChange(instance.view.camera);
 
-// Creates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
-
-// you need to use these 2 lines each time you change the camera lookAt or position programatically
 controls.target.copy(lookAt);
 controls.saveState();
-
 instance.useTHREEControls(controls);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 StatusBar.bind(instance);
 
@@ -164,7 +159,8 @@ const removeFeatures = bindButton('remove-features', button => {
 
 const disableButtons = disable => {
     const buttons = document.getElementById('group').getElementsByTagName('button');
-    for (const button of buttons) {
+    for (let i = 0; i < buttons.length; i++) {
+        const button = buttons.item(i);
         button.disabled = disable;
     }
 };

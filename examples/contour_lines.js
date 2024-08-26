@@ -15,17 +15,20 @@ import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { bindNumericalDropDown } from './widgets/bindNumericalDropDown.js';
+import { bindSlider } from './widgets/bindSlider.js';
+import { bindToggle } from './widgets/bindToggle.js';
 
 const x = -13602000;
 const y = 5812000;
 const halfWidth = 2500;
 
-// Defines geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent('EPSG:3857', x - halfWidth, x + halfWidth, y - halfWidth, y + halfWidth);
 
-const viewerDiv = document.getElementById('viewerDiv');
-
-const instance = new Instance(viewerDiv, { crs: extent.crs() });
+const instance = new Instance({
+    target: 'view',
+    crs: extent.crs(),
+});
 
 const map = new Map({
     extent,
@@ -74,12 +77,11 @@ instance.useTHREEControls(controls);
 
 instance.notifyChange();
 
-StatusBar.bind(instance);
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
-const checkbox = document.getElementById('contourLineCheckbox');
-checkbox.oninput = function oninput() {
-    const state = checkbox.checked;
+StatusBar.bind(instance);
+
+bindToggle('contourLineCheckbox', state => {
     if (state) {
         document.getElementById('options').removeAttribute('disabled');
     } else {
@@ -87,33 +89,21 @@ checkbox.oninput = function oninput() {
     }
     map.contourLines.enabled = state;
     instance.notifyChange(map);
-};
-
-function bindSlider(name, fn) {
-    const slider = document.getElementById(name);
-    slider.oninput = function oninput() {
-        fn(slider.value);
-        instance.notifyChange(map);
-    };
-}
-
-function bindDropDown(name, fn) {
-    const mode = document.getElementById(name);
-    mode.onchange = () => {
-        fn(Number.parseFloat(mode.value));
-        instance.notifyChange(map);
-    };
-}
-
-bindDropDown('mainInterval', v => {
-    map.contourLines.interval = v;
 });
-bindDropDown('secondaryInterval', v => {
+
+bindNumericalDropDown('mainInterval', v => {
+    map.contourLines.interval = v;
+    instance.notifyChange(map);
+});
+bindNumericalDropDown('secondaryInterval', v => {
     map.contourLines.secondaryInterval = v;
+    instance.notifyChange(map);
 });
 bindSlider('opacitySlider', v => {
     map.contourLines.opacity = v;
+    instance.notifyChange(map);
 });
 bindSlider('thicknessSlider', v => {
     map.contourLines.thickness = v;
+    instance.notifyChange(map);
 });

@@ -1,4 +1,4 @@
-import * as GUI from 'lil-gui';
+import GUI from 'lil-gui';
 
 import StadiaMaps from 'ol/source/StadiaMaps.js';
 
@@ -36,13 +36,11 @@ class MyCustomPanel extends Panel {
             });
     }
 
-    // eslint-disable-next-line class-methods-use-this
     sayHello() {
         window.alert('Hello from my custom panel!');
     }
 }
 
-// Defines geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent(
     'EPSG:3857',
     -20037508.342789244,
@@ -51,20 +49,19 @@ const extent = new Extent(
     20037508.342789244,
 );
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
-// Creates a Giro3D instance
-const instance = new Instance(viewerDiv, { crs: extent.crs() });
+const instance = new Instance({
+    target: 'view',
+    crs: extent.crs(),
+});
 
 const map = new Map({ extent });
+
 instance.add(map);
 
-// Adds an TMS imagery layer
 map.addLayer(
     new ColorLayer({
-        name: 'color',
         source: new TiledImageSource({
+            // @ts-expect-error missing properties (but they are actually optional)
             source: new StadiaMaps({ layer: 'stamen_watercolor', wrapX: false }),
         }),
     }),
@@ -75,10 +72,8 @@ instance.view.camera.position.set(0, 0, 25000000);
 const controls = new MapControls(instance.view.camera, instance.domElement);
 instance.useTHREEControls(controls);
 
-StatusBar.bind(instance);
-
 // Attach the inspector to the DOM
-const inspectorDiv = document.getElementById('panelDiv');
+const inspectorDiv = document.getElementById('inspector');
 inspectorDiv.classList.remove('d-none');
 const inspector = Inspector.attach(inspectorDiv, instance, { title: 'Custom title' });
 
@@ -93,3 +88,5 @@ inspector.addPanel(myCustomPanel);
 
 // Trigger the first render
 instance.notifyChange(map);
+
+StatusBar.bind(instance);

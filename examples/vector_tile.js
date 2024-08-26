@@ -11,7 +11,6 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-// Defines geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent(
     'EPSG:3857',
     -20037508.342789244,
@@ -20,11 +19,8 @@ const extent = new Extent(
     20048966.1,
 );
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
-// Creates a Giro3D instance
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         clearColor: 0xffffff,
@@ -34,10 +30,8 @@ const instance = new Instance(viewerDiv, {
 const map = new Map({ extent, maxSubdivisionLevel: 15 });
 instance.add(map);
 
-// Instantiates camera
 instance.view.camera.position.set(0, 0, 10000000);
 
-// Instantiates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.25;
@@ -77,7 +71,7 @@ function createMapboxStreetsV6Style() {
             icon = new Style({
                 image: new Icon({
                     src: `https://cdn.rawgit.com/mapbox/maki/master/icons/${iconName}-15.svg`,
-                    imgSize: [15, 15],
+                    size: [15, 15],
                     crossOrigin: 'anonymous',
                 }),
             });
@@ -394,5 +388,6 @@ const vectorTileLayer = new ColorLayer({
 
 map.addLayer(vectorTileLayer);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
+
 StatusBar.bind(instance);
