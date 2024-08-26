@@ -21,12 +21,16 @@ const source = new TiledImageSource({
     source: new StadiaMaps({ layer: 'stamen_watercolor', wrapX: false }),
 });
 
-function buildViewer(viewerDiv, defaultRenderer = true) {
+function buildViewer(target, defaultRenderer = true) {
     const renderer = { clearColor: false };
     if (!defaultRenderer) {
         renderer.renderer = new WebGLRenderer({ antialias: true, alpha: true });
     }
-    const instance = new Instance(viewerDiv, { renderer, crs: extent.crs() });
+    const instance = new Instance({
+        target,
+        crs: extent.crs(),
+        renderer,
+    });
     // Creates a map that will contain the layer
     const map = new Map({ extent, maxSubdivisionLevel: 10 });
 
@@ -51,7 +55,7 @@ function buildViewer(viewerDiv, defaultRenderer = true) {
 }
 
 // Remove the pre-generated default HTML elements for this example
-document.getElementById('viewerDiv').remove();
+document.getElementById('view').remove();
 document.getElementById('panelDiv').remove();
 
 // Dynamically find all viewers we have to build

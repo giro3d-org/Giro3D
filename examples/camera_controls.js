@@ -45,8 +45,10 @@ Instance.registerCRS(
         '+y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
 );
 
-const viewerDiv = document.getElementById('viewerDiv');
-const instance = new Instance(viewerDiv, { crs: 'EPSG:3946' });
+const instance = new Instance({
+    target: 'view',
+    crs: 'EPSG:3946',
+});
 
 const material = new PointCloudMaterial({ size: 4, mode: MODE.TEXTURE });
 const pointcloud = new Tiles3D(

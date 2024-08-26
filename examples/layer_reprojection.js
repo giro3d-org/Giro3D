@@ -86,11 +86,12 @@ function createScene(crs, crsDef, extent) {
 
     Instance.registerCRS(crs, crsDef);
 
-    // `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-    const viewerDiv = document.getElementById('viewerDiv');
-
     // Creates a Giro3D instance
-    instance = new Instance(viewerDiv, { crs, renderer: { clearColor: 'grey' } });
+    instance = new Instance({
+        target: 'view',
+        crs,
+        renderer: { clearColor: 'grey' },
+    });
 
     // Adds the map that will contain the layers.
     map = new Map({ extent, hillshading: true });
@@ -109,7 +110,7 @@ function createScene(crs, crsDef, extent) {
     instance.view.camera.position.set(center.x, center.y - 1, extent.dimensions().y * 2);
 
     // Creates controls
-    controls = new MapControls(instance.view.camera, viewerDiv);
+    controls = new MapControls(instance.view.camera, instance.domElement);
 
     // Then looks at extent's center
     controls.target = center;

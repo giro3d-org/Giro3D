@@ -27,8 +27,8 @@ Instance.registerCRS(
 );
 
 const SKY_COLOR = new Color(0xf1e9c6);
-const viewerDiv = document.getElementById('viewerDiv');
-const mainInstance = new Instance(viewerDiv, {
+const mainInstance = new Instance({
+    target: 'view',
     crs: 'EPSG:2154',
     renderer: { clearColor: SKY_COLOR },
 });
@@ -128,9 +128,8 @@ mainInstance.scene.background = cubeTexture;
 // differences related to the camera and navigation.
 
 // Create our minimap instance and attach it to the 'minimap' <div> element.
-const minimapDiv = document.getElementById('minimap');
-
-const minimapInstance = new Instance(minimapDiv, {
+const minimapInstance = new Instance({
+    target: 'minimap',
     crs: 'EPSG:3857', // Contrary to the main view, this minimap uses the Web mercator projection
 });
 

@@ -42,7 +42,8 @@ describe('Instance', () => {
                 },
             ],
         });
-        instance = new Instance(viewerDiv, {
+        instance = new Instance({
+            target: viewerDiv,
             crs: 'EPSG:3857',
             renderer: {
                 renderer: mockWebGLRenderer(),

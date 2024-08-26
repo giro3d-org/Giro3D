@@ -29,11 +29,9 @@ import { makeColorRamp } from './widgets/makeColorRamp.js';
 // Defines geographic extent: CRS, min/max X, min/max Y
 const extent = Extent.fromCenterAndSize('EPSG:3857', { x: 697313, y: 5591324 }, 30000, 30000);
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
 // Creates the Giro3D instance
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         // To display the background style

@@ -24,11 +24,9 @@ const extent = new Extent(
     20037508.342789244,
 );
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
 // Creates a Giro3D instance
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         clearColor: 0x0a3b59,
@@ -154,7 +152,7 @@ const startButton = bindButton('draw', button => {
 
     drawExtent().then(extent => {
         if (currentImage) {
-            map.removeLayer(currentImage, { disposLayer: true });
+            map.removeLayer(currentImage, { disposeLayer: true });
         }
         const source = new StaticImageSource({
             extent,
@@ -175,7 +173,7 @@ const startButton = bindButton('draw', button => {
     });
 });
 
-const [currentUrl, setUrl] = bindTextInput('url', v => {
+const [currentUrl] = bindTextInput('url', v => {
     url = v;
     startButton.disabled = !url;
 });

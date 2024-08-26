@@ -16,9 +16,8 @@ import { makeColorRamp } from './widgets/makeColorRamp.js';
 
 const extent = new Extent('EPSG:3857', 2285900, 2444000, 4230900, 4386100);
 
-const viewerDiv = document.getElementById('viewerDiv');
-
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: 'EPSG:3857',
     renderer: {
         clearColor: false,

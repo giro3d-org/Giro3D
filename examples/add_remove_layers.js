@@ -22,11 +22,9 @@ Instance.registerCRS(
 );
 const extent = new Extent('EPSG:2154', -111629.52, 1275028.84, 5976033.79, 7230161.64);
 
-// `viewerDiv` will contain giro3d' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
 // Creates a Giro3D instance
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         clearColor: 0x000000,

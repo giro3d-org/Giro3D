@@ -29,11 +29,9 @@ const datasetExtent = new Extent(
 
 const extent = datasetExtent.clone().as('EPSG:32742');
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
 // Instantiate Giro3D
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
 });
 

@@ -23,9 +23,8 @@ const halfWidth = 2500;
 // Defines geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent('EPSG:3857', x - halfWidth, x + halfWidth, y - halfWidth, y + halfWidth);
 
-const viewerDiv = document.getElementById('viewerDiv');
-
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         clearColor: false,

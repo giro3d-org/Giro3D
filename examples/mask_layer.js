@@ -18,11 +18,9 @@ import StatusBar from './widgets/StatusBar.js';
 // Defines geographic extent: CRS, min/max X, min/max Y
 const extent = Extent.fromCenterAndSize('EPSG:3857', { x: 260000, y: 6251379 }, 32000, 32000);
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
 // Creates a Giro3D instance
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         clearColor: false,
@@ -90,7 +88,7 @@ const center = extent.centerAsVector3();
 instance.view.camera.position.set(center.x, center.y - 1, 40000);
 
 // Creates controls
-const controls = new MapControls(instance.view.camera, viewerDiv);
+const controls = new MapControls(instance.view.camera, instance.domElement);
 
 // Then looks at extent's center
 controls.target = center;

@@ -22,11 +22,11 @@ Instance.registerCRS(
 // Defines geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent('EPSG:3857', 659030, 735596, 5535152, 5647497);
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
 // Creates the Giro3D instance
-const instance = new Instance(viewerDiv, { crs: 'EPSG:3857' });
+const instance = new Instance({
+    target: 'view',
+    crs: 'EPSG:3857',
+});
 
 // Adds the map that will contain the layers.
 const map = new Map({ extent });

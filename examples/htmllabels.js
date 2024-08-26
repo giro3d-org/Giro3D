@@ -27,9 +27,10 @@ Instance.registerCRS(
 
 const extent = new Extent('EPSG:3946', 1837816.94334, 1847692.32501, 5170036.4587, 5178412.82698);
 
-const viewerDiv = document.getElementById('viewerDiv');
-
-const instance = new Instance(viewerDiv, { crs: extent.crs() });
+const instance = new Instance({
+    target: 'view',
+    crs: extent.crs(),
+});
 
 const map = new Map({ extent });
 instance.add(map);

@@ -8,8 +8,6 @@ import PotreeSource from '@giro3d/giro3d/sources/PotreeSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-const viewerDiv = document.getElementById('viewerDiv');
-
 const source = new PotreeSource(
     'https://3d.oslandia.com/potree/pointclouds/lion_takanawa',
     'cloud.js',
@@ -17,7 +15,11 @@ const source = new PotreeSource(
 
 const potree = new PotreePointCloud(source);
 
-const instance = new Instance(viewerDiv, { crs: 'EPSG:3857', renderer: { clearColor: 'bisque' } });
+const instance = new Instance({
+    target: 'view',
+    crs: 'EPSG:3857',
+    renderer: { clearColor: 'bisque' },
+});
 
 function placeCamera() {
     const camera = instance.view.camera;

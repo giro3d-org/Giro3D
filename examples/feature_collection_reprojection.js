@@ -21,9 +21,12 @@ Instance.registerCRS(
     '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
 );
 
-const viewerDiv = document.getElementById('viewerDiv');
 const extent = new Extent('EPSG:2154', -111629.52, 1275028.84, 5976033.79, 7230161.64);
-const instance = new Instance(viewerDiv, { crs: extent.crs() });
+
+const instance = new Instance({
+    target: 'view',
+    crs: extent.crs(),
+});
 
 // This is a geojson with the default crs EPSG:4326
 const arrondissementSource = new VectorSource({

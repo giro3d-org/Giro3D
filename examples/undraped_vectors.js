@@ -21,8 +21,11 @@ import { bindSlider } from './widgets/bindSlider.js';
 import { makeColorRamp } from './widgets/makeColorRamp.js';
 import { bindDropDown } from './widgets/bindDropDown.js';
 
-const viewerDiv = document.getElementById('viewerDiv');
-const instance = new Instance(viewerDiv, { crs: 'EPSG:3857', renderer: { clearColor: false } });
+const instance = new Instance({
+    target: 'view',
+    crs: 'EPSG:3857',
+    renderer: { clearColor: false },
+});
 
 // Define the extent of the vector in the web mercator projection.
 const extent = new Extent(

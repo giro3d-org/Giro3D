@@ -20,11 +20,9 @@ const extent = new Extent(
     20048966.1,
 );
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
 // Creates a Giro3D instance
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         clearColor: 0xffffff,
@@ -77,7 +75,7 @@ function createMapboxStreetsV6Style() {
             icon = new Style({
                 image: new Icon({
                     src: `https://cdn.rawgit.com/mapbox/maki/master/icons/${iconName}-15.svg`,
-                    imgSize: [15, 15],
+                    size: [15, 15],
                     crossOrigin: 'anonymous',
                 }),
             });

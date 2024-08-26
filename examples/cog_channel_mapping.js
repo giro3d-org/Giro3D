@@ -16,11 +16,9 @@ Instance.registerCRS('EPSG:32611', '+proj=utm +zone=11 +datum=WGS84 +units=m +no
 const extent = new Extent('EPSG:32611', 666285, 668533.5, 3997174, 3998444);
 const center = extent.centerAsVector3();
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
 // Instantiate Giro3D
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         clearColor: 0x0a3b59,

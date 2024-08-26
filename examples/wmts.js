@@ -17,11 +17,9 @@ const extent = new Extent(
     20037508.342789244,
 );
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
 // Creates a Giro3D instance
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         clearColor: 0x0a3b59,
@@ -39,7 +37,7 @@ WmtsSource.fromCapabilities(
     'https://data.geopf.fr/wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetCapabilities',
     {
         layer: 'GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2',
-        tileMatrix: 'PM',
+        matrixSet: 'PM',
     },
 )
     .then(source => {

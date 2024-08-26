@@ -21,9 +21,10 @@ Instance.registerCRS(
 
 const tmpVec3 = new Vector3();
 
-const viewerDiv = document.getElementById('viewerDiv');
-
-const instance = new Instance(viewerDiv, { crs: 'EPSG:2154' });
+const instance = new Instance({
+    target: 'view',
+    crs: 'EPSG:2154',
+});
 
 // Creates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);

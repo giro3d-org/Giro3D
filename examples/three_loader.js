@@ -20,18 +20,20 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-const viewerDiv = document.getElementById('viewerDiv');
-
 // we can customize the renderer THREE will use
 // Here, this is necessary to render the glb correctly.
 // Giro3D will handle:
-// - adding it in the DOM within viewerDiv
-// - resizing it when the window or viewerDiv is resized
+// - adding it in the DOM within the parent element
+// - resizing it when the window or parent element is resized
 const renderer = new WebGLRenderer({ antialias: true });
 renderer.shadowMap.enabled = true;
 
 // Create the Giro3D instance
-const instance = new Instance(viewerDiv, { crs: 'EPSG:3857', renderer: { renderer } });
+const instance = new Instance({
+    target: 'view',
+    crs: 'EPSG:3857',
+    renderer: { renderer },
+});
 const camera = instance.view.camera;
 
 // Creates controls

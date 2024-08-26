@@ -13,11 +13,9 @@ import StatusBar from './widgets/StatusBar.js';
 const extent = new Extent('EPSG:3857', 1818329.448, 1987320.77, 6062229.082, 6231700.791);
 const center = extent.centerAsVector3();
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
 // Instantiate Giro3D
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         clearColor: 0x0a3b59,

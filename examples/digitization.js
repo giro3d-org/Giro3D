@@ -28,8 +28,11 @@ Instance.registerCRS(
     'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]',
 );
 
-const viewerDiv = document.getElementById('viewerDiv');
-const instance = new Instance(viewerDiv, { crs: 'EPSG:2154', renderer: { clearColor: false } });
+const instance = new Instance({
+    target: 'view',
+    crs: 'EPSG:2154',
+    renderer: { clearColor: false },
+});
 
 // create a map
 const extent = Extent.fromCenterAndSize('EPSG:2154', { x: 895_055, y: 6_247_049 }, 20_000, 20_000);

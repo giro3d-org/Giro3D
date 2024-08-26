@@ -36,9 +36,8 @@ Instance.registerCRS(
 
 const extent = new Extent('EPSG:2154', -111629.52, 1275028.84, 5976033.79, 7230161.64);
 
-const viewerDiv = document.getElementById('viewerDiv');
-
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         clearColor: 0xcccccc,

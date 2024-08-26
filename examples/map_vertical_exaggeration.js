@@ -18,9 +18,11 @@ import { bindSlider } from './widgets/bindSlider.js';
 import { bindToggle } from './widgets/bindToggle.js';
 import { bindButton } from './widgets/bindButton.js';
 
-const viewerDiv = document.getElementById('viewerDiv');
-
-const instance = new Instance(viewerDiv, { crs: 'EPSG:3857', renderer: { clearColor: false } });
+const instance = new Instance({
+    target: 'view',
+    crs: 'EPSG:3857',
+    renderer: { clearColor: false },
+});
 
 const minAltitude = -1531;
 const maxAltitude = 2388;

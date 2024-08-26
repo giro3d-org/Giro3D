@@ -38,8 +38,11 @@ Instance.registerCRS(
 );
 
 const SKY_COLOR = new Color(0xf1e9c6);
-const viewerDiv = document.getElementById('viewerDiv');
-const instance = new Instance(viewerDiv, { crs: 'EPSG:2154', renderer: { clearColor: SKY_COLOR } });
+const instance = new Instance({
+    target: 'view',
+    crs: 'EPSG:2154',
+    renderer: { clearColor: SKY_COLOR },
+});
 
 const extent = new Extent('EPSG:2154', -111629.52, 1275028.84, 5976033.79, 7230161.64);
 

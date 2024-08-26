@@ -40,8 +40,8 @@ Instance.registerCRS(
     'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]',
 );
 
-const viewerDiv = document.getElementById('viewerDiv');
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: 'EPSG:2154',
     renderer: {
         clearColor: false,

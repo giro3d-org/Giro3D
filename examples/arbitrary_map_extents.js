@@ -23,11 +23,9 @@ const EPSG3857_BOUNDS = new Extent(
 
 let currentMap;
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
 // Creates a Giro3D instance
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: EPSG3857_BOUNDS.crs(),
     renderer: {
         clearColor: 0x0a3b59,

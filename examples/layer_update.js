@@ -21,11 +21,9 @@ import { bindSlider } from './widgets/bindSlider.js';
 // Defines geographic extent: CRS, min/max X, min/max Y
 const extent = Extent.fromCenterAndSize('EPSG:3857', { x: 11393552, y: 44035 }, 1000000, 500000);
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
 // Creates a Giro3D instance
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         clearColor: 0xffffff,
@@ -37,7 +35,7 @@ const center = extent.centerAsVector3();
 instance.view.camera.position.set(center.x, center.y - 1, 1000000);
 
 // Creates controls
-const controls = new MapControls(instance.view.camera, viewerDiv);
+const controls = new MapControls(instance.view.camera, instance.domElement);
 
 // Then looks at extent's center
 controls.target = center;

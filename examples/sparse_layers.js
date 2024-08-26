@@ -20,11 +20,9 @@ const extent = new Extent('EPSG:26910', 532622, 569790, 5114416, 5137240);
 
 const center = extent.centerAsVector3();
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
 // Instantiate Giro3D
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         clearColor: 'gray',

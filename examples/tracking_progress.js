@@ -15,9 +15,10 @@ import StatusBar from './widgets/StatusBar.js';
 
 const extent = new Extent('EPSG:3857', -13611854, -13593262, 5806332, 5820603);
 
-const viewerDiv = document.getElementById('viewerDiv');
-
-const instance = new Instance(viewerDiv, { crs: 'EPSG:3857' });
+const instance = new Instance({
+    target: 'view',
+    crs: 'EPSG:3857',
+});
 
 function createMap(mapExtent, tileset) {
     const key =

@@ -26,11 +26,9 @@ const SKY_COLOR = '#87CEEB';
 const size = 200_000;
 const extent = Extent.fromCenterAndSize('EPSG:2154', { x: 1_051_908, y: 6_542_409 }, size, size);
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
 // Creates a Giro3D instance
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         clearColor: SKY_COLOR,

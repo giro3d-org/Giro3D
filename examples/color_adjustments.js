@@ -30,15 +30,16 @@ document.getElementById('layer-select').addEventListener('change', function () {
     }
 });
 
-const viewer = document.getElementById('viewerDiv');
-
 Instance.registerCRS(
     'EPSG:3946',
     '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
 );
 Instance.registerCRS('EPSG:4171', '+proj=longlat +ellps=GRS80 +no_defs +type=crs');
 
-const instance = new Instance(viewer, { crs: 'EPSG:3946' });
+const instance = new Instance({
+    target: 'view',
+    crs: 'EPSG:3946',
+});
 
 const xmin = 1837816.94334;
 const xmax = 1847692.32501;

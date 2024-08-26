@@ -61,13 +61,11 @@ Instance.registerCRS(
 // Define geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent('EPSG:3946', 1837900, 1837900 + 8000, 5170100, 5170100 + 8000);
 
-// `viewerDiv` will contain Giro3D' rendering area (the canvas element)
-const viewerDiv = document.getElementById('viewerDiv');
-
 const scale = new Vector3(1, 1, 1).divideScalar(extent.dimensions().x);
 
 // Instantiate Giro3D
-const instance = new Instance(viewerDiv, {
+const instance = new Instance({
+    target: 'view',
     crs: extent.crs(),
     renderer: {
         clearColor: 0x999999,
@@ -147,7 +145,7 @@ instance.view.camera.position.set(3, 2, 3);
 instance.view.camera.updateMatrixWorld(true);
 instance.view.camera.lookAt(new Vector3(0, 0, 0));
 
-const controls = new OrbitControls(instance.view.camera, viewerDiv);
+const controls = new OrbitControls(instance.view.camera, instance.domElement);
 controls.minDistance = 1;
 
 instance.useTHREEControls(controls);
