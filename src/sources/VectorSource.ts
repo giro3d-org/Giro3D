@@ -139,9 +139,9 @@ export interface VectorSourceOptions extends ImageSourceOptions {
     data?: string | object | Feature[];
 
     /**
-     * The style, or style function.
+     * The style(s), or style function.
      */
-    style: Style | StyleFunction;
+    style?: Style | Style[] | StyleFunction;
 }
 
 /**
@@ -189,7 +189,7 @@ class VectorSource extends ImageSource {
      * The current style.
      * Note: to set a new style, use `setStyle()` instead.
      */
-    style: Style | StyleFunction;
+    style?: Style | Style[] | StyleFunction;
 
     /**
      * @param options - Options.
