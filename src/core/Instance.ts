@@ -186,10 +186,8 @@ export interface CustomCameraControls {
     enabled: boolean;
 }
 
-export interface ThreeControls extends CustomCameraControls {
+export interface ThreeControls extends CustomCameraControls, EventDispatcher {
     update: () => void;
-    addEventListener: (event: string, callback: unknown) => void;
-    removeEventListener: (event: string, callback: unknown) => void;
 }
 
 interface ControlFunctions {
