@@ -31,7 +31,7 @@ type ShapeUserData = {
 
 export type PickCallback = (event: MouseEvent) => PickResult[];
 
-export type CreationOptions = Partial<ShapeConstructorOptions> & {
+export type CommonCreationOptions = {
     /**
      * The optional signal to listen to cancel the creation of a shape.
      */
@@ -40,7 +40,15 @@ export type CreationOptions = Partial<ShapeConstructorOptions> & {
      * The optional custom picking function.
      */
     pick?: PickCallback;
+    /**
+     * An optional callback to be called when a point has been moved.
+     * @param shape - The shape being created.
+     * @param position - The position of the point.
+     */
+    onTemporaryPointMoved?: (shape: Shape, position: Vector3) => void;
 };
+
+export type CreationOptions = Partial<ShapeConstructorOptions> & CommonCreationOptions;
 
 /**
  * Verify that the given operation is possible on the shape.
@@ -62,45 +70,32 @@ function isOperationAllowed<K extends keyof Permissions>(
 /**
  * Options for the {@link DrawTool.createShape} method.
  */
-export type CreateShapeOptions = Partial<ShapeConstructorOptions> & {
-    /**
-     * The minimum number of points to create before the shape can be completed.
-     */
-    minPoints?: number;
-    /**
-     * The maximum number of points to create before the shape is automatically completed.
-     */
-    maxPoints?: number;
-    /**
-     * An optional signal to cancel the creation.
-     */
-    signal?: AbortSignal;
-    /**
-     * If `true`, the shape's line will be closed just before being returned to the caller.
-     */
-    closeRing?: boolean;
-    /**
-     * An optional callback to be called when a point has been added to the shape.
-     * @param shape - The shape being created.
-     * @param index - The index of the point.
-     * @param position - The position of the point.
-     */
-    onPointCreated?: (shape: Shape, index: number, position: Vector3) => void;
-    /**
-     * An optional callback to be called when a point has been moved.
-     * @param shape - The shape being created.
-     * @param position - The position of the point.
-     */
-    onTemporaryPointMoved?: (shape: Shape, position: Vector3) => void;
-    /**
-     * An optional custom picking function to be used instead of the default one.
-     */
-    pick?: PickCallback;
-    /**
-     * An optional list of permitted operations.
-     */
-    constraints?: Permissions;
-};
+export type CreateShapeOptions = Partial<ShapeConstructorOptions> &
+    CommonCreationOptions & {
+        /**
+         * The minimum number of points to create before the shape can be completed.
+         */
+        minPoints?: number;
+        /**
+         * The maximum number of points to create before the shape is automatically completed.
+         */
+        maxPoints?: number;
+        /**
+         * If `true`, the shape's line will be closed just before being returned to the caller.
+         */
+        closeRing?: boolean;
+        /**
+         * An optional callback to be called when a point has been added to the shape.
+         * @param shape - The shape being created.
+         * @param index - The index of the point.
+         * @param position - The position of the point.
+         */
+        onPointCreated?: (shape: Shape, index: number, position: Vector3) => void;
+        /**
+         * An optional list of permitted operations.
+         */
+        constraints?: Permissions;
+    };
 
 function inhibit(e: Event) {
     e.preventDefault();
