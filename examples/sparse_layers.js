@@ -66,6 +66,6 @@ const layer = new ColorLayer({
 map.addLayer(layer);
 
 // Attach the inspector
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 StatusBar.bind(instance);

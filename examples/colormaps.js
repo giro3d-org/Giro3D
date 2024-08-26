@@ -462,7 +462,7 @@ function resetToDefaults() {
 
 bindButton('reset', resetToDefaults);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 StatusBar.bind(instance);
 
 // For some reason, not waiting a bit causes the curve editor to be blank on Firefox

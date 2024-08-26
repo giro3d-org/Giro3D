@@ -205,7 +205,7 @@ instance.useTHREEControls(controls);
 
 // This supposes that we have a `div` ready to host our inspector.
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 // Initialize the coordinate bar widget on our instance.
 StatusBar.bind(instance);

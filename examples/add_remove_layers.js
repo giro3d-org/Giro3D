@@ -129,5 +129,5 @@ bindToggle('terrain');
 bindToggle('plan');
 bindToggle('orthophotos');
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 StatusBar.bind(instance);

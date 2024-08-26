@@ -110,7 +110,7 @@ map.addLayer(layer);
 
 StatusBar.bind(instance);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 instance.notifyChange(map);
 

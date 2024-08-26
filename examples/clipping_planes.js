@@ -320,7 +320,7 @@ bindSlider('slider-size', v => {
     updateFromBox();
 });
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 // configure camera
 const lookAt = new Vector3(915833, 6455879, 121);

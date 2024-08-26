@@ -132,7 +132,7 @@ function initializeCamera() {
 
 instance.add(pointcloud).then(initializeCamera);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 instance.domElement.addEventListener('dblclick', e =>
     console.log(
         instance.pickObjectsAt(e, {

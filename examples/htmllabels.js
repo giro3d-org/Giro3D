@@ -184,5 +184,5 @@ controls.maxPolarAngle = Math.PI / 2.3;
 
 instance.useTHREEControls(controls);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 StatusBar.bind(instance);

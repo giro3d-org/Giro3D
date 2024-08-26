@@ -104,7 +104,7 @@ controls.saveState();
 
 instance.useTHREEControls(controls);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 const sphere = new Mesh(new SphereGeometry(1), new MeshBasicMaterial({ color: 'red' }));
 

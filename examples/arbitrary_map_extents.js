@@ -38,7 +38,7 @@ instance.view.camera.position.set(0, 0, 100000000);
 
 instance.useTHREEControls(controls);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 instance.notifyChange();
 

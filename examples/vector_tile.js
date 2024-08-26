@@ -392,5 +392,5 @@ const vectorTileLayer = new ColorLayer({
 
 map.addLayer(vectorTileLayer);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 StatusBar.bind(instance);

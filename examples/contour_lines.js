@@ -76,7 +76,7 @@ instance.useTHREEControls(controls);
 instance.notifyChange();
 
 StatusBar.bind(instance);
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 const checkbox = document.getElementById('contourLineCheckbox');
 checkbox.oninput = function oninput() {

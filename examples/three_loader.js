@@ -177,5 +177,5 @@ loader.load('https://threejs.org/examples/models/gltf/Soldier.glb', gltf => {
     });
 });
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 StatusBar.bind(instance);

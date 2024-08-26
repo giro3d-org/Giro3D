@@ -71,7 +71,7 @@ function updateSource(name) {
     map.addLayer(layer);
 }
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 StatusBar.bind(instance);
 
 const sourceSelector = document.getElementById('source-file');

@@ -248,5 +248,5 @@ function pick(e) {
 instance.domElement.addEventListener('mousemove', pick);
 
 // Bind events
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 StatusBar.bind(instance);

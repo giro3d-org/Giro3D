@@ -63,7 +63,7 @@ function initializeCamera() {
 
 instance.add(pointcloud).then(initializeCamera);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 const resultsTable = document.getElementById('results-body');
 const formatter = new Intl.NumberFormat();

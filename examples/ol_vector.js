@@ -250,4 +250,4 @@ function update(t) {
 update(0);
 
 instance.domElement.addEventListener('mousemove', pickFeatures);
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);

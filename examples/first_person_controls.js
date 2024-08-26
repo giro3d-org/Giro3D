@@ -41,5 +41,5 @@ instance.domElement.focus();
 
 instance.notifyChange(instance.view.camera);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 StatusBar.bind(instance, { disableUrlUpdate: true });

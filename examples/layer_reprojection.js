@@ -122,7 +122,7 @@ function createScene(crs, crsDef, extent) {
 
     instance.useTHREEControls(controls);
 
-    inspector = Inspector.attach(document.getElementById('panelDiv'), instance);
+    inspector = Inspector.attach('inspector', instance);
 
     StatusBar.bind(instance, { disableUrlUpdate: true });
 }

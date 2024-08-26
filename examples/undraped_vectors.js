@@ -188,7 +188,7 @@ controls.saveState();
 
 instance.useTHREEControls(controls);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 // information on click
 const resultTable = document.getElementById('results');

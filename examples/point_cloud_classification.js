@@ -66,7 +66,7 @@ const pointcloud = new Tiles3D(new Tiles3DSource(url), {
 // add pointcloud to scene
 instance.add(pointcloud);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 // Bind events
 StatusBar.bind(instance);

@@ -152,7 +152,7 @@ controls.saveState();
 
 instance.useTHREEControls(controls);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 StatusBar.bind(instance);
 

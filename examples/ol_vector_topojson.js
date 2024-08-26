@@ -157,7 +157,7 @@ function pickFeatures(mouseEvent) {
 }
 
 instance.domElement.addEventListener('mousemove', pickFeatures);
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 instance.domElement.addEventListener('dblclick', e => console.log(instance.pickObjectsAt(e)));
 
 instance.notifyChange(map);

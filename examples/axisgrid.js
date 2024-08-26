@@ -159,5 +159,5 @@ document.getElementById('randomize-position').onclick = () => {
     instance.notifyChange(axisGrid);
 };
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 StatusBar.bind(instance);

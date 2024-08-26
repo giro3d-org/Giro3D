@@ -148,7 +148,7 @@ function buildLayers() {
 }
 
 // Attach the inspector
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 const alphaReplacementInput = document.getElementById('alphaReplacement');
 

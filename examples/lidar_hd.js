@@ -100,7 +100,7 @@ const cubeTexture = cubeTextureLoader.load([
 
 instance.scene.background = cubeTexture;
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 // Bind events
 StatusBar.bind(instance);

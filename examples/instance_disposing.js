@@ -64,7 +64,7 @@ function init() {
 
     instance.useTHREEControls(controls);
 
-    inspector = Inspector.attach(document.getElementById('panelDiv'), instance);
+    inspector = Inspector.attach('inspector', instance);
 }
 
 init();

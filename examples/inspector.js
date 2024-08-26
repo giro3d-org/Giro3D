@@ -78,7 +78,7 @@ instance.useTHREEControls(controls);
 StatusBar.bind(instance);
 
 // Attach the inspector to the DOM
-const inspectorDiv = document.getElementById('panelDiv');
+const inspectorDiv = document.getElementById('inspector');
 inspectorDiv.classList.remove('d-none');
 const inspector = Inspector.attach(inspectorDiv, instance, { title: 'Custom title' });
 

@@ -178,5 +178,5 @@ terrainStitchingCheckbox.oninput = function oninput() {
     instance.notifyChange(map);
 };
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 StatusBar.bind(instance);

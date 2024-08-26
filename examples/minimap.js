@@ -212,7 +212,7 @@ function handleMouseWheel(event) {
 // We use the 'wheel' event (careful not to use the non-standard 'mousewheel' event).
 minimapInstance.domElement.addEventListener('wheel', handleMouseWheel);
 
-Inspector.attach(document.getElementById('panelDiv'), mainInstance, { title: 'main' });
-Inspector.attach(document.getElementById('panelDiv'), minimapInstance, { title: 'minimap' });
+Inspector.attach('inspector', mainInstance, { title: 'main' });
+Inspector.attach('inspector', minimapInstance, { title: 'minimap' });
 
 StatusBar.bind(mainInstance, { additionalInstances: minimapInstance });

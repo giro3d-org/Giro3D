@@ -56,6 +56,6 @@ map.addLayer(
 );
 
 // Attach the inspector
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 StatusBar.bind(instance);

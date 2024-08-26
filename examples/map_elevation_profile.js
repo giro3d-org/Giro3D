@@ -309,7 +309,7 @@ bindButton('closeChart', () => {
     chartContainer.style.display = 'none';
 });
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 StatusBar.bind(instance);
 
 const parameters = {

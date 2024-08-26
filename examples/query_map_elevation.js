@@ -159,5 +159,5 @@ map.addEventListener('elevation-changed', ({ extent }) => updateMarkers(extent))
 const fog = new Fog(new Color(SKY_COLOR), 1000, 200_000);
 instance.scene.fog = fog;
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 StatusBar.bind(instance);

@@ -78,7 +78,7 @@ controls.target.set(center.x, center.y, min);
 instance.useTHREEControls(controls);
 
 // Attach the inspector
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 StatusBar.bind(instance);
 

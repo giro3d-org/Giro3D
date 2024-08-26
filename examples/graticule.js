@@ -124,5 +124,5 @@ bindSlider('thickness', v => (map.graticule.thickness = v));
 
 bindDropdown('color', v => (map.graticule.color = new Color(v)));
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 StatusBar.bind(instance);

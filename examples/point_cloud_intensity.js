@@ -97,7 +97,7 @@ function initializeCamera() {
 
 instance.add(pointcloud).then(initializeCamera);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 function updatePreview(colors) {
     const canvas = document.getElementById('gradient');

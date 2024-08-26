@@ -56,7 +56,7 @@ function buildViewer(target, defaultRenderer = true) {
 
 // Remove the pre-generated default HTML elements for this example
 document.getElementById('view').remove();
-document.getElementById('panelDiv').remove();
+document.getElementById('inspector').remove();
 
 // Dynamically find all viewers we have to build
 const viewerDivs = document.getElementsByClassName('viewer');

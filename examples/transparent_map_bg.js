@@ -100,7 +100,7 @@ const blueTriangle = makeGeoJSONLayer('blueTriangle', triangle, '#0000aa');
 map.addLayer(redSquare);
 map.addLayer(blueTriangle);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 instance.notifyChange(map);
 

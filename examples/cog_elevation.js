@@ -60,7 +60,7 @@ const viridis = new ColorMap(makeColorMap('viridis'), min, max, ColorMapMode.Ele
 const magma = new ColorMap(makeColorMap('magma'), min, max, ColorMapMode.Elevation);
 
 // Attach the inspector
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 StatusBar.bind(instance);
 

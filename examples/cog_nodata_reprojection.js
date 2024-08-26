@@ -93,7 +93,7 @@ instance.add(boxHelper);
 boxHelper.updateMatrixWorld();
 
 // Attach the inspector
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 // Bind events
 StatusBar.bind(instance);

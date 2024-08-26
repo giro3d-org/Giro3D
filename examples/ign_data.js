@@ -251,7 +251,7 @@ const cubeTexture = cubeTextureLoader.load([
 
 instance.scene.background = cubeTexture;
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 // information on click
 const resultTable = document.getElementById('results');

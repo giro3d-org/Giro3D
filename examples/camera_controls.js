@@ -194,7 +194,7 @@ const cubeTexture = cubeTextureLoader.load([
 
 instance.scene.background = cubeTexture;
 
-const inspector = Inspector.attach(document.getElementById('panelDiv'), instance);
+const inspector = Inspector.attach('inspector', instance);
 
 class ControlsInspector extends Panel {
     constructor(gui, _instance, _controls) {

@@ -54,7 +54,7 @@ map.addLayer(watercolor);
 map.addLayer(toner);
 map.addLayer(terrain);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 StatusBar.bind(instance);
 
 const layers = {

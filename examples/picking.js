@@ -150,7 +150,7 @@ controls.dampingFactor = 0.2;
 
 instance.useTHREEControls(controls);
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 
 const markerMaterial = new MeshLambertMaterial({
     color: 'red',

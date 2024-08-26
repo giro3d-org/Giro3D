@@ -284,5 +284,5 @@ bindToggle('showMap', v => {
     instance.notifyChange();
 });
 
-Inspector.attach(document.getElementById('panelDiv'), instance);
+Inspector.attach('inspector', instance);
 StatusBar.bind(instance);
