@@ -55,11 +55,11 @@ class Inspector {
     /**
      * Creates an instance of the inspector.
      *
-     * @param div - The div element to attach the panel to.
+     * @param parent - The HTML element to attach the panel to.
      * @param instance - The Giro3D instance.
      * @param options - The options.
      */
-    constructor(div: HTMLDivElement, instance: Instance, options: InspectorOptions = {}) {
+    constructor(parent: HTMLElement, instance: Instance, options: InspectorOptions = {}) {
         this.instance = instance;
         this.gui = new GUI({
             autoPlace: false,
@@ -68,7 +68,7 @@ class Inspector {
         });
         this.gui.close();
         this.gui.add(this, 'collapse');
-        div.appendChild(this.gui.domElement);
+        parent.appendChild(this.gui.domElement);
 
         instance.addEventListener('update-end', () => this.update());
 
@@ -112,13 +112,13 @@ class Inspector {
     /**
      * Attaches the inspector to the specified DOM element.
      *
-     * @param div - The div element to attach the panel to.
+     * @param parent - The element to attach the panel to.
      * @param instance - The Giro3D instance.
      * @param options - The options.
      * @returns The created inspector.
      */
-    static attach(div: HTMLDivElement, instance: Instance, options: InspectorOptions = {}) {
-        const inspector = new Inspector(div, instance, options);
+    static attach(parent: HTMLElement, instance: Instance, options: InspectorOptions = {}) {
+        const inspector = new Inspector(parent, instance, options);
         return inspector;
     }
 
