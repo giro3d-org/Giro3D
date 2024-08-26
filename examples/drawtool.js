@@ -117,6 +117,7 @@ controls.saveState();
 
 instance.useTHREEControls(controls);
 
+/** @type {Shape[]} */
 const shapes = [];
 
 const options = {
@@ -130,11 +131,7 @@ const options = {
     surfaceOpacity: DEFAULT_SURFACE_OPACITY,
 };
 
-const tool = new DrawTool({
-    instance,
-    hoverColor: options.highlightColor,
-    dragColor: options.dragColor,
-});
+const tool = new DrawTool({ instance });
 
 let abortController;
 
@@ -321,14 +318,15 @@ bindButton('import', () => {
     const input = document.createElement('input');
     input.type = 'file';
 
-    input.onchange = e => {
-        const file = e.target.files[0];
+    input.onchange = () => {
+        const file = input.files[0];
 
         const reader = new FileReader();
         reader.readAsText(file);
 
         reader.onload = readerEvent => {
             const text = readerEvent.target.result;
+            // @ts-expect-error typing
             const json = JSON.parse(text);
             importGeoJSONFile(json);
         };
@@ -337,12 +335,11 @@ bindButton('import', () => {
     input.click();
 });
 
-let isCurrentlyDrawing = false;
-
 function disableDrawButtons(disabled) {
     const group = document.getElementById('draw-group');
     const buttons = group.getElementsByTagName('button');
-    for (const button of buttons) {
+    for (let i = 0; i < buttons.length; i++) {
+        const button = buttons.item(i);
         button.disabled = disabled;
     }
 }
@@ -359,8 +356,6 @@ function createShape(button, callback, specificOptions) {
     button.classList.add('btn-secondary');
 
     abortController = new AbortController();
-
-    isCurrentlyDrawing = true;
 
     callback
         .bind(tool)({
@@ -384,7 +379,6 @@ function createShape(button, callback, specificOptions) {
             disableDrawButtons(false);
             button.classList.add('btn-primary');
             button.classList.remove('btn-secondary');
-            isCurrentlyDrawing = false;
         });
 }
 
@@ -470,6 +464,7 @@ bindSlider('surface-opacity', v => {
     });
 });
 bindColorPicker('color', v => {
+    // @ts-expect-error conversion
     options.color = v;
     shapes.forEach(m => {
         m.color = v;
@@ -489,6 +484,8 @@ function dimLabels(mouseEvent) {
 
     if (pickResults.length > 0) {
         const picked = pickResults[0];
+        /** @type {Shape} */
+        // @ts-expect-error typing
         const shape = picked.entity;
 
         // Dim labels so the user can properly insert vertices on segments.

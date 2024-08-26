@@ -11,6 +11,7 @@ import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { bindToggle } from './widgets/bindToggle.js';
 
 Instance.registerCRS(
     'EPSG:2154',
@@ -111,23 +112,22 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
     })
     .catch(console.error);
 
-function bindToggle(layerName) {
-    const toggle = document.getElementById(layerName);
-    toggle.oninput = () => {
-        const state = toggle.checked;
+function bindLayerToggle(layerName) {
+    bindToggle(layerName, state => {
         if (state) {
             map.addLayer(layers[layerName]);
         } else {
             map.removeLayer(layers[layerName]);
         }
+        // @ts-expect-error untyped zOrder
         map.sortColorLayers((a, b) => a.userData.zOrder - b.userData.zOrder);
         instance.notifyChange(map);
-    };
+    });
 }
 
-bindToggle('terrain');
-bindToggle('plan');
-bindToggle('orthophotos');
+bindLayerToggle('terrain');
+bindLayerToggle('plan');
+bindLayerToggle('orthophotos');
 
 Inspector.attach('inspector', instance);
 StatusBar.bind(instance);

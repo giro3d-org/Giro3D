@@ -14,21 +14,9 @@ import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-document.getElementById('layer-select').addEventListener('change', function () {
-    var selectedValue = this.value;
-
-    document.getElementById('map-settings').style.display = 'none';
-    document.getElementById('satellite-settings').style.display = 'none';
-    document.getElementById('geojson-settings').style.display = 'none';
-
-    if (selectedValue === 'map') {
-        document.getElementById('map-settings').style.display = 'block';
-    } else if (selectedValue === 'satellite') {
-        document.getElementById('satellite-settings').style.display = 'block';
-    } else if (selectedValue === 'geojson') {
-        document.getElementById('geojson-settings').style.display = 'block';
-    }
-});
+import { bindSlider } from './widgets/bindSlider.js';
+import { bindButton } from './widgets/bindButton.js';
+import { bindDropDown } from './widgets/bindDropDown.js';
 
 Instance.registerCRS(
     'EPSG:3946',
@@ -58,12 +46,12 @@ const satelliteSource = new WmsSource({
     imageFormat: 'image/jpeg',
 });
 
-const colorLayer = new ColorLayer({
+const satellite = new ColorLayer({
     name: 'satellite',
     source: satelliteSource,
     extent: map.extent,
 });
-map.addLayer(colorLayer);
+map.addLayer(satellite);
 
 // Adds our first layer from a geojson file
 // Initial source: https://data.grandlyon.com/jeux-de-donnees/parcs-places-jardins-indice-canopee-metropole-lyon/info
@@ -92,11 +80,13 @@ map.addLayer(geoJsonLayer);
 const camera = instance.view.camera;
 const cameraAltitude = 2000;
 
-const cameraPosition = new Vector3(extent.west, extent.south, cameraAltitude);
+const center = extent.centerAsVector3();
+
+const cameraPosition = new Vector3(center.x, center.y, cameraAltitude);
 camera.position.copy(cameraPosition);
 
 const controls = new MapControls(camera, instance.domElement);
-controls.target = extent.centerAsVector3();
+controls.target = center;
 
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
@@ -106,53 +96,75 @@ controls.saveState();
 
 instance.useTHREEControls(controls);
 
-function bindSlider(name, fn) {
-    const slider = document.getElementById(name);
-    slider.oninput = function oninput() {
-        fn(slider.value);
-        instance.notifyChange(map);
-    };
-}
-
-function bindLayerSliders(id, layer) {
-    document.getElementById(`${id}-reset`).onclick = function onclick() {
-        layer.brightness = 0;
-        layer.saturation = 1;
-        layer.contrast = 1;
-        instance.notifyChange(map);
-    };
-    bindSlider(`${id}-brightness`, v => {
-        layer.brightness = v;
-    });
-    bindSlider(`${id}-contrast`, v => {
-        layer.contrast = v;
-    });
-    bindSlider(`${id}-saturation`, v => {
-        layer.saturation = v;
-    });
-}
-
-bindLayerSliders('satellite', colorLayer);
-bindLayerSliders('vector', geoJsonLayer);
+const [setSatelliteBrightness] = bindSlider('satellite-brightness', v => {
+    satellite.brightness = v;
+    instance.notifyChange(map);
+});
+const [setSatelliteContrast] = bindSlider('satellite-contrast', v => {
+    satellite.contrast = v;
+    instance.notifyChange(map);
+});
+const [setSatelliteSaturation] = bindSlider('satellite-saturation', v => {
+    satellite.saturation = v;
+    instance.notifyChange(map);
+});
+const [setVectorBrightness] = bindSlider('vector-brightness', v => {
+    geoJsonLayer.brightness = v;
+    instance.notifyChange(map);
+});
+const [setVectorContrast] = bindSlider('vector-contrast', v => {
+    geoJsonLayer.contrast = v;
+    instance.notifyChange(map);
+});
+const [setVectorSaturation] = bindSlider('vector-saturation', v => {
+    geoJsonLayer.saturation = v;
+    instance.notifyChange(map);
+});
 
 const mapParams = map.colorimetry;
-bindSlider('map-brightness', v => {
+
+const [setMapBrightness] = bindSlider('map-brightness', v => {
     mapParams.brightness = v;
+    instance.notifyChange(map);
 });
-bindSlider('map-contrast', v => {
+const [setMapContrast] = bindSlider('map-contrast', v => {
     mapParams.contrast = v;
+    instance.notifyChange(map);
 });
-bindSlider('map-saturation', v => {
+const [setMapSaturation] = bindSlider('map-saturation', v => {
     mapParams.saturation = v;
+    instance.notifyChange(map);
 });
 
-document.getElementById('map-reset').onclick = function onclick() {
-    mapParams.brightness = 0;
-    mapParams.contrast = 1;
-    mapParams.saturation = 1;
+bindButton('reset', () => {
+    setMapBrightness(0);
+    setMapContrast(1);
+    setMapSaturation(1);
+
+    setVectorBrightness(0);
+    setVectorContrast(1);
+    setVectorSaturation(1);
+
+    setSatelliteBrightness(0);
+    setSatelliteContrast(1);
+    setSatelliteSaturation(1);
 
     instance.notifyChange(map);
-};
+});
+
+bindDropDown('layer-select', selectedValue => {
+    document.getElementById('map-settings').style.display = 'none';
+    document.getElementById('satellite-settings').style.display = 'none';
+    document.getElementById('geojson-settings').style.display = 'none';
+
+    if (selectedValue === 'map') {
+        document.getElementById('map-settings').style.display = 'block';
+    } else if (selectedValue === 'satellite') {
+        document.getElementById('satellite-settings').style.display = 'block';
+    } else if (selectedValue === 'geojson') {
+        document.getElementById('geojson-settings').style.display = 'block';
+    }
+});
 
 Inspector.attach('inspector', instance);
 

@@ -1,3 +1,4 @@
+import { AdditiveBlending, Mesh, MeshBasicMaterial, PlaneGeometry, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import OSM from 'ol/source/OSM.js';
@@ -8,12 +9,11 @@ import Map from '@giro3d/giro3d/entities/Map.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
+import StaticImageSource from '@giro3d/giro3d/sources/StaticImageSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 import { bindTextInput } from './widgets/bindTextInput.js';
 import { bindButton } from './widgets/bindButton.js';
-import { AdditiveBlending, Mesh, MeshBasicMaterial, PlaneGeometry, Vector3 } from 'three';
-import StaticImageSource from '@giro3d/giro3d/sources/StaticImageSource.js';
 
 // Define the extent of the map in the web mercator projection.
 const extent = new Extent(
@@ -173,10 +173,9 @@ const startButton = bindButton('draw', button => {
     });
 });
 
-const [currentUrl] = bindTextInput('url', v => {
+const [setCurrentUrl, currentUrl] = bindTextInput('url', v => {
     url = v;
     startButton.disabled = !url;
 });
 
-url = currentUrl;
-startButton.disabled = !url;
+setCurrentUrl(currentUrl);

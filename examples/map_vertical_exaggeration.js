@@ -212,17 +212,17 @@ instance.domElement.addEventListener('mousemove', updateMeasurements);
 // Bind events
 StatusBar.bind(instance);
 
-const showColliders = bindToggle('show-colliders', v => {
+const [showColliders] = bindToggle('show-colliders', v => {
     map.showColliderMeshes = v;
     instance.notifyChange(map);
 });
 
-const showGrid = bindToggle('show-grid', v => {
+const [showGrid] = bindToggle('show-grid', v => {
     axisGrid.visible = v;
     instance.notifyChange();
 });
 
-const setGeometricResolution = bindSlider('geometric-resolution', v => {
+const [setGeometricResolution] = bindSlider('geometric-resolution', v => {
     map.segments = 2 ** v;
     instance.notifyChange(map);
 
@@ -230,13 +230,12 @@ const setGeometricResolution = bindSlider('geometric-resolution', v => {
         `Terrain mesh resolution: ${map.segments}`;
 });
 
-const setWireframe = bindToggle('wireframe', v => {
+const [setWireframe] = bindToggle('wireframe', v => {
     map.wireframe = v;
-    map.traverseMaterials(m => (m.wireframe = v));
     instance.notifyChange(map);
 });
 
-const setVerticalExaggeration = bindSlider('vertical-exaggeration', v => {
+const [setVerticalExaggeration] = bindSlider('vertical-exaggeration', v => {
     // Vertical exaggerations simply means that the entire scene is scaled vertically.
     instance.scene.scale.setZ(v);
 

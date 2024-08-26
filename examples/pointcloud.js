@@ -75,7 +75,7 @@ function format(point) {
 }
 
 instance.domElement.addEventListener('dblclick', e => {
-    const picked = instance.pickObjectsAt(e, { radius: 5, limit: 10, where: ['pointcloud'] });
+    const picked = instance.pickObjectsAt(e, { radius: 5, limit: 10 });
 
     if (picked.length === 0) {
         const row = document.createElement('tr');

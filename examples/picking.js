@@ -24,6 +24,10 @@ import PointCloudMaterial from '@giro3d/giro3d/renderer/PointCloudMaterial.js';
 
 import StatusBar from './widgets/StatusBar';
 
+import { bindDropDown } from './widgets/bindDropDown';
+import { bindSlider } from './widgets/bindSlider';
+import { bindToggle } from './widgets/bindToggle';
+
 // Defines projection that we will use (taken from https://epsg.io/2154, Proj4js section)
 Instance.registerCRS(
     'EPSG:2154',
@@ -52,7 +56,6 @@ instance.renderingOptions.enablePointCloudOcclusion = true;
 const map = new Map({
     extent,
     backgroundColor: 'gray',
-    supportRaycast: true,
     hillshading: {
         enabled: true,
         elevationLayersOnly: true,
@@ -169,43 +172,21 @@ const options = {
     pickEvent: 'mousemove',
 };
 
-function bindCheckBox(name, callback) {
-    const elt = document.getElementById(name);
-    elt.onchange = () => {
-        callback(elt.checked);
-    };
-}
-
-function bindNumericUpDown(name, callback) {
-    const elt = document.getElementById(name);
-    elt.onchange = () => {
-        const value = parseInt(elt.value, 10);
-        callback(value);
-    };
-}
-
-function bindDropDown(name, callback) {
-    const mode = document.getElementById(name);
-    mode.onchange = () => {
-        callback(mode.value);
-    };
-}
-
 bindDropDown('pickEvent', v => (options.pickEvent = v));
 
-bindCheckBox('gpuPicking', v => (options.gpuPicking = v));
-bindCheckBox('showMarkers', v => {
+bindToggle('gpuPicking', v => (options.gpuPicking = v));
+bindToggle('showMarkers', v => {
     options.showMarkers = v;
     if (!v) {
         markerGroup.clear();
         instance.notifyChange();
     }
 });
-bindCheckBox('pickMap', v => (options.pickMapOnly = v));
-bindCheckBox('pickPointCloud', v => (options.pickPointCloudOnly = v));
+bindToggle('pickMap', v => (options.pickMapOnly = v));
+bindToggle('pickPointCloud', v => (options.pickPointCloudOnly = v));
 
-bindNumericUpDown('radius', v => (options.radius = v));
-bindNumericUpDown('limit', v => (options.limit = v));
+bindSlider('radius', v => (options.radius = v));
+bindSlider('limit', v => (options.limit = v));
 
 function updateResultTable(pickResults) {
     const table = document.getElementById('table');
@@ -327,18 +308,12 @@ function onMouseClick(mouseEvent) {
     }
 }
 
-function bindSlider(name, callback) {
-    const slider = document.getElementById(name);
-    slider.oninput = function oninput() {
-        callback(slider.valueAsNumber);
-        instance.notifyChange(map);
-    };
-}
-
 bindSlider('zScaleSlider', v => {
+    document.getElementById('zScaleLabel').innerText = `Z-scale = ${v.toFixed(1)}`;
+
     instance.scene.scale.setZ(v);
     instance.scene.updateMatrixWorld(true);
-    document.getElementById('zScaleLabel').innerText = `Z-scale = ${v.toFixed(1)}`;
+    instance.notifyChange(map);
 });
 
 instance.domElement.addEventListener('mousemove', onMouseMove);

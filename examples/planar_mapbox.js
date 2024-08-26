@@ -93,6 +93,7 @@ Inspector.attach('inspector', instance);
 
 document.getElementById('mapboxApi').addEventListener('submit', e => {
     e.preventDefault();
+    // @ts-expect-error typing
     addLayers(document.getElementById('mapboxApiKey').value);
 });
 

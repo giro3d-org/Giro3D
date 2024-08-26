@@ -1,23 +1,33 @@
-import { Color, ColorRepresentation } from 'three';
+import { Color } from 'three';
+
+/**
+ * @typedef {(color: import("three").ColorRepresentation) => void} ColorPickerCallback
+ */
 
 /**
  * @param {string} id - The DOM element id.
- * @param {(color: Color) => void} onChange - The change callback.
- * @returns {(color: ColorRepresentation) => void} The external update function.
+ * @param {ColorPickerCallback} onChange - The change callback.
+ * @returns {[ColorPickerCallback, import("three").ColorRepresentation, HTMLInputElement]} An array with 3
+ * elements: the callback to set the value from outside, the initial value, and the HTML element;
  */
 export function bindColorPicker(id, onChange) {
-    const colorPicker = document.getElementById(id);
+    const element = document.getElementById(id);
+    if (!(element instanceof HTMLInputElement)) {
+        throw new Error(
+            'invalid binding element: expected HTMLInputElement, got: ' + element.constructor.name,
+        );
+    }
 
-    colorPicker.oninput = function oninput() {
+    element.oninput = function oninput() {
         // Let's change the classification color with the color picker value
-        const hexColor = colorPicker.value;
+        const hexColor = element.value;
         onChange(new Color(hexColor));
     };
 
     const externalFunction = v => {
-        colorPicker.value = `#${new Color(v).getHexString()}`;
-        onChange(colorPicker.value);
+        element.value = `#${new Color(v).getHexString()}`;
+        onChange(element.value);
     };
 
-    return externalFunction;
+    return [externalFunction, new Color(element.value), element];
 }

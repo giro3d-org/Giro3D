@@ -15,6 +15,8 @@ import GeoTIFFFormat from '@giro3d/giro3d/formats/GeoTIFFFormat.js';
 import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/layer/ColorMap.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { bindSlider } from './widgets/bindSlider.js';
+import { bindToggle } from './widgets/bindToggle.js';
 
 const x = -13602000;
 const y = 5812000;
@@ -93,47 +95,38 @@ controls.target.set(-13603000, 5811000, 0);
 
 instance.useTHREEControls(controls);
 
-// Manage GUI
-
 function bindAxisStep(axis) {
-    const slider = document.getElementById(`${axis}-axis-step`);
-    slider.oninput = () => {
-        axisGrid.ticks[axis] = parseInt(slider.value, 10);
+    bindSlider(`${axis}-axis-step`, v => {
+        axisGrid.ticks[axis] = v;
         axisGrid.refresh();
         instance.notifyChange(axisGrid);
-    };
-}
-
-function bindToggle(name, rebuild, action) {
-    const toggle = document.getElementById(`toggle-${name}`);
-    toggle.oninput = () => {
-        const state = toggle.checked;
-        action(state);
-        if (rebuild) {
-            axisGrid.refresh();
-        }
-        instance.notifyChange(axisGrid);
-    };
+    });
 }
 
 bindAxisStep('x');
 bindAxisStep('y');
 bindAxisStep('z');
 
-bindToggle('entity', false, v => {
+bindToggle('entity', v => {
     axisGrid.visible = v;
+    instance.notifyChange(axisGrid);
 });
-bindToggle('origin', true, v => {
+bindToggle('origin', v => {
     axisGrid.origin = v ? TickOrigin.Relative : TickOrigin.Absolute;
+    axisGrid.refresh();
+    instance.notifyChange(axisGrid);
 });
-bindToggle('ceiling', false, v => {
+bindToggle('ceiling', v => {
     axisGrid.showCeilingGrid = v;
+    instance.notifyChange(axisGrid);
 });
-bindToggle('floor', false, v => {
+bindToggle('floor', v => {
     axisGrid.showFloorGrid = v;
+    instance.notifyChange(axisGrid);
 });
-bindToggle('sides', false, v => {
+bindToggle('sides', v => {
     axisGrid.showSideGrids = v;
+    instance.notifyChange(axisGrid);
 });
 
 document.getElementById('randomize-position').onclick = () => {

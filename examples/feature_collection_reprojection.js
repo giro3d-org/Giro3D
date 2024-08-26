@@ -1,3 +1,4 @@
+import { MathUtils } from 'three/src/math/MathUtils.js';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import VectorSource from 'ol/source/Vector.js';
 import { createXYZ } from 'ol/tilegrid.js';
@@ -13,7 +14,6 @@ import FeatureCollection from '@giro3d/giro3d/entities/FeatureCollection.js';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';
 
 import StatusBar from './widgets/StatusBar.js';
-import { MathUtils } from 'three/src/math/MathUtils.js';
 
 // Defines projection that we will use (taken from https://epsg.io/2154, Proj4js section)
 Instance.registerCRS(

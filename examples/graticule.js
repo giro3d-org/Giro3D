@@ -17,6 +17,10 @@ import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/layer/ColorMap.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
+import { bindToggle } from './widgets/bindToggle.js';
+import { bindSlider } from './widgets/bindSlider.js';
+import { bindDropDown } from './widgets/bindDropDown.js';
+
 const x = -13602000;
 const y = 5812000;
 const halfWidth = 25000;
@@ -55,6 +59,7 @@ const map = new Map({
 instance.add(map);
 
 const source = new TiledImageSource({
+    retries: 0, // Don't retry to download missing tiles as this dataset as a lot of missing tiles
     source: new XYZ({
         minZoom: 10,
         maxZoom: 16,
@@ -89,40 +94,39 @@ controls.target.set(-13603000, 5811000, 0);
 instance.useTHREEControls(controls);
 
 // GUI
-function bindSlider(id, callback) {
-    const slider = document.getElementById(id);
-    slider.oninput = function oninput() {
-        callback(slider.value);
-        instance.notifyChange(map);
-    };
-}
+bindToggle('toggle-graticule', v => {
+    map.graticule.enabled = v;
+    instance.notifyChange(map);
+});
 
-function bindToggle(id, callback) {
-    const toggle = document.getElementById(id);
-
-    toggle.oninput = function oninput() {
-        callback(toggle.checked);
-        instance.notifyChange(map);
-    };
-}
-
-function bindDropdown(id, callback) {
-    document.getElementById(id).addEventListener('change', e => {
-        callback(e.target.value);
-        instance.notifyChange(map);
-    });
-}
-
-bindToggle('toggle-graticule', v => (map.graticule.enabled = v));
-
-bindSlider('x-step', v => (map.graticule.xStep = v));
-bindSlider('y-step', v => (map.graticule.yStep = v));
-bindSlider('x-offset', v => (map.graticule.xOffset = v));
-bindSlider('y-offset', v => (map.graticule.yOffset = v));
-bindSlider('opacity', v => (map.graticule.opacity = v));
-bindSlider('thickness', v => (map.graticule.thickness = v));
-
-bindDropdown('color', v => (map.graticule.color = new Color(v)));
+bindSlider('x-step', v => {
+    map.graticule.xStep = v;
+    instance.notifyChange(map);
+});
+bindSlider('y-step', v => {
+    map.graticule.yStep = v;
+    instance.notifyChange(map);
+});
+bindSlider('x-offset', v => {
+    map.graticule.xOffset = v;
+    instance.notifyChange(map);
+});
+bindSlider('y-offset', v => {
+    map.graticule.yOffset = v;
+    instance.notifyChange(map);
+});
+bindSlider('opacity', v => {
+    map.graticule.opacity = v;
+    instance.notifyChange(map);
+});
+bindSlider('thickness', v => {
+    map.graticule.thickness = v;
+    instance.notifyChange(map);
+});
+bindDropDown('color', v => {
+    map.graticule.color = new Color(v);
+    instance.notifyChange(map);
+});
 
 Inspector.attach('inspector', instance);
 StatusBar.bind(instance);

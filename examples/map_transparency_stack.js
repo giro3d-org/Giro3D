@@ -20,6 +20,9 @@ import ColorMap from '@giro3d/giro3d/core/layer/ColorMap.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
+import { bindToggle } from './widgets/bindToggle.js';
+import { bindSlider } from './widgets/bindSlider.js';
+
 // # Planar (EPSG:3946) viewer
 
 // Defines projection that we will use (taken from https://epsg.io/3946, Proj4js section)
@@ -138,41 +141,30 @@ Inspector.attach('inspector', instance);
 // Bind events
 StatusBar.bind(instance);
 
-function bindToggle(id, callback) {
-    const toggle = document.getElementById(id);
-    toggle.oninput = () => {
-        const state = toggle.checked;
-        callback(state);
-        instance.notifyChange();
-    };
-}
-
-function bindSlider(id, callback) {
-    const slider = document.getElementById(id);
-    slider.oninput = function oninput() {
-        callback(slider.valueAsNumber);
-        instance.notifyChange();
-    };
-}
-
 bindToggle('show-terrain', v => {
     terrainMap.visible = v;
+    instance.notifyChange();
 });
 bindToggle('show-orthophoto', v => {
     orthophotoMap.visible = v;
+    instance.notifyChange();
 });
 bindToggle('show-vector', v => {
     vectorMap.visible = v;
+    instance.notifyChange();
 });
 
 bindSlider('terrain-opacity', o => {
     terrainMap.opacity = o;
+    instance.notifyChange();
 });
 bindSlider('orthophoto-opacity', o => {
     orthophotoMap.opacity = o;
+    instance.notifyChange();
 });
 bindSlider('vector-opacity', o => {
     vectorMap.opacity = o;
+    instance.notifyChange();
 });
 bindSlider('vector-bg-opacity', o => {
     vectorMap.backgroundOpacity = o;

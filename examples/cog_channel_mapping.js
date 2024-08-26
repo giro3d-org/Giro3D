@@ -9,6 +9,7 @@ import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { bindNumericalDropDown } from './widgets/bindNumericalDropDown.js';
 
 Instance.registerCRS('EPSG:32611', '+proj=utm +zone=11 +datum=WGS84 +units=m +no_defs +type=crs');
 
@@ -57,22 +58,15 @@ const layer = new ColorLayer({
 
 map.addLayer(layer);
 
-function bindDropdown(id, action) {
-    document.getElementById(id).addEventListener('change', e => {
-        const value = parseInt(e.target.value, 10);
-        action(value);
-    });
-}
-
-bindDropdown('r-channel', v => {
+bindNumericalDropDown('r-channel', v => {
     source.channels[0] = v;
     source.update();
 });
-bindDropdown('g-channel', v => {
+bindNumericalDropDown('g-channel', v => {
     source.channels[1] = v;
     source.update();
 });
-bindDropdown('b-channel', v => {
+bindNumericalDropDown('b-channel', v => {
     source.channels[2] = v;
     source.update();
 });

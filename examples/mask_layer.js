@@ -14,6 +14,7 @@ import MaskLayer, { MaskMode } from '@giro3d/giro3d/core/layer/MaskLayer.js';
 import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { bindNumericalDropDown } from './widgets/bindNumericalDropDown.js';
 
 // Defines geographic extent: CRS, min/max X, min/max Y
 const extent = Extent.fromCenterAndSize('EPSG:3857', { x: 260000, y: 6251379 }, 32000, 32000);
@@ -105,9 +106,7 @@ Inspector.attach('inspector', instance);
 // Bind events
 StatusBar.bind(instance);
 
-document.getElementById('layerState').addEventListener('change', e => {
-    const newMode = parseInt(e.target.value, 10);
-
+bindNumericalDropDown('layerState', newMode => {
     switch (newMode) {
         case 1:
             mask.visible = true;

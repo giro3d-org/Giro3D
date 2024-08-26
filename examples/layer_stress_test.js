@@ -9,6 +9,8 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import DebugSource from '@giro3d/giro3d/sources/DebugSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { bindSlider } from './widgets/bindSlider.js';
+import { bindToggle } from './widgets/bindToggle.js';
 
 // Defines geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent(
@@ -38,21 +40,6 @@ instance.useTHREEControls(controls);
 
 Inspector.attach('inspector', instance);
 StatusBar.bind(instance);
-
-function bindSlider(name, callback) {
-    const slider = document.getElementById(name);
-    slider.oninput = function oninput() {
-        callback(slider.value);
-    };
-}
-
-function bindToggle(name, callback) {
-    const toggle = document.getElementById(name);
-    toggle.oninput = () => {
-        const state = toggle.checked;
-        callback(state);
-    };
-}
 
 function createColorLayer() {
     const source = new DebugSource({

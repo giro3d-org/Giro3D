@@ -1,12 +1,22 @@
 /**
+ * @typedef {(v: string) => void} TextInputCallback
+ */
+
+/**
  * Binds a text <input>.
  * @param {string} id The id of the <input> element.
- * @param {(v: string) => void} onChange The callback when the text field value changes.
- * @returns {[v: string, (v: string) => void]} The function to update the value from outside.
+ * @param {TextInputCallback} onChange The callback when the text field value changes.
+ * @returns {[TextInputCallback, string, HTMLInputElement]} An array containing three elements: the callback
+ * to set the value, the initial value, and the bound element.
  */
 export function bindTextInput(id, onChange) {
-    /** @type {HTMLInputElement} */
     const element = document.getElementById(id);
+    if (!(element instanceof HTMLInputElement)) {
+        throw new Error(
+            'invalid binding element: expected HTMLInputElement, got: ' + element.constructor.name,
+        );
+    }
+
     element.onchange = () => {
         if (element.checkValidity()) {
             onChange(element.value);
@@ -20,5 +30,5 @@ export function bindTextInput(id, onChange) {
 
     const currentValue = element.value;
 
-    return [currentValue, setValue];
+    return [setValue, currentValue, element];
 }

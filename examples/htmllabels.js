@@ -2,7 +2,7 @@ import { GeoJSON } from 'ol/format.js';
 import { Fill, Stroke, Style } from 'ol/style.js';
 import TileWMS from 'ol/source/TileWMS.js';
 
-import { MathUtils as THREEMath, Vector2, Vector3 } from 'three';
+import { MathUtils, Vector2, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
@@ -35,31 +35,48 @@ const instance = new Instance({
 const map = new Map({ extent });
 instance.add(map);
 
+const controls = new MapControls(instance.view.camera, instance.domElement);
+controls.target = extent.centerAsVector3();
+controls.saveState();
+
+controls.enableDamping = true;
+controls.dampingFactor = 0.2;
+controls.maxPolarAngle = Math.PI / 2.3;
+
+instance.useTHREEControls(controls);
+
 // Function to look at an extent from top
 function lookTopDownAt(lookAtExtent, lookAtAltitude = 0) {
-    const hFov = THREEMath.degToRad(instance.view.camera.fov) / 2;
+    const camera = instance.view.camera;
+    // @ts-expect-error conversion
+    const fov = camera.fov;
+    // @ts-expect-error conversion
+    const aspect = camera.aspect;
 
-    const altitude =
-        (Math.max(
-            lookAtExtent.dimensions().x / instance.view.camera.aspect,
-            lookAtExtent.dimensions().y,
-        ) /
-            Math.tan(hFov)) *
-        0.5;
+    const hFov = MathUtils.degToRad(fov) / 2;
+
+    const dims = lookAtExtent.dimensions();
+
+    const altitude = (Math.max(dims.x / aspect, dims.y) / Math.tan(hFov)) * 0.5;
     const position = lookAtExtent.centerAsVector3().add(new Vector3(0, 0, altitude));
     const lookAt = lookAtExtent.centerAsVector3();
-    lookAt.z = lookAtAltitude;
-    // place camera above
-    instance.view.camera.position.copy(position);
-    // look down
-    instance.view.camera.lookAt(lookAt);
-    // make sure the camera isn't rotating around its view axis
-    instance.view.camera.rotation.z = 0;
-    instance.view.camera.rotation.x = 0.01; // quickfix to avoid bizarre jumps
 
-    instance.controls.target.copy(lookAt);
-    instance.controls.saveState();
-    instance.notifyChange(instance.view.camera);
+    lookAt.z = lookAtAltitude;
+
+    // place camera above
+    camera.position.copy(position);
+
+    // look down
+    camera.lookAt(lookAt);
+
+    // make sure the camera isn't rotating around its view axis
+    camera.rotation.z = 0;
+    camera.rotation.x = 0.01; // quickfix to avoid bizarre jumps
+
+    controls.target.copy(lookAt);
+    controls.saveState();
+
+    instance.notifyChange(camera);
 }
 
 const wmsSource = new TiledImageSource({
@@ -119,7 +136,7 @@ map.addLayer(geoJsonLayer).then(() => {
         text.style.border = '2px solid #cccccc';
         text.style.backgroundColor = '#080808';
         text.style.textAlign = 'center';
-        text.style.opacity = 0.8;
+        text.style.opacity = '80%';
 
         // Adding the label requires a Vector3 position, let's compute that
         // We'll position the label at the center of the geometry extent
@@ -158,13 +175,13 @@ map.addLayer(geoJsonLayer).then(() => {
         // but the mouseover is not, so use that to know if the user really wants to click
         // on the label.
         text.addEventListener('mouseover', () => {
-            text._over = true;
+            text.setAttribute('giro3d_over', 'on');
         });
         text.addEventListener('mouseout', () => {
-            text._over = false;
+            text.removeAttribute('giro3d_over');
         });
         text.addEventListener('click', () => {
-            if (text._over) {
+            if (text.getAttribute('giro3d_over')) {
                 lookTopDownAt(giro3dExtent);
             }
         });
@@ -173,16 +190,6 @@ map.addLayer(geoJsonLayer).then(() => {
 });
 
 instance.view.camera.position.set(extent.west, extent.south, 2000);
-
-const controls = new MapControls(instance.view.camera, instance.domElement);
-controls.target = extent.centerAsVector3();
-controls.saveState();
-
-controls.enableDamping = true;
-controls.dampingFactor = 0.2;
-controls.maxPolarAngle = Math.PI / 2.3;
-
-instance.useTHREEControls(controls);
 
 Inspector.attach('inspector', instance);
 StatusBar.bind(instance);

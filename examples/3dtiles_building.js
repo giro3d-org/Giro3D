@@ -120,11 +120,14 @@ function highlight(evt) {
         resultsTable.replaceChildren(row);
     } else {
         const obj = picked[0].object;
+        // @ts-expect-error material is missing
+        const material = obj.material;
+
         // keep the old color to reset it later
-        if (!obj.material.userData.oldColor) {
-            obj.material.userData.oldColor = obj.material.color.clone();
+        if (!material.userData.oldColor) {
+            material.userData.oldColor = material.color.clone();
         }
-        obj.material.color.copy(highlightColor);
+        material.color.copy(highlightColor);
         instance.notifyChange(obj);
 
         highlighted = obj;

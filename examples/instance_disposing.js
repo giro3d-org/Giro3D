@@ -10,6 +10,7 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { bindToggle } from './widgets/bindToggle.js';
 
 // Defines geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent(
@@ -47,6 +48,7 @@ function init() {
         new ColorLayer({
             name: 'osm',
             source: new TiledImageSource({
+                // @ts-expect-error missing properties (but they are actually optional)
                 source: new StadiaMaps({ layer: 'stamen_watercolor', wrapX: false }),
             }),
         }),
@@ -86,17 +88,12 @@ function reload() {
 
 document.getElementById('load_once').addEventListener('click', reload);
 
-// we need to get the current state of the checkbox, as browsers remembers it
 let intervalId;
-const autoreloadCheckbox = document.getElementById('autoreload');
-if (autoreloadCheckbox.checked) {
-    intervalId = setInterval(reload, 2000);
-}
-autoreloadCheckbox.addEventListener('change', e => {
-    if (intervalId) {
-        clearInterval(intervalId);
-    }
-    if (e.target.checked) {
+
+bindToggle('autoreload', state => {
+    clearInterval(intervalId);
+
+    if (state) {
         intervalId = setInterval(reload, 2000);
     }
 });

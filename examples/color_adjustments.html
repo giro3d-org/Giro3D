@@ -7,7 +7,12 @@ tags: [map, colorimetry]
 
 <div class="side-pane-with-status-bar">
     <div class="card">
-        <div class="card-header">Colorimetry</div>
+        <div class="card-header">
+            Parameters
+            <button type="button" id="reset" class="btn btn-sm btn-primary rounded float-end">
+                reset
+            </button>
+        </div>
         <div class="card-body">
             <select class="form-select" id="layer-select">
                 <option value="map">Map</option>
@@ -15,173 +20,144 @@ tags: [map, colorimetry]
                 <option value="geojson">GeoJSON layer</option>
             </select>
 
-            <ul class="list-group list-group-flush">
-                <li class="list-group-item" id="map-settings">
-                    <!-- Map parameters -->
-                    <form>
-                        <label for="map-brightness" class="form-label">Brightness</label>
-                        <div class="input-group">
-                            <input
-                                type="range"
-                                min="-1"
-                                max="1"
-                                value="0"
-                                class="form-range"
-                                step="0.05"
-                                id="map-brightness"
-                                autocomplete="off"
-                            />
-                        </div>
+            <div id="map-settings">
+                <!-- Map parameters -->
+                <form>
+                    <label for="map-brightness" class="form-label">Brightness</label>
+                    <div class="input-group">
+                        <input
+                            type="range"
+                            min="-1"
+                            max="1"
+                            value="0"
+                            class="form-range"
+                            step="0.05"
+                            id="map-brightness"
+                            autocomplete="off"
+                        />
+                    </div>
 
-                        <label for="map-contrast" class="form-label">Contrast</label>
-                        <div class="input-group">
-                            <input
-                                type="range"
-                                min="0"
-                                max="3"
-                                value="1"
-                                class="form-range"
-                                step="0.05"
-                                id="map-contrast"
-                                autocomplete="off"
-                            />
-                        </div>
+                    <label for="map-contrast" class="form-label">Contrast</label>
+                    <div class="input-group">
+                        <input
+                            type="range"
+                            min="0"
+                            max="3"
+                            value="1"
+                            class="form-range"
+                            step="0.05"
+                            id="map-contrast"
+                            autocomplete="off"
+                        />
+                    </div>
 
-                        <label for="map-saturation" class="form-label">Saturation</label>
-                        <div class="input-group">
-                            <input
-                                type="range"
-                                min="0"
-                                max="3"
-                                value="1"
-                                class="form-range"
-                                step="0.05"
-                                id="map-saturation"
-                                autocomplete="off"
-                            />
-                        </div>
+                    <label for="map-saturation" class="form-label">Saturation</label>
+                    <div class="input-group">
+                        <input
+                            type="range"
+                            min="0"
+                            max="3"
+                            value="1"
+                            class="form-range"
+                            step="0.05"
+                            id="map-saturation"
+                            autocomplete="off"
+                        />
+                    </div>
+                </form>
+            </div>
+            <div id="satellite-settings" style="display: none">
+                <!-- Satellite layer parameters -->
+                <form>
+                    <label for="satellite-brightness" class="form-label">Brightness</label>
+                    <div class="input-group">
+                        <input
+                            type="range"
+                            min="-1"
+                            max="1"
+                            value="0"
+                            class="form-range"
+                            step="0.05"
+                            id="satellite-brightness"
+                            autocomplete="off"
+                        />
+                    </div>
 
-                        <div class="input-group my-2">
-                            <input
-                                id="map-reset"
-                                type="reset"
-                                class="btn btn-primary"
-                                value="Reset"
-                            />
-                        </div>
-                    </form>
-                </li>
-                <li class="list-group-item" id="satellite-settings" style="display: none">
-                    <!-- Satellite layer parameters -->
-                    <form>
-                        <label for="satellite-brightness" class="form-label">Brightness</label>
-                        <div class="input-group">
-                            <input
-                                type="range"
-                                min="-1"
-                                max="1"
-                                value="0"
-                                class="form-range"
-                                step="0.05"
-                                id="satellite-brightness"
-                                autocomplete="off"
-                            />
-                        </div>
+                    <label for="satellite-contrast" class="form-label">Contrast</label>
+                    <div class="input-group">
+                        <input
+                            type="range"
+                            min="0"
+                            max="3"
+                            value="1"
+                            class="form-range"
+                            step="0.05"
+                            id="satellite-contrast"
+                            autocomplete="off"
+                        />
+                    </div>
 
-                        <label for="satellite-contrast" class="form-label">Contrast</label>
-                        <div class="input-group">
-                            <input
-                                type="range"
-                                min="0"
-                                max="3"
-                                value="1"
-                                class="form-range"
-                                step="0.05"
-                                id="satellite-contrast"
-                                autocomplete="off"
-                            />
-                        </div>
+                    <label for="satellite-saturation" class="form-label">Saturation</label>
+                    <div class="input-group">
+                        <input
+                            type="range"
+                            min="0"
+                            max="3"
+                            value="1"
+                            class="form-range"
+                            step="0.05"
+                            id="satellite-saturation"
+                            autocomplete="off"
+                        />
+                    </div>
+                </form>
+            </div>
+            <div id="geojson-settings" style="display: none">
+                <!-- Vector layer parameters -->
+                <form>
+                    <label for="vector-brightness" class="form-label">Brightness</label>
+                    <div class="input-group">
+                        <input
+                            type="range"
+                            min="-1"
+                            max="1"
+                            value="0"
+                            class="form-range"
+                            step="0.05"
+                            id="vector-brightness"
+                            autocomplete="off"
+                        />
+                    </div>
 
-                        <label for="satellite-saturation" class="form-label">Saturation</label>
-                        <div class="input-group">
-                            <input
-                                type="range"
-                                min="0"
-                                max="3"
-                                value="1"
-                                class="form-range"
-                                step="0.05"
-                                id="satellite-saturation"
-                                autocomplete="off"
-                            />
-                        </div>
+                    <label for="vector-contrast" class="form-label">Contrast</label>
+                    <div class="input-group">
+                        <input
+                            type="range"
+                            min="0"
+                            max="3"
+                            value="1"
+                            class="form-range"
+                            step="0.05"
+                            id="vector-contrast"
+                            autocomplete="off"
+                        />
+                    </div>
 
-                        <div class="input-group my-2">
-                            <input
-                                id="satellite-reset"
-                                type="reset"
-                                class="btn btn-primary"
-                                value="Reset"
-                            />
-                        </div>
-                    </form>
-                </li>
-                <li class="list-group-item" id="geojson-settings" style="display: none">
-                    <!-- Vector layer parameters -->
-                    <form>
-                        <label for="vector-brightness" class="form-label">Brightness</label>
-                        <div class="input-group">
-                            <input
-                                type="range"
-                                min="-1"
-                                max="1"
-                                value="0"
-                                class="form-range"
-                                step="0.05"
-                                id="vector-brightness"
-                                autocomplete="off"
-                            />
-                        </div>
-
-                        <label for="vector-contrast" class="form-label">Contrast</label>
-                        <div class="input-group">
-                            <input
-                                type="range"
-                                min="0"
-                                max="3"
-                                value="1"
-                                class="form-range"
-                                step="0.05"
-                                id="vector-contrast"
-                                autocomplete="off"
-                            />
-                        </div>
-
-                        <label for="vector-saturation" class="form-label">Saturation</label>
-                        <div class="input-group">
-                            <input
-                                type="range"
-                                min="0"
-                                max="3"
-                                value="1"
-                                class="form-range"
-                                step="0.05"
-                                id="vector-saturation"
-                                autocomplete="off"
-                            />
-                        </div>
-
-                        <div class="input-group my-2">
-                            <input
-                                id="vector-reset"
-                                type="reset"
-                                class="btn btn-primary"
-                                value="Reset"
-                            />
-                        </div>
-                    </form>
-                </li>
-            </ul>
+                    <label for="vector-saturation" class="form-label">Saturation</label>
+                    <div class="input-group">
+                        <input
+                            type="range"
+                            min="0"
+                            max="3"
+                            value="1"
+                            class="form-range"
+                            step="0.05"
+                            id="vector-saturation"
+                            autocomplete="off"
+                        />
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>

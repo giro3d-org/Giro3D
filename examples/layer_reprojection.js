@@ -15,6 +15,7 @@ import CogSource from '@giro3d/giro3d/sources/CogSource.js';
 import { crsToUnit } from '@giro3d/giro3d/core/geographic/Coordinates.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { bindButton } from './widgets/bindButton.js';
 
 /** @type {Instance} */
 let instance;
@@ -179,18 +180,18 @@ async function initialize(crs) {
 
         createScene(proj, def, extent);
     } catch (e) {
-        const msg = e.message;
-        const error = document.getElementById('errorMessage');
-        error.innerText = msg;
-        error.style.display = 'block';
+        if (e instanceof Error) {
+            const msg = e.message;
+            const error = document.getElementById('errorMessage');
+            error.innerText = msg;
+            error.style.display = 'block';
+        }
     }
 }
 
-/** @type {HTMLButtonElement} */
-const button = document.getElementById('createSceneBtn');
-
-button.onclick = () => {
+bindButton('createSceneBtn', () => {
     /** @type {HTMLInputElement} */
+    // @ts-expect-error conversion
     const epsgCodeElt = document.getElementById('epsgCode');
 
     const content = epsgCodeElt.value;
@@ -198,6 +199,6 @@ button.onclick = () => {
     if (content) {
         initialize(content);
     }
-};
+});
 
 initialize('EPSG:2154');

@@ -1,18 +1,32 @@
 /**
+ * @typedef {(v: number) => void} SliderCallback
+ */
+
+/**
  * Binds a {@link HTMLInputElement} in slider mode.
  * @param {string} id The id of the <input> element.
- * @param {(v: number) => void} onChange The callback when the slider value changes.
- * @returns {(v: number) => void} The function to update the value from outside.
+ * @param {SliderCallback} onChange The callback when the slider value changes.
+ * @returns {[SliderCallback, number, HTMLInputElement]} An array containing three elements: the callback
+ * to set the value, the initial value, and the bound element.
  */
 export function bindSlider(id, onChange) {
-    /** @type {HTMLInputElement} */
-    const slider = document.getElementById(id);
-    slider.oninput = function oninput() {
-        onChange(slider.valueAsNumber);
+    const element = document.getElementById(id);
+    if (!(element instanceof HTMLInputElement)) {
+        throw new Error(
+            'invalid binding element: expected HTMLInputElement, got: ' + element.constructor.name,
+        );
+    }
+
+    element.oninput = function oninput() {
+        onChange(element.valueAsNumber);
     };
 
-    return v => {
-        slider.valueAsNumber = v;
-        onChange(slider.valueAsNumber);
+    const setValue = v => {
+        element.valueAsNumber = v;
+        onChange(element.valueAsNumber);
     };
+
+    const initialValue = element.valueAsNumber;
+
+    return [setValue, initialValue, element];
 }

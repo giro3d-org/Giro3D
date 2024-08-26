@@ -18,6 +18,7 @@ import { bindToggle } from './widgets/bindToggle.js';
 import { bindDropDown } from './widgets/bindDropDown.js';
 import { bindButton } from './widgets/bindButton.js';
 import { makeColorRamp } from './widgets/makeColorRamp.js';
+import { bindColorMapBounds } from './widgets/bindColorMapBounds.js';
 
 Instance.registerCRS(
     'EPSG:3946',
@@ -81,9 +82,9 @@ const tmpVec3 = new Vector3();
 
 // add pointcloud to scene
 function initializeCamera() {
-    const bbox = pointcloud.root.bbox
-        ? pointcloud.root.bbox
-        : pointcloud.root.boundingVolume.box.clone().applyMatrix4(pointcloud.root.matrixWorld);
+    const bbox = pointcloud.root.boundingVolume.box
+        .clone()
+        .applyMatrix4(pointcloud.root.matrixWorld);
 
     instance.view.camera.far = 2.0 * bbox.getSize(tmpVec3).length();
 
@@ -100,6 +101,8 @@ instance.add(pointcloud).then(initializeCamera);
 Inspector.attach('inspector', instance);
 
 function updatePreview(colors) {
+    /** @type {HTMLCanvasElement} */
+    // @ts-expect-error conversion
     const canvas = document.getElementById('gradient');
     const ctx = canvas.getContext('2d');
 
@@ -129,15 +132,15 @@ function updateColorRamp() {
     instance.notifyChange(pointcloud);
 }
 
-const setDiscrete = bindToggle('discrete', v => {
+const [setDiscrete] = bindToggle('discrete', v => {
     parameters.discrete = v;
     updateColorRamp();
 });
-const setInvert = bindToggle('invert', v => {
+const [setInvert] = bindToggle('invert', v => {
     parameters.invert = v;
     updateColorRamp();
 });
-const setRamp = bindDropDown('ramp', v => {
+const [setRamp] = bindDropDown('ramp', v => {
     parameters.ramp = v;
     updateColorRamp();
     instance.notifyChange(pointcloud);
@@ -148,50 +151,8 @@ const updateBounds = bindColorMapBounds((min, max) => {
     instance.notifyChange(pointcloud);
 });
 
-function bindColorMapBounds(callback) {
-    /** @type {HTMLInputElement} */
-    const lower = document.getElementById('lower');
-
-    /** @type {HTMLInputElement} */
-    const upper = document.getElementById('upper');
-
-    callback(lower.valueAsNumber, upper.valueAsNumber);
-
-    function updateLabels() {
-        document.getElementById('minLabel').innerText = `Lower bound: ${lower.valueAsNumber}`;
-        document.getElementById('maxLabel').innerText = `Upper bound: ${upper.valueAsNumber}`;
-    }
-
-    lower.oninput = function oninput() {
-        const rawValue = lower.valueAsNumber;
-        const clampedValue = MathUtils.clamp(rawValue, lower.min, upper.valueAsNumber - 1);
-        lower.valueAsNumber = clampedValue;
-        callback(lower.valueAsNumber, upper.valueAsNumber);
-        instance.notifyChange(pointcloud);
-        updateLabels();
-    };
-
-    upper.oninput = function oninput() {
-        const rawValue = upper.valueAsNumber;
-        const clampedValue = MathUtils.clamp(rawValue, lower.valueAsNumber + 1, upper.max);
-        upper.valueAsNumber = clampedValue;
-        callback(lower.valueAsNumber, upper.valueAsNumber);
-        instance.notifyChange(pointcloud);
-        updateLabels();
-    };
-
-    return (min, max) => {
-        lower.min = min;
-        lower.max = max;
-        upper.min = min;
-        upper.max = max;
-        lower.valueAsNumber = min;
-        upper.valueAsNumber = max;
-        updateLabels();
-    };
-}
-
 const canvas = document.getElementById('curve');
+// @ts-expect-error conversion
 const widget = new FunctionCurveEditor.Widget(canvas);
 
 function updateTransparency() {
@@ -292,7 +253,9 @@ function updateLabel(mouseEvent) {
         for (const result of results) {
             const { object, point, index } = result;
 
+            // @ts-expect-error typing
             if (object.isPointCloud) {
+                // @ts-expect-error typing
                 const intensity = object.getIntensity(index);
 
                 if (intensity) {

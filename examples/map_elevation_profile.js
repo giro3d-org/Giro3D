@@ -133,6 +133,8 @@ function updateMarkers(points) {
 
 let currentChart;
 
+/** @type {HTMLCanvasElement} */
+// @ts-expect-error conversion
 const canvas = document.getElementById('profileChart');
 const chartContainer = document.getElementById('chartContainer');
 
@@ -243,6 +245,7 @@ function computeElevationProfile() {
 
         // Then we need to sample this line according to the number of samples
         // selected by the user. We are using a THREE.js CurvePath for that.
+        /** @type {CurvePath<Vector2>} */
         const path = new CurvePath();
 
         const vertices = lineString.points;
@@ -252,12 +255,13 @@ function computeElevationProfile() {
             const v0 = vertices[i];
             const v1 = vertices[i + 1];
 
-            const line = new LineCurve(v0, v1);
+            const line = new LineCurve(new Vector2(v0.x, v0.y), new Vector2(v1.x, v1.y));
 
             path.add(line);
         }
 
         // And then we sample this curve to have our evenly spaced points
+        // @ts-expect-error conversion
         const sampleCount = document.getElementById('sampleCount').valueAsNumber;
         const points = path.getSpacedPoints(sampleCount - 1);
 

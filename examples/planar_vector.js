@@ -204,6 +204,7 @@ instance.domElement.addEventListener('mousemove', e => {
     resultTable.innerHTML = '';
 
     if (pickedObject?.features && pickedObject.features.length > 0) {
+        // @ts-expect-error untyped
         for (const { layer, feature } of pickedObject.features) {
             const layerName = layer.name;
             const featureName = feature.get('nom') ?? feature.get('name') ?? feature.get('gid');

@@ -167,7 +167,8 @@ const removeFeatures = bindButton('remove-features', button => {
 
 const disableButtons = disable => {
     const buttons = document.getElementById('group').getElementsByTagName('button');
-    for (const button of buttons) {
+    for (let i = 0; i < buttons.length; i++) {
+        const button = buttons.item(i);
         button.disabled = disable;
     }
 };

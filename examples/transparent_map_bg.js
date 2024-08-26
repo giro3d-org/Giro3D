@@ -11,6 +11,8 @@ import Instance from '@giro3d/giro3d/core/Instance.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 
+import { bindSlider } from './widgets/bindSlider';
+
 // Defines geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent(
     'EPSG:3857',
@@ -105,23 +107,19 @@ Inspector.attach('inspector', instance);
 instance.notifyChange(map);
 
 // GUI
-function bindSlider(id, action) {
-    const slider = document.getElementById(id);
-    slider.oninput = () => {
-        action(slider.value);
-        instance.notifyChange(map);
-    };
-}
-
 bindSlider('map-opacity', v => {
     map.opacity = v;
+    instance.notifyChange(map);
 });
 bindSlider('bg-opacity', v => {
     map.backgroundOpacity = v;
+    instance.notifyChange(map);
 });
 bindSlider('blue-opacity', v => {
     blueTriangle.opacity = v;
+    instance.notifyChange(map);
 });
 bindSlider('red-opacity', v => {
     redSquare.opacity = v;
+    instance.notifyChange(map);
 });

@@ -323,7 +323,7 @@ instance.domElement.addEventListener('click', click);
 
 for (const continent of Object.keys(colors)) {
     let timeout;
-    const setColor = bindColorPicker(continent, c => {
+    const [setColor] = bindColorPicker(continent, c => {
         colors[continent] = c;
         if (timeout) {
             clearTimeout(timeout);
@@ -333,28 +333,28 @@ for (const continent of Object.keys(colors)) {
     setColor(colors[continent]);
 }
 
-const setLineWidth = bindSlider('line-width', v => {
+const [setLineWidth] = bindSlider('line-width', v => {
     lineWidth = v;
     countries.updateStyles();
 });
 
 setLineWidth(lineWidth);
 
-const setStrokeOpacity = bindSlider('stroke-opacity', v => {
+const [setStrokeOpacity] = bindSlider('stroke-opacity', v => {
     strokeOpacity = v;
     countries.updateStyles();
 });
 
 setStrokeOpacity(strokeOpacity);
 
-const setFillOpacity = bindSlider('fill-opacity', v => {
+const [setFillOpacity] = bindSlider('fill-opacity', v => {
     fillOpacity = v;
     countries.updateStyles();
 });
 
 setFillOpacity(fillOpacity);
 
-const setImageSize = bindSlider('image-size', v => {
+const [setImageSize] = bindSlider('image-size', v => {
     imageSize = v;
     capitals.updateStyles();
 });

@@ -9,6 +9,9 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import PointCloudMaterial, { MODE } from '@giro3d/giro3d/renderer/PointCloudMaterial.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { bindSlider } from './widgets/bindSlider.js';
+import { bindToggle } from './widgets/bindToggle.js';
+import { bindColorPicker } from './widgets/bindColorPicker.js';
 
 // Defines projection that we will use (taken from https://epsg.io/2154, Proj4js section)
 Instance.registerCRS(
@@ -110,30 +113,24 @@ function addClassification(number, name) {
     node.innerHTML = template;
     document.getElementById('classifications').appendChild(node);
 
-    const colorPicker = document.getElementById(`color-${number}`);
-
-    colorPicker.oninput = function oninput() {
-        // Let's change the classification color with the color picker value
-        const hexColor = colorPicker.value;
-
+    // Let's change the classification color with the color picker value
+    bindColorPicker(`color-${number}`, v => {
         // Parse it into a THREE.js color
-        const color = new Color(hexColor);
+        const color = new Color(v);
 
         material.classifications[number].color = color;
 
         instance.notifyChange();
-    };
+    });
 
     classificationNames[number] = name;
 
-    const toggle = document.getElementById(`class-${number}`);
-
-    toggle.oninput = function oninput() {
+    bindToggle(`class-${number}`, enabled => {
         // By toggling the .visible property of a classification,
         // all points that have this classification are hidden/shown.
-        material.classifications[number].visible = toggle.checked;
+        material.classifications[number].visible = enabled;
         instance.notifyChange();
-    };
+    });
 }
 
 // Standard ASPRS classifications found in the dataset
@@ -182,6 +179,7 @@ function updateLabel(mouseEvent) {
         for (const result of results) {
             const { object, point, index } = result;
 
+            // @ts-expect-error conversion
             const classificationIndex = object.getClassification(index);
 
             const classification = material.classifications[classificationIndex];
@@ -205,31 +203,16 @@ function updateLabel(mouseEvent) {
     instance.notifyChange();
 }
 
-function bindSlider(name, callback) {
-    const slider = document.getElementById(name);
-    slider.oninput = function oninput() {
-        callback(slider.valueAsNumber);
-        instance.notifyChange(pointcloud);
-    };
-}
-
 bindSlider('pointSize', v => {
     material.size = v;
+    instance.notifyChange(pointcloud);
 });
-
-function bindToggle(name, callback) {
-    const toggle = document.getElementById(name);
-    toggle.oninput = () => {
-        const state = toggle.checked;
-        callback(state);
-        instance.notifyChange(pointcloud);
-    };
-}
 
 bindToggle('postProcessingEffects', v => {
     instance.renderingOptions.enableEDL = v;
     instance.renderingOptions.enableInpainting = v;
     instance.renderingOptions.enablePointCloudOcclusion = v;
+    instance.notifyChange(pointcloud);
 });
 
 instance.domElement.addEventListener('mousemove', updateLabel);

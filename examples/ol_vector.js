@@ -73,15 +73,17 @@ const ecoRegionLayerStyle = feature => {
     });
 };
 
+const ecoRegionSource = new VectorSource({
+    format: new GeoJSON(),
+    data: 'https://openlayers.org/data/vector/ecoregions.json',
+    dataProjection: 'EPSG:4326',
+    style: ecoRegionLayerStyle,
+});
+
 const ecoRegionLayer = new ColorLayer({
     name: 'ecoregions',
     extent,
-    source: new VectorSource({
-        format: new GeoJSON(),
-        data: 'https://openlayers.org/data/vector/ecoregions.json',
-        dataProjection: 'EPSG:4326',
-        style: ecoRegionLayerStyle,
-    }),
+    source: ecoRegionSource,
 });
 
 map.addLayer(ecoRegionLayer);
@@ -202,7 +204,7 @@ function pickFeatures(mouseEvent) {
     function resetPickedFeatures() {
         if (previousFeature) {
             previousFeature.set('highlight', false);
-            ecoRegionLayer.source.updateFeature(previousFeature);
+            ecoRegionSource.updateFeature(previousFeature);
         }
         if (label.visible) {
             label.visible = false;
@@ -223,7 +225,7 @@ function pickFeatures(mouseEvent) {
             firstFeature.set('highlight', true);
 
             if (previousFeature !== firstFeature) {
-                ecoRegionLayer.source.updateFeature(previousFeature, firstFeature);
+                ecoRegionSource.updateFeature(previousFeature, firstFeature);
                 previousFeature = firstFeature;
             }
 
@@ -242,7 +244,7 @@ function pickFeatures(mouseEvent) {
 function update(t) {
     time = t;
     if (previousFeature != null) {
-        ecoRegionLayer.source.updateFeature(previousFeature);
+        ecoRegionSource.updateFeature(previousFeature);
     }
     requestAnimationFrame(update);
 }

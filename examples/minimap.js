@@ -168,6 +168,7 @@ const osmLayer = new ColorLayer({
 minimap.addLayer(osmLayer);
 
 function synchronizeCameras() {
+    // @ts-expect-error typing
     const target = mainInstance.controls.target;
 
     // Since our minimap does not use the same projection as the main view (EPSG:2154),

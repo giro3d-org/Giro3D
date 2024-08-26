@@ -19,6 +19,7 @@ import Instance from '@giro3d/giro3d/core/Instance.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { bindNumericalDropDown } from './widgets/bindNumericalDropDown.js';
 
 // we can customize the renderer THREE will use
 // Here, this is necessary to render the glb correctly.
@@ -84,6 +85,7 @@ instance.add(mesh);
 const loader = new GLTFLoader();
 loader.load('https://threejs.org/examples/models/gltf/Soldier.glb', gltf => {
     gltf.scene.traverse(object => {
+        // @ts-expect-error typing
         if (object.isMesh) {
             object.castShadow = true;
         }
@@ -144,8 +146,7 @@ loader.load('https://threejs.org/examples/models/gltf/Soldier.glb', gltf => {
     instance.notifyChange();
 
     let where = models;
-    document.getElementById('pick_source').addEventListener('change', e => {
-        const newMode = parseInt(e.target.value, 10);
+    bindNumericalDropDown('pick_source', newMode => {
         if (newMode === 1) {
             where = [model1];
         } else if (newMode === 2) {

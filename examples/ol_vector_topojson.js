@@ -73,15 +73,17 @@ const buildingsStyle = feature => {
     });
 };
 
+const topoJsonSource = new VectorSource({
+    format: new TopoJSON(),
+    data: 'https://3d.oslandia.com/giro3d/vectors/tokyo_buildings.topojson',
+    dataProjection: 'EPSG:4326',
+    style: buildingsStyle,
+});
+
 const buildingsLayer = new ColorLayer({
     name: 'Buildings',
     extent,
-    source: new VectorSource({
-        format: new TopoJSON(),
-        data: 'https://3d.oslandia.com/giro3d/vectors/tokyo_buildings.topojson',
-        dataProjection: 'EPSG:4326',
-        style: buildingsStyle,
-    }),
+    source: topoJsonSource,
 });
 
 // Create the OpenStreetMap color layer using an OpenLayers source.
@@ -118,7 +120,7 @@ function pickFeatures(mouseEvent) {
     function resetPickedFeatures() {
         if (previousFeature) {
             previousFeature.set('highlight', false);
-            buildingsLayer.source.updateFeature(previousFeature);
+            topoJsonSource.updateFeature(previousFeature);
         }
         if (label.visible) {
             label.visible = false;
@@ -139,7 +141,7 @@ function pickFeatures(mouseEvent) {
             firstFeature.set('highlight', true);
 
             if (previousFeature !== firstFeature) {
-                buildingsLayer.source.updateFeature(previousFeature, firstFeature);
+                topoJsonSource.updateFeature(previousFeature, firstFeature);
                 previousFeature = firstFeature;
             }
 

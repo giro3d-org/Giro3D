@@ -8,6 +8,7 @@ import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { bindDropDown } from './widgets/bindDropDown.js';
 
 // Define geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent('EPSG:3857', 1818329.448, 1987320.77, 6062229.082, 6231700.791);
@@ -74,6 +75,6 @@ function updateSource(name) {
 Inspector.attach('inspector', instance);
 StatusBar.bind(instance);
 
-const sourceSelector = document.getElementById('source-file');
-sourceSelector.onchange = () => updateSource(sourceSelector.value);
-updateSource(sourceSelector.value);
+bindDropDown('source-file', updateSource);
+
+updateSource('rgb');

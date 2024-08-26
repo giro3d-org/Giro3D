@@ -12,6 +12,7 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/layer/ColorMap.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { bindToggle } from './widgets/bindToggle.js';
 
 // Define projection that we will use (taken from https://epsg.io/26910, Proj4js section)
 Instance.registerCRS(
@@ -98,9 +99,7 @@ Inspector.attach('inspector', instance);
 // Bind events
 StatusBar.bind(instance);
 
-const enableFillNoDataCheckbox = document.getElementById('enableFillNoData');
-enableFillNoDataCheckbox.oninput = function oninput() {
-    const state = enableFillNoDataCheckbox.checked;
+bindToggle('enableFillNoData', state => {
     map.discardNoData = state;
     instance.notifyChange(map);
-};
+});

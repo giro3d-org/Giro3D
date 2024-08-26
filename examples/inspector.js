@@ -1,4 +1,4 @@
-import * as GUI from 'lil-gui';
+import GUI from 'lil-gui';
 
 import StadiaMaps from 'ol/source/StadiaMaps.js';
 
@@ -36,7 +36,6 @@ class MyCustomPanel extends Panel {
             });
     }
 
-    // eslint-disable-next-line class-methods-use-this
     sayHello() {
         window.alert('Hello from my custom panel!');
     }
@@ -65,6 +64,7 @@ map.addLayer(
     new ColorLayer({
         name: 'color',
         source: new TiledImageSource({
+            // @ts-expect-error missing properties (but they are actually optional)
             source: new StadiaMaps({ layer: 'stamen_watercolor', wrapX: false }),
         }),
     }),

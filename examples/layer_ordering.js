@@ -30,6 +30,7 @@ const watercolor = new ColorLayer({
     name: 'watercolor',
     extent: Extent.fromCenterAndSize(crs, { x: -100000, y: 6169226 }, layerSize, layerSize),
     source: new TiledImageSource({
+        // @ts-expect-error missing properties (but they are actually optional)
         source: new StadiaMaps({ layer: 'stamen_watercolor', wrapX: false }),
     }),
 });
@@ -38,6 +39,7 @@ const toner = new ColorLayer({
     name: 'toner',
     extent: Extent.fromCenterAndSize(crs, { x: 500000, y: 5669226 }, layerSize, layerSize),
     source: new TiledImageSource({
+        // @ts-expect-error missing properties (but they are actually optional)
         source: new StadiaMaps({ layer: 'stamen_toner', wrapX: false }),
     }),
 });
@@ -46,6 +48,7 @@ const terrain = new ColorLayer({
     name: 'terrain',
     extent: Extent.fromCenterAndSize(crs, { x: 900000, y: 5169226 }, layerSize, layerSize),
     source: new TiledImageSource({
+        // @ts-expect-error missing properties (but they are actually optional)
         source: new StadiaMaps({ layer: 'stamen_terrain', wrapX: false }),
     }),
 });

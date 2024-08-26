@@ -14,6 +14,9 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/layer/ColorMap.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { bindNumericalDropDown } from './widgets/bindNumericalDropDown.js';
+import { bindToggle } from './widgets/bindToggle.js';
+import { bindSlider } from './widgets/bindSlider.js';
 
 // Define projection that we will use (taken from https://epsg.io/26910, Proj4js section)
 Instance.registerCRS(
@@ -150,46 +153,28 @@ function buildLayers() {
 // Attach the inspector
 Inspector.attach('inspector', instance);
 
-const alphaReplacementInput = document.getElementById('alphaReplacement');
-
-alphaReplacementInput.addEventListener('change', e => {
-    const value = parseInt(e.target.value, 10);
+const [, , alphaReplacementInput] = bindNumericalDropDown('alphaReplacement', value => {
     noDataOptions.alpha = value;
+    instance.notifyChange(map);
 });
 
-const radiusSlider = document.getElementById('maxDistanceSlider');
-radiusSlider.oninput = function oninput() {
-    noDataOptions.maxSearchDistance = radiusSlider.valueAsNumber;
-};
+const [, , radiusSlider] = bindSlider('maxDistanceSlider', v => {
+    noDataOptions.maxSearchDistance = v;
+});
 
-const enableFillNoDataCheckbox = document.getElementById('enableFillNoData');
-
-enableFillNoDataCheckbox.oninput = function oninput() {
-    const state = enableFillNoDataCheckbox.checked;
+bindToggle('enableFillNoData', state => {
     noDataOptions.replaceNoData = state;
     if (!state) {
-        radiusSlider.setAttribute('disabled', !state);
-        alphaReplacementInput.setAttribute('disabled', !state);
+        radiusSlider.setAttribute('disabled', '');
+        alphaReplacementInput.setAttribute('disabled', '');
     } else {
         radiusSlider.removeAttribute('disabled');
         alphaReplacementInput.removeAttribute('disabled');
     }
-};
-
-function bindDropdown(id, action) {
-    document.getElementById(id).addEventListener('change', e => {
-        const value = parseInt(e.target.value, 10);
-        action(value);
-        instance.notifyChange(map);
-    });
-}
-
-bindDropdown('noDataLayerSource', v => {
-    activeLayer = v;
 });
 
-bindDropdown('alphaReplacement', v => {
-    noDataOptions.value = v;
+bindNumericalDropDown('noDataLayerSource', v => {
+    activeLayer = v;
 });
 
 // Bind events

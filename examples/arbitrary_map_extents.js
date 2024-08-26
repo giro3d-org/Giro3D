@@ -11,6 +11,7 @@ import Helpers from '@giro3d/giro3d/helpers/Helpers.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { bindButton } from './widgets/bindButton.js';
 
 // Defines geographic extent: CRS, min/max X, min/max Y
 const EPSG3857_BOUNDS = new Extent(
@@ -79,6 +80,7 @@ function createMap(extent) {
             new ColorLayer({
                 name: 'osm',
                 extent,
+                // @ts-expect-error missing properties (but they are actually optional)
                 source: new TiledImageSource({ source: new StadiaMaps({ layer, wrapX: false }) }),
             }),
         )
@@ -87,9 +89,7 @@ function createMap(extent) {
     instance.notifyChange();
 }
 
-const button = document.getElementById('createMap');
-
-button.onclick = () => {
+bindButton('createMap', () => {
     const x0 = Math.random();
     const x1 = Math.random();
     const y0 = Math.random();
@@ -106,6 +106,6 @@ button.onclick = () => {
     const extent = new Extent('EPSG:3857', west, east, south, north);
 
     createMap(extent);
-};
+});
 
 StatusBar.bind(instance);

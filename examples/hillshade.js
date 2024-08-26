@@ -12,6 +12,8 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { bindToggle } from './widgets/bindToggle.js';
+import { bindSlider } from './widgets/bindSlider.js';
 
 // # Planar (EPSG:3946) viewer
 
@@ -106,77 +108,57 @@ controls.maxPolarAngle = Math.PI / 2.3;
 
 instance.useTHREEControls(controls);
 
-const hillshadingCheckbox = document.getElementById('hillshadingCheckbox');
-const shadeColorLayersCheckbox = document.getElementById('colorLayers');
-const terrainDeformationCheckbox = document.getElementById('terrainDeformation');
-const terrainStitchingCheckbox = document.getElementById('terrainStitching');
-const azimuthSlider = document.getElementById('azimuthSlider');
-const zenithSlider = document.getElementById('zenithSlider');
-const opacitySlider = document.getElementById('opacitySlider');
-const intensitySlider = document.getElementById('intensitySlider');
-const zFactorSlider = document.getElementById('zFactorSlider');
+const [, , colorLayersToggle] = bindToggle('colorLayers', state => {
+    map.hillshading.elevationLayersOnly = !state;
+    instance.notifyChange(map);
+});
 
-hillshadingCheckbox.oninput = function oninput() {
-    const state = hillshadingCheckbox.checked;
+const [, , azimuthSlider] = bindSlider('azimuth', azimuth => {
+    map.hillshading.azimuth = azimuth;
+    instance.notifyChange(map);
+});
+
+const [, , zenithSlider] = bindSlider('zenith', zenith => {
+    map.hillshading.zenith = zenith;
+    instance.notifyChange(map);
+});
+
+bindToggle('enabled', state => {
     map.hillshading.enabled = state;
     instance.notifyChange(map);
 
-    shadeColorLayersCheckbox.disabled = !state;
+    colorLayersToggle.disabled = !state;
     azimuthSlider.disabled = !state;
     zenithSlider.disabled = !state;
-};
+});
 
-shadeColorLayersCheckbox.oninput = function oninput() {
-    const state = shadeColorLayersCheckbox.checked;
-    map.hillshading.elevationLayersOnly = !state;
-    instance.notifyChange(map);
-};
-
-opacitySlider.oninput = function oninput() {
-    const percentage = opacitySlider.value;
+const [, , opacitySlider] = bindSlider('opacity', percentage => {
     const opacity = percentage / 100.0;
     colorLayer.opacity = opacity;
     instance.notifyChange(map);
     opacitySlider.innerHTML = `${percentage}%`;
-};
+});
 
-azimuthSlider.oninput = function oninput() {
-    map.hillshading.azimuth = azimuthSlider.value;
+bindSlider('intensity', intensity => {
+    map.hillshading.intensity = intensity;
     instance.notifyChange(map);
-};
+});
 
-zenithSlider.oninput = function oninput() {
-    map.hillshading.zenith = zenithSlider.value;
+bindSlider('zFactor', zFactor => {
+    map.hillshading.zFactor = zFactor;
     instance.notifyChange(map);
-};
+});
 
-intensitySlider.oninput = function oninput() {
-    map.hillshading.intensity = intensitySlider.value;
+const [, , stitchingToggle] = bindToggle('stitching', enabled => {
+    map.terrain.stitching = enabled;
     instance.notifyChange(map);
-};
+});
 
-intensitySlider.oninput = function oninput() {
-    map.hillshading.intensity = intensitySlider.value;
+bindToggle('terrainDeformation', enabled => {
+    map.terrain.enabled = enabled;
     instance.notifyChange(map);
-};
-
-zFactorSlider.oninput = function oninput() {
-    map.hillshading.zFactor = zFactorSlider.value;
-    instance.notifyChange(map);
-};
-
-terrainDeformationCheckbox.oninput = function oninput() {
-    const state = terrainDeformationCheckbox.checked;
-    map.terrain.enabled = state;
-    instance.notifyChange(map);
-    terrainStitchingCheckbox.disabled = !state;
-};
-
-terrainStitchingCheckbox.oninput = function oninput() {
-    const state = terrainStitchingCheckbox.checked;
-    map.terrain.stitching = state;
-    instance.notifyChange(map);
-};
+    stitchingToggle.disabled = !enabled;
+});
 
 Inspector.attach('inspector', instance);
 StatusBar.bind(instance);

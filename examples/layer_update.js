@@ -116,18 +116,18 @@ instance.notifyChange(map);
 
 source.addFeatures([point, line, polygon]);
 
-const setStrokeWidth = bindSlider('stroke-width', v => {
+const [setStrokeWidth] = bindSlider('stroke-width', v => {
     style.getStroke().setWidth(v);
     style.getImage().getStroke().setWidth(v);
     style.getImage().setRadius(style.getImage().getRadius());
     source.update();
 });
-const setPointRadius = bindSlider('point-radius', v => {
+const [setPointRadius] = bindSlider('point-radius', v => {
     style.getImage().setRadius(v);
     style.setImage(style.getImage());
     source.update();
 });
-const setOpacity = bindSlider('style-opacity', v => {
+const [setOpacity] = bindSlider('style-opacity', v => {
     style
         .getImage()
         .getStroke()
