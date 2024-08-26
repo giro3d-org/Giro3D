@@ -57,7 +57,7 @@
         "serve-tutorials": "npm run build-examples && node tasks/build-tutorials.mjs --watch",
         "serve-static-site": "node tasks/build-static-site.mjs --watch",
         "serve-site": "npm run build && node tasks/build-site.mjs --build-latest --watch",
-        "start": "npm run build && node tasks/build-examples.mjs --watch --mode=development",
+        "start": "npm run build && concurrently \"node tasks/build-examples.mjs --watch --mode=development\" \"tsc --declaration --declarationMap --emitDeclarationOnly --watch\"",
         "test-unit": "jest test/unit",
         "test-with-coverage": "jest test/unit --coverage",
         "test": "npm run lint -- --max-warnings=0 && npm run build && npm run test-with-coverage",
