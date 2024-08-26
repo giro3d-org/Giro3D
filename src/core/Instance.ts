@@ -505,7 +505,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * @returns a promise resolved with the new layer object when it is fully initialized
      * or rejected if any error occurred.
      */
-    async add(object: Object3D | Entity): Promise<Object3D | Entity> {
+    async add<T extends Object3D | Entity>(object: T): Promise<T> {
         if (!object) {
             throw new Error('object is undefined');
         }
@@ -524,7 +524,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
             const object3d = object as Object3D;
             this._threeObjects.add(object3d);
             this.notifyChange(object3d);
-            return object3d;
+            return object3d as T;
         }
 
         // We know it's an Entity
