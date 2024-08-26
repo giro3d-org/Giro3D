@@ -102,7 +102,7 @@
         "@babel/register": "^7.17.7",
         "@commitlint/cli": "^17.0.3",
         "@commitlint/config-conventional": "^17.0.3",
-        "@turf/turf": "^6.5.0",
+        "@turf/turf": "^7.1.0",
         "@types/earcut": "^2.1.1",
         "@types/geojson": "^7946.0.14",
         "@types/jest": "^29.5.3",
