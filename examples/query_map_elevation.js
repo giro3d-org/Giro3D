@@ -132,7 +132,7 @@ async function loadMarker(summit) {
     const markerHtmlElement = document.createElement('div');
     markerHtmlElement.style.paddingBottom = '4rem';
     const span = document.createElement('span');
-    span.classList = 'badge rounded-pill text-bg-dark';
+    span.classList.value = 'badge rounded-pill text-bg-dark';
     span.innerText = summit.name;
     markerHtmlElement.appendChild(span);
 

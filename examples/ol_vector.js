@@ -187,7 +187,7 @@ map.addLayer(customVectorLayer);
 StatusBar.bind(instance);
 
 const labelElement = document.createElement('span');
-labelElement.classList = 'badge rounded-pill text-bg-light';
+labelElement.classList.value = 'badge rounded-pill text-bg-light';
 labelElement.style.marginTop = '2rem';
 const label = new CSS2DObject(labelElement);
 
@@ -199,7 +199,7 @@ let previousFeature;
 function pickFeatures(mouseEvent) {
     const pickResult = instance.pickObjectsAt(mouseEvent);
 
-    const picked = pickResult.at(0);
+    const picked = pickResult[0];
 
     function resetPickedFeatures() {
         if (previousFeature) {

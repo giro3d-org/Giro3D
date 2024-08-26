@@ -84,7 +84,7 @@ Inspector.attach(document.getElementById('panelDiv'), instance);
 StatusBar.bind(instance);
 
 const labelElement = document.createElement('span');
-labelElement.classList = 'badge rounded-pill text-bg-light';
+labelElement.classList.value = 'badge rounded-pill text-bg-light';
 labelElement.style.marginTop = '2rem';
 const label = new CSS2DObject(labelElement);
 

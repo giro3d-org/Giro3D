@@ -200,7 +200,7 @@ controls.dampingFactor = 0.2;
 instance.useTHREEControls(controls);
 
 const labelElement = document.createElement('div');
-labelElement.classList = 'badge rounded-pill text-bg-light';
+labelElement.classList.value = 'badge rounded-pill text-bg-light';
 labelElement.style.marginTop = '2rem';
 
 const text = document.createElement('span');
@@ -225,15 +225,12 @@ const objectsToUpdate = [];
 function pick(e) {
     previousObjects.forEach(obj => obj.userData.feature.set('selected', false));
 
-    const found = instance
-        .pickObjectsAt(e, {
-            // radius: 2,
-            // limit: 1,
-            preferRaycasting: true,
-            sortByDistance: true,
-            where: [busStops, busLines],
-        })
-        .at(0);
+    const pickResults = instance.pickObjectsAt(e, {
+        sortByDistance: true,
+        where: [busStops, busLines],
+    });
+
+    const found = pickResults[0];
 
     if (found) {
         const obj = found.object;

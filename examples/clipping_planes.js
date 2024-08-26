@@ -31,6 +31,7 @@ import { makeColorRamp } from './widgets/makeColorRamp.js';
 import { bindToggle } from './widgets/bindToggle.js';
 import { bindDropDown } from './widgets/bindDropDown.js';
 import { bindButton } from './widgets/bindButton.js';
+import { bindSlider } from './widgets/bindSlider.js';
 
 // Defines projection that we will use (taken from https://epsg.io/2154, Proj4js section)
 Instance.registerCRS(
@@ -313,11 +314,10 @@ bindToggle('toggle-map', v => {
     update();
 });
 
-const slider = document.getElementById('slider-size');
-slider.oninput = function oninput() {
-    boxSize = slider.value;
+bindSlider('slider-size', v => {
+    boxSize = v;
     updateFromBox();
-};
+});
 
 Inspector.attach(document.getElementById('panelDiv'), instance);
 

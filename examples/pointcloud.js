@@ -45,16 +45,16 @@ function placeCamera(position, lookAt) {
 
 // add pointcloud to scene
 function initializeCamera() {
-    const bbox = pointcloud.root.bbox
-        ? pointcloud.root.bbox
-        : pointcloud.root.boundingVolume.box.clone().applyMatrix4(pointcloud.root.matrixWorld);
+    const bbox = pointcloud.root.boundingVolume.box
+        .clone()
+        .applyMatrix4(pointcloud.root.matrixWorld);
 
     instance.view.camera.far = 2.0 * bbox.getSize(tmpVec3).length();
 
     const ratio = bbox.getSize(tmpVec3).x / bbox.getSize(tmpVec3).z;
     const position = bbox.min
         .clone()
-        .add(bbox.getSize(tmpVec3).multiply({ x: 0, y: 0, z: ratio * 0.5 }));
+        .add(bbox.getSize(tmpVec3).multiply(new Vector3(0, 0, ratio * 0.5)));
     const lookAt = bbox.getCenter(tmpVec3);
     lookAt.z = bbox.min.z;
     placeCamera(position, lookAt);

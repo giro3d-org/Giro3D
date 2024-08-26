@@ -192,15 +192,17 @@ Inspector.attach(document.getElementById('panelDiv'), instance);
 
 const resultTable = document.getElementById('results');
 instance.domElement.addEventListener('mousemove', e => {
-    const pickedObject = instance
-        .pickObjectsAt(e, {
-            radius: 5,
-            limit: 1,
-            pickFeatures: true,
-            sortByDistance: true,
-        })
-        .at(0);
+    const pickResults = instance.pickObjectsAt(e, {
+        radius: 5,
+        limit: 1,
+        pickFeatures: true,
+        sortByDistance: true,
+    });
+
+    const pickedObject = pickResults[0];
+
     resultTable.innerHTML = '';
+
     if (pickedObject?.features && pickedObject.features.length > 0) {
         for (const { layer, feature } of pickedObject.features) {
             const layerName = layer.name;

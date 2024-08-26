@@ -262,14 +262,14 @@ function resetToDefaults() {
 bindButton('reset', resetToDefaults);
 
 const labelElement = document.createElement('div');
-labelElement.classList = 'badge rounded-pill text-bg-light';
+labelElement.classList.value = 'badge rounded-pill text-bg-light';
 labelElement.style.marginTop = '2rem';
 
 const intensityValue = document.createElement('span');
 intensityValue.style.marginLeft = '0.5rem';
 
 const intensityColor = document.createElement('span');
-intensityColor.classList = 'badge rounded-pill';
+intensityColor.classList.value = 'badge rounded-pill';
 intensityColor.style.color = 'white';
 intensityColor.style.background = 'red';
 intensityColor.style.width = '1rem';

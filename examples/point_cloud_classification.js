@@ -152,14 +152,14 @@ addClassification(65, 'Artifacts');
 addClassification(67, 'Virtual points');
 
 const labelElement = document.createElement('div');
-labelElement.classList = 'badge rounded-pill text-bg-light';
+labelElement.classList.value = 'badge rounded-pill text-bg-light';
 labelElement.style.marginTop = '2rem';
 
 const classifName = document.createElement('span');
 classifName.style.marginLeft = '0.5rem';
 
 const classifColor = document.createElement('span');
-classifColor.classList = 'badge rounded-pill';
+classifColor.classList.value = 'badge rounded-pill';
 classifColor.style.color = 'white';
 classifColor.style.background = 'red';
 classifColor.style.width = '1rem';

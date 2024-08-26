@@ -72,7 +72,6 @@ instance.add(pointcloud).then(pc => pc.attach(colorLayer));
 // eslint-disable-next-line no-undef
 const controls = new CameraControls(instance.view.camera, instance.domElement);
 controls.dollyToCursor = true;
-controls.enableDamping = true;
 controls.verticalDragToForward = true;
 
 // eslint-disable-next-line no-undef
@@ -166,17 +165,14 @@ instance.domElement.addEventListener('keydown', e => {
 
 // Make rotation around where the user clicked
 instance.domElement.addEventListener('contextmenu', e => {
-    const picked = instance
-        .pickObjectsAt(e, {
-            limit: 1,
-            radius: 20,
-            filter: p =>
-                // Make sure we pick a valid point
-                Number.isFinite(p.point.x) &&
-                Number.isFinite(p.point.y) &&
-                Number.isFinite(p.point.z),
-        })
-        .at(0);
+    const picked = instance.pickObjectsAt(e, {
+        limit: 1,
+        radius: 20,
+        filter: p =>
+            // Make sure we pick a valid point
+            Number.isFinite(p.point.x) && Number.isFinite(p.point.y) && Number.isFinite(p.point.z),
+    })[0];
+
     if (picked) {
         controls.setOrbitPoint(picked.point.x, picked.point.y, picked.point.z);
     }

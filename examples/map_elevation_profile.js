@@ -343,7 +343,7 @@ hoveredPoint.visible = false;
 const markerHtmlElement = document.createElement('div');
 markerHtmlElement.style.paddingBottom = '4rem';
 const span = document.createElement('span');
-span.classList = 'badge rounded-pill text-bg-primary';
+span.classList.value = 'badge rounded-pill text-bg-primary';
 span.innerText = '?';
 markerHtmlElement.appendChild(span);
 

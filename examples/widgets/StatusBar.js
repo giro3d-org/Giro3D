@@ -138,26 +138,24 @@ function pick(mouseEvent) {
 
     // Don't pick while the camera is moving
     if (!isCameraMoving) {
-        const picked = currentInstance
-            .pickObjectsAt(mouseEvent, {
-                limit: 1,
-                radius: pickingRadius,
-                sortByDistance: true,
-            })
-            .at(0);
+        const picked = currentInstance.pickObjectsAt(mouseEvent, {
+            limit: 1,
+            radius: pickingRadius,
+            sortByDistance: true,
+        });
 
-        pickedPoint = picked?.point;
+        pickedPoint = picked[0]?.point;
         updateCoordinates();
     }
 }
 
 /**
  * @param {Instance} instance The instance.
- * @param {object} options The options.
- * @param {number} options.radius The radius of the picking.
- * @param {boolean} options.disableUrlUpdate Disable automatic URL update.
- * @param {boolean} options.disableCoordinates Disable automatic coordinates update.
- * @param {[Instance] | Instance} options.additionalInstances Additional instances to track.
+ * @param {object} [options] The options.
+ * @param {number} [options.radius] The radius of the picking.
+ * @param {boolean} [options.disableUrlUpdate] Disable automatic URL update.
+ * @param {boolean} [options.disableCoordinates] Disable automatic coordinates update.
+ * @param {[Instance] | Instance} [options.additionalInstances] Additional instances to track.
  */
 function bind(instance, options = {}) {
     pickingRadius = options.radius;
