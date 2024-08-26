@@ -23,7 +23,6 @@ Instance.registerCRS(
 );
 const extent = new Extent('EPSG:2154', -111629.52, 1275028.84, 5976033.79, 7230161.64);
 
-// Creates a Giro3D instance
 const instance = new Instance({
     target: 'view',
     crs: extent.crs(),
@@ -32,15 +31,13 @@ const instance = new Instance({
     },
 });
 
-// Instanciates camera
 const camPos = new Vector3(220295, 6810219, 409065);
 instance.view.camera.position.set(camPos.x, camPos.y, camPos.z);
 
-// Instanciates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
+instance.useTHREEControls(controls);
 
 controls.target.set(camPos.x, camPos.y + 1, 0);
-instance.useTHREEControls(controls);
 
 const map = new Map({
     extent,

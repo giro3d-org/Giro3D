@@ -64,24 +64,16 @@ const split = extent.split(2, 1);
 const naip = createMap(split[0], 'naip');
 const satellite = createMap(split[1], 'satellite');
 
-// Sets the camera position
 const center = extent.centerAsVector3();
 instance.view.camera.position.set(center.x, extent.north, 10000);
 
-// Creates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
-
-// Then looks at extent's center
 controls.target = center;
 controls.saveState();
-
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.maxPolarAngle = Math.PI / 2.3;
-
 instance.useTHREEControls(controls);
-
-Inspector.attach('inspector', instance);
 
 const instanceProgress = document.getElementById('progress-instance');
 const naipMapProgress = document.getElementById('progress-map1');
@@ -107,5 +99,7 @@ instance.addEventListener('update-end', () => {
     updateProgressBar(color2Progress, satellite.colorLayer);
     updateProgressBar(elevation2Progress, satellite.elevationLayer);
 });
+
+Inspector.attach('inspector', instance);
 
 StatusBar.bind(instance);

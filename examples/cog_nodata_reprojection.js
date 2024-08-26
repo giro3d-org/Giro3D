@@ -14,7 +14,6 @@ import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/layer/ColorMap.js';
 import StatusBar from './widgets/StatusBar.js';
 import { bindToggle } from './widgets/bindToggle.js';
 
-// Define projection that we will use (taken from https://epsg.io/26910, Proj4js section)
 Instance.registerCRS(
     'EPSG:32742',
     '+proj=utm +zone=42 +south +datum=WGS84 +units=m +no_defs +type=crs',
@@ -30,16 +29,13 @@ const datasetExtent = new Extent(
 
 const extent = datasetExtent.clone().as('EPSG:32742');
 
-// Instantiate Giro3D
 const instance = new Instance({
     target: 'view',
     crs: extent.crs(),
 });
 
-// Instantiate the camera
 instance.view.camera.position.set(1305865, 24791965, 243407);
 
-// Instantiate the controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
@@ -93,10 +89,8 @@ const boxHelper = new Box3Helper(box, new Color('yellow'));
 instance.add(boxHelper);
 boxHelper.updateMatrixWorld();
 
-// Attach the inspector
 Inspector.attach('inspector', instance);
 
-// Bind events
 StatusBar.bind(instance);
 
 bindToggle('enableFillNoData', state => {

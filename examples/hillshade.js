@@ -15,24 +15,18 @@ import StatusBar from './widgets/StatusBar.js';
 import { bindToggle } from './widgets/bindToggle.js';
 import { bindSlider } from './widgets/bindSlider.js';
 
-// # Planar (EPSG:3946) viewer
-
-// Defines projection that we will use (taken from https://epsg.io/3946, Proj4js section)
 Instance.registerCRS(
     'EPSG:3946',
     '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
 );
 
-// Defines geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent('EPSG:3946', 1837816.94334, 1847692.32501, 5170036.4587, 5178412.82698);
 
-// Creates the Giro3D instance
 const instance = new Instance({
     target: 'view',
     crs: extent.crs(),
 });
 
-// Adds the map that will contain the layers.
 const map = new Map({
     extent,
     // Enables hillshading on this map
@@ -44,7 +38,6 @@ const map = new Map({
 });
 instance.add(map);
 
-// Adds a WMS imagery layer
 const colorSource = new TiledImageSource({
     source: new TileWMS({
         url: 'https://data.geopf.fr/wms-r',
@@ -57,13 +50,12 @@ const colorSource = new TiledImageSource({
 });
 
 const colorLayer = new ColorLayer({
-    name: 'wms_imagery',
+    name: 'orthophoto',
     extent: extent.split(2, 1)[0],
     source: colorSource,
 });
 map.addLayer(colorLayer);
 
-// Adds a WMS elevation layer
 const elevationSource = new TiledImageSource({
     source: new TileWMS({
         url: 'https://data.geopf.fr/wms-r',
@@ -82,7 +74,7 @@ const min = 149;
 const max = 621;
 
 const elevationLayer = new ElevationLayer({
-    name: 'wms_elevation',
+    name: 'elevation',
     extent,
     minmax: { min, max },
     source: elevationSource,
@@ -92,21 +84,21 @@ map.addLayer(elevationLayer);
 
 const mapCenter = extent.centerAsVector3();
 
-// Sets the camera position
 instance.view.camera.position.set(mapCenter.x, mapCenter.y - 1, 10000);
 
-// Creates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
-
-// Then looks at extent's center
 controls.target = mapCenter;
 controls.saveState();
-
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.maxPolarAngle = Math.PI / 2.3;
-
 instance.useTHREEControls(controls);
+
+Inspector.attach('inspector', instance);
+
+StatusBar.bind(instance);
+
+// Example GUI
 
 const [, , colorLayersToggle] = bindToggle('colorLayers', state => {
     map.hillshading.elevationLayersOnly = !state;
@@ -159,6 +151,3 @@ bindToggle('terrainDeformation', enabled => {
     instance.notifyChange(map);
     stitchingToggle.disabled = !enabled;
 });
-
-Inspector.attach('inspector', instance);
-StatusBar.bind(instance);

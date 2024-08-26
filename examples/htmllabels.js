@@ -192,4 +192,5 @@ map.addLayer(geoJsonLayer).then(() => {
 instance.view.camera.position.set(extent.west, extent.south, 2000);
 
 Inspector.attach('inspector', instance);
+
 StatusBar.bind(instance);

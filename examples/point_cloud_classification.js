@@ -13,7 +13,6 @@ import { bindSlider } from './widgets/bindSlider.js';
 import { bindToggle } from './widgets/bindToggle.js';
 import { bindColorPicker } from './widgets/bindColorPicker.js';
 
-// Defines projection that we will use (taken from https://epsg.io/2154, Proj4js section)
 Instance.registerCRS(
     'EPSG:2154',
     '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
@@ -32,16 +31,13 @@ instance.renderingOptions.enableEDL = true;
 instance.renderingOptions.enableInpainting = true;
 instance.renderingOptions.enablePointCloudOcclusion = true;
 
-// Creates controls
+instance.view.camera.position.set(227137, 6876151, 128);
+
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
-
-instance.view.camera.position.set(227137, 6876151, 128);
 controls.target.set(227423, 6876442, 0);
-
 controls.saveState();
-
 instance.useTHREEControls(controls);
 
 // We create a PointCloudMaterial in CLASSIFICATION
@@ -66,13 +62,7 @@ const pointcloud = new Tiles3D(new Tiles3DSource(url), {
     material,
 });
 
-// add pointcloud to scene
 instance.add(pointcloud);
-
-Inspector.attach('inspector', instance);
-
-// Bind events
-StatusBar.bind(instance);
 
 const classificationNames = new Array(32);
 
@@ -216,3 +206,7 @@ bindToggle('postProcessingEffects', v => {
 });
 
 instance.domElement.addEventListener('mousemove', updateLabel);
+
+Inspector.attach('inspector', instance);
+
+StatusBar.bind(instance);

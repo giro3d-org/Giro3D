@@ -32,18 +32,12 @@ function buildViewer(target, defaultRenderer = true) {
         crs: extent.crs(),
         renderer,
     });
-    // Creates a map that will contain the layer
+
     const map = new Map({ extent, maxSubdivisionLevel: 10 });
 
     instance.add(map);
 
-    // Adds an TMS imagery layer
-    map.addLayer(
-        new ColorLayer({
-            name: 'osm',
-            source,
-        }),
-    ).catch(e => console.error(e));
+    map.addLayer(new ColorLayer({ source })).catch(e => console.error(e));
 
     instance.view.camera.position.set(0, 0, 25000000);
 

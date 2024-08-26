@@ -16,7 +16,6 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-// Defines projection that we will use (taken from https://epsg.io/2154, Proj4js section)
 Instance.registerCRS(
     'EPSG:2154',
     '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
@@ -26,7 +25,6 @@ const SKY_COLOR = '#87CEEB';
 const size = 200_000;
 const extent = Extent.fromCenterAndSize('EPSG:2154', { x: 1_051_908, y: 6_542_409 }, size, size);
 
-// Creates a Giro3D instance
 const instance = new Instance({
     target: 'view',
     crs: extent.crs(),
@@ -35,7 +33,6 @@ const instance = new Instance({
     },
 });
 
-// Creates a map that will contain the layer
 const map = new Map({
     extent,
     hillshading: {
@@ -82,7 +79,6 @@ map.addLayer(satelliteLayer);
 
 const controls = new MapControls(instance.view.camera, instance.domElement);
 
-const center = extent.centerAsVector2();
 instance.view.camera.position.set(994_410, 6_520_646, 5_520);
 controls.target.set(1_011_954, 6_539_864, 1_000);
 
@@ -160,4 +156,5 @@ const fog = new Fog(new Color(SKY_COLOR), 1000, 200_000);
 instance.scene.fog = fog;
 
 Inspector.attach('inspector', instance);
+
 StatusBar.bind(instance);

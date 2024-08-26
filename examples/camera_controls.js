@@ -51,38 +51,32 @@ const instance = new Instance({
 });
 
 const material = new PointCloudMaterial({ size: 4, mode: MODE.TEXTURE });
+
 const pointcloud = new Tiles3D(
     new Tiles3DSource('https://3d.oslandia.com/3dtiles/lyon.3dtiles/tileset.json'),
     { material },
 );
 
-const colorize = new WmsSource({
+const source = new WmsSource({
     url: 'https://data.geopf.fr/wms-r',
     projection: 'EPSG:3946',
     layer: 'HR.ORTHOIMAGERY.ORTHOPHOTOS',
     imageFormat: 'image/jpeg',
 });
 
-const colorLayer = new ColorLayer({
-    name: 'wms_imagery',
-    source: colorize,
-});
+const colorLayer = new ColorLayer({ source });
 
 instance.add(pointcloud).then(pc => pc.attach(colorLayer));
 
 // Configure our controls
-// eslint-disable-next-line no-undef
 const controls = new CameraControls(instance.view.camera, instance.domElement);
+
 controls.dollyToCursor = true;
 controls.verticalDragToForward = true;
 
-// eslint-disable-next-line no-undef
 controls.mouseButtons.left = CameraControls.ACTION.TRUCK;
-// eslint-disable-next-line no-undef
 controls.mouseButtons.right = CameraControls.ACTION.ROTATE;
-// eslint-disable-next-line no-undef
 controls.mouseButtons.wheel = CameraControls.ACTION.DOLLY;
-// eslint-disable-next-line no-undef
 controls.mouseButtons.middle = CameraControls.ACTION.DOLLY;
 
 // Giro3D integration

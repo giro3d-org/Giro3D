@@ -10,7 +10,6 @@ import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-// Defines geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent(
     'EPSG:3857',
     -20037508.342789244,
@@ -19,7 +18,6 @@ const extent = new Extent(
     20037508.342789244,
 );
 
-// Creates a Giro3D instance
 const instance = new Instance({
     target: 'view',
     crs: extent.crs(),
@@ -52,14 +50,12 @@ for (const ex of extent.split(8, 8)) {
 }
 
 Promise.allSettled(promises).then(() => {
-    // Instanciates camera
     instance.view.camera.position.set(0, 0, 25000000);
 
-    // Instanciates controls
     const controls = new MapControls(instance.view.camera, instance.domElement);
-
     instance.useTHREEControls(controls);
 
     Inspector.attach('inspector', instance);
+
     StatusBar.bind(instance);
 });

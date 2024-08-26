@@ -33,7 +33,6 @@ import { bindDropDown } from './widgets/bindDropDown.js';
 import { bindButton } from './widgets/bindButton.js';
 import { bindSlider } from './widgets/bindSlider.js';
 
-// Defines projection that we will use (taken from https://epsg.io/2154, Proj4js section)
 Instance.registerCRS(
     'EPSG:2154',
     '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
@@ -50,7 +49,6 @@ const instance = new Instance({
 
 instance.renderingOptions.enableEDL = true;
 
-// Creates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
@@ -320,14 +318,13 @@ bindSlider('slider-size', v => {
     updateFromBox();
 });
 
-Inspector.attach('inspector', instance);
-
-// configure camera
+// Configure camera
 const lookAt = new Vector3(915833, 6455879, 121);
 instance.view.camera.position.set(909914, 6448629, 7925);
 instance.view.camera.lookAt(lookAt);
 controls.target.copy(lookAt);
 controls.saveState();
 
-// Bind events
+Inspector.attach('inspector', instance);
+
 StatusBar.bind(instance);

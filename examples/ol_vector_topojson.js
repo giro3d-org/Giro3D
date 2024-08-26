@@ -21,7 +21,6 @@ Instance.registerCRS(
     '+proj=tmerc +lat_0=26 +lon_0=142 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=-146.414,507.337,680.507,0,0,0,0 +units=m +no_defs +type=crs',
 );
 
-// Defines geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent(
     'EPSG:30174',
     -201012.900985493,
@@ -30,27 +29,20 @@ const extent = new Extent(
     1071890.8856167798,
 );
 
-// Creates a Giro3D instance
 const instance = new Instance({
     target: 'view',
     crs: extent.crs(),
 });
 
-// Instanciates camera
 const center = extent.centerAsVector2();
+
 instance.view.camera.position.set(center.x, center.y - 1, 2000);
 
-// Instanciates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.25;
-
-instance.useTHREEControls(controls);
-
-// target
 controls.target.set(center.x, center.y, 0);
-
-// Adds layers in a map
+instance.useTHREEControls(controls);
 
 const map = new Map({ extent, backgroundColor: '#135D66' });
 instance.add(map);
@@ -159,7 +151,8 @@ function pickFeatures(mouseEvent) {
 }
 
 instance.domElement.addEventListener('mousemove', pickFeatures);
-Inspector.attach('inspector', instance);
 instance.domElement.addEventListener('dblclick', e => console.log(instance.pickObjectsAt(e)));
+
+Inspector.attach('inspector', instance);
 
 instance.notifyChange(map);

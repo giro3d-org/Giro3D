@@ -25,7 +25,6 @@ import { bindToggle } from './widgets/bindToggle.js';
 import { makeColorRamp } from './widgets/makeColorRamp.js';
 import { bindButton } from './widgets/bindButton.js';
 
-// Defines projection that we will use (taken from https://epsg.io/2154, Proj4js section)
 Instance.registerCRS(
     'EPSG:2154',
     '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
@@ -35,10 +34,8 @@ Instance.registerCRS(
     'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]',
 );
 
-// Defines geographic extent: CRS, min/max X, min/max Y
 const extent = Extent.fromCenterAndSize('EPSG:2154', { x: 674_675, y: 6_442_569 }, 30_000, 30_000);
 
-// Creates a Giro3D instance
 const instance = new Instance({
     target: 'view',
     crs: extent.crs(),
@@ -47,7 +44,6 @@ const instance = new Instance({
     },
 });
 
-// Creates a map that will contain the layer
 const map = new Map({
     extent,
     hillshading: {
@@ -106,11 +102,8 @@ const center = extent.centerAsVector2();
 
 instance.view.camera.position.set(center.x - 4000, center.y - 4000, 7300);
 
-// Instanciates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
-
 controls.target.set(center.x, center.y, 300);
-
 instance.useTHREEControls(controls);
 
 // We use the DrawTool to draw the path on the map.

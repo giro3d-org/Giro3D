@@ -15,7 +15,6 @@ import StatusBar from './widgets/StatusBar.js';
 import { bindTextInput } from './widgets/bindTextInput.js';
 import { bindButton } from './widgets/bindButton.js';
 
-// Define the extent of the map in the web mercator projection.
 const extent = new Extent(
     'EPSG:3857',
     -20037508.342789244,
@@ -24,7 +23,6 @@ const extent = new Extent(
     20037508.342789244,
 );
 
-// Creates a Giro3D instance
 const instance = new Instance({
     target: 'view',
     crs: extent.crs(),
@@ -33,7 +31,6 @@ const instance = new Instance({
     },
 });
 
-// Creates a map that will contain the layer
 const map = new Map({ extent, backgroundColor: 'white' });
 
 instance.add(map);

@@ -41,7 +41,6 @@ class MyCustomPanel extends Panel {
     }
 }
 
-// Defines geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent(
     'EPSG:3857',
     -20037508.342789244,
@@ -50,19 +49,17 @@ const extent = new Extent(
     20037508.342789244,
 );
 
-// Creates a Giro3D instance
 const instance = new Instance({
     target: 'view',
     crs: extent.crs(),
 });
 
 const map = new Map({ extent });
+
 instance.add(map);
 
-// Adds an TMS imagery layer
 map.addLayer(
     new ColorLayer({
-        name: 'color',
         source: new TiledImageSource({
             // @ts-expect-error missing properties (but they are actually optional)
             source: new StadiaMaps({ layer: 'stamen_watercolor', wrapX: false }),
@@ -74,8 +71,6 @@ map.addLayer(
 instance.view.camera.position.set(0, 0, 25000000);
 const controls = new MapControls(instance.view.camera, instance.domElement);
 instance.useTHREEControls(controls);
-
-StatusBar.bind(instance);
 
 // Attach the inspector to the DOM
 const inspectorDiv = document.getElementById('inspector');
@@ -93,3 +88,5 @@ inspector.addPanel(myCustomPanel);
 
 // Trigger the first render
 instance.notifyChange(map);
+
+StatusBar.bind(instance);

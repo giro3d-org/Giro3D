@@ -1,3 +1,4 @@
+import { Color } from 'three';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import { Fill, Stroke, Style } from 'ol/style.js';
 
@@ -13,9 +14,7 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
 
 import StatusBar from './widgets/StatusBar.js';
-import { Color } from 'three';
 
-// Defines geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent(
     'EPSG:3857',
     -20037508.342789244,
@@ -26,7 +25,6 @@ const extent = new Extent(
 
 let time = 0;
 
-// Creates a Giro3D instance
 const instance = new Instance({
     target: 'view',
     crs: extent.crs(),
@@ -35,19 +33,15 @@ const instance = new Instance({
     },
 });
 
-// Instanciates camera
 instance.view.camera.position.set(0, 0, 10000000);
 
-// Instanciates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.25;
-
 instance.useTHREEControls(controls);
 
-// Adds layers in a map
-
 const map = new Map({ extent, backgroundColor: '#135D66' });
+
 instance.add(map);
 
 const ecoRegionLayerStyle = feature => {
@@ -184,8 +178,6 @@ const customVectorLayer = new ColorLayer({
 
 map.addLayer(customVectorLayer);
 
-StatusBar.bind(instance);
-
 const labelElement = document.createElement('span');
 labelElement.classList.value = 'badge rounded-pill text-bg-light';
 labelElement.style.marginTop = '2rem';
@@ -252,4 +244,7 @@ function update(t) {
 update(0);
 
 instance.domElement.addEventListener('mousemove', pickFeatures);
+
 Inspector.attach('inspector', instance);
+
+StatusBar.bind(instance);

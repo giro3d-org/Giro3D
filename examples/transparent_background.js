@@ -20,7 +20,6 @@ const x = -13602000;
 const y = 5812000;
 const halfWidth = 2500;
 
-// Defines geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent('EPSG:3857', x - halfWidth, x + halfWidth, y - halfWidth, y + halfWidth);
 
 const instance = new Instance({
@@ -75,4 +74,5 @@ instance.useTHREEControls(controls);
 instance.notifyChange();
 
 Inspector.attach('inspector', instance);
+
 StatusBar.bind(instance);

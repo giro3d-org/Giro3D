@@ -14,8 +14,6 @@ import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-// # Planar (EPSG:3946) viewer
-
 const wmsLayers = [
     'fpc_fond_plan_communaut.fpcilot',
     'pvo_patrimoine_voirie.pvochausseetrottoir',

@@ -19,29 +19,23 @@ import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-// # Planar (EPSG:3946) viewer
-
-// Defines projection that we will use (taken from https://epsg.io/3946, Proj4js section)
 Instance.registerCRS(
     'EPSG:3946',
     '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
 );
 Instance.registerCRS('EPSG:4171', '+proj=longlat +ellps=GRS80 +no_defs +type=crs');
 
-// Defines geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent('EPSG:3946', 1837816.94334, 1847692.32501, 5170036.4587, 5178412.82698);
 
-// Creates the Giro3D instance
 const instance = new Instance({
     target: 'view',
     crs: 'EPSG:3946',
 });
 
-// Adds the map that will contain the layers.
 const map = new Map({ extent });
+
 instance.add(map);
 
-// Adds a WMS imagery layer
 const colorSource = new TiledImageSource({
     source: new TileWMS({
         url: 'https://data.geopf.fr/wms-r',
@@ -83,7 +77,7 @@ const elevationLayer = new ElevationLayer({
 
 map.addLayer(elevationLayer);
 
-// Adds our first layer from a geojson file
+// Adds our first layer from a GeoJSON file
 // Initial source: https://data.grandlyon.com/jeux-de-donnees/parcs-places-jardins-indice-canopee-metropole-lyon/info
 const geoJsonLayer = new ColorLayer({
     name: 'geojson',
@@ -107,7 +101,7 @@ const geoJsonLayer = new ColorLayer({
 });
 map.addLayer(geoJsonLayer);
 
-// Adds a second vector layer from a gpx file
+// Adds a second vector layer from a GPX file
 const gpxLayer = new ColorLayer({
     name: 'gpx',
     source: new VectorSource({
@@ -141,7 +135,7 @@ const kmlLayer = new ColorLayer({
 });
 map.addLayer(kmlLayer);
 
-// Adds our fourth layer from a gml file
+// Adds our fourth layer from a GML file
 // Initial source: https://data.grandlyon.com/jeux-de-donnees/bornes-fontaine-metropole-lyon/info
 // Edited for having a simple GML FeatureCollection
 const gmlLayer = new ColorLayer({
@@ -173,22 +167,15 @@ const gmlLayer = new ColorLayer({
 });
 map.addLayer(gmlLayer);
 
-// Sets the camera position
 instance.view.camera.position.set(extent.west, extent.south, 2000);
 
-// Creates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
-// Then looks at extent's center
 controls.target = extent.centerAsVector3();
 controls.saveState();
-
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.maxPolarAngle = Math.PI / 2.3;
-
 instance.useTHREEControls(controls);
-
-Inspector.attach('inspector', instance);
 
 const resultTable = document.getElementById('results');
 instance.domElement.addEventListener('mousemove', e => {
@@ -213,5 +200,6 @@ instance.domElement.addEventListener('mousemove', e => {
     }
 });
 
-// Bind events
+Inspector.attach('inspector', instance);
+
 StatusBar.bind(instance);

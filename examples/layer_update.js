@@ -18,10 +18,8 @@ import { bindButton } from './widgets/bindButton.js';
 import { bindToggle } from './widgets/bindToggle.js';
 import { bindSlider } from './widgets/bindSlider.js';
 
-// Defines geographic extent: CRS, min/max X, min/max Y
 const extent = Extent.fromCenterAndSize('EPSG:3857', { x: 11393552, y: 44035 }, 1000000, 500000);
 
-// Creates a Giro3D instance
 const instance = new Instance({
     target: 'view',
     crs: extent.crs(),
@@ -30,14 +28,11 @@ const instance = new Instance({
     },
 });
 
-// Instanciates camera
 const center = extent.centerAsVector3();
 instance.view.camera.position.set(center.x, center.y - 1, 1000000);
 
-// Creates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 
-// Then looks at extent's center
 controls.target = center;
 controls.saveState();
 

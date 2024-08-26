@@ -17,7 +17,6 @@ const extent = new Extent(
     20037508.342789244,
 );
 
-// Creates a Giro3D instance
 const instance = new Instance({
     target: 'view',
     crs: extent.crs(),
@@ -26,7 +25,6 @@ const instance = new Instance({
     },
 });
 
-// Creates a map that will contain the layer
 const map = new Map({ extent });
 
 instance.add(map);
@@ -52,4 +50,5 @@ const controls = new MapControls(instance.view.camera, instance.domElement);
 instance.useTHREEControls(controls);
 
 Inspector.attach('inspector', instance);
+
 StatusBar.bind(instance);

@@ -24,7 +24,6 @@ const center = { x: -13601505, y: 5812315 };
 
 const extent = Extent.fromCenterAndSize('EPSG:3857', center, 20000, 20000);
 
-// Creates a Giro3D instance
 const instance = new Instance({
     target: 'view',
     crs: extent.crs(),
@@ -78,17 +77,12 @@ map.addLayer(colorLayer);
 // Sets the camera position
 instance.view.camera.position.set(-13615016, 5835706, 14797);
 
-// Creates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
-
-// Then looks at extent's center
 controls.target = new Vector3(-13603869, 5814829, 0);
 controls.saveState();
-
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.maxPolarAngle = Math.PI / 2.3;
-
 instance.useTHREEControls(controls);
 
 Inspector.attach('inspector', instance);
@@ -104,7 +98,9 @@ bindToggle('toggle-colorlayer-range', enabled => {
         colorLayer.elevationRange = null;
     }
 
+    // @ts-expect-error typing
     document.getElementById('layerMin').disabled = !enabled;
+    // @ts-expect-error typing
     document.getElementById('layerMax').disabled = !enabled;
 
     instance.notifyChange(map);

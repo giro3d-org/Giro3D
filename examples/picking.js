@@ -28,7 +28,6 @@ import { bindDropDown } from './widgets/bindDropDown';
 import { bindSlider } from './widgets/bindSlider';
 import { bindToggle } from './widgets/bindToggle';
 
-// Defines projection that we will use (taken from https://epsg.io/2154, Proj4js section)
 Instance.registerCRS(
     'EPSG:2154',
     '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
@@ -52,7 +51,6 @@ instance.renderingOptions.enableEDL = true;
 instance.renderingOptions.enableInpainting = true;
 instance.renderingOptions.enablePointCloudOcclusion = true;
 
-// create a map
 const map = new Map({
     extent,
     backgroundColor: 'gray',
@@ -61,6 +59,7 @@ const map = new Map({
         elevationLayersOnly: true,
     },
 });
+
 instance.add(map);
 
 const noDataValue = -1000;
@@ -111,7 +110,7 @@ const pointcloud = new Tiles3D(new Tiles3DSource('https://3d.oslandia.com/lidar_
 
 instance.add(pointcloud);
 
-// also add some lights
+// Add a sunlight
 const sun = new DirectionalLight('#ffffff', 1.4);
 sun.position.set(-1, -2, 1).normalize();
 sun.updateMatrixWorld(true);
@@ -123,7 +122,7 @@ sun2.position.set(0, 1, 1);
 sun2.updateMatrixWorld();
 instance.scene.add(sun2);
 
-// ambient
+// Add an ambient light
 const ambientLight = new AmbientLight(0xffffff, 0.2);
 instance.scene.add(ambientLight);
 
@@ -134,26 +133,17 @@ cube.position.set(913741, 6459089, 369);
 instance.add(cube);
 cube.updateMatrixWorld(true);
 
-// place camera above grenoble
-instance.view.camera.position.set(913349.2364044407, 6456426.459171033, 1706.0108044011636);
-
-// and look at the Bastille
 const lookAt = new Vector3(913896, 6459191, 200);
+
+instance.view.camera.position.set(913349.2364044407, 6456426.459171033, 1706.0108044011636);
 instance.view.camera.lookAt(lookAt);
 
-// Creates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
-
-// Then looks at extent's center
 controls.target.copy(lookAt);
 controls.saveState();
-
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
-
 instance.useTHREEControls(controls);
-
-Inspector.attach('inspector', instance);
 
 const markerMaterial = new MeshLambertMaterial({
     color: 'red',
@@ -322,5 +312,7 @@ instance.domElement.addEventListener('click', onMouseClick);
 instance.scene.updateMatrixWorld(true);
 
 instance.notifyChange();
+
+Inspector.attach('inspector', instance);
 
 StatusBar.bind(instance, { disableCoordinates: true });

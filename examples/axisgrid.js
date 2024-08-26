@@ -22,10 +22,8 @@ const x = -13602000;
 const y = 5812000;
 const halfWidth = 2500;
 
-// Defines geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent('EPSG:3857', x - halfWidth, x + halfWidth, y - halfWidth, y + halfWidth);
 
-// Creates a Giro3D instance
 const instance = new Instance({
     target: 'view',
     crs: extent.crs(),
@@ -34,7 +32,6 @@ const instance = new Instance({
     },
 });
 
-// Creates a map that will contain the layer
 const map = new Map({
     extent,
     hillshading: true,
@@ -88,11 +85,8 @@ instance.add(axisGrid);
 
 instance.view.camera.position.set(-13594700, 5819700, 7300);
 
-// Instanciates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
-
 controls.target.set(-13603000, 5811000, 0);
-
 instance.useTHREEControls(controls);
 
 function bindAxisStep(axis) {

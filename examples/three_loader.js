@@ -9,7 +9,6 @@ import {
     MeshPhongMaterial,
     PlaneGeometry,
     Vector3,
-    WebGLRenderer,
 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -21,28 +20,18 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import StatusBar from './widgets/StatusBar.js';
 import { bindNumericalDropDown } from './widgets/bindNumericalDropDown.js';
 
-// we can customize the renderer THREE will use
-// Here, this is necessary to render the glb correctly.
-// Giro3D will handle:
-// - adding it in the DOM within the parent element
-// - resizing it when the window or parent element is resized
-const renderer = new WebGLRenderer({ antialias: true });
-renderer.shadowMap.enabled = true;
-
-// Create the Giro3D instance
 const instance = new Instance({
     target: 'view',
     crs: 'EPSG:3857',
-    renderer: { renderer },
+    renderer: { antialias: true },
 });
 const camera = instance.view.camera;
 
-// Creates controls
+instance.renderer.shadowMap.enabled = true;
+
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
-
-// and setup our instance to use them.
 instance.useTHREEControls(controls);
 
 const clock = new Clock();
@@ -179,4 +168,5 @@ loader.load('https://threejs.org/examples/models/gltf/Soldier.glb', gltf => {
 });
 
 Inspector.attach('inspector', instance);
+
 StatusBar.bind(instance);

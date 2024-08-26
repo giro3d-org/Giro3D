@@ -13,7 +13,6 @@ import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import StatusBar from './widgets/StatusBar.js';
 import { bindButton } from './widgets/bindButton.js';
 
-// Defines geographic extent: CRS, min/max X, min/max Y
 const EPSG3857_BOUNDS = new Extent(
     'EPSG:3857',
     -20037508.342789244,
@@ -24,7 +23,6 @@ const EPSG3857_BOUNDS = new Extent(
 
 let currentMap;
 
-// Creates a Giro3D instance
 const instance = new Instance({
     target: 'view',
     crs: EPSG3857_BOUNDS.crs(),
@@ -33,10 +31,9 @@ const instance = new Instance({
     },
 });
 
-// Instanciates controls
-const controls = new MapControls(instance.view.camera, instance.domElement);
 instance.view.camera.position.set(0, 0, 100000000);
 
+const controls = new MapControls(instance.view.camera, instance.domElement);
 instance.useTHREEControls(controls);
 
 Inspector.attach('inspector', instance);
@@ -58,8 +55,9 @@ function createMap(extent) {
     }
 
     mapCount++;
+
     const object3d = new Object3D();
-    // Creates a map that will contain the layer
+
     currentMap = new Map({
         extent,
         maxSubdivisionLevel: 10,

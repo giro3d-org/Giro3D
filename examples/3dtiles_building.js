@@ -23,7 +23,7 @@ const instance = new Instance({
     },
 });
 
-// add some lights
+// Add a sunlight
 const sun = new DirectionalLight('#ffffff', 1.4);
 sun.position.set(1, 0, 1).normalize();
 sun.updateMatrixWorld(true);
@@ -35,12 +35,11 @@ sun2.position.set(0, -1, 1);
 sun2.updateMatrixWorld();
 instance.scene.add(sun2);
 
-// ambient
+// Add ambient light
 const ambientLight = new AmbientLight(0xffffff, 1);
 instance.scene.add(ambientLight);
 instance.view.minNearPlane = 0.5;
 
-// Configure Point Cloud
 const ifc = new Tiles3D(
     new Tiles3DSource('https://3d.oslandia.com/3dtiles/19_rue_Marc_Antoine_Petit_ifc/tileset.json'),
 );
@@ -50,6 +49,7 @@ ifc.addEventListener('object-created', evt => {
     const obj = evt.obj;
     if (obj.userData?.class === 'IfcSpace') {
         obj.visible = false;
+        instance.notifyChange();
     }
 });
 
@@ -91,14 +91,9 @@ Inspector.attach('inspector', instance);
 const resultsTable = document.getElementById('results-body');
 const formatter = new Intl.NumberFormat();
 
-function format(point) {
-    return `x: ${formatter.format(point.x)}\n
-            y: ${formatter.format(point.y)}\n
-            z: ${formatter.format(point.z)}`;
-}
-
 let highlighted;
 let highlightColor = new Color(0xff7171);
+
 function highlight(evt) {
     const picked = instance.pickObjectsAt(evt, { radius: 5, limit: 10, where: [ifc] });
     if (highlighted) {
@@ -127,12 +122,15 @@ function highlight(evt) {
         if (!material.userData.oldColor) {
             material.userData.oldColor = material.color.clone();
         }
+
         material.color.copy(highlightColor);
+
         instance.notifyChange(obj);
 
         highlighted = obj;
 
         const rows = [];
+
         for (const [name, value] of Object.entries(obj.userData)) {
             if (name !== 'oldColor' && name !== 'parentEntity') {
                 const row = document.createElement('tr');

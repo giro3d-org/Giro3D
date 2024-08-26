@@ -11,7 +11,6 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-// Defines geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent(
     'EPSG:3857',
     -20037508.342789244,
@@ -20,7 +19,6 @@ const extent = new Extent(
     20048966.1,
 );
 
-// Creates a Giro3D instance
 const instance = new Instance({
     target: 'view',
     crs: extent.crs(),
@@ -32,10 +30,8 @@ const instance = new Instance({
 const map = new Map({ extent, maxSubdivisionLevel: 15 });
 instance.add(map);
 
-// Instantiates camera
 instance.view.camera.position.set(0, 0, 10000000);
 
-// Instantiates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.25;
@@ -393,4 +389,5 @@ const vectorTileLayer = new ColorLayer({
 map.addLayer(vectorTileLayer);
 
 Inspector.attach('inspector', instance);
+
 StatusBar.bind(instance);

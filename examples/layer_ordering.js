@@ -12,16 +12,15 @@ import StatusBar from './widgets/StatusBar.js';
 const crs = 'EPSG:3857';
 const mapExtent = Extent.fromCenterAndSize(crs, { x: 256227, y: 5882214 }, 2000000, 2000000);
 
-// Creates a Giro3D instance
 const instance = new Instance({
     target: 'view',
     crs,
 });
 
-// Instanciates camera
 instance.view.camera.position.set(256227, 5882214, 4000000);
 
 const map = new Map({ extent: mapExtent, backgroundOpacity: 0 });
+
 instance.add(map);
 
 const layerSize = 1000000;
@@ -58,6 +57,7 @@ map.addLayer(toner);
 map.addLayer(terrain);
 
 Inspector.attach('inspector', instance);
+
 StatusBar.bind(instance);
 
 const layers = {

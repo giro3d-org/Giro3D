@@ -18,16 +18,13 @@ import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';
 
 import StatusBar from './widgets/StatusBar.js';
 
-// Define projection that we will use (taken from https://epsg.io/3946, Proj4js section)
 Instance.registerCRS(
     'EPSG:3946',
     '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
 );
 
-// Define geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent('EPSG:3946', 1837816.94334, 1847692.32501, 5170036.4587, 5178412.82698);
 
-// Instantiate Giro3D
 const instance = new Instance({
     target: 'view',
     crs: extent.crs(),
@@ -118,17 +115,14 @@ const wfsLayer = new ColorLayer({
 
 map.addLayer(wfsLayer);
 
-// Creates controls
-const controls = new MapControls(instance.view.camera, instance.domElement);
-
 instance.view.camera.position.set(1839739, 5171618, 910);
+
+const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.target = new Vector3(1840839, 5172718, 0);
 controls.saveState();
-
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.maxPolarAngle = Math.PI / 2.3;
-
 instance.useTHREEControls(controls);
 
 const labelElement = document.createElement('div');
@@ -205,5 +199,7 @@ function pickFeatures(mouseEvent) {
 }
 
 instance.domElement.addEventListener('mousemove', pickFeatures);
+
 Inspector.attach('inspector', instance);
+
 StatusBar.bind(instance);

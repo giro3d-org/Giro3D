@@ -20,23 +20,20 @@ import StatusBar from './widgets/StatusBar.js';
 
 import { bindToggle } from './widgets/bindToggle.js';
 
-// Define projection that we will use (taken from https://epsg.io/3946, Proj4js section)
 Instance.registerCRS(
     'EPSG:3946',
     '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
 );
 
-// Define a geographic extent: CRS, min/max X, min/max Y
 const extent = Extent.fromCenterAndSize('EPSG:3946', { x: 1842741, y: 5174060 }, 30000, 30000);
 
-// Instantiate Giro3D
 const instance = new Instance({
     target: 'view',
     crs: 'EPSG:3946',
 });
 
-// Adds the map that will contain the layers.
 const map = new Map({ extent });
+
 instance.add(map);
 
 const capabilitiesUrl =
@@ -180,24 +177,16 @@ const cubeTexture = cubeTextureLoader.load([
 ]);
 instance.scene.background = cubeTexture;
 
-// Place camera at the bottom left corner of the map
 const center = extent.centerAsVector3();
+
 instance.view.camera.position.set(center.x - 300, center.y - 300, 5000);
-// and look at the center of our extent
 instance.view.camera.lookAt(center);
-// we need to tell Giro3D we changed the camera position
-instance.notifyChange(instance.view.camera);
 
-// Creates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
-
-// MapControls needs a target, let's set it at our lookAt position
 controls.target = extent.centerAsVector3();
 controls.saveState();
-
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
-
 instance.useTHREEControls(controls);
 
 const labelElement = document.createElement('div');
@@ -262,7 +251,6 @@ function pick(e) {
         instance.notifyChange(label);
     }
 
-    // instance.notifyChange([...previousObjects, ...objectsToUpdate]);
     busLines.updateStyles();
     busStops.updateStyles();
     previousObjects = [...objectsToUpdate];
@@ -285,4 +273,5 @@ bindToggle('showMap', v => {
 });
 
 Inspector.attach('inspector', instance);
+
 StatusBar.bind(instance);

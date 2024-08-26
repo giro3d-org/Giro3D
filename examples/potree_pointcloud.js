@@ -24,20 +24,19 @@ const instance = new Instance({
 function placeCamera() {
     const camera = instance.view.camera;
 
-    // create controls
+    const pos = new Vector3(6.757520397934977, -10.102934086721376, 7.402449241148831);
+    const lookAt = new Vector3(0.5, 0.5, 5);
+
     const controls = new OrbitControls(camera, instance.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.25;
-
-    const pos = new Vector3(6.757520397934977, -10.102934086721376, 7.402449241148831);
-
-    const lookAt = new Vector3(0.5, 0.5, 5);
 
     camera.lookAt(lookAt);
     controls.target.copy(lookAt);
     camera.position.copy(pos);
 
     instance.useTHREEControls(controls);
+
     StatusBar.bind(instance, { radius: 5 });
 }
 

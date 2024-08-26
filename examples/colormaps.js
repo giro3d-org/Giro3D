@@ -27,10 +27,8 @@ import { bindButton } from './widgets/bindButton.js';
 import { makeColorRamp } from './widgets/makeColorRamp.js';
 import { bindColorMapBounds } from './widgets/bindColorMapBounds.js';
 
-// Defines geographic extent: CRS, min/max X, min/max Y
 const extent = Extent.fromCenterAndSize('EPSG:3857', { x: 697313, y: 5591324 }, 30000, 30000);
 
-// Creates the Giro3D instance
 const instance = new Instance({
     target: 'view',
     crs: extent.crs(),
@@ -40,20 +38,15 @@ const instance = new Instance({
     },
 });
 
-// Sets the camera position
 const cameraPosition = new Vector3(697119, 5543639, 53043);
+
 instance.view.camera.position.copy(cameraPosition);
 
-// Creates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
-
-// Then looks at extent's center
 controls.target = extent.centerAsVector3();
-controls.saveState();
-
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
-
+controls.saveState();
 instance.useTHREEControls(controls);
 
 const elevationMin = 780;
@@ -416,6 +409,7 @@ function resetToDefaults() {
 bindButton('reset', resetToDefaults);
 
 Inspector.attach('inspector', instance);
+
 StatusBar.bind(instance);
 
 // For some reason, not waiting a bit causes the curve editor to be blank on Firefox

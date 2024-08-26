@@ -18,7 +18,6 @@ import { bindNumericalDropDown } from './widgets/bindNumericalDropDown.js';
 import { bindToggle } from './widgets/bindToggle.js';
 import { bindSlider } from './widgets/bindSlider.js';
 
-// Define projection that we will use (taken from https://epsg.io/26910, Proj4js section)
 Instance.registerCRS(
     'EPSG:26910',
     '+proj=utm +zone=10 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
@@ -28,7 +27,6 @@ const extent = new Extent('EPSG:26910', 532622, 569790, 5114416, 5137240);
 
 const center = extent.centerAsVector3();
 
-// Instantiate Giro3D
 const instance = new Instance({
     target: 'view',
     crs: extent.crs(),
@@ -37,10 +35,8 @@ const instance = new Instance({
     },
 });
 
-// Instantiate the camera
 instance.view.camera.position.set(center.x, center.y - 1, 50000);
 
-// Instantiate the controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
@@ -150,9 +146,6 @@ function buildLayers() {
     instance.notifyChange(map);
 }
 
-// Attach the inspector
-Inspector.attach('inspector', instance);
-
 const [, , alphaReplacementInput] = bindNumericalDropDown('alphaReplacement', value => {
     noDataOptions.alpha = value;
     instance.notifyChange(map);
@@ -177,11 +170,12 @@ bindNumericalDropDown('noDataLayerSource', v => {
     activeLayer = v;
 });
 
-// Bind events
-StatusBar.bind(instance);
-
 buildLayers();
 
 document.getElementById('applyChanges').onclick = function onclick() {
     buildLayers();
 };
+
+Inspector.attach('inspector', instance);
+
+StatusBar.bind(instance);

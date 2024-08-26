@@ -30,7 +30,6 @@ import { bindSlider } from './widgets/bindSlider.js';
 import { bindColorPicker } from './widgets/bindColorPicker.js';
 import { bindDropDown } from './widgets/bindDropDown.js';
 
-// Defines projection that we will use (taken from https://epsg.io/2154, Proj4js section)
 Instance.registerCRS(
     'EPSG:2154',
     '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
@@ -48,7 +47,6 @@ const instance = new Instance({
     },
 });
 
-// create a map
 const extent = Extent.fromCenterAndSize('EPSG:2154', { x: 972_027, y: 6_299_491 }, 10_000, 10_000);
 
 const map = new Map({
@@ -108,13 +106,11 @@ const lookAt = new Vector3(center.x, center.y, 200);
 instance.view.camera.lookAt(lookAt);
 instance.notifyChange(instance.view.camera);
 
-// Creates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.target.copy(lookAt);
 controls.saveState();
-
 instance.useTHREEControls(controls);
 
 /** @type {Shape[]} */

@@ -16,10 +16,8 @@ import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
 import StatusBar from './widgets/StatusBar.js';
 import { bindNumericalDropDown } from './widgets/bindNumericalDropDown.js';
 
-// Defines geographic extent: CRS, min/max X, min/max Y
 const extent = Extent.fromCenterAndSize('EPSG:3857', { x: 260000, y: 6251379 }, 32000, 32000);
 
-// Creates a Giro3D instance
 const instance = new Instance({
     target: 'view',
     crs: extent.crs(),
@@ -31,7 +29,6 @@ const instance = new Instance({
 const apiKey =
     'pk.eyJ1IjoidG11Z3VldCIsImEiOiJjbGJ4dTNkOW0wYWx4M25ybWZ5YnpicHV6In0.KhDJ7W5N3d1z3ArrsDjX_A';
 
-// Adds the map that will contain the layers.
 const map = new Map({ extent });
 
 instance.add(map);
@@ -48,6 +45,7 @@ const basemap = new ColorLayer({
         }),
     }),
 });
+
 map.addLayer(basemap);
 
 const outlineStyle = new Style({
@@ -84,26 +82,19 @@ const mask = new MaskLayer({
 
 map.addLayer(mask);
 
-// Sets the camera position
 const center = extent.centerAsVector3();
 instance.view.camera.position.set(center.x, center.y - 1, 40000);
 
-// Creates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
-
-// Then looks at extent's center
 controls.target = center;
 controls.saveState();
-
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.maxPolarAngle = Math.PI / 2.3;
-
 instance.useTHREEControls(controls);
 
 Inspector.attach('inspector', instance);
 
-// Bind events
 StatusBar.bind(instance);
 
 bindNumericalDropDown('layerState', newMode => {

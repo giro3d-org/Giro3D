@@ -87,40 +87,31 @@ function createScene(crs, crsDef, extent) {
 
     Instance.registerCRS(crs, crsDef);
 
-    // Creates a Giro3D instance
     instance = new Instance({
         target: 'view',
         crs,
         renderer: { clearColor: 'grey' },
     });
 
-    // Adds the map that will contain the layers.
     map = new Map({ extent, hillshading: true });
 
     instance.add(map);
 
-    // Add a bunch of layers
     addMapboxLayer(extent);
 
     addCogLayer();
 
     addVectorLayer();
 
-    // Sets the camera position
     const center = extent.centerAsVector3();
     instance.view.camera.position.set(center.x, center.y - 1, extent.dimensions().y * 2);
 
-    // Creates controls
     controls = new MapControls(instance.view.camera, instance.domElement);
-
-    // Then looks at extent's center
     controls.target = center;
     controls.saveState();
-
     controls.enableDamping = true;
     controls.dampingFactor = 0.2;
     controls.maxPolarAngle = Math.PI / 2.3;
-
     instance.useTHREEControls(controls);
 
     inspector = Inspector.attach('inspector', instance);

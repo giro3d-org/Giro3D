@@ -12,7 +12,6 @@ import StatusBar from './widgets/StatusBar.js';
 import { bindSlider } from './widgets/bindSlider.js';
 import { bindToggle } from './widgets/bindToggle.js';
 
-// Defines geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent(
     'EPSG:3857',
     -20037508.342789244,
@@ -21,7 +20,6 @@ const extent = new Extent(
     20037508.342789244,
 );
 
-// Creates a Giro3D instance
 const instance = new Instance({
     target: 'view',
     crs: extent.crs(),
@@ -30,15 +28,14 @@ const instance = new Instance({
     },
 });
 
-// Instanciates camera
 instance.view.camera.position.set(0, 0, 25000000);
 
-// Instanciates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 
 instance.useTHREEControls(controls);
 
 Inspector.attach('inspector', instance);
+
 StatusBar.bind(instance);
 
 function createColorLayer() {
@@ -64,7 +61,6 @@ function buildMapAndLayers() {
         instance.remove(map);
     }
 
-    // Creates a map that will contain the layer
     map = new Map({ extent, forceTextureAtlases });
 
     instance.add(map);

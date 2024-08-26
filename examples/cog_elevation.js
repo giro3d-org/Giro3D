@@ -19,23 +19,19 @@ import { bindDropDown } from './widgets/bindDropDown.js';
 
 const extent = new Extent('EPSG:3857', -13581040.085, -13469591.026, 5780261.83, 5942165.048);
 
-// Instantiate Giro3D
 const instance = new Instance({
     target: 'view',
     crs: extent.crs(),
 });
 
-// Instantiate the camera
 instance.view.camera.position.set(-13656319, 5735451, 88934);
 
-// Instantiate the controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.target.set(-13545408, 5837154, 0);
 instance.useTHREEControls(controls);
 
-// Construct a map and add it to the instance
 const map = new Map({
     extent,
     backgroundColor: 'gray',

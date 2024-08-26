@@ -25,10 +25,8 @@ const x = -13602000;
 const y = 5812000;
 const halfWidth = 25000;
 
-// Defines geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent('EPSG:3857', x - halfWidth, x + halfWidth, y - halfWidth, y + halfWidth);
 
-// Creates a Giro3D instance
 const instance = new Instance({
     target: 'view',
     crs: extent.crs(),
@@ -37,7 +35,6 @@ const instance = new Instance({
     },
 });
 
-// Creates a map that will contain the layer
 const map = new Map({
     extent,
     hillshading: true,
@@ -86,14 +83,18 @@ map.addLayer(dem);
 
 instance.view.camera.position.set(-13600394, 5818579, 11832);
 
-// Instanciates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 
 controls.target.set(-13603000, 5811000, 0);
 
 instance.useTHREEControls(controls);
 
-// GUI
+Inspector.attach('inspector', instance);
+
+StatusBar.bind(instance);
+
+/// Example GUI
+
 bindToggle('toggle-graticule', v => {
     map.graticule.enabled = v;
     instance.notifyChange(map);
@@ -127,6 +128,3 @@ bindDropDown('color', v => {
     map.graticule.color = new Color(v);
     instance.notifyChange(map);
 });
-
-Inspector.attach('inspector', instance);
-StatusBar.bind(instance);

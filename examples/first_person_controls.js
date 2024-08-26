@@ -21,25 +21,26 @@ const instance = new Instance({
     },
 });
 
-// Configure and add Point Cloud to the scene
-instance.add(
-    new Tiles3D(
-        new Tiles3DSource('https://3d.oslandia.com/3dtiles/eglise_saint_blaise_arles/tileset.json'),
-    ),
+const pointCloud = new Tiles3D(
+    new Tiles3DSource('https://3d.oslandia.com/3dtiles/eglise_saint_blaise_arles/tileset.json'),
 );
 
-// Position our camera
-instance.view.camera.position.set(831542.2870560559, 6287655.35350404, 31.86644500706522);
-instance.view.camera.lookAt(new Vector3(831585.923, 6287652.23, 27.461));
-instance.view.camera.updateMatrixWorld();
-// And create our controls
-const controls = new FirstPersonControls(instance, {
-    focusOnMouseOver: true,
-});
-controls.reset();
-instance.domElement.focus();
+instance.add(pointCloud);
 
-instance.notifyChange(instance.view.camera);
+// Position our camera
+const camera = instance.view.camera;
+camera.position.set(831542.2870560559, 6287655.35350404, 31.86644500706522);
+camera.lookAt(new Vector3(831585.923, 6287652.23, 27.461));
+camera.updateMatrixWorld();
+
+// And create our controls
+const controls = new FirstPersonControls(instance, { focusOnMouseOver: true });
+
+controls.reset();
+
+instance.domElement.focus();
+instance.notifyChange(camera);
 
 Inspector.attach('inspector', instance);
+
 StatusBar.bind(instance, { disableUrlUpdate: true });

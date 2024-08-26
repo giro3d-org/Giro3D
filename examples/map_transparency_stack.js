@@ -23,18 +23,13 @@ import StatusBar from './widgets/StatusBar.js';
 import { bindToggle } from './widgets/bindToggle.js';
 import { bindSlider } from './widgets/bindSlider.js';
 
-// # Planar (EPSG:3946) viewer
-
-// Defines projection that we will use (taken from https://epsg.io/3946, Proj4js section)
 Instance.registerCRS(
     'EPSG:3946',
     '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
 );
 
-// Defines geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent('EPSG:3946', 1837816.94334, 1847692.32501, 5170036.4587, 5178412.82698);
 
-// Creates the Giro3D instance
 const instance = new Instance({
     target: 'view',
     crs: 'EPSG:3946',
@@ -122,23 +117,17 @@ orthophotoMap.object3d.updateMatrixWorld();
 vectorMap.object3d.translateZ(+2500);
 vectorMap.object3d.updateMatrixWorld();
 
-// Sets the camera position
 instance.view.camera.position.set(1832816, 5163527, 6121);
 
-// Creates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
-// Then looks at extent's center
 controls.target = extent.centerAsVector3();
 controls.saveState();
-
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
-
 instance.useTHREEControls(controls);
 
 Inspector.attach('inspector', instance);
 
-// Bind events
 StatusBar.bind(instance);
 
 bindToggle('show-terrain', v => {

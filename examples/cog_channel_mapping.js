@@ -13,11 +13,9 @@ import { bindNumericalDropDown } from './widgets/bindNumericalDropDown.js';
 
 Instance.registerCRS('EPSG:32611', '+proj=utm +zone=11 +datum=WGS84 +units=m +no_defs +type=crs');
 
-// Define geographic extent: CRS, min/max X, min/max Y
 const extent = new Extent('EPSG:32611', 666285, 668533.5, 3997174, 3998444);
 const center = extent.centerAsVector3();
 
-// Instantiate Giro3D
 const instance = new Instance({
     target: 'view',
     crs: extent.crs(),
@@ -26,19 +24,16 @@ const instance = new Instance({
     },
 });
 
-// Instantiate the camera
 instance.view.camera.position.set(center.x, center.y, 2500);
 
-// Instantiate the controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.target.set(center.x, center.y + 1, center.z);
-
 instance.useTHREEControls(controls);
 
-// Construct a map and add it to the instance
 const map = new Map({ extent });
+
 instance.add(map);
 
 // Data coming from the same source as

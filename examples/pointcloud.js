@@ -31,12 +31,11 @@ const pointcloud = new Tiles3D(
 function placeCamera(position, lookAt) {
     instance.view.camera.position.set(position.x, position.y, position.z);
     instance.view.camera.lookAt(lookAt);
-    // create controls
+
     const controls = new MapControls(instance.view.camera, instance.domElement);
     controls.target.copy(lookAt);
     controls.enableDamping = true;
     controls.dampingFactor = 0.25;
-
     instance.useTHREEControls(controls);
 
     instance.notifyChange(instance.view.camera);

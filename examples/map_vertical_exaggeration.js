@@ -27,7 +27,6 @@ const instance = new Instance({
 const minAltitude = -1531;
 const maxAltitude = 2388;
 
-// create a map
 const extent = new Extent(
     instance.referenceCrs,
     -13576103.933,
@@ -54,9 +53,7 @@ map.subdivisionThreshold = 0.75;
 
 instance.add(map);
 
-// Use an elevation COG with nodata values
 const source = new CogSource({
-    // https://www.sciencebase.gov/catalog/item/632a9a9ad34e71c6d67b95a3
     url: 'https://3d.oslandia.com/giro3d/rasters/topobathy.cog.tiff',
     crs: extent.crs(),
 });
@@ -93,15 +90,11 @@ instance.view.camera.lookAt(lookAt);
 
 instance.notifyChange(instance.view.camera);
 
-// Creates controls
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
-
-// you need to use these 2 lines each time you change the camera lookAt or position programatically
 controls.target.copy(lookAt);
 controls.saveState();
-
 instance.useTHREEControls(controls);
 
 Inspector.attach('inspector', instance);
@@ -209,7 +202,6 @@ function updateMeasurements(mouseEvent) {
 
 instance.domElement.addEventListener('mousemove', updateMeasurements);
 
-// Bind events
 StatusBar.bind(instance);
 
 const [showColliders] = bindToggle('show-colliders', v => {
