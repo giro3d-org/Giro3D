@@ -3,8 +3,10 @@ import { GlobalCache } from '../core/Cache';
 import type Context from '../core/Context';
 import { isDisposable } from '../core/Disposable';
 import type Extent from '../core/geographic/Extent';
-import type { ColorLayer, Layer, LayerEvents } from '../core/layer';
+import type ColorLayer from '../core/layer/ColorLayer';
 import type HasLayers from '../core/layer/HasLayers';
+import type Layer from '../core/layer/Layer';
+import type { LayerEvents } from '../core/layer/Layer';
 import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../core/MemoryUsage';
 import OperationCounter from '../core/OperationCounter';
 import type Pickable from '../core/picking/Pickable';
@@ -176,7 +178,7 @@ class Tiles3D<
 
     onRenderingContextRestored(): void {
         this.forEachLayer(layer => layer.onRenderingContextRestored());
-        this._instance.notifyChange(this);
+        this.instance.notifyChange(this);
     }
 
     getMemoryUsage(context: GetMemoryUsageContext) {
@@ -195,7 +197,7 @@ class Tiles3D<
 
     async attach(colorLayer: ColorLayer) {
         this._colorLayer = colorLayer;
-        await colorLayer.initialize({ instance: this._instance });
+        await colorLayer.initialize({ instance: this.instance });
     }
 
     get loading() {
@@ -294,7 +296,7 @@ class Tiles3D<
         nonNull(this._tileIndex).get(tile).obj = tile;
         this._root = tile;
         this._extent = boundingVolumeToExtent(
-            this._instance.referenceCrs,
+            this.instance.referenceCrs,
             tile.boundingVolume,
             tile.matrixWorld,
         );
@@ -307,7 +309,7 @@ class Tiles3D<
         if (metadata.obj) {
             const tileset = metadata as ProcessedTile;
             this.unmarkTileForDeletion(tileset.obj);
-            this._instance.notifyChange(parent);
+            this.instance.notifyChange(parent);
             return tileset.obj;
         }
 
@@ -345,7 +347,7 @@ class Tiles3D<
         try {
             const node = (await this._queue.enqueue(request)) as Tile;
             metadata.obj = node;
-            this._instance.notifyChange(this);
+            this.notifyChange(this);
             return node;
         } catch (e) {
             if (e instanceof Error && e.name !== 'AbortError') {
@@ -625,7 +627,7 @@ class Tiles3D<
                             (obj as ObjectWithExtent).extent = extent;
                         });
 
-                        this._instance.notifyChange(child);
+                        this.notifyChange(child);
                     }
                 })
                 .catch(e => {
@@ -685,7 +687,7 @@ class Tiles3D<
         Promise.all(promises).then(
             () => {
                 node.pendingSubdivision = false;
-                this._instance.notifyChange(node);
+                this.notifyChange(node);
             },
             () => {
                 node.pendingSubdivision = false;
@@ -830,9 +832,9 @@ class Tiles3D<
 
     pick(coordinates: Vector2, options?: PickOptions): Tiles3DPickResult[] {
         if (this.material && PointCloudMaterial.isPointCloudMaterial(this.material)) {
-            return pickPointsAt(this._instance, coordinates, this, options);
+            return pickPointsAt(this.instance, coordinates, this, options);
         }
-        return pickObjectsAt(this._instance, coordinates, this.object3d, options);
+        return pickObjectsAt(this.instance, coordinates, this.object3d, options);
     }
 }
 

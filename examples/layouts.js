@@ -23,14 +23,11 @@ const source = new TiledImageSource({
 });
 
 function buildViewer(target, defaultRenderer = true) {
-    const renderer = { clearColor: false };
-    if (!defaultRenderer) {
-        renderer.renderer = new WebGLRenderer({ antialias: true, alpha: true });
-    }
     const instance = new Instance({
         target,
         crs: extent.crs,
-        renderer,
+        backgroundColor: null,
+        renderer: defaultRenderer ? null : new WebGLRenderer({ antialias: true, alpha: true }),
     });
 
     const map = new Map({ extent, maxSubdivisionLevel: 10 });
@@ -43,7 +40,7 @@ function buildViewer(target, defaultRenderer = true) {
 
     const controls = new MapControls(instance.view.camera, instance.domElement);
 
-    instance.useTHREEControls(controls);
+    instance.view.setControls(controls);
 
     // Disable zoom so it doesn't capture scrolling
     controls.enableZoom = false;

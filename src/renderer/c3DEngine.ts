@@ -1,4 +1,11 @@
-import type { Camera, ColorRepresentation, Object3D, Scene, TextureDataType } from 'three';
+import type {
+    Camera,
+    ColorRepresentation,
+    Object3D,
+    Scene,
+    TextureDataType,
+    WebGLRendererParameters,
+} from 'three';
 import {
     DepthTexture,
     LinearFilter,
@@ -79,6 +86,34 @@ function createErrorMessage() {
     return element;
 }
 
+function createRenderer(target: HTMLDivElement, options?: WebGLRendererParameters): WebGLRenderer {
+    // Create renderer
+    try {
+        const renderer = new WebGLRenderer({
+            ...options,
+            canvas: options?.canvas ?? document.createElement('canvas'),
+            antialias: options?.antialias ?? true,
+            alpha: options?.alpha ?? true,
+            logarithmicDepthBuffer: options?.logarithmicDepthBuffer ?? false,
+        });
+
+        // Necessary to enable clipping planes per-entity or per-object, rather
+        // than per-renderer (global) clipping planes.
+        renderer.localClippingEnabled = true;
+
+        return renderer;
+    } catch (error) {
+        const msg = 'Failed to create WebGLRenderer';
+        console.error(msg, error);
+        target.appendChild(createErrorMessage());
+        if (error instanceof Error) {
+            throw new Error(`${msg}: ${error.message}`);
+        } else {
+            throw new Error(msg);
+        }
+    }
+}
+
 export interface RenderToBufferZone {
     /** x (in instance coordinate) */
     x: number;
@@ -107,119 +142,46 @@ export interface RenderToBufferOptions {
     zone?: RenderToBufferZone;
 }
 
-export interface RendererOptions {
-    /**
-     * Enables antialiasing.
-     * Not used if renderer is provided.
-     *
-     * @defaultvalue true
-     */
-    antialias?: boolean;
-    /**
-     * Enables transparency on the renderer.
-     * Necessary for transparent backgrounds.
-     * Not used if renderer is provided.
-     *
-     * @defaultvalue true
-     */
-    alpha?: boolean;
-    /**
-     * Enables the [logarithmic depth buffer](https://threejs.org/docs/#api/en/renderers/WebGLRenderer.logarithmicDepthBuffer).
-     * Not used if renderer is provided.
-     *
-     * @defaultvalue false
-     */
-    logarithmicDepthBuffer?: boolean;
-    /**
-     * Enables shader validation.
-     * Note: shader validation is a costly operation that should be disabled in production.
-     * That can be toggled at any moment using the corresponding property in the renderer.
-     * See the [Three.js documentation](https://threejs.org/docs/index.html?q=webglren#api/en/renderers/WebGLRenderer.debug)
-     * for more information.
-     *
-     * @defaultvalue false
-     */
-    checkShaderErrors?: boolean;
-    /**
-     * The background color.
-     * Can be a hex color or `false` for transparent backgrounds (requires alpha true).
-     */
-    clearColor?: ColorRepresentation | boolean;
-    /**
-     * Custom renderer to be used.
-     * If provided, it will be automatically added in the DOM in viewerDiv.
-     */
-    renderer?: WebGLRenderer;
-}
+type EngineOptions = {
+    clearColor?: ColorRepresentation | null;
+    renderer?: WebGLRenderer | WebGLRendererParameters;
+};
 
 class C3DEngine {
+    private readonly _renderTargets: Map<number, WebGLRenderTarget> = new Map();
+
+    readonly renderer: WebGLRenderer;
+    readonly labelRenderer: CSS2DRenderer;
+    private _renderPipeline: RenderPipeline | null;
+
     width: number;
     height: number;
-    renderTargets: Map<number, WebGLRenderTarget>;
-    renderer: WebGLRenderer;
-    labelRenderer: CSS2DRenderer;
-    renderPipeline: RenderPipeline | null;
     renderingOptions: RenderingOptions;
 
     clearAlpha = 1;
     clearColor: ColorRepresentation = 0x030508;
 
     /**
-     * @param viewerDiv - The parent div that will contain the canvas.
+     * @param target - The parent div that will contain the canvas.
      * @param options - The options.
      */
-    constructor(viewerDiv: HTMLDivElement, options: RendererOptions = {}) {
-        // pick sensible default options
-        if (options.antialias === undefined) {
-            options.antialias = true;
-        }
-        if (options.alpha === undefined) {
-            options.alpha = true;
-        }
-        if (options.logarithmicDepthBuffer === undefined) {
-            options.logarithmicDepthBuffer = false;
-        }
-        if (options.clearColor === undefined) {
-            // Set clearColor to false for transparent
-            options.clearColor = 0x030508;
-        }
-
-        const renderer = options.renderer;
-
+    constructor(target: HTMLDivElement, options?: EngineOptions) {
         registerChunks();
 
-        this.width = viewerDiv.clientWidth;
-        this.height = viewerDiv.clientHeight;
+        this.width = target.clientWidth;
+        this.height = target.clientHeight;
 
-        this.renderTargets = new Map();
-
-        // Create renderer
-        try {
-            this.renderer =
-                renderer ||
-                new WebGLRenderer({
-                    canvas: document.createElement('canvas'),
-                    antialias: options.antialias,
-                    alpha: options.alpha,
-                    logarithmicDepthBuffer: options.logarithmicDepthBuffer,
-                });
-
-            // Necessary to enable clipping planes per-entity or per-object, rather
-            // than per-renderer (global) clipping planes.
-            this.renderer.localClippingEnabled = true;
-        } catch (error) {
-            const msg = 'Failed to create WebGLRenderer';
-            console.error(msg, error);
-            viewerDiv.appendChild(createErrorMessage());
-            if (error instanceof Error) {
-                throw new Error(`${msg}: ${error.message}`);
-            } else {
-                throw new Error(msg);
-            }
+        if (options?.renderer instanceof WebGLRenderer) {
+            this.renderer = options?.renderer;
+        } else {
+            this.renderer = createRenderer(target, {
+                ...options?.renderer,
+            });
         }
 
         // Don't verify shaders by default (it is very costly)
-        this.renderer.debug.checkShaderErrors = options.checkShaderErrors ?? false;
+        this.renderer.debug.checkShaderErrors = false;
+
         this.labelRenderer = new CSS2DRenderer();
 
         // Let's allow our canvas to take focus
@@ -233,14 +195,20 @@ class C3DEngine {
 
         Capabilities.updateCapabilities(this.renderer);
 
-        if (options.clearColor !== false) {
-            const color = options.clearColor as ColorRepresentation;
-            this.clearColor = color;
-            this.renderer.setClearColor(color);
-        } else {
+        let clearColor = options?.clearColor;
+
+        if (clearColor === undefined) {
+            clearColor = 0x030508;
+        } else if (clearColor === null) {
             this.clearAlpha = 0;
+            clearColor = 0;
         }
+
+        this.clearColor = clearColor;
+        this.renderer.setClearColor(this.clearColor, this.clearAlpha);
+
         this.renderer.clear();
+
         this.renderer.autoClear = false;
 
         // Finalize DOM insertion:
@@ -261,19 +229,19 @@ class C3DEngine {
         this.labelRenderer.setSize(this.width, this.height);
 
         // Append renderer to the DOM
-        viewerDiv.appendChild(this.renderer.domElement);
-        viewerDiv.appendChild(this.labelRenderer.domElement);
+        target.appendChild(this.renderer.domElement);
+        target.appendChild(this.labelRenderer.domElement);
 
-        this.renderPipeline = null;
+        this._renderPipeline = null;
 
         this.renderingOptions = new RenderingOptions();
     }
 
     dispose() {
-        for (const rt of this.renderTargets.values()) {
+        for (const rt of this._renderTargets.values()) {
             rt.dispose();
         }
-        this.renderTargets.clear();
+        this._renderTargets.clear();
         this.labelRenderer.domElement.remove();
         this.renderer.domElement.remove();
         this.renderer.dispose();
@@ -282,7 +250,7 @@ class C3DEngine {
     onWindowResize(w: number, h: number) {
         this.width = w;
         this.height = h;
-        for (const rt of this.renderTargets.values()) {
+        for (const rt of this._renderTargets.values()) {
             rt.setSize(this.width, this.height);
         }
         this.renderer.setSize(this.width, this.height);
@@ -334,15 +302,15 @@ class C3DEngine {
      * @param camera - The camera.
      */
     renderUsingCustomPipeline(scene: Object3D, camera: Camera) {
-        if (!this.renderPipeline) {
-            this.renderPipeline = new RenderPipeline(this.renderer);
+        if (!this._renderPipeline) {
+            this._renderPipeline = new RenderPipeline(this.renderer);
         }
 
-        this.renderPipeline.render(scene, camera, this.width, this.height, this.renderingOptions);
+        this._renderPipeline.render(scene, camera, this.width, this.height, this.renderingOptions);
     }
 
     private acquireRenderTarget(datatype: TextureDataType) {
-        let renderTarget = this.renderTargets.get(datatype);
+        let renderTarget = this._renderTargets.get(datatype);
 
         if (!renderTarget) {
             const newRenderTarget = createRenderTarget(
@@ -351,7 +319,7 @@ class C3DEngine {
                 datatype,
                 this.renderer,
             );
-            this.renderTargets.set(datatype, newRenderTarget);
+            this._renderTargets.set(datatype, newRenderTarget);
             renderTarget = newRenderTarget;
         }
 

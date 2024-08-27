@@ -29,9 +29,7 @@ Instance.registerCRS(
 const instance = new Instance({
     target: 'view',
     crs: 'EPSG:3946',
-    renderer: {
-        clearColor: false, // To make canvas transparent
-    },
+    backgroundColor: null, // To make canvas transparent
 });
 
 // Enable point cloud post processing effects
@@ -73,7 +71,7 @@ function placeCamera(position, lookAt) {
     controls.enableDamping = true;
     controls.dampingFactor = 0.25;
 
-    instance.useTHREEControls(controls);
+    instance.view.setControls(controls);
 
     instance.notifyChange(instance.view.camera);
 }

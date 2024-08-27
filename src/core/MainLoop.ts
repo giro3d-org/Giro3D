@@ -238,7 +238,10 @@ class MainLoop {
             dt,
             updateLoopRestarted: this._updateLoopRestarted,
         });
-        instance.execCameraUpdate();
+
+        const dim = instance.engine.getWindowSize();
+        instance.view.update(dim.x, dim.y);
+
         instance.dispatchEvent({
             type: 'after-camera-update',
             frame,

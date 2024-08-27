@@ -39,9 +39,7 @@ const extent = Extent.fromCenterAndSize('EPSG:2154', { x: 674_675, y: 6_442_569 
 const instance = new Instance({
     target: 'view',
     crs: extent.crs,
-    renderer: {
-        clearColor: false,
-    },
+    backgroundColor: null,
 });
 
 const map = new Map({
@@ -104,7 +102,7 @@ instance.view.camera.position.set(center.x - 4000, center.y - 4000, 7300);
 
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.target.set(center.x, center.y, 300);
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 // We use the DrawTool to draw the path on the map.
 const measureTool = new DrawTool({ instance });

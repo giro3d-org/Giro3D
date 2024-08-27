@@ -9,14 +9,16 @@ import {
     Vector2,
     Vector3,
     type Box3,
+    type ColorRepresentation,
     type WebGLRenderer,
+    type WebGLRendererParameters,
 } from 'three';
 import type { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer';
 import type Entity from '../entities/Entity';
 import { isEntity } from '../entities/Entity';
 import Entity3D, { isEntity3D } from '../entities/Entity3D';
 import Map from '../entities/Map';
-import C3DEngine, { type RendererOptions } from '../renderer/c3DEngine';
+import C3DEngine from '../renderer/c3DEngine';
 import type RenderingOptions from '../renderer/RenderingOptions';
 import { GlobalRenderTargetPool } from '../renderer/RenderTargetPool';
 import View, { type CameraOptions } from '../renderer/View';
@@ -156,8 +158,17 @@ export interface InstanceOptions extends CameraOptions {
      * otherwise a default one will be constructed
      */
     scene3D?: Scene;
-    /* Rendering options */
-    renderer?: RendererOptions;
+    /**
+     * The background color of the canvas. If `null`, the canvas is transparent.
+     * If `undefined`, the default color is used.
+     * @defaultValue `'#030508'`
+     */
+    backgroundColor?: ColorRepresentation | null;
+    /**
+     * The renderer to use. Might be either an instance of an existing {@link WebGLRenderer},
+     * or options to create one. If `undefined`, a new one will be created with default parameters.
+     */
+    renderer?: WebGLRenderer | WebGLRendererParameters;
 }
 
 /**
@@ -187,19 +198,6 @@ export interface PickObjectsAtOptions extends PickOptions {
     pickFeatures?: boolean;
 }
 
-export interface CustomCameraControls {
-    enabled: boolean;
-}
-
-export interface ThreeControls extends CustomCameraControls, EventDispatcher {
-    update: () => void;
-}
-
-interface ControlFunctions {
-    update: () => void;
-    eventListener: () => void;
-}
-
 function isObject3D(o: unknown): o is Object3D {
     return (o as Object3D).isObject3D;
 }
@@ -212,7 +210,7 @@ function isObject3D(o: unknown): o is Object3D {
  * ```js
  * // Create a Giro3D instance in the EPSG:3857 coordinate system:
  * const instance = new Instance({
- *     view: 'view',
+ *     target: 'view',
  *     crs: 'EPSG:3857',
  * });
  *
@@ -246,8 +244,6 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
     private readonly _onContextRestored: () => void;
     private readonly _onContextLost: () => void;
     private _resizeTimeout?: string | number | NodeJS.Timeout;
-    private _controls?: CustomCameraControls;
-    private _controlFunctions?: ControlFunctions;
     private _disposed = false;
 
     /**
@@ -301,7 +297,11 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         this._viewport.style.height = '100%';
         viewerDiv.appendChild(this._viewport);
 
-        this._engine = new C3DEngine(this._viewport, options.renderer);
+        this._engine = new C3DEngine(this._viewport, {
+            clearColor: options.backgroundColor,
+            renderer: options.renderer,
+        });
+
         this._mainLoop = new MainLoop();
 
         this._scene = options.scene3D || new Scene();
@@ -326,6 +326,8 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
             options,
         );
 
+        this._view.addEventListener('change', () => this.notifyChange(this._view.camera));
+
         this._entities = new Set();
 
         if (window.ResizeObserver) {
@@ -335,7 +337,6 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
             this._resizeObserver.observe(viewerDiv);
         }
 
-        this._controls = undefined;
         this._pickingClock = new Clock(false);
 
         this._onContextRestored = this.onContextRestored.bind(this);
@@ -446,19 +447,6 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         return this._view;
     }
 
-    /** Gets the currently bound camera controls. */
-    get controls(): CustomCameraControls | undefined {
-        return this._controls;
-    }
-
-    /**
-     * Sets custom camera controls.
-     * Prefer {@link Instance.useTHREEControls} when possible.
-     */
-    set controls(controls: CustomCameraControls | undefined) {
-        this._controls = controls;
-    }
-
     private _doUpdateRendererSize(div: HTMLDivElement): void {
         this._engine.onWindowResize(div.clientWidth, div.clientHeight);
         this.notifyChange(this._view.camera);
@@ -498,13 +486,13 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         this.domElement.removeEventListener('webglcontextrestored', this._onContextRestored);
 
         this._resizeObserver?.disconnect();
-        this.removeTHREEControls();
         for (const obj of this.getObjects()) {
             this.remove(obj);
         }
         this._scene.remove(this._threeObjects);
 
         this._engine.dispose();
+        this._view.dispose();
         this.viewport.remove();
     }
 
@@ -531,11 +519,6 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
             throw new Error('object is not an instance of THREE.Object3D or Giro3D.Entity');
         }
 
-        if (isEntity3D(object)) {
-            // @ts-expect-error private property. TODO assign it cleanly (maybe in entity constructor ?)
-            object._instance = this;
-        }
-
         if (isObject3D(object)) {
             // case of a simple THREE.js object3D
             const object3d = object as Object3D;
@@ -552,11 +535,11 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
             throw new Error(`Invalid id '${object.id}': id already used`);
         }
 
-        entity.startPreprocess();
-
         this._entities.add(entity);
 
-        await entity.whenReady;
+        await entity.initialize({
+            instance: this,
+        });
 
         if (
             entity instanceof Entity3D &&
@@ -631,16 +614,15 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * This should be done before creating the instance.
      * This method can be called several times to add multiple CRS.
      *
-     * ```
+     * ```js
      *  // register the CRS first...
      *  Instance.registerCRS(
      *  'EPSG:102115',
      *  '+proj=utm +zone=5 +ellps=clrk66 +units=m +no_defs +type=crs');
      *
      *  // ...then create the instance
-     *  const instance = new Instance(div, { crs: 'EPSG:102115' });
+     *  const instance = new Instance({ crs: 'EPSG:102115' });
      * ```
-     *
      * @param name - the short name, or EPSG code to identify this CRS.
      * @param value - the CRS definition, either in proj syntax, or in WKT syntax.
      */
@@ -709,17 +691,6 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         }
 
         return result;
-    }
-
-    /**
-     * Executes the camera update.
-     * Internal use only.
-     *
-     * @internal
-     */
-    execCameraUpdate() {
-        const dim = this._engine.getWindowSize();
-        this.view.update(dim.x, dim.y);
     }
 
     /**
@@ -969,65 +940,6 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         GlobalCache.getMemoryUsage(context);
 
         return aggregateMemoryUsage(context);
-    }
-
-    /**
-     * This function allows to use three.js controls (files in `examples/{js,jsm}/controls` folder
-     * of THREE.js) into Giro3D 3D scene.
-     *
-     * Giro3D supports the controls that check the following assumptions:
-     *
-     * - they fire 'change' events when something happens
-     * - they have an `update` method
-     *
-     * @param controls - An instance of a THREE controls
-     */
-    useTHREEControls(controls: ThreeControls): void {
-        if (this.controls) {
-            return;
-        }
-
-        this._controlFunctions = {
-            eventListener: () => this.notifyChange(this._view.camera),
-            update: () => this.updateControls(),
-        };
-
-        this._controls = controls;
-        if (typeof controls.addEventListener === 'function') {
-            controls.addEventListener('change', this._controlFunctions.eventListener);
-            this.addEventListener('before-camera-update', this._controlFunctions.update);
-            // Some THREE controls don't inherit of EventDispatcher
-        } else {
-            throw new Error(
-                'Unsupported control class: only event dispatcher controls are supported.',
-            );
-        }
-    }
-
-    /**
-     * Removes a THREE controls previously added. The controls won't be disable.
-     */
-    removeTHREEControls(): void {
-        if (!this._controls || !this._controlFunctions) {
-            return;
-        }
-
-        if (typeof (this._controls as ThreeControls).removeEventListener === 'function') {
-            (this._controls as ThreeControls).removeEventListener(
-                'change',
-                this._controlFunctions.eventListener,
-            );
-            this.removeEventListener('before-camera-update', this._controlFunctions.update);
-        }
-
-        this._controls = undefined;
-        this._controlFunctions = undefined;
-    }
-
-    private updateControls() {
-        if (typeof (this._controls as ThreeControls).update === 'function') {
-            (this._controls as ThreeControls).update();
-        }
     }
 }
 

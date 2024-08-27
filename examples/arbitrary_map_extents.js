@@ -26,15 +26,13 @@ let currentMap;
 const instance = new Instance({
     target: 'view',
     crs: EPSG3857_BOUNDS.crs,
-    renderer: {
-        clearColor: 0x0a3b59,
-    },
+    backgroundColor: 0x0a3b59,
 });
 
 instance.view.camera.position.set(0, 0, 100000000);
 
 const controls = new MapControls(instance.view.camera, instance.domElement);
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 Inspector.attach('inspector', instance);
 

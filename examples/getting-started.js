@@ -196,7 +196,7 @@ controls.saveState();
 
 // Now let's register those controls with the instance. The instance will automatically register
 // the event handlers relevant to the navigation in the scene.
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 // ### Optional: Set up the inspector
 

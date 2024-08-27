@@ -28,9 +28,7 @@ const extent = new Extent('EPSG:3946', 1837816.94334, 1847692.32501, 5170036.458
 const instance = new Instance({
     target: 'view',
     crs: extent.crs,
-    renderer: {
-        clearColor: 0x0a3b59,
-    },
+    backgroundColor: 0x0a3b59,
 });
 
 const map = new Map({ extent });
@@ -123,7 +121,7 @@ controls.saveState();
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.maxPolarAngle = Math.PI / 2.3;
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 const labelElement = document.createElement('div');
 labelElement.classList.value = 'badge rounded-pill text-bg-light';

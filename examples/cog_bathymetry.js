@@ -19,9 +19,7 @@ const extent = new Extent('EPSG:3857', 2285900, 2444000, 4230900, 4386100);
 const instance = new Instance({
     target: 'view',
     crs: 'EPSG:3857',
-    renderer: {
-        clearColor: false,
-    },
+    backgroundColor: null, // Make the canvas transparent
 });
 
 const map = new Map({
@@ -75,7 +73,7 @@ const center = extent.centerAsVector2();
 instance.view.camera.position.set(2195551, 4146310, 90_000);
 controls.target.set(center.x, center.y, min);
 
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 // Attach the inspector
 Inspector.attach('inspector', instance);

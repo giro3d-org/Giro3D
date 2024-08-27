@@ -48,9 +48,7 @@ Instance.registerCRS(
 const instance = new Instance({
     target: 'view',
     crs: 'EPSG:3946',
-    renderer: {
-        clearColor: 0xcccccc,
-    },
+    backgroundColor: 0xcccccc,
 });
 
 // Create a custom material for our point cloud.
@@ -82,7 +80,7 @@ function placeCamera(position, lookAt) {
     controls.enableDamping = true;
     controls.dampingFactor = 0.25;
 
-    instance.useTHREEControls(controls);
+    instance.view.setControls(controls);
 
     instance.notifyChange(instance.view.camera);
 }

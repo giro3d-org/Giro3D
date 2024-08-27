@@ -1,10 +1,11 @@
 import type GUI from 'lil-gui';
 import { Color } from 'three';
 import type Instance from '../core/Instance';
-import type { ColorLayer, ElevationLayer } from '../core/layer';
+import { isColorLayer } from '../core/layer/ColorLayer';
+import { isElevationLayer } from '../core/layer/ElevationLayer';
 import type Layer from '../core/layer/Layer';
 import * as MemoryUsage from '../core/MemoryUsage';
-import type { Entity3D } from '../entities';
+import type Entity3D from '../entities/Entity3D';
 import { isMap } from '../entities/Map';
 import type { BoundingBoxHelper } from '../helpers/Helpers';
 import Helpers from '../helpers/Helpers';
@@ -92,26 +93,24 @@ class LayerInspector extends Panel {
 
         this.addController<number>(this, 'composerImages').name('Loaded images');
 
-        if ((this.layer as ElevationLayer).isElevationLayer) {
-            const elevationLayer = this.layer as ElevationLayer;
-            this.minmax = { min: elevationLayer.minmax.min, max: elevationLayer.minmax.max };
+        if (isElevationLayer(this.layer)) {
+            this.minmax = { min: this.layer.minmax.min, max: this.layer.minmax.max };
             this.addController<number>(this.minmax, 'min').name('Minimum elevation');
             this.addController<number>(this.minmax, 'max').name('Maximum elevation');
         }
-        if ((this.layer as ColorLayer).isColorLayer) {
-            const colorLayer = this.layer as ColorLayer;
-            if (colorLayer.elevationRange) {
-                this.addController<number>(colorLayer.elevationRange, 'min')
+        if (isColorLayer(this.layer)) {
+            if (this.layer.elevationRange) {
+                this.addController<number>(this.layer.elevationRange, 'min')
                     .name('Elevation range minimum')
                     .onChange(() => this.notify(entity));
 
-                this.addController<number>(colorLayer.elevationRange, 'max')
+                this.addController<number>(this.layer.elevationRange, 'max')
                     .name('Elevation range maximum')
                     .onChange(() => this.notify(entity));
             }
 
             this.colorimetryPanel = new ColorimetryPanel(
-                colorLayer.colorimetry,
+                this.layer.colorimetry,
                 this.gui,
                 instance,
             );
@@ -210,11 +209,10 @@ class LayerInspector extends Panel {
             : 'idle';
         this.visible = this.layer.visible || true;
         this.composerImages = this.layer.composer?.images?.size ?? 0;
-        if ((this.layer as ElevationLayer).isElevationLayer) {
-            const elevationLayer = this.layer as ElevationLayer;
-            if (elevationLayer.minmax && this.minmax) {
-                this.minmax.min = elevationLayer.minmax.min;
-                this.minmax.max = elevationLayer.minmax.max;
+        if (isElevationLayer(this.layer)) {
+            if (this.layer.minmax && this.minmax) {
+                this.minmax.min = this.layer.minmax.min;
+                this.minmax.max = this.layer.minmax.max;
             }
         }
         const ctx: MemoryUsage.GetMemoryUsageContext = {

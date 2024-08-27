@@ -42,10 +42,10 @@ class CameraInspector extends Panel {
         this._controllers.push(position.add(this.camera.position, 'y'));
         this._controllers.push(position.add(this.camera.position, 'z'));
 
-        if (this.instance.controls && 'target' in this.instance.controls) {
+        if (this.view.controls && 'target' in this.view.controls) {
             const target = this.gui.addFolder('Target');
             target.close();
-            const targetObj = this.instance.controls.target as Vector3;
+            const targetObj = this.view.controls.target as Vector3;
             this._controllers.push(target.add(targetObj, 'x'));
             this._controllers.push(target.add(targetObj, 'y'));
             this._controllers.push(target.add(targetObj, 'z'));

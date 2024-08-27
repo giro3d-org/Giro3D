@@ -24,7 +24,7 @@ import { bindDropDown } from './widgets/bindDropDown.js';
 const instance = new Instance({
     target: 'view',
     crs: 'EPSG:3857',
-    renderer: { clearColor: false },
+    backgroundColor: null,
 });
 
 const extent = new Extent(
@@ -176,7 +176,7 @@ controls.enableDamping = true;
 controls.dampingFactor = 0.4;
 controls.target.copy(lookAt);
 controls.saveState();
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 Inspector.attach('inspector', instance);
 

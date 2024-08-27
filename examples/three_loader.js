@@ -23,8 +23,8 @@ import { bindNumericalDropDown } from './widgets/bindNumericalDropDown.js';
 const instance = new Instance({
     target: 'view',
     crs: 'EPSG:3857',
-    renderer: { antialias: true },
 });
+
 const camera = instance.view.camera;
 
 instance.renderer.shadowMap.enabled = true;
@@ -32,7 +32,7 @@ instance.renderer.shadowMap.enabled = true;
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 const clock = new Clock();
 

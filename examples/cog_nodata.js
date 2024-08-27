@@ -30,9 +30,7 @@ const center = extent.centerAsVector3();
 const instance = new Instance({
     target: 'view',
     crs: extent.crs,
-    renderer: {
-        clearColor: false,
-    },
+    backgroundColor: null,
 });
 
 instance.view.camera.position.set(center.x, center.y - 1, 50000);
@@ -41,7 +39,7 @@ const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.target.set(center.x, center.y, center.z);
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 // Use an elevation COG with nodata values
 const source = new CogSource({

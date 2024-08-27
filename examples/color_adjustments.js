@@ -94,7 +94,7 @@ controls.maxPolarAngle = Math.PI / 2.3;
 
 controls.saveState();
 
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 const [setSatelliteBrightness] = bindSlider('satellite-brightness', v => {
     satellite.brightness = v;

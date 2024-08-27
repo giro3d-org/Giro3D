@@ -28,9 +28,7 @@ let time = 0;
 const instance = new Instance({
     target: 'view',
     crs: extent.crs,
-    renderer: {
-        clearColor: 0xffffff,
-    },
+    backgroundColor: 'white',
 });
 
 instance.view.camera.position.set(0, 0, 10000000);
@@ -38,7 +36,7 @@ instance.view.camera.position.set(0, 0, 10000000);
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.25;
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 const map = new Map({ extent, backgroundColor: '#135D66' });
 

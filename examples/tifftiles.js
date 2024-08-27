@@ -23,9 +23,7 @@ const extent = new Extent('EPSG:3857', x - 12000, x + 13000, y - 4000, y + 26000
 const instance = new Instance({
     target: 'view',
     crs: extent.crs,
-    renderer: {
-        clearColor: 0x0a3b59,
-    },
+    backgroundColor: 0x0a3b59,
 });
 
 const map = new Map({
@@ -102,7 +100,7 @@ const controls = new MapControls(instance.view.camera, instance.domElement);
 
 controls.target.copy(center);
 
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 Inspector.attach('inspector', instance);
 

@@ -73,7 +73,7 @@ const controls = new MapControls(instance.view.camera, instance.domElement);
 
 controls.target.set(-13603000, 5811000, 0);
 
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 instance.notifyChange();
 

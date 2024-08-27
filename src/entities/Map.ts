@@ -335,6 +335,8 @@ export interface MapEventMap extends Entity3DEventMap {
 export type MapConstructorOptions = {
     /**
      * The geographic extent of the map.
+     *
+     * Note: It must have the same CRS as the instance this map will be added to.
      */
     extent: Extent;
     /**
@@ -522,7 +524,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     private readonly _layerIds: Set<string> = new Set();
     /** @internal */
     readonly geometryPool: globalThis.Map<string, TileGeometry>;
-    extent: Extent;
+    readonly extent: Extent;
     readonly maxSubdivisionLevel: number;
     readonly isPickableFeatures = true;
     private readonly _materialOptions: MaterialOptions;
@@ -825,7 +827,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
                 child.updateMatrixWorld(true);
                 i++;
             }
-            this._instance.notifyChange(node);
+            this.notifyChange(node);
         }
     }
 
@@ -845,7 +847,9 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     preprocess() {
-        this.extent = this.extent.as(this._instance.referenceCrs);
+        if (this.extent.crs !== this.instance.referenceCrs) {
+            throw new Error('The extent of this map is not in the same CRS as the Instance CRS');
+        }
 
         const subdivs = selectBestSubdivisions(this.extent);
 
@@ -888,7 +892,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
         // build tile
         const material = new LayeredMaterial({
-            renderer: this._instance.renderer,
+            renderer: this.instance.renderer,
             atlasInfo: this._atlasInfo,
             options: this._materialOptions,
             getIndexFn: this.getIndex.bind(this),
@@ -899,7 +903,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
         const tile = new TileMesh({
             geometryPool: this.geometryPool,
-            instance: this._instance,
+            instance: this.instance,
             material,
             extent,
             textureSize: nonNull(this._imageSize),
@@ -970,7 +974,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
     pick(coordinates: Vector2, options?: PickOptions): MapPickResult[] {
         if (options?.gpuPicking) {
-            return pickTilesAt(this._instance, coordinates, this, options);
+            return pickTilesAt(this.instance, coordinates, this, options);
         } else {
             return this.pickUsingRaycast(coordinates, options);
         }
@@ -981,10 +985,10 @@ class Map<UserData extends EntityUserData = EntityUserData>
         results: MapPickResult[],
         options?: PickOptions,
     ) {
-        const normalized = this._instance.canvasToNormalizedCoords(coordinates, tempNDC);
+        const normalized = this.instance.canvasToNormalizedCoords(coordinates, tempNDC);
 
         const raycaster = new Raycaster();
-        raycaster.setFromCamera(normalized, this._instance.view.camera);
+        raycaster.setFromCamera(normalized, this.instance.view.camera);
 
         tmpIntersectList.length = 0;
 
@@ -1001,7 +1005,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
             const pickResult: MapPickResult = {
                 isMapPickResult: true,
-                coord: new Coordinates(this._instance.referenceCrs, x, y, z),
+                coord: new Coordinates(this.instance.referenceCrs, x, y, z),
                 entity: this,
                 ...intersect,
             };
@@ -1163,7 +1167,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     onRenderingContextRestored(): void {
         this._materialOptions.colorMapAtlas?.forceUpdate();
         this.forEachLayer(layer => layer.onRenderingContextRestored());
-        this._instance.notifyChange(this);
+        this.notifyChange(this);
     }
 
     /**
@@ -1260,7 +1264,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
         this.dispatchEvent({ type: 'layer-order-changed' });
 
-        this._instance.notifyChange(this);
+        this.notifyChange(this);
     }
 
     contains(obj: unknown) {
@@ -1390,7 +1394,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
     private registerColorMap(colorMap: ColorMap) {
         if (!this._materialOptions.colorMapAtlas) {
-            this._materialOptions.colorMapAtlas = new ColorMapAtlas(this._instance.renderer);
+            this._materialOptions.colorMapAtlas = new ColorMapAtlas(this.instance.renderer);
             this.traverseTiles(t => {
                 t.material.setColorMapAtlas(this._materialOptions.colorMapAtlas);
             });
@@ -1408,10 +1412,6 @@ class Map<UserData extends EntityUserData = EntityUserData>
      * @returns a promise resolving when the layer is ready
      */
     async addLayer<TLayer extends Layer>(layer: TLayer): Promise<TLayer> {
-        if (!this._instance) {
-            throw new Error('map is not attached to an instance');
-        }
-
         if (!(layer instanceof Layer)) {
             throw new Error('layer is not an instance of Layer');
         }
@@ -1424,7 +1424,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
         this._layers.push(layer);
 
-        await layer.initialize({ instance: this._instance });
+        await layer.initialize({ instance: this.instance });
 
         layer.addEventListener('visible-property-changed', this._onLayerVisibilityChanged);
 
@@ -1441,7 +1441,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
         this.reorderLayers();
 
-        this._instance.notifyChange(this);
+        this.notifyChange(this);
 
         this.dispatchEvent({ type: 'layer-added', layer });
 
@@ -1492,7 +1492,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
             layer.postUpdate();
             this.reorderLayers();
             this.dispatchEvent({ type: 'layer-removed', layer });
-            this._instance.notifyChange(this);
+            this.notifyChange(this);
             if (options.disposeLayer) {
                 layer.dispose();
             }

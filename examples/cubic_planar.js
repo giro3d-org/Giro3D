@@ -65,9 +65,7 @@ const scale = new Vector3(1, 1, 1).divideScalar(extent.dimensions().x);
 const instance = new Instance({
     target: 'view',
     crs: extent.crs,
-    renderer: {
-        clearColor: 0x999999,
-    },
+    backgroundColor: 0x999999,
 });
 
 const cube = new Mesh(
@@ -146,7 +144,7 @@ instance.view.camera.lookAt(new Vector3(0, 0, 0));
 const controls = new OrbitControls(instance.view.camera, instance.domElement);
 controls.minDistance = 1;
 
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 // Request redraw
 instance.notifyChange();

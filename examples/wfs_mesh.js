@@ -187,7 +187,7 @@ controls.target = extent.centerAsVector3();
 controls.saveState();
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 const labelElement = document.createElement('div');
 labelElement.classList.value = 'badge rounded-pill text-bg-light';

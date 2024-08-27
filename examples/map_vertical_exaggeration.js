@@ -21,7 +21,7 @@ import { bindButton } from './widgets/bindButton.js';
 const instance = new Instance({
     target: 'view',
     crs: 'EPSG:3857',
-    renderer: { clearColor: false },
+    backgroundColor: null,
 });
 
 const minAltitude = -1531;
@@ -95,7 +95,7 @@ controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.target.copy(lookAt);
 controls.saveState();
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 Inspector.attach('inspector', instance);
 

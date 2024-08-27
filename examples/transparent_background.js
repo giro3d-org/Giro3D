@@ -25,9 +25,7 @@ const extent = new Extent('EPSG:3857', x - halfWidth, x + halfWidth, y - halfWid
 const instance = new Instance({
     target: 'view',
     crs: extent.crs,
-    renderer: {
-        clearColor: false,
-    },
+    backgroundColor: null,
 });
 
 const map = new Map({
@@ -69,7 +67,7 @@ const controls = new MapControls(instance.view.camera, instance.domElement);
 
 controls.target.set(-13603000, 5811000, 0);
 
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 instance.notifyChange();
 

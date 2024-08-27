@@ -30,7 +30,7 @@ Instance.registerCRS(
 const instance = new Instance({
     target: 'view',
     crs: 'EPSG:2154',
-    renderer: { clearColor: false },
+    backgroundColor: null, // To make the canvas transparent
 });
 
 const extent = Extent.fromCenterAndSize('EPSG:2154', { x: 895_055, y: 6_247_049 }, 20_000, 20_000);
@@ -142,7 +142,7 @@ controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.target.copy(lookAt);
 controls.saveState();
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 Inspector.attach('inspector', instance);
 

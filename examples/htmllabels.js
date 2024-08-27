@@ -43,7 +43,7 @@ controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.maxPolarAngle = Math.PI / 2.3;
 
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 // Function to look at an extent from top
 function lookTopDownAt(lookAtExtent, lookAtAltitude = 0) {

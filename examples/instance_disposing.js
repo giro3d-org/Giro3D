@@ -31,9 +31,7 @@ function init() {
     instance = new Instance({
         target: 'view',
         crs: extent.crs,
-        renderer: {
-            clearColor: 0x0a3b59,
-        },
+        backgroundColor: 0x0a3b59,
     });
 
     map = new Map({ extent });
@@ -59,7 +57,7 @@ function init() {
 
     controls = new MapControls(instance.view.camera, instance.domElement);
 
-    instance.useTHREEControls(controls);
+    instance.view.setControls(controls);
 
     inspector = Inspector.attach('inspector', instance);
 }

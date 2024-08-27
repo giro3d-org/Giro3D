@@ -44,7 +44,7 @@ export async function buildApidoc(parameters) {
 
     fse.writeJsonSync(typedocConfigPath, {
         $schema: 'https://typedoc.org/schema.json',
-        entryPoints: [path.join(sourceDir, 'index.ts')],
+        entryPoints: [path.join(sourceDir, 'api.ts')],
         tsconfig: path.join(rootDir, 'tsconfig.json'),
         out: parameters.output,
         theme: 'custom',
@@ -55,7 +55,6 @@ export async function buildApidoc(parameters) {
         customCss: path.join(apidocDir, 'theme.css'),
         titleLink: '/',
         excludeInternal: true,
-        excludeExternals: true,
         excludePrivate: true,
         navigationLinks: {},
         releaseName: parameters.releaseName,

@@ -42,9 +42,7 @@ const extent = new Extent('EPSG:2154', -111629.52, 1275028.84, 5976033.79, 72301
 const instance = new Instance({
     target: 'view',
     crs: extent.crs,
-    renderer: {
-        clearColor: 0xcccccc,
-    },
+    backgroundColor: 0xcccccc,
 });
 
 instance.renderingOptions.enableEDL = true;
@@ -143,7 +141,7 @@ controls.target.copy(lookAt);
 controls.saveState();
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 const markerMaterial = new MeshLambertMaterial({
     color: 'red',

@@ -33,9 +33,7 @@ const extent = new Extent('EPSG:3946', 1837816.94334, 1847692.32501, 5170036.458
 const instance = new Instance({
     target: 'view',
     crs: 'EPSG:3946',
-    renderer: {
-        clearColor: false,
-    },
+    backgroundColor: null,
 });
 
 const terrainMap = new Map({ extent, doubleSided: true, hillshading: true });
@@ -124,7 +122,7 @@ controls.target = extent.centerAsVector3();
 controls.saveState();
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 Inspector.attach('inspector', instance);
 

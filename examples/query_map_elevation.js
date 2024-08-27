@@ -28,9 +28,7 @@ const extent = Extent.fromCenterAndSize('EPSG:2154', { x: 1_051_908, y: 6_542_40
 const instance = new Instance({
     target: 'view',
     crs: extent.crs,
-    renderer: {
-        clearColor: SKY_COLOR,
-    },
+    backgroundColor: SKY_COLOR,
 });
 
 const map = new Map({
@@ -82,7 +80,7 @@ const controls = new MapControls(instance.view.camera, instance.domElement);
 instance.view.camera.position.set(994_410, 6_520_646, 5_520);
 controls.target.set(1_011_954, 6_539_864, 1_000);
 
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 // Here we have a list of summits of the Alps and their geographic coordinates,
 // but without any elevation information

@@ -26,9 +26,7 @@ const extent = new Extent(
 const instance = new Instance({
     target: 'view',
     crs: extent.crs,
-    renderer: {
-        clearColor: 0x0a3b59,
-    },
+    backgroundColor: 0x0a3b59,
 });
 
 const map = new Map({ extent, backgroundColor: 'white' });
@@ -51,7 +49,7 @@ const controls = new MapControls(instance.view.camera, instance.domElement);
 
 controls.enableRotate = false;
 
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 Inspector.attach('inspector', instance);
 StatusBar.bind(instance);

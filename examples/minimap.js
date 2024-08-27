@@ -26,10 +26,11 @@ Instance.registerCRS(
 );
 
 const SKY_COLOR = new Color(0xf1e9c6);
+
 const mainInstance = new Instance({
     target: 'view',
     crs: 'EPSG:2154',
-    renderer: { clearColor: SKY_COLOR },
+    backgroundColor: SKY_COLOR,
 });
 
 // create a map
@@ -97,7 +98,7 @@ controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.target.copy(lookAt);
 controls.saveState();
-mainInstance.useTHREEControls(controls);
+mainInstance.view.setControls(controls);
 
 const cubeTextureLoader = new CubeTextureLoader();
 cubeTextureLoader.setPath('image/skyboxsun25deg_zup/');
@@ -140,7 +141,7 @@ minimapInstance.view.camera = minimapCamera;
 
 // Let's create our minimap map with the same extent than the main map.
 const minimap = new Map({
-    extent: map.extent,
+    extent: map.extent.as(minimapInstance.referenceCrs),
     // Since the map is flat (no terrain applied), we can use 1 segment per tile.
     segments: 1,
     backgroundColor: 'black',
@@ -159,8 +160,7 @@ const osmLayer = new ColorLayer({
 minimap.addLayer(osmLayer);
 
 function synchronizeCameras() {
-    // @ts-expect-error typing
-    const target = mainInstance.controls.target;
+    const target = controls.target;
 
     // Since our minimap does not use the same projection as the main view (EPSG:2154),
     // we must convert the camera position into this projection (EPSG:3857).

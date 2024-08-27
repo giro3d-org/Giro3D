@@ -1,15 +1,14 @@
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import Instance from '@giro3d/giro3d/core/Instance';
-import type { LayerUserData } from '@giro3d/giro3d/core/layer';
 import ColorLayer, { isColorLayer } from '@giro3d/giro3d/core/layer/ColorLayer';
 import ElevationLayer, { isElevationLayer } from '@giro3d/giro3d/core/layer/ElevationLayer';
+import type { LayerUserData } from '@giro3d/giro3d/core/layer/Layer';
 import type TileMesh from '@giro3d/giro3d/core/TileMesh.js';
 import Map from '@giro3d/giro3d/entities/Map';
 import { DEFAULT_AZIMUTH, DEFAULT_ZENITH } from '@giro3d/giro3d/renderer/LayeredMaterial';
 import RenderingState from '@giro3d/giro3d/renderer/RenderingState';
 import NullSource from '@giro3d/giro3d/sources/NullSource';
 import { Color, Group } from 'three';
-import { mockWebGLRenderer, setupGlobalMocks } from '../mocks';
 
 const nullSource = new NullSource({ extent: new Extent('EPSG:3857', -10, 10, -10, 10) });
 
@@ -31,8 +30,6 @@ type TestUserData = LayerUserData & {
 };
 
 describe('Map', () => {
-    let viewerDiv: HTMLDivElement;
-    let instance: Instance;
     let map: Map;
     const crs = 'EPSG:4326';
 
@@ -44,22 +41,18 @@ describe('Map', () => {
     });
 
     beforeEach(() => {
-        setupGlobalMocks();
-        viewerDiv = document.createElement('div');
-        instance = new Instance({
-            target: viewerDiv,
-            crs,
-            renderer: {
-                renderer: mockWebGLRenderer(),
-            },
-        });
-
         map = new Map({
             extent,
             maxSubdivisionLevel: 15,
         });
 
-        instance.add(map);
+        // @ts-expect-error incomplete
+        const instance: Instance = {
+            notifyChange: jest.fn(),
+            referenceCrs: crs,
+        };
+
+        map.initialize({ instance });
     });
 
     function checkLayerIndices() {
@@ -272,7 +265,7 @@ describe('Map', () => {
             expect(verticalMap.subdivisions).toEqual({ x: 1, y: 3 });
         });
 
-        it('should convert the extent to the instance CRS', async () => {
+        it('should throw if the extent does not match the instance CRS', async () => {
             const verticalExtent = new Extent('EPSG:3857', -100, 100, -250, 250);
             const verticalMap = new Map({ extent: verticalExtent });
 
@@ -284,9 +277,7 @@ describe('Map', () => {
             // @ts-expect-error private property
             verticalMap._instance = { referenceCrs: 'EPSG:3946' } as Instance;
 
-            await verticalMap.preprocess();
-
-            expect(verticalMap.extent.crs).toEqual('EPSG:3946');
+            expect(() => verticalMap.preprocess()).toThrow();
         });
     });
 

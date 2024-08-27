@@ -90,7 +90,7 @@ function createScene(crs, crsDef, extent) {
     instance = new Instance({
         target: 'view',
         crs,
-        renderer: { clearColor: 'grey' },
+        backgroundColor: 'grey',
     });
 
     map = new Map({ extent, hillshading: true });
@@ -112,7 +112,7 @@ function createScene(crs, crsDef, extent) {
     controls.enableDamping = true;
     controls.dampingFactor = 0.2;
     controls.maxPolarAngle = Math.PI / 2.3;
-    instance.useTHREEControls(controls);
+    instance.view.setControls(controls);
 
     inspector = Inspector.attach('inspector', instance);
 

@@ -1,38 +1,34 @@
-import * as cache from './Cache';
+import type * as cache from './Cache';
 import type ColorimetryOptions from './ColorimetryOptions';
-import Context from './Context';
+import type Context from './Context';
 import type ContourLineOptions from './ContourLineOptions';
 import type Disposable from './Disposable';
 import type ElevationRange from './ElevationRange';
-import * as features from './FeatureTypes';
-import {
-    type FeatureElevationCallback,
-    type FeatureExtrusionOffsetCallback,
-    type FeatureStyle,
-    type FeatureStyleCallback,
-} from './FeatureTypes';
-import * as geographic from './geographic';
+import type * as features from './FeatureTypes';
+import type * as geographic from './geographic/api';
 import type GraticuleOptions from './GraticuleOptions';
 import type HillshadingOptions from './HillshadingOptions';
-import Instance, {
-    type CustomCameraControls,
-    type EntityEventPayload,
-    type FrameEventPayload,
-    type InstanceEvents,
-    type InstanceOptions,
-    type PickObjectsAtOptions,
-    type ThreeControls,
+import type Instance from './Instance';
+import type {
+    EntityEventPayload,
+    FrameEventPayload,
+    InstanceEvents,
+    InstanceOptions,
+    PickObjectsAtOptions,
 } from './Instance';
-import * as layer from './layer';
-import MainLoop, { type RenderingState } from './MainLoop';
+import type * as layer from './layer/api';
+import type MainLoop from './MainLoop';
+import type { RenderingState } from './MainLoop';
 import type MemoryUsage from './MemoryUsage';
 import type { GetMemoryUsageContext, MemoryUsageReport } from './MemoryUsage';
 import type OffsetScale from './OffsetScale';
-import OperationCounter, { type OperationCounterEvents } from './OperationCounter';
-import * as picking from './picking';
-import PointCloud, { type PointCloudEventMap, type PointCloudOptions } from './PointCloud';
+import type OperationCounter from './OperationCounter';
+import type { OperationCounterEvents } from './OperationCounter';
+import type * as picking from './picking/api';
+import type PointCloud from './PointCloud';
+import type { PointCloudEventMap, PointCloudOptions } from './PointCloud';
 import type Progress from './Progress';
-import Rect from './Rect';
+import type Rect from './Rect';
 import type TerrainOptions from './TerrainOptions';
 import {
     DEFAULT_ENABLE_CPU_TERRAIN,
@@ -54,8 +50,6 @@ export {
     FrameEventPayload,
     EntityEventPayload,
     PickObjectsAtOptions,
-    CustomCameraControls,
-    ThreeControls,
     RenderingState,
     MainLoop,
     Rect,
@@ -76,10 +70,6 @@ export {
     DEFAULT_ENABLE_TERRAIN,
     DEFAULT_ENABLE_STITCHING,
     DEFAULT_ENABLE_CPU_TERRAIN,
-    FeatureStyle,
-    FeatureElevationCallback,
-    FeatureStyleCallback,
-    FeatureExtrusionOffsetCallback,
     GraticuleOptions,
     HillshadingOptions,
 };

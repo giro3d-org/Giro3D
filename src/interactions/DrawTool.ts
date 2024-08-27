@@ -197,7 +197,7 @@ export type MouseCallback = (e: MouseEvent) => boolean;
  * To create shapes, you can either use one of the preset methods ({@link createSegment},
  * {@link createPolygon}...), or start creating a free shape with {@link createShape}.
  *
- * This method allows fine control overthe constraints to apply to the shape (how many vertices,
+ * This method allows fine control over the constraints to apply to the shape (how many vertices,
  * styling options, what component to display...).
  *
  * ## Edition
