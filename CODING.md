@@ -35,6 +35,6 @@ Otherwise the transpiled `Foo.js` will still import a non-existent `Bar.ts` file
 
 ## API surface
 
-Files that should be part of the public API (and thus, appear in the [documentation](https://giro3d.org/apidoc/)) should be a part of a namespace file. Namespace files are located within each folder in the `src` folder (including `src` itself), and are named `index.ts`.
+Files that should be part of the public API (and thus, appear in the [documentation](https://giro3d.org/apidoc/)) should be a part of a namespace file. Namespace files are located within each folder in the `src` folder (including `src` itself), and are named `api.ts`.
 
-For example, if you want to add `src/core/Foo.ts` to the API, you must add it to the `src/core/index.ts` file.
+For example, if you want to add `src/core/Foo.ts` to the API, you must add it to the `src/core/api.ts` file.
