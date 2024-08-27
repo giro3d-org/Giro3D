@@ -1,4 +1,4 @@
-import { Color, DirectionalLight, AmbientLight, Vector3 } from 'three';
+import { Color, DirectionalLight, AmbientLight, Vector3, GridHelper, MathUtils } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import Instance from '@giro3d/giro3d/core/Instance.js';
@@ -71,22 +71,32 @@ function placeCamera(position, lookAt) {
 function initializeCamera() {
     const bbox = ifc.root.boundingVolume.box.clone().applyMatrix4(ifc.root.matrixWorld);
 
-    // instance.view.camera.far = 2.0 * bbox.getSize(tmpVec3).length();
-
     const ratio = bbox.getSize(tmpVec3).x / bbox.getSize(tmpVec3).z;
-    const position = bbox.min
+
+    const position = bbox
+        .getCenter(new Vector3())
         .clone()
         .add(bbox.getSize(tmpVec3).multiply(new Vector3(-2, -2, ratio)));
+
     const lookAt = bbox.getCenter(tmpVec3);
     lookAt.z = bbox.min.z;
+
     placeCamera(position, lookAt);
 
-    StatusBar.bind(instance);
+    const grid = new GridHelper(60, 10);
+    grid.rotateX(MathUtils.degToRad(90));
+
+    grid.position.copy(lookAt);
+
+    instance.add(grid);
+    grid.updateMatrixWorld(true);
 }
 
 instance.add(ifc).then(initializeCamera);
 
 Inspector.attach('inspector', instance);
+
+StatusBar.bind(instance);
 
 const resultsTable = document.getElementById('results-body');
 const formatter = new Intl.NumberFormat();
