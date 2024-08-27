@@ -24,7 +24,7 @@ const extent = new Extent('EPSG:2154', -111629.52, 1275028.84, 5976033.79, 72301
 
 const instance = new Instance({
     target: 'view',
-    crs: extent.crs(),
+    crs: extent.crs,
 });
 
 // This is a GeoJSON with the default crs EPSG:4326

@@ -77,7 +77,7 @@ describe('Extent', () => {
             extent.set('EPSG:3857', -1, 2, -3, 5);
 
             expect([...extent.values]).toStrictEqual([-1, 2, -3, 5]);
-            expect(extent.crs()).toEqual('EPSG:3857');
+            expect(extent.crs).toEqual('EPSG:3857');
         });
     });
 
@@ -457,7 +457,7 @@ describe('Extent', () => {
 
             const extent = Extent.fromBox3('EPSG:4326', box);
 
-            expect(extent.crs()).toBe('EPSG:4326');
+            expect(extent.crs).toBe('EPSG:4326');
             expect(extent.west).toBe(box.min.x);
             expect(extent.east).toBe(box.max.x);
             expect(extent.north).toBe(box.max.y);
@@ -643,7 +643,7 @@ describe('Extent', () => {
 
             const union = Extent.unionMany(e0, e1, e2)!;
 
-            expect(union.crs()).toEqual(crs);
+            expect(union.crs).toEqual(crs);
             expect(union.west).toEqual(-123);
             expect(union.east).toEqual(100);
             expect(union.north).toEqual(6660);

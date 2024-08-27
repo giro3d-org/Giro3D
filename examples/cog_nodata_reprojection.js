@@ -31,7 +31,7 @@ const extent = datasetExtent.clone().as('EPSG:32742');
 
 const instance = new Instance({
     target: 'view',
-    crs: extent.crs(),
+    crs: extent.crs,
 });
 
 instance.view.camera.position.set(1305865, 24791965, 243407);

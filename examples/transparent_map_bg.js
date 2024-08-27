@@ -23,7 +23,7 @@ const extent = new Extent(
 
 const instance = new Instance({
     target: 'view',
-    crs: extent.crs(),
+    crs: extent.crs,
     renderer: {
         clearColor: false,
     },

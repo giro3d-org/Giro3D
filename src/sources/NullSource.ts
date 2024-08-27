@@ -17,7 +17,7 @@ class NullSource extends ImageSource {
     }
 
     getCrs() {
-        return this._extent.crs();
+        return this._extent.crs;
     }
 
     // eslint-disable-next-line class-methods-use-this

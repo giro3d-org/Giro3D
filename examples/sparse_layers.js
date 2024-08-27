@@ -21,7 +21,7 @@ const center = extent.centerAsVector3();
 
 const instance = new Instance({
     target: 'view',
-    crs: extent.crs(),
+    crs: extent.crs,
     renderer: {
         clearColor: 'gray',
     },
@@ -37,7 +37,7 @@ instance.useTHREEControls(controls);
 
 const source = new CogSource({
     url: 'https://3d.oslandia.com/dem/msh2009dem.tif',
-    crs: extent.crs(),
+    crs: extent.crs,
 });
 
 const map = new Map({

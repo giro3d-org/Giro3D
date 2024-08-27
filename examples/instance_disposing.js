@@ -30,7 +30,7 @@ let map = null;
 function init() {
     instance = new Instance({
         target: 'view',
-        crs: extent.crs(),
+        crs: extent.crs,
         renderer: {
             clearColor: 0x0a3b59,
         },

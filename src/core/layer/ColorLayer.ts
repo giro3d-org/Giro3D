@@ -260,7 +260,7 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
             yTileRes?: number;
         },
     ): Feature[] {
-        const layerProjection = this.getExtent()?.crs();
+        const layerProjection = this.getExtent()?.crs;
 
         if (!layerProjection) {
             return [];
@@ -339,7 +339,7 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
      */
     getVectorFeaturesInExtent(extent: Extent): Feature[] {
         if ((this.source as VectorSource).isVectorSource && this.visible) {
-            const layerProjection = this.getExtent()?.crs();
+            const layerProjection = this.getExtent()?.crs;
             if (!layerProjection) {
                 return [];
             }

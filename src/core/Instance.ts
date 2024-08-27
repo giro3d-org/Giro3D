@@ -206,22 +206,29 @@ function isObject3D(o: unknown): o is Object3D {
 
 /**
  * The instance is the core component of Giro3D. It encapsulates the 3D scene,
- * the current camera and one or more {@link Entity},
+ * the current camera and one or more {@link Entity | entities},
  * such as a {@link Map}.
  *
  * ```js
- * // example of Giro3D instantiation
- * const instance = new Instance(viewerDiv, { crs: extent.crs() });
+ * // Create a Giro3D instance in the EPSG:3857 coordinate system:
+ * const instance = new Instance({
+ *     view: 'view',
+ *     crs: 'EPSG:3857',
+ * });
+ *
  * const map = new Map(...);
+ *
+ * // Add an entity to the instance
  * instance.add(map);
  *
  * // Bind an event listener on double click
- * instance.domElement.addEventListener('dblclick', dblClickHandler);
+ * instance.domElement.addEventListener('dblclick', () => console.log('double click!'));
  *
  * // Get the camera position
- * const myvector = instance.view.camera.position;
- * // Set the camera position
- * instance.view.camera.position.set(newPosition);
+ * const position = instance.view.camera.position;
+ *
+ * // Set the camera position to be located 10,000 meters above the center of the coordinate system.
+ * instance.view.camera.position.set(0, 0, 10000);
  * instance.view.camera.lookAt(lookAt);
  * ```
  */

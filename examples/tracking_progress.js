@@ -35,7 +35,7 @@ function createMap(mapExtent, tileset) {
             format: new MapboxTerrainFormat(),
             source: new XYZ({
                 url: `https://api.mapbox.com/v4/mapbox.terrain-rgb/{z}/{x}/{y}.pngraw?access_token=${key}`,
-                projection: extent.crs(),
+                projection: extent.crs,
                 crossOrigin: 'anonymous',
             }),
         }),
@@ -49,7 +49,7 @@ function createMap(mapExtent, tileset) {
         source: new TiledImageSource({
             source: new XYZ({
                 url: `https://api.mapbox.com/v4/mapbox.${tileset}/{z}/{x}/{y}.webp?access_token=${key}`,
-                projection: extent.crs(),
+                projection: extent.crs,
                 crossOrigin: 'anonymous',
             }),
         }),

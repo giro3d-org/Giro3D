@@ -31,7 +31,7 @@ const extent = new Extent(
 
 const instance = new Instance({
     target: 'view',
-    crs: extent.crs(),
+    crs: extent.crs,
 });
 
 const center = extent.centerAsVector2();

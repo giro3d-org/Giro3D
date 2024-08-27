@@ -81,7 +81,7 @@ export default class StaticImageSource extends ImageSource<StaticImageSourceEven
     }
 
     getCrs(): string {
-        return this._extent.crs();
+        return this._extent.crs;
     }
 
     private async fetchTexture(url: string): Promise<Texture> {

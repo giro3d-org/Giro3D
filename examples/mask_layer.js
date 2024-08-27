@@ -20,7 +20,7 @@ const extent = Extent.fromCenterAndSize('EPSG:3857', { x: 260000, y: 6251379 }, 
 
 const instance = new Instance({
     target: 'view',
-    crs: extent.crs(),
+    crs: extent.crs,
     renderer: {
         clearColor: false,
     },
@@ -40,7 +40,7 @@ const basemap = new ColorLayer({
     source: new TiledImageSource({
         source: new XYZ({
             url: `https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.webp?access_token=${apiKey}`,
-            projection: extent.crs(),
+            projection: extent.crs,
             crossOrigin: 'anonymous',
         }),
     }),

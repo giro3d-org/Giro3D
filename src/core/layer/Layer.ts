@@ -579,9 +579,9 @@ abstract class Layer<
 
         this._instance = instance;
 
-        if (this.extent && this.extent.crs() !== instance.referenceCrs) {
+        if (this.extent && this.extent.crs !== instance.referenceCrs) {
             throw new Error(
-                `the extent of the layer was defined in a different CRS (${this.extent.crs()}) than the instance's (${instance.referenceCrs}). Please convert the extent to the instance CRS before creating the layer.`,
+                `the extent of the layer was defined in a different CRS (${this.extent.crs}) than the instance's (${instance.referenceCrs}). Please convert the extent to the instance CRS before creating the layer.`,
             );
         }
 

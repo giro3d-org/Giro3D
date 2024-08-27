@@ -29,7 +29,7 @@ const center = extent.centerAsVector3();
 
 const instance = new Instance({
     target: 'view',
-    crs: extent.crs(),
+    crs: extent.crs,
     renderer: {
         clearColor: false,
     },
@@ -47,7 +47,7 @@ instance.useTHREEControls(controls);
 const source = new CogSource({
     // https://pubs.er.usgs.gov/publication/ds904
     url: 'https://3d.oslandia.com/dem/msh2009dem.tif',
-    crs: extent.crs(),
+    crs: extent.crs,
 });
 
 const values = colormap({ colormap: 'viridis', nshades: 256 });

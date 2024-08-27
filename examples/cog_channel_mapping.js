@@ -18,7 +18,7 @@ const center = extent.centerAsVector3();
 
 const instance = new Instance({
     target: 'view',
-    crs: extent.crs(),
+    crs: extent.crs,
     renderer: {
         clearColor: 0x0a3b59,
     },
@@ -40,7 +40,7 @@ instance.add(map);
 // https://openlayers.org/en/latest/examples/cog-math-multisource.html
 const source = new CogSource({
     url: 'https://3d.oslandia.com/cog_data/20200428_211318_ssc8d1_0017_pansharpened.cog.tif',
-    crs: extent.crs(),
+    crs: extent.crs,
     channels: [0, 1, 2],
 });
 

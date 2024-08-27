@@ -419,7 +419,7 @@ class VectorTileSource extends ImageSource {
     private loadTiles(extent: Extent, zoom: number): Array<ImageResponse> {
         const source = this.source;
         const tileGrid = this._tileGrid;
-        const crs = extent.crs();
+        const crs = extent.crs;
 
         const requests: ImageResponse[] = [];
 

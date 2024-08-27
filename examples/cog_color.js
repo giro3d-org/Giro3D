@@ -15,7 +15,7 @@ const center = extent.centerAsVector3();
 
 const instance = new Instance({
     target: 'view',
-    crs: extent.crs(),
+    crs: extent.crs,
     renderer: {
         clearColor: 0x0a3b59,
     },
@@ -38,24 +38,24 @@ const sources = {
     // LZW compression, RGB colorspace
     rgb: new CogSource({
         url: 'https://3d.oslandia.com/giro3d/rasters/TCI.tif',
-        crs: extent.crs(),
+        crs: extent.crs,
         channels: [0, 1, 2],
     }),
     // LZW compression, RGB colorspace, 8-bit alpha band
     rgba: new CogSource({
         url: 'https://3d.oslandia.com/giro3d/rasters/TCI-alpha.tif',
-        crs: extent.crs(),
+        crs: extent.crs,
         channels: [0, 1, 2, 3],
     }),
     // JPEG compression, YCbCr colorspace
     ycbcr: new CogSource({
         url: 'https://3d.oslandia.com/giro3d/rasters/TCI-YCbCr.tif',
-        crs: extent.crs(),
+        crs: extent.crs,
     }),
     // JPEG compression, YCbCr colorspace, 1-bit mask band
     'ycbcr-mask': new CogSource({
         url: 'https://3d.oslandia.com/giro3d/rasters/TCI-YCbCr-mask.tif',
-        crs: extent.crs(),
+        crs: extent.crs,
     }),
 };
 

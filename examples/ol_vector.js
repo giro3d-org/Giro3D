@@ -27,7 +27,7 @@ let time = 0;
 
 const instance = new Instance({
     target: 'view',
-    crs: extent.crs(),
+    crs: extent.crs,
     renderer: {
         clearColor: 0xffffff,
     },
