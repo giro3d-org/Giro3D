@@ -39,7 +39,7 @@ const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.target.set(center.x, center.y, center.z);
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 // Use an elevation COG with nodata values
 const source = new CogSource({

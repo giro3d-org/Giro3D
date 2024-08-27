@@ -10,9 +10,12 @@ import {
 import type RenderingContextHandler from './RenderingContextHandler';
 import type RenderingOptions from './RenderingOptions';
 import type View from './View';
+import type { CameraOptions, ExternalControls } from './View';
 
 export {
     View,
+    CameraOptions,
+    ExternalControls,
     MemoryTracker,
     PointCloudMaterial,
     PointCloudMaterialOptions,

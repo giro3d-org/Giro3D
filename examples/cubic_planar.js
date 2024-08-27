@@ -144,7 +144,7 @@ instance.view.camera.lookAt(new Vector3(0, 0, 0));
 const controls = new OrbitControls(instance.view.camera, instance.domElement);
 controls.minDistance = 1;
 
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 // Request redraw
 instance.notifyChange();

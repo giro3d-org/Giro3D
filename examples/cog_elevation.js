@@ -30,7 +30,7 @@ const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.target.set(-13545408, 5837154, 0);
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 const map = new Map({
     extent,

@@ -73,7 +73,7 @@ const center = extent.centerAsVector2();
 instance.view.camera.position.set(2195551, 4146310, 90_000);
 controls.target.set(center.x, center.y, min);
 
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 // Attach the inspector
 Inspector.attach('inspector', instance);

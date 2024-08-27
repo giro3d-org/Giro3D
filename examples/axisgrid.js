@@ -85,7 +85,7 @@ instance.view.camera.position.set(-13594700, 5819700, 7300);
 
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.target.set(-13603000, 5811000, 0);
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 function bindAxisStep(axis) {
     bindSlider(`${axis}-axis-step`, v => {

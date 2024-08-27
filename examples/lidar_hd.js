@@ -28,7 +28,7 @@ const instance = new Instance({
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 // Adds a WMS imagery layer
 const wmsOthophotoSource = new TiledImageSource({

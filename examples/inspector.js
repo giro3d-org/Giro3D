@@ -70,7 +70,7 @@ map.addLayer(
 // Create camera and controls
 instance.view.camera.position.set(0, 0, 25000000);
 const controls = new MapControls(instance.view.camera, instance.domElement);
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 // Attach the inspector to the DOM
 const inspectorDiv = document.getElementById('inspector');

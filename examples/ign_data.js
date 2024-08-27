@@ -226,7 +226,7 @@ controls.enableDamping = true;
 controls.dampingFactor = 0.4;
 controls.target.copy(lookAt);
 controls.saveState();
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 // add a skybox background
 const cubeTextureLoader = new CubeTextureLoader();

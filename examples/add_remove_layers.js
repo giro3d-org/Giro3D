@@ -33,7 +33,7 @@ const camPos = new Vector3(220295, 6810219, 409065);
 instance.view.camera.position.set(camPos.x, camPos.y, camPos.z);
 
 const controls = new MapControls(instance.view.camera, instance.domElement);
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 controls.target.set(camPos.x, camPos.y + 1, 0);
 

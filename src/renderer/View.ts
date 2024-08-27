@@ -1,5 +1,6 @@
 import {
     Box3,
+    EventDispatcher,
     Frustum,
     MathUtils,
     Matrix4,
@@ -8,6 +9,7 @@ import {
     type OrthographicCamera,
     type Sphere,
 } from 'three';
+import type Disposable from '../core/Disposable';
 import Coordinates from '../core/geographic/Coordinates';
 import { isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
 
@@ -35,13 +37,21 @@ export interface CameraOptions {
     camera?: PerspectiveCamera;
 }
 
+export interface ExternalControls extends EventDispatcher<{ change: unknown }> {
+    update(): void;
+}
+
 export const DEFAULT_MIN_NEAR_PLANE = 2;
 export const DEFAULT_MAX_NEAR_PLANE = 2000000000;
+
+type ViewEvents = {
+    change: unknown;
+};
 
 /**
  * Adds geospatial capabilities to three.js cameras.
  */
-class View {
+class View extends EventDispatcher<ViewEvents> implements Disposable {
     private readonly _crs: string;
     private readonly _viewMatrix: Matrix4;
     private _camera: PerspectiveCamera | OrthographicCamera;
@@ -50,6 +60,8 @@ class View {
     private _preSSE: number;
     private _maxFar: number = DEFAULT_MAX_NEAR_PLANE;
     private _minNear: number = DEFAULT_MIN_NEAR_PLANE;
+    private _controls: ExternalControls | null = null;
+    private _onControlsUpdated = () => this.dispatchEvent({ type: 'change' });
 
     /**
      * The width, in pixels, of this view.
@@ -87,6 +99,8 @@ class View {
      * @param options - optional values
      */
     constructor(crs: string, width: number, height: number, options: CameraOptions = {}) {
+        super();
+
         this._crs = crs;
 
         this._camera = options.camera ? options.camera : new PerspectiveCamera(30, width / height);
@@ -165,6 +179,40 @@ class View {
     }
 
     /**
+     * Gets the currently registered controls, if any.
+     *
+     * Note: To register controls, use {@link setControls}.
+     */
+    get controls(): ExternalControls | null {
+        return this._controls;
+    }
+
+    /**
+     * Registers external controls that must be udpated periodically.
+     *
+     * Note: this is the case of simple controls in the  `examples/{js,jsm}/controls` folder
+     * of THREE.js (e.g `MapControls`):
+     *
+     * - they fire `'change'` events when the controls' state has changed and the view must be rendered,
+     * - they have an `update()` method to update the controls' state.
+     *
+     * For more complex controls, such as the package [`camera-controls`](https://www.npmjs.com/package/camera-controls),
+     * a more complex logic is required. Please refer to the appropriate examples for a detailed
+     * documentation on how to bind Giro3D and those controls.
+     *
+     * @param controls - The controls to register. If `null`, currently registered controls
+     * are unregistered (they are not disabled however).
+     */
+    setControls(controls: ExternalControls | null) {
+        if (controls) {
+            controls.addEventListener('change', this._onControlsUpdated);
+        } else {
+            this._controls?.removeEventListener('change', this._onControlsUpdated);
+        }
+        this._controls = controls;
+    }
+
+    /**
      * Resets the near and far planes to their default value.
      */
     resetPlanes() {
@@ -177,6 +225,8 @@ class View {
      */
     update(width?: number, height?: number) {
         this.resize(width, height);
+
+        this._controls?.update();
 
         // update matrix
         this.camera.updateMatrixWorld();
@@ -285,6 +335,10 @@ class View {
         }
 
         return atLeastOneInFrontOfNearPlane ? points : undefined;
+    }
+
+    dispose(): void {
+        this.setControls(null);
     }
 }
 

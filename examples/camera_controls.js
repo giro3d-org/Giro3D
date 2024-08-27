@@ -79,8 +79,6 @@ controls.mouseButtons.right = CameraControls.ACTION.ROTATE;
 controls.mouseButtons.wheel = CameraControls.ACTION.DOLLY;
 controls.mouseButtons.middle = CameraControls.ACTION.DOLLY;
 
-// Giro3D integration
-instance.controls = controls;
 const clock = new Clock();
 
 // Update controls from event loop - this replaces the requestAnimationFrame logic from

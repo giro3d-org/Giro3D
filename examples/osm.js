@@ -43,7 +43,7 @@ instance.view.camera.position.set(0, 0, 80000000);
 
 const controls = new MapControls(instance.view.camera, instance.domElement);
 
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 Inspector.attach('inspector', instance);
 

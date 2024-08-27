@@ -49,7 +49,7 @@ const controls = new MapControls(instance.view.camera, instance.domElement);
 
 controls.enableRotate = false;
 
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 Inspector.attach('inspector', instance);
 StatusBar.bind(instance);

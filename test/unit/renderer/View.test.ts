@@ -1,5 +1,6 @@
+import type { ExternalControls } from '@giro3d/giro3d/renderer/View';
 import View from '@giro3d/giro3d/renderer/View';
-import { PerspectiveCamera } from 'three';
+import { EventDispatcher, PerspectiveCamera } from 'three';
 
 const DEFAULT_CRS = 'EPSG:1234';
 
@@ -27,6 +28,49 @@ describe('Camera', () => {
 
             expect(view.width).toEqual(123);
             expect(view.height).toEqual(456);
+        });
+    });
+
+    describe('setControls', () => {
+        it('should update the controls in its update() step', () => {
+            const view = new View(DEFAULT_CRS, 0, 0);
+
+            const controls: ExternalControls = {
+                addEventListener: jest.fn(),
+                removeEventListener: jest.fn(),
+                dispatchEvent: jest.fn(),
+                update: jest.fn(),
+                hasEventListener: jest.fn(),
+            };
+
+            view.setControls(controls);
+
+            view.update();
+
+            expect(controls.update).toHaveBeenCalledTimes(1);
+
+            view.setControls(null);
+
+            view.update();
+
+            expect(controls.update).toHaveBeenCalledTimes(1);
+        });
+
+        it('should raise an event when the controls change', () => {
+            const view = new View(DEFAULT_CRS, 0, 0);
+
+            // @ts-expect-error incorrect type
+            const controls: ExternalControls = new EventDispatcher();
+
+            view.setControls(controls);
+
+            let called = false;
+
+            view.addEventListener('change', () => (called = true));
+
+            controls.dispatchEvent({ type: 'change' });
+
+            expect(called).toEqual(true);
         });
     });
 });

@@ -80,7 +80,7 @@ const controls = new MapControls(instance.view.camera, instance.domElement);
 instance.view.camera.position.set(994_410, 6_520_646, 5_520);
 controls.target.set(1_011_954, 6_539_864, 1_000);
 
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 // Here we have a list of summits of the Alps and their geographic coordinates,
 // but without any elevation information

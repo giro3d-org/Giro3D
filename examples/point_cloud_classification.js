@@ -36,7 +36,7 @@ controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.target.set(227423, 6876442, 0);
 controls.saveState();
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 // We create a PointCloudMaterial in CLASSIFICATION
 // mode to display the point classifications.

@@ -10,13 +10,11 @@ import type GraticuleOptions from './GraticuleOptions';
 import type HillshadingOptions from './HillshadingOptions';
 import type Instance from './Instance';
 import type {
-    CustomCameraControls,
     EntityEventPayload,
     FrameEventPayload,
     InstanceEvents,
     InstanceOptions,
     PickObjectsAtOptions,
-    ThreeControls,
 } from './Instance';
 import type * as layer from './layer/api';
 import type MainLoop from './MainLoop';
@@ -52,8 +50,6 @@ export {
     FrameEventPayload,
     EntityEventPayload,
     PickObjectsAtOptions,
-    CustomCameraControls,
-    ThreeControls,
     RenderingState,
     MainLoop,
     Rect,

@@ -57,7 +57,7 @@ function init() {
 
     controls = new MapControls(instance.view.camera, instance.domElement);
 
-    instance.useTHREEControls(controls);
+    instance.view.setControls(controls);
 
     inspector = Inspector.attach('inspector', instance);
 }

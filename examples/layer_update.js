@@ -34,7 +34,7 @@ const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.target = center;
 controls.saveState();
 
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 const map = new Map({ extent });
 instance.add(map);

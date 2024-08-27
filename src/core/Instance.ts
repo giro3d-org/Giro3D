@@ -198,19 +198,6 @@ export interface PickObjectsAtOptions extends PickOptions {
     pickFeatures?: boolean;
 }
 
-export interface CustomCameraControls {
-    enabled: boolean;
-}
-
-export interface ThreeControls extends CustomCameraControls, EventDispatcher {
-    update: () => void;
-}
-
-interface ControlFunctions {
-    update: () => void;
-    eventListener: () => void;
-}
-
 function isObject3D(o: unknown): o is Object3D {
     return (o as Object3D).isObject3D;
 }
@@ -257,8 +244,6 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
     private readonly _onContextRestored: () => void;
     private readonly _onContextLost: () => void;
     private _resizeTimeout?: string | number | NodeJS.Timeout;
-    private _controls?: CustomCameraControls;
-    private _controlFunctions?: ControlFunctions;
     private _disposed = false;
 
     /**
@@ -341,6 +326,8 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
             options,
         );
 
+        this._view.addEventListener('change', () => this.notifyChange(this._view.camera));
+
         this._entities = new Set();
 
         if (window.ResizeObserver) {
@@ -350,7 +337,6 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
             this._resizeObserver.observe(viewerDiv);
         }
 
-        this._controls = undefined;
         this._pickingClock = new Clock(false);
 
         this._onContextRestored = this.onContextRestored.bind(this);
@@ -461,19 +447,6 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         return this._view;
     }
 
-    /** Gets the currently bound camera controls. */
-    get controls(): CustomCameraControls | undefined {
-        return this._controls;
-    }
-
-    /**
-     * Sets custom camera controls.
-     * Prefer {@link Instance.useTHREEControls} when possible.
-     */
-    set controls(controls: CustomCameraControls | undefined) {
-        this._controls = controls;
-    }
-
     private _doUpdateRendererSize(div: HTMLDivElement): void {
         this._engine.onWindowResize(div.clientWidth, div.clientHeight);
         this.notifyChange(this._view.camera);
@@ -513,13 +486,13 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         this.domElement.removeEventListener('webglcontextrestored', this._onContextRestored);
 
         this._resizeObserver?.disconnect();
-        this.removeTHREEControls();
         for (const obj of this.getObjects()) {
             this.remove(obj);
         }
         this._scene.remove(this._threeObjects);
 
         this._engine.dispose();
+        this._view.dispose();
         this.viewport.remove();
     }
 
@@ -718,17 +691,6 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         }
 
         return result;
-    }
-
-    /**
-     * Executes the camera update.
-     * Internal use only.
-     *
-     * @internal
-     */
-    execCameraUpdate() {
-        const dim = this._engine.getWindowSize();
-        this.view.update(dim.x, dim.y);
     }
 
     /**
@@ -978,65 +940,6 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         GlobalCache.getMemoryUsage(context);
 
         return aggregateMemoryUsage(context);
-    }
-
-    /**
-     * This function allows to use three.js controls (files in `examples/{js,jsm}/controls` folder
-     * of THREE.js) into Giro3D 3D scene.
-     *
-     * Giro3D supports the controls that check the following assumptions:
-     *
-     * - they fire 'change' events when something happens
-     * - they have an `update` method
-     *
-     * @param controls - An instance of a THREE controls
-     */
-    useTHREEControls(controls: ThreeControls): void {
-        if (this.controls) {
-            return;
-        }
-
-        this._controlFunctions = {
-            eventListener: () => this.notifyChange(this._view.camera),
-            update: () => this.updateControls(),
-        };
-
-        this._controls = controls;
-        if (typeof controls.addEventListener === 'function') {
-            controls.addEventListener('change', this._controlFunctions.eventListener);
-            this.addEventListener('before-camera-update', this._controlFunctions.update);
-            // Some THREE controls don't inherit of EventDispatcher
-        } else {
-            throw new Error(
-                'Unsupported control class: only event dispatcher controls are supported.',
-            );
-        }
-    }
-
-    /**
-     * Removes a THREE controls previously added. The controls won't be disable.
-     */
-    removeTHREEControls(): void {
-        if (!this._controls || !this._controlFunctions) {
-            return;
-        }
-
-        if (typeof (this._controls as ThreeControls).removeEventListener === 'function') {
-            (this._controls as ThreeControls).removeEventListener(
-                'change',
-                this._controlFunctions.eventListener,
-            );
-            this.removeEventListener('before-camera-update', this._controlFunctions.update);
-        }
-
-        this._controls = undefined;
-        this._controlFunctions = undefined;
-    }
-
-    private updateControls() {
-        if (typeof (this._controls as ThreeControls).update === 'function') {
-            (this._controls as ThreeControls).update();
-        }
     }
 }
 

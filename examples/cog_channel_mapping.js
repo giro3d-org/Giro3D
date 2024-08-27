@@ -28,7 +28,7 @@ const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.target.set(center.x, center.y + 1, center.z);
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 const map = new Map({ extent });
 

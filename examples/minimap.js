@@ -98,7 +98,7 @@ controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.target.copy(lookAt);
 controls.saveState();
-mainInstance.useTHREEControls(controls);
+mainInstance.view.setControls(controls);
 
 const cubeTextureLoader = new CubeTextureLoader();
 cubeTextureLoader.setPath('image/skyboxsun25deg_zup/');
@@ -160,8 +160,7 @@ const osmLayer = new ColorLayer({
 minimap.addLayer(osmLayer);
 
 function synchronizeCameras() {
-    // @ts-expect-error typing
-    const target = mainInstance.controls.target;
+    const target = controls.target;
 
     // Since our minimap does not use the same projection as the main view (EPSG:2154),
     // we must convert the camera position into this projection (EPSG:3857).

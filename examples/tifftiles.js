@@ -100,7 +100,7 @@ const controls = new MapControls(instance.view.camera, instance.domElement);
 
 controls.target.copy(center);
 
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 Inspector.attach('inspector', instance);
 

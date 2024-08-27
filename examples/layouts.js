@@ -40,7 +40,7 @@ function buildViewer(target, defaultRenderer = true) {
 
     const controls = new MapControls(instance.view.camera, instance.domElement);
 
-    instance.useTHREEControls(controls);
+    instance.view.setControls(controls);
 
     // Disable zoom so it doesn't capture scrolling
     controls.enableZoom = false;

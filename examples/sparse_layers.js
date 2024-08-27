@@ -31,7 +31,7 @@ const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.target.set(center.x, center.y, center.z);
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 const source = new CogSource({
     url: 'https://3d.oslandia.com/dem/msh2009dem.tif',

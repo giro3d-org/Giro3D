@@ -44,7 +44,7 @@ controls.target = extent.centerAsVector3();
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.saveState();
-instance.useTHREEControls(controls);
+instance.view.setControls(controls);
 
 const elevationMin = 780;
 const elevationMax = 3574;

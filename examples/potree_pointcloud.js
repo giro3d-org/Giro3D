@@ -35,7 +35,7 @@ function placeCamera() {
     controls.target.copy(lookAt);
     camera.position.copy(pos);
 
-    instance.useTHREEControls(controls);
+    instance.view.setControls(controls);
 
     StatusBar.bind(instance, { radius: 5 });
 }
