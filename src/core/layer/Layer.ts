@@ -23,6 +23,7 @@ import PromiseUtils, { PromiseStatus } from '../../utils/PromiseUtils';
 import TextureGenerator from '../../utils/TextureGenerator';
 import { nonNull } from '../../utils/tsutils';
 import type Context from '../Context';
+import type Disposable from '../Disposable';
 import type ElevationRange from '../ElevationRange';
 import type Extent from '../geographic/Extent';
 import type Instance from '../Instance';
@@ -357,7 +358,7 @@ abstract class Layer<
         TUserData extends LayerUserData = LayerUserData,
     >
     extends EventDispatcher<TEvents & LayerEvents>
-    implements Progress, MemoryUsage, RenderingContextHandler
+    implements Progress, MemoryUsage, RenderingContextHandler, Disposable
 {
     readonly isMemoryUsage = true as const;
 
