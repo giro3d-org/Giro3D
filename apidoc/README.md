@@ -17,10 +17,9 @@ Here is a brief overview of the main concepts behind Giro3D.
 The [`Instance`](./classes/core.Instance.html) is the entry point of a Giro3D context. It contains [**entities**](./modules/entities.html) that represent dynamically updated objects and make the most of a Giro3D scene. Each instance is hosted by a DOM element (a `<div>`) that will contain the `<canvas>` used to render the scene.
 
 ```js
-// Get the DOM element that will contain the Giro3D instance
-const div = document.getElementById('giro3d-view');
-
-const instance = new Instance(div);
+const instance = new Instance({
+    target: 'giro3d-view', // The id of the <div> that will contain the Giro3D instance
+});
 ```
 
 Under the hood, Giro3D uses three.js to render the scene. To directly access the three.js scene, you can use the [`scene`](./classes/core.Instance.html#scene) property.

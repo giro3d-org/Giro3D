@@ -646,16 +646,15 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * This should be done before creating the instance.
      * This method can be called several times to add multiple CRS.
      *
-     * ```
+     * ```js
      *  // register the CRS first...
      *  Instance.registerCRS(
      *  'EPSG:102115',
      *  '+proj=utm +zone=5 +ellps=clrk66 +units=m +no_defs +type=crs');
      *
      *  // ...then create the instance
-     *  const instance = new Instance(div, { crs: 'EPSG:102115' });
+     *  const instance = new Instance({ crs: 'EPSG:102115' });
      * ```
-     *
      * @param name - the short name, or EPSG code to identify this CRS.
      * @param value - the CRS definition, either in proj syntax, or in WKT syntax.
      */
