@@ -1,3 +1,4 @@
+import type * as three from 'three';
 import ConstantSizeSphere from './ConstantSizeSphere';
 import * as simpleGeometries from './geometries';
 import MemoryTracker from './MemoryTracker';
@@ -21,4 +22,8 @@ export {
     RenderingOptions,
     RenderingContextHandler,
     simpleGeometries,
+
+    // We re-export the types from three so that they can be
+    // explored in the documentation as well.
+    three,
 };
