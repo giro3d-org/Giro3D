@@ -42,9 +42,7 @@ Instance.registerCRS(
 const instance = new Instance({
     target: 'view',
     crs: 'EPSG:2154',
-    renderer: {
-        clearColor: false,
-    },
+    backgroundColor: null,
 });
 
 const extent = Extent.fromCenterAndSize('EPSG:2154', { x: 972_027, y: 6_299_491 }, 10_000, 10_000);

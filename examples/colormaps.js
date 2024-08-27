@@ -32,10 +32,7 @@ const extent = Extent.fromCenterAndSize('EPSG:3857', { x: 697313, y: 5591324 }, 
 const instance = new Instance({
     target: 'view',
     crs: extent.crs,
-    renderer: {
-        // To display the background style
-        clearColor: false,
-    },
+    backgroundColor: null, // To make the canvas transparent
 });
 
 const cameraPosition = new Vector3(697119, 5543639, 53043);

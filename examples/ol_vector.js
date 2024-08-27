@@ -28,9 +28,7 @@ let time = 0;
 const instance = new Instance({
     target: 'view',
     crs: extent.crs,
-    renderer: {
-        clearColor: 0xffffff,
-    },
+    backgroundColor: 'white',
 });
 
 instance.view.camera.position.set(0, 0, 10000000);

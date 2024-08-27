@@ -22,9 +22,7 @@ const extent = new Extent(
 const instance = new Instance({
     target: 'view',
     crs: extent.crs,
-    renderer: {
-        clearColor: 0xffffff,
-    },
+    backgroundColor: 'white',
 });
 
 const map = new Map({ extent, maxSubdivisionLevel: 15 });

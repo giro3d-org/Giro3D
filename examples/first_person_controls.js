@@ -16,9 +16,7 @@ Instance.registerCRS(
 const instance = new Instance({
     target: 'view',
     crs: 'EPSG:2154',
-    renderer: {
-        clearColor: 0xcccccc,
-    },
+    backgroundColor: null,
 });
 
 const pointCloud = new Tiles3D(

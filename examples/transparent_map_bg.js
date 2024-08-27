@@ -24,9 +24,7 @@ const extent = new Extent(
 const instance = new Instance({
     target: 'view',
     crs: extent.crs,
-    renderer: {
-        clearColor: false,
-    },
+    backgroundColor: null,
 });
 
 instance.view.camera.position.set(-4553934, -3910697, 4600000);

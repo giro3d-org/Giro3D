@@ -21,9 +21,7 @@ const extent = Extent.fromCenterAndSize('EPSG:3857', { x: 260000, y: 6251379 }, 
 const instance = new Instance({
     target: 'view',
     crs: extent.crs,
-    renderer: {
-        clearColor: false,
-    },
+    backgroundColor: null,
 });
 
 const apiKey =

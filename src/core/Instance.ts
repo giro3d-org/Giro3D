@@ -9,14 +9,16 @@ import {
     Vector2,
     Vector3,
     type Box3,
+    type ColorRepresentation,
     type WebGLRenderer,
+    type WebGLRendererParameters,
 } from 'three';
 import type { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer';
 import type Entity from '../entities/Entity';
 import { isEntity } from '../entities/Entity';
 import Entity3D, { isEntity3D } from '../entities/Entity3D';
 import Map from '../entities/Map';
-import C3DEngine, { type RendererOptions } from '../renderer/c3DEngine';
+import C3DEngine from '../renderer/c3DEngine';
 import type RenderingOptions from '../renderer/RenderingOptions';
 import { GlobalRenderTargetPool } from '../renderer/RenderTargetPool';
 import View, { type CameraOptions } from '../renderer/View';
@@ -156,8 +158,17 @@ export interface InstanceOptions extends CameraOptions {
      * otherwise a default one will be constructed
      */
     scene3D?: Scene;
-    /* Rendering options */
-    renderer?: RendererOptions;
+    /**
+     * The background color of the canvas. If `null`, the canvas is transparent.
+     * If `undefined`, the default color is used.
+     * @defaultValue `'#030508'`
+     */
+    backgroundColor?: ColorRepresentation | null;
+    /**
+     * The renderer to use. Might be either an instance of an existing {@link WebGLRenderer},
+     * or options to create one. If `undefined`, a new one will be created with default parameters.
+     */
+    renderer?: WebGLRenderer | WebGLRendererParameters;
 }
 
 /**
@@ -212,7 +223,7 @@ function isObject3D(o: unknown): o is Object3D {
  * ```js
  * // Create a Giro3D instance in the EPSG:3857 coordinate system:
  * const instance = new Instance({
- *     view: 'view',
+ *     target: 'view',
  *     crs: 'EPSG:3857',
  * });
  *
@@ -301,7 +312,11 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         this._viewport.style.height = '100%';
         viewerDiv.appendChild(this._viewport);
 
-        this._engine = new C3DEngine(this._viewport, options.renderer);
+        this._engine = new C3DEngine(this._viewport, {
+            clearColor: options.backgroundColor,
+            renderer: options.renderer,
+        });
+
         this._mainLoop = new MainLoop();
 
         this._scene = options.scene3D || new Scene();

@@ -21,7 +21,7 @@ import { bindButton } from './widgets/bindButton.js';
 const instance = new Instance({
     target: 'view',
     crs: 'EPSG:3857',
-    renderer: { clearColor: false },
+    backgroundColor: null,
 });
 
 const minAltitude = -1531;

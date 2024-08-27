@@ -48,9 +48,7 @@ Instance.registerCRS(
 const instance = new Instance({
     target: 'view',
     crs: 'EPSG:3946',
-    renderer: {
-        clearColor: 0xcccccc,
-    },
+    backgroundColor: 0xcccccc,
 });
 
 // Create a custom material for our point cloud.

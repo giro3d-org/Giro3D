@@ -18,7 +18,7 @@ const potree = new PotreePointCloud(source);
 const instance = new Instance({
     target: 'view',
     crs: 'EPSG:3857',
-    renderer: { clearColor: 'bisque' },
+    backgroundColor: 'black',
 });
 
 function placeCamera() {

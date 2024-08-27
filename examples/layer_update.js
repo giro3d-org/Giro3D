@@ -23,9 +23,7 @@ const extent = Extent.fromCenterAndSize('EPSG:3857', { x: 11393552, y: 44035 }, 
 const instance = new Instance({
     target: 'view',
     crs: extent.crs,
-    renderer: {
-        clearColor: 0xffffff,
-    },
+    backgroundColor: 'white',
 });
 
 const center = extent.centerAsVector3();

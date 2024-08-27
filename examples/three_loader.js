@@ -23,8 +23,8 @@ import { bindNumericalDropDown } from './widgets/bindNumericalDropDown.js';
 const instance = new Instance({
     target: 'view',
     crs: 'EPSG:3857',
-    renderer: { antialias: true },
 });
+
 const camera = instance.view.camera;
 
 instance.renderer.shadowMap.enabled = true;

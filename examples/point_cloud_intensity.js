@@ -29,9 +29,7 @@ Instance.registerCRS(
 const instance = new Instance({
     target: 'view',
     crs: 'EPSG:3946',
-    renderer: {
-        clearColor: false, // To make canvas transparent
-    },
+    backgroundColor: null, // To make canvas transparent
 });
 
 // Enable point cloud post processing effects

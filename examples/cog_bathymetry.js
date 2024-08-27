@@ -19,9 +19,7 @@ const extent = new Extent('EPSG:3857', 2285900, 2444000, 4230900, 4386100);
 const instance = new Instance({
     target: 'view',
     crs: 'EPSG:3857',
-    renderer: {
-        clearColor: false,
-    },
+    backgroundColor: null, // Make the canvas transparent
 });
 
 const map = new Map({

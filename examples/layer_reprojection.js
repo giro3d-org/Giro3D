@@ -90,7 +90,7 @@ function createScene(crs, crsDef, extent) {
     instance = new Instance({
         target: 'view',
         crs,
-        renderer: { clearColor: 'grey' },
+        backgroundColor: 'grey',
     });
 
     map = new Map({ extent, hillshading: true });

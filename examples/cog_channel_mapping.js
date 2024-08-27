@@ -19,9 +19,7 @@ const center = extent.centerAsVector3();
 const instance = new Instance({
     target: 'view',
     crs: extent.crs,
-    renderer: {
-        clearColor: 0x0a3b59,
-    },
+    backgroundColor: 0x0a3b59,
 });
 
 instance.view.camera.position.set(center.x, center.y, 2500);

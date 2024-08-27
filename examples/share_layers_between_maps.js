@@ -21,9 +21,7 @@ const extent = new Extent(
 const instance = new Instance({
     target: 'view',
     crs: extent.crs,
-    renderer: {
-        clearColor: 0x0a3b59,
-    },
+    backgroundColor: 0x0a3b59,
 });
 
 // Adds an TMS imagery layer

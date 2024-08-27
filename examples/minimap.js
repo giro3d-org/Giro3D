@@ -26,10 +26,11 @@ Instance.registerCRS(
 );
 
 const SKY_COLOR = new Color(0xf1e9c6);
+
 const mainInstance = new Instance({
     target: 'view',
     crs: 'EPSG:2154',
-    renderer: { clearColor: SKY_COLOR },
+    backgroundColor: SKY_COLOR,
 });
 
 // create a map

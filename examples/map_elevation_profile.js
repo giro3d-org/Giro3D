@@ -39,9 +39,7 @@ const extent = Extent.fromCenterAndSize('EPSG:2154', { x: 674_675, y: 6_442_569 
 const instance = new Instance({
     target: 'view',
     crs: extent.crs,
-    renderer: {
-        clearColor: false,
-    },
+    backgroundColor: null,
 });
 
 const map = new Map({

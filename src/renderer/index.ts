@@ -1,4 +1,3 @@
-import { type RendererOptions } from './c3DEngine';
 import ConstantSizeSphere from './ConstantSizeSphere';
 import * as simpleGeometries from './geometries';
 import MemoryTracker from './MemoryTracker';
@@ -13,7 +12,6 @@ import View from './View';
 
 export {
     View,
-    RendererOptions,
     MemoryTracker,
     PointCloudMaterial,
     PointCloudMaterialOptions,

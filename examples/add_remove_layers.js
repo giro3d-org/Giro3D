@@ -26,9 +26,7 @@ const extent = new Extent('EPSG:2154', -111629.52, 1275028.84, 5976033.79, 72301
 const instance = new Instance({
     target: 'view',
     crs: extent.crs,
-    renderer: {
-        clearColor: 0x000000,
-    },
+    backgroundColor: 'black',
 });
 
 const camPos = new Vector3(220295, 6810219, 409065);

@@ -65,9 +65,7 @@ const scale = new Vector3(1, 1, 1).divideScalar(extent.dimensions().x);
 const instance = new Instance({
     target: 'view',
     crs: extent.crs,
-    renderer: {
-        clearColor: 0x999999,
-    },
+    backgroundColor: 0x999999,
 });
 
 const cube = new Mesh(
