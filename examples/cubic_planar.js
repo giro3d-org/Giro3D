@@ -64,7 +64,7 @@ const scale = new Vector3(1, 1, 1).divideScalar(extent.dimensions().x);
 // Instantiate Giro3D
 const instance = new Instance({
     target: 'view',
-    crs: extent.crs(),
+    crs: extent.crs,
     renderer: {
         clearColor: 0x999999,
     },

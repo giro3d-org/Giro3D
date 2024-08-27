@@ -25,7 +25,7 @@ let currentMap;
 
 const instance = new Instance({
     target: 'view',
-    crs: EPSG3857_BOUNDS.crs(),
+    crs: EPSG3857_BOUNDS.crs,
     renderer: {
         clearColor: 0x0a3b59,
     },

@@ -237,7 +237,7 @@ export default class TiledImageSource extends ImageSource {
 
         signal?.throwIfAborted();
 
-        if (extent.crs() !== this.getCrs()) {
+        if (extent.crs !== this.getCrs()) {
             throw new Error('invalid CRS');
         }
 

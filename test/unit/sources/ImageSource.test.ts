@@ -15,7 +15,7 @@ class TestSource extends ImageSource {
     }
 
     getCrs() {
-        return this.extent.crs();
+        return this.extent.crs;
     }
 
     getExtent() {

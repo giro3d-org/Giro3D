@@ -29,7 +29,7 @@ function buildViewer(target, defaultRenderer = true) {
     }
     const instance = new Instance({
         target,
-        crs: extent.crs(),
+        crs: extent.crs,
         renderer,
     });
 

@@ -83,7 +83,7 @@ class DebugSource extends ImageSource {
     }
 
     getCrs(): string {
-        return this._extent.crs();
+        return this._extent.crs;
     }
 
     getExtent() {

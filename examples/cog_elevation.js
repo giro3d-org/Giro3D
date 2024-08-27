@@ -21,7 +21,7 @@ const extent = new Extent('EPSG:3857', -13581040.085, -13469591.026, 5780261.83,
 
 const instance = new Instance({
     target: 'view',
-    crs: extent.crs(),
+    crs: extent.crs,
 });
 
 instance.view.camera.position.set(-13656319, 5735451, 88934);
@@ -43,7 +43,7 @@ instance.add(map);
 const source = new CogSource({
     // https://www.sciencebase.gov/catalog/item/632a9a9ad34e71c6d67b95a3
     url: 'https://3d.oslandia.com/cog_data/COG_EPSG3857_USGS_13_n47w122_20220919.tif',
-    crs: extent.crs(),
+    crs: extent.crs,
 });
 
 const min = 263;

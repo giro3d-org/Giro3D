@@ -244,7 +244,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
         this._ticks = options.ticks || { x: 100, y: 100, z: 100 };
         this._origin = options.origin || TickOrigin.Relative;
 
-        const unit = crsToUnit(this.volume.extent.crs());
+        const unit = crsToUnit(this.volume.extent.crs);
         switch (unit) {
             case UNIT.METER:
                 this._unitSuffix = ' m';

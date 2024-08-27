@@ -156,7 +156,7 @@ class Extent {
 
         // Geographic coordinate systems may allow a greater "west" than "east"
         // to account for the wrap around the 180° longitude line.
-        if (!crsIsGeographic(this.crs())) {
+        if (!crsIsGeographic(this.crs)) {
             if (this.west > this.east) {
                 return false;
             }
@@ -218,7 +218,7 @@ class Extent {
         const n = this.north + y;
         const s = this.south - y;
 
-        return new Extent(this.crs(), w, e, s, n);
+        return new Extent(this.crs, w, e, s, n);
     }
 
     /**
@@ -278,7 +278,7 @@ class Extent {
     }
 
     offsetToParent(other: Extent, target = new OffsetScale()) {
-        if (this.crs() !== other.crs()) {
+        if (this.crs !== other.crs) {
             throw new Error('unsupported mix');
         }
 
@@ -326,36 +326,34 @@ class Extent {
      * @returns the coordinates of the top left corner
      */
     topLeft() {
-        return new Coordinates(this.crs(), this.west, this.north, 0);
+        return new Coordinates(this.crs, this.west, this.north, 0);
     }
 
     /**
      * @returns the coordinates of the top right corner
      */
     topRight() {
-        return new Coordinates(this.crs(), this.east, this.north, 0);
+        return new Coordinates(this.crs, this.east, this.north, 0);
     }
 
     /**
      * @returns the coordinates of the bottom right corner
      */
     bottomRight() {
-        return new Coordinates(this.crs(), this.east, this.south, 0);
+        return new Coordinates(this.crs, this.east, this.south, 0);
     }
 
     /**
      * @returns the coordinates of the bottom right corner
      */
     bottomLeft() {
-        return new Coordinates(this.crs(), this.west, this.south, 0);
+        return new Coordinates(this.crs, this.west, this.south, 0);
     }
 
     /**
      * Gets the coordinate reference system of this extent.
-     *
-     * @returns the coordinate reference system of this object
      */
-    crs() {
+    get crs(): string {
         return this._crs;
     }
 
@@ -452,9 +450,9 @@ class Extent {
      * @returns `true` if the coordinate is inside the bounding box
      */
     isPointInside(coord: Coordinates, epsilon = 0) {
-        const c = this.crs() === coord.crs ? coord : coord.as(this.crs());
+        const c = this.crs === coord.crs ? coord : coord.as(this.crs);
         // TODO this ignores altitude
-        if (crsIsGeographic(this.crs())) {
+        if (crsIsGeographic(this.crs)) {
             return (
                 c.longitude <= this.east + epsilon &&
                 c.longitude >= this.west - epsilon &&
@@ -498,7 +496,7 @@ class Extent {
      * @returns `true` if this bounding box intersects with the provided bounding box
      */
     intersectsExtent(bbox: Extent) {
-        const other = bbox.as(this.crs());
+        const other = bbox.as(this.crs);
         return !(
             this.west >= other.east ||
             this.east <= other.west ||
@@ -515,15 +513,15 @@ class Extent {
      */
     intersect(other: Extent): this {
         if (!this.intersectsExtent(other)) {
-            this.set(this.crs(), 0, 0, 0, 0);
+            this.set(this.crs, 0, 0, 0, 0);
             return this;
         }
         // TODO use an intermediate tmp instance for .as
-        if (other.crs() !== this.crs()) {
-            other = other.as(this.crs());
+        if (other.crs !== this.crs) {
+            other = other.as(this.crs);
         }
         this.set(
-            this.crs(),
+            this.crs,
             Math.max(this.west, other.west),
             Math.min(this.east, other.east),
             Math.max(this.south, other.south),
@@ -588,7 +586,7 @@ class Extent {
         const north = gridExtent.south + topPixels * pixelHeight;
 
         return {
-            extent: new Extent(this.crs(), west, east, south, north),
+            extent: new Extent(this.crs, west, east, south, north),
             width: rightPixels - leftPixels,
             height: topPixels - bottomPixels,
         };
@@ -629,7 +627,7 @@ class Extent {
     }
 
     copy(other: Extent): this {
-        this._crs = other.crs();
+        this._crs = other.crs;
         this._values[CARDINAL.WEST] = other._values[CARDINAL.WEST];
         this._values[CARDINAL.EAST] = other._values[CARDINAL.EAST];
         this._values[CARDINAL.SOUTH] = other._values[CARDINAL.SOUTH];
@@ -659,13 +657,13 @@ class Extent {
 
             valid = true;
             if (crs) {
-                if (crs !== e.crs()) {
+                if (crs !== e.crs) {
                     throw new Error(
-                        `Unsupported union between different CRSes (${e.crs()} and ${crs} differ)`,
+                        `Unsupported union between different CRSes (${e.crs} and ${crs} differ)`,
                     );
                 }
             } else {
-                crs = e.crs();
+                crs = e.crs;
             }
 
             south = Math.min(e.south, south);
@@ -675,7 +673,7 @@ class Extent {
         }
 
         if (valid) {
-            return new Extent(extents[0].crs(), west, east, south, north);
+            return new Extent(extents[0].crs, west, east, south, north);
         } else {
             return null;
         }
@@ -686,9 +684,9 @@ class Extent {
             return;
         }
 
-        if (extent.crs() !== this.crs()) {
+        if (extent.crs !== this.crs) {
             throw new Error(
-                `unsupported union between different CRSes (${extent.crs()} and ${this.crs()} differ)`,
+                `unsupported union between different CRSes (${extent.crs} and ${this.crs} differ)`,
             );
         }
         const west = extent.west;
@@ -718,7 +716,7 @@ class Extent {
      * @param coordinates - The coordinates to include
      */
     expandByPoint(coordinates: Coordinates): void {
-        const coords = coordinates.as(this.crs());
+        const coords = coordinates.as(this.crs);
         const we = coords.values[0];
         if (we < this.west) {
             this._values[CARDINAL.WEST] = we;
@@ -792,7 +790,7 @@ class Extent {
      * // returns `(0.5, 0.5)`.
      */
     offsetInExtent(coordinate: Coordinates, target = new Vector2()) {
-        if (coordinate.crs !== this.crs()) {
+        if (coordinate.crs !== this.crs) {
             throw new Error('unsupported mix');
         }
 
@@ -883,7 +881,7 @@ class Extent {
         const minY = this.south;
         const w = dims.x / xSubdivs;
         const h = dims.y / ySubdivs;
-        const crs = this.crs();
+        const crs = this.crs;
 
         const result = [];
 

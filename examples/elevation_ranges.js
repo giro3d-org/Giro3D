@@ -26,7 +26,7 @@ const extent = Extent.fromCenterAndSize('EPSG:3857', center, 20000, 20000);
 
 const instance = new Instance({
     target: 'view',
-    crs: extent.crs(),
+    crs: extent.crs,
     renderer: {
         clearColor: false,
     },
@@ -51,7 +51,7 @@ const elevationLayer = new ElevationLayer({
         format: new MapboxTerrainFormat(),
         source: new XYZ({
             url: `https://api.mapbox.com/v4/mapbox.terrain-rgb/{z}/{x}/{y}.pngraw?access_token=${key}`,
-            projection: extent.crs(),
+            projection: extent.crs,
             crossOrigin: 'anonymous',
         }),
     }),
@@ -66,7 +66,7 @@ const colorLayer = new ColorLayer({
     source: new TiledImageSource({
         source: new XYZ({
             url: `https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.webp?access_token=${key}`,
-            projection: extent.crs(),
+            projection: extent.crs,
             crossOrigin: 'anonymous',
         }),
     }),

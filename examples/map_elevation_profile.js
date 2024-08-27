@@ -38,7 +38,7 @@ const extent = Extent.fromCenterAndSize('EPSG:2154', { x: 674_675, y: 6_442_569 
 
 const instance = new Instance({
     target: 'view',
-    crs: extent.crs(),
+    crs: extent.crs,
     renderer: {
         clearColor: false,
     },
@@ -261,7 +261,7 @@ function computeElevationProfile() {
         const chartPoints = [];
 
         for (const point of points) {
-            const coordinates = new Coordinates(extent.crs(), point.x, point.y, 0);
+            const coordinates = new Coordinates(extent.crs, point.x, point.y, 0);
 
             // Get the elevation for our current coordinate
             const result = map.getElevation({ coordinates });

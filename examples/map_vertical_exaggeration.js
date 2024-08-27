@@ -55,7 +55,7 @@ instance.add(map);
 
 const source = new CogSource({
     url: 'https://3d.oslandia.com/giro3d/rasters/topobathy.cog.tiff',
-    crs: extent.crs(),
+    crs: extent.crs,
 });
 
 const elevationLayer = new ElevationLayer({

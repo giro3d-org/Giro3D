@@ -286,7 +286,7 @@ describe('Map', () => {
 
             await verticalMap.preprocess();
 
-            expect(verticalMap.extent.crs()).toEqual('EPSG:3946');
+            expect(verticalMap.extent.crs).toEqual('EPSG:3946');
         });
     });
 

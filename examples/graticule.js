@@ -29,7 +29,7 @@ const extent = new Extent('EPSG:3857', x - halfWidth, x + halfWidth, y - halfWid
 
 const instance = new Instance({
     target: 'view',
-    crs: extent.crs(),
+    crs: extent.crs,
     renderer: {
         clearColor: 0x0a3b59,
     },

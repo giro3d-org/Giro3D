@@ -26,7 +26,7 @@ const extent = new Extent('EPSG:3857', x - halfWidth, x + halfWidth, y - halfWid
 
 const instance = new Instance({
     target: 'view',
-    crs: extent.crs(),
+    crs: extent.crs,
     renderer: {
         clearColor: 0x0a3b59,
     },
@@ -134,7 +134,7 @@ document.getElementById('randomize-position').onclick = () => {
         0,
     );
     const newExtent = new Extent(
-        current.crs(),
+        current.crs,
         center.x - dims.x / 2,
         center.x + dims.x / 2,
         center.y - dims.y / 2,

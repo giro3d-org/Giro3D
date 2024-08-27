@@ -617,7 +617,7 @@ class Tiles3D<
                         tile.updateMatrixWorld();
 
                         const extent = boundingVolumeToExtent(
-                            nonNull(this._extent).crs(),
+                            nonNull(this._extent).crs,
                             tile.boundingVolume,
                             tile.matrixWorld,
                         );
@@ -667,7 +667,7 @@ class Tiles3D<
                         tile.updateMatrixWorld();
 
                         const extent = boundingVolumeToExtent(
-                            nonNull(this._extent).crs(),
+                            nonNull(this._extent).crs,
                             tile.boundingVolume,
                             tile.matrixWorld,
                         );

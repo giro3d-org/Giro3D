@@ -100,7 +100,7 @@ function pickTilesAt(
     const { ids, uvs, zs } = renderTileBuffer(instance, map, canvasCoords, radius);
 
     const extent = map.extent;
-    const crs = extent.crs();
+    const crs = extent.crs;
 
     for (let i = 0; i < ids.length; i++) {
         const id = ids[i];
