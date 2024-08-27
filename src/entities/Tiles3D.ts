@@ -3,7 +3,7 @@ import { GlobalCache } from '../core/Cache';
 import type Context from '../core/Context';
 import { isDisposable } from '../core/Disposable';
 import type Extent from '../core/geographic/Extent';
-import type { ColorLayer, Layer, LayerEvents } from '../core/layer';
+import type { ColorLayer, Layer, LayerEvents } from '../core/layer/api';
 import type HasLayers from '../core/layer/HasLayers';
 import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../core/MemoryUsage';
 import OperationCounter from '../core/OperationCounter';
