@@ -1284,7 +1284,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
             this._surfaceOpacity = v;
             this._surfaceMaterial.opacity = this.opacity * v;
             if (this.showSurface && this._surface) {
-                this.notify();
+                this.notifyChange();
             }
         }
     }
@@ -1330,7 +1330,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
             this._vertexRadius = radius;
 
             this.visitVertices(v => (v.radius = radius));
-            this.notify();
+            this.notifyChange();
         }
     }
 
@@ -1361,7 +1361,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
 
             this.updateLabels();
 
-            this.notify();
+            this.notifyChange();
         }
     }
 
@@ -1404,7 +1404,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         this._innerSecondaryLineMaterial.dashed = dashed;
         this._outerSecondaryLineMaterial.dashed = dashed;
 
-        this.notify();
+        this.notifyChange();
     }
 
     /**
@@ -1421,7 +1421,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
             this._innerSecondaryLineMaterial.gapSize = size;
             this._outerSecondaryLineMaterial.gapSize = size;
 
-            this.notify();
+            this.notifyChange();
         }
     }
 
@@ -1482,7 +1482,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
             this._innerSecondaryLineMaterial.linewidth = width * VERTICAL_LINE_WIDTH_FACTOR;
             this._outerSecondaryLineMaterial.linewidth =
                 this._innerSecondaryLineMaterial.linewidth + this._borderWidth * 2;
-            this.notify();
+            this.notifyChange();
         }
     }
 
@@ -1536,7 +1536,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
                 v.borderWidth = this._borderWidth;
             });
 
-            this.notify();
+            this.notifyChange();
         }
     }
 
@@ -1919,13 +1919,13 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     }
 
     pick(coordinates: Vector2, _options?: PickOptions): ShapePickResult[] {
-        const normalized = this._instance.canvasToNormalizedCoords(coordinates, tmpNDC);
+        const normalized = this.instance.canvasToNormalizedCoords(coordinates, tmpNDC);
         const raycaster = new Raycaster();
         raycaster.params.Line2 = {
             threshold: this.lineWidth * 8,
         };
 
-        raycaster.setFromCamera(normalized, this._instance.view.camera);
+        raycaster.setFromCamera(normalized, this.instance.view.camera);
 
         const pickedVertexIndex = this.raycastVertices(raycaster);
 
@@ -2036,7 +2036,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
             m.depthTest = depthTest;
             m.depthWrite = false;
         });
-        this.notify();
+        this.notifyChange();
     }
 
     private visitVertices(callback: (vertex: Vertex) => void) {
@@ -2055,7 +2055,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     }
 
     preUpdate(): unknown[] | null {
-        this.visitLines(line => line.updateMaterialResolution(this._instance.renderer));
+        this.visitLines(line => line.updateMaterialResolution(this.instance.renderer));
         return null;
     }
 
@@ -2120,7 +2120,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
             });
         }
 
-        this.notify();
+        this.notifyChange();
     }
 
     onObjectCreated(obj: Object3D) {
@@ -2210,10 +2210,6 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         return object;
     }
 
-    private notify() {
-        this._instance?.notifyChange(this);
-    }
-
     private rebuildSurface() {
         if (this._surface) {
             this._surface.geometry?.dispose();
@@ -2232,7 +2228,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
             }
         }
 
-        this.notify();
+        this.notifyChange();
     }
 
     private rebuildSurfaceLabel() {
@@ -2262,7 +2258,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
             }
         }
 
-        this.notify();
+        this.notifyChange();
     }
 
     private rebuildVerticalLineLabels() {
@@ -2297,7 +2293,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
             }
         }
 
-        this.notify();
+        this.notifyChange();
     }
 
     private rebuildLineLabels() {
@@ -2365,7 +2361,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
             }
         }
 
-        this.notify();
+        this.notifyChange();
     }
 
     private rebuildVertexLabels() {
@@ -2401,7 +2397,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
             }
         }
 
-        this.notify();
+        this.notifyChange();
     }
 
     private rebuildFloorLine() {
@@ -2487,7 +2483,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         this.updateVisibility();
         this.updateDepthTest();
 
-        this.notify();
+        this.notifyChange();
     }
 
     private buildSegmentListIfNecessary() {
@@ -2547,7 +2543,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
             // they might not be visible, so we are using a sphere instead.
             tmpSphere.center = position;
             tmpSphere.radius = getWorldSpaceRadius(
-                this._instance.renderer,
+                this.instance.renderer,
                 raycaster.camera,
                 position,
                 radius,
@@ -2603,7 +2599,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     }
 
     private getGeoJSONGeometry(options: ShapeExportOptions): Geometry {
-        const src = proj.Proj(this._instance.referenceCrs);
+        const src = proj.Proj(this.instance.referenceCrs);
         const dst = proj.Proj('EPSG:4326');
 
         const tmp = { x: 0, y: 0, z: 0 };

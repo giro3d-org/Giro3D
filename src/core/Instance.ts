@@ -546,11 +546,6 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
             throw new Error('object is not an instance of THREE.Object3D or Giro3D.Entity');
         }
 
-        if (isEntity3D(object)) {
-            // @ts-expect-error private property. TODO assign it cleanly (maybe in entity constructor ?)
-            object._instance = this;
-        }
-
         if (isObject3D(object)) {
             // case of a simple THREE.js object3D
             const object3d = object as Object3D;
@@ -567,11 +562,11 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
             throw new Error(`Invalid id '${object.id}': id already used`);
         }
 
-        entity.startPreprocess();
-
         this._entities.add(entity);
 
-        await entity.whenReady;
+        await entity.initialize({
+            instance: this,
+        });
 
         if (
             entity instanceof Entity3D &&

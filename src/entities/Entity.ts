@@ -1,6 +1,7 @@
 import { EventDispatcher, MathUtils, type Camera } from 'three';
 import type Context from '../core/Context';
 import type Disposable from '../core/Disposable';
+import type Instance from '../core/Instance';
 
 /* eslint no-unused-vars: 0 */
 /* eslint class-methods-use-this: 0 */
@@ -10,6 +11,10 @@ export interface EntityEventMap {
 }
 
 export type EntityUserData = Record<string, unknown>;
+
+export type EntityPreprocessOptions = {
+    instance: Instance;
+};
 
 /**
  * Abstract base class for all entities in Giro3D.
@@ -77,8 +82,25 @@ abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserDa
      */
     readonly id: string;
     private _frozen: boolean;
-    public whenReady?: Promise<this>;
-    public ready = false;
+    private _ready = false;
+    private _instance?: Instance;
+
+    /**
+     * Determine if this entity is ready to use.
+     */
+    get ready() {
+        return this._ready;
+    }
+
+    get instance(): Instance {
+        if (!this._instance) {
+            throw new Error(
+                'This entity has not been added to an instance or its initialization is not finished.\n' +
+                    'To check if the entity is ready, use the .ready property',
+            );
+        }
+        return this._instance;
+    }
 
     /**
      * The name of this entity.
@@ -152,29 +174,23 @@ abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserDa
      * any operation that must be done before the entity can be used in the scene, such
      * as fetching metadata about a dataset, etc.
      *
+     * @param opts - The preprocess options.
+     *
      * @returns A promise that resolves when the entity is ready to be used.
      */
-    preprocess(): Promise<void> {
+    protected preprocess(_opts: EntityPreprocessOptions): Promise<void> {
         return Promise.resolve();
     }
 
-    startPreprocess(): this {
-        let preprocessingPromise;
-        if (this.preprocess) {
-            preprocessingPromise = this.preprocess();
-        }
+    /**
+     * @internal
+     */
+    async initialize(opts: EntityPreprocessOptions): Promise<void> {
+        this._instance = opts.instance;
 
-        if (!preprocessingPromise) {
-            preprocessingPromise = Promise.resolve(this);
-        }
+        await this.preprocess(opts);
 
-        // the last promise in the chain must return the layer
-        this.whenReady = preprocessingPromise.then(() => {
-            this.ready = true;
-            return this;
-        });
-
-        return this;
+        this._ready = true;
     }
 
     /**
@@ -188,7 +204,7 @@ abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserDa
      * @returns `true` if should check for update
      */
     shouldCheckForUpdate(): boolean {
-        return this.ready;
+        return this._ready;
     }
 
     /**
@@ -312,6 +328,13 @@ abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserDa
      */
     dispose() {
         /** do nothing */
+    }
+
+    /**
+     * Notifies the parent instance that a change occured in the scene.
+     */
+    protected notifyChange(source?: unknown | unknown[]): void {
+        this._instance?.notifyChange(source);
     }
 }
 

@@ -371,9 +371,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
             lineMaterialGenerator: options.lineMaterialGenerator,
             pointMaterialGenerator: options.pointMaterialGenerator,
         });
-        this._geometryConverter.addEventListener('texture-loaded', () =>
-            this._instance.notifyChange(this),
-        );
+        this._geometryConverter.addEventListener('texture-loaded', () => this.notifyChange(this));
 
         if (!options.extent) {
             throw new Error('Error while initializing FeatureCollection: missing options.extent');
@@ -422,7 +420,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
     }
 
     preprocess() {
-        this._targetProjection = new Projection({ code: this._instance.referenceCrs });
+        this._targetProjection = new Projection({ code: this.instance.referenceCrs });
 
         // If the map is not square, we want to have more than a single
         // root tile to avoid elongated tiles that hurt visual quality and SSE computation.
@@ -464,7 +462,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
     private buildNewTile(extent: Extent, z: number, x = 0, y = 0) {
         // create a simple square shape. We duplicate the top left and bottom right
         // vertices because each vertex needs to appear once per triangle.
-        extent = extent.as(this._instance.referenceCrs);
+        extent = extent.as(this.instance.referenceCrs);
 
         const origin = extent.centerAsVector3();
         const name = `tile @ (z=${z}, x=${x}, y=${y})`;
@@ -562,7 +560,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         // Make sure new materials have the correct opacity
         this.updateOpacity();
 
-        this._instance.notifyChange(this);
+        this.notifyChange(this);
     }
 
     private updateStyle(obj: SimpleGeometryMesh<MeshUserData> | null) {
@@ -907,7 +905,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
                                 this.onObjectCreated(mesh);
 
                                 tile.boundingBox.expandByObject(mesh);
-                                this._instance.notifyChange(tile);
+                                this.notifyChange(tile);
                             }
                         }
                         tile.userData.layerUpdateState.noMoreUpdatePossible();
@@ -992,7 +990,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
                 child.updateMatrixWorld(true);
                 i++;
             }
-            this._instance.notifyChange(node);
+            this.notifyChange(node);
         }
     }
 

@@ -1,12 +1,31 @@
-import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import Instance from '@giro3d/giro3d/core/Instance';
-import Map from '@giro3d/giro3d/entities/Map';
-import Tiles3D from '@giro3d/giro3d/entities/Tiles3D';
-import Tiles3DSource from '@giro3d/giro3d/sources/Tiles3DSource';
+import Entity from '@giro3d/giro3d/entities/Entity';
 import Fetcher from '@giro3d/giro3d/utils/Fetcher';
 import proj4 from 'proj4';
-import { Group, Object3D, Vector2 } from 'three';
-import { mockWebGLRenderer, resizeObservers, setupGlobalMocks } from '../mocks';
+import { Group, Object3D, Vector2, WebGLRenderer } from 'three';
+import { resizeObservers, setupGlobalMocks } from '../mocks';
+
+const renderer = new WebGLRenderer();
+
+jest.mock('@giro3d/giro3d/renderer/c3DEngine', () => {
+    return jest.fn().mockImplementation(() => {
+        return {
+            renderer: {
+                domElement: {
+                    addEventListener: jest.fn(),
+                    getBoundingClientRect() {
+                        return { x: 10, y: 10 };
+                    },
+                },
+            },
+            getWindowSize() {
+                return { x: 10, y: 10 };
+            },
+        };
+    });
+});
+
+class FakeEntity extends Entity {}
 
 describe('Instance', () => {
     let viewerDiv: HTMLDivElement;
@@ -45,9 +64,7 @@ describe('Instance', () => {
         instance = new Instance({
             target: viewerDiv,
             crs: 'EPSG:3857',
-            renderer: {
-                renderer: mockWebGLRenderer(),
-            },
+            renderer,
         });
         Fetcher.json = jest.fn();
     });
@@ -132,34 +149,10 @@ describe('Instance', () => {
             expect(instance.threeObjects.children).toContain(o);
         });
 
-        it('should add a map', () => {
-            const map = new Map({
-                extent: new Extent('EPSG:4326', {
-                    west: 0,
-                    east: 10,
-                    south: 0,
-                    north: 10,
-                }),
-                maxSubdivisionLevel: 15,
-            });
-            return instance.add(map).then(() => {
-                expect(instance.getObjects()).toStrictEqual([map]);
-            });
-        });
-
-        it('should add a Tiles3D', () => {
-            const tileset = {
-                root: {
-                    refine: 'ADD',
-                    boundingVolume: { box: [0, 0, 0, 7.0955, 0, 0, 0, 3.1405, 0, 0, 0, 5.0375] },
-                },
-                geometricError: 50,
-            };
-            // @ts-expect-error mockResolvedValue does not exist
-            Fetcher.json.mockResolvedValue(tileset);
-            const tiles3d = new Tiles3D(new Tiles3DSource('https://domain.tld/tileset.json'));
-            return instance.add(tiles3d).then(() => {
-                expect(instance.getObjects()).toStrictEqual([tiles3d]);
+        it('should add an entity', () => {
+            const entity = new FakeEntity();
+            return instance.add(entity).then(() => {
+                expect(instance.getObjects()).toStrictEqual([entity]);
             });
         });
 
@@ -173,23 +166,13 @@ describe('Instance', () => {
         it('should fire the entity-added event', () => {
             let eventFired = false;
 
-            const map = new Map({
-                extent: new Extent('EPSG:4326', {
-                    west: 0,
-                    east: 10,
-                    south: 0,
-                    north: 10,
-                }),
-                maxSubdivisionLevel: 15,
-            });
-
             instance.addEventListener('entity-added', () => {
                 eventFired = true;
             });
 
             expect(eventFired).toBeFalsy();
 
-            return instance.add(map).then(() => {
+            return instance.add(new FakeEntity()).then(() => {
                 expect(eventFired).toBeTruthy();
             });
         });
@@ -197,36 +180,35 @@ describe('Instance', () => {
 
     describe('remove', () => {
         it('should remove the object from the list', () => {
-            const extent = new Extent('EPSG:4326', 0, 0, 0, 0);
-            const map1 = new Map({ extent });
-            const map2 = new Map({ extent });
-            const map3 = new Map({ extent });
+            const entity1 = new FakeEntity();
+            const entity2 = new FakeEntity();
+            const entity3 = new FakeEntity();
 
-            instance.add(map1);
-            instance.add(map2);
-            instance.add(map3);
+            instance.add(entity1);
+            instance.add(entity2);
+            instance.add(entity3);
 
-            expect(instance.getObjects().includes(map1)).toBeTruthy();
-            expect(instance.getObjects().includes(map2)).toBeTruthy();
-            expect(instance.getObjects().includes(map3)).toBeTruthy();
+            expect(instance.getObjects().includes(entity1)).toBeTruthy();
+            expect(instance.getObjects().includes(entity2)).toBeTruthy();
+            expect(instance.getObjects().includes(entity3)).toBeTruthy();
 
-            instance.remove(map1);
+            instance.remove(entity1);
 
-            expect(instance.getObjects().includes(map1)).toBeFalsy();
-            expect(instance.getObjects().includes(map2)).toBeTruthy();
-            expect(instance.getObjects().includes(map3)).toBeTruthy();
+            expect(instance.getObjects().includes(entity1)).toBeFalsy();
+            expect(instance.getObjects().includes(entity2)).toBeTruthy();
+            expect(instance.getObjects().includes(entity3)).toBeTruthy();
 
-            instance.remove(map2);
+            instance.remove(entity2);
 
-            expect(instance.getObjects().includes(map1)).toBeFalsy();
-            expect(instance.getObjects().includes(map2)).toBeFalsy();
-            expect(instance.getObjects().includes(map3)).toBeTruthy();
+            expect(instance.getObjects().includes(entity1)).toBeFalsy();
+            expect(instance.getObjects().includes(entity2)).toBeFalsy();
+            expect(instance.getObjects().includes(entity3)).toBeTruthy();
 
-            instance.remove(map3);
+            instance.remove(entity3);
 
-            expect(instance.getObjects().includes(map1)).toBeFalsy();
-            expect(instance.getObjects().includes(map2)).toBeFalsy();
-            expect(instance.getObjects().includes(map3)).toBeFalsy();
+            expect(instance.getObjects().includes(entity1)).toBeFalsy();
+            expect(instance.getObjects().includes(entity2)).toBeFalsy();
+            expect(instance.getObjects().includes(entity3)).toBeFalsy();
         });
 
         it('should remove the object from threeObjects if it is a native three.js object', () => {
@@ -239,26 +221,19 @@ describe('Instance', () => {
         });
 
         it('should call the dispose() method if it exists', () => {
-            const map = new Map({ extent: new Extent('EPSG:4326', 0, 0, 0, 0) });
-            map.dispose = jest.fn();
-            return instance.add(map).then(() => {
-                instance.remove(map);
-                expect(map.dispose).toHaveBeenCalled();
+            const entity = new FakeEntity();
+            entity.dispose = jest.fn();
+
+            return instance.add(entity).then(() => {
+                instance.remove(entity);
+                expect(entity.dispose).toHaveBeenCalled();
             });
         });
 
         it('should fire the entity-removed event', () => {
             let eventFired = false;
 
-            const map = new Map({
-                extent: new Extent('EPSG:4326', {
-                    west: 0,
-                    east: 10,
-                    south: 0,
-                    north: 10,
-                }),
-                maxSubdivisionLevel: 15,
-            });
+            const entity = new FakeEntity();
 
             instance.addEventListener('entity-removed', () => {
                 eventFired = true;
@@ -266,8 +241,8 @@ describe('Instance', () => {
 
             expect(eventFired).toBeFalsy();
 
-            instance.add(map).then(() => {
-                instance.remove(map);
+            instance.add(entity).then(() => {
+                instance.remove(entity);
                 expect(eventFired).toBeTruthy();
             });
         });
@@ -279,25 +254,24 @@ describe('Instance', () => {
         });
 
         it('should return true if any entity is loading', () => {
-            const extent = new Extent('EPSG:4326', 0, 0, 0, 0);
-            const map1 = new Map({ extent });
-            const map2 = new Map({ extent });
+            const entity1 = new FakeEntity();
+            const entity2 = new FakeEntity();
 
             let map1Loading = false;
             let map2Loading = false;
 
-            Object.defineProperty(map1, 'loading', {
+            Object.defineProperty(entity1, 'loading', {
                 get: jest.fn(() => map1Loading),
                 set: jest.fn(),
             });
 
-            Object.defineProperty(map2, 'loading', {
+            Object.defineProperty(entity2, 'loading', {
                 get: jest.fn(() => map2Loading),
                 set: jest.fn(),
             });
 
-            instance.add(map1);
-            instance.add(map2);
+            instance.add(entity1);
+            instance.add(entity2);
 
             map1Loading = false;
             map2Loading = true;
@@ -319,23 +293,22 @@ describe('Instance', () => {
 
     describe('getEntities', () => {
         it('should return added entities', () => {
-            const extent = new Extent('EPSG:4326', 0, 0, 0, 0);
-            const map1 = new Map({ extent });
-            const map2 = new Map({ extent });
+            const entity1 = new FakeEntity();
+            const entity2 = new FakeEntity();
 
-            instance.add(map1);
+            instance.add(entity1);
 
-            expect(instance.getEntities()).toEqual(expect.arrayContaining([map1]));
+            expect(instance.getEntities()).toEqual(expect.arrayContaining([entity1]));
 
-            instance.add(map2);
+            instance.add(entity2);
 
-            expect(instance.getEntities()).toEqual(expect.arrayContaining([map1, map2]));
+            expect(instance.getEntities()).toEqual(expect.arrayContaining([entity1, entity2]));
 
-            instance.remove(map1);
+            instance.remove(entity1);
 
-            expect(instance.getEntities()).toEqual(expect.arrayContaining([map2]));
+            expect(instance.getEntities()).toEqual(expect.arrayContaining([entity2]));
 
-            instance.remove(map2);
+            instance.remove(entity2);
 
             expect(instance.getEntities()).toEqual(expect.arrayContaining([]));
         });
@@ -343,9 +316,8 @@ describe('Instance', () => {
 
     describe('getObjects', () => {
         it('should return added objects and entities', () => {
-            const extent = new Extent('EPSG:4326', 0, 0, 0, 0);
-            const map1 = new Map({ extent });
-            const map2 = new Map({ extent });
+            const map1 = new FakeEntity();
+            const map2 = new FakeEntity();
             const object1 = new Object3D();
             const object2 = new Object3D();
 
@@ -374,9 +346,8 @@ describe('Instance', () => {
         });
 
         it('should return the average of all entities progress', () => {
-            const extent = new Extent('EPSG:4326', 0, 0, 0, 0);
-            const map1 = new Map({ extent });
-            const map2 = new Map({ extent });
+            const map1 = new FakeEntity();
+            const map2 = new FakeEntity();
 
             Object.defineProperty(map1, 'progress', {
                 get: jest.fn(() => 0.7),

@@ -1,7 +1,6 @@
 import { Box3, type Material, type Mesh, type Object3D, type Plane, type Vector2 } from 'three';
 
 import type Context from '../core/Context';
-import type Instance from '../core/Instance';
 import type MemoryUsage from '../core/MemoryUsage';
 import { type GetMemoryUsageContext } from '../core/MemoryUsage';
 import type Pickable from '../core/picking/Pickable';
@@ -55,8 +54,6 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
      */
     readonly isEntity3D: boolean = true as const;
 
-    // @ts-expect-error we should fix this. The instance should be known since the beginning to avoid issues.
-    protected _instance: Instance = null;
     private _visible: boolean;
     private _opacity: number;
     private _object3d: Object3D;
@@ -403,7 +400,7 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
     }
 
     pick(canvasCoords: Vector2, options?: PickOptions): PickResult[] {
-        return pickObjectsAt(this._instance, canvasCoords, this.object3d, options);
+        return pickObjectsAt(this.instance, canvasCoords, this.object3d, options);
     }
 }
 

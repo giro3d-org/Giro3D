@@ -496,11 +496,11 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
         this.root = root;
         // @ts-expect-error incorrect type signature // TODO
         root.findChildrenByName = findChildrenByName.bind(root, root);
-        this.extent = Extent.fromBox3(this._instance.referenceCrs, root.bbox);
+        this.extent = Extent.fromBox3(this.instance.referenceCrs, root.bbox);
     }
 
     pick(coordinates: Vector2, options?: PickOptions): PointsPickResult[] {
-        return pickPointsAt(this._instance, coordinates, this, options);
+        return pickPointsAt(this.instance, coordinates, this, options);
     }
 
     updateMinMaxDistance(context: Context, bbox: Box3) {
@@ -687,7 +687,7 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
                                 this.group.add(elt.obj);
                                 elt.obj.updateMatrixWorld(true);
                                 elt.promise = undefined;
-                                this._instance.notifyChange(this);
+                                this.notifyChange(this);
                             },
                             err => {
                                 if (err instanceof Error && err.message === 'aborted') {
@@ -834,7 +834,7 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
         // Query HRC if we don't have children metadata yet.
         if (metadata.childrenBitField && metadata.children.length === 0) {
             this.parseOctree(thisMetadata.hierarchyStepSize, metadata).then(() =>
-                this._instance.notifyChange(this, { needsRedraw: false }),
+                this.notifyChange(this),
             );
         }
 
@@ -855,7 +855,7 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
             geometry,
             material: this.material.clone(),
             textureSize: nonNull(this._imageSize),
-            extent: Extent.fromBox3(this._instance.referenceCrs, metadata.bbox),
+            extent: Extent.fromBox3(this.instance.referenceCrs, metadata.bbox),
         });
         points.name = `r${metadata.name}.${this.extension}`;
         if (PointCloudMaterial.isPointCloudMaterial(points.material)) {

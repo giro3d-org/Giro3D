@@ -5,3 +5,44 @@
 import { TextDecoder as NodeTextDecoder } from 'node:util';
 
 global.TextDecoder = NodeTextDecoder;
+
+jest.mock('three', () => {
+    const three = jest.requireActual('three');
+    return {
+        ...three,
+        WebGLRenderer: jest.fn().mockReturnValue({
+            domElement: {
+                tabIndex: 0,
+                width: 10,
+                height: 10,
+                style: jest.fn(),
+                appendChild: jest.fn(),
+                addEventListener: jest.fn(),
+                getBoundingClientRect() {
+                    return { x: 10, y: 10 };
+                },
+            },
+            capabilities: {
+                getMaxAnisotropy() {
+                    return 0;
+                },
+            },
+            setSize: jest.fn(),
+            clear: jest.fn(),
+            setClearColor: jest.fn(),
+            getContext() {
+                return {
+                    getParameter() {
+                        return 0;
+                    },
+                    getExtension() {
+                        return true;
+                    },
+                };
+            },
+            debug: {
+                checkShaderErrors: false,
+            },
+        }),
+    };
+});
