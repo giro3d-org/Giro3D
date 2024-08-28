@@ -22,6 +22,7 @@ import {
 import MapLightingOptions, { MapLightingMode } from './MapLightingOptions';
 import PointCloud, { PointCloudOptions, UnsupportedAttributeError } from './PointCloud';
 import Shape, * as shape from './Shape';
+import SphericalPanorama, * as sphericalPanorama from './SphericalPanorama';
 import Tiles3D, {
     DEFAULT_TILES3D_POINTCLOUD_ATTRIBUTE_MAPPING,
     WellKnown3DTilesPointCloudAttributes,
@@ -62,6 +63,8 @@ export {
     PointCloudOptions,
     Shape,
     shape,
+    sphericalPanorama,
+    SphericalPanorama,
     Tiles3D,
     Tiles3DOptions,
     Tiles3DPickResult,

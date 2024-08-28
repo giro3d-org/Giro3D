@@ -709,7 +709,7 @@ describe('Extent', () => {
 
     describe('equirectangular', () => {
         it('should return the full spherical projection', () => {
-            const extent = Extent.equirectangular;
+            const extent = Extent.fullEquirectangularProjection;
 
             expect(extent.crs).toEqual('equirectangular');
             expect(extent.west).toEqual(-180);

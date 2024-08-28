@@ -1,4 +1,4 @@
-import { Box3, MathUtils, Sphere, Vector2, Vector3 } from 'three';
+import { Box3, MathUtils, type Matrix4, Vector2, Vector3 } from 'three';
 import type ElevationRange from '../../core/ElevationRange';
 import Coordinates from '../../core/geographic/Coordinates';
 import type Ellipsoid from '../../core/geographic/Ellipsoid';
@@ -33,7 +33,7 @@ export default class EllipsoidTileVolume extends TileVolume {
         this._ellipsoid = options.ellipsoid;
     }
 
-    getWorldSpaceCorners(): Vector3[] {
+    getWorldSpaceCorners(matrix: Matrix4): Vector3[] {
         if (this._corners == null) {
             const dims = this._extent.dimensions(vec2);
 
@@ -54,6 +54,9 @@ export default class EllipsoidTileVolume extends TileVolume {
 
                     const p0 = this._ellipsoid.toCartesian(latitude, longitude, this._min);
                     const p1 = this._ellipsoid.toCartesian(latitude, longitude, this._max);
+
+                    p0.applyMatrix4(matrix);
+                    p1.applyMatrix4(matrix);
 
                     this._corners[index++] = p0;
                     this._corners[index++] = p1;
@@ -132,10 +135,5 @@ export default class EllipsoidTileVolume extends TileVolume {
             this._localBox = this.computeLocalBox();
             this._corners = null;
         }
-    }
-
-    override getWorldSpaceBoundingSphere(target?: Sphere): Sphere {
-        target = target ?? new Sphere();
-        return target.setFromPoints(this.getWorldSpaceCorners());
     }
 }

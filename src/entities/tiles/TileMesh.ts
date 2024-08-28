@@ -1,4 +1,3 @@
-import type { Box3, BufferGeometry, Side, WebGLRenderer } from 'three';
 import {
     FrontSide,
     Group,
@@ -12,11 +11,15 @@ import {
     UnsignedByteType,
     Vector2,
     Vector3,
+    type Box3,
+    type BufferGeometry,
     type Intersection,
     type Object3D,
     type Object3DEventMap,
     type Raycaster,
+    type Side,
     type Texture,
+    type WebGLRenderer,
     type WebGLRenderTarget,
 } from 'three';
 
@@ -64,6 +67,7 @@ const NO_NEIGHBOUR = -99;
 const NO_OFFSET_SCALE = new OffsetScale(0, 0, 0, 0);
 const tempVec2 = new Vector2();
 const tempVec3 = new Vector3();
+const tempAbsolutePosition = new Vector3();
 
 export interface TileMeshEventMap extends Object3DEventMap {
     'visibility-changed': unknown;
@@ -319,7 +323,14 @@ class TileMesh
     }
 
     addChildTile(tile: TileMesh) {
-        this.attach(tile);
+        // The absolute position here means "absolute position in the cartographic coordinate system", not in the scene.
+        const absolutePosition = tempAbsolutePosition.copy(tile.absolutePosition);
+        tile.position.copy(absolutePosition.sub(this.absolutePosition));
+
+        this.add(tile);
+        tile.updateMatrix();
+        tile.updateMatrixWorld();
+
         if (this._heightMap) {
             const heightMap = this._heightMap.payload;
             const inheritedHeightMap = heightMap.clone();
