@@ -18,6 +18,7 @@ const customInspectors: Record<string, typeof EntityInspector<Entity3D>> = {
     Map: MapInspector,
     Globe: MapInspector,
     Tiles3D: Tiles3DInspector,
+    SphericalPanorama: MapInspector,
     AxisGrid: AxisGridInspector,
     Shape: ShapeInspector,
     FeatureCollection: FeatureCollectionInspector,

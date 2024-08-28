@@ -42,7 +42,7 @@ export interface GlobeTerrainOptions {
     enableSkirts: boolean;
 }
 
-function computeEllipsoidalImageSize(extent: Extent, ellipsoid: Ellipsoid): Vector2 {
+export function computeEllipsoidalImageSize(extent: Extent, ellipsoid: Ellipsoid): Vector2 {
     const dims = extent.dimensions(tempDims);
 
     const meridianLength = ellipsoid.getMeridianArcLength(extent.north, extent.south);
@@ -166,7 +166,7 @@ export default class Globe extends Map {
         return frustumVisible && horizonVisible;
     }
 
-    private testHorizonVisibility(node: TileMesh, context: Context): boolean {
+    protected testHorizonVisibility(node: TileMesh, context: Context): boolean {
         const cameraPosition = context.view.camera.position;
         const corners = node.getBoundingBoxCorners();
 
