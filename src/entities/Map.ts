@@ -392,6 +392,11 @@ export type MapConstructorOptions = {
      */
     side?: Side;
     /**
+     * Enable or disable depth testing on materials.
+     * @defaultValue true
+     */
+    depthTest?: boolean;
+    /**
      * Options for geometric terrain rendering.
      */
     terrain?: boolean | TerrainOptions;
@@ -589,6 +594,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
             contourLines: getContourLineOptions(options.contourLines),
             discardNoData: options.discardNoData ?? false,
             side: options.side ?? FrontSide,
+            depthTest: options.depthTest ?? true,
             showTileOutlines: options.showOutline ?? false,
             terrain: getTerrainOptions(options.terrain),
             colorimetry: getColorimetryOptions(options.colorimetry),
@@ -627,6 +633,17 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
         const sum = this._layers.reduce((accum, layer) => accum + layer.progress, 0);
         return sum / this._layers.length;
+    }
+
+    /**
+     * Gets or sets depth testing on materials.
+     */
+    get depthTest() {
+        return this._materialOptions.depthTest;
+    }
+
+    set depthTest(v: boolean) {
+        this._materialOptions.depthTest = v;
     }
 
     /**

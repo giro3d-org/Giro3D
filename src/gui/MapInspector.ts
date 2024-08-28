@@ -102,6 +102,9 @@ class MapInspector extends EntityInspector<Map> {
         this.addController<Sidedness>(this, 'side', sides)
             .name('Sidedness')
             .onChange(v => this.setSidedness(v));
+        this.addController<boolean>(this.entity, 'depthTest')
+            .name('Depth test')
+            .onChange(() => this.notify(this.entity));
         this.addController<number>(this.entity, 'renderOrder')
             .name('Render order')
             .onChange(() => this.notify(map));

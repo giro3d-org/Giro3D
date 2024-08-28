@@ -216,6 +216,7 @@ export interface MaterialOptions {
      * Displays the collider meshes used for raycast.
      */
     showColliderMeshes: boolean;
+    depthTest: boolean;
 }
 
 type HillshadingUniform = {
@@ -881,6 +882,8 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
     update(materialOptions?: MaterialOptions) {
         if (materialOptions) {
             this._options = materialOptions;
+
+            this.depthTest = materialOptions.depthTest;
 
             if (this._colorMapAtlas) {
                 this.updateColorMaps();
