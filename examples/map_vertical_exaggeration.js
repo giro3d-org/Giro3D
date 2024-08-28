@@ -1,4 +1,4 @@
-import { MathUtils, Mesh, MeshBasicMaterial, SphereGeometry, Vector3 } from 'three';
+import { DoubleSide, MathUtils, Mesh, MeshBasicMaterial, SphereGeometry, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import Instance from '@giro3d/giro3d/core/Instance.js';
@@ -45,7 +45,7 @@ const map = new Map({
         azimuth: 254,
     },
     discardNoData: true,
-    doubleSided: true,
+    side: DoubleSide,
 });
 
 // Forces the map to subdivide more than usual, for better readability of tiles.

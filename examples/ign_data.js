@@ -6,6 +6,7 @@ import {
     Fog,
     Color,
     MathUtils,
+    DoubleSide,
 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
@@ -55,7 +56,7 @@ const map = new Giro3dMap({
         elevationLayersOnly: true,
     },
     discardNoData: true,
-    doubleSided: true,
+    side: DoubleSide,
 });
 
 instance.add(map);

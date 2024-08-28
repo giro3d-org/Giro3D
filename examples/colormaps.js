@@ -1,6 +1,6 @@
 import colormap from 'colormap';
 
-import { MathUtils, Vector3, Color } from 'three';
+import { Vector3, Color, DoubleSide } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import XYZ from 'ol/source/XYZ.js';
@@ -89,7 +89,7 @@ updatePreview(parameters.colors);
 const map = new Map({
     extent,
     backgroundColor: 'cyan',
-    doubleSided: true,
+    side: DoubleSide,
     hillshading: {
         enabled: true,
         elevationLayersOnly: true,

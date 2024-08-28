@@ -1,5 +1,5 @@
 import type GUI from 'lil-gui';
-import type { AxesHelper, GridHelper } from 'three';
+import type { AxesHelper, GridHelper, Side } from 'three';
 import { Color } from 'three';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 import type Instance from '../core/Instance';
@@ -30,6 +30,10 @@ function createTileLabel() {
     return text;
 }
 
+type Sidedness = 'Front' | 'Back' | 'DoubleSide';
+
+const sides: Sidedness[] = ['Front', 'Back', 'DoubleSide'];
+
 class MapInspector extends EntityInspector<Map> {
     /** Toggle the frozen property of the map. */
     frozen: boolean;
@@ -56,6 +60,7 @@ class MapInspector extends EntityInspector<Map> {
     reachableTiles: number;
     visibleTiles: number;
     terrainPanel: MapTerrainPanel;
+    side: Sidedness = 'Front';
 
     /**
      * Creates an instance of MapInspector.
@@ -75,6 +80,7 @@ class MapInspector extends EntityInspector<Map> {
         this.frozen = this.entity.frozen ?? false;
         this.showGrid = false;
         this.renderState = 'Normal';
+        this.side = sides[this.entity.side];
 
         this.addController<never>(this.entity, 'discardNoData')
             .name('Discard no-data values')
@@ -93,6 +99,12 @@ class MapInspector extends EntityInspector<Map> {
 
         this.labels = new window.Map();
 
+        this.addController<Sidedness>(this, 'side', sides)
+            .name('Sidedness')
+            .onChange(v => this.setSidedness(v));
+        this.addController<boolean>(this.entity, 'depthTest')
+            .name('Depth test')
+            .onChange(() => this.notify(this.entity));
         this.addController<number>(this.entity, 'renderOrder')
             .name('Render order')
             .onChange(() => this.notify(map));
@@ -294,6 +306,11 @@ class MapInspector extends EntityInspector<Map> {
             this.extentHelper.visible = this.showExtent;
         }
 
+        this.notify(this.entity);
+    }
+
+    setSidedness(side: Sidedness) {
+        this.entity.side = sides.indexOf(side) as Side;
         this.notify(this.entity);
     }
 

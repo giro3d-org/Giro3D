@@ -1,6 +1,6 @@
 import colormap from 'colormap';
 
-import { CurvePath, LineCurve, Vector2, Vector3 } from 'three';
+import { CurvePath, DoubleSide, LineCurve, Vector2, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
@@ -48,7 +48,7 @@ const map = new Map({
         enabled: true,
         elevationLayersOnly: true,
     },
-    doubleSided: true,
+    side: DoubleSide,
     backgroundColor: 'white',
 });
 

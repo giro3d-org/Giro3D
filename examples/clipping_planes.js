@@ -9,6 +9,7 @@ import {
     Box3Helper,
     Group,
     Plane,
+    DoubleSide,
 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
@@ -116,7 +117,7 @@ const map = new Map({
     extent,
     hillshading: false,
     discardNoData: true,
-    doubleSided: true,
+    side: DoubleSide,
 });
 instance.add(map);
 

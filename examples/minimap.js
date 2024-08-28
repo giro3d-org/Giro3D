@@ -43,7 +43,6 @@ const map = new Map({
         elevationLayersOnly: true,
     },
     discardNoData: true,
-    doubleSided: false,
 });
 mainInstance.add(map);
 

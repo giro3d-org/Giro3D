@@ -25,7 +25,7 @@ const defaultOptions: MaterialOptions = {
         thickness: 1,
     },
     discardNoData: false,
-    doubleSided: false,
+    side: FrontSide,
     elevationRange: null,
     forceTextureAtlases: false,
     graticule: {
@@ -70,7 +70,7 @@ describe('LayeredMaterial', () => {
                 textureDataType: UnsignedByteType,
             });
             const ds = new LayeredMaterial({
-                options: { ...defaultOptions, doubleSided: true },
+                options: { ...defaultOptions, side: DoubleSide },
                 renderer: defaultRenderer,
                 atlasInfo: defaultAtlasInfo,
                 getIndexFn,

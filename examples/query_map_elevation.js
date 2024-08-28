@@ -1,4 +1,4 @@
-import { Color, Fog } from 'three';
+import { Color, DoubleSide, Fog } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
@@ -37,7 +37,7 @@ const map = new Map({
         enabled: true,
         elevationLayersOnly: true,
     },
-    doubleSided: true,
+    side: DoubleSide,
     backgroundColor: 'gray',
 });
 

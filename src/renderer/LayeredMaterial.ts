@@ -1,5 +1,6 @@
 import type {
     IUniform,
+    Side,
     Texture,
     TextureDataType,
     WebGLProgramParametersWithUniforms,
@@ -7,8 +8,6 @@ import type {
 } from 'three';
 import {
     Color,
-    DoubleSide,
-    FrontSide,
     GLSL3,
     NoBlending,
     NormalBlending,
@@ -165,9 +164,9 @@ export interface MaterialOptions {
      */
     colorimetry: Required<ColorimetryOptions>;
     /**
-     * Toggles double-sided surfaces.
+     * The sidedness.
      */
-    doubleSided: boolean;
+    side: Side;
     /**
      * Contour lines options.
      */
@@ -217,6 +216,7 @@ export interface MaterialOptions {
      * Displays the collider meshes used for raycast.
      */
     showColliderMeshes: boolean;
+    depthTest: boolean;
 }
 
 type HillshadingUniform = {
@@ -398,7 +398,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
             },
         };
 
-        this.side = options.doubleSided ? DoubleSide : FrontSide;
+        this.side = options.side;
         this._renderer = params.renderer;
         this._forceTextureAtlas = options.forceTextureAtlases ?? false;
         this._hasElevationLayer = params.hasElevationLayer;
@@ -883,6 +883,8 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         if (materialOptions) {
             this._options = materialOptions;
 
+            this.depthTest = materialOptions.depthTest;
+
             if (this._colorMapAtlas) {
                 this.updateColorMaps();
             }
@@ -985,7 +987,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
                 MaterialUtils.setDefine(this, 'ENABLE_HILLSHADING', false);
             }
 
-            const newSide = materialOptions.doubleSided ? DoubleSide : FrontSide;
+            const newSide = materialOptions.side;
             if (this.side !== newSide) {
                 this.side = newSide;
                 this.needsUpdate = true;

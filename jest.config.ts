@@ -1,6 +1,7 @@
 import type { JestConfigWithTsJest } from 'ts-jest';
 
 const jestConfig: JestConfigWithTsJest = {
+    roots: ['test/unit'],
     preset: 'ts-jest',
     testEnvironment: 'jest-environment-jsdom',
     transformIgnorePatterns: ['node_modules/(?!ol|three|quick-lru)'],

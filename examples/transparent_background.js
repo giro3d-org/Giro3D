@@ -1,6 +1,6 @@
 import colormap from 'colormap';
 
-import { Color } from 'three';
+import { Color, DoubleSide } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import XYZ from 'ol/source/XYZ.js';
@@ -31,7 +31,7 @@ const instance = new Instance({
 const map = new Map({
     extent,
     hillshading: true,
-    doubleSided: true,
+    side: DoubleSide,
     backgroundColor: 'white',
 });
 

@@ -8,7 +8,7 @@ import Map from '@giro3d/giro3d/entities/Map';
 import { DEFAULT_AZIMUTH, DEFAULT_ZENITH } from '@giro3d/giro3d/renderer/LayeredMaterial';
 import RenderingState from '@giro3d/giro3d/renderer/RenderingState';
 import NullSource from '@giro3d/giro3d/sources/NullSource';
-import { Color, Group } from 'three';
+import { Color, DoubleSide, Group } from 'three';
 
 const nullSource = new NullSource({ extent: new Extent('EPSG:3857', -10, 10, -10, 10) });
 
@@ -193,18 +193,17 @@ describe('Map', () => {
             expect(m2.terrain.stitching).toEqual(true);
         });
 
-        it.each([true, false])('should assign the correct', b => {
-            const opts = {
+        it.each([true, false])('should assign the correct parameters', b => {
+            const m = new Map({
                 extent,
-                doubleSided: b,
+                side: DoubleSide,
                 backgroundColor: 'red',
                 discardNoData: b,
-            };
-            const m = new Map(opts);
+            });
 
             expect(m).toBeDefined();
-            expect(m.discardNoData).toEqual(opts.discardNoData);
-            expect(m.discardNoData).toEqual(opts.doubleSided);
+            expect(m.discardNoData).toEqual(b);
+            expect(m.side).toEqual(DoubleSide);
             expect(m.backgroundColor).toEqual(new Color('red'));
         });
 

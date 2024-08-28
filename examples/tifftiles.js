@@ -14,6 +14,7 @@ import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import Fetcher from '@giro3d/giro3d/utils/Fetcher.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { DoubleSide } from 'three';
 
 const x = -13602618.385789588;
 const y = 5811042.273912458;
@@ -29,7 +30,7 @@ const instance = new Instance({
 const map = new Map({
     extent,
     hillshading: true,
-    doubleSided: true,
+    side: DoubleSide,
     discardNoData: true,
     backgroundColor: 'white',
 });

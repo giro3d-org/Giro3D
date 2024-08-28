@@ -1,6 +1,7 @@
 import {
     Box3,
     Color,
+    FrontSide,
     Group,
     MathUtils,
     Quaternion,
@@ -12,6 +13,7 @@ import {
     type ColorRepresentation,
     type Intersection,
     type Object3D,
+    type Side,
     type TextureDataType,
 } from 'three';
 
@@ -380,11 +382,20 @@ export type MapConstructorOptions = {
      */
     segments?: number;
     /**
-     * If `true`, both sides of the map will be rendered, i.e when
-     * looking at the map from underneath.
-     * @defaultValue false
+     * The sidedness of the map surface:
+     * - `FrontSide` will only display the "above ground" side of the map (in cartesian maps),
+     * or the outer shell of the map (in globe settings).
+     * - `BackSide` will only display the "underground" side of the map (in cartesian maps),
+     * or the inner shell of the map (in globe settings).
+     * - `DoubleSide` will display both sides of the map.
+     * @defaultValue `FrontSide`
      */
-    doubleSided?: boolean;
+    side?: Side;
+    /**
+     * Enable or disable depth testing on materials.
+     * @defaultValue true
+     */
+    depthTest?: boolean;
     /**
      * Options for geometric terrain rendering.
      */
@@ -582,7 +593,8 @@ class Map<UserData extends EntityUserData = EntityUserData>
             hillshading: getHillshadingOptions(options.hillshading),
             contourLines: getContourLineOptions(options.contourLines),
             discardNoData: options.discardNoData ?? false,
-            doubleSided: options.doubleSided ?? false,
+            side: options.side ?? FrontSide,
+            depthTest: options.depthTest ?? true,
             showTileOutlines: options.showOutline ?? false,
             terrain: getTerrainOptions(options.terrain),
             colorimetry: getColorimetryOptions(options.colorimetry),
@@ -624,6 +636,17 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     /**
+     * Gets or sets depth testing on materials.
+     */
+    get depthTest() {
+        return this._materialOptions.depthTest;
+    }
+
+    set depthTest(v: boolean) {
+        this._materialOptions.depthTest = v;
+    }
+
+    /**
      * Gets or sets the background opacity.
      */
     get backgroundOpacity(): number {
@@ -643,6 +666,23 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
     set terrain(terrain: TerrainOptions) {
         this._materialOptions.terrain = getTerrainOptions(terrain);
+    }
+
+    /**
+     * Gets or sets the sidedness of the map surface:
+     * - `FrontSide` will only display the "above ground" side of the map (in cartesian maps),
+     * or the outer shell of the map (in globe settings).
+     * - `BackSide` will only display the "underground" side of the map (in cartesian maps),
+     * or the inner shell of the map (in globe settings).
+     * - `DoubleSide` will display both sides of the map.
+     * @defaultValue `FrontSide`
+     */
+    get side(): Side {
+        return this._materialOptions.side;
+    }
+
+    set side(newSide: Side) {
+        this._materialOptions.side = newSide;
     }
 
     /**
