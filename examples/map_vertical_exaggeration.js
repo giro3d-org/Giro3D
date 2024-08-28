@@ -9,7 +9,7 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import ColorMap from '@giro3d/giro3d/core/layer/ColorMap.js';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
 import AxisGrid from '@giro3d/giro3d/entities/AxisGrid.js';
-import CogSource from '@giro3d/giro3d/sources/CogSource.js';
+import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
@@ -53,7 +53,7 @@ map.subdivisionThreshold = 0.75;
 
 instance.add(map);
 
-const source = new CogSource({
+const source = new GeoTIFFSource({
     url: 'https://3d.oslandia.com/giro3d/rasters/topobathy.cog.tiff',
     crs: extent.crs,
 });

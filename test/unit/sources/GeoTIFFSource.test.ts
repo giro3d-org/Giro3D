@@ -1,12 +1,12 @@
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
-import CogSource from '@giro3d/giro3d/sources/CogSource';
+import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource';
 import type { GeoTIFFImage } from 'geotiff';
 
-describe('CogSource', () => {
+describe('GeoTIFFSource', () => {
     describe('constructor', () => {
         it('should assign properties', () => {
             const containsFn = jest.fn();
-            const source = new CogSource({
+            const source = new GeoTIFFSource({
                 url: 'http://example.com',
                 crs: 'EPSG:1234',
                 containsFn,
@@ -19,7 +19,7 @@ describe('CogSource', () => {
 
     describe('initialize', () => {
         it('should always return the same promise to avoid concurrent initializations', () => {
-            const source = new CogSource({ url: 'http://example.com', crs: 'EPSG:1234' });
+            const source = new GeoTIFFSource({ url: 'http://example.com', crs: 'EPSG:1234' });
             const promise1 = source.initialize();
             const promise2 = source.initialize();
 
@@ -29,7 +29,7 @@ describe('CogSource', () => {
 
     describe('adjustExtentAndPixelSize', () => {
         it('should not return huge texture sizes', () => {
-            const source = new CogSource({
+            const source = new GeoTIFFSource({
                 url: 'foo',
                 crs: 'EPSG:3857',
             });
@@ -63,7 +63,7 @@ describe('CogSource', () => {
             const image = {
                 getBoundingBox,
             };
-            expect(() => CogSource.computeExtent('EPSG:3857', image as GeoTIFFImage)).toThrow(
+            expect(() => GeoTIFFSource.computeExtent('EPSG:3857', image as GeoTIFFImage)).toThrow(
                 /unknown/,
             );
         });
@@ -78,7 +78,7 @@ describe('CogSource', () => {
                 getBoundingBox: () => [minx, miny, maxx, maxy],
             };
 
-            const extent = CogSource.computeExtent('EPSG:3857', image as GeoTIFFImage);
+            const extent = GeoTIFFSource.computeExtent('EPSG:3857', image as GeoTIFFImage);
 
             expect(extent).toEqual(new Extent('EPSG:3857', minx, maxx, miny, maxy));
         });

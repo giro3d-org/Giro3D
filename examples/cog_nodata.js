@@ -4,7 +4,7 @@ import { Color } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
-import CogSource from '@giro3d/giro3d/sources/CogSource.js';
+import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
@@ -42,7 +42,7 @@ controls.target.set(center.x, center.y, center.z);
 instance.view.setControls(controls);
 
 // Use an elevation COG with nodata values
-const source = new CogSource({
+const source = new GeoTIFFSource({
     // https://pubs.er.usgs.gov/publication/ds904
     url: 'https://3d.oslandia.com/dem/msh2009dem.tif',
     crs: extent.crs,

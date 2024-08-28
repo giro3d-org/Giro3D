@@ -11,7 +11,7 @@ import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
-import CogSource from '@giro3d/giro3d/sources/CogSource.js';
+import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';
 import { crsToUnit } from '@giro3d/giro3d/core/geographic/Coordinates.js';
 
 import StatusBar from './widgets/StatusBar.js';
@@ -50,7 +50,7 @@ function addCogLayer() {
     const cogLayer = new ColorLayer({
         name: 'cog',
         showTileBorders: true,
-        source: new CogSource({
+        source: new GeoTIFFSource({
             url: 'https://3d.oslandia.com/giro3d/rasters/TCI.tif',
             crs: 'EPSG:3857',
         }),

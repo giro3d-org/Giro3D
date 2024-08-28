@@ -1,8 +1,8 @@
-import CogSource, {
+import GeoTIFFSource, {
     type ChannelMapping,
-    type CogCacheOptions,
-    type CogSourceOptions,
-} from './CogSource';
+    type GeoTIFFCacheOptions,
+    type GeoTIFFSourceOptions,
+} from './GeoTIFFSource';
 import ImageSource, {
     type CustomContainsFn,
     type GetImageOptions,
@@ -42,9 +42,9 @@ export {
     PotreeSource,
     TiledImageSource,
     TiledImageSourceOptions,
-    CogSource,
-    CogSourceOptions,
-    CogCacheOptions,
+    GeoTIFFSource,
+    GeoTIFFSourceOptions,
+    GeoTIFFCacheOptions,
     ChannelMapping,
     WmtsSource,
     WmtsSourceOptions,

@@ -1,7 +1,7 @@
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
-import CogSource from '@giro3d/giro3d/sources/CogSource.js';
+import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
@@ -33,7 +33,7 @@ const map = new Map({
 instance.add(map);
 
 // Use an elevation COG with nodata values
-const source = new CogSource({
+const source = new GeoTIFFSource({
     // https://www.sciencebase.gov/catalog/item/632a9a9ad34e71c6d67b95a3
     url: 'https://3d.oslandia.com/cog_data/COG_EPSG3857_USGS_13_n47w122_20220919.tif',
     crs: extent.crs,

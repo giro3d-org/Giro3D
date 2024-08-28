@@ -2,7 +2,7 @@ import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
-import CogSource from '@giro3d/giro3d/sources/CogSource.js';
+import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
@@ -28,7 +28,7 @@ const map = new Map({
 });
 instance.add(map);
 
-const source = new CogSource({
+const source = new GeoTIFFSource({
     url: 'https://3d.oslandia.com/giro3d/rasters/bathymetry-emodnet.cog.tif',
     crs: 'EPSG:3857',
 });
