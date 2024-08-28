@@ -1,6 +1,6 @@
 import colormap from 'colormap';
 
-import { Color } from 'three';
+import { Color, DoubleSide } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import { Fill, Stroke, Style } from 'ol/style.js';
@@ -36,7 +36,7 @@ const instance = new Instance({
     backgroundColor: null,
 });
 
-const terrainMap = new Map({ extent, doubleSided: true, hillshading: true });
+const terrainMap = new Map({ extent, side: DoubleSide, hillshading: true });
 instance.add(terrainMap);
 
 const min = 100;
@@ -68,7 +68,7 @@ const elevationLayer = new ElevationLayer({
 
 terrainMap.addLayer(elevationLayer);
 
-const orthophotoMap = new Map({ extent, doubleSided: true });
+const orthophotoMap = new Map({ extent, side: DoubleSide });
 instance.add(orthophotoMap);
 
 const orthophotoLayer = new ColorLayer({
@@ -87,7 +87,7 @@ const orthophotoLayer = new ColorLayer({
 });
 orthophotoMap.addLayer(orthophotoLayer);
 
-const vectorMap = new Map({ extent, doubleSided: true, backgroundOpacity: 0 });
+const vectorMap = new Map({ extent, side: DoubleSide, backgroundOpacity: 0 });
 instance.add(vectorMap);
 
 const geoJsonLayer = new ColorLayer({

@@ -1,6 +1,6 @@
 import colormap from 'colormap';
 
-import { Color } from 'three';
+import { Color, DoubleSide } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
@@ -64,7 +64,7 @@ const noDataOptions = {
 
 const map = new Map({
     extent,
-    doubleSided: true,
+    side: DoubleSide,
     backgroundOpacity: 0,
     hillshading: true,
     discardNoData: true,

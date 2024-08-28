@@ -1,6 +1,6 @@
 import colormap from 'colormap';
 
-import { Box3Helper, Color } from 'three';
+import { Box3Helper, Color, DoubleSide } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
@@ -74,7 +74,7 @@ const elevationLayer = new ElevationLayer({
 
 const map = new Map({
     extent,
-    doubleSided: true,
+    side: DoubleSide,
     backgroundOpacity: 0,
     hillshading: true,
     discardNoData: true,

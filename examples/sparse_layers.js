@@ -9,6 +9,7 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import Interpretation from '@giro3d/giro3d/core/layer/Interpretation.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { DoubleSide } from 'three';
 
 Instance.registerCRS(
     'EPSG:26910',
@@ -40,7 +41,7 @@ const source = new GeoTIFFSource({
 
 const map = new Map({
     extent,
-    doubleSided: true,
+    side: DoubleSide,
     showOutline: true,
 });
 

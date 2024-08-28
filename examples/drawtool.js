@@ -1,4 +1,4 @@
-import { Color, MathUtils, Vector3 } from 'three';
+import { Color, DoubleSide, MathUtils, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
@@ -55,7 +55,7 @@ const map = new Map({
         intensity: 0.6,
         elevationLayersOnly: true,
     },
-    doubleSided: true,
+    side: DoubleSide,
 });
 instance.add(map);
 

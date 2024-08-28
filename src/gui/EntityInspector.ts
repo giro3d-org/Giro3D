@@ -164,7 +164,7 @@ class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
         this.addController<string>(this, 'gpuMemoryUsage').name('Memory usage (GPU)');
 
         this.addController<string>(this, 'state').name('Status');
-        this.addController<number>(this.entity, 'renderOrder', 0, 10, 1)
+        this.addController<number>(this.entity, 'renderOrder')
             .name('Render order')
             .onChange(() => this.notify(this.entity));
 

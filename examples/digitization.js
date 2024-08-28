@@ -42,7 +42,6 @@ const map = new Map({
         enabled: true,
         elevationLayersOnly: true,
     },
-    doubleSided: false,
 });
 instance.add(map);
 
