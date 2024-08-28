@@ -4,7 +4,7 @@ import { Box3Helper, Color } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
-import CogSource from '@giro3d/giro3d/sources/CogSource.js';
+import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer';
 import Map from '@giro3d/giro3d/entities/Map';
@@ -43,7 +43,7 @@ controls.target.set(1305865, 24791964, 1000);
 instance.view.setControls(controls);
 
 // Use an elevation COG with nodata values
-const source = new CogSource({
+const source = new GeoTIFFSource({
     // https://pubs.er.usgs.gov/publication/ds904
     url: 'https://3d.oslandia.com/cog_data/COG_EPSG3857_USGS_13_n47w122_20220919.tif',
     crs: 'EPSG:3857',

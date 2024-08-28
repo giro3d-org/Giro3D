@@ -1,7 +1,7 @@
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
-import CogSource from '@giro3d/giro3d/sources/CogSource.js';
+import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
@@ -34,24 +34,24 @@ instance.add(map);
 // https://openlayers.org/en/latest/examples/cog-math-multisource.html
 const sources = {
     // LZW compression, RGB colorspace
-    rgb: new CogSource({
+    rgb: new GeoTIFFSource({
         url: 'https://3d.oslandia.com/giro3d/rasters/TCI.tif',
         crs: extent.crs,
         channels: [0, 1, 2],
     }),
     // LZW compression, RGB colorspace, 8-bit alpha band
-    rgba: new CogSource({
+    rgba: new GeoTIFFSource({
         url: 'https://3d.oslandia.com/giro3d/rasters/TCI-alpha.tif',
         crs: extent.crs,
         channels: [0, 1, 2, 3],
     }),
     // JPEG compression, YCbCr colorspace
-    ycbcr: new CogSource({
+    ycbcr: new GeoTIFFSource({
         url: 'https://3d.oslandia.com/giro3d/rasters/TCI-YCbCr.tif',
         crs: extent.crs,
     }),
     // JPEG compression, YCbCr colorspace, 1-bit mask band
-    'ycbcr-mask': new CogSource({
+    'ycbcr-mask': new GeoTIFFSource({
         url: 'https://3d.oslandia.com/giro3d/rasters/TCI-YCbCr-mask.tif',
         crs: extent.crs,
     }),

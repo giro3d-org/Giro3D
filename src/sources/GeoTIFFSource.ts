@@ -163,7 +163,7 @@ class FetcherClient extends BaseClient {
 }
 
 /**
- * A level in the COG pyramid.
+ * A level in the GeoTIFF pyramid.
  */
 interface Level {
     image: GeoTIFFImage;
@@ -190,7 +190,7 @@ function selectDataType(format: number, bitsPerSample: number) {
     return FloatType;
 }
 
-export interface CogCacheOptions {
+export interface GeoTIFFCacheOptions {
     /**
      * The cache size (in number of entries), of the underlying
      * [blocked source](https://geotiffjs.github.io/geotiff.js/BlockedSource_BlockedSource.html).
@@ -205,9 +205,9 @@ export interface CogCacheOptions {
     blockSize?: number;
 }
 
-export interface CogSourceOptions extends ImageSourceOptions {
+export interface GeoTIFFSourceOptions extends ImageSourceOptions {
     /**
-     * The URL of the COG image.
+     * The URL to the GeoTIFF image.
      */
     url: string;
     /**
@@ -222,21 +222,30 @@ export interface CogSourceOptions extends ImageSourceOptions {
     /**
      * Advanced caching options.
      */
-    cacheOptions?: CogCacheOptions;
+    cacheOptions?: GeoTIFFCacheOptions;
 }
 
 /**
- * Provides data from a Cloud Optimized GeoTIFF (COG).
+ * Provides data from a GeoTIFF file.
+ *
+ * Features:
+ * - supports tiled and untiled TIFF images
+ * - supports [Cloud Optimized GeoTIFF (COG)](https://www.cogeo.org/),
+ * - supports various compression (LZW, DEFLATE, JPEG...)
+ * - supports RGB and YCbCr color spaces
+ * - supports grayscale (e.g elevation data) and color images,
+ * - support high-dynamic range colors (8-bit, 16-bit and 32-bit floating point pixels),
+ * - dynamic channel mapping,
  */
-class CogSource extends ImageSource {
-    readonly isCogSource: boolean = true as const;
-    readonly type = 'CogSource' as const;
+class GeoTIFFSource extends ImageSource {
+    readonly isGeoTIFFSource: boolean = true as const;
+    readonly type = 'GeoTIFFSource' as const;
 
     readonly url: string;
     readonly crs: string;
 
     private readonly _cacheId: string = MathUtils.generateUUID();
-    private readonly _cacheOptions?: CogCacheOptions;
+    private readonly _cacheOptions?: GeoTIFFCacheOptions;
     private readonly _cache: Cache = GlobalCache;
     private readonly _pool: Pool | undefined;
 
@@ -256,11 +265,11 @@ class CogSource extends ImageSource {
     private _initializePromise?: Promise<void>;
 
     /**
-     * Creates a COG source.
+     * Creates a {@link GeoTIFFSource} source.
      *
      * @param options - options
      */
-    constructor(options: CogSourceOptions) {
+    constructor(options: GeoTIFFSourceOptions) {
         super({ ...options, flipY: options.flipY ?? true });
 
         this.url = options.url;
@@ -383,7 +392,6 @@ class CogSource extends ImageSource {
             return;
         }
 
-        // Get the COG informations
         const opts = {
             cacheSize: this._cacheOptions?.cacheSize,
             blockSize: this._cacheOptions?.blockSize,
@@ -399,7 +407,7 @@ class CogSource extends ImageSource {
         // Get original image header
         const firstImage = await this._tiffImage.getImage();
 
-        this._extent = CogSource.computeExtent(this.crs, firstImage);
+        this._extent = GeoTIFFSource.computeExtent(this.crs, firstImage);
         this._dimensions = this._extent.dimensions();
 
         this._origin = firstImage.getOrigin();
@@ -789,4 +797,4 @@ class CogSource extends ImageSource {
     }
 }
 
-export default CogSource;
+export default GeoTIFFSource;

@@ -3,7 +3,7 @@ import type TileSource from 'ol/source/Tile.js';
 import UrlTile from 'ol/source/UrlTile.js';
 import type Instance from '../core/Instance';
 import * as MemoryUsage from '../core/MemoryUsage';
-import CogSource from '../sources/CogSource';
+import GeoTIFFSource from '../sources/GeoTIFFSource';
 import type ImageSource from '../sources/ImageSource';
 import TiledImageSource from '../sources/TiledImageSource';
 import VectorSource from '../sources/VectorSource';
@@ -51,9 +51,8 @@ class SourceInspector extends Panel {
         this.addController<string>(this, 'cpuMemoryUsage').name('Memory usage (CPU)');
         this.addController<string>(this, 'gpuMemoryUsage').name('Memory usage (GPU)');
 
-        if (source instanceof CogSource) {
-            const cogSource = source as CogSource;
-            this.url = cogSource.url.toString();
+        if (source instanceof GeoTIFFSource) {
+            this.url = source.url.toString();
             this.addController<string>(this, 'url').name('URL');
             if (source.channels) {
                 this.cogChannels = JSON.stringify(source.channels);

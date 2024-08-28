@@ -1,7 +1,7 @@
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
-import CogSource from '@giro3d/giro3d/sources/CogSource.js';
+import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import Interpretation from '@giro3d/giro3d/core/layer/Interpretation.js';
@@ -36,7 +36,7 @@ instance.add(map);
 
 // Data coming from the same source as
 // https://openlayers.org/en/latest/examples/cog-math-multisource.html
-const source = new CogSource({
+const source = new GeoTIFFSource({
     url: 'https://3d.oslandia.com/cog_data/20200428_211318_ssc8d1_0017_pansharpened.cog.tif',
     crs: extent.crs,
     channels: [0, 1, 2],
