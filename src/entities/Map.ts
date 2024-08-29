@@ -5,7 +5,6 @@ import {
     Group,
     MathUtils,
     Matrix4,
-    Quaternion,
     Raycaster,
     UnsignedByteType,
     Vector2,
@@ -47,14 +46,10 @@ import ScreenSpaceError from '../core/ScreenSpaceError';
 import Capabilities from '../core/system/Capabilities';
 import type TerrainOptions from '../core/TerrainOptions';
 import {
-    DEFAULT_ENABLE_CPU_TERRAIN,
     DEFAULT_ENABLE_STITCHING,
     DEFAULT_ENABLE_TERRAIN,
+    DEFAULT_MAP_SEGMENTS,
 } from '../core/TerrainOptions';
-import type TileGeometry from '../core/TileGeometry';
-import TileIndex, { type NeighbourList } from '../core/TileIndex';
-import TileMesh, { isTileMesh } from '../core/TileMesh';
-import AtlasBuilder, { type AtlasInfo } from '../renderer/AtlasBuilder';
 import ColorMapAtlas from '../renderer/ColorMapAtlas';
 import LayeredMaterial, {
     DEFAULT_AZIMUTH,
@@ -68,11 +63,17 @@ import LayeredMaterial, {
 } from '../renderer/LayeredMaterial';
 import type RenderingState from '../renderer/RenderingState';
 import TextureGenerator from '../utils/TextureGenerator';
-import { nonNull } from '../utils/tsutils';
 import type { EntityUserData } from './Entity';
 import Entity3D, { type Entity3DEventMap } from './Entity3D';
 import type MapLightingOptions from './MapLightingOptions';
 import { MapLightingMode } from './MapLightingOptions';
+import PlanarTileGeometry from './tiles/PlanarTileGeometry';
+import PlanarTileVolume from './tiles/PlanarTileVolume';
+import type TileGeometry from './tiles/TileGeometry';
+import type { TileGeometryBuilder } from './tiles/TileGeometry';
+import TileIndex, { type NeighbourList } from './tiles/TileIndex';
+import TileMesh, { isTileMesh } from './tiles/TileMesh';
+import type TileVolume from './tiles/TileVolume';
 
 /**
  * The default background color of maps.
@@ -83,11 +84,6 @@ export const DEFAULT_MAP_BACKGROUND_COLOR: ColorRepresentation = '#0a3b59';
  * The default tile subdivision threshold.
  */
 export const DEFAULT_SUBDIVISION_THRESHOLD = 1.5;
-
-/**
- * The default number of segments in a map's tile.
- */
-export const DEFAULT_MAP_SEGMENTS = 32;
 
 /**
  * Comparison function to order layers.
@@ -108,6 +104,10 @@ function isStitchableNeighbour(neighbour: TileMesh): boolean {
     );
 }
 
+function defaultGeometryBuilder(extent: Extent, segments: number): TileGeometry {
+    return new PlanarTileGeometry({ extent, segments });
+}
+
 /**
  * The maximum supported aspect ratio for the map tiles, before we stop trying to create square
  * tiles. This is a safety measure to avoid huge number of root tiles when the extent is a very
@@ -119,12 +119,15 @@ const MAX_SUPPORTED_ASPECT_RATIO = 10;
 const tmpVector = new Vector3();
 const tmpBox3 = new Box3();
 const tempNDC = new Vector2();
+const tempDims = new Vector2();
 const tempCanvasCoords = new Vector2();
 const tmpSseSizes: [number, number] = [0, 0];
 const tmpIntersectList: Intersection<TileMesh>[] = [];
 const tmpNeighbours: NeighbourList<TileMesh> = [null, null, null, null, null, null, null, null];
 
-function getContourLineOptions(input?: boolean | ContourLineOptions): Required<ContourLineOptions> {
+function getContourLineOptions(
+    input?: boolean | Partial<ContourLineOptions>,
+): Required<ContourLineOptions> {
     if (input == null) {
         // Default values
         return {
@@ -159,32 +162,35 @@ function getContourLineOptions(input?: boolean | ContourLineOptions): Required<C
     };
 }
 
-function getTerrainOptions(input?: boolean | TerrainOptions): Required<TerrainOptions> {
+function getTerrainOptions(
+    input: boolean | Partial<TerrainOptions> | undefined,
+    defaultValue: Readonly<TerrainOptions>,
+): Required<TerrainOptions> {
     if (input == null) {
         // Default values
         return {
-            enabled: DEFAULT_ENABLE_TERRAIN,
-            stitching: DEFAULT_ENABLE_STITCHING,
-            enableCPUTerrain: DEFAULT_ENABLE_CPU_TERRAIN,
+            ...defaultValue,
         };
     }
 
     if (typeof input === 'boolean') {
         return {
             enabled: input,
-            stitching: DEFAULT_ENABLE_STITCHING,
-            enableCPUTerrain: DEFAULT_ENABLE_CPU_TERRAIN,
+            stitching: defaultValue.stitching,
+            segments: defaultValue.segments,
         };
     }
 
     return {
-        enabled: input.enabled ?? DEFAULT_ENABLE_TERRAIN,
-        stitching: input.stitching ?? DEFAULT_ENABLE_STITCHING,
-        enableCPUTerrain: input.enableCPUTerrain ?? DEFAULT_ENABLE_CPU_TERRAIN,
+        enabled: input.enabled ?? defaultValue.enabled,
+        stitching: input.stitching ?? defaultValue.stitching,
+        segments: input.segments ?? defaultValue.segments,
     };
 }
 
-function getGraticuleOptions(input?: boolean | GraticuleOptions): Required<GraticuleOptions> {
+function getGraticuleOptions(
+    input?: boolean | Partial<GraticuleOptions>,
+): Required<GraticuleOptions> {
     if (input == null) {
         // Default values
         return {
@@ -258,7 +264,7 @@ function getLightingOptions(
     };
 }
 
-function selectBestSubdivisions(extent: Extent) {
+export function selectBestSubdivisions(extent: Extent) {
     const dims = extent.dimensions();
     const ratio = dims.x / dims.y;
     let x = 1;
@@ -280,9 +286,9 @@ function selectBestSubdivisions(extent: Extent) {
  *
  * @param extent - The map extent.
  */
-function computeImageSize(extent: Extent) {
+function computeImageSize(extent: Extent): Vector2 {
     const baseSize = 512;
-    const dims = extent.dimensions();
+    const dims = extent.dimensions(tempDims);
     const ratio = dims.x / dims.y;
     if (Math.abs(ratio - 1) < 0.01) {
         // We have a square tile
@@ -357,25 +363,18 @@ export type MapConstructorOptions = {
      * Note: this option has no effect if the map does not contain an elevation layer.
      * @defaultValue `undefined` (contour lines are disabled)
      */
-    contourLines?: boolean | ContourLineOptions;
+    contourLines?: boolean | Partial<ContourLineOptions>;
     /**
      * The graticule options.
      * @defaultValue undefined (graticule is disabled).
      */
-    graticule?: boolean | GraticuleOptions;
+    graticule?: boolean | Partial<GraticuleOptions>;
     /**
      * The colorimetry for the whole map.
      * Those are distinct from the individual layers' own colorimetry.
      * @defaultValue undefined
      */
     colorimetry?: ColorimetryOptions;
-    /**
-     * The number of geometry segments in each map tile.
-     * The higher the better. It *must* be power of two between `1` included and `256` included.
-     * Note: the number of vertices per tile side is `segments` + 1.
-     * @defaultValue {@link DEFAULT_MAP_SEGMENTS}
-     */
-    segments?: number;
     /**
      * The sidedness of the map surface:
      * - `FrontSide` will only display the "above ground" side of the map (in cartesian maps),
@@ -394,7 +393,7 @@ export type MapConstructorOptions = {
     /**
      * Options for geometric terrain rendering.
      */
-    terrain?: boolean | TerrainOptions;
+    terrain?: boolean | Partial<TerrainOptions>;
     /**
      * If `true`, parts of the map that relate to no-data elevation
      * values are not displayed. Note: you should only set this value to `true` if
@@ -486,15 +485,11 @@ type ObjectOptions = {
  * Note: to benefit from the features given by elevation layers (shading for instance) while keeping
  * a flat map, disable terrain in the {@link TerrainOptions}.
  *
- * 💡 If the {@link TerrainOptions.enableCPUTerrain} is enabled, the elevation data can be sampled
- * by the {@link getElevation} method.
+ * 💡 The elevation data can be sampled by the {@link getElevation} method.
  *
  * ## Picking on maps
  *
  * Maps can be picked like any other 3D entity, using the {@link entities.Entity3D#pick | pick()} method.
- *
- * However, if {@link TerrainOptions.enableCPUTerrain} is enabled, then the map provides an alternate
- * methods for: raycasting-based picking, in addition to GPU-based picking.
  *
  * ### GPU-based picking
  *
@@ -507,8 +502,7 @@ type ObjectOptions = {
  *
  * ### Raycasting-based picking
  *
- * 💡 This method requires that {@link TerrainOptions.enableCPUTerrain} is enabled, and that
- * {@link core.picking.PickOptions.gpuPicking} is disabled.
+ * 💡 This method requires that {@link core.picking.PickOptions.gpuPicking} is disabled.
  *
  * This method casts a ray that is then intersected with the map's meshes. The first intersection is
  * returned.
@@ -536,51 +530,36 @@ class Map<UserData extends EntityUserData = EntityUserData>
         MemoryUsage
 {
     readonly isMap = true as const;
-    readonly type = 'Map' as const;
+    readonly type: string = 'Map' as const;
     readonly hasLayers = true as const;
+    readonly isPickableFeatures = true as const;
+
+    readonly extent: Extent;
+    readonly maxSubdivisionLevel: number;
 
     private readonly _objectOptions: ObjectOptions = {
         castShadow: true,
         receiveShadow: true,
     };
 
-    private _segments: number;
-    private _hasElevationLayer = false;
-    private readonly _atlasInfo: AtlasInfo;
-    private _subdivisions: { x: number; y: number } | null = null;
-    private _colorAtlasDataType: TextureDataType = UnsignedByteType;
-    private _imageSize: Vector2 | null = null;
-    private _wireframe = false;
     private readonly _layers: Layer[] = [];
     private readonly _onLayerVisibilityChanged: (event: { target: Layer }) => void;
     private readonly _onTileElevationChanged: (tile: TileMesh) => void;
-    /** @internal */
-    readonly level0Nodes: TileMesh[];
-    /** @internal */
-    readonly allTiles: Set<TileMesh> = new Set();
+    private readonly _rootTiles: TileMesh[];
+    private readonly _allTiles: Set<TileMesh> = new Set();
+    private readonly _tileIndex: TileIndex<TileMesh>;
     private readonly _layerIndices: globalThis.Map<string, number>;
     private readonly _layerIds: Set<string> = new Set();
-    /** @internal */
-    readonly geometryPool: globalThis.Map<string, TileGeometry>;
-    readonly extent: Extent;
-    readonly maxSubdivisionLevel: number;
-    readonly isPickableFeatures = true;
     private readonly _materialOptions: MaterialOptions;
-    /** @internal */
-    readonly tileIndex: TileIndex<TileMesh>;
-    /**
-     * The global factor that drives SSE (screen space error) computation. The lower this value, the
-     * sooner a tile is subdivided. Note: changing this scale to a value less than 1 can drastically
-     * increase the number of tiles displayed in the scene, and can even lead to WebGL crashes.
-     *
-     * @defaultValue {@link DEFAULT_SUBDIVISION_THRESHOLD}
-     */
-    subdivisionThreshold: number;
+
+    private _hasElevationLayer = false;
+    private _colorAtlasDataType: TextureDataType = UnsignedByteType;
+    private _wireframe = false;
+    private _subdivisionThreshold;
 
     getMemoryUsage(context: GetMemoryUsageContext) {
         this._layers.forEach(layer => layer.getMemoryUsage(context));
-        this.geometryPool.forEach(geometry => geometry.getMemoryUsage(context));
-        this.allTiles.forEach(tile => tile.getMemoryUsage(context));
+        this._allTiles.forEach(tile => tile.getMemoryUsage(context));
     }
 
     /**
@@ -591,13 +570,9 @@ class Map<UserData extends EntityUserData = EntityUserData>
     constructor(options: MapConstructorOptions) {
         super(options.object3d || new Group());
 
-        this.level0Nodes = [];
-
-        this.geometryPool = new window.Map();
+        this._rootTiles = [];
 
         this._layerIndices = new window.Map();
-
-        this._atlasInfo = { maxX: 0, maxY: 0, atlas: null };
 
         if (!options.extent.isValid()) {
             throw new Error(
@@ -606,12 +581,10 @@ class Map<UserData extends EntityUserData = EntityUserData>
         }
         this.extent = options.extent;
 
-        this.subdivisionThreshold = options.subdivisionThreshold ?? DEFAULT_SUBDIVISION_THRESHOLD;
+        this._subdivisionThreshold = options.subdivisionThreshold ?? DEFAULT_SUBDIVISION_THRESHOLD;
         this.maxSubdivisionLevel = options.maxSubdivisionLevel ?? 30;
         this._onTileElevationChanged = this.onTileElevationChanged.bind(this);
         this._onLayerVisibilityChanged = this.onLayerVisibilityChanged.bind(this);
-
-        this._segments = options.segments ?? DEFAULT_MAP_SEGMENTS;
 
         this._materialOptions = {
             showColliderMeshes: false,
@@ -622,10 +595,9 @@ class Map<UserData extends EntityUserData = EntityUserData>
             side: options.side ?? FrontSide,
             depthTest: options.depthTest ?? true,
             showTileOutlines: options.showOutline ?? false,
-            terrain: getTerrainOptions(options.terrain),
+            terrain: getTerrainOptions(options.terrain, this.getDefaultTerrainOptions()),
             colorimetry: getColorimetryOptions(options.colorimetry),
             graticule: getGraticuleOptions(options.graticule),
-            segments: this.segments,
             colorMapAtlas: null,
             elevationRange: options.elevationRange ?? null,
             backgroundOpacity: options.backgroundOpacity ?? 1,
@@ -636,7 +608,18 @@ class Map<UserData extends EntityUserData = EntityUserData>
                     : new Color(DEFAULT_MAP_BACKGROUND_COLOR),
         };
 
-        this.tileIndex = new TileIndex();
+        this._tileIndex = new TileIndex();
+    }
+
+    get tileIndex(): Readonly<TileIndex<TileMesh>> {
+        return this._tileIndex;
+    }
+
+    /**
+     * Gets the tiles at the root of the hierarchy (i.e LOD 0).
+     */
+    get rootTiles(): Readonly<TileMesh[]> {
+        return this._rootTiles;
     }
 
     /**
@@ -691,7 +674,22 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     set terrain(terrain: TerrainOptions) {
-        this._materialOptions.terrain = getTerrainOptions(terrain);
+        this._materialOptions.terrain = getTerrainOptions(terrain, this.getDefaultTerrainOptions());
+    }
+
+    /**
+     * The global factor that drives SSE (screen space error) computation. The lower this value, the
+     * sooner a tile is subdivided. Note: changing this scale to a value less than 1 can drastically
+     * increase the number of tiles displayed in the scene, and can even lead to WebGL crashes.
+     *
+     * @defaultValue {@link DEFAULT_SUBDIVISION_THRESHOLD}
+     */
+    get subdivisionThreshold(): number {
+        return this._subdivisionThreshold;
+    }
+
+    set subdivisionThreshold(v: number) {
+        this._subdivisionThreshold = v;
     }
 
     /**
@@ -861,16 +859,13 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     get segments() {
-        return this._segments;
+        return this._materialOptions.terrain.segments;
     }
 
     set segments(v) {
-        if (this._segments !== v) {
+        if (this._materialOptions.terrain.segments !== v) {
             if (MathUtils.isPowerOfTwo(v) && v >= 1 && v <= 128) {
-                // Delete cached geometries that just became obsolete
-                this.clearGeometryPool();
-                this._segments = v;
-                this._materialOptions.segments = v;
+                this._materialOptions.terrain.segments = v;
                 this.updateGeometries();
             } else {
                 throw new Error(
@@ -896,16 +891,12 @@ class Map<UserData extends EntityUserData = EntityUserData>
         }
     }
 
-    get imageSize(): Vector2 {
-        return this._imageSize as Vector2;
-    }
-
     private subdivideNode(context: Context, node: TileMesh) {
         if (!node.children.some(n => isTileMesh(n))) {
             const extents = node.extent.split(2, 2);
 
             let i = 0;
-            const { x, y, z } = node;
+            const { x, y, z } = node.coordinate;
 
             for (const extent of extents) {
                 let child: TileMesh;
@@ -936,108 +927,124 @@ class Map<UserData extends EntityUserData = EntityUserData>
         }
     }
 
-    private clearGeometryPool() {
-        this.geometryPool.forEach(v => v.dispose());
-        this.geometryPool.clear();
-    }
-
     private updateGeometries() {
         this.traverseTiles(tile => {
             tile.segments = this.segments;
         });
     }
 
-    get subdivisions(): { x: number; y: number } {
-        return this._subdivisions as Vector2;
+    /**
+     * Gets the number of vertical and horizontal subdivisions for the root tile matrix.
+     */
+    protected getRootTileMatrix(): { x: number; y: number } {
+        return selectBestSubdivisions(this.extent);
     }
 
     preprocess() {
-        if (this.extent.crs !== this.instance.referenceCrs) {
-            throw new Error('The extent of this map is not in the same CRS as the Instance CRS');
+        if (this.extent.crs !== this.getComposerProjection()) {
+            throw new Error(
+                `The extent of this map is not in the correct CRS. Expected: ${this.getComposerProjection()}, got: ${this.extent.crs}`,
+            );
         }
 
-        const subdivs = selectBestSubdivisions(this.extent);
-
-        this._subdivisions = subdivs;
+        const subdivs = this.getRootTileMatrix();
 
         // If the map is not square, we want to have more than a single
         // root tile to avoid elongated tiles that hurt visual quality and SSE computation.
         const rootExtents = this.extent.split(subdivs.x, subdivs.y);
 
-        this._imageSize = computeImageSize(rootExtents[0]);
-
         let i = 0;
+
         for (const root of rootExtents) {
             if (subdivs.x > subdivs.y) {
-                this.level0Nodes.push(this.requestNewTile(root, undefined, 0, i, 0));
+                this._rootTiles.push(this.requestNewTile(root, undefined, 0, i, 0));
             } else if (subdivs.y > subdivs.x) {
-                this.level0Nodes.push(this.requestNewTile(root, undefined, 0, 0, i));
+                this._rootTiles.push(this.requestNewTile(root, undefined, 0, 0, i));
             } else {
-                this.level0Nodes.push(this.requestNewTile(root, undefined, 0, 0, 0));
+                this._rootTiles.push(this.requestNewTile(root, undefined, 0, 0, 0));
             }
+
             i++;
         }
-        for (const level0 of this.level0Nodes) {
-            this.object3d.add(level0);
-            level0.updateMatrixWorld(false);
+
+        for (const tile of this._rootTiles) {
+            this.object3d.add(tile);
+            tile.updateMatrixWorld(false);
         }
 
         return Promise.resolve();
     }
 
+    /**
+     * Compute the best image size for tiles, taking into account the extent ratio.
+     * In other words, rectangular tiles will have more pixels in their longest side.
+     *
+     * @param extent - The tile extent.
+     */
+    protected getTextureSize(extent: Extent) {
+        return computeImageSize(extent);
+    }
+
+    protected getTileDimensions(extent: Extent) {
+        return extent.dimensions();
+    }
+
+    protected get isEllipsoidal() {
+        return false;
+    }
+
+    protected getComposerProjection() {
+        return this.instance.referenceCrs;
+    }
+
+    protected getGeometryBuilder(): TileGeometryBuilder {
+        return defaultGeometryBuilder;
+    }
+
     private requestNewTile(
         extent: Extent,
         parent: TileMesh | undefined,
-        level: number,
+        z: number,
         x = 0,
         y = 0,
     ): TileMesh {
-        const quaternion = new Quaternion();
-        const position = extent.centerAsVector3();
+        const textureSize = this.getTextureSize(extent);
 
-        // build tile
         const material = new LayeredMaterial({
             renderer: this.instance.renderer,
-            atlasInfo: this._atlasInfo,
             options: this._materialOptions,
+            textureSize,
             extent,
-            textureSize: nonNull(this._imageSize),
-            tileDimensions: extent.dimensions(),
+            tileDimensions: this.getTileDimensions(extent),
             getIndexFn: this.getIndex.bind(this),
             textureDataType: this._colorAtlasDataType,
             hasElevationLayer: this._hasElevationLayer,
             maxTextureImageUnits: Capabilities.getMaxTextureUnitsCount(),
+            isGlobe: this.isEllipsoidal,
         });
 
         const tile = new TileMesh({
-            geometryPool: this.geometryPool,
-            instance: this.instance,
+            renderer: this.instance.renderer,
             material,
             extent,
-            textureSize: nonNull(this._imageSize),
+            textureSize,
             segments: this.segments,
-            coord: { level, x, y },
-            enableCPUTerrain: this._materialOptions.terrain.enableCPUTerrain ?? true,
+            coord: { z, x, y },
             enableTerrainDeformation: this._materialOptions.terrain.enabled ?? true,
             onElevationChanged: this._onTileElevationChanged,
+            geometryBuilder: this.getGeometryBuilder(),
+            volume: this.createTileVolume(extent),
         });
 
-        this.allTiles.add(tile);
+        this._allTiles.add(tile);
 
-        this.tileIndex.addTile(tile);
+        this._tileIndex.addTile(tile);
 
         tile.material.opacity = this.opacity;
 
-        if (parent && parent instanceof TileMesh) {
-            // get parent position from extent
-            const positionParent = parent.extent.centerAsVector3();
-            // place relative to his parent
-            position.sub(positionParent).applyQuaternion(parent.quaternion.invert());
-            quaternion.premultiply(parent.quaternion);
-        }
+        const position = tile.absolutePosition;
 
-        tile.position.copy(position);
-        tile.quaternion.copy(quaternion);
+        tile.position.copy(position).add(this.object3d.position);
 
         tile.opacity = this.opacity;
         tile.setVisibility(false);
@@ -1063,6 +1070,13 @@ class Map<UserData extends EntityUserData = EntityUserData>
         return tile;
     }
 
+    protected createTileVolume(extent: Extent): TileVolume {
+        return new PlanarTileVolume({
+            extent,
+            range: { min: -1, max: +1 },
+        });
+    }
+
     private onTileElevationChanged(tile: TileMesh) {
         this.dispatchEvent({ type: 'elevation-changed', extent: tile.extent });
     }
@@ -1075,7 +1089,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
      * @returns The function to revert to the previous state.
      */
     setRenderState(state: RenderingState) {
-        const restores = this.level0Nodes.map(n => n.pushRenderState(state));
+        const restores = this._rootTiles.map(n => n.pushRenderState(state));
 
         return () => {
             restores.forEach(r => r());
@@ -1124,6 +1138,14 @@ class Map<UserData extends EntityUserData = EntityUserData>
                 results.push(pickResult);
             }
         }
+    }
+
+    protected getDefaultTerrainOptions(): Readonly<TerrainOptions> {
+        return {
+            enabled: DEFAULT_ENABLE_TERRAIN,
+            stitching: DEFAULT_ENABLE_STITCHING,
+            segments: DEFAULT_MAP_SEGMENTS,
+        };
     }
 
     protected getDefaultLightingOptions(): Readonly<Required<MapLightingOptions>> {
@@ -1190,10 +1212,10 @@ class Map<UserData extends EntityUserData = EntityUserData>
     preUpdate(context: Context, changeSources: Set<unknown>) {
         this._materialOptions.colorMapAtlas?.update();
 
-        this.tileIndex.update();
+        this._tileIndex.update();
 
         if (changeSources.has(undefined) || changeSources.size === 0) {
-            return this.level0Nodes;
+            return this._rootTiles;
         }
 
         let commonAncestor: TileMesh | null = null;
@@ -1202,7 +1224,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
                 // if the change is caused by a camera move, no need to bother
                 // to find common ancestor: we need to update the whole tree:
                 // some invisible tiles may now be visible
-                return this.level0Nodes;
+                return this._rootTiles;
             }
             if (isTileMesh(source)) {
                 if (!commonAncestor) {
@@ -1210,7 +1232,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
                 } else {
                     commonAncestor = source.findCommonAncestor(commonAncestor);
                     if (!commonAncestor) {
-                        return this.level0Nodes;
+                        return this._rootTiles;
                     }
                 }
                 if (commonAncestor.material == null) {
@@ -1221,7 +1243,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         if (commonAncestor) {
             return [commonAncestor];
         }
-        return this.level0Nodes;
+        return this._rootTiles;
     }
 
     /**
@@ -1412,19 +1434,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
             let requestChildrenUpdate = false;
 
             if (!this.frozen) {
-                const worldBox = node.getWorldSpaceBoundingBox(tmpBox3);
-                const size = worldBox.getSize(tmpVector);
-                const geometricError = Math.max(size.x, size.y);
-
-                const sse = ScreenSpaceError.computeFromBox3(
-                    context.view,
-                    worldBox,
-                    IDENTITY,
-                    geometricError,
-                    ScreenSpaceError.Mode.MODE_2D,
-                );
-
-                if (this.testTileSSE(node, sse) && this.canSubdivide(node)) {
+                if (this.shouldSubdivide(context, node) && this.canSubdivide(node)) {
                     this.subdivideNode(context, node);
                     // display iff children aren't ready
                     node.setDisplayed(false);
@@ -1454,12 +1464,11 @@ class Map<UserData extends EntityUserData = EntityUserData>
         return node.detachChildren();
     }
 
-    private testVisibility(node: TileMesh, context: Context): boolean {
+    protected testVisibility(node: TileMesh, context: Context): boolean {
         node.update(this._materialOptions);
 
-        const isVisible = context.view.isBox3Visible(node.boundingBox, node.matrixWorld);
-
-        return isVisible;
+        // Frustum culling
+        return context.view.isBox3Visible(node.getWorldSpaceBoundingBox(tmpBox3));
     }
 
     postUpdate(context: Context) {
@@ -1476,7 +1485,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         if (computeNeighbours) {
             this.traverseTiles(tile => {
                 if (tile.material.visible) {
-                    const neighbours = this.tileIndex.getNeighbours(
+                    const neighbours = this._tileIndex.getNeighbours(
                         tile,
                         tmpNeighbours,
                         isStitchableNeighbour,
@@ -1487,25 +1496,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         }
     }
 
-    private registerColorLayer(layer: ColorLayer) {
-        const colorLayers = this._layers.filter(l => l instanceof ColorLayer);
-
-        // rebuild color textures atlas
-        // We use a margin to prevent atlas bleeding.
-        const margin = 1.1;
-        const factor = layer.resolutionFactor * margin;
-        const { x, y } = nonNull(this._imageSize);
-        const size = new Vector2(Math.round(x * factor), Math.round(y * factor));
-
-        const { atlas, maxX, maxY } = AtlasBuilder.pack(
-            Capabilities.getMaxTextureSize(),
-            colorLayers.map(l => ({ id: l.id, size })),
-            this._atlasInfo.atlas,
-        );
-        this._atlasInfo.atlas = atlas;
-        this._atlasInfo.maxX = Math.max(this._atlasInfo.maxX, maxX);
-        this._atlasInfo.maxY = Math.max(this._atlasInfo.maxY, maxY);
-
+    private registerColorLayer() {
         this._colorAtlasDataType = getWidestDataType(this.getColorLayers());
     }
 
@@ -1548,12 +1539,15 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
         this._layers.push(layer);
 
-        await layer.initialize({ instance: this.instance });
+        await layer.initialize({
+            instance: this.instance,
+            composerProjection: this.getComposerProjection(),
+        });
 
         layer.addEventListener('visible-property-changed', this._onLayerVisibilityChanged);
 
         if (layer instanceof ColorLayer) {
-            this.registerColorLayer(layer);
+            this.registerColorLayer();
         } else if (layer instanceof ElevationLayer) {
             this._hasElevationLayer = true;
             this.updateGlobalMinMax();
@@ -1575,6 +1569,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     private onLayerVisibilityChanged(event: { target: Layer }) {
         if (event.target instanceof ElevationLayer) {
             this.dispatchEvent({ type: 'elevation-changed', extent: this.extent });
+            this.updateGlobalMinMax();
         }
 
         this.traverseTiles(tile => {
@@ -1684,11 +1679,6 @@ class Map<UserData extends EntityUserData = EntityUserData>
             disposeLayers: false,
         },
     ) {
-        // Delete cached TileGeometry objects. This is not possible to do
-        // at the TileMesh level because TileMesh objects do not own their geometry,
-        // as it is shared among all tiles at the same depth level.
-        this.clearGeometryPool();
-
         // Dispose all tiles so that every layer will unload data relevant to those tiles.
         this.traverseTiles(t => this.disposeTile(t));
 
@@ -1702,8 +1692,35 @@ class Map<UserData extends EntityUserData = EntityUserData>
     private disposeTile(tile: TileMesh) {
         tile.traverseTiles(desc => {
             desc.dispose();
-            this.allTiles.delete(desc);
+            this._allTiles.delete(desc);
         });
+    }
+
+    /**
+     * Gets the elevation range of visible tiles, or `null` if no tile is visible.
+     *
+     * If there are no elevation layers on this map, returns `null` as well.
+     */
+    getElevationMinMaxForVisibleTiles(): ElevationRange | null {
+        if (!this._hasElevationLayer) {
+            return null;
+        }
+
+        let min = +Infinity;
+        let max = -Infinity;
+
+        this.traverseTiles(tile => {
+            if (tile.visible && tile.material.visible) {
+                min = Math.min(min, tile.minmax.min);
+                max = Math.max(max, tile.minmax.max);
+            }
+        });
+
+        if (isFinite(min) && isFinite(max)) {
+            return { min, max };
+        }
+
+        return null;
     }
 
     /**
@@ -1715,13 +1732,15 @@ class Map<UserData extends EntityUserData = EntityUserData>
      */
     getElevationMinMax(): ElevationRange {
         const elevationLayers = this.getElevationLayers();
+
         if (elevationLayers.length > 0) {
             let min = null;
             let max = null;
 
             for (const layer of elevationLayers) {
                 const minmax = layer.minmax;
-                if (minmax != null) {
+
+                if (layer.visible && minmax != null) {
                     if (min == null || max == null) {
                         min = min ?? minmax.min;
                         max = max ?? minmax.max;
@@ -1742,9 +1761,8 @@ class Map<UserData extends EntityUserData = EntityUserData>
     /**
      * Sample the elevation at the specified coordinate.
      *
-     * Note: this method does nothing if {@link TerrainOptions.enableCPUTerrain} is not enabled,
-     * or if no elevation layer is present on the map, or if the sampling coordinate is not inside
-     * the map's extent.
+     * Note: this method does nothing if no elevation layer is present on the map, or if the
+     * sampling coordinate is not inside the map's extent.
      *
      * Note: sampling might return more than one sample for any given coordinate. You can sort them
      * by {@link entities.ElevationSample.resolution | resolution} to select the best sample for your needs.
@@ -1753,8 +1771,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
      * empty result is created. The existing samples in the array are not removed. Useful to
      * cumulate samples across different maps.
      * @returns The {@link GetElevationResult} containing the updated sample array.
-     * If the map has no elevation layer or if {@link TerrainOptions.enableCPUTerrain} is not enabled,
-     * this array is left untouched.
+     * If the map has no elevation layer, this array is left untouched.
      */
     getElevation(
         options: GetElevationOptions,
@@ -1775,13 +1792,6 @@ class Map<UserData extends EntityUserData = EntityUserData>
         const elevationLayer = this.getElevationLayers()[0];
 
         if (!elevationLayer.visible) {
-            return result;
-        }
-
-        if (!this._materialOptions.terrain.enableCPUTerrain) {
-            console.warn(
-                'Map.getElevation() is only supported when TerrainOptions.enableCPUTerrain is enabled',
-            );
             return result;
         }
 
@@ -1816,6 +1826,33 @@ class Map<UserData extends EntityUserData = EntityUserData>
         }
     }
 
+    protected canSubdivideTile(tile: TileMesh): boolean {
+        let current = tile;
+        let ancestorLevel = 0;
+
+        // To be able to subdivide a tile, we need to ensure that we
+        // have proper elevation data on this tile (if applicable).
+        // Otherwise the newly created tiles will not have a correct bounding box,
+        // and this will mess with frustum culling / level of detail selection, in turn leading
+        // to dangerous levels of subdivisions (and hundreds/thousands of undesired tiles).
+        // On the other hand, we can afford a bit of undesired tiles if it means that
+        // the color layers will display correctly.
+        const LOD_MARGIN = 3;
+        while (ancestorLevel < LOD_MARGIN && current != null) {
+            if (
+                current != null &&
+                current.material != null &&
+                current.material.isElevationLayerTextureLoaded()
+            ) {
+                return true;
+            }
+            ancestorLevel++;
+            current = current.parent as TileMesh;
+        }
+
+        return false;
+    }
+
     /**
      * @param node - The node to subdivide.
      * @returns True if the node can be subdivided.
@@ -1830,18 +1867,20 @@ class Map<UserData extends EntityUserData = EntityUserData>
         // Prevent subdivision if node is covered by at least one elevation layer
         // and if node doesn't have a elevation texture yet.
         for (const e of this.getElevationLayers()) {
-            // If the elevation layer is not ready, we are still waiting for
-            // some information related to the terrain (min/max values).
-            if (!e.ready && e.visible && !e.frozen) {
-                return false;
-            }
+            if (e.visible) {
+                // If the elevation layer is not ready, we are still waiting for
+                // some information related to the terrain (min/max values).
+                if (!e.ready && !e.frozen) {
+                    return false;
+                }
 
-            if (!node.canSubdivide()) {
-                return false;
+                if (!this.canSubdivideTile(node)) {
+                    return false;
+                }
             }
         }
 
-        if (node.children.some(n => isTileMesh(n))) {
+        if (!node.isLeaf) {
             // No need to prevent subdivision, since we've already done it before
             return true;
         }
@@ -1850,7 +1889,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     private testTileSSE(tile: TileMesh, sse: SSE | null) {
-        if (this.maxSubdivisionLevel <= tile.level) {
+        if (this.maxSubdivisionLevel <= tile.lod) {
             return false;
         }
 
@@ -1861,8 +1900,26 @@ class Map<UserData extends EntityUserData = EntityUserData>
         tmpSseSizes[0] = sse.lengths.x * sse.ratio;
         tmpSseSizes[1] = sse.lengths.y * sse.ratio;
 
-        const threshold = Math.max(this.imageSize.x, this.imageSize.y);
+        const { width, height } = tile.textureSize;
+
+        const threshold = Math.max(width, height);
         return tmpSseSizes.some(v => v >= threshold * this.subdivisionThreshold);
+    }
+
+    protected shouldSubdivide(context: Context, node: TileMesh): boolean {
+        const worldBox = node.getWorldSpaceBoundingBox(tmpBox3);
+        const size = worldBox.getSize(tmpVector);
+        const geometricError = Math.max(size.x, size.y);
+
+        const sse = ScreenSpaceError.computeFromBox3(
+            context.view,
+            worldBox,
+            IDENTITY,
+            geometricError,
+            ScreenSpaceError.Mode.MODE_2D,
+        );
+
+        return this.testTileSSE(node, sse);
     }
 
     private updateMinMaxDistance(context: Context, node: TileMesh) {

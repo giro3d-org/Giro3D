@@ -1,10 +1,10 @@
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import HeightMap from '@giro3d/giro3d/core/HeightMap';
 import OffsetScale from '@giro3d/giro3d/core/OffsetScale';
-import TileGeometry from '@giro3d/giro3d/core/TileGeometry';
+import PlanarTileGeometry from '@giro3d/giro3d/entities/tiles/PlanarTileGeometry';
 import { FloatType, RGFormat } from 'three';
 
-const dimensions = new Extent('EPSG:3857', -100, 100, -100, 100).dimensions();
+const extent = new Extent('EPSG:3857', -100, 100, -100, 100);
 const DEFAULT_OFFSET_SCALE = new OffsetScale(0, 0, 1, 1);
 
 // Actual buffer arrays to prevent regression
@@ -31,9 +31,9 @@ const indicesSquare = new Uint16Array([
     32, 31, 25, 33, 26, 27, 33, 32, 26, 34, 27, 28, 34, 33, 27, 35, 28, 29, 35, 34, 28,
 ]);
 
-describe('TileGeometry', () => {
+describe('PlanarTileGeometry', () => {
     it('should have the proper attributes for a 6x6 squared grid given segment=5 parameter', () => {
-        const geometry = new TileGeometry({ dimensions, segments: 5 });
+        const geometry = new PlanarTileGeometry({ extent, segments: 5 });
 
         expect(geometry.attributes.position.array).toStrictEqual(positionsSquare);
         expect(geometry.attributes.uv.array).toStrictEqual(uvsSquare);
@@ -41,8 +41,8 @@ describe('TileGeometry', () => {
     });
 
     it('should create an index buffer with 16bit numbers if possible', () => {
-        const small = new TileGeometry({ dimensions, segments: 5 });
-        const big = new TileGeometry({ dimensions, segments: 200 });
+        const small = new PlanarTileGeometry({ extent, segments: 5 });
+        const big = new PlanarTileGeometry({ extent, segments: 200 });
 
         expect(small.getIndex()!.array.BYTES_PER_ELEMENT).toEqual(2);
         expect(big.getIndex()!.array.BYTES_PER_ELEMENT).toEqual(4);
@@ -50,7 +50,7 @@ describe('TileGeometry', () => {
 
     describe('resetHeights', () => {
         it('should set all Z coordinates to zero', () => {
-            const geometry = new TileGeometry({ dimensions, segments: 3 });
+            const geometry = new PlanarTileGeometry({ extent, segments: 3 });
             const positions = geometry.getAttribute('position');
             for (let i = 0; i < positions.count; i++) {
                 positions.setZ(i, 999);
@@ -79,7 +79,7 @@ describe('TileGeometry', () => {
             buffer[6] = 800;
             buffer[7] = ALPHA;
 
-            const grid_2x2 = new TileGeometry({ dimensions, segments: 2 });
+            const grid_2x2 = new PlanarTileGeometry({ extent, segments: 2 });
 
             const { min, max } = grid_2x2.applyHeightMap(
                 new HeightMap(buffer, width, height, DEFAULT_OFFSET_SCALE, RGFormat, FloatType),
@@ -90,7 +90,7 @@ describe('TileGeometry', () => {
         });
 
         it('should correctly sample the buffer', () => {
-            const small = new TileGeometry({ dimensions, segments: 2 });
+            const small = new PlanarTileGeometry({ extent, segments: 2 });
 
             // Create 2x2 heightmap, with a stride of 2 (the elevation is in the even indices)
             const width = 2;

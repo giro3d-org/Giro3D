@@ -16,6 +16,7 @@ import Tiles3DInspector from './Tiles3DInspector';
 
 const customInspectors: Record<string, typeof EntityInspector<Entity3D>> = {
     Map: MapInspector,
+    Globe: MapInspector,
     Tiles3D: Tiles3DInspector,
     AxisGrid: AxisGridInspector,
     Shape: ShapeInspector,

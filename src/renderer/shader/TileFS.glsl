@@ -84,6 +84,7 @@ void renderDistance() {
     dist = saturate( dist ); // clamp to [ 0, 1 ]
     gl_FragColor = packDepthToRGBA( dist );
 }
+vec3 Z = vec3(0, 0, 1);
 
 void renderDepth() {
     // Depth-based rendering for directional light shadows
@@ -99,6 +100,24 @@ void renderBackface() {
         gl_FragColor.rgb = desaturate(gl_FragColor.rgb, 1.) * 0.5;
     }
 
+}
+
+// Transforms the local normal to ENU (for Globes)
+vec3 transformENU(in vec3 normal, in vec3 localNormal) {
+    vec3 u = normal;
+    vec3 e = normalize(cross(Z, normal));
+    vec3 n = normalize(cross(u, e));
+
+    mat4 enu = transpose(mat4(
+        e.x, e.y, e.z, 0.0,
+        n.x, n.y, n.z, 0.0,
+        u.x, u.y, u.z, 0.0,
+        0.0, 0.0, 0.0, 1.0
+    ));
+
+    vec4 result = vec4(localNormal, 1.0) * enu;
+
+    return result.xyz;
 }
 
 void main() {
@@ -181,7 +200,14 @@ void main() {
         outgoingLight = hillshade(df, hillshading.zenith, hillshading.azimuth, hillshading.intensity);
         #endif
     } else if (hillshading.mode == HILLSHADE_PHYSICAL) {
-        vec3 worldNormal = localNormal;
+        #if defined(GLOBE)
+            // In globe mode, we have to convert the normal local to the surface
+            // to the world normal using an East/North/Up transformation matrix.
+            vec3 worldNormal = transformENU(vWorldNormal, localNormal);
+        #else
+            vec3 worldNormal = localNormal;
+        #endif
+
         vec3 normal = (vec4(worldNormal.xyz, 1.0) * inverse(viewMatrix)).xyz;
 
         #include <specularmap_fragment>

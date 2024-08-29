@@ -1,10 +1,9 @@
 import type GUI from 'lil-gui';
 import type { AxesHelper, GridHelper, Side } from 'three';
-import { Color } from 'three';
-import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+import { Color, MathUtils, Mesh, MeshBasicMaterial, Sphere, SphereGeometry } from 'three';
 import type Instance from '../core/Instance';
-import TileMesh from '../core/TileMesh';
 import type Map from '../entities/Map';
+import TileMesh from '../entities/tiles/TileMesh';
 import type { BoundingBoxHelper } from '../helpers/Helpers';
 import Helpers from '../helpers/Helpers';
 import RenderingState from '../renderer/RenderingState';
@@ -16,19 +15,9 @@ import GraticulePanel from './GraticulePanel';
 import LayerInspector from './LayerInspector';
 import MapLightingPanel from './MapLightingPanel';
 import MapTerrainPanel from './MapTerrainPanel';
+import TileInfoPanel from './TileInfoPanel';
 
-function createTileLabel() {
-    const text = document.createElement('div');
-
-    text.style.color = '#FFFFFF';
-    text.style.padding = '0.2em 1em';
-    text.style.textShadow = '2px 2px 2px black';
-    text.style.textAlign = 'center';
-    text.style.fontSize = '12px';
-    text.style.backgroundColor = 'rgba(0,0,0,0.5)';
-
-    return text;
-}
+const tmpSphere = new Sphere();
 
 type Sidedness = 'Front' | 'Back' | 'DoubleSide';
 
@@ -44,10 +33,9 @@ class MapInspector extends EntityInspector<Map> {
     backgroundOpacity: number;
     extentColor: Color;
     showExtent: boolean;
-    showTileInfo: boolean;
     extentHelper: BoundingBoxHelper | null;
-    labels: globalThis.Map<number, CSS2DObject>;
     lightingPanel: MapLightingPanel;
+    tileInfoPanel: TileInfoPanel;
     contourLinePanel: ContourLinePanel;
     colorimetryPanel: ColorimetryPanel;
     graticulePanel: GraticulePanel;
@@ -61,6 +49,10 @@ class MapInspector extends EntityInspector<Map> {
     visibleTiles: number;
     terrainPanel: MapTerrainPanel;
     side: Sidedness = 'Front';
+    showSphereVolumes = false;
+    boundingSpheres: Set<Mesh<SphereGeometry, MeshBasicMaterial>> = new Set();
+    sphereMaterial?: MeshBasicMaterial;
+    sphereGeometry?: SphereGeometry;
 
     /**
      * Creates an instance of MapInspector.
@@ -91,13 +83,10 @@ class MapInspector extends EntityInspector<Map> {
 
         this.extentColor = new Color('red');
         this.showExtent = false;
-        this.showTileInfo = false;
         this.extentHelper = null;
 
         this.reachableTiles = 0;
         this.visibleTiles = 0;
-
-        this.labels = new window.Map();
 
         this.addController(this, 'side', sides)
             .name('Sidedness')
@@ -107,7 +96,8 @@ class MapInspector extends EntityInspector<Map> {
             .onChange(() => this.notify(this.entity));
         this.addController(this, 'visibleTiles').name('Visible tiles');
         this.addController(this, 'reachableTiles').name('Reachable tiles');
-        this.addController(this.entity.allTiles, 'size').name('Loaded tiles');
+        // @ts-expect-error private property
+        this.addController(this.entity._allTiles, 'size').name('Loaded tiles');
         if (this.entity.elevationRange) {
             this.addController(this.entity.elevationRange, 'min')
                 .name('Elevation range minimum')
@@ -119,8 +109,6 @@ class MapInspector extends EntityInspector<Map> {
         }
         this.addController(this.entity, 'castShadow');
         this.addController(this.entity, 'receiveShadow');
-        this.addController(this.entity.imageSize, 'width').name('Tile width  (pixels)');
-        this.addController(this.entity.imageSize, 'height').name('Tile height  (pixels)');
         this.addController(this, 'showGrid')
             .name('Show grid')
             .onChange(v => this.toggleGrid(v));
@@ -138,15 +126,15 @@ class MapInspector extends EntityInspector<Map> {
         this.addColorController(this.entity, 'tileOutlineColor')
             .name('Tile outline color')
             .onChange(() => this.notify());
-        this.addController(this, 'showTileInfo')
-            .name('Show tile info')
-            .onChange(() => this.toggleBoundingBoxes());
         this.addController(this, 'showExtent')
             .name('Show extent')
             .onChange(() => this.toggleExtent());
         this.addColorController(this, 'extentColor')
             .name('Extent color')
             .onChange(() => this.updateExtentColor());
+        this.addController(this, 'showSphereVolumes')
+            .name('Show sphere volumes')
+            .onChange(() => this.notify());
         this.addController(this.entity, 'subdivisionThreshold')
             .name('Subdivision threshold')
             .min(0.1)
@@ -154,6 +142,7 @@ class MapInspector extends EntityInspector<Map> {
             .step(0.1)
             .onChange(() => this.notify());
 
+        this.tileInfoPanel = new TileInfoPanel(this.entity, this.gui, instance);
         this.terrainPanel = new MapTerrainPanel(this.entity, this.gui, instance);
 
         this.lightingPanel = new MapLightingPanel(this.entity.lighting, this.gui, instance);
@@ -181,6 +170,11 @@ class MapInspector extends EntityInspector<Map> {
         this.entity.addEventListener('layer-removed', this._fillLayersCb);
         this.entity.addEventListener('layer-order-changed', this._fillLayersCb);
 
+        this.instance.addEventListener(
+            'after-camera-update',
+            this.updateBoundingSpheres.bind(this),
+        );
+
         this.fillLayers();
     }
 
@@ -193,55 +187,63 @@ class MapInspector extends EntityInspector<Map> {
         this.notify();
     }
 
-    getOrCreateLabel(obj: TileMesh) {
-        let label = this.labels.get(obj.id);
-        if (!label) {
-            label = new CSS2DObject(createTileLabel());
-            label.name = 'MapInspector label';
-            obj.addEventListener('dispose', () => {
-                label?.element.remove();
-                label?.remove();
-            });
-            obj.add(label);
-            obj.updateMatrixWorld(true);
-            this.labels.set(obj.id, label);
-        }
-        return label;
-    }
-
-    getInfo(tile: TileMesh): string {
-        const layers: string[] = [];
-        for (const layer of this.entity.getLayers()) {
-            const info = layer.getInfo(tile);
-            layers.push(
-                `${layer.name ?? layer.id}: ${info.imageCount} img, ${info.state}, ${info.paintCount} paints)`,
-            );
-        }
-
-        return [
-            `Node #${tile.id} (${Math.ceil(tile.progress * 100)}%) - LOD=${tile.z}, x=${tile.x}, y=${tile.y}`,
-            ...layers,
-        ].join('\n');
-    }
-
-    updateLabel(tile: TileMesh, visible: boolean, color: Color) {
-        if (!visible) {
-            const label = this.labels.get(tile.id);
-            if (label) {
-                label.element.remove();
-                label.parent?.remove(label);
-                this.labels.delete(tile.id);
+    private updateBoundingSpheres() {
+        if (!this.showSphereVolumes) {
+            if (this.boundingSpheres.size > 0) {
+                this.boundingSpheres.forEach(mesh => {
+                    mesh.removeFromParent();
+                    mesh.userData.owner.userData.boundingSphere = null;
+                });
+                this.boundingSpheres.clear();
             }
-        } else {
-            const isVisible = tile.visible && tile.material.visible;
-            const label = this.getOrCreateLabel(tile);
-            const element = label.element;
-            element.innerText = this.getInfo(tile);
-            element.style.color = `#${color.getHexString()}`;
-            element.style.opacity = isVisible ? '100%' : '0%';
-            tile.boundingBox.getCenter(label.position);
-            label.updateMatrixWorld();
+            return;
         }
+
+        if (!this.sphereMaterial) {
+            this.sphereMaterial = new MeshBasicMaterial({
+                color: this.boundingBoxColor,
+                wireframe: true,
+            });
+        }
+
+        if (!this.sphereGeometry) {
+            this.sphereGeometry = new SphereGeometry(1, 32, 16);
+        }
+
+        this.sphereMaterial.color = new Color(this.boundingBoxColor);
+
+        [...this.boundingSpheres].forEach(mesh => {
+            const tile: TileMesh = mesh.userData.owner;
+            if (tile.disposed) {
+                mesh.removeFromParent();
+                this.boundingSpheres.delete(mesh);
+            } else {
+                mesh.visible = tile.visible && tile.material.visible;
+            }
+        });
+
+        this.entity.traverseTiles(tile => {
+            if (tile.userData.boundingSphere == null) {
+                const mesh = new Mesh(this.sphereGeometry, this.sphereMaterial);
+                tile.userData.boundingSphere = mesh;
+
+                this.instance.add(mesh);
+                this.boundingSpheres.add(mesh);
+
+                mesh.userData.owner = tile;
+                mesh.rotateX(MathUtils.degToRad(90));
+            } else {
+                const mesh: Mesh = tile.userData.boundingSphere;
+                const sphere = tile.getWorldSpaceBoundingSphere(tmpSphere);
+
+                const r = sphere.radius;
+
+                mesh.scale.set(r, r, r);
+                mesh.position.copy(sphere.center);
+
+                mesh.updateMatrixWorld(true);
+            }
+        });
     }
 
     toggleBoundingBoxes() {
@@ -261,8 +263,6 @@ class MapInspector extends EntityInspector<Map> {
                     finalColor = color;
                 }
                 this.addOrRemoveBoundingBox(tile, this.boundingBoxes, finalColor);
-
-                this.updateLabel(tile, this.showTileInfo, finalColor);
             }
         });
         this.notify(this.entity);
@@ -345,11 +345,15 @@ class MapInspector extends EntityInspector<Map> {
     }
 
     dumpTiles() {
-        console.log(this.entity.level0Nodes);
+        const tiles: TileMesh[] = [];
+        const collect = (t: TileMesh) => tiles.push(t);
+        this.entity.traverseTiles(collect);
+        console.log(tiles);
     }
 
     updateValues() {
         super.updateValues();
+        this.tileInfoPanel.updateValues();
         this.toggleBoundingBoxes();
         this.layerCount = this.entity.layerCount;
         this.layers.forEach(l => l.updateValues());

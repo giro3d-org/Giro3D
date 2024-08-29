@@ -38,6 +38,7 @@ import type MemoryUsage from '../core/MemoryUsage';
 import { type GetMemoryUsageContext } from '../core/MemoryUsage';
 import OffsetScale from '../core/OffsetScale';
 import Rect from '../core/Rect';
+import Capabilities from '../core/system/Capabilities';
 import type TerrainOptions from '../core/TerrainOptions';
 import type MapLightingOptions from '../entities/MapLightingOptions';
 import { MapLightingMode } from '../entities/MapLightingOptions';
@@ -45,6 +46,7 @@ import { getColor } from '../utils/predicates';
 import TextureGenerator from '../utils/TextureGenerator';
 import { nonNull } from '../utils/tsutils';
 import type { AtlasInfo, LayerAtlasInfo } from './AtlasBuilder';
+import AtlasBuilder from './AtlasBuilder';
 import type ColorMapAtlas from './ColorMapAtlas';
 import WebGLComposer from './composition/WebGLComposer';
 import EmptyTexture from './EmptyTexture';
@@ -107,6 +109,7 @@ export const DEFAULT_ZENITH = 45;
 export const DEFAULT_GRATICULE_COLOR = new Color(0, 0, 0);
 export const DEFAULT_GRATICULE_STEP = 500; // meters
 export const DEFAULT_GRATICULE_THICKNESS = 1;
+export const DEFAULT_SUN_DIRECTION = new Vector3(1, 0, 0);
 
 function drawImageOnAtlas(
     width: number,
@@ -186,10 +189,6 @@ export interface MaterialOptions {
      * Graticule options.
      */
     graticule: Required<GraticuleOptions>;
-    /**
-     * The number of subdivision segments per tile.
-     */
-    segments: number;
     /**
      * The elevation range.
      */
@@ -311,6 +310,13 @@ type Defines = {
     DISTANCE_RENDER?: 1;
 
     /** The number of _visible_ color layers */
+    /**
+     * The z coordinate of vertices is reset before computing terrain
+     */
+    GLOBE?: 1;
+    /**
+     * The number of _visible_ color layers
+     */
     VISIBLE_COLOR_LAYER_COUNT: number;
 };
 
@@ -416,8 +422,6 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         renderer: WebGLRenderer;
         /** The number of maximum texture units in fragment shaders */
         maxTextureImageUnits: number;
-        /**  the Atlas info */
-        atlasInfo: AtlasInfo;
         /** The function to help sorting color layers. */
         getIndexFn: (arg0: Layer) => number;
         /** The texture data type to be used for the atlas texture. */
@@ -426,10 +430,11 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         tileDimensions: Vector2;
         extent: Extent;
         textureSize: Vector2;
+        isGlobe: boolean;
     }) {
         super({ clipping: true, glslVersion: GLSL3 });
 
-        this._atlasInfo = params.atlasInfo;
+        this._atlasInfo = { maxX: 0, maxY: 0, atlas: null };
         this._textureSize = params.textureSize;
         this.fog = true;
         this._maxTextureImageUnits = params.maxTextureImageUnits;
@@ -439,6 +444,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
 
         MaterialUtils.setDefine(this, 'USE_ATLAS_TEXTURE', false);
         MaterialUtils.setDefine(this, 'STITCHING', options.terrain.stitching);
+        MaterialUtils.setDefine(this, 'GLOBE', params.isGlobe);
         MaterialUtils.setDefine(this, 'TERRAIN_DEFORMATION', options.terrain.enabled);
         MaterialUtils.setDefine(this, 'DISCARD_NODATA_ELEVATION', options.discardNoData);
         MaterialUtils.setDefine(this, 'ENABLE_ELEVATION_RANGE', options.elevationRange != null);
@@ -500,9 +506,9 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
 
             renderingState: new Uniform(RenderingState.FINAL),
 
-            segments: new Uniform(options.segments ?? 8),
             extent: new Uniform(new Vector4(extent.west, extent.south, width, height)),
             tileDimensions: new Uniform(params.tileDimensions),
+            segments: new Uniform(options.terrain.segments ?? 8),
             neighbours: new Uniform(
                 repeat<NeighbourUniform>(
                     {
@@ -833,6 +839,30 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         return Promise.resolve(true);
     }
 
+    private rebuildAtlasInfo() {
+        const colorLayers = this._colorLayers;
+
+        // rebuild color textures atlas
+        // We use a margin to prevent atlas bleeding.
+        const margin = 1.1;
+        const { width, height } = this._textureSize;
+
+        const { atlas, maxX, maxY } = AtlasBuilder.pack(
+            Capabilities.getMaxTextureSize(),
+            colorLayers.map(l => ({
+                id: l.id,
+                size: new Vector2(
+                    Math.round(width * l.resolutionFactor * margin),
+                    Math.round(height * l.resolutionFactor * margin),
+                ),
+            })),
+            this._atlasInfo.atlas,
+        );
+        this._atlasInfo.atlas = atlas;
+        this._atlasInfo.maxX = Math.max(this._atlasInfo.maxX, maxX);
+        this._atlasInfo.maxY = Math.max(this._atlasInfo.maxY, maxY);
+    }
+
     pushColorLayer(newLayer: ColorLayer) {
         if (this._colorLayers.includes(newLayer)) {
             return;
@@ -844,6 +874,8 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         if (newLayer.type === 'MaskLayer') {
             MaterialUtils.setDefine(this, 'ENABLE_LAYER_MASKS', true);
         }
+
+        this.rebuildAtlasInfo();
 
         // Optional feature: limit color layer display within an elevation range
         if (newLayer.elevationRange != null) {
@@ -895,6 +927,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         this._colorLayers.splice(index, 1);
 
         this.updateColorMaps();
+        this.rebuildAtlasInfo();
 
         this.updateColorLayerCount();
     }

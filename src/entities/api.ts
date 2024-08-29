@@ -8,10 +8,12 @@ import AxisGrid, {
 import Entity, { type EntityEventMap, type EntityUserData } from './Entity';
 import Entity3D, { type Entity3DEventMap } from './Entity3D';
 import FeatureCollection, { type MeshUserData } from './FeatureCollection';
-import Glow from './Glow';
-import Map, {
+import type Globe from './Globe';
+import type { GlobeConstructorOptions, GlobeTerrainOptions } from './Globe';
+import type Glow from './Glow';
+import type Map from './Map';
+import {
     DEFAULT_MAP_BACKGROUND_COLOR,
-    DEFAULT_MAP_SEGMENTS,
     DEFAULT_SUBDIVISION_THRESHOLD,
     type LayerCompareFn,
     type MapConstructorOptions,
@@ -30,7 +32,6 @@ export {
     AxisGridTicks,
     AxisGridVolume,
     DEFAULT_MAP_BACKGROUND_COLOR,
-    DEFAULT_MAP_SEGMENTS,
     DEFAULT_SUBDIVISION_THRESHOLD,
     Entity,
     Entity3D,
@@ -38,6 +39,9 @@ export {
     EntityEventMap,
     EntityUserData,
     FeatureCollection,
+    Globe,
+    GlobeConstructorOptions,
+    GlobeTerrainOptions,
     Glow,
     LayerCompareFn,
     Map,

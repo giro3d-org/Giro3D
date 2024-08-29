@@ -7,33 +7,33 @@ export default interface GraticuleOptions {
     /**
      * Enables the graticule.
      */
-    enabled?: boolean;
+    enabled: boolean;
     /**
      * The graticule thickness, in CRS units.
      */
-    thickness?: number;
+    thickness: number;
     /**
      * The graticule color.
      */
-    color?: ColorRepresentation;
+    color: ColorRepresentation;
     /**
      * The distance between vertical lines, in CRS units.
      */
-    xStep?: number;
+    xStep: number;
     /**
      * The distance between horizontal lines, in CRS units.
      */
-    yStep?: number;
+    yStep: number;
     /**
      * The X coordinate of the starting point of the graticule, in CRS units.
      */
-    xOffset?: number;
+    xOffset: number;
     /**
      * The Y coordinate of the starting point of the graticule, in CRS units.
      */
-    yOffset?: number;
+    yOffset: number;
     /**
      * The graticule opacity.
      */
-    opacity?: number;
+    opacity: number;
 }

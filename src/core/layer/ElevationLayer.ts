@@ -1,10 +1,10 @@
 import type { PixelFormat, Texture, TextureDataType } from 'three';
 import { FloatType, NoColorSpace, RGFormat } from 'three';
+import type TileMesh from '../../entities/tiles/TileMesh';
 import { isFiniteNumber } from '../../utils/predicates';
 import { nonNull } from '../../utils/tsutils';
 import type ElevationRange from '../ElevationRange';
 import type Extent from '../geographic/Extent';
-import type TileMesh from '../TileMesh';
 import type { LayerEvents, LayerOptions, LayerUserData, Target, TextureAndPitch } from './Layer';
 import Layer from './Layer';
 

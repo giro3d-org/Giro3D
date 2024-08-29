@@ -47,9 +47,9 @@ class PointCloud<M extends PointCloudMaterial = PointCloudMaterial>
         return (obj as PointCloud)?.isPointCloud;
     }
 
-    get level(): number {
+    get lod(): number {
         if (PointCloud.isPointCloud(this.parent)) {
-            return this.parent.level + 1;
+            return this.parent.lod + 1;
         } else {
             return 0;
         }

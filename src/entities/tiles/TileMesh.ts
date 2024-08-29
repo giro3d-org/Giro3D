@@ -1,12 +1,14 @@
-import type { Side } from 'three';
+import type { Box3, BufferGeometry, Side, WebGLRenderer } from 'three';
 import {
-    Box3,
     FrontSide,
+    Group,
+    MathUtils,
     Matrix4,
     Mesh,
     MeshBasicMaterial,
     Ray,
     RGBAFormat,
+    Sphere,
     UnsignedByteType,
     Vector2,
     Vector3,
@@ -18,31 +20,37 @@ import {
     type WebGLRenderTarget,
 } from 'three';
 
-import { readRGRenderTargetIntoRGBAU8Buffer } from '../renderer/composition/WebGLComposer';
-import type LayeredMaterial from '../renderer/LayeredMaterial';
-import type { MaterialOptions } from '../renderer/LayeredMaterial';
-import MaterialUtils from '../renderer/MaterialUtils';
-import MemoryTracker from '../renderer/MemoryTracker';
-import type RenderingState from '../renderer/RenderingState';
-import type Disposable from './Disposable';
-import type Extent from './geographic/Extent';
-import type GetElevationOptions from './GetElevationOptions';
-import HeightMap from './HeightMap';
-import type Instance from './Instance';
-import ElevationLayer from './layer/ElevationLayer';
-import type Layer from './layer/Layer';
-import type MemoryUsage from './MemoryUsage';
-import { type GetMemoryUsageContext } from './MemoryUsage';
-import OffsetScale from './OffsetScale';
-import Rect from './Rect';
-import TileGeometry from './TileGeometry';
-import { type NeighbourList } from './TileIndex';
-import type UniqueOwner from './UniqueOwner';
-import { intoUniqueOwner } from './UniqueOwner';
+import type Disposable from '../../core/Disposable';
+import type Ellipsoid from '../../core/geographic/Ellipsoid';
+import type Extent from '../../core/geographic/Extent';
+import type GetElevationOptions from '../../core/GetElevationOptions';
+import HeightMap from '../../core/HeightMap';
+import ElevationLayer from '../../core/layer/ElevationLayer';
+import type Layer from '../../core/layer/Layer';
+import type MemoryUsage from '../../core/MemoryUsage';
+import type { GetMemoryUsageContext } from '../../core/MemoryUsage';
+import OffsetScale from '../../core/OffsetScale';
+import Rect from '../../core/Rect';
+import type UniqueOwner from '../../core/UniqueOwner';
+import { intoUniqueOwner } from '../../core/UniqueOwner';
+import { readRGRenderTargetIntoRGBAU8Buffer } from '../../renderer/composition/WebGLComposer';
+import type LayeredMaterial from '../../renderer/LayeredMaterial';
+import type { MaterialOptions } from '../../renderer/LayeredMaterial';
+import MaterialUtils from '../../renderer/MaterialUtils';
+import MemoryTracker from '../../renderer/MemoryTracker';
+import type RenderingState from '../../renderer/RenderingState';
+import type View from '../../renderer/View';
+import { isPerspectiveCamera } from '../../utils/predicates';
+import type TileCoordinate from './TileCoordinate';
+import type TileGeometry from './TileGeometry';
+import type { TileGeometryBuilder } from './TileGeometry';
+import type { NeighbourList } from './TileIndex';
+import type TileVolume from './TileVolume';
 
 const ray = new Ray();
 const inverseMatrix = new Matrix4();
 const THIS_RECT = new Rect(0, 1, 0, 1);
+const tmpSphere = new Sphere();
 
 const helperMaterial = new MeshBasicMaterial({
     color: '#75eba8',
@@ -57,144 +65,50 @@ const NO_OFFSET_SCALE = new OffsetScale(0, 0, 0, 0);
 const tempVec2 = new Vector2();
 const tempVec3 = new Vector3();
 
-type GeometryPool = Map<string, TileGeometry>;
-
-function makePooledGeometry(pool: GeometryPool, extent: Extent, segments: number, level: number) {
-    const key = `${segments}-${level}`;
-
-    const cached = pool.get(key);
-    if (cached) {
-        return cached;
-    }
-
-    const dimensions = extent.dimensions();
-    const geometry = new TileGeometry({ dimensions, segments });
-    pool.set(key, geometry);
-    return geometry;
-}
-
-function makeRaycastableGeometry(extent: Extent, segments: number) {
-    const dimensions = extent.dimensions();
-    const geometry = new TileGeometry({ dimensions, segments });
-    return geometry;
-}
-
 export interface TileMeshEventMap extends Object3DEventMap {
     'visibility-changed': unknown;
     dispose: unknown;
-}
-
-class TileVolume {
-    private readonly _localBox: Box3;
-    private readonly _owner: Object3D<Object3DEventMap>;
-
-    constructor(options: { extent: Extent; min: number; max: number; owner: Object3D }) {
-        const dims = options.extent.dimensions(tempVec2);
-        const width = dims.x;
-        const height = dims.y;
-        const min = new Vector3(-width / 2, -height / 2, options.min);
-        const max = new Vector3(+width / 2, +height / 2, options.max);
-        this._localBox = new Box3(min, max);
-        this._owner = options.owner;
-    }
-
-    get centerZ() {
-        return this.localBox.getCenter(tempVec3).z;
-    }
-
-    get localBox(): Readonly<Box3> {
-        return this._localBox;
-    }
-
-    /**
-     * Gets or set the min altitude, in local coordinates.
-     */
-    get zMin() {
-        return this._localBox.min.z;
-    }
-
-    set zMin(v: number) {
-        this._localBox.min.setZ(v);
-    }
-
-    /**
-     * Gets or set the max altitude, in local coordinates.
-     */
-    get zMax() {
-        return this._localBox.max.z;
-    }
-
-    set zMax(v: number) {
-        this._localBox.max.setZ(v);
-    }
-
-    /**
-     * Returns the local size of this volume.
-     */
-    getLocalSize(target: Vector3): Vector3 {
-        return this._localBox.getSize(target);
-    }
-
-    /**
-     * Returns the local bounding box.
-     */
-    getLocalBoundingBox(target?: Box3): Box3 {
-        const result = target ?? new Box3();
-
-        result.copy(this._localBox);
-
-        return result;
-    }
-
-    /**
-     * Gets the world bounding box, taking into account world transformation.
-     */
-    getWorldSpaceBoundingBox(target?: Box3): Box3 {
-        const result = target ?? new Box3();
-
-        result.copy(this._localBox);
-
-        this._owner.updateWorldMatrix(true, false);
-
-        result.applyMatrix4(this._owner.matrixWorld);
-
-        return result;
-    }
 }
 
 class TileMesh
     extends Mesh<TileGeometry, LayeredMaterial, TileMeshEventMap>
     implements Disposable, MemoryUsage
 {
+    readonly isTileMesh = true as const;
+    readonly type = 'TileMesh' as const;
     readonly isMemoryUsage = true as const;
-    private readonly _pool: GeometryPool;
-    private readonly _extentDimensions: Vector2;
-    private _segments: number;
-    readonly type: string = 'TileMesh';
-    readonly isTileMesh: boolean = true;
-    private _minmax: { min: number; max: number } = { min: -Infinity, max: +Infinity };
     readonly extent: Extent;
     readonly textureSize: Vector2;
+
+    readonly coordinate: TileCoordinate;
+
+    private readonly _extentDimensions: Vector2;
+    private readonly _geometryBuilder: TileGeometryBuilder<TileGeometry>;
     private readonly _volume: TileVolume;
-    private _materialSide: Side = FrontSide;
-    readonly level: number;
-    readonly x: number;
-    readonly y: number;
-    readonly z: number;
-    private _heightMap: UniqueOwner<HeightMap, this> | null = null;
-    disposed = false;
-    private _enableTerrainDeformation: boolean;
-    private readonly _enableCPUTerrain: boolean;
-    private readonly _instance: Instance;
+    private readonly _renderer: WebGLRenderer;
     private readonly _onElevationChanged: (tile: this) => void;
+
+    private _materialSide: Side = FrontSide;
+    private _heightMap: UniqueOwner<HeightMap, this> | null = null;
+    private _enableTerrainDeformation: boolean;
+
+    private _tileGeometry: TileGeometry;
+    private _segments: number;
+    private _minmax: { min: number; max: number } = { min: -Infinity, max: +Infinity };
     private _shouldUpdateHeightMap = false;
-    isLeaf = false;
+    private _helperRoot: Group | null = null;
+
+    private readonly _helpers: {
+        colliderMesh?: Mesh<BufferGeometry, MeshBasicMaterial, Object3DEventMap>;
+    } = {};
     private _elevationLayerInfo: {
         layer: ElevationLayer;
         offsetScale: OffsetScale;
         renderTarget: WebGLRenderTarget<Texture>;
     } | null = null;
-    private _helperMesh: Mesh<TileGeometry, MeshBasicMaterial, Object3DEventMap> | null = null;
+
+    disposed = false;
+    isLeaf = false;
 
     getMemoryUsage(context: GetMemoryUsageContext) {
         this.material?.getMemoryUsage(context);
@@ -206,26 +120,44 @@ class TileMesh
                 gpuMemory: 0,
             });
         }
-        // If CPU terrain is enabled, then the geometry is owned by this mesh, rather than
-        // shared with other meshes in the same map, so we have to count it.
-        if (this._enableCPUTerrain) {
-            this.geometry.getMemoryUsage(context);
-        }
+
+        this.geometry.getMemoryUsage(context);
     }
 
     get boundingBox(): Box3 {
-        if (!this._enableTerrainDeformation) {
-            this._volume.zMin = 0;
-            this._volume.zMax = 0;
+        if (!this._enableTerrainDeformation || this._elevationLayerInfo?.layer.visible !== true) {
+            this._volume.setElevationRange({ min: 0, max: 0 });
         } else {
-            this._volume.zMin = this.minmax.min;
-            this._volume.zMax = this.minmax.max;
+            this._volume.setElevationRange(this.minmax);
         }
         return this._volume.localBox;
     }
 
+    /**
+     * The LOD. Root nodes have LOD 0.
+     */
+    get lod() {
+        return this.coordinate.z;
+    }
+
     getWorldSpaceBoundingBox(target: Box3): Box3 {
-        return this._volume.getWorldSpaceBoundingBox(target);
+        const local = this._volume.getLocalBoundingBox(target);
+
+        this.updateMatrixWorld(true);
+
+        local.applyMatrix4(this.matrixWorld);
+
+        return local;
+    }
+
+    getWorldSpaceBoundingSphere(target: Sphere): Sphere {
+        this.updateWorldMatrix(true, false);
+        return this._volume.getWorldSpaceBoundingSphere(target, this.matrixWorld);
+    }
+
+    getBoundingBoxCorners(): Vector3[] {
+        this.updateWorldMatrix(true, false);
+        return this._volume.getWorldSpaceCorners(this.matrixWorld);
     }
 
     /**
@@ -233,20 +165,9 @@ class TileMesh
      *
      * @param options - Constructor options.
      */
-    constructor({
-        geometryPool,
-        material,
-        extent,
-        segments,
-        coord: { level, x = 0, y = 0 },
-        textureSize,
-        instance,
-        enableCPUTerrain,
-        enableTerrainDeformation,
-        onElevationChanged,
-    }: {
-        /** The geometry pool to use. */
-        geometryPool: GeometryPool;
+    constructor(params: {
+        geometryBuilder: TileGeometryBuilder<TileGeometry>;
+        volume: TileVolume;
         /** The tile material. */
         material: LayeredMaterial;
         /** The tile extent. */
@@ -254,48 +175,37 @@ class TileMesh
         /** The subdivisions. */
         segments: number;
         /** The tile coordinate. */
-        coord: { level: number; x: number; y: number };
+        coord: TileCoordinate;
         /** The texture size. */
         textureSize: Vector2;
-        instance: Instance;
-        enableCPUTerrain: boolean;
+        ellipsoid?: Ellipsoid;
+        renderer: WebGLRenderer;
         enableTerrainDeformation: boolean;
         onElevationChanged: (tile: TileMesh) => void;
     }) {
-        super(
-            // CPU terrain forces geometries to be unique, so cannot be pooled
-            enableCPUTerrain
-                ? makeRaycastableGeometry(extent, segments)
-                : makePooledGeometry(geometryPool, extent, segments, level),
-            material,
-        );
+        super(params.geometryBuilder(params.extent, params.segments), params.material);
 
-        this._pool = geometryPool;
-        this._segments = segments;
-        this._instance = instance;
-        this._onElevationChanged = onElevationChanged;
+        this._geometryBuilder = params.geometryBuilder;
+        this._tileGeometry = this.geometry;
+        this._segments = params.segments;
+        this._renderer = params.renderer;
+        this._onElevationChanged = params.onElevationChanged;
 
         this.matrixAutoUpdate = false;
 
-        this.level = level;
-        this.extent = extent;
-        this.textureSize = textureSize;
-        this._enableCPUTerrain = enableCPUTerrain;
-        this._enableTerrainDeformation = enableTerrainDeformation;
+        this.coordinate = params.coord;
+        this.extent = params.extent;
+        this.textureSize = params.textureSize;
+        this._enableTerrainDeformation = params.enableTerrainDeformation;
 
         if (!this.geometry.boundingBox) {
             this.geometry.computeBoundingBox();
         }
-        const boundingBox = this.geometry.boundingBox as Box3;
 
-        this._volume = new TileVolume({
-            extent,
-            owner: this,
-            min: boundingBox.min.z,
-            max: boundingBox.max.z,
-        });
+        this._volume = params.volume;
 
-        this.name = `tile @ (z=${level}, x=${x}, y=${y})`;
+        const { z, x, y } = this.coordinate;
+        this.name = `tile @ (z=${z}, x=${x}, y=${y})`;
 
         this.frustumCulled = false;
 
@@ -303,44 +213,44 @@ class TileMesh
         this.setDisplayed(false);
 
         this.material.setUuid(this.id);
-        const dim = extent.dimensions();
+        const dim = params.extent.dimensions();
         this._extentDimensions = dim;
-        this.material.uniforms.tileDimensions.value.set(dim.x, dim.y);
 
         // Sets the default bbox volume
         this.setBBoxZ(-0.5, +0.5);
 
-        this.x = x;
-        this.y = y;
-        this.z = level;
-
         MemoryTracker.track(this, this.name);
     }
 
-    get showHelpers() {
-        if (!this._helperMesh) {
-            return false;
-        }
-        return this._helperMesh.material.visible;
+    get absolutePosition() {
+        return this.geometry.origin;
     }
 
-    set showHelpers(visible: boolean) {
-        if (visible && !this._helperMesh) {
-            this._helperMesh = new Mesh(this.geometry, helperMaterial);
-            this._helperMesh.matrixAutoUpdate = false;
-            this._helperMesh.name = 'collider helper';
-            this.add(this._helperMesh);
-            this._helperMesh.updateMatrix();
-            this._helperMesh.updateMatrixWorld(true);
+    get showColliderMesh() {
+        if (!this._helpers.colliderMesh) {
+            return false;
+        }
+        return this._helpers.colliderMesh.material.visible;
+    }
+
+    set showColliderMesh(visible: boolean) {
+        if (visible && !this._helpers.colliderMesh) {
+            this._helpers.colliderMesh = new Mesh(this.geometry.raycastGeometry, helperMaterial);
+            this._helpers.colliderMesh.matrixAutoUpdate = false;
+            this._helpers.colliderMesh.name = 'collider helper';
+            this.createHelperRootIfNecessary();
+            this._helperRoot?.add(this._helpers.colliderMesh);
+            this._helpers.colliderMesh.updateMatrix();
+            this._helpers.colliderMesh.updateMatrixWorld(true);
         }
 
-        if (!visible && this._helperMesh) {
-            this._helperMesh.removeFromParent();
-            this._helperMesh = null;
+        if (!visible && this._helpers.colliderMesh) {
+            this._helpers.colliderMesh.removeFromParent();
+            this._helpers.colliderMesh = undefined;
         }
 
-        if (this._helperMesh) {
-            this._helperMesh.material.visible = visible;
+        if (this._helpers.colliderMesh) {
+            this._helpers.colliderMesh.material.visible = visible;
         }
     }
 
@@ -351,31 +261,39 @@ class TileMesh
     set segments(v) {
         if (this._segments !== v) {
             this._segments = v;
-            this.createGeometry();
             this.material.segments = v;
-            if (this._enableCPUTerrain) {
-                this._shouldUpdateHeightMap = true;
-            }
+            this.createGeometry();
+            this._shouldUpdateHeightMap = true;
+        }
+    }
+
+    private createHelperRootIfNecessary() {
+        if (!this._helperRoot) {
+            this._helperRoot = new Group();
+            this._helperRoot.name = 'helpers';
+            this.add(this._helperRoot);
+            this._helperRoot.updateMatrixWorld(true);
         }
     }
 
     private createGeometry() {
-        this.geometry = this._enableCPUTerrain
-            ? makeRaycastableGeometry(this.extent, this._segments)
-            : makePooledGeometry(this._pool, this.extent, this._segments, this.level);
-        if (this._helperMesh) {
-            this._helperMesh.geometry = this.geometry;
+        this.geometry.dispose();
+        this.geometry = this._geometryBuilder(this.extent, this.segments);
+        this._tileGeometry = this.geometry;
+
+        if (this._helpers.colliderMesh) {
+            this._helpers.colliderMesh.geometry = this.geometry.raycastGeometry;
         }
     }
 
     onLayerVisibilityChanged(layer: Layer) {
-        if (layer instanceof ElevationLayer && this._enableCPUTerrain) {
+        if (layer instanceof ElevationLayer) {
             this._shouldUpdateHeightMap = true;
         }
     }
 
     addChildTile(tile: TileMesh) {
-        this.add(tile);
+        this.attach(tile);
         if (this._heightMap) {
             const heightMap = this._heightMap.payload;
             const inheritedHeightMap = heightMap.clone();
@@ -414,7 +332,16 @@ class TileMesh
         // Let's do it only if the ray intersects the volume of this tile.
         if (this.checkRayVolumeIntersection(raycaster)) {
             this.updateHeightMapIfNecessary();
+
+            // We have to distinguish between the rendered geometry and the raycasting geometry.
+            // However, three.js does not let use choose which will be used for raycasting,
+            // so we temporarily swap the geometry with the raycast geometry to perform raycasting.
+            // @ts-expect-error type mismatch is expected and transient
+            this.geometry = this._tileGeometry.raycastGeometry;
+
             super.raycast(raycaster, intersects);
+
+            this.geometry = this._tileGeometry;
         }
     }
 
@@ -470,7 +397,7 @@ class TileMesh
     }
 
     private updateHeightMapIfNecessary(): void {
-        if (this._shouldUpdateHeightMap && this._enableCPUTerrain) {
+        if (this._shouldUpdateHeightMap) {
             this._shouldUpdateHeightMap = false;
 
             if (this._elevationLayerInfo) {
@@ -496,7 +423,7 @@ class TileMesh
      * @param location - Its location in the neighbour array.
      */
     private processNeighbour(neighbour: TileMesh, location: number) {
-        const diff = neighbour.level - this.level;
+        const diff = neighbour.lod - this.lod;
 
         const neighbourTexture = neighbour.material.getElevationTexture();
         const neighbourOffsetScale = neighbour.material.getElevationOffsetScale();
@@ -522,14 +449,14 @@ class TileMesh
     }
 
     update(materialOptions: MaterialOptions) {
-        if (this._enableCPUTerrain && this._heightMap && this._elevationLayerInfo) {
+        if (this._heightMap && this._elevationLayerInfo) {
             if (this._enableTerrainDeformation !== materialOptions.terrain.enabled) {
                 this._enableTerrainDeformation = materialOptions.terrain.enabled;
                 this._shouldUpdateHeightMap = true;
             }
         }
 
-        this.showHelpers = materialOptions.showColliderMeshes ?? false;
+        this.showColliderMesh = materialOptions.showColliderMeshes ?? false;
     }
 
     isVisible() {
@@ -539,8 +466,8 @@ class TileMesh
     setDisplayed(show: boolean) {
         const currentVisibility = this.material.visible;
         this.material.visible = show && this.material.update();
-        if (this._helperMesh) {
-            this._helperMesh.visible = this.material.visible;
+        if (this._helperRoot) {
+            this._helperRoot.visible = this.material.visible;
         }
         if (currentVisibility !== show) {
             this.dispatchEvent({ type: 'visibility-changed' });
@@ -600,41 +527,6 @@ class TileMesh
         return this.material.canProcessColorLayer();
     }
 
-    private static canSubdivideTile(tile: TileMesh): boolean {
-        let current = tile;
-        let ancestorLevel = 0;
-
-        // To be able to subdivide a tile, we need to ensure that we
-        // have proper elevation data on this tile (if applicable).
-        // Otherwise the newly created tiles will not have a correct bounding box,
-        // and this will mess with frustum culling / level of detail selection, in turn leading
-        // to dangerous levels of subdivisions (and hundreds/thousands of undesired tiles).
-        // On the other hand, we can afford a bit of undesired tiles if it means that
-        // the color layers will display correctly.
-        const LOD_MARGIN = 3;
-        while (ancestorLevel < LOD_MARGIN && current != null) {
-            if (
-                current != null &&
-                current.material != null &&
-                current.material.isElevationLayerTextureLoaded()
-            ) {
-                return true;
-            }
-            ancestorLevel++;
-            if (isTileMesh(current.parent)) {
-                current = current.parent as TileMesh;
-            } else {
-                break;
-            }
-        }
-
-        return false;
-    }
-
-    canSubdivide() {
-        return TileMesh.canSubdivideTile(this);
-    }
-
     removeElevationTexture() {
         this._elevationLayerInfo = null;
         this._shouldUpdateHeightMap = true;
@@ -666,11 +558,41 @@ class TileMesh
 
         this.setBBoxZ(elevation.min, elevation.max);
 
-        if (this._enableCPUTerrain) {
-            this._shouldUpdateHeightMap = true;
-        }
+        this._shouldUpdateHeightMap = true;
 
         this._onElevationChanged(this);
+    }
+
+    getScreenPixelSize(view: View, target?: Vector2): Vector2 {
+        target = target ?? new Vector2();
+
+        const sphere = this.getWorldSpaceBoundingSphere(tmpSphere);
+
+        const distance = sphere.center.distanceTo(view.camera.getWorldPosition(tempVec3));
+
+        let height: number;
+        let width: number;
+
+        const camera = view.camera;
+
+        if (isPerspectiveCamera(camera)) {
+            const fovRads = MathUtils.degToRad(camera.fov);
+            height = 2 * Math.tan(fovRads / 2) * distance;
+            width = height * camera.aspect;
+        } else {
+            height = Math.abs(camera.top - camera.bottom);
+            width = Math.abs(camera.right - camera.left);
+        }
+
+        const diameter = sphere.radius * 2;
+
+        const wRatio = diameter / width;
+        const hRatio = diameter / height;
+
+        target.setX(Math.ceil(wRatio * view.width));
+        target.setY(Math.ceil(hRatio * view.height));
+
+        return target;
     }
 
     private createHeightMap(renderTarget: WebGLRenderTarget, offsetScale: OffsetScale) {
@@ -685,7 +607,7 @@ class TileMesh
 
         const buffer = readRGRenderTargetIntoRGBAU8Buffer({
             renderTarget,
-            renderer: this._instance.renderer,
+            renderer: this._renderer,
             outputWidth,
             outputHeight,
             precision,
@@ -736,6 +658,10 @@ class TileMesh
             this.setBBoxZ(min, max);
         }
 
+        if (this._helpers.colliderMesh) {
+            this._helpers.colliderMesh.geometry = this.geometry.raycastGeometry;
+        }
+
         this._onElevationChanged(this);
     }
 
@@ -768,11 +694,7 @@ class TileMesh
     }
 
     private updateVolume(min: number, max: number) {
-        const v = this._volume;
-        if (Math.floor(min) !== Math.floor(v.zMin) || Math.floor(max) !== Math.floor(v.zMax)) {
-            this._volume.zMin = min;
-            this._volume.zMax = max;
-        }
+        this._volume.setElevationRange({ min, max });
     }
 
     get minmax() {
@@ -848,23 +770,23 @@ class TileMesh
         if (tile == null) {
             return null;
         }
-        if (tile.level === this.level) {
+        if (tile.lod === this.lod) {
             if (tile.id === this.id) {
                 return tile;
             }
-            if (tile.level !== 0) {
+            if (tile.lod !== 0) {
                 return (this.parent as TileMesh).findCommonAncestor(tile.parent as TileMesh);
             }
             return null;
         }
-        if (tile.level < this.level) {
+        if (tile.lod < this.lod) {
             return (this.parent as TileMesh).findCommonAncestor(tile);
         }
         return this.findCommonAncestor(tile.parent as TileMesh);
     }
 
-    isAncestorOf(node: TileMesh) {
-        return node.findCommonAncestor(this) === this;
+    isAncestorOf(tile: TileMesh) {
+        return tile.findCommonAncestor(this) === this;
     }
 
     dispose() {
@@ -874,11 +796,7 @@ class TileMesh
         this.disposed = true;
         this.dispatchEvent({ type: 'dispose' });
         this.material.dispose();
-        if (this._enableCPUTerrain) {
-            // When colliders are enabled, geometries are created for each tile,
-            // and thus must be disposed when the mesh is disposed.
-            this.geometry.dispose();
-        }
+        this.geometry.dispose();
     }
 }
 

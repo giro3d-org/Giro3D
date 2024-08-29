@@ -141,10 +141,13 @@ minimapInstance.view.camera = minimapCamera;
 // Let's create our minimap map with the same extent than the main map.
 const minimap = new Map({
     extent: map.extent.as(minimapInstance.referenceCrs),
-    // Since the map is flat (no terrain applied), we can use 1 segment per tile.
-    segments: 1,
+    terrain: {
+        // We can disable terrain deformation because our map will be flat.
+        enabled: false,
+        // Since the map is flat (no terrain applied), we can use 1 segment per tile.
+        segments: 1,
+    },
     backgroundColor: 'black',
-    terrain: false, // We can disable terrain because our map will be flat.
 });
 
 minimapInstance.add(minimap);

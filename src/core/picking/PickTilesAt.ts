@@ -1,9 +1,9 @@
 import { Color, FloatType, Vector2, Vector3 } from 'three';
 import type Map from '../../entities/Map';
+import type TileMesh from '../../entities/tiles/TileMesh';
 import RenderingState from '../../renderer/RenderingState';
 import Coordinates from '../geographic/Coordinates';
 import type Instance from '../Instance';
-import type TileMesh from '../TileMesh';
 import traversePickingCircle from './PickingCircle';
 import type PickOptions from './PickOptions';
 import type PickResult from './PickResult';

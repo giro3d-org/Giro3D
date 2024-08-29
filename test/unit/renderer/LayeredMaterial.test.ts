@@ -2,18 +2,15 @@ import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import type ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer';
 import OffsetScale from '@giro3d/giro3d/core/OffsetScale';
 import { MapLightingMode } from '@giro3d/giro3d/entities/MapLightingOptions';
-import type { AtlasInfo } from '@giro3d/giro3d/renderer/AtlasBuilder';
 import type { MaterialOptions } from '@giro3d/giro3d/renderer/LayeredMaterial';
 import LayeredMaterial from '@giro3d/giro3d/renderer/LayeredMaterial';
 import type { WebGLRenderer } from 'three';
 import { Color, DoubleSide, FrontSide, Texture, UnsignedByteType, Vector2 } from 'three';
 
-// @ts-expect-error invalid definition
-const defaultAtlasInfo: AtlasInfo = { minX: 0, maxX: 1 };
 const defaultTextureSize: Vector2 = new Vector2(128, 128);
 const defaultTileDimensions: Vector2 = new Vector2(100, 100);
 const defaultExtent = new Extent('EPSG:3857', 0, 10, 0, 10);
-// @ts-expect-error invalid definition
+// @ts-expect-error incomplete type
 const defaultRenderer: WebGLRenderer = {};
 const getIndexFn = () => 0;
 
@@ -56,13 +53,12 @@ const defaultOptions: MaterialOptions = {
         hillshadeAzimuth: 0,
         elevationLayersOnly: false,
     },
-    segments: 32,
     showColliderMeshes: false,
     showTileOutlines: false,
     tileOutlineColor: new Color('red'),
     terrain: {
         enabled: true,
-        enableCPUTerrain: true,
+        segments: 32,
         stitching: true,
     },
 };
@@ -73,7 +69,6 @@ describe('LayeredMaterial', () => {
             const normal = new LayeredMaterial({
                 options: defaultOptions,
                 renderer: defaultRenderer,
-                atlasInfo: defaultAtlasInfo,
                 getIndexFn,
                 extent: defaultExtent,
                 textureSize: defaultTextureSize,
@@ -81,6 +76,7 @@ describe('LayeredMaterial', () => {
                 hasElevationLayer: false,
                 maxTextureImageUnits: 15,
                 textureDataType: UnsignedByteType,
+                isGlobe: false,
             });
             const ds = new LayeredMaterial({
                 options: { ...defaultOptions, side: DoubleSide },
@@ -88,11 +84,11 @@ describe('LayeredMaterial', () => {
                 extent: defaultExtent,
                 textureSize: defaultTextureSize,
                 tileDimensions: defaultTileDimensions,
-                atlasInfo: defaultAtlasInfo,
                 getIndexFn,
                 hasElevationLayer: false,
                 maxTextureImageUnits: 15,
                 textureDataType: UnsignedByteType,
+                isGlobe: false,
             });
 
             expect(ds.side).toBe(DoubleSide);
@@ -103,7 +99,6 @@ describe('LayeredMaterial', () => {
             const enabled = new LayeredMaterial({
                 options: { ...defaultOptions, elevationRange: { min: 0, max: 100 } },
                 renderer: defaultRenderer,
-                atlasInfo: defaultAtlasInfo,
                 getIndexFn,
                 extent: defaultExtent,
                 textureSize: defaultTextureSize,
@@ -111,6 +106,7 @@ describe('LayeredMaterial', () => {
                 hasElevationLayer: false,
                 maxTextureImageUnits: 15,
                 textureDataType: UnsignedByteType,
+                isGlobe: false,
             });
 
             expect(enabled.defines.ENABLE_ELEVATION_RANGE).toBeDefined();
@@ -118,7 +114,6 @@ describe('LayeredMaterial', () => {
             const disabled = new LayeredMaterial({
                 options: defaultOptions,
                 renderer: defaultRenderer,
-                atlasInfo: defaultAtlasInfo,
                 getIndexFn,
                 extent: defaultExtent,
                 textureSize: defaultTextureSize,
@@ -126,6 +121,7 @@ describe('LayeredMaterial', () => {
                 hasElevationLayer: false,
                 maxTextureImageUnits: 15,
                 textureDataType: UnsignedByteType,
+                isGlobe: false,
             });
 
             expect(disabled.defines.ENABLE_ELEVATION_RANGE).not.toBeDefined();
@@ -137,12 +133,11 @@ describe('LayeredMaterial', () => {
                     ...defaultOptions,
                     terrain: {
                         enabled: true,
+                        segments: 32,
                         stitching: true,
-                        enableCPUTerrain: true,
                     },
                 },
                 renderer: defaultRenderer,
-                atlasInfo: defaultAtlasInfo,
                 getIndexFn,
                 extent: defaultExtent,
                 textureSize: defaultTextureSize,
@@ -150,6 +145,7 @@ describe('LayeredMaterial', () => {
                 hasElevationLayer: false,
                 maxTextureImageUnits: 15,
                 textureDataType: UnsignedByteType,
+                isGlobe: false,
             });
 
             expect(enabled.defines.STITCHING).toBeDefined();
@@ -159,12 +155,11 @@ describe('LayeredMaterial', () => {
                     ...defaultOptions,
                     terrain: {
                         enabled: true,
+                        segments: 32,
                         stitching: false,
-                        enableCPUTerrain: true,
                     },
                 },
                 renderer: defaultRenderer,
-                atlasInfo: defaultAtlasInfo,
                 getIndexFn,
                 extent: defaultExtent,
                 textureSize: defaultTextureSize,
@@ -172,6 +167,7 @@ describe('LayeredMaterial', () => {
                 hasElevationLayer: false,
                 maxTextureImageUnits: 15,
                 textureDataType: UnsignedByteType,
+                isGlobe: false,
             });
 
             expect(disabled.defines.STITCHING).not.toBeDefined();
@@ -183,12 +179,11 @@ describe('LayeredMaterial', () => {
                     ...defaultOptions,
                     terrain: {
                         enabled: true,
-                        enableCPUTerrain: true,
+                        segments: 32,
                         stitching: true,
                     },
                 },
                 renderer: defaultRenderer,
-                atlasInfo: defaultAtlasInfo,
                 getIndexFn,
                 extent: defaultExtent,
                 textureSize: defaultTextureSize,
@@ -196,6 +191,7 @@ describe('LayeredMaterial', () => {
                 hasElevationLayer: false,
                 maxTextureImageUnits: 15,
                 textureDataType: UnsignedByteType,
+                isGlobe: false,
             });
 
             expect(enabled.defines.TERRAIN_DEFORMATION).toBeDefined();
@@ -205,12 +201,11 @@ describe('LayeredMaterial', () => {
                     ...defaultOptions,
                     terrain: {
                         enabled: false,
-                        enableCPUTerrain: false,
+                        segments: 32,
                         stitching: false,
                     },
                 },
                 renderer: defaultRenderer,
-                atlasInfo: defaultAtlasInfo,
                 getIndexFn,
                 extent: defaultExtent,
                 textureSize: defaultTextureSize,
@@ -218,6 +213,7 @@ describe('LayeredMaterial', () => {
                 hasElevationLayer: false,
                 maxTextureImageUnits: 15,
                 textureDataType: UnsignedByteType,
+                isGlobe: false,
             });
 
             expect(disabled.defines.TERRAIN_DEFORMATION).not.toBeDefined();
@@ -229,7 +225,7 @@ describe('LayeredMaterial', () => {
             const mat = new LayeredMaterial({
                 options: { ...defaultOptions, elevationRange: null },
                 renderer: defaultRenderer,
-                atlasInfo: defaultAtlasInfo,
+                isGlobe: false,
                 getIndexFn,
                 extent: defaultExtent,
                 textureSize: defaultTextureSize,
@@ -268,7 +264,6 @@ describe('LayeredMaterial', () => {
             const mat = new LayeredMaterial({
                 options: { ...defaultOptions, elevationRange: null },
                 renderer: defaultRenderer,
-                atlasInfo: defaultAtlasInfo,
                 getIndexFn,
                 extent: defaultExtent,
                 textureSize: defaultTextureSize,
@@ -276,12 +271,14 @@ describe('LayeredMaterial', () => {
                 hasElevationLayer: false,
                 maxTextureImageUnits: 15,
                 textureDataType: UnsignedByteType,
+                isGlobe: false,
             });
             expect(mat.defines.ENABLE_ELEVATION_RANGE).not.toBeDefined();
 
-            // @ts-expect-error invalid
+            // @ts-expect-error incomplete
             const layer: ColorLayer = {
                 getRenderTargetDataType: () => UnsignedByteType,
+                resolutionFactor: 1,
             };
             mat.pushColorLayer(layer);
 

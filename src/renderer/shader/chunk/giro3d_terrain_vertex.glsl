@@ -1,5 +1,12 @@
 float elevation = 0.0;
 
+#if defined(GLOBE)
+    // Nothing to do
+#else
+    // In flat mode, the vertex shader does the terrain deformation on the Z-axis,
+    // since this axis is the same as the local up vector.
+    transformed.z = 0.0;
+#endif
 
 #if defined(TERRAIN_DEFORMATION)
 #if defined(ELEVATION_LAYER)
@@ -8,7 +15,9 @@ if(elevationLayer.offsetScale.z > 0.) {
 
     elevation = getElevation(elevationTexture, vVv);
 
-#if defined(STITCHING)
+#if defined(GLOBE)
+    // Disabled: stitching does not work well we curved surfaces (globes)
+#elif defined(STITCHING)
     /*
         Stitching aims to eliminate visible cracks between neighbouring tiles, that are caused
         by slight discrepancies in elevation and a different level of detail (LOD).
@@ -83,5 +92,5 @@ if(elevationLayer.offsetScale.z > 0.) {
 #endif // STITCHING
 }
 #endif // ELEVATION_LAYER
-    transformed.z = elevation;
+    transformed.xyz += objectNormal * elevation;
 #endif // TERRAIN_DEFORMATION

@@ -1,6 +1,9 @@
 export const DEFAULT_ENABLE_TERRAIN = true;
-export const DEFAULT_ENABLE_CPU_TERRAIN = true;
 export const DEFAULT_ENABLE_STITCHING = true;
+/**
+ * The default number of segments in a map's tile.
+ */
+export const DEFAULT_MAP_SEGMENTS = 32;
 
 /**
  * Options for geometric terrain rendering.
@@ -11,7 +14,7 @@ export default interface TerrainOptions {
      * match the elevation data. If `false` or unset, the surface of the map will be flat.
      * @defaultValue {@link DEFAULT_ENABLE_TERRAIN}
      */
-    enabled?: boolean;
+    enabled: boolean;
     /**
      * Requires {@link enabled} to be `true`.
      *
@@ -21,15 +24,12 @@ export default interface TerrainOptions {
      * Disabling stitching might improve performance.
      * @defaultValue {@link DEFAULT_ENABLE_STITCHING}
      */
-    stitching?: boolean;
+    stitching: boolean;
     /**
-     * Requires {@link enabled} to be `true`
-     *
-     * Computes the actual terrain mesh in CPU, in addition to GPU. Required to perform raycasting
-     * or collision detection with the map's surface, as well as elevation queries.
-     *
-     * Disabling CPU terrain might improve performance and reduce memory usage.
-     * @defaultValue {@link DEFAULT_ENABLE_CPU_TERRAIN}
+     * The resolution of the grid for each tile.
+     * The higher the better. It *must* be power of two between `1` included and `256` included.
+     * Note: the number of vertices per tile side is `segments` + 1.
+     * @defaultValue {@link DEFAULT_MAP_SEGMENTS}
      */
-    enableCPUTerrain?: boolean;
+    segments: number;
 }

@@ -400,7 +400,10 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
             this.removeColorLayer();
         }
         this._colorLayer = layer;
-        await layer.initialize({ instance: this.instance });
+        await layer.initialize({
+            instance: this.instance,
+            composerProjection: this.instance.referenceCrs,
+        });
         this.dispatchEvent({ type: 'layer-removed', layer });
     }
 

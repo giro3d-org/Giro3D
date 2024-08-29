@@ -3,8 +3,8 @@ import Instance from '@giro3d/giro3d/core/Instance';
 import ColorLayer, { isColorLayer } from '@giro3d/giro3d/core/layer/ColorLayer';
 import ElevationLayer, { isElevationLayer } from '@giro3d/giro3d/core/layer/ElevationLayer';
 import type { LayerUserData } from '@giro3d/giro3d/core/layer/Layer';
-import type TileMesh from '@giro3d/giro3d/core/TileMesh.js';
-import Map from '@giro3d/giro3d/entities/Map';
+import Map, { selectBestSubdivisions } from '@giro3d/giro3d/entities/Map';
+import type TileMesh from '@giro3d/giro3d/entities/tiles/TileMesh.js';
 import { DEFAULT_AZIMUTH, DEFAULT_ZENITH } from '@giro3d/giro3d/renderer/LayeredMaterial';
 import RenderingState from '@giro3d/giro3d/renderer/RenderingState';
 import NullSource from '@giro3d/giro3d/sources/NullSource';
@@ -231,7 +231,7 @@ describe('Map', () => {
         });
 
         it('should have a single root tile if square', () => {
-            expect(map.subdivisions).toEqual({ x: 1, y: 1 });
+            expect(map.rootTiles).toHaveLength(1);
         });
 
         it('should have an tileIndex', () => {
@@ -239,32 +239,20 @@ describe('Map', () => {
         });
     });
 
-    describe('preprocess', () => {
+    describe('selectBestSubdivisions', () => {
         it('should produce multiple horizontal root tiles if needed', async () => {
             const horizontalExtent = new Extent('EPSG:3857', -250, 250, -100, 100);
-            const horizontalMap = new Map({ extent: horizontalExtent });
-
-            // @ts-expect-error private property
-            horizontalMap._instance = { referenceCrs: 'EPSG:3857' } as Instance;
-
-            await horizontalMap.preprocess();
-
-            expect(horizontalMap.subdivisions).toEqual({ x: 3, y: 1 });
+            expect(selectBestSubdivisions(horizontalExtent)).toEqual({ x: 3, y: 1 });
         });
 
         it('should produce multiple vertical root tiles if needed', async () => {
             const verticalExtent = new Extent('EPSG:3857', -100, 100, -250, 250);
-            const verticalMap = new Map({ extent: verticalExtent });
-
-            // @ts-expect-error private property
-            verticalMap._instance = { referenceCrs: 'EPSG:3857' } as Instance;
-
-            await verticalMap.preprocess();
-
-            expect(verticalMap.subdivisions).toEqual({ x: 1, y: 3 });
+            expect(selectBestSubdivisions(verticalExtent)).toEqual({ x: 1, y: 3 });
         });
+    });
 
-        it('should throw if the extent does not match the instance CRS', async () => {
+    describe('preprocess', () => {
+        it('should convert the extent to the instance CRS', async () => {
             const verticalExtent = new Extent('EPSG:3857', -100, 100, -250, 250);
             const verticalMap = new Map({ extent: verticalExtent });
 
@@ -479,7 +467,8 @@ describe('Map', () => {
             const tile = makeTile(t => (t.reorderLayers = jest.fn()));
 
             map.object3d.add(tile);
-            map.level0Nodes.push(tile);
+            // @ts-expect-error readonly object
+            map.rootTiles.push(tile);
 
             const a = { id: 'a' } as ColorLayer;
             const b = { id: 'b' } as ColorLayer;
@@ -504,7 +493,7 @@ describe('Map', () => {
 
     describe('Name of the group', () => {
         it('should register the newly created TileMesh to the index', () => {
-            expect(map.tileIndex.tiles.get('0,0,0')!.deref()).toEqual(map.level0Nodes[0]);
+            expect(map.tileIndex.tiles.get('0,0,0')!.deref()).toEqual(map.rootTiles[0]);
         });
     });
 
@@ -561,7 +550,8 @@ describe('Map', () => {
             const tile = makeTile(tile => (tile.reorderLayers = jest.fn()));
 
             map.object3d.add(tile);
-            map.level0Nodes.push(tile);
+            // @ts-expect-error readonly object
+            map.rootTiles.push(tile);
 
             const a = mkColorLayer(2);
             const b = mkColorLayer(10);
@@ -594,7 +584,8 @@ describe('Map', () => {
             const tile = makeTile(tile => (tile.reorderLayers = jest.fn()));
 
             map.object3d.add(tile);
-            map.level0Nodes.push(tile);
+            // @ts-expect-error readonly object
+            map.rootTiles.push(tile);
 
             const a = { id: 'a' } as ColorLayer;
             const b = { id: 'b' } as ColorLayer;
@@ -657,7 +648,8 @@ describe('Map', () => {
             const tile = makeTile(tile => (tile.reorderLayers = jest.fn()));
 
             map.object3d.add(tile);
-            map.level0Nodes.push(tile);
+            // @ts-expect-error readonly object
+            map.rootTiles.push(tile);
 
             const a = { id: 'a' } as ColorLayer;
             const b = { id: 'b' } as ColorLayer;
@@ -958,8 +950,10 @@ describe('Map', () => {
 
             map.object3d.add(tile1);
             map.object3d.add(tile2);
-            map.level0Nodes.push(tile1);
-            map.level0Nodes.push(tile2);
+            // @ts-expect-error readonly object
+            map.rootTiles.push(tile1);
+            // @ts-expect-error readonly object
+            map.rootTiles.push(tile2);
 
             map.dispose();
 
@@ -983,15 +977,15 @@ describe('Map', () => {
 
         describe('set', () => {
             it('should set the renderOrder property of all tiles', () => {
-                expect(map.level0Nodes.length).toBeGreaterThan(0);
+                expect(map.rootTiles.length).toBeGreaterThan(0);
 
-                map.level0Nodes.forEach(n => {
+                map.rootTiles.forEach(n => {
                     expect(n.renderOrder).toEqual(0);
                 });
 
                 map.renderOrder = 99;
 
-                map.level0Nodes.forEach(n => {
+                map.rootTiles.forEach(n => {
                     expect(n.renderOrder).toEqual(99);
                 });
             });
@@ -1001,7 +995,7 @@ describe('Map', () => {
     describe('setRenderState', () => {
         it('should update the render state of the root nodes', () => {
             const fn = jest.fn();
-            map.level0Nodes.forEach(n => {
+            map.rootTiles.forEach(n => {
                 n.pushRenderState = fn;
             });
 
@@ -1014,7 +1008,7 @@ describe('Map', () => {
         it('should return a function that restores the previous state', () => {
             const restoreFuncs: (() => () => void)[] = [];
 
-            map.level0Nodes.forEach(n => {
+            map.rootTiles.forEach(n => {
                 const fn = jest.fn();
                 n.pushRenderState = () => fn;
                 restoreFuncs.push(fn);
