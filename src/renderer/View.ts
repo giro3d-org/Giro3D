@@ -13,8 +13,6 @@ import type Disposable from '../core/Disposable';
 import Coordinates from '../core/geographic/Coordinates';
 import { isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
 
-const ndcBox3 = new Box3(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
-
 const tmp = {
     frustum: new Frustum(),
     matrix: new Matrix4(),
@@ -271,8 +269,14 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
         return new Coordinates(this.crs, this.camera.position).as(crs || this.crs);
     }
 
-    isBox3Visible(box3: Box3, matrixWorld: Matrix4) {
-        return this.box3SizeOnScreen(box3, matrixWorld).intersectsBox(ndcBox3);
+    isBox3Visible(box3: Box3, matrixWorld?: Matrix4) {
+        if (matrixWorld) {
+            tmp.matrix.multiplyMatrices(this._viewMatrix, matrixWorld);
+            tmp.frustum.setFromProjectionMatrix(tmp.matrix);
+        } else {
+            tmp.frustum.setFromProjectionMatrix(this._viewMatrix);
+        }
+        return tmp.frustum.intersectsBox(box3);
     }
 
     isSphereVisible(sphere: Sphere, matrixWorld?: Matrix4) {
