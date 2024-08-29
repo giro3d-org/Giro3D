@@ -37,7 +37,7 @@ function processUrl(instance, url) {
             const [x, y, z, tx, ty, tz] = pov.split(',').map(s => Number.parseFloat(s));
 
             instance.view.camera.position.set(x, y, z);
-            instance.controls?.target?.set(tx, ty, tz);
+            instance.view.controls?.target?.set(tx, ty, tz);
         } finally {
             instance.notifyChange();
         }
@@ -53,7 +53,7 @@ function updateUrl() {
     }
 
     const cam = currentInstance.view.camera.position;
-    const target = currentInstance?.controls?.target;
+    const target = currentInstance?.view.controls?.target;
     if (target) {
         const pov = `${round10(cam.x)},${round10(cam.y)},${round10(cam.z)},${round10(target.x)},${round10(target.y)},${round10(target.z)}`;
 
