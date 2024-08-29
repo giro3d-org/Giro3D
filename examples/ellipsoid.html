@@ -1,0 +1,102 @@
+---
+title: Ellipsoid
+shortdesc: Visualize an ellipsoid.
+longdesc: Use the <a href="../apidoc/classes/helpers.EllipsoidHelper.html" target="_blank"><code>EllipsoidHelper</code></a> to visualize an <a href="../apidoc/classes/core.geographic.Ellipsoid.html" target="_blank"><code>ellipsoid</code></a>.
+tags: [ellipsoid, helper]
+---
+
+<div class="side-pane-with-status-bar" style="width: 22rem">
+    <!--Parameters -->
+    <div class="card">
+        <div class="card-header">
+            Parameters
+            <button type="button" id="reset" class="btn btn-sm btn-primary rounded float-end">
+                reset
+            </button>
+        </div>
+
+        <div class="card-body">
+            <!-- Semi-major axis -->
+            <div class="input-group mb-2">
+                <span class="input-group-text">Semi-major axis</span>
+                <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value="6378137"
+                    class="form-control"
+                    id="semi-major-axis"
+                    autocomplete="off"
+                />
+                <span class="input-group-text">m</span>
+            </div>
+
+            <!-- Semi-minor axis -->
+            <div class="input-group mb-3">
+                <span class="input-group-text">Semi-minor axis</span>
+                <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value="6356752"
+                    class="form-control"
+                    id="semi-minor-axis"
+                    autocomplete="off"
+                />
+                <span class="input-group-text">m</span>
+            </div>
+
+            <!-- Toggle labels -->
+            <div class="form-check form-switch">
+                <input
+                    class="form-check-input"
+                    checked
+                    type="checkbox"
+                    role="switch"
+                    id="show-labels"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="show-labels">Show labels</label>
+            </div>
+
+            <!-- Toggle labels -->
+            <div class="form-check form-switch">
+                <input
+                    class="form-check-input"
+                    checked
+                    type="checkbox"
+                    role="switch"
+                    id="show-normals"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="show-normals">Show normal vectors</label>
+            </div>
+
+            <!-- Toggle axes -->
+            <div class="form-check form-switch">
+                <input
+                    class="form-check-input"
+                    checked
+                    type="checkbox"
+                    role="switch"
+                    id="show-axes"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="show-axes">Show axes</label>
+            </div>
+
+            <!-- Toggle lines -->
+            <div class="form-check form-switch">
+                <input
+                    class="form-check-input"
+                    checked
+                    type="checkbox"
+                    role="switch"
+                    id="show-lines"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="show-lines">Show lines</label>
+            </div>
+        </div>
+    </div>
+</div>
