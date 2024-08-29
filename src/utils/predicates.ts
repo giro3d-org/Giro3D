@@ -3,6 +3,7 @@ import type {
     CanvasTexture,
     ColorRepresentation,
     DataTexture,
+    Light,
     Material,
     Mesh,
     Object3D,
@@ -25,6 +26,9 @@ export function isObject3D(obj: unknown): obj is Object3D {
 }
 export function isMesh(obj: unknown): obj is Mesh {
     return (obj as Mesh)?.isMesh;
+}
+export function isLight(obj: unknown): obj is Light {
+    return (obj as Light)?.isLight;
 }
 export function isBufferGeometry(obj: unknown): obj is BufferGeometry {
     return (obj as BufferGeometry)?.isBufferGeometry;

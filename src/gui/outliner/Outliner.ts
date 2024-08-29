@@ -5,6 +5,7 @@ import type Instance from '../../core/Instance';
 import type Entity3D from '../../entities/Entity3D';
 import type { BoundingBoxHelper } from '../../helpers/Helpers';
 import Helpers from '../../helpers/Helpers';
+import { isLight } from '../../utils/predicates';
 import Panel from '../Panel';
 import OutlinerPropertyView from './OutlinerPropertyView';
 
@@ -47,6 +48,9 @@ function selectColor(obj: OutlinedObject3D): { back: string; fore: string } {
     const entity = isEntityRoot(obj);
     if (entity) {
         return { back: 'gold', fore: 'black' };
+    }
+    if (isLight(obj)) {
+        return { back: 'yellow', fore: 'black' };
     }
     switch (obj.type) {
         case 'Mesh':
