@@ -706,4 +706,45 @@ describe('Extent', () => {
             expect(splitVertically[3]).toEqual(new Extent('foo', 0, 100, 75, 100));
         });
     });
+
+    describe('sampleUV', () => {
+        it('should return the passed target, if any', () => {
+            const extent = new Extent('EPSG:3857', 10, 20, 40, 50);
+
+            const target = new Coordinates(extent.crs, 0, 0);
+
+            const sample = extent.sampleUV(0, 0, target);
+
+            expect(sample).toBe(target);
+            expect(sample.x).toEqual(10);
+            expect(sample.y).toEqual(40);
+        });
+
+        it('should return the bottom left corner when u = 0 and v = 0', () => {
+            const extent = new Extent('EPSG:3857', 10, 20, 40, 50);
+
+            const sample = extent.sampleUV(0, 0);
+
+            expect(sample.x).toEqual(10);
+            expect(sample.y).toEqual(40);
+        });
+
+        it('should return the top right corner when u = 1 and v = 1', () => {
+            const extent = new Extent('EPSG:3857', 10, 20, 40, 50);
+
+            const sample = extent.sampleUV(1, 1);
+
+            expect(sample.x).toEqual(20);
+            expect(sample.y).toEqual(50);
+        });
+
+        it('should return the center when u = 0.5 and v = 0.5', () => {
+            const extent = new Extent('EPSG:3857', 10, 20, 40, 50);
+
+            const sample = extent.sampleUV(0.5, 0.5);
+
+            expect(sample.x).toEqual(15);
+            expect(sample.y).toEqual(45);
+        });
+    });
 });
