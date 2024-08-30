@@ -105,9 +105,6 @@ class MapInspector extends EntityInspector<Map> {
         this.addController<boolean>(this.entity, 'depthTest')
             .name('Depth test')
             .onChange(() => this.notify(this.entity));
-        this.addController<number>(this.entity, 'renderOrder')
-            .name('Render order')
-            .onChange(() => this.notify(map));
         this.addController<number>(this, 'visibleTiles').name('Visible tiles');
         this.addController<number>(this, 'reachableTiles').name('Reachable tiles');
         this.addController<number>(this.entity.allTiles, 'size').name('Loaded tiles');
