@@ -48,6 +48,9 @@ export interface StaticImageSourceEvents extends ImageSourceEvents {
  * The image must be either a PNG, JPG or WebP file.
  */
 export default class StaticImageSource extends ImageSource<StaticImageSourceEvents> {
+    readonly isStaticImageSource = true as const;
+    readonly type = 'StaticImageSource' as const;
+
     private readonly _extent: Extent;
     private readonly _source: string | HTMLImageElement | HTMLCanvasElement | Texture;
     private readonly _id = MathUtils.generateUUID();
