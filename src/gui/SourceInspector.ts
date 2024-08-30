@@ -17,6 +17,7 @@ import * as MemoryUsage from '../core/MemoryUsage';
 import { isGeoTIFFSource } from '../sources/GeoTIFFSource';
 import { isTiledImageSource } from '../sources/TiledImageSource';
 import { isVectorSource } from '../sources/VectorSource';
+import VideoSource from '../sources/VideoSource';
 import Panel from './Panel';
 
 /**
@@ -79,6 +80,22 @@ class SourceInspector extends Panel {
             this.processOpenLayersSource(source.source);
         } else if (isVectorSource(source)) {
             this.addController(source, 'featureCount').name('Feature count');
+        } else if (source instanceof VideoSource) {
+            const video = source.video;
+            if (video) {
+                this.populateVideoSource(source);
+            } else {
+                source.addEventListener('loaded', () => this.populateVideoSource(source));
+            }
+        }
+    }
+
+    private populateVideoSource(source: VideoSource): void {
+        const video = source.video;
+        if (video) {
+            this.addController(video, 'duration');
+            this.addController(video, 'play');
+            this.addController(video, 'pause');
         }
     }
 

@@ -14,6 +14,12 @@ This entity displays a series of oriented images in 3D space. This is suitable t
 
 👉 [See the example](https://giro3d.org/examples/oriented_image_collection.html)
 
+### New image source: `VideoSource`
+
+This source allows you to use videos as color layers. Common use cases include meteorological timelapses and draped drone video captures.
+
+👉 [See the example](https://giro3d.org/examples/video_source.html)
+
 ### Colorize point clouds with intersecting volumes
 
 The `PointCloud` entity now supports coloring the intersection between box-like volumes (represented by the `IntersectingVolume` type) and the point cloud. This is useful to emulate Potree's features that colorize a point cloud with boxes.
@@ -52,6 +58,7 @@ const instance = new Instance({
 ### Feat
 
 - introduce the `CoordinateSystem` class
+- add the `VideoSource` image source to draw videos on color layers (#505)
 - **entities**: introduce new entity `OrientedImageCollection`
 - **crs**: add support for CRS with non-meter vertical unit
 - **Layer**: getPixel of a layer at coordinates

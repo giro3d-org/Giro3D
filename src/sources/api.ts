@@ -43,6 +43,7 @@ import StaticImageSource, {
 import TiledImageSource, { type TiledImageSourceOptions } from './TiledImageSource';
 import VectorSource, { type VectorSourceOptions } from './VectorSource';
 import VectorTileSource, { type VectorTileSourceOptions } from './VectorTileSource';
+import VideoSource, { type VideoSourceEvents, type VideoSourceOptions } from './VideoSource';
 import WmsSource, { type WmsSourceOptions } from './WmsSource';
 import WmtsSource, { type WmtsFromCapabilitiesOptions, type WmtsSourceOptions } from './WmtsSource';
 
@@ -89,6 +90,9 @@ export {
     VectorSourceOptions,
     VectorTileSource,
     VectorTileSourceOptions,
+    VideoSource,
+    VideoSourceEvents,
+    VideoSourceOptions,
     WmsSource,
     WmsSourceOptions,
     WmtsFromCapabilitiesOptions,
