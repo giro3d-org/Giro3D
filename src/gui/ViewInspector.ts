@@ -2,6 +2,7 @@ import type GUI from 'lil-gui';
 import { CameraHelper, type OrthographicCamera, type PerspectiveCamera, type Vector3 } from 'three';
 import type Instance from '../core/Instance';
 import type View from '../renderer/View';
+import { isPerspectiveCamera } from '../utils/predicates';
 import Panel from './Panel';
 
 class CameraInspector extends Panel {
@@ -22,6 +23,9 @@ class CameraInspector extends Panel {
         const notify = this.notify.bind(this);
 
         this.addController<string>(this.camera, 'type').name('Type');
+        if (isPerspectiveCamera(this.camera)) {
+            this.addController<number>(this.camera, 'fov').min(25).max(150).name('FOV');
+        }
         this.addController<number>(instance.mainLoop, 'automaticCameraPlaneComputation')
             .name('Automatic plane computation')
             .onChange(notify);

@@ -950,7 +950,7 @@ abstract class Layer<
             const otherExtent = t.geometryExtent;
             if (
                 t !== target &&
-                extent.isInside(otherExtent) &&
+                extent.isInside(otherExtent, 0.00000001) &&
                 t.state === TargetState.Complete &&
                 t.renderTarget != null
             ) {
