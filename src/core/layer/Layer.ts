@@ -1134,7 +1134,7 @@ abstract class Layer<
      * @param node - the node to update
      */
     public update(context: Context, node: LayerNode): void {
-        if (!this.ready) {
+        if (!this.ready || !this.visible) {
             return;
         }
 
