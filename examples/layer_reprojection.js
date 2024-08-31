@@ -67,8 +67,10 @@ function addVectorLayer() {
     const boundaries = new ColorLayer({
         name: 'boundaries',
         source: new VectorSource({
-            format: new GeoJSON(),
-            data: 'https://3d.oslandia.com/giro3d/vectors/countries.geojson',
+            data: {
+                url: 'https://3d.oslandia.com/giro3d/vectors/countries.geojson',
+                format: new GeoJSON(),
+            },
             style: outlineStyle,
             dataProjection: 'EPSG:4326',
         }),

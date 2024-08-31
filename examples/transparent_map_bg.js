@@ -77,8 +77,10 @@ function makeGeoJSONLayer(name, geojson, color) {
         }),
     });
     const source = new VectorSource({
-        data: geojson,
-        format: new GeoJSON(),
+        data: {
+            content: geojson,
+            format: new GeoJSON(),
+        },
         style,
         dataProjection: 'EPSG:4326',
     });

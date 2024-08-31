@@ -94,8 +94,10 @@ const geoJsonLayer = new ColorLayer({
     name: 'geojson',
     extent,
     source: new VectorSource({
-        data: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/lyon.geojson',
-        format: new GeoJSON(),
+        data: {
+            url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/lyon.geojson',
+            format: new GeoJSON(),
+        },
         dataProjection: 'EPSG:3946',
         style: new Style({
             fill: new Fill({

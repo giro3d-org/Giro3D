@@ -108,8 +108,10 @@ const style = new Style({
 });
 
 const geojsonSource = new VectorSource({
-    format: new GeoJSON(),
-    data: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/lyon.geojson',
+    data: {
+        url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/lyon.geojson',
+        format: new GeoJSON(),
+    },
     style,
 });
 
