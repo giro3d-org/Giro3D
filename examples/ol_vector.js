@@ -66,8 +66,10 @@ const ecoRegionLayerStyle = feature => {
 };
 
 const ecoRegionSource = new VectorSource({
-    format: new GeoJSON(),
-    data: 'https://openlayers.org/data/vector/ecoregions.json',
+    data: {
+        url: 'https://openlayers.org/data/vector/ecoregions.json',
+        format: new GeoJSON(),
+    },
     dataProjection: 'EPSG:4326',
     style: ecoRegionLayerStyle,
 });
@@ -92,8 +94,10 @@ const countryLayer = new ColorLayer({
     name: 'countries',
     extent,
     source: new VectorSource({
-        format: new GeoJSON(),
-        data: 'https://openlayers.org/en/v5.3.0/examples/data/geojson/countries.geojson',
+        data: {
+            url: 'https://openlayers.org/en/v5.3.0/examples/data/geojson/countries.geojson',
+            format: new GeoJSON(),
+        },
         dataProjection: 'EPSG:4326',
         style: countryLayerStyle,
     }),
@@ -167,8 +171,10 @@ const customVectorLayer = new ColorLayer({
     name: 'geojson',
     extent,
     source: new VectorSource({
-        format: new GeoJSON(),
-        data: geojson,
+        data: {
+            content: geojson,
+            format: new GeoJSON(),
+        },
         dataProjection: 'EPSG:4326',
         style: customVectorLayerStyle,
     }),

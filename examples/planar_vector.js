@@ -82,12 +82,14 @@ map.addLayer(elevationLayer);
 const geoJsonLayer = new ColorLayer({
     name: 'geojson',
     source: new VectorSource({
-        data: 'https://3d.oslandia.com/lyon/evg_esp_veg.evgparcindiccanope_latest.geojson',
+        data: {
+            url: 'https://3d.oslandia.com/lyon/evg_esp_veg.evgparcindiccanope_latest.geojson',
+            format: new GeoJSON(),
+        },
         // Defines the dataProjection to reproject the data,
         // GeoJSON specifications say that the crs should be EPSG:4326 but
         // here we are using a different one.
         dataProjection: 'EPSG:4171',
-        format: new GeoJSON(),
         style: feature =>
             new Style({
                 fill: new Fill({
@@ -105,11 +107,13 @@ map.addLayer(geoJsonLayer);
 const gpxLayer = new ColorLayer({
     name: 'gpx',
     source: new VectorSource({
-        data: 'https://3d.oslandia.com/lyon/track.gpx',
+        data: {
+            url: 'https://3d.oslandia.com/lyon/track.gpx',
+            format: new GPX(),
+        },
         // Defines the dataProjection to reproject the data,
         // KML and GPX specifications say that the crs is EPSG:4326.
         dataProjection: 'EPSG:4326',
-        format: new GPX(),
         style: new Style({
             stroke: new Stroke({
                 color: '#FA8C22',
@@ -126,9 +130,11 @@ map.addLayer(gpxLayer);
 const kmlLayer = new ColorLayer({
     name: 'kml',
     source: new VectorSource({
-        data: 'https://3d.oslandia.com/lyon/tcl_sytral.tcllignemf_2_0_0.kml',
+        data: {
+            url: 'https://3d.oslandia.com/lyon/tcl_sytral.tcllignemf_2_0_0.kml',
+            format: new KML(),
+        },
         dataProjection: 'EPSG:3946',
-        format: new KML(),
         // With KML format, there is not necessary to specify style rules,
         // there are already present in the file.
     }),
@@ -141,9 +147,11 @@ map.addLayer(kmlLayer);
 const gmlLayer = new ColorLayer({
     name: 'gml',
     source: new VectorSource({
-        data: 'https://3d.oslandia.com/lyon/adr_voie_lieu.adrbornefontaine_latest.gml',
+        data: {
+            url: 'https://3d.oslandia.com/lyon/adr_voie_lieu.adrbornefontaine_latest.gml',
+            format: new GML32(),
+        },
         dataProjection: 'EPSG:4171',
-        format: new GML32(),
         style: (feature, resolution) => {
             const meters = 1 / resolution; // Assuming pixel ratio is 1
             // We want to display a 5*5m square, except

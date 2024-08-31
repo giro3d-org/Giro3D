@@ -58,12 +58,14 @@ map.addLayer(satellite);
 const geoJsonLayer = new ColorLayer({
     name: 'geojson',
     source: new VectorSource({
-        data: 'https://3d.oslandia.com/lyon/evg_esp_veg.evgparcindiccanope_latest.geojson',
+        data: {
+            url: 'https://3d.oslandia.com/lyon/evg_esp_veg.evgparcindiccanope_latest.geojson',
+            format: new GeoJSON(),
+        },
         // Defines the dataProjection to reproject the data,
         // GeoJSON specifications say that the crs should be EPSG:4326 but
         // here we are using a different one.
         dataProjection: 'EPSG:4171',
-        format: new GeoJSON(),
         style: feature =>
             new Style({
                 fill: new Fill({

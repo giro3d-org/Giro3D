@@ -8,8 +8,10 @@ describe('VectorSource', () => {
 
         beforeEach(() => {
             source = new VectorSource({
-                data: 'http://example.com/geojson',
-                format: new GeoJSON(),
+                data: {
+                    url: 'http://example.com/geojson',
+                    format: new GeoJSON(),
+                },
                 style: new Style(),
             });
         });

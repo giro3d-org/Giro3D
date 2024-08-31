@@ -91,17 +91,19 @@ const style = feature => {
 
 // Adds a WFS imagery layer
 const wfsSource = new VectorSource({
-    format: new GeoJSON(),
     dataProjection: 'EPSG:3946',
-    data:
-        'https://download.data.grandlyon.com/wfs/rdata' +
-        '?SERVICE=WFS' +
-        '&VERSION=2.0.0' +
-        '&request=GetFeature' +
-        '&typename=tcl_sytral.tcllignebus_2_0_0' +
-        '&outputFormat=application/json;%20subtype=geojson' +
-        '&SRSNAME=EPSG:3946' +
-        '&startIndex=0',
+    data: {
+        url:
+            'https://download.data.grandlyon.com/wfs/rdata' +
+            '?SERVICE=WFS' +
+            '&VERSION=2.0.0' +
+            '&request=GetFeature' +
+            '&typename=tcl_sytral.tcllignebus_2_0_0' +
+            '&outputFormat=application/json;%20subtype=geojson' +
+            '&SRSNAME=EPSG:3946' +
+            '&startIndex=0',
+        format: new GeoJSON(),
+    },
     style,
 });
 

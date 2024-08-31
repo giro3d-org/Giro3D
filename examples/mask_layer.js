@@ -55,8 +55,10 @@ const outlineStyle = new Style({
 const outline = new ColorLayer({
     name: 'outline',
     source: new VectorSource({
-        format: new GeoJSON(),
-        data: 'https://3d.oslandia.com/giro3d/vectors/paris.geojson',
+        data: {
+            url: 'https://3d.oslandia.com/giro3d/vectors/paris.geojson',
+            format: new GeoJSON(),
+        },
         style: outlineStyle,
     }),
 });
@@ -72,8 +74,10 @@ const maskStyle = new Style({
 const mask = new MaskLayer({
     name: 'mask',
     source: new VectorSource({
-        format: new GeoJSON(),
-        data: 'https://3d.oslandia.com/giro3d/vectors/paris.geojson',
+        data: {
+            url: 'https://3d.oslandia.com/giro3d/vectors/paris.geojson',
+            format: new GeoJSON(),
+        },
         style: maskStyle,
     }),
 });

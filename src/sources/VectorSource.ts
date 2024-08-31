@@ -119,24 +119,28 @@ function rasterizeBuilderGroup(
     executor.execute(ctx, 1, transform, 0, true);
 }
 
+/**
+ * The data content. Can be:
+ *  - The URL to a remote file and a {@link FeatureFormat} to parse the data,
+ *  - The content of the source file (such as GeoJSON) and a {@link FeatureFormat} to parse the data,
+ *  - A list of OpenLayers {@link Feature} (no format decoder required)
+ */
+export type DataSource =
+    | { url: string; format: FeatureFormat }
+    | { content: unknown; format: FeatureFormat }
+    | Feature[];
+
 export interface VectorSourceOptions extends ImageSourceOptions {
     /**
      * The projection of the data source. Must be specified if the source
      * does not have the same projection as the Giro3D instance.
      */
     dataProjection?: string;
-    /**
-     * The data format. Required if `url` or `data` are used.
-     */
-    format?: FeatureFormat;
 
     /**
-     * The data content. Can be:
-     *  - A URL to a remote file (requires the `format` parameter)
-     *  - The content of the source (such as GeoJSON) (requires the `format` parameter)
-     *  - A list of OpenLayers features.
+     * The data content.
      */
-    data?: string | object | Feature[];
+    data?: DataSource;
 
     /**
      * The style(s), or style function.
@@ -176,8 +180,7 @@ class VectorSource extends ImageSource {
     readonly isVectorSource = true as const;
     readonly type = 'VectorSource' as const;
 
-    readonly format: FeatureFormat | undefined;
-    readonly data: string | object | Feature[];
+    readonly data: DataSource;
     readonly dataProjection: string | undefined;
 
     readonly source: Vector;
@@ -199,12 +202,8 @@ class VectorSource extends ImageSource {
         if (options.data == null) {
             throw new Error('"data" parameter is required');
         }
-        if (!options.format && typeof options.data == 'string') {
-            throw new Error('format required if features are not passed directly.');
-        }
 
         this.data = options.data;
-        this.format = options.format;
 
         this.source = new Vector();
 
@@ -222,6 +221,10 @@ class VectorSource extends ImageSource {
         this.update();
     }
 
+    private loadFeaturesFromContent(content: unknown, format: FeatureFormat) {
+        return format.readFeatures(content) as Feature[];
+    }
+
     /**
      * Loads the features from this source, either from:
      * - the URL
@@ -229,28 +232,18 @@ class VectorSource extends ImageSource {
      * - the features array
      */
     async loadFeatures() {
-        let features: Feature[];
         if (Array.isArray(this.data)) {
-            features = this.data;
-        } else {
-            let content;
-            try {
-                // Download the data file.
-                const url = new URL(this.data as string);
-                content = await Fetcher.text(url.toString());
-            } catch (e) {
-                if (e instanceof TypeError) {
-                    // Not a URL, let's parse it instead.
-                    content = this.data;
-                } else {
-                    throw e;
-                }
-            }
-
-            features = nonNull(this.format).readFeatures(content) as Feature[];
+            this.source.addFeatures(this.data);
+        } else if ('url' in this.data) {
+            const { url, format } = this.data;
+            const content = await Fetcher.text(url.toString());
+            const features = this.loadFeaturesFromContent(content, format);
+            this.source.addFeatures(features);
+        } else if ('content' in this.data) {
+            const { content, format } = this.data;
+            const features = this.loadFeaturesFromContent(content, format);
+            this.source.addFeatures(features);
         }
-
-        this.source.addFeatures(features);
     }
 
     /**

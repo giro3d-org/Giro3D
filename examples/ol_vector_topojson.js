@@ -66,8 +66,10 @@ const buildingsStyle = feature => {
 };
 
 const topoJsonSource = new VectorSource({
-    format: new TopoJSON(),
-    data: 'https://3d.oslandia.com/giro3d/vectors/tokyo_buildings.topojson',
+    data: {
+        url: 'https://3d.oslandia.com/giro3d/vectors/tokyo_buildings.topojson',
+        format: new TopoJSON(),
+    },
     dataProjection: 'EPSG:4326',
     style: buildingsStyle,
 });
