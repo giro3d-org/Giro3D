@@ -2,6 +2,7 @@ import { Vector3 } from 'three';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import * as MemoryUsage from '@giro3d/giro3d/core/MemoryUsage.js';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
+import proj4 from 'proj4';
 
 const VIEW_PARAM = 'view';
 let currentURL = '';
@@ -29,6 +30,7 @@ let coordinates;
 let pickedPoint;
 let crsButton;
 let coordsAsLatLon = false;
+let ecefToLatlonConverter;
 
 function processUrl(instance, url) {
     const pov = new URL(url).searchParams.get(VIEW_PARAM);
@@ -120,8 +122,8 @@ function updateCoordinates() {
 
         if (coordsAsLatLon) {
             if (Number.isFinite(x) && Number.isFinite(y) && Number.isFinite(z)) {
-                const latlon = new Coordinates(crs, x, y).as('EPSG:4326');
-                coordinates.textContent = `lat: ${LATLON_FORMAT.format(latlon.latitude)}, lon: ${LATLON_FORMAT.format(latlon.longitude)}, altitude: ${NUMBER_FORMAT.format(z)}`;
+                const [lon, lat, alt] = ecefToLatlonConverter.forward([x, y, z]);
+                coordinates.textContent = `lat: ${LATLON_FORMAT.format(lat)}, lon: ${LATLON_FORMAT.format(lon)}, altitude: ${NUMBER_FORMAT.format(alt)}`;
             } else {
                 coordinates.textContent = `lat: NaN, lon: NaN, altitude: NaN`;
             }
@@ -165,6 +167,8 @@ function bind(instance, options = {}) {
         coordinates = document.getElementById('coordinates');
         instance.domElement.addEventListener('mousemove', pick);
     }
+
+    ecefToLatlonConverter = proj4(instance.referenceCrs, 'EPSG:4979');
 
     progressBar = document.getElementById('progress-bar');
     percent = document.getElementById('loading-percent');

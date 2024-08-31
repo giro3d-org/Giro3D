@@ -146,21 +146,21 @@ export default {
      * Compute a "visible" error: project geometricError in meter on screen,
      * based on a bounding box and a transformation matrix.
      *
-     * @param camera - the current camera of the scene
+     * @param view - the current view of the scene
      * @param box3 - the box3 to consider
      * @param matrix - the matrix world of the box
      * @param geometricError - the geometricError
      * @param mode - Whether or not use 3D in the calculus
      */
     computeFromBox3(
-        camera: View,
+        view: View,
         box3: Box3,
         matrix: Matrix4,
         geometricError: number,
         mode: Mode,
     ): SSE | null {
-        if (isPerspectiveCamera(camera.camera)) {
-            const distance = findBox3Distance(camera, box3, matrix, mode === Mode.MODE_3D);
+        if (isPerspectiveCamera(view.camera)) {
+            const distance = findBox3Distance(view, box3, matrix, mode === Mode.MODE_3D);
             if (distance <= geometricError) {
                 return null;
             }
@@ -169,18 +169,17 @@ export default {
         const size = computeSizeFromGeometricError(box3, geometricError, mode === Mode.MODE_3D);
         const offset = box3.min;
 
-        const sse = computeSSE(offset, size, matrix, camera, mode === Mode.MODE_3D);
+        const sse = computeSSE(offset, size, matrix, view, mode === Mode.MODE_3D);
 
         return sse;
     },
 
-    computeFromSphere(camera: View, sphere: Sphere, matrix: Matrix4, geometricError: number) {
-        const s = sphere.clone().applyMatrix4(matrix);
-        const distance = Math.max(0.0, s.distanceToPoint(camera.camera.position));
+    computeFromSphere(view: View, sphere: Sphere, geometricError: number) {
+        const distance = Math.max(0.0, sphere.distanceToPoint(view.camera.position));
         temp[0].set(geometricError, 0, -distance);
-        temp[0].applyMatrix4(camera.camera.projectionMatrix);
-        temp[0].x = temp[0].x * camera.width * 0.5;
-        temp[0].y = temp[0].y * camera.height * 0.5;
+        temp[0].applyMatrix4(view.camera.projectionMatrix);
+        temp[0].x = temp[0].x * view.width * 0.5;
+        temp[0].y = temp[0].y * view.height * 0.5;
         temp[0].z = 0;
 
         return temp[0].length();
