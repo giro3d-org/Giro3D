@@ -20,11 +20,11 @@ describe('Camera', () => {
         });
     });
 
-    describe('update', () => {
+    describe('setSize', () => {
         it('should update the size', () => {
             const view = new View(DEFAULT_CRS, 0, 0);
 
-            view.update(123, 456);
+            view.setSize(123, 456);
 
             expect(view.width).toEqual(123);
             expect(view.height).toEqual(456);
