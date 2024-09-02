@@ -35,6 +35,7 @@ import {
     DEFAULT_ENABLE_STITCHING,
     DEFAULT_ENABLE_TERRAIN,
 } from './TerrainOptions';
+import type { Vector2Array, Vector3Array, Vector4Array, VectorArray } from './VectorArray';
 
 export {
     geographic,
@@ -72,4 +73,8 @@ export {
     DEFAULT_ENABLE_CPU_TERRAIN,
     GraticuleOptions,
     HillshadingOptions,
+    VectorArray,
+    Vector2Array,
+    Vector3Array,
+    Vector4Array,
 };
