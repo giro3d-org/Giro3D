@@ -1,3 +1,4 @@
+import type BlendingMode from './BlendingMode';
 import type ColorLayer from './ColorLayer';
 import type { ColorLayerEvents, ColorLayerOptions } from './ColorLayer';
 import type ColorMap from './ColorMap';
@@ -24,6 +25,7 @@ import type NoDataOptions from './NoDataOptions';
 export {
     hasLayers,
     HasLayers,
+    BlendingMode,
     ColorLayer,
     ColorLayerOptions,
     ColorLayerEvents,

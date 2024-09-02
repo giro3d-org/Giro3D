@@ -175,12 +175,10 @@ void main() {
                 maskOpacity *= (1. - rgba.a);
                 blended = gl_FragColor;
             } else if (layer.mode == LAYER_MODE_NORMAL) {
-                // Regular alpha blending
-                blended = blend(rgba, gl_FragColor);
+                blended = applyBlending(rgba, gl_FragColor, layer.blendingMode);
             }
         #else
-            // Regular alpha blending
-            blended = blend(rgba, gl_FragColor);
+            blended = applyBlending(rgba, gl_FragColor, layer.blendingMode);
         #endif
 
 #if defined(ENABLE_ELEVATION_RANGE)
