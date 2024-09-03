@@ -61,7 +61,7 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
                 name: 'wmts_elevation',
                 extent: map.extent,
                 resolutionFactor: 0.5,
-                minmax: { min: 0, max: 5000 },
+                minmax: { min: 0, max: 500 },
                 noDataOptions: {
                     replaceNoData: false,
                 },
