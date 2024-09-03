@@ -1,4 +1,13 @@
-import { Mesh, Vector3, Euler, MeshBasicMaterial, BoxGeometry, Object3D } from 'three';
+import {
+    Mesh,
+    Vector3,
+    Euler,
+    MeshBasicMaterial,
+    BoxGeometry,
+    Object3D,
+    DoubleSide,
+    AxesHelper,
+} from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 import TileWMS from 'ol/source/TileWMS.js';
@@ -8,19 +17,20 @@ import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Interpretation from '@giro3d/giro3d/core/layer/Interpretation.js';
-import Map from '@giro3d/giro3d/entities/Map.js';
+import Map, { isMap } from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import WmsSource from '@giro3d/giro3d/sources/WmsSource.js';
 
 const wmsLayers = [
-    'fpc_fond_plan_communaut.fpcilot',
-    'pvo_patrimoine_voirie.pvochausseetrottoir',
-    'Ortho2009_vue_ensemble_16cm_CC46',
-    'pos_opposable.poshauvoi',
-    'MNT2015_Ombrage_2m',
-    'cad_cadastre.cadilot',
+    'metropole-de-lyon:fpc_fond_plan_communaut.fpcilot',
+    'metropole-de-lyon:pvo_patrimoine_voirie.pvochausseetrottoir',
+    'grandlyon:ortho_2009',
+    'metropole-de-lyon:pos_opposable.poshauvoi',
+    'grandlyon:MNT2015_Ombrage_2m',
+    'metropole-de-lyon:cad_cadastre.cadilot',
 ];
 
 const cubeTransformations = [
@@ -72,28 +82,31 @@ const cube = new Mesh(
     new BoxGeometry(8000, 8000, 8000),
     new MeshBasicMaterial({ color: 0xdddddd }),
 );
+cube.name = 'root cube';
+const wireframe = new Mesh(
+    new BoxGeometry(8000, 8000, 8000),
+    new MeshBasicMaterial({ color: 0x000000, wireframe: true }),
+);
+wireframe.name = 'wireframe cube';
+cube.add(wireframe);
 cube.scale.copy(scale);
 cube.updateMatrixWorld(true);
 
 instance.scene.add(cube);
 
+const axes = new AxesHelper(1);
+
+instance.scene.add(axes);
+
 function createColorLayer(name, url) {
-    const source = new TiledImageSource({
-        source: new TileWMS({
-            url,
-            params: {
-                LAYERS: name,
-                FORMAT: 'image/jpeg',
-            },
-            projection: 'EPSG:3946',
-            crossOrigin: 'anonymous',
-        }),
+    const source = new WmsSource({
+        url,
+        layer: name,
+        imageFormat: 'image/jpeg',
+        projection: 'EPSG:3946',
     });
 
-    return new ColorLayer({
-        name: 'wms_imagery',
-        source,
-    });
+    return new ColorLayer({ name, source });
 }
 
 function createElevationLayer(name, url) {
@@ -101,7 +114,6 @@ function createElevationLayer(name, url) {
         source: new TileWMS({
             url,
             projection: 'EPSG:3946',
-            crossOrigin: 'anonymous',
             params: {
                 LAYERS: [name],
             },
@@ -109,11 +121,14 @@ function createElevationLayer(name, url) {
     });
 
     return new ElevationLayer({
-        name: 'wms_elevation',
+        name,
         source,
+        minmax: { min: -100, max: +250 },
         interpretation: Interpretation.ScaleToMinMax(149, 621),
     });
 }
+
+const allMaps = [];
 
 for (let i = 0; i < wmsLayers.length; i++) {
     const cubeSide = new Object3D();
@@ -124,20 +139,32 @@ for (let i = 0; i < wmsLayers.length; i++) {
     cube.add(cubeSide);
     cubeSide.updateMatrixWorld(true);
 
-    const wms = wmsLayers[i];
-    const map = new Map({ extent, object3d: cubeSide, maxSubdivisionLevel: 2 });
+    const layerName = wmsLayers[i];
+
+    const map = new Map({
+        extent,
+        segments: 16,
+        discardNoData: true,
+        side: DoubleSide,
+        object3d: cubeSide,
+    });
+
+    map.name = layerName;
+
     instance.add(map);
 
-    map.addLayer(createColorLayer(wms, 'https://download.data.grandlyon.com/wms/grandlyon'));
+    allMaps.push(map);
+
+    map.addLayer(createColorLayer(layerName, 'https://download.data.grandlyon.com/wms/grandlyon'));
     map.addLayer(
         createElevationLayer(
-            'MNT2012_Altitude_10m_CC46',
+            'grandlyon:MNT2012_Altitude_10m_CC46',
             'https://download.data.grandlyon.com/wms/grandlyon',
         ),
     );
 }
 
-instance.view.camera.position.set(3, 2, 3);
+instance.view.camera.position.set(3, 3, 2);
 instance.view.camera.updateMatrixWorld(true);
 instance.view.camera.lookAt(new Vector3(0, 0, 0));
 
@@ -145,9 +172,40 @@ const controls = new OrbitControls(instance.view.camera, instance.domElement);
 controls.minDistance = 1;
 
 instance.view.setControls(controls);
+instance.view.minNearPlane = 0.1;
 
 // Request redraw
 instance.notifyChange();
 
 Inspector.attach('inspector', instance);
 StatusBar.bind(instance);
+
+/**
+ * @param {MouseEvent} event
+ */
+function highlight(event) {
+    for (const map of allMaps) {
+        map.colorimetry.brightness = 0;
+        map.colorimetry.saturation = 1;
+        map.colorimetry.contrast = 1;
+    }
+
+    const picked = instance.pickObjectsAt(event);
+    if (picked.length > 0) {
+        picked.sort((a, b) => a.distance - b.distance);
+
+        const first = picked[0];
+
+        if (first) {
+            const entity = first.entity;
+            if (isMap(entity)) {
+                entity.colorimetry.brightness = 0.3;
+                entity.colorimetry.saturation = 2;
+                entity.colorimetry.contrast = 1.5;
+            }
+        }
+    }
+    instance.notifyChange(allMaps);
+}
+
+instance.domElement.addEventListener('mousemove', highlight);
