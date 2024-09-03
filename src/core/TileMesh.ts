@@ -569,7 +569,11 @@ class TileMesh
                 return true;
             }
             ancestorLevel++;
-            current = current.parent as TileMesh;
+            if (isTileMesh(current.parent)) {
+                current = current.parent as TileMesh;
+            } else {
+                break;
+            }
         }
 
         return false;
