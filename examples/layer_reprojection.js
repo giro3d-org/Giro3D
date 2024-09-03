@@ -39,7 +39,6 @@ function addMapboxLayer(extent) {
             source: new XYZ({
                 url: `https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.webp?access_token=${apiKey}`,
                 projection: 'EPSG:3857',
-                crossOrigin: 'anonymous',
             }),
         }),
     });
@@ -95,7 +94,7 @@ function createScene(crs, crsDef, extent) {
         backgroundColor: 'grey',
     });
 
-    map = new Map({ extent, hillshading: true });
+    map = new Map({ extent, segments: 2, backgroundOpacity: 0 });
 
     instance.add(map);
 
