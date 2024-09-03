@@ -1,6 +1,6 @@
 import colormap from 'colormap';
 
-import { Color, MathUtils, Vector3 } from 'three';
+import { Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import Instance from '@giro3d/giro3d/core/Instance.js';
@@ -8,9 +8,9 @@ import Tiles3D from '@giro3d/giro3d/entities/Tiles3D.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import PointCloudMaterial, { MODE } from '@giro3d/giro3d/renderer/PointCloudMaterial.js';
 import Tiles3DSource from '@giro3d/giro3d/sources/Tiles3DSource.js';
-import WmsSource from '@giro3d/giro3d/sources/WmsSource.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
+import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
@@ -104,20 +104,21 @@ function initializeCamera() {
 
     placeCamera(position, lookAt);
 
-    const colorize = new WmsSource({
-        url: 'https://data.geopf.fr/wms-r',
-        projection: 'EPSG:3946',
+    const url = 'https://data.geopf.fr/wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetCapabilities';
+
+    // Let's build the color layer from the WMTS capabilities
+    WmtsSource.fromCapabilities(url, {
         layer: 'HR.ORTHOIMAGERY.ORTHOPHOTOS',
-        imageFormat: 'image/jpeg',
-    });
-
-    colorLayer = new ColorLayer({
-        name: 'wms_imagery',
-        extent,
-        source: colorize,
-    });
-
-    pointcloud.attach(colorLayer);
+    })
+        .then(orthophotoWmts => {
+            colorLayer = new ColorLayer({
+                name: 'color',
+                extent,
+                source: orthophotoWmts,
+            });
+            pointcloud.attach(colorLayer);
+        })
+        .catch(console.error);
 
     instance.renderingOptions.enableEDL = true;
     instance.renderingOptions.enableInpainting = true;
