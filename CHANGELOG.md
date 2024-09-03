@@ -2,9 +2,9 @@
 
 ## v0.39.0 (2024-09-03)
 
-### BREAKING CHANGE
-
 This release brings **color layer blending modes** as well as many fixes and API improvements.
+
+### BREAKING CHANGE
 
 #### ImageSources
 
