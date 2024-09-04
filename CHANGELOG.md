@@ -202,6 +202,8 @@ This release brings **color layer blending modes** as well as many fixes and API
 ### Fix
 
 -   **StaticImageSource**: add missing `type` and `isStaticImageSource` properties
+-   **LayerComposer**: fix reprojection issues in some cases (#507)
+-   **FeatureCollection**: correctly honor render order specified by styles (#508)
 -   **VectorSource**: remove ambiguities in `data` parameter
 -   **StatusBar**: fix incorrect conversion to WGS84 coordinates
 -   **Layer**: use tighter epsilon for extent comparison when looking for a suitable ancestor
