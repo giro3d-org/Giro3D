@@ -10,7 +10,6 @@ import { tile } from 'ol/loadingstrategy.js';
 
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
-// NOTE: changing the imported name because we use the native `Map` object in this example.
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import FeatureCollection from '@giro3d/giro3d/entities/FeatureCollection.js';
 
@@ -177,8 +176,6 @@ controls.dampingFactor = 0.4;
 controls.target.copy(lookAt);
 controls.saveState();
 instance.view.setControls(controls);
-
-Inspector.attach('inspector', instance);
 
 // information on click
 const resultTable = document.getElementById('results');
@@ -356,5 +353,7 @@ bindDropDown('color-mode', mode => {
     countries.updateStyles();
     document.getElementById('colors').style.display = colorMode === 'continent' ? 'block' : 'none';
 });
+
+Inspector.attach('inspector', instance);
 
 StatusBar.bind(instance);
