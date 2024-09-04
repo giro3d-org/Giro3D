@@ -1,4 +1,4 @@
-import { Vector3, Object3D } from 'three';
+import { Vector3, Object3D, MathUtils } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import StadiaMaps from 'ol/source/StadiaMaps.js';
 
@@ -86,20 +86,16 @@ function createMap(extent) {
 }
 
 bindButton('createMap', () => {
-    const x0 = Math.random();
-    const x1 = Math.random();
-    const y0 = Math.random();
-    const y1 = Math.random();
-
     const dimensions = EPSG3857_BOUNDS.dimensions();
 
-    const west = EPSG3857_BOUNDS.west + Math.min(x0, x1) * dimensions.x;
-    const east = EPSG3857_BOUNDS.west + Math.max(x0, x1) * dimensions.x;
+    const width = MathUtils.randFloat(dimensions.width * 0.5, dimensions.width * 0.1);
+    const height = MathUtils.randFloat(dimensions.height * 0.5, dimensions.height * 0.1);
+    const x = MathUtils.randFloat(-dimensions.width / 2, +dimensions.width / 2);
+    const y = MathUtils.randFloat(-dimensions.height / 2, +dimensions.height / 2);
 
-    const north = EPSG3857_BOUNDS.south + Math.max(y0, y1) * dimensions.y;
-    const south = EPSG3857_BOUNDS.south + Math.min(y0, y1) * dimensions.y;
-
-    const extent = new Extent('EPSG:3857', west, east, south, north);
+    const extent = Extent.fromCenterAndSize('EPSG:3857', { x, y }, width, height).intersect(
+        EPSG3857_BOUNDS,
+    );
 
     createMap(extent);
 });
