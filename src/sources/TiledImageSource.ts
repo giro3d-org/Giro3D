@@ -159,8 +159,9 @@ export default class TiledImageSource extends ImageSource {
         requestHeight: number,
         margin = 0,
     ): { extent: Extent; width: number; height: number } {
-        const size = Math.min(requestWidth, requestHeight);
-        const zoom = this.getZoomLevel(requestExtent, size) ?? this._tileGrid.getMinZoom();
+        const zoom =
+            this.getZoomLevel(requestExtent, requestWidth, requestHeight) ??
+            this._tileGrid.getMinZoom();
 
         const resolution = this._tileGrid.getResolution(zoom);
 
@@ -186,10 +187,11 @@ export default class TiledImageSource extends ImageSource {
      * Selects the best zoom level given the provided image size and extent.
      *
      * @param extent - The target extent.
-     * @param size - The size in pixels of the target extent.
+     * @param width - The width in pixels of the target texture.
+     * @param height - The height in pixels of the target texture.
      * @returns The ideal zoom level for this particular extent.
      */
-    private getZoomLevel(extent: Extent, size: number): number | null {
+    private getZoomLevel(extent: Extent, width: number, height: number): number | null {
         const minZoom = this._tileGrid.getMinZoom();
         const maxZoom = this._tileGrid.getMaxZoom();
 
@@ -198,7 +200,9 @@ export default class TiledImageSource extends ImageSource {
         }
 
         const dims = extent.dimensions(tmp.dims);
-        const targetResolution = round1000000(dims.x / size);
+        const resX = dims.x / width;
+        const resY = dims.y / height;
+        const targetResolution = round1000000(Math.min(resX, resY));
         const minResolution = this._tileGrid.getResolution(minZoom);
 
         if (targetResolution / minResolution > MIN_LEVEL_THRESHOLD) {
@@ -241,10 +245,12 @@ export default class TiledImageSource extends ImageSource {
             throw new Error('invalid CRS');
         }
 
-        const zoomLevel = this.getZoomLevel(extent, Math.min(width, height));
+        const zoomLevel = this.getZoomLevel(extent, width, height);
+
         if (zoomLevel == null) {
             return [];
         }
+
         const tileRange = this._tileGrid.getTileRangeForExtentAndZ(
             OpenLayersUtils.toOLExtent(extent),
             zoomLevel,

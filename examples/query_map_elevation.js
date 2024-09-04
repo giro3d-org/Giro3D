@@ -50,6 +50,8 @@ const key =
 const elevationLayer = new ElevationLayer({
     name: 'xyz_elevation',
     extent,
+    resolutionFactor: 0.5,
+    minmax: { min: 0, max: 5000 },
     source: new TiledImageSource({
         format: new MapboxTerrainFormat(),
         source: new XYZ({
