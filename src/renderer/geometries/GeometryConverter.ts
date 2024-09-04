@@ -86,14 +86,14 @@ export type BaseOptions = {
     ignoreZ?: boolean;
 };
 
-type PointOptions = BaseOptions & Partial<PointStyle>;
-type PolygonOptions = BaseOptions & {
+export type PointOptions = BaseOptions & Partial<PointStyle>;
+export type PolygonOptions = BaseOptions & {
     fill?: FillStyle;
     stroke?: StrokeStyle;
     extrusionOffset?: number[] | number;
     elevation?: number[] | number;
 };
-type LineOptions = BaseOptions & StrokeStyle;
+export type LineOptions = BaseOptions & StrokeStyle;
 
 export interface OptionMap {
     Point: PointOptions;
@@ -416,28 +416,28 @@ export default class GeometryConverter<
      * @param geometry - The `Point` to convert.
      * @param options  - The options.
      */
-    build(geometry: Point, options: PointOptions): PointMesh<UserData>;
+    build(geometry: Point, options?: PointOptions): PointMesh<UserData>;
 
     /**
      * Converts a {@link MultiPoint}.
      * @param geometry - The `MultiPoint` to convert.
      * @param options  - The options.
      */
-    build(geometry: MultiPoint, options: PointOptions): MultiPointMesh<UserData>;
+    build(geometry: MultiPoint, options?: PointOptions): MultiPointMesh<UserData>;
 
     /**
      * Converts a {@link MultiPoint} or {@link Point}.
      * @param geometry - The `MultiPoint` or `Point` to convert.
      * @param options  - The options.
      */
-    build(geometry: Point | MultiPoint, options: PointOptions): SimpleGeometryMesh<UserData>;
+    build(geometry: Point | MultiPoint, options?: PointOptions): SimpleGeometryMesh<UserData>;
 
     /**
      * Converts a {@link Polygon}.
      * @param geometry - The `Polygon` to convert.
      * @param options  - The options.
      */
-    build(geometry: Polygon, options: PolygonOptions): PolygonMesh<UserData>;
+    build(geometry: Polygon, options?: PolygonOptions): PolygonMesh<UserData>;
 
     /**
      * Converts a {@link MultiPolygon}.
@@ -448,7 +448,7 @@ export default class GeometryConverter<
      */
     build(
         geometry: MultiPolygon,
-        options: PolygonOptions,
+        options?: PolygonOptions,
     ): PolygonMesh<UserData> | MultiPolygonMesh<UserData>;
 
     /**
@@ -456,14 +456,14 @@ export default class GeometryConverter<
      * @param geometry - The `Polygon` to convert.
      * @param options  - The options.
      */
-    build(geometry: Polygon | MultiPolygon, options: PolygonOptions): SimpleGeometryMesh<UserData>;
+    build(geometry: Polygon | MultiPolygon, options?: PolygonOptions): SimpleGeometryMesh<UserData>;
 
     /**
      * Converts a {@link LineString}.
      * @param geometry - The `LineString` to convert.
      * @param options  - The options.
      */
-    build(geometry: LineString, options: LineOptions): LineStringMesh<UserData>;
+    build(geometry: LineString, options?: LineOptions): LineStringMesh<UserData>;
 
     /**
      * Converts a {@link MultiLineString}.
@@ -474,7 +474,7 @@ export default class GeometryConverter<
      */
     build(
         geometry: MultiLineString,
-        options: LineOptions,
+        options?: LineOptions,
     ): MultiLineStringMesh<UserData> | LineStringMesh<UserData>;
 
     /**
@@ -486,7 +486,7 @@ export default class GeometryConverter<
      */
     build(
         geometry: LineString | MultiLineString,
-        options: LineOptions,
+        options?: LineOptions,
     ): SimpleGeometryMesh<UserData>;
 
     /**
@@ -497,9 +497,11 @@ export default class GeometryConverter<
      */
     build<K extends keyof OutputMap>(
         geometry: InputMap[K],
-        options: OptionMap[K],
+        options?: OptionMap[K],
     ): OutputMap<UserData>[K] {
         type ReturnType = OutputMap<UserData>[K];
+
+        options = options ?? {};
 
         this.setDefaultOrigin(geometry, options);
 
