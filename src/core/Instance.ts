@@ -634,10 +634,26 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
             throw new Error('missing CRS PROJ string');
         }
 
-        // define the CRS with PROJ
-        proj4.defs(name, value);
-        // register this CRS with OpenLayers
-        register(proj4);
+        try {
+            // define the CRS with PROJ
+            proj4.defs(name, value);
+        } catch (e) {
+            let message = '';
+            if (e instanceof Error) {
+                message = ': ' + e.message;
+            }
+            throw new Error(`failed to register PROJ definition for ${name}${message}`);
+        }
+        try {
+            // register this CRS with OpenLayers
+            register(proj4);
+        } catch (e) {
+            let message = '';
+            if (e instanceof Error) {
+                message = ': ' + e.message;
+            }
+            throw new Error(`failed to register PROJ definitions in OpenLayers${message}`);
+        }
     }
 
     /**
