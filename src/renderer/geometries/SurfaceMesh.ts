@@ -34,9 +34,10 @@ export default class SurfaceMesh<UserData extends DefaultUserData = DefaultUserD
         this.material.transparent = this.material.opacity < 1;
     }
 
-    update(options: { material: Material; opacity: number }) {
+    update(options: { material: Material; opacity: number; renderOrder: number }) {
         this.material = options.material;
         this._styleOpacity = options.opacity;
+        this.renderOrder = options.renderOrder;
         this.visible = true;
         this.updateOpacity();
     }

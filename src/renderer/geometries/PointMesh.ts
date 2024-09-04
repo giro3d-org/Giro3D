@@ -62,13 +62,20 @@ export default class PointMesh<UserData extends DefaultUserData = DefaultUserDat
         }
     }
 
-    update(options: Omit<ConstructorParams, 'material'> & { material: SpriteMaterial | null }) {
+    update(
+        options: Omit<ConstructorParams, 'material'> & {
+            material: SpriteMaterial | null;
+            renderOrder: number;
+        },
+    ) {
         if (options.material) {
             this.material = options.material;
             this._styleOpacity = options.opacity ?? 1;
             this.updateOpacity();
             this._pointSize = options.pointSize ?? DEFAULT_POINT_SIZE;
         }
+
+        this.renderOrder = options.renderOrder;
 
         // We can't have no material on a mesh,
         // so setting a material to "null" only hides the mesh.

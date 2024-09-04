@@ -564,6 +564,7 @@ export default class GeometryConverter<
                 ring.update({
                     material: lineMaterial,
                     opacity: stroke.opacity,
+                    renderOrder: stroke.renderOrder,
                 }),
             );
         }
@@ -585,6 +586,7 @@ export default class GeometryConverter<
             mesh.surface.update({
                 material: surfacematerial,
                 opacity: fill.opacity,
+                renderOrder: fill.renderOrder,
             });
         }
     }
@@ -604,6 +606,7 @@ export default class GeometryConverter<
         mesh.update({
             material: lineMaterial,
             opacity: style.opacity,
+            renderOrder: style.renderOrder,
         });
     }
 
@@ -614,6 +617,7 @@ export default class GeometryConverter<
             material,
             pointSize: fullStyle.pointSize,
             opacity: fullStyle.opacity,
+            renderOrder: fullStyle.renderOrder,
         });
     }
 
@@ -636,9 +640,6 @@ export default class GeometryConverter<
 
         object.traverse(desc => {
             desc.updateMatrix();
-            if (options.renderOrder) {
-                desc.renderOrder = options.renderOrder;
-            }
         });
         object.updateMatrixWorld(true);
     }
@@ -709,6 +710,8 @@ export default class GeometryConverter<
         if (options.extrusionOffset != null) {
             geometry.computeVertexNormals();
         }
+
+        surface.renderOrder = fill.renderOrder;
 
         return surface;
     }
@@ -784,17 +787,19 @@ export default class GeometryConverter<
 
         const coordinate = point.getCoordinates();
 
-        const result = new PointMesh({
+        const pointMesh = new PointMesh({
             material,
             opacity: style.opacity,
             pointSize: style.pointSize,
         });
 
-        result.position.setX(coordinate[0] ?? 0);
-        result.position.setY(coordinate[1] ?? 0);
-        result.position.setZ(coordinate[2] ?? 0);
+        pointMesh.renderOrder = style.renderOrder;
 
-        return result;
+        pointMesh.position.setX(coordinate[0] ?? 0);
+        pointMesh.position.setY(coordinate[1] ?? 0);
+        pointMesh.position.setZ(coordinate[2] ?? 0);
+
+        return pointMesh;
     }
 
     private buildPoint(point: Point, options: PointOptions): PointMesh {
@@ -983,13 +988,15 @@ export default class GeometryConverter<
         options: OptionMap['LineString'],
     ): LineStringMesh {
         const fullStyle = getFullStrokeStyle(options);
-        const obj = new LineStringMesh(
+        const lineStringMesh = new LineStringMesh(
             this.getLineGeometry(geometry.getCoordinates(), options),
             this._lineMaterialGenerator(fullStyle),
             fullStyle.opacity,
         );
 
-        return obj;
+        lineStringMesh.renderOrder = fullStyle.renderOrder;
+
+        return lineStringMesh;
     }
 
     private buildMultiLineString(
@@ -1003,22 +1010,14 @@ export default class GeometryConverter<
             return this.buildLineString(lineStrings[0], options);
         }
 
-        const fullStyle = getFullStrokeStyle(options);
-        const material = this._lineMaterialGenerator(fullStyle);
-
-        const lines: LineStringMesh[] = [];
+        const meshes: LineStringMesh[] = [];
         for (const line of lineStrings) {
-            const obj = new LineStringMesh(
-                this.getLineGeometry(line.getCoordinates(), options),
-                material,
-                fullStyle.opacity,
-            );
+            const lineStringMesh = this.buildLineString(line, options);
 
-            lines.push(obj);
+            meshes.push(lineStringMesh);
         }
 
-        const result = new MultiLineStringMesh(lines);
-        return result;
+        return new MultiLineStringMesh(meshes);
     }
 
     /**
