@@ -14,6 +14,9 @@ This release brings **color layer blending modes** as well as many fixes and API
     -   `CogCacheOptions` -> `GeoTIFFCacheOptions`
     -   `CogSourceOptions` -> `GeoTIFFSourceOptions`
 
+-   `GeoTIFFSource.channels` setter now throws an exception if
+    the input does not have a valid number of elements (1, 3 or 4 elements).
+
 -   `VectorSource`: The `data` parameter of `VectorSource` has changed to
     remove ambiguities between URLs and text data, and allow relative URLs.
     Please refer to the documentation for more details.
@@ -55,9 +58,6 @@ This release brings **color layer blending modes** as well as many fixes and API
         },
     });
     ```
-
--   `CogSource.channels` setter now throws an exception if
-    the input does not have a valid number of elements (1, 3 or 4 elements).
 
 #### `Map`
 
