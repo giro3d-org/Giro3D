@@ -201,6 +201,7 @@ This release brings **color layer blending modes** as well as many fixes and API
 
 ### Fix
 
+-   **RenderPipeline**: fix loss of antialiasing on enabling point cloud post-processing (#509)
 -   **StaticImageSource**: add missing `type` and `isStaticImageSource` properties
 -   **LayerComposer**: fix reprojection issues in some cases (#507)
 -   **FeatureCollection**: correctly honor render order specified by styles (#508)

@@ -75,11 +75,12 @@ export default class RenderPipeline {
         this.sceneRenderTarget = null;
     }
 
-    prepareRenderTargets(width: number, height: number) {
+    prepareRenderTargets(width: number, height: number, samples: number) {
         if (
             !this.sceneRenderTarget ||
             this.sceneRenderTarget.width !== width ||
-            this.sceneRenderTarget.height !== height
+            this.sceneRenderTarget.height !== height ||
+            this.sceneRenderTarget.samples !== samples
         ) {
             this.sceneRenderTarget?.dispose();
             this.effectComposer?.dispose();
@@ -95,6 +96,7 @@ export default class RenderPipeline {
                 magFilter: NearestFilter,
                 minFilter: NearestFilter,
                 depthBuffer: true,
+                samples,
                 depthTexture: new DepthTexture(width, height, depthBufferType),
             });
 
@@ -130,7 +132,11 @@ export default class RenderPipeline {
     ) {
         const renderer = this.renderer;
 
-        const { composer, target } = this.prepareRenderTargets(width, height);
+        const maxSamples = this.renderer.capabilities.maxSamples;
+        const requiredSamples = 4; // No need for more
+        const samples = options.enableMSAA ? Math.min(maxSamples, requiredSamples) : 0;
+
+        const { composer, target } = this.prepareRenderTargets(width, height, samples);
 
         renderer.setRenderTarget(this.sceneRenderTarget);
 

@@ -10,6 +10,9 @@ class RenderingInspector extends Panel {
     constructor(parentGui: GUI, instance: Instance) {
         super(parentGui, instance, 'Visual parameters');
 
+        this.addController<boolean>(instance.renderingOptions, 'enableMSAA')
+            .name('MSAA')
+            .onChange(() => this.notify());
         this.addController<boolean>(instance.renderingOptions, 'enableEDL')
             .name('EDL')
             .onChange(() => this.notify());
