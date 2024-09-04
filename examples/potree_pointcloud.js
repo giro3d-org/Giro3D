@@ -7,44 +7,63 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import PotreeSource from '@giro3d/giro3d/sources/PotreeSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { bindToggle } from './widgets/bindToggle.js';
+import { bindSlider } from './widgets/bindSlider.js';
+import { updateLabel } from './widgets/updateLabel.js';
 
-const source = new PotreeSource(
-    'https://3d.oslandia.com/potree/pointclouds/lion_takanawa',
-    'cloud.js',
-);
-
-const potree = new PotreePointCloud(source);
+const source = new PotreeSource('https://3d.oslandia.com/potree/pointclouds/lion_takanawa');
 
 const instance = new Instance({
     target: 'view',
     crs: 'EPSG:3857',
-    backgroundColor: 'black',
+    backgroundColor: null,
 });
 
 function placeCamera() {
     const camera = instance.view.camera;
 
-    const pos = new Vector3(6.757520397934977, -10.102934086721376, 7.402449241148831);
-    const lookAt = new Vector3(0.5, 0.5, 5);
+    const pos = new Vector3(7.5, -9.14, 9.1);
+    const lookAt = new Vector3(0.5, 0, 4.3);
 
     const controls = new OrbitControls(camera, instance.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.25;
 
-    camera.lookAt(lookAt);
-    controls.target.copy(lookAt);
     camera.position.copy(pos);
 
+    camera.lookAt(lookAt);
+    controls.target.copy(lookAt);
+
     instance.view.setControls(controls);
+
+    instance.notifyChange(instance.view.camera);
+
+    Inspector.attach('inspector', instance);
 
     StatusBar.bind(instance, { radius: 5 });
 }
 
-instance.add(potree).then(placeCamera);
-instance.notifyChange(instance.view.camera);
+const potree = new PotreePointCloud(source);
 
-Inspector.attach('inspector', instance);
+instance.add(potree).then(placeCamera).catch(console.error);
 
-instance.domElement.addEventListener('dblclick', e => {
-    console.log(instance.pickObjectsAt(e, { radius: 5, limit: 10 }));
+const renderingOptions = instance.renderingOptions;
+
+renderingOptions.enableEDL = true;
+renderingOptions.enableInpainting = true;
+renderingOptions.inpaintingSteps = 1;
+renderingOptions.enablePointCloudOcclusion = true;
+
+bindToggle('edl', v => {
+    renderingOptions.enableEDL = v;
+    instance.notifyChange();
+});
+bindToggle('inpainting', v => {
+    renderingOptions.enableInpainting = v;
+    instance.notifyChange();
+});
+bindSlider('size', v => {
+    potree.pointSize = v;
+    updateLabel('size-label', 'Point size: ' + (v > 0 ? v.toString() : 'auto'));
+    instance.notifyChange(potree);
 });
