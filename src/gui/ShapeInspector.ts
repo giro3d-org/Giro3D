@@ -28,47 +28,32 @@ class ShapeInspector extends EntityInspector<Shape> {
             .onChange(c => {
                 this.entity.color = c;
             });
-        this.addController<boolean>(this.entity, 'showSegmentLabels').name('Segment labels');
-        this.addController<boolean>(this.entity, 'showLineLabel').name('Line label');
-        this.addController<boolean>(this.entity, 'showSurfaceLabel').name('Surface label');
-        this.addController<boolean>(this.entity, 'showVerticalLineLabels').name(
-            'Vertical line labels',
-        );
-        this.addController<boolean>(this.entity, 'showVertexLabels').name('Vertex labels');
-        this.addController<boolean>(this.entity, 'showSurface').name('Surface');
-        this.addController<number>(this.entity, 'surfaceOpacity')
-            .name('Surface opacity')
-            .min(0)
-            .max(1);
-        this.addController<number>(this.entity, 'labelOpacity').name('Label opacity').min(0).max(1);
-        this.addController<boolean>(this.entity, 'showVertices').name('Vertices');
-        this.addController<boolean>(this.entity, 'showFloorVertices').name('Floor vertices');
-        this.addController<boolean>(this.entity, 'showLine').name('Line');
-        this.addController<boolean>(this.entity, 'showFloorLine').name('Floor line');
-        this.addController<boolean>(this.entity, 'showVerticalLines').name('Vertical lines');
-        this.addController<boolean>(this.entity, 'floorElevation').name('Floor elevation');
-        this.addController<boolean>(this.entity, 'dashed').name('Dashed');
-        this.addController<boolean>(this.entity, 'dashSize').name('Dash size').min(1).max(100);
-        this.addController<boolean>(this.entity, 'depthTest').name('Depth test');
-        this.addController<number>(this.entity, 'fontSize')
-            .name('Font size (px)')
-            .min(1)
-            .max(50)
-            .step(1);
-        this.addController<string>(this.entity, 'fontWeight', ['bold', 'normal']).name(
-            'Font weight',
-        );
-        this.addController<number>(this.entity, 'lineWidth')
-            .name('Line width')
-            .min(1)
-            .max(50)
-            .step(1);
-        this.addController<number>(this.entity, 'vertexRadius')
+        this.addController(this.entity, 'showSegmentLabels').name('Segment labels');
+        this.addController(this.entity, 'showLineLabel').name('Line label');
+        this.addController(this.entity, 'showSurfaceLabel').name('Surface label');
+        this.addController(this.entity, 'showVerticalLineLabels').name('Vertical line labels');
+        this.addController(this.entity, 'showVertexLabels').name('Vertex labels');
+        this.addController(this.entity, 'showSurface').name('Surface');
+        this.addController(this.entity, 'surfaceOpacity').name('Surface opacity').min(0).max(1);
+        this.addController(this.entity, 'labelOpacity').name('Label opacity').min(0).max(1);
+        this.addController(this.entity, 'showVertices').name('Vertices');
+        this.addController(this.entity, 'showFloorVertices').name('Floor vertices');
+        this.addController(this.entity, 'showLine').name('Line');
+        this.addController(this.entity, 'showFloorLine').name('Floor line');
+        this.addController(this.entity, 'showVerticalLines').name('Vertical lines');
+        this.addController(this.entity, 'floorElevation').name('Floor elevation');
+        this.addController(this.entity, 'dashed').name('Dashed');
+        this.addController(this.entity, 'dashSize').name('Dash size').min(1).max(100);
+        this.addController(this.entity, 'depthTest').name('Depth test');
+        this.addController(this.entity, 'fontSize').name('Font size (px)').min(1).max(50).step(1);
+        this.addController(this.entity, 'fontWeight', ['bold', 'normal']).name('Font weight');
+        this.addController(this.entity, 'lineWidth').name('Line width').min(1).max(50).step(1);
+        this.addController(this.entity, 'vertexRadius')
             .name('Vertex radius')
             .min(1)
             .max(50)
             .step(1);
-        this.addController<number>(this.entity, 'borderWidth')
+        this.addController(this.entity, 'borderWidth')
             .name('Border width')
             .min(0)
             .max(51)

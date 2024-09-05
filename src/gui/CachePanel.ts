@@ -19,8 +19,8 @@ class CachePanel extends Panel {
         this.capacityMb = GlobalCache.maxSize / 1024 / 1024;
         this.capacityEntries = GlobalCache.capacity;
 
-        this.addController<boolean>(GlobalCache, 'enabled').name('Enable cache');
-        this.addController<number>(this, 'ttl')
+        this.addController(GlobalCache, 'enabled').name('Enable cache');
+        this.addController(this, 'ttl')
             .name('Default TTL (seconds)')
             .min(1)
             .max(3600)
@@ -28,7 +28,7 @@ class CachePanel extends Panel {
                 this.ttl = Math.floor(v);
                 GlobalCache.defaultTtl = this.ttl * 1000;
             });
-        this.addController<number>(this, 'capacityMb')
+        this.addController(this, 'capacityMb')
             .name('Capacity (MB)')
             .min(2)
             .max(1024)
@@ -36,7 +36,7 @@ class CachePanel extends Panel {
                 this.capacityMb = Math.floor(v);
                 // GlobalCache.maxSize = this.capacityMb * 1024 * 1024;
             });
-        this.addController<number>(this, 'capacityEntries')
+        this.addController(this, 'capacityEntries')
             .name('Capacity (entries)')
             .min(0)
             .max(16000)
@@ -44,11 +44,11 @@ class CachePanel extends Panel {
                 this.capacityEntries = Math.floor(v);
                 // GlobalCache.capacity = this.capacityEntries;
             });
-        this.addController<string>(this, 'count').name('Entries');
-        this.addController<string>(this, 'size').name('Memory usage (approx)');
-        this.addController<never>(this, 'purge').name('Purge stale entries');
-        this.addController<never>(this, 'clear').name('Clear the cache');
-        this.addController<never>(this, 'dump').name('Dump cache to console');
+        this.addController(this, 'count').name('Entries');
+        this.addController(this, 'size').name('Memory usage (approx)');
+        this.addController(this, 'purge').name('Purge stale entries');
+        this.addController(this, 'clear').name('Clear the cache');
+        this.addController(this, 'dump').name('Dump cache to console');
     }
 
     purge() {

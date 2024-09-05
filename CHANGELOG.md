@@ -6,6 +6,20 @@ This release brings **color layer blending modes** as well as many fixes and API
 
 ### BREAKING CHANGE
 
+#### Inspector
+
+-   `Panel.addController()` and `Panel.addColorController()` are now typechecked. The type parameter is no longer required and no longer points to the type of the bound parameter, but the type of the source object:
+
+    ```js
+    // Before
+    this.addController < number > (source, 'propname');
+
+    // Now
+    this.addController(source, 'propname');
+    ```
+
+    If `source['propname']` does not exist, it will throw a compile-time error (if using TypeScript).
+
 #### ImageSources
 
 -   `CogSource` is renamed to `GeoTIFFSource` for clarity.
@@ -201,6 +215,7 @@ This release brings **color layer blending modes** as well as many fixes and API
 
 ### Fix
 
+-   **Inspector**: typecheck bindings (#510)
 -   **RenderPipeline**: fix loss of antialiasing on enabling point cloud post-processing (#509)
 -   **StaticImageSource**: add missing `type` and `isStaticImageSource` properties
 -   **LayerComposer**: fix reprojection issues in some cases (#507)

@@ -19,31 +19,31 @@ class MapTerrainPanel extends Panel {
         this.map = map;
         this.segments = map.segments;
 
-        this.addController<boolean>(this.map.terrain, 'enabled')
+        this.addController(this.map.terrain, 'enabled')
             .name('Deformation')
             .onChange(() => this.notify(map));
 
-        this.addController<boolean>(this.map, 'wireframe')
+        this.addController(this.map, 'wireframe')
             .name('Wireframe')
             .onChange(() => this.notify());
 
-        this.addController<number>(this, 'segments')
+        this.addController(this, 'segments')
             .name('Tile subdivisions')
             .min(2)
             .max(128)
             .onChange(v => this.updateSegments(v));
 
-        this.addController<boolean>(this.map, 'showColliderMeshes')
+        this.addController(this.map, 'showColliderMeshes')
             .name('Show collider meshes')
             .onChange(() => this.notify());
 
-        this.addController<boolean>(this.map.terrain, 'enableCPUTerrain').name('CPU terrain');
+        this.addController(this.map.terrain, 'enableCPUTerrain').name('CPU terrain');
 
-        this.addController<boolean>(this.map.terrain, 'stitching')
+        this.addController(this.map.terrain, 'stitching')
             .name('Stitching')
             .onChange(() => this.notify(map));
 
-        this.addController<number>(this.map.geometryPool, 'size').name('Geometry pool');
+        this.addController(this.map.geometryPool, 'size').name('Geometry pool');
     }
 
     updateSegments(v: number) {

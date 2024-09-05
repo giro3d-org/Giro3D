@@ -26,41 +26,41 @@ class AxisGridInspector extends EntityInspector<AxisGrid> {
         this.addColorController(this.entity, 'color')
             .name('Grid color')
             .onChange(v => this.updateGridColor(v));
-        this.addController<number>(this.entity.style, 'fontSize', 1, 20, 1)
+        this.addController(this.entity.style, 'fontSize', 1, 20, 1)
             .name('Font size')
             .onChange(() => this._rebuild());
-        this.addController<boolean>(this.entity, 'showHelpers')
+        this.addController(this.entity, 'showHelpers')
             .name('Show debug helpers')
             .onChange(() => this.notify(this.entity));
-        this.addController<boolean>(this.entity, 'showLabels')
+        this.addController(this.entity, 'showLabels')
             .name('Show labels')
             .onChange(() => this.notify(this.entity));
-        this.addController<boolean>(this, 'absoluteTicks')
+        this.addController(this, 'absoluteTicks')
             .name('Absolute ticks')
             .onChange(v => this.updateTickOrigin(v));
-        this.addController<boolean>(this.entity, 'showFloorGrid')
+        this.addController(this.entity, 'showFloorGrid')
             .name('Show floor grid')
             .onChange(() => this.notify(this.entity));
-        this.addController<boolean>(this.entity, 'showCeilingGrid')
+        this.addController(this.entity, 'showCeilingGrid')
             .name('Show ceiling grid')
             .onChange(() => this.notify(this.entity));
-        this.addController<boolean>(this.entity, 'showSideGrids')
+        this.addController(this.entity, 'showSideGrids')
             .name('Show side grids')
             .onChange(() => this.notify(this.entity));
 
-        this.addController<number>(this.entity.volume, 'floor')
+        this.addController(this.entity.volume, 'floor')
             .name('Floor elevation')
             .onChange(() => this._rebuild());
-        this.addController<number>(this.entity.volume, 'ceiling')
+        this.addController(this.entity.volume, 'ceiling')
             .name('Ceiling elevation')
             .onChange(() => this._rebuild());
-        this.addController<number>(this.entity.ticks, 'x')
+        this.addController(this.entity.ticks, 'x')
             .name('X ticks')
             .onChange(() => this._rebuild());
-        this.addController<number>(this.entity.ticks, 'y')
+        this.addController(this.entity.ticks, 'y')
             .name('Y ticks')
             .onChange(() => this._rebuild());
-        this.addController<number>(this.entity.ticks, 'z')
+        this.addController(this.entity.ticks, 'z')
             .name('Z ticks')
             .onChange(() => this._rebuild());
     }

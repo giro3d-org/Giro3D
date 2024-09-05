@@ -26,24 +26,24 @@ class ColorMapInspector extends Panel {
         if (colorMap != null) {
             this.mode = modes[colorMap.mode - 1];
 
-            this.addController<boolean>(colorMap, 'active')
+            this.addController(colorMap, 'active')
                 .name('Enabled')
                 .onChange(() => this.notify(layer));
 
-            this.addController<Mode>(this, 'mode', modes)
+            this.addController(this, 'mode', modes)
                 .name('Mode')
                 .onChange(v => {
                     colorMap.mode = modes.indexOf(v) + 1;
                     this.notify(layer);
                 });
 
-            this.addController<number>(colorMap, 'min')
+            this.addController(colorMap, 'min')
                 .name('Lower bound')
                 .min(-8000)
                 .max(8000)
                 .onChange(() => this.notify(layer));
 
-            this.addController<number>(colorMap, 'max')
+            this.addController(colorMap, 'max')
                 .name('Upper bound')
                 .min(-8000)
                 .max(8000)
