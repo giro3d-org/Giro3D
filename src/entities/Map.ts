@@ -104,8 +104,16 @@ function isStitchableNeighbour(neighbour: TileMesh): boolean {
     );
 }
 
-function defaultGeometryBuilder(extent: Extent, segments: number): TileGeometry {
-    return new PlanarTileGeometry({ extent, segments });
+function defaultGeometryBuilder(
+    extent: Extent,
+    segments: number,
+    skirtDepth: number | null,
+): TileGeometry {
+    return new PlanarTileGeometry({
+        extent,
+        segments,
+        skirtDepth: skirtDepth ?? undefined,
+    });
 }
 
 /**
@@ -178,6 +186,10 @@ function getTerrainOptions(
             enabled: input,
             stitching: defaultValue.stitching,
             segments: defaultValue.segments,
+            skirts: {
+                enabled: false,
+                depth: 0,
+            },
         };
     }
 
@@ -185,6 +197,7 @@ function getTerrainOptions(
         enabled: input.enabled ?? defaultValue.enabled,
         stitching: input.stitching ?? defaultValue.stitching,
         segments: input.segments ?? defaultValue.segments,
+        skirts: input.skirts ?? defaultValue.skirts,
     };
 }
 
@@ -867,6 +880,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
             if (MathUtils.isPowerOfTwo(v) && v >= 1 && v <= 128) {
                 this._materialOptions.terrain.segments = v;
                 this.updateGeometries();
+                this.notifyChange(this);
             } else {
                 throw new Error(
                     'invalid segments. Must be a power of two between 1 and 128 included',
@@ -1030,6 +1044,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
             textureSize,
             segments: this.segments,
             coord: { z, x, y },
+            skirtDepth: this.terrain.skirts.enabled ? this.terrain.skirts.depth : undefined,
             enableTerrainDeformation: this._materialOptions.terrain.enabled ?? true,
             onElevationChanged: this._onTileElevationChanged,
             geometryBuilder: this.getGeometryBuilder(),
@@ -1145,6 +1160,10 @@ class Map<UserData extends EntityUserData = EntityUserData>
             enabled: DEFAULT_ENABLE_TERRAIN,
             stitching: DEFAULT_ENABLE_STITCHING,
             segments: DEFAULT_MAP_SEGMENTS,
+            skirts: {
+                enabled: false,
+                depth: 0,
+            },
         };
     }
 

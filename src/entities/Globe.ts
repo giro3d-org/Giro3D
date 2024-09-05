@@ -19,28 +19,7 @@ const tmpWGS84Coordinates = new Coordinates('EPSG:4326', 0, 0);
 /**
  * Options for Globe terrains.
  */
-export interface GlobeTerrainOptions {
-    /**
-     * Enables terrain deformation. If `true`, the surface of the globe will be deformed to
-     * match the elevation data. If `false` or unset, the surface of the globe will be the surface
-     * of the ellipsoid.
-     * @defaultValue true
-     */
-    enabled: boolean;
-    /**
-     * The resolution of the grid for each tile.
-     * The higher the better. It *must* be power of two between `1` included and `256` included.
-     * Note: the number of vertices per tile side is `segments` + 1.
-     * @defaultValue 8
-     */
-    segments: number;
-    /**
-     * Enables "skirts" on the side of globe tiles to fill small gaps at the boundaries
-     * of neighbouring tiles.
-     * @defaultValue true
-     */
-    enableSkirts: boolean;
-}
+export type GlobeTerrainOptions = Omit<TerrainOptions, 'stitching'>;
 
 function computeEllipsoidalImageSize(extent: Extent, ellipsoid: Ellipsoid): Vector2 {
     const dims = extent.dimensions(tempDims);
@@ -81,13 +60,13 @@ export interface GlobeConstructorOptions extends Omit<MapConstructorOptions, 'ex
     terrain?: boolean | Partial<GlobeTerrainOptions>;
 }
 
-function createBuilder(ellipsoid: Ellipsoid, includeSkirt: boolean): TileGeometryBuilder {
-    return (extent, segments) => {
+function createBuilder(ellipsoid: Ellipsoid): TileGeometryBuilder {
+    return (extent, segments, skirtDepth) => {
         return new EllipsoidTileGeometry({
             extent,
             segments,
             ellipsoid,
-            includeSkirt,
+            skirtDepth,
         });
     };
 }
@@ -143,13 +122,7 @@ export default class Globe extends Map {
 
         this._ellipsoid = options.ellipsoid ?? Ellipsoid.WGS84;
 
-        let skirts = true;
-        const terrainOptions = options.terrain;
-        if (terrainOptions != null && typeof terrainOptions === 'object') {
-            skirts = terrainOptions.enableSkirts ?? true;
-        }
-
-        this._geometryBuilder = createBuilder(this._ellipsoid, skirts);
+        this._geometryBuilder = createBuilder(this._ellipsoid);
     }
 
     protected override testVisibility(node: TileMesh, context: Context): boolean {

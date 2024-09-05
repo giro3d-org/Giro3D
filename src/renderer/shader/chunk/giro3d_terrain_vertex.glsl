@@ -1,3 +1,4 @@
+// The elevation offset to apply to vertices
 float elevation = 0.0;
 
 #if defined(GLOBE)
@@ -92,5 +93,20 @@ if(elevationLayer.offsetScale.z > 0.) {
 #endif // STITCHING
 }
 #endif // ELEVATION_LAYER
-    transformed.xyz += objectNormal * elevation;
+
+#if defined(ENABLE_SKIRTS)
+    bool isBottomVertex = vUv.x <= -999.0 && vUv.y <= -999.0;
+    // Skirt bottom vertices must not be affected by terrain
+    // deformation since they have a pre-defined height.
+    if (isBottomVertex) {
+        elevation = 0.0;
+    }
+#endif
+
+#if defined(GLOBE)
+    vec3 upVector = objectNormal;
+#else
+    vec3 upVector = vec3(0, 0, 1);
+#endif
+    transformed.xyz += upVector * elevation;
 #endif // TERRAIN_DEFORMATION

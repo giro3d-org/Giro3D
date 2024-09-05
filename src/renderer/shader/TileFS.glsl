@@ -40,6 +40,10 @@ uniform float       nearDistance;
 uniform float       farDistance;
 uniform vec3        referencePosition;
 
+#if defined(ENABLE_SKIRTS)
+varying float       vIsSkirtVertex; // 1.0 if the vertex belongs to the skirt, 0.0 if it belongs to the top side
+#endif
+
 uniform int         renderingState; // Current rendering state (default is STATE_FINAL)
 uniform int         uuid;           // The ID of the tile mesh (used for the STATE_PICKING rendering state)
 
@@ -126,6 +130,17 @@ void main() {
         return;
     }
 
+    // Determine if the fragment belongs to the surface of the tile
+    // or not. If skirts are enabled, then fragments belonging to the
+    // sides or at the bottom are not part of the surface.
+    // In other words, the surface is all the fragments that point "upward"
+    bool isSurface = true;
+#if defined(ENABLE_SKIRTS)
+    if (vIsSkirtVertex > 0.0) {
+        isSurface = false;
+    }
+#endif
+
     vec4 diffuseColor = vec4( 1, 1, 1, opacity );
     #include <clipping_planes_fragment>
 
@@ -167,7 +182,7 @@ void main() {
 
 #if defined(ELEVATION_LAYER)
     // Step 3 : if the elevation layer has a color map, use it as the background color.
-    if (elevationColorMap.mode != COLORMAP_MODE_DISABLED) {
+    if (isSurface && elevationColorMap.mode != COLORMAP_MODE_DISABLED) {
         vec4 rgba = computeColorMap(
             tileDimensions,
             elevationLayer,
@@ -191,6 +206,13 @@ void main() {
     );
 
     localNormal = getNormalFromDerivatives(df.x, df.y);
+#endif
+
+#if defined(ENABLE_SKIRTS)
+    // Skirts have their own normal that must not be overriden by elevation sampling
+    if (!isSurface) {
+        localNormal = vWorldNormal;
+    }
 #endif
 
     vec3 outgoingLight = vec3(1, 1, 1);
@@ -234,6 +256,7 @@ void main() {
     // we have to inline the code so that it can be patched from the material.
 #if defined(COLOR_RENDER)
 #if VISIBLE_COLOR_LAYER_COUNT
+if (isSurface) {
     float maskOpacity = 1.;
 
     LayerInfo layer;
@@ -280,13 +303,16 @@ void main() {
                 gl_FragColor = blended;
             }
 #else
-            gl_FragColor = blended;
+            if (isSurface) {
+                gl_FragColor =  blended;
+            }
 #endif
         }
     }
     #pragma unroll_loop_end
 
     gl_FragColor.a *= maskOpacity;
+}
 #endif // VISIBLE_COLOR_LAYER_COUNT
 
     if (gl_FragColor.a <= 0.0) {
@@ -294,8 +320,10 @@ void main() {
     }
 
 #if defined(ELEVATION_LAYER)
+if (isSurface) {
     // Contour lines
     #include <giro3d_contour_line_fragment>
+}
 #endif
 #endif // COLOR_RENDER
 
@@ -317,17 +345,21 @@ void main() {
 
     renderBackface();
 
+if (isSurface) {
     // Step 7 : draw tile outlines
     #include <giro3d_outline_fragment>
 
     #include <giro3d_graticule_fragment>
+}
 
     // Final step : process rendering states.
     if (gl_FragColor.a <= 0.) {
         // The fragment is transparent, discard it to short-circuit rendering state evaluation.
         discard;
     } else if (renderingState == STATE_FINAL) {
-        gl_FragColor.rgb = adjustBrightnessContrastSaturation(gl_FragColor.rgb, brightnessContrastSaturation);
+        if (isSurface) {
+            gl_FragColor.rgb = adjustBrightnessContrastSaturation(gl_FragColor.rgb, brightnessContrastSaturation);
+        }
         #include <colorspace_fragment>
         #include <fog_fragment>
         #include <premultiplied_alpha_fragment>

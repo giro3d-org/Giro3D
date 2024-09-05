@@ -32,4 +32,15 @@ export default interface TerrainOptions {
      * @defaultValue {@link DEFAULT_MAP_SEGMENTS}
      */
     segments: number;
+
+    /**
+     * Draw vertical skirts on the sides of the map tiles.
+     */
+    skirts: {
+        enabled: boolean;
+        /**
+         * The depth of the skirt, in CRS units.
+         */
+        depth: number;
+    };
 }

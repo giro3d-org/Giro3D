@@ -51,7 +51,11 @@ export default class EllipsoidTileGeometry
 
     private _segments = 32;
     private _heightMap: HeightMap | null = null;
-    private _includeSkirt: boolean;
+    private _skirtDepth: number | null = null;
+
+    get vertexCount() {
+        return this.getAttribute('position').count;
+    }
 
     get segments(): number {
         return this._segments;
@@ -77,13 +81,13 @@ export default class EllipsoidTileGeometry
         extent: Extent;
         segments: number;
         ellipsoid: Ellipsoid;
-        includeSkirt: boolean;
+        skirtDepth: number | null;
     }) {
         super();
 
         this._segments = params.segments;
         this._extent = params.extent;
-        this._includeSkirt = params.includeSkirt;
+        this._skirtDepth = params.skirtDepth;
 
         this._ellipsoid = params.ellipsoid;
 
@@ -130,7 +134,7 @@ export default class EllipsoidTileGeometry
         const origin = this._origin;
 
         // A shortcut to get ready to use buffers
-        const buffers = getGridBuffers(this.segments, this._includeSkirt);
+        const buffers = getGridBuffers(this.segments, this._skirtDepth != null);
 
         const heightMap = this._heightMap;
 
@@ -188,9 +192,8 @@ export default class EllipsoidTileGeometry
             }
         }
 
-        if (this._includeSkirt) {
-            // TODO configurable skirt depth ?
-            const skirtDepth = -200_000;
+        if (this._skirtDepth != null) {
+            const skirtDepth = this._skirtDepth;
             const skirtStart = rowVertices * rowVertices;
 
             const nw = this._ellipsoid.toCartesian(north, west, skirtDepth, tmpNW).sub(origin);

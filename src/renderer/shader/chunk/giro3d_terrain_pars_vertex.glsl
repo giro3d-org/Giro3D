@@ -3,6 +3,11 @@
     uniform sampler2D   elevationTexture;
     uniform LayerInfo   elevationLayer;
 
+#if defined (ENABLE_SKIRTS)
+    // The vertex indices range that corresponds to the skirt bottom vertices
+    uniform vec2        skirtVertexRange;
+#endif
+
 #if defined(STITCHING)
     struct Neighbour {
         vec4            offsetScale;

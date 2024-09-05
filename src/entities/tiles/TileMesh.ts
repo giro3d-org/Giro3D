@@ -94,6 +94,7 @@ class TileMesh
 
     private _tileGeometry: TileGeometry;
     private _segments: number;
+    private _skirtDepth: number | undefined;
     private _minmax: { min: number; max: number } = { min: -Infinity, max: +Infinity };
     private _shouldUpdateHeightMap = false;
     private _helperRoot: Group | null = null;
@@ -174,6 +175,7 @@ class TileMesh
         extent: Extent;
         /** The subdivisions. */
         segments: number;
+        skirtDepth?: number;
         /** The tile coordinate. */
         coord: TileCoordinate;
         /** The texture size. */
@@ -183,11 +185,15 @@ class TileMesh
         enableTerrainDeformation: boolean;
         onElevationChanged: (tile: TileMesh) => void;
     }) {
-        super(params.geometryBuilder(params.extent, params.segments), params.material);
+        super(
+            params.geometryBuilder(params.extent, params.segments, params.skirtDepth ?? null),
+            params.material,
+        );
 
         this._geometryBuilder = params.geometryBuilder;
         this._tileGeometry = this.geometry;
         this._segments = params.segments;
+        this._skirtDepth = params.skirtDepth;
         this._renderer = params.renderer;
         this._onElevationChanged = params.onElevationChanged;
 
@@ -220,6 +226,24 @@ class TileMesh
         this.setBBoxZ(-0.5, +0.5);
 
         MemoryTracker.track(this, this.name);
+
+        this.updateSkirtParameters();
+    }
+
+    private updateSkirtParameters() {
+        if (this._skirtDepth != null) {
+            MaterialUtils.setDefine(this.material, 'ENABLE_SKIRTS', true);
+            const vertexCount = this.geometry.vertexCount;
+            const rowSize = this.segments + 1;
+            const firstSkirtVertex = rowSize * rowSize;
+            const lastSkirtVertex = vertexCount - 1;
+            this.material.uniforms.skirtVertexRange.value = new Vector2(
+                firstSkirtVertex,
+                lastSkirtVertex,
+            );
+        } else {
+            MaterialUtils.setDefine(this.material, 'ENABLE_SKIRTS', false);
+        }
     }
 
     get absolutePosition() {
@@ -278,12 +302,14 @@ class TileMesh
 
     private createGeometry() {
         this.geometry.dispose();
-        this.geometry = this._geometryBuilder(this.extent, this.segments);
+        this.geometry = this._geometryBuilder(this.extent, this.segments, this._skirtDepth ?? null);
         this._tileGeometry = this.geometry;
 
         if (this._helpers.colliderMesh) {
             this._helpers.colliderMesh.geometry = this.geometry.raycastGeometry;
         }
+
+        this.updateSkirtParameters();
     }
 
     onLayerVisibilityChanged(layer: Layer) {
@@ -671,6 +697,10 @@ class TileMesh
             return;
         }
         this._minmax = { min, max };
+
+        if (this._skirtDepth != null) {
+            this._minmax.min = Math.min(this._skirtDepth, this._minmax.min);
+        }
 
         this.updateVolume(min, max);
     }
