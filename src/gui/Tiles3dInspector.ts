@@ -32,15 +32,15 @@ class Tiles3dInspector extends EntityInspector<Tiles3D> {
         this.wireframe = entity.wireframe ?? false;
         this.sse = entity.sseThreshold;
 
-        this.addController<boolean>(this, 'wireframe')
+        this.addController(this, 'wireframe')
             .name('Wireframe')
             .onChange(v => this.toggleWireframe(v));
-        this.addController<number>(this, 'sse')
+        this.addController(this, 'sse')
             .min(this.sse / 4)
             .max(this.sse * 4)
             .name('Screen Space Error')
             .onChange(v => this.updateSSE(v));
-        this.addController<number>(this.entity, 'cleanupDelay')
+        this.addController(this.entity, 'cleanupDelay')
             .min(10)
             .max(10000)
             .name('Cleanup delay (ms)')
@@ -48,21 +48,21 @@ class Tiles3dInspector extends EntityInspector<Tiles3D> {
 
         if (this.entity.material) {
             if ('brightness' in this.entity.material) {
-                this.addController<number>(this.entity.material, 'brightness')
+                this.addController(this.entity.material, 'brightness')
                     .min(-1)
                     .max(1)
                     .name('Brightness')
                     .onChange(() => this.instance.notifyChange(this.entity));
             }
             if ('contrast' in this.entity.material) {
-                this.addController<number>(this.entity.material, 'contrast')
+                this.addController(this.entity.material, 'contrast')
                     .name('Contrast')
                     .min(0)
                     .max(10)
                     .onChange(() => this.instance.notifyChange(this.entity));
             }
             if ('saturation' in this.entity.material) {
-                this.addController<number>(this.entity.material, 'saturation')
+                this.addController(this.entity.material, 'saturation')
                     .name('Saturation')
                     .min(0)
                     .max(10)

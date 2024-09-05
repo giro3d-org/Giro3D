@@ -22,23 +22,21 @@ class CameraInspector extends Panel {
 
         const notify = this.notify.bind(this);
 
-        this.addController<string>(this.camera, 'type').name('Type');
+        this.addController(this.camera, 'type').name('Type');
         if (isPerspectiveCamera(this.camera)) {
-            this.addController<number>(this.camera, 'fov').min(25).max(150).name('FOV');
+            this.addController(this.camera, 'fov').min(25).max(150).name('FOV');
         }
-        this.addController<number>(instance.mainLoop, 'automaticCameraPlaneComputation')
+        this.addController(instance.mainLoop, 'automaticCameraPlaneComputation')
             .name('Automatic plane computation')
             .onChange(notify);
-        this.addController<number>(this.camera, 'far').name('Far plane').onChange(notify);
-        this.addController<number>(this.camera, 'near').name('Near plane').onChange(notify);
-        this.addController<number>(this.view, 'maxFarPlane').name('Max far plane').onChange(notify);
-        this.addController<number>(this.view, 'minNearPlane')
-            .name('Min near plane')
-            .onChange(notify);
-        this.addController<number>(this.view, 'width').name('Width (pixels)');
-        this.addController<number>(this.view, 'height').name('Height (pixels)');
-        this.addController<void>(this, 'createFrustumSnapshot').name('Create frustum snapshot');
-        this.addController<void>(this, 'deleteSnapshots').name('Delete frustum snapshots');
+        this.addController(this.camera, 'far').name('Far plane').onChange(notify);
+        this.addController(this.camera, 'near').name('Near plane').onChange(notify);
+        this.addController(this.view, 'maxFarPlane').name('Max far plane').onChange(notify);
+        this.addController(this.view, 'minNearPlane').name('Min near plane').onChange(notify);
+        this.addController(this.view, 'width').name('Width (pixels)');
+        this.addController(this.view, 'height').name('Height (pixels)');
+        this.addController(this, 'createFrustumSnapshot').name('Create frustum snapshot');
+        this.addController(this, 'deleteSnapshots').name('Delete frustum snapshots');
 
         const position = this.gui.addFolder('Position');
         position.close();
@@ -56,7 +54,7 @@ class CameraInspector extends Panel {
         }
     }
 
-    private deleteSnapshots() {
+    deleteSnapshots() {
         this.snapshots.forEach(helper => {
             helper.dispose();
             this.instance.remove(helper);
@@ -64,7 +62,7 @@ class CameraInspector extends Panel {
         this.snapshots.length = 0;
     }
 
-    private createFrustumSnapshot() {
+    createFrustumSnapshot() {
         const helper = new CameraHelper(this.instance.view.camera);
         this.instance.add(helper);
         helper.update();

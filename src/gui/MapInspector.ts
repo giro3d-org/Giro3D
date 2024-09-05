@@ -82,7 +82,7 @@ class MapInspector extends EntityInspector<Map> {
         this.renderState = 'Normal';
         this.side = sides[this.entity.side];
 
-        this.addController<never>(this.entity, 'discardNoData')
+        this.addController(this.entity, 'discardNoData')
             .name('Discard no-data values')
             .onChange(() => this.notify(this.entity));
         this.layerCount = this.entity.layerCount;
@@ -99,53 +99,53 @@ class MapInspector extends EntityInspector<Map> {
 
         this.labels = new window.Map();
 
-        this.addController<Sidedness>(this, 'side', sides)
+        this.addController(this, 'side', sides)
             .name('Sidedness')
             .onChange(v => this.setSidedness(v));
-        this.addController<boolean>(this.entity, 'depthTest')
+        this.addController(this.entity, 'depthTest')
             .name('Depth test')
             .onChange(() => this.notify(this.entity));
-        this.addController<number>(this, 'visibleTiles').name('Visible tiles');
-        this.addController<number>(this, 'reachableTiles').name('Reachable tiles');
-        this.addController<number>(this.entity.allTiles, 'size').name('Loaded tiles');
+        this.addController(this, 'visibleTiles').name('Visible tiles');
+        this.addController(this, 'reachableTiles').name('Reachable tiles');
+        this.addController(this.entity.allTiles, 'size').name('Loaded tiles');
         if (this.entity.elevationRange) {
-            this.addController<number>(this.entity.elevationRange, 'min')
+            this.addController(this.entity.elevationRange, 'min')
                 .name('Elevation range minimum')
                 .onChange(() => this.notify(map));
 
-            this.addController<number>(this.entity.elevationRange, 'max')
+            this.addController(this.entity.elevationRange, 'max')
                 .name('Elevation range maximum')
                 .onChange(() => this.notify(map));
         }
-        this.addController<number>(this.entity.imageSize, 'width').name('Tile width  (pixels)');
-        this.addController<number>(this.entity.imageSize, 'height').name('Tile height  (pixels)');
-        this.addController<boolean>(this, 'showGrid')
+        this.addController(this.entity.imageSize, 'width').name('Tile width  (pixels)');
+        this.addController(this.entity.imageSize, 'height').name('Tile height  (pixels)');
+        this.addController(this, 'showGrid')
             .name('Show grid')
             .onChange(v => this.toggleGrid(v));
         this.addColorController(this, 'background')
             .name('Background')
             .onChange(v => this.updateBackgroundColor(v));
-        this.addController<number>(this, 'backgroundOpacity')
+        this.addController(this, 'backgroundOpacity')
             .name('Background opacity')
             .min(0)
             .max(1)
             .onChange(v => this.updateBackgroundOpacity(v));
-        this.addController<boolean>(this.entity, 'showTileOutlines')
+        this.addController(this.entity, 'showTileOutlines')
             .name('Show tiles outlines')
             .onChange(() => this.notify());
         this.addColorController(this.entity, 'tileOutlineColor')
             .name('Tile outline color')
             .onChange(() => this.notify());
-        this.addController<boolean>(this, 'showTileInfo')
+        this.addController(this, 'showTileInfo')
             .name('Show tile info')
             .onChange(() => this.toggleBoundingBoxes());
-        this.addController<boolean>(this, 'showExtent')
+        this.addController(this, 'showExtent')
             .name('Show extent')
             .onChange(() => this.toggleExtent());
         this.addColorController(this, 'extentColor')
             .name('Extent color')
             .onChange(() => this.updateExtentColor());
-        this.addController<number>(this.entity, 'subdivisionThreshold')
+        this.addController(this.entity, 'subdivisionThreshold')
             .name('Subdivision threshold')
             .min(0.1)
             .max(3)
@@ -162,12 +162,12 @@ class MapInspector extends EntityInspector<Map> {
 
         this.colorimetryPanel = new ColorimetryPanel(this.entity.colorimetry, this.gui, instance);
 
-        this.addController<number>(this, 'layerCount').name('Layer count');
-        this.addController<string>(this, 'renderState', ['Normal', 'Picking'])
+        this.addController(this, 'layerCount').name('Layer count');
+        this.addController(this, 'renderState', ['Normal', 'Picking'])
             .name('Render state')
             .onChange(v => this.setRenderState(v));
-        this.addController<never>(this, 'dumpTiles').name('Dump tiles in console');
-        this.addController<never>(this, 'disposeMapAndLayers').name('Dispose map and layers');
+        this.addController(this, 'dumpTiles').name('Dump tiles in console');
+        this.addController(this, 'disposeMapAndLayers').name('Dispose map and layers');
 
         this.layerFolder = this.gui.addFolder('Layers');
 

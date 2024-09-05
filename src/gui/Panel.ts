@@ -1,6 +1,5 @@
 import type GUI from 'lil-gui';
 import type { Controller } from 'lil-gui';
-import type { Color } from 'three';
 import type Instance from '../core/Instance';
 
 export interface TypedController<T> extends Controller {
@@ -65,8 +64,8 @@ abstract class Panel {
      * @param prop - The name of the property.
      * @returns The created controller.
      */
-    addColorController(obj: object, prop: string) {
-        const controller = this.gui.addColor(obj, prop) as TypedController<Color>;
+    addColorController<T extends object, K extends keyof T & string>(obj: T, prop: K) {
+        const controller = this.gui.addColor(obj, prop) as TypedController<T[K]>;
         this._controllers.push(controller);
         return controller;
     }
@@ -83,14 +82,14 @@ abstract class Panel {
      * @param step - Step value for number controllers.
      * @returns The created controller.
      */
-    addController<T>(
-        obj: object,
-        prop: string,
+    addController<T extends object, K extends keyof T & string>(
+        obj: T,
+        prop: K,
         $1?: object | number | unknown[],
         max?: number,
         step?: number,
     ) {
-        const controller = this.gui.add(obj, prop, $1, max, step) as TypedController<T>;
+        const controller = this.gui.add(obj, prop, $1, max, step) as TypedController<T[K]>;
         this._controllers.push(controller);
         return controller;
     }

@@ -16,22 +16,22 @@ class ColorimetryPanel extends Panel {
 
         this._options = options;
 
-        this.addController<number>(this, 'reset')
+        this.addController(this, 'reset')
             .name('Reset to defaults')
             .min(-1)
             .max(1)
             .onChange(() => this.notify());
-        this.addController<number>(options, 'brightness')
+        this.addController(options, 'brightness')
             .name('Brightness')
             .min(-1)
             .max(1)
             .onChange(() => this.notify());
-        this.addController<number>(options, 'contrast')
+        this.addController(options, 'contrast')
             .name('Contrast')
             .min(0)
             .max(10)
             .onChange(() => this.notify());
-        this.addController<number>(options, 'saturation')
+        this.addController(options, 'saturation')
             .name('Saturation')
             .min(0)
             .max(1)
