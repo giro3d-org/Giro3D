@@ -476,6 +476,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
      */
     exitEditMode() {
         this._editionModeController?.abort();
+        this.hideVertexMarker();
     }
 
     private exitCreateMode() {
