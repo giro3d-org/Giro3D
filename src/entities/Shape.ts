@@ -104,7 +104,13 @@ export type SegmentLabelFormatOptions = {
      * The length of the segment or line, in CRS units.
      */
     length: number;
+    /**
+     * The coordinate of the segment start.
+     */
     start: Vector3;
+    /**
+     * The coordinate of the segment end.
+     */
     end: Vector3;
 };
 
