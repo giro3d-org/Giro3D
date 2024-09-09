@@ -6,7 +6,7 @@ attribution: © <a target="_blank" href="https://ign.fr/">IGN</a>
 tags: [drawing, picking, map]
 ---
 
-<div class="side-pane-with-status-bar" class="pe-none">
+<div class="side-pane-with-status-bar" style="width: 20rem" class="pe-none">
     <!--Parameters -->
     <div class="card">
         <div class="card-header">Parameters</div>
@@ -71,6 +71,16 @@ tags: [drawing, picking, map]
 
                 <hr />
 
+                <button
+                    type="button"
+                    class="btn btn-primary w-100"
+                    id="edit-clicked-shape"
+                    title="Click on a shape to start editing it. When finished, press right-click to exit edition."
+                >
+                    <i class="bi bi-pencil"></i>
+                    Edit first clicked shape
+                </button>
+
                 <div class="row">
                     <div class="col" style="padding-right: 0 !important">
                         <button type="button" disabled class="btn btn-secondary w-100" id="export">
@@ -94,9 +104,11 @@ tags: [drawing, picking, map]
 
             <hr />
 
+            <h6>Units</h6>
+
             <!-- Area unit -->
             <div class="input-group mb-2">
-                <label class="input-group-text" for="area-unit">Areas</label>
+                <label class="input-group-text" style="width: 5rem" for="area-unit">Areas</label>
                 <select class="form-select" id="area-unit" autocomplete="off">
                     <option value="m" selected>Metric</option>
                     <option value="ha">Hectares</option>
@@ -106,7 +118,9 @@ tags: [drawing, picking, map]
 
             <!-- Length unit -->
             <div class="input-group mb-2">
-                <label class="input-group-text" for="length-unit">Lengths</label>
+                <label class="input-group-text" style="width: 5rem" for="length-unit"
+                    >Lengths</label
+                >
                 <select class="form-select" id="length-unit" autocomplete="off">
                     <option value="m" selected>Metric</option>
                     <option value="ft">Feet</option>
@@ -115,7 +129,7 @@ tags: [drawing, picking, map]
 
             <!-- Slope unit -->
             <div class="input-group">
-                <label class="input-group-text" for="slope-unit">Slopes</label>
+                <label class="input-group-text" style="width: 5rem" for="slope-unit">Slopes</label>
                 <select class="form-select" id="slope-unit" autocomplete="off">
                     <option value="deg" selected>Degrees</option>
                     <option value="pct">Percent</option>

@@ -310,9 +310,19 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
          * By default, points are inserted with a **left click**.
          */
         onSegmentClicked?: MouseCallback;
+        /**
+         * The shapes to edit. If `undefined` or empty, all shapes become editable.
+         */
+        shapesToEdit?: Shape[];
     }) {
         this._editionModeController?.abort();
         this._editionModeController = new AbortController();
+
+        // Optionally limit the shapes to edit to the specified entity ids.
+        let ids: Set<string> | null = null;
+        if (options?.shapesToEdit != null && options.shapesToEdit.length > 0) {
+            ids = new Set(options.shapesToEdit.map(shape => shape.id));
+        }
 
         const onBeforePointRemoved =
             options?.onBeforePointRemoved ?? middleButtonOrLeftButtonAndAlt;
@@ -324,7 +334,8 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
             const picked = pick(e);
 
             for (const item of picked) {
-                if (isShape(item.entity)) {
+                const entity = item.entity;
+                if (isShape(entity) && (ids == null || ids.has(entity.id))) {
                     return item as ShapePickResult;
                 }
             }
@@ -476,6 +487,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
      */
     exitEditMode() {
         this._editionModeController?.abort();
+        this.hideVertexMarker();
     }
 
     private exitCreateMode() {

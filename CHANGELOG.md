@@ -204,6 +204,7 @@ This release brings **color layer blending modes** as well as many fixes and API
 
 ### Feat
 
+-   **DrawTool**: enable constraining edition to specified shapes (#511)
 -   **ColorLayer**: support various blending modes (#483)
 -   **Extent**: add shorthands for Web Mercator and EPSG:4326 bounds
 -   **ViewInspector**: add FOV slider
@@ -215,6 +216,7 @@ This release brings **color layer blending modes** as well as many fixes and API
 
 ### Fix
 
+-   **DrawTool**: hide markers on exiting edit mode (#512)
 -   **Inspector**: typecheck bindings (#510)
 -   **RenderPipeline**: fix loss of antialiasing on enabling point cloud post-processing (#509)
 -   **StaticImageSource**: add missing `type` and `isStaticImageSource` properties
