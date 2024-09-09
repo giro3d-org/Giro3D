@@ -23,6 +23,13 @@
 | ------------------------------------------------------ | ----------------------------------------------------------------- | ------------------------------------------------------------ |
 | ![alt text](examples/screenshots/3dtiles_building.jpg) | ![alt text](examples/screenshots/axisgrid.jpg)                    | ![alt text](examples/screenshots/cog_color.jpg)              |
 
+<div align="center">
+  <a href="https://giro3d.org/latest/examples/index.html">Examples</a> ·
+  <a href="https://giro3d.org/latest/apidoc/index.html">Documentation</a> ·
+  <a href="https://gitlab.com/giro3d/giro3d/-/blob/main/CHANGELOG.md">Changelog</a> ·
+  <a href="https://giro3d.org/faq.html">FAQ</a>
+</div>
+
 ## What is Giro3D ?
 
 [**Giro3D**](https://giro3d.org) is a **Web library** written in TypeScript to build 2D and 3D geospatial scenes. It is powered by **[three.js](https://threejs.org)** and WebGL. It aims to **support major geospatial standards** and provide a rich feature set to help visualize data in a 3D environment.
