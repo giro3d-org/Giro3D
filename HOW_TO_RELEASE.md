@@ -12,6 +12,19 @@ pip install commitizen
 
 This will install the `cz` utility in your python packages folder (by default `$HOME/.local/bin/cz`).
 
+## Note on semantic versioning
+
+Giro3D follows [semantic versioning](https://semver.org/). Until 1.0.0 is released, versions are noted `0.Y.Z`, with:
+
+-   `Y` being the minor version - incremented when breaking changes or non-breaking changes are introduced to the public API,
+-   `Z` being the patch version - incremented when only non-breaking bugfixes are introduced.
+
+When 1.0.0 will be released, versions will be noted `X.Y.Z`, with:
+
+-   `X` being the major version - incremented when breaking changes are introduced to the public API,
+-   `Y` being the minor version - incremented when new non-breaking changes are introduced to the public API,
+-   `Z` being the patch version - incremented when only non-breaking bugfixes are introduced.
+
 ## Normal workflow: major/minor release
 
 1. Create a release branch `release/X.Y` (where `X.Y.0` is the release version number) at the tip of `main`
