@@ -12,11 +12,49 @@ pip install commitizen
 
 This will install the `cz` utility in your python packages folder (by default `$HOME/.local/bin/cz`).
 
-## Create a release branch
+## Note on semantic versioning
 
-If new major/minor release: create a branch `release/X.Y` where `X.Y.0` is the release version number.
+Giro3D follows [semantic versioning](https://semver.org/). Until 1.0.0 is released, versions are noted `0.Y.Z`, with:
 
-If patch release, the branch `release/X.Y` should already exist, start from there.
+-   `Y` being the minor version - incremented when breaking changes or non-breaking changes are introduced to the public API,
+-   `Z` being the patch version - incremented when only non-breaking bugfixes are introduced.
+
+When 1.0.0 will be released, versions will be noted `X.Y.Z`, with:
+
+-   `X` being the major version - incremented when breaking changes are introduced to the public API,
+-   `Y` being the minor version - incremented when new non-breaking changes are introduced to the public API,
+-   `Z` being the patch version - incremented when only non-breaking bugfixes are introduced.
+
+## Normal workflow: major/minor release
+
+1. Create a release branch `release/X.Y` (where `X.Y.0` is the release version number) at the tip of `main`
+2. In branch `main`, bump the version in _package.json_ and run `npm i` (to update the _package-lock.json_ file accordingly)
+3. In the release branch, generate changelog, etc. (described below)
+4. Open the release Merge Request (MR) to `main` (described below)
+5. If major changes are required (i.e. that require peer-review), new merge requests can be created, branching from and to the release branch
+6. When the release MR is ready:
+    1. Tag the latest commit on the release branch (don't forget the `v` prefix)
+    2. Once tagged, the pipeline will automatically be triggered to publish the package on NPM
+    3. Accept the release MR
+    4. The release branch can be deleted
+
+**Note:** for pre-releases, you can use a release branch to tag the version, but that branch **MUST** be protected for the pipeline to run and publish the package. Branches following the pattern `release/*` are automatically protected.
+
+## Exceptional workflow: patch releases
+
+If an urgent hotfix is needed for an existing release (say, release a `v0.39.1` for `v0.39.0`):
+
+1. Create a release branch `release/X.Y` at the tag of the existing release we need to patch
+2. Create a short-lived hotfix branch from the release branch
+3. In the hotfix branch, push the fix, generate changelog, etc.
+4. Open the release Merge Request (MR) to the release branch
+5. If changes that need peer-review are required, new merge requests can be created, branching from and to the release branch
+6. When the release MR is ready:
+    1. Tag the latest commit on the release branch (don't forget the `v` prefix)
+    2. Once tagged, the pipeline will automatically be triggered to publish the package on NPM
+    3. Accept the release MR
+    4. If applicable, merge the release branch into `main`
+    5. The release branch can be deleted
 
 ## Generate the changelog
 
@@ -26,10 +64,7 @@ If patch release, the branch `release/X.Y` should already exist, start from ther
     git log --oneline --no-merges $(git describe --tags --abbrev=0)..
     ```
 
-2. figure out what type of version we release (major, minor, patch). Normally commitizen should be
-   able to auto-detect it, but is confused by the fact release starting with v0.x are MAJOR in
-   semver...
-3. generate a changelog with commitizen:
+2. generate a changelog with commitizen:
 
     ```shell
     $HOME/.local/bin/cz changelog --incremental --unreleased-version <version>
@@ -37,21 +72,9 @@ If patch release, the branch `release/X.Y` should already exist, start from ther
 
     where version is the version we want to release (don't forget the `v` prefix, for example `v0.5.0`).
 
-4. Edit the generated changelog for readability (fix typos, add some context for unclear changes).  
+3. Edit the generated changelog for readability (fix typos, add some context for unclear changes).  
    It's also best to sort the items in Feat/Fix/Refactor alphabetically.  
    For the `BREAKING CHANGE` section, edit the text to add a migration guide.
-
-## Bump the version number
-
--   bump version in package.json and run `npm i`
-
-## Open a MR
-
--   open a MR on the repo with these changes
--   once merged, tag the commit on main branch (Don't forget the `v` prefix)
--   once tagged, the pipeline will automatically be triggered to publish the package on NPM.
-
-**Note:** for pre-releases, you can use a release branch to tag the version, but that branch **MUST** be protected for the pipeline to run and publish the package. Branches following the pattern `release/*` are automatically protected.
 
 ## Publish on NPM
 
