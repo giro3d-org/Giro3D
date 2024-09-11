@@ -8,6 +8,7 @@ const RGBA_OFFSET = 20000;
 const temp = {
     input: new Vector2(),
     output: new Vector2(),
+    ij: new Vector2(),
 };
 
 export type HeightMapPixelFormat = typeof RGBAFormat | typeof RGFormat | typeof RedFormat;
@@ -135,6 +136,12 @@ export default class HeightMap {
      * values that match transparent pixels return `null`. Default is `false`.
      */
     getValue(u: number, v: number, ignoreTransparentPixels = false): number | null {
+        const ij = this.getPixelCoordinates(u, v, temp.ij);
+
+        return this.getValueRaw(ij.x, ij.y, ignoreTransparentPixels);
+    }
+
+    private getPixelCoordinates(u: number, v: number, target: Vector2): Vector2 {
         const { width, height, offsetScale } = this;
 
         temp.input.set(u, v);
@@ -146,7 +153,11 @@ export default class HeightMap {
         const i = MathUtils.clamp(Math.round(uu * width - 1), 0, width);
         const j = MathUtils.clamp(Math.round(vv * height - 1), 0, height);
 
-        const index = i + j * width;
+        return target.set(i, j);
+    }
+
+    private getValueRaw(i: number, j: number, ignoreTransparentPixels = false): number | null {
+        const index = i + j * this.width;
 
         if (this.format === RGBAFormat && this.type === UnsignedByteType) {
             return this.readRGBA(index, ignoreTransparentPixels);
