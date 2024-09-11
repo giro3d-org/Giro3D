@@ -1,7 +1,9 @@
 import type { FloatType, RedFormat, RGFormat, TypedArray, UnsignedShortType } from 'three';
 import { MathUtils, RGBAFormat, UnsignedByteType, Vector2 } from 'three';
 import TextureGenerator from '../utils/TextureGenerator';
+import type ElevationRange from './ElevationRange';
 import type OffsetScale from './OffsetScale';
+import type Rect from './Rect';
 
 const RGBA_OFFSET = 20000;
 
@@ -9,6 +11,8 @@ const temp = {
     input: new Vector2(),
     output: new Vector2(),
     ij: new Vector2(),
+    topLeft: new Vector2(),
+    bottomRight: new Vector2(),
 };
 
 export type HeightMapPixelFormat = typeof RGBAFormat | typeof RGFormat | typeof RedFormat;
@@ -139,6 +143,41 @@ export default class HeightMap {
         const ij = this.getPixelCoordinates(u, v, temp.ij);
 
         return this.getValueRaw(ij.x, ij.y, ignoreTransparentPixels);
+    }
+
+    /**
+     * Computes the min/max elevation from the given normalized region.
+     * @param uvRect - The normalized region to process.
+     * @returns The min/max, if any, otherwise `null`.
+     */
+    getMinMax(uvRect: Rect): ElevationRange | null {
+        const left = uvRect.left;
+        const top = uvRect.top;
+        const bottom = uvRect.bottom;
+        const right = uvRect.right;
+
+        let min = +Infinity;
+        let max = -Infinity;
+
+        const topLeft = this.getPixelCoordinates(left, top, temp.topLeft);
+        const bottomRight = this.getPixelCoordinates(right, bottom, temp.bottomRight);
+
+        for (let i = topLeft.x; i <= bottomRight.x; i++) {
+            for (let j = bottomRight.y; j <= topLeft.y; j++) {
+                const z = this.getValueRaw(i, j, true);
+
+                if (z) {
+                    min = Math.min(z, min);
+                    max = Math.max(z, max);
+                }
+            }
+        }
+
+        if (isFinite(min) && isFinite(max)) {
+            return { min, max };
+        }
+
+        return null;
     }
 
     private getPixelCoordinates(u: number, v: number, target: Vector2): Vector2 {

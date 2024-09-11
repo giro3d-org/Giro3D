@@ -1,7 +1,9 @@
 import HeightMap from '@giro3d/giro3d/core/HeightMap';
 import OffsetScale from '@giro3d/giro3d/core/OffsetScale';
+import Rect from '@giro3d/giro3d/core/Rect';
 import {
     FloatType,
+    MathUtils,
     RedFormat,
     RGBAFormat,
     RGFormat,
@@ -210,6 +212,40 @@ describe('HeightMap', () => {
             expect(heightmap.getValue(1, 1)).toEqual(cornerValue);
             expect(heightmap.getValue(0, 1)).toEqual(cornerValue);
             expect(heightmap.getValue(0.5, 0.5)).toEqual(cornerValue);
+        });
+
+        describe('getMinMax', () => {
+            it('should return the correct value for identity offset/scale', () => {
+                const width = 30;
+                const height = 42;
+
+                const buffer = new Uint16Array(width * height);
+
+                let min = +Infinity;
+                let max = -Infinity;
+
+                for (let i = 0; i < buffer.length; i++) {
+                    const z = MathUtils.randInt(0, 10_000);
+                    min = Math.min(z, min);
+                    max = Math.max(z, max);
+                    buffer[i] = z;
+                }
+
+                const heightMap = new HeightMap(
+                    buffer,
+                    width,
+                    height,
+                    OffsetScale.identity(),
+                    RedFormat,
+                    UnsignedShortType,
+                );
+
+                const minmax = heightMap.getMinMax(new Rect(0, 1, 0, 1));
+
+                expect(minmax).toBeDefined();
+                expect(minmax.min).toEqual(min);
+                expect(minmax.max).toEqual(max);
+            });
         });
     });
 });
