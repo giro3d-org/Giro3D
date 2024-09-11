@@ -1,4 +1,4 @@
-import type { PixelFormat, TextureDataType, TypedArray } from 'three';
+import type { FloatType, RedFormat, RGFormat, TypedArray, UnsignedShortType } from 'three';
 import { MathUtils, RGBAFormat, UnsignedByteType, Vector2 } from 'three';
 import TextureGenerator from '../utils/TextureGenerator';
 import type OffsetScale from './OffsetScale';
@@ -9,6 +9,12 @@ const temp = {
     input: new Vector2(),
     output: new Vector2(),
 };
+
+export type HeightMapPixelFormat = typeof RGBAFormat | typeof RGFormat | typeof RedFormat;
+export type HeightMapTextureDataType =
+    | typeof UnsignedByteType
+    | typeof UnsignedShortType
+    | typeof FloatType;
 
 /**
  * Utility class to sample an elevation raster.
@@ -38,11 +44,11 @@ export default class HeightMap {
     /**
      * The format of the underlying buffer pixels.
      */
-    readonly format: PixelFormat;
+    readonly format: HeightMapPixelFormat;
     /**
      * The data type of the underlying buffer pixels.
      */
-    readonly type: TextureDataType;
+    readonly type: HeightMapTextureDataType;
 
     /**
      * The vertical precision of the height values to apply during decoding.
@@ -59,8 +65,8 @@ export default class HeightMap {
         width: number,
         height: number,
         offsetScale: OffsetScale,
-        format: PixelFormat,
-        type: TextureDataType,
+        format: HeightMapPixelFormat,
+        type: HeightMapTextureDataType,
         precision?: number,
         offset?: number,
     ) {
