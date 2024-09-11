@@ -216,6 +216,7 @@ This release brings **color layer blending modes** as well as many fixes and API
 
 ### Fix
 
+-   **Map**: avoid dangerous recursion of tiles in some cases (#515)
 -   **DrawTool**: hide markers on exiting edit mode (#512)
 -   **Inspector**: typecheck bindings (#510)
 -   **RenderPipeline**: fix loss of antialiasing on enabling point cloud post-processing (#509)
