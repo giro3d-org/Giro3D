@@ -170,6 +170,7 @@ class TileMesh
 {
     readonly isMemoryUsage = true as const;
     private readonly _pool: GeometryPool;
+    private readonly _extentDimensions: Vector2;
     private _segments: number;
     readonly type: string = 'TileMesh';
     readonly isTileMesh: boolean = true;
@@ -304,6 +305,7 @@ class TileMesh
 
         this.material.setUuid(this.id);
         const dim = extent.dimensions();
+        this._extentDimensions = dim;
         this.material.uniforms.tileDimensions.value.set(dim.x, dim.y);
 
         // Sets the default bbox volume
@@ -726,6 +728,20 @@ class TileMesh
     }
 
     get minmax() {
+        const range = Math.abs(this._minmax.max - this._minmax.min);
+        const width = this._extentDimensions.width;
+        const height = this._extentDimensions.height;
+        const RATIO = 3;
+
+        // If the current volume is very elongated in the vertical axis,
+        // this can cause excessive subdivisions of the tile. Let's compute
+        // the heightmap to get a more precise min/max and hopefully a tighter
+        // volume. Note that the heightmap will be computed only if it does not
+        // exist, avoiding unnecessary computations.
+        if (range / Math.max(width, height) > RATIO) {
+            this.updateHeightMapIfNecessary();
+        }
+
         return this._minmax;
     }
 
