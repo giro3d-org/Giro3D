@@ -70,18 +70,14 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
     format: new BilFormat(),
     noDataValue,
 })
-    .then(elevationWmts => {
+    .then(source => {
         map.addLayer(
             new ElevationLayer({
-                name: 'wmts_elevation',
                 extent: map.extent,
-                resolutionFactor: 1,
                 preloadImages: true,
+                resolutionFactor: 0.5,
                 minmax: { min: 500, max: 1500 },
-                noDataOptions: {
-                    replaceNoData: false,
-                },
-                source: elevationWmts,
+                source: source,
             }),
         );
     })
@@ -90,11 +86,12 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
 WmtsSource.fromCapabilities(capabilitiesUrl, {
     layer: 'HR.ORTHOIMAGERY.ORTHOPHOTOS',
 })
-    .then(orthophotoWmts => {
+    .then(source => {
         map.addLayer(
             new ColorLayer({
+                preloadImages: true,
                 extent: map.extent,
-                source: orthophotoWmts,
+                source: source,
             }),
         );
     })
