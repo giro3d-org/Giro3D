@@ -32,6 +32,7 @@ import type Layer from './layer/Layer';
 import type MemoryUsage from './MemoryUsage';
 import { type GetMemoryUsageContext } from './MemoryUsage';
 import type OffsetScale from './OffsetScale';
+import Rect from './Rect';
 import TileGeometry from './TileGeometry';
 import { type NeighbourList } from './TileIndex';
 import type UniqueOwner from './UniqueOwner';
@@ -39,6 +40,7 @@ import { intoUniqueOwner } from './UniqueOwner';
 
 const ray = new Ray();
 const inverseMatrix = new Matrix4();
+const THIS_RECT = new Rect(0, 1, 0, 1);
 
 const helperMaterial = new MeshBasicMaterial({
     color: '#75eba8',
@@ -625,7 +627,7 @@ class TileMesh
         const outputHeight = Math.floor(renderTarget.height);
         const outputWidth = Math.floor(renderTarget.width);
 
-        // On millimeter
+        // One millimeter
         const precision = 0.001;
 
         // To ensure that all values are positive before encoding
@@ -656,6 +658,14 @@ class TileMesh
     private inheritHeightMap(heightMap: UniqueOwner<HeightMap, this>) {
         this._heightMap = heightMap;
         this._shouldUpdateHeightMap = true;
+
+        // Let's get a more precise minmax from the inherited heightmap, but
+        // only on the region of the inherited heightmap that matches this tile's extent
+        // (otherwise this would not provide any benefit at all);
+        const minmax = heightMap.payload.getMinMax(THIS_RECT);
+        if (minmax != null) {
+            this._minmax = minmax;
+        }
     }
 
     private resetHeights() {
