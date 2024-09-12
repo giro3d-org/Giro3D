@@ -1683,7 +1683,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     ): GetElevationResult {
         result.coordinates = options.coordinates;
 
-        const { coordinates } = options;
+        const coordinates = options.coordinates.as(this.extent.crs);
 
         if (!this.extent.isPointInside(coordinates)) {
             return result;
