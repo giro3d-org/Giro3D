@@ -1,5 +1,335 @@
 # Changelog
 
+## v0.39.0 (2024-09-03)
+
+This release brings **color layer blending modes** as well as many fixes and API improvements.
+
+### BREAKING CHANGE
+
+#### Inspector
+
+-   `Panel.addController()` and `Panel.addColorController()` are now typechecked. The type parameter is no longer required and no longer points to the type of the bound parameter, but the type of the source object:
+
+    ```js
+    // Before
+    this.addController < number > (source, 'propname');
+
+    // Now
+    this.addController(source, 'propname');
+    ```
+
+    If `source['propname']` does not exist, it will throw a compile-time error (if using TypeScript).
+
+#### ImageSources
+
+-   `CogSource` is renamed to `GeoTIFFSource` for clarity.
+    Other changes include types related to this source:
+
+    -   `CogCacheOptions` -> `GeoTIFFCacheOptions`
+    -   `CogSourceOptions` -> `GeoTIFFSourceOptions`
+
+-   `GeoTIFFSource.channels` setter now throws an exception if
+    the input does not have a valid number of elements (1, 3 or 4 elements).
+
+-   `VectorSource`: The `data` parameter of `VectorSource` has changed to
+    remove ambiguities between URLs and text data, and allow relative URLs.
+    Please refer to the documentation for more details.
+
+    For URL based sources:
+
+    ```js
+    // Before
+    const source = new VectorSource({
+        data: 'http://example.com/data.geojson',
+        format: new GeoJSON(),
+    });
+
+    // Now
+    const source = new VectorSource({
+        data: {
+            url: 'http://example.com/data.geojson',
+            format: new GeoJSON(),
+        },
+    });
+    ```
+
+    For content based sources (e.g a GeoJSON document):
+
+    ```js
+    const geojson = JSON.parse(...);
+
+    // Before
+    const source = new VectorSource({
+        data: geojson,
+        format: new GeoJSON(),
+    });
+
+    // Now
+    const source = new VectorSource({
+        data: {
+            content: geojson,
+            format: new GeoJSON(),
+        },
+    });
+    ```
+
+#### `Map`
+
+-   The `doubleSided` parameter of the `Map` constructor is
+    replaced by the `side` parameter, which is a value of type
+    [`Side`](https://threejs.org/docs/index.html?q=material#api/en/constants/Materials)
+    that can take 3 values: `FrontSide`, `BackSide` and `DoubleSide`.
+
+#### `Instance`
+
+-   `Instance.useTHREEControls()` and `Instance.removeTHREEControls`
+    are removed. To register controls, use `View.setControls()`:
+
+    ```js
+    // Before
+    instance.useTHREEControls(myCustomControls);
+    instance.removeTHREEControls();
+
+    // Now
+    instance.view.setControls(myCustomControls);
+    instance.view.setControls(null);
+    ```
+
+-   `Entity3D._instance` is now longer accessible from
+    subclasses. Instead, use the getter `Entity.instance`. This property
+    will throw an error if the entity is not initialized (yet). To check
+    if the entity is initialized, use `Entity.ready`.
+
+-   The constructor of `Instance` now handles rendering
+    options differently:
+
+    -   to specify the background color, use the `backgroundColor` property
+        (previously named `clearColor`):
+
+    ```js
+    // Before
+    new Instance({
+        renderer: {
+            clearColor: '#FF3020',
+        },
+    });
+
+    // Now. Notice that `backgroundColor` is now at the root of the options
+    new Instance({
+        backgroundColor: '#FF3020',
+    });
+    ```
+
+    -   the `renderer` parameter of the constructor options is now either
+        a `WebGLRenderer` or an object with renderer creation options. Providing
+        a renderer is useful to integrate Giro3D in an existing application that
+        creates its own THREE.js renderer:
+
+    ```js
+    // Before. Notice the awkward double `renderer` parameter.
+    new Instance({
+        renderer: {
+            renderer: new WebGLRenderer(...),
+        }
+    })
+
+    // Now. Notice that `renderer` is now at the root of the options.
+    new Instance({
+        renderer: new WebGLRenderer(...),
+    })
+
+    // Alternatively, let Giro3D create the renderer with the provided options
+    new Instance({
+        renderer: {
+            logarithmicDepthBuffer: true,
+        },
+    })
+    ```
+
+-   The constructor signature in `Instance` has changed.
+    The first parameter `viewerDiv` is removed. Instead, use the `target`
+    parameter in the `options` parameter:
+
+    Before:
+
+    ```js
+    const div = document.getElementById('viewer');
+    const instance = new Instance(div, { ... });
+    ```
+
+    After:
+
+    ```js
+    // Provide the element id
+    const instance = new Instance({ target: 'viewer', ... });
+
+    // Provide the element directly
+    const div = document.getElementById('viewer');
+    const instance = new Instance({ target: div, ... });
+    ```
+
+#### `Extent`
+
+-   `Extent.crs` is now a readonly accessor (previously a method):
+
+    ```js
+    const extent = new Extent('EPSG:3857', 0, 10, 10, 20);
+
+    // Before
+    const crs = extent.crs();
+
+    // Now
+    const crs = extent.crs;
+    ```
+
+-   `Extent.west()`, `Extent.east()`, `Extent.south()` and
+    `Extent.north()` are now accessors instead of methods:
+
+    ```js
+    // Before
+    const west = extent.west();
+
+    // Now
+    const west = extent.west;
+    ```
+
+#### `Context`
+
+-   `Context` is now an interface
+-   `Context.instance` is removed.
+
+#### `Cache`
+
+-   The values of `Cache` must be objects, they cannot be primitives or functions.
+
+### Feat
+
+-   **DrawTool**: enable constraining edition to specified shapes (#511)
+-   **ColorLayer**: support various blending modes (#483)
+-   **Extent**: add shorthands for Web Mercator and EPSG:4326 bounds
+-   **ViewInspector**: add FOV slider
+-   **Map**: add the `.depthTest` property
+-   **Map**: support `Front`, `Back` and `DoubleSide` (#501)
+-   **Instance**: accept the `id` of the parent element (#497)
+-   **Inspector**: add a panel to draw shapes
+-   **FetcherPanel**: display total number of completed requests
+
+### Fix
+
+-   **Map**: avoid dangerous recursion of tiles in some cases (#515)
+-   **DrawTool**: hide markers on exiting edit mode (#512)
+-   **Inspector**: typecheck bindings (#510)
+-   **RenderPipeline**: fix loss of antialiasing on enabling point cloud post-processing (#509)
+-   **StaticImageSource**: add missing `type` and `isStaticImageSource` properties
+-   **LayerComposer**: fix reprojection issues in some cases (#507)
+-   **FeatureCollection**: correctly honor render order specified by styles (#508)
+-   **VectorSource**: remove ambiguities in `data` parameter
+-   **StatusBar**: fix incorrect conversion to WGS84 coordinates
+-   **Layer**: use tighter epsilon for extent comparison when looking for a suitable ancestor
+-   **Outliner**: display lights in yellow
+-   **StatusBar**: fix incorrect access to view controls
+-   **MapInspector**: remove redundant renderOrder entry
+-   **Layer**: don't update non-visible layers
+-   **DrawTool**: fix missing `onTemporaryPointMoved` from API
+-   **ContourLineOptions**: color is now of type `ColorRepresentation`
+-   **Entity3D**: fix typing of setter for clipping planes
+-   **Shape**: mitigate jittering of surface mesh by having relative coordinates
+-   **DrawTool**: fix incorrect argument type for `createSegment()` and `createLineString()`
+-   **TiledImageSource**: stop logging HTTP errors
+-   **Tiles3dInspector**: update layer inspectors
+-   **Coordinates**: remove geocentric constraint when converting to `Vector2` or `Vector3` (#224)
+
+### Refactor
+
+-   **View**: simplify frustum culling
+-   **View**: `isSphereVisible()` now takes an optional `matrixWorld` parameter
+-   **CogSource**: rename to `GeoTIFFSource` (#500)
+-   **Instance**: remove `useTHREEControls()` and `removeTHREEControls()`
+-   **entities**: initialize the `.instance` field with `initialize()`
+-   **Instance**: refactor `renderer` constructor option (#499)
+-   **Extent**: `crs()` is now an accessor (#498)
+-   **DebugSource**: make most parameters optional
+-   **Inspector**: accept the `id` of the parent element
+-   **Instance**: `add()` is now generic over the type of the added object
+-   **WmtsSource**: `matrixSet` is now optional
+-   **Inspector**: constructor now accepts an `HTMLElement`
+-   **VectorSource**: fix type of `style` parameter
+-   **Extent**: make `west()`, `east()`, `north()` and `south()` accessors
+-   **MainLoop**: remove `.gfxEngine` property
+-   **Context**: is now an interface
+-   **Cache**: fix invalid entry type
+-   **Fetcher**: use concrete `HttpError` class instead of interface
+-   **AxisGrid**: use `Coordinates.toVector2()` rather than `toVector3()` when not necessary
+
+### Perf
+
+-   **TiledImageSource**: don't process transient requests
+
+## v0.38.4 (2024-08-20)
+
+### BREAKING CHANGE
+
+-   `Entity3D.getObjectToUpdateForAttachedLayers()` is
+    removed. Entities are now responsible for updating their layers.
+    This is typically done in the `postUpdate()` method.
+-   ImageFormat.decode() now takes two mandatory parameters
+-   the `MemoryUsage` has changed to avoid counting the
+    same object twice.
+-   Coordinates.altitude is now a getter
+-   Entities now generate their ID.
+-   `Instance.camera` is renamed to `Instance.view`
+-   The `Camera` class is renamed to `View`
+-   The `.camera3D` property is renamed `.camera`
+-   `Map.materialOptions` is no longer exposed. Use
+    individual accessors instead (`.hillshading`, `.terrain`, etc).
+
+### Feat
+
+-   **MainLoop**: count frames
+-   **ViewInspector**: add button create frustum snapshots
+-   **Map**: expose subdivisionThreshold option in constructor
+
+### Fix
+
+-   **Entity**: isEntity() accepts a nullish object
+-   **VectorSource**: getExtent() now longer throws
+-   **examples**: don't import from index.js files
+-   **VectorSource**: don't throw in getCrs()
+-   **Map**: the wireframe property now updates all existing tiles
+-   **Coordinates**: make altitude a getter
+-   **PointCloudMaterial**: create classification uniform on copy if necessary
+-   **bindColorPicker**: accept values of type ColorRepresentation
+-   **bindNumericalDropdown**: fix incorrect parsing of numerical values
+-   **Entity**: accept returning null in update()
+-   **giro3d_graticule_pars_fragment.glsl**: add smooth edges/antialiasing for graticule lines
+
+### Refactor
+
+-   **Entity3D**: improve typing of traverseMaterials()
+-   **PointCloud**: add type parameter for material type
+-   reduce occurences of 'any'
+-   **View**: move isPerspectiveCamera and isOrthographicCamera to predicates.ts
+-   **TextureGenerator**: remove circular dependency to WebGLComposer
+-   **ImageFormat**: use true as const in isImageFormat flag
+-   don't import from index.ts files
+-   **predicates**: add more predicates
+-   **ImageFormat**: the options parameters is now mandatory
+-   **TextureGenerator**: remove NumberArray and use TypedArray instead
+-   **sources**: enable strict mode
+-   **MemoryUsage**: don't count the same object twice
+-   **c3DEngine**: getWindowSize() now takes an optional target
+-   **Map**: accept graticule color in ColorRepresentation rather than only Color
+-   **StatusBar**: don't throw error if target does not exist
+-   **Coordinates**: add EPSG:4979 to crsToUnit()
+-   **Entity**: automatically generate the ID (#492)
+-   **Instance**: rename `.camera` to `.view` (#491)
+-   **Map**: don't expose materialOptions and use accessors (#487)
+-   **EntityInspector**: make entity type a generic parameter
+
+### Perf
+
+-   **MainLoop**: stop updating layers (#495)
+
 ## v0.38.5 (2024-08-20)
 
 ### Feat

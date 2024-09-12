@@ -64,62 +64,62 @@ class LayerInspector extends Panel {
 
         this.updateValues();
 
-        this.addController<string>(this.layer, 'id').name('Identifier');
-        this.addController<string>(this, 'cpuMemoryUsage').name('Memory usage (CPU)');
-        this.addController<string>(this, 'gpuMemoryUsage').name('Memory usage (GPU)');
+        this.addController(this.layer, 'id').name('Identifier');
+        this.addController(this, 'cpuMemoryUsage').name('Memory usage (CPU)');
+        this.addController(this, 'gpuMemoryUsage').name('Memory usage (GPU)');
         if (layer.name) {
-            this.addController<string>(this.layer, 'name').name('Name');
+            this.addController(this.layer, 'name').name('Name');
         }
-        this.addController<string>(this, 'sourceCrs').name('Source CRS');
+        this.addController(this, 'sourceCrs').name('Source CRS');
 
-        this.addController<string>(this, 'state').name('Status');
-        this.addController<number>(this.layer, 'resolutionFactor').name('Resolution factor');
-        this.addController<boolean>(this.layer, 'visible')
+        this.addController(this, 'state').name('Status');
+        this.addController(this.layer, 'resolutionFactor').name('Resolution factor');
+        this.addController(this.layer, 'visible')
             .name('Visible')
             .onChange(() => {
                 this.gui.title(getTitle(layer));
                 this.notify(entity);
             });
 
-        this.addController<boolean>(this.layer, 'frozen')
+        this.addController(this.layer, 'frozen')
             .name('Frozen')
             .onChange(() => {
                 this.notify(entity);
             });
 
         this.interpretation = layer.interpretation.toString();
-        this.addController<string>(this, 'interpretation').name('Interpretation');
+        this.addController(this, 'interpretation').name('Interpretation');
 
-        this.addController<never>(this, 'repaint')
+        this.addController(this, 'repaint')
             .name('Repaint layer')
             .onChange(() => {
                 this.notify(entity);
             });
 
-        this.addController<number>(this, 'composerImages').name('Loaded images');
+        this.addController(this, 'composerImages').name('Loaded images');
 
         if (isElevationLayer(this.layer)) {
             this.minmax = { min: this.layer.minmax.min, max: this.layer.minmax.max };
-            this.addController<number>(this.minmax, 'min').name('Minimum elevation');
-            this.addController<number>(this.minmax, 'max').name('Maximum elevation');
+            this.addController(this.minmax, 'min').name('Minimum elevation');
+            this.addController(this.minmax, 'max').name('Maximum elevation');
         }
 
         if (isColorLayer(this.layer)) {
             const colorLayer = this.layer;
 
             if (colorLayer.elevationRange) {
-                this.addController<number>(colorLayer.elevationRange, 'min')
+                this.addController(colorLayer.elevationRange, 'min')
                     .name('Elevation range minimum')
                     .onChange(() => this.notify(entity));
 
-                this.addController<number>(colorLayer.elevationRange, 'max')
+                this.addController(colorLayer.elevationRange, 'max')
                     .name('Elevation range maximum')
                     .onChange(() => this.notify(entity));
             }
 
             this.blendingMode = blendingModes[colorLayer.blendingMode];
 
-            this.addController<string>(this, 'blendingMode', blendingModes)
+            this.addController(this, 'blendingMode', blendingModes)
                 .name('Blending mode')
                 .onChange(v => {
                     colorLayer.blendingMode = blendingModes.indexOf(v);
@@ -134,7 +134,7 @@ class LayerInspector extends Panel {
         }
 
         if ('opacity' in this.layer && this.layer.opacity !== undefined) {
-            this.addController<number>(this.layer, 'opacity')
+            this.addController(this.layer, 'opacity')
                 .name('Opacity')
                 .min(0)
                 .max(1)
@@ -145,7 +145,7 @@ class LayerInspector extends Panel {
         this.showExtent = false;
         this.extentHelper = null;
 
-        this.addController<boolean>(this, 'showExtent')
+        this.addController(this, 'showExtent')
             .name('Show extent')
             .onChange(() => this.toggleExtent());
         this.addColorController(this, 'extentColor')
@@ -158,10 +158,10 @@ class LayerInspector extends Panel {
             this.sourceInspector = new SourceInspector(this.gui, instance, layer.source);
         }
 
-        this.addController<never>(this, 'disposeLayer').name('Dispose layer');
+        this.addController(this, 'disposeLayer').name('Dispose layer');
 
         if (isMap(this.entity)) {
-            this.addController<never>(this, 'removeLayer').name('Remove layer from map');
+            this.addController(this, 'removeLayer').name('Remove layer from map');
         }
 
         layer.addEventListener('visible-property-changed', () => this.gui.title(getTitle(layer)));

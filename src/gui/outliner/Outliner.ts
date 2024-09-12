@@ -290,19 +290,19 @@ class Outliner extends Panel {
         // avoid wrapping ids and coordinates for deep-nested elements
         this.treeview.style.whiteSpace = 'nowrap';
 
-        this.addController<boolean>(this.filters, 'showHelpers')
+        this.addController(this.filters, 'showHelpers')
             .name('Show helpers')
             .onChange(() => {
                 this.search();
                 this.instance.notifyChange();
             });
-        this.addController<boolean>(this.filters, 'showHiddenObjects')
+        this.addController(this.filters, 'showHiddenObjects')
             .name('Show hidden objects')
             .onChange(() => {
                 this.search();
                 this.instance.notifyChange();
             });
-        this.addController<string>(this.filters, 'searchQuery')
+        this.addController(this.filters, 'searchQuery')
             .name('Name filter')
             .onChange(() => {
                 this.search();

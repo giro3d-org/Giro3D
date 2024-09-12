@@ -15,16 +15,14 @@ class WebGLRendererInspector extends Panel {
 
         this.renderer = this.instance.renderer;
 
-        this.addController<boolean>(this.renderer, 'localClippingEnabled').onChange(() =>
-            this.notify(),
-        );
+        this.addController(this.renderer, 'localClippingEnabled').onChange(() => this.notify());
 
         this._addCapabilities(this.renderer, this.gui.addFolder('Capabilities'));
 
         const loseContextExt = this.renderer.getContext().getExtension('WEBGL_lose_context');
         if (loseContextExt) {
-            this.addController<never>(loseContextExt, 'loseContext').name('Lose context');
-            this.addController<never>(loseContextExt, 'restoreContext').name('Restore context');
+            this.addController(loseContextExt, 'loseContext').name('Lose context');
+            this.addController(loseContextExt, 'restoreContext').name('Restore context');
         }
     }
 

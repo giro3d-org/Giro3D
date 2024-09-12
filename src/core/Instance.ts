@@ -634,10 +634,26 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
             throw new Error('missing CRS PROJ string');
         }
 
-        // define the CRS with PROJ
-        proj4.defs(name, value);
-        // register this CRS with OpenLayers
-        register(proj4);
+        try {
+            // define the CRS with PROJ
+            proj4.defs(name, value);
+        } catch (e) {
+            let message = '';
+            if (e instanceof Error) {
+                message = ': ' + e.message;
+            }
+            throw new Error(`failed to register PROJ definition for ${name}${message}`);
+        }
+        try {
+            // register this CRS with OpenLayers
+            register(proj4);
+        } catch (e) {
+            let message = '';
+            if (e instanceof Error) {
+                message = ': ' + e.message;
+            }
+            throw new Error(`failed to register PROJ definitions in OpenLayers${message}`);
+        }
     }
 
     /**
@@ -803,10 +819,11 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * layer/source, there may be additionnal properties (coming from THREE.Raycaster
      * for instance).
      * If `options.pickFeatures` if `true`, `features` property may be set.
+     *
      * ```js
-     * instance.pickObjectsAt({ x, y })
-     * instance.pickObjectsAt({ x, y }, { radius: 1, where: ['wfsBuilding'] })
-     * instance.pickObjectsAt({ x, y }, { radius: 3, where: ['wfsBuilding', myLayer] })
+     * instance.pickObjectsAt(mouseEvent)
+     * instance.pickObjectsAt(mouseEvent, { radius: 1, where: [entity0, entity1] })
+     * instance.pickObjectsAt(mouseEvent, { radius: 3, where: [entity0] })
      * ```
      */
     pickObjectsAt(

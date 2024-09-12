@@ -62,11 +62,11 @@ class FeatureCollectionInspector extends EntityInspector<FeatureCollection> {
 
         this.showGrid = false;
 
-        this.addController<string>(this, 'dataProjection').name('Data projection');
-        this.addController<boolean>(this, 'wireframe')
+        this.addController(this, 'dataProjection').name('Data projection');
+        this.addController(this, 'wireframe')
             .name('Wireframe')
             .onChange(v => this.toggleWireframe(v));
-        this.addController<number>(this.entity, 'materialCount').name('Materials');
+        this.addController(this.entity, 'materialCount').name('Materials');
     }
 
     /**

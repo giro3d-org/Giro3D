@@ -4,6 +4,7 @@ import {
     FrontSide,
     Group,
     MathUtils,
+    Matrix4,
     Quaternion,
     Raycaster,
     UnsignedByteType,
@@ -90,6 +91,8 @@ export const DEFAULT_MAP_SEGMENTS = 32;
  * Comparison function to order layers.
  */
 export type LayerCompareFn = (a: Layer, b: Layer) => number;
+
+const IDENTITY = new Matrix4().identity();
 
 /**
  * A predicate to determine if the given tile can be used as a neighbour for stitching purposes.
@@ -1330,13 +1333,15 @@ class Map<UserData extends EntityUserData = EntityUserData>
             let requestChildrenUpdate = false;
 
             if (!this.frozen) {
-                const size = node.boundingBox.getSize(tmpVector);
-                const box = node.boundingBox;
+                const worldBox = node.getWorldSpaceBoundingBox(tmpBox3);
+                const size = worldBox.getSize(tmpVector);
+                const geometricError = Math.max(size.x, size.y);
+
                 const sse = ScreenSpaceError.computeFromBox3(
                     context.view,
-                    box,
-                    node.matrixWorld,
-                    Math.max(size.x, size.y),
+                    worldBox,
+                    IDENTITY,
+                    geometricError,
                     ScreenSpaceError.Mode.MODE_2D,
                 );
 

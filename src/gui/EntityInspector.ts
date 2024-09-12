@@ -50,26 +50,26 @@ class ClippingPlanePanel extends Panel {
         this.helperSize = 5;
         this.negate = false;
 
-        this.addController<boolean>(this, 'enableClippingPlane')
+        this.addController(this, 'enableClippingPlane')
             .name('Enable')
             .onChange(() => this.updateClippingPlane());
 
-        this.addController<number>(this.normal, 'x')
+        this.addController(this.normal, 'x')
             .name('Plane normal X')
             .onChange(() => this.updateClippingPlane());
-        this.addController<number>(this.normal, 'y')
+        this.addController(this.normal, 'y')
             .name('Plane normal Y')
             .onChange(() => this.updateClippingPlane());
-        this.addController<number>(this.normal, 'z')
+        this.addController(this.normal, 'z')
             .name('Plane normal Z')
             .onChange(() => this.updateClippingPlane());
-        this.addController<number>(this, 'distance')
+        this.addController(this, 'distance')
             .name('Distance')
             .onChange(() => this.updateClippingPlane());
-        this.addController<number>(this, 'helperSize')
+        this.addController(this, 'helperSize')
             .name('Helper size')
             .onChange(() => this.updateClippingPlane());
-        this.addController<boolean>(this, 'negate')
+        this.addController(this, 'negate')
             .name('Negate plane')
             .onChange(() => this.updateClippingPlane());
     }
@@ -158,35 +158,35 @@ class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
         this.boundingBoxColor = '#FFFF00';
         this.state = 'idle';
 
-        this.addController<string>(this.entity, 'id').name('Identifier');
+        this.addController(this.entity, 'id').name('Identifier');
 
-        this.addController<string>(this, 'cpuMemoryUsage').name('Memory usage (CPU)');
-        this.addController<string>(this, 'gpuMemoryUsage').name('Memory usage (GPU)');
+        this.addController(this, 'cpuMemoryUsage').name('Memory usage (CPU)');
+        this.addController(this, 'gpuMemoryUsage').name('Memory usage (GPU)');
 
-        this.addController<string>(this, 'state').name('Status');
-        this.addController<number>(this.entity, 'renderOrder')
+        this.addController(this, 'state').name('Status');
+        this.addController(this.entity, 'renderOrder')
             .name('Render order')
             .onChange(() => this.notify(this.entity));
 
         this.clippingPlanePanel = new ClippingPlanePanel(entity, this.gui, instance);
 
         if (options.visibility) {
-            this.addController<boolean>(this, 'visible')
+            this.addController(this, 'visible')
                 .name('Visible')
                 .onChange(v => this.toggleVisibility(v));
         }
-        this.addController<boolean>(this.entity, 'frozen')
+        this.addController(this.entity, 'frozen')
             .name('Freeze updates')
             .onChange(() => this.notify(this.entity));
         if (options.opacity) {
-            this.addController<string>(this.entity, 'opacity')
+            this.addController(this.entity, 'opacity')
                 .name('Opacity')
                 .min(0)
                 .max(1)
                 .onChange(() => this.notify(this.entity));
         }
         if (options.boundingBoxes) {
-            this.addController<boolean>(this, 'boundingBoxes')
+            this.addController(this, 'boundingBoxes')
                 .name('Show volumes')
                 .onChange(v => this.toggleBoundingBoxes(v));
             if (options.boundingBoxColor) {

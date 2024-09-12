@@ -19,6 +19,7 @@ import { isFiniteNumber } from '../../utils/predicates';
 import ProjUtils from '../../utils/ProjUtils';
 import TextureGenerator from '../../utils/TextureGenerator';
 import { nonNull } from '../../utils/tsutils';
+import Coordinates from '../geographic/Coordinates';
 import type Extent from '../geographic/Extent';
 import type MemoryUsage from '../MemoryUsage';
 import { type GetMemoryUsageContext, type MemoryUsageReport } from '../MemoryUsage';
@@ -29,6 +30,7 @@ const tmpVec1 = new Vector2();
 const tmpVec2 = new Vector2();
 const DEFAULT_WARP_SUBDIVISIONS = 8;
 const tmpFloat64 = new Float64Array(DEFAULT_WARP_SUBDIVISIONS * DEFAULT_WARP_SUBDIVISIONS * 3);
+const tmpCoords = new Coordinates('EPSG:4326', 0, 0);
 
 /**
  * Removes the texture data from CPU memory.
@@ -367,19 +369,21 @@ class LayerComposer implements MemoryUsage {
         const itemSize = 3;
         const arraySize = (segments + 1) * (segments + 1) * itemSize;
         const float64 = tmpFloat64.length === arraySize ? tmpFloat64 : new Float64Array(arraySize);
+
         const grid = sourceExtent.toGrid(segments, segments, float64, itemSize);
-        const targetExtent = sourceExtent.as(this.targetCrs);
-        const center = targetExtent.centerAsVector2(tmpVec2);
+        const center = sourceExtent.center(tmpCoords).as(this.targetCrs).toVector2(tmpVec2);
+        const offset = center.clone().negate();
 
         // Transformations must occur in double precision
         ProjUtils.transformBufferInPlace(grid, {
             srcCrs: this.sourceCrs,
             dstCrs: this.targetCrs,
-            offset: new Vector2(-center.x, -center.y),
+            offset,
             stride: itemSize,
         });
 
         const geometry = new PlaneGeometry(dims.x, dims.y, segments, segments);
+        geometry.name = 'warped mesh';
         const positionAttribute = geometry.getAttribute('position');
 
         // But vertex buffers are in single precision.
@@ -390,7 +394,7 @@ class LayerComposer implements MemoryUsage {
         }
 
         positionAttribute.needsUpdate = true;
-        geometry.computeBoundingBox();
+        geometry.computeBoundingSphere();
 
         // Note: the material will be set by the WebGLComposer itself.
         const result = new Mesh(geometry);

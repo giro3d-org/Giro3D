@@ -12,28 +12,28 @@ class GraticulePanel extends Panel {
     constructor(graticule: GraticuleOptions, parentGui: GUI, instance: Instance) {
         super(parentGui, instance, 'Graticule');
 
-        this.addController<boolean>(graticule, 'enabled')
+        this.addController(graticule, 'enabled')
             .name('Enable')
             .onChange(() => this.notify());
         this.addColorController(graticule, 'color')
             .name('Color')
             .onChange(() => this.notify());
-        this.addController<number>(graticule, 'opacity', 0, 1)
+        this.addController(graticule, 'opacity', 0, 1)
             .name('Opacity')
             .onChange(() => this.notify());
-        this.addController<number>(graticule, 'xStep')
+        this.addController(graticule, 'xStep')
             .name('X step')
             .onChange(() => this.notify());
-        this.addController<number>(graticule, 'yStep')
+        this.addController(graticule, 'yStep')
             .name('Y step')
             .onChange(() => this.notify());
-        this.addController<number>(graticule, 'xOffset')
+        this.addController(graticule, 'xOffset')
             .name('X Offset')
             .onChange(() => this.notify());
-        this.addController<number>(graticule, 'yOffset')
+        this.addController(graticule, 'yOffset')
             .name('Y Offset')
             .onChange(() => this.notify());
-        this.addController<number>(graticule, 'thickness')
+        this.addController(graticule, 'thickness')
             .name('Thickness')
             .onChange(() => this.notify());
     }

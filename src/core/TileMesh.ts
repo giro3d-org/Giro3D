@@ -32,6 +32,7 @@ import type Layer from './layer/Layer';
 import type MemoryUsage from './MemoryUsage';
 import { type GetMemoryUsageContext } from './MemoryUsage';
 import type OffsetScale from './OffsetScale';
+import Rect from './Rect';
 import TileGeometry from './TileGeometry';
 import { type NeighbourList } from './TileIndex';
 import type UniqueOwner from './UniqueOwner';
@@ -39,6 +40,7 @@ import { intoUniqueOwner } from './UniqueOwner';
 
 const ray = new Ray();
 const inverseMatrix = new Matrix4();
+const THIS_RECT = new Rect(0, 1, 0, 1);
 
 const helperMaterial = new MeshBasicMaterial({
     color: '#75eba8',
@@ -168,6 +170,7 @@ class TileMesh
 {
     readonly isMemoryUsage = true as const;
     private readonly _pool: GeometryPool;
+    private readonly _extentDimensions: Vector2;
     private _segments: number;
     readonly type: string = 'TileMesh';
     readonly isTileMesh: boolean = true;
@@ -302,6 +305,7 @@ class TileMesh
 
         this.material.setUuid(this.id);
         const dim = extent.dimensions();
+        this._extentDimensions = dim;
         this.material.uniforms.tileDimensions.value.set(dim.x, dim.y);
 
         // Sets the default bbox volume
@@ -569,7 +573,11 @@ class TileMesh
                 return true;
             }
             ancestorLevel++;
-            current = current.parent as TileMesh;
+            if (isTileMesh(current.parent)) {
+                current = current.parent as TileMesh;
+            } else {
+                break;
+            }
         }
 
         return false;
@@ -621,7 +629,7 @@ class TileMesh
         const outputHeight = Math.floor(renderTarget.height);
         const outputWidth = Math.floor(renderTarget.width);
 
-        // On millimeter
+        // One millimeter
         const precision = 0.001;
 
         // To ensure that all values are positive before encoding
@@ -652,6 +660,14 @@ class TileMesh
     private inheritHeightMap(heightMap: UniqueOwner<HeightMap, this>) {
         this._heightMap = heightMap;
         this._shouldUpdateHeightMap = true;
+
+        // Let's get a more precise minmax from the inherited heightmap, but
+        // only on the region of the inherited heightmap that matches this tile's extent
+        // (otherwise this would not provide any benefit at all);
+        const minmax = heightMap.payload.getMinMax(THIS_RECT);
+        if (minmax != null) {
+            this._minmax = minmax;
+        }
     }
 
     private resetHeights() {
@@ -712,6 +728,20 @@ class TileMesh
     }
 
     get minmax() {
+        const range = Math.abs(this._minmax.max - this._minmax.min);
+        const width = this._extentDimensions.width;
+        const height = this._extentDimensions.height;
+        const RATIO = 3;
+
+        // If the current volume is very elongated in the vertical axis,
+        // this can cause excessive subdivisions of the tile. Let's compute
+        // the heightmap to get a more precise min/max and hopefully a tighter
+        // volume. Note that the heightmap will be computed only if it does not
+        // exist, avoiding unnecessary computations.
+        if (range / Math.max(width, height) > RATIO) {
+            this.updateHeightMapIfNecessary();
+        }
+
         return this._minmax;
     }
 

@@ -1053,7 +1053,7 @@ abstract class Layer<
                 }
             }
 
-            if (!this.source.synchronous && !this.canFetchImages(target)) {
+            if (!this.canFetchImages(target)) {
                 return;
             }
 

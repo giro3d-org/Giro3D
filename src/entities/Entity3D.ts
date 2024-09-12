@@ -318,13 +318,22 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
         this.traverse(o => {
             // To be able to link an object to its parent entity (e.g for picking purposes)
             o.userData.parentEntity = this;
-            o.renderOrder = this.renderOrder;
+            this.assignRenderOrder(obj);
         }, obj);
 
         // Setup materials
         this.traverseMaterials(m => this.setupMaterial(m), obj);
         // dispatch event
         this.dispatchEvent({ type: 'object-created', obj });
+    }
+
+    /**
+     * Assigns the render order of this object.
+     *
+     * This may be overriden to perform custom logic.
+     */
+    protected assignRenderOrder(obj: Object3D) {
+        obj.renderOrder = this.renderOrder;
     }
 
     /* eslint-enable class-methods-use-this */

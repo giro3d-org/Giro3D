@@ -33,7 +33,7 @@ export default class LineStringMesh<UserData extends DefaultUserData = DefaultUs
         this.dispatchEvent({ type: 'dispose' });
     }
 
-    update(options: { material: LineMaterial | null; opacity: number }) {
+    update(options: { material: LineMaterial | null; opacity: number; renderOrder: number }) {
         if (options.material) {
             this.material = options.material;
             this._styleOpacity = options.opacity;
@@ -42,6 +42,7 @@ export default class LineStringMesh<UserData extends DefaultUserData = DefaultUs
         } else {
             this.visible = false;
         }
+        this.renderOrder = options.renderOrder;
     }
 
     private updateOpacity() {

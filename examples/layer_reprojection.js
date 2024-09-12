@@ -39,7 +39,6 @@ function addMapboxLayer(extent) {
             source: new XYZ({
                 url: `https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.webp?access_token=${apiKey}`,
                 projection: 'EPSG:3857',
-                crossOrigin: 'anonymous',
             }),
         }),
     });
@@ -95,7 +94,12 @@ function createScene(crs, crsDef, extent) {
         backgroundColor: 'grey',
     });
 
-    map = new Map({ extent, hillshading: true });
+    map = new Map({
+        extent,
+        segments: 2,
+        backgroundColor: 'black',
+        backgroundOpacity: 0.3,
+    });
 
     instance.add(map);
 
@@ -123,6 +127,7 @@ function createScene(crs, crsDef, extent) {
 
 async function fetchCrsBbox(crs) {
     const code = crs.split(':')[1];
+    const link = `https://epsg.io/${code}`;
     const url = `https://epsg.io/${code}.json?download=1`;
     const res = await fetch(url, { mode: 'cors' });
     const json = await res.json();
@@ -140,9 +145,11 @@ async function fetchCrsBbox(crs) {
         south,
     });
 
-    document.getElementById('currentCrsCode').innerText = crs;
-    document.getElementById('currentCrsName').innerText = json.name;
-    document.getElementById('currentCrsArea').innerText = json.area;
+    document.getElementById('srid').innerText = json.name;
+    document.getElementById('name').innerText = crs;
+    document.getElementById('description').innerText = json.area;
+    // @ts-expect-error typing
+    document.getElementById('link').href = link;
 
     if (crsToUnit(crs) === undefined) {
         // Unsupported projection
@@ -164,28 +171,30 @@ async function fetchCrsDefinition(crs) {
 }
 
 async function initialize(crs) {
+    const error = document.getElementById('message');
+
     try {
         const def = await fetchCrsDefinition(crs);
         const extent = await fetchCrsBbox(crs);
         const proj = crs;
-        const error = document.getElementById('errorMessage');
         error.style.display = 'none';
 
         createScene(proj, def, extent);
     } catch (e) {
+        error.style.display = 'block';
+
         if (e instanceof Error) {
-            const msg = e.message;
-            const error = document.getElementById('errorMessage');
-            error.innerText = msg;
-            error.style.display = 'block';
+            error.innerText = e.message;
+        } else {
+            error.innerText = `An error occured while fetching CRS definition on epsg.io`;
         }
     }
 }
 
-bindButton('createSceneBtn', () => {
+bindButton('create', () => {
     /** @type {HTMLInputElement} */
     // @ts-expect-error conversion
-    const epsgCodeElt = document.getElementById('epsgCode');
+    const epsgCodeElt = document.getElementById('code');
 
     const content = epsgCodeElt.value;
 

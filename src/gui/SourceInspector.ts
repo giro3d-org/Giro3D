@@ -16,7 +16,7 @@ import Panel from './Panel';
 class SourceInspector extends Panel {
     source: ImageSource;
     url?: string;
-    cogChannels?: string;
+    cogChannels = '[0]';
     subtype?: string;
     crs?: string;
     resolutions?: number;
@@ -40,23 +40,23 @@ class SourceInspector extends Panel {
     private addControllers(source: ImageSource) {
         const obj = { crs: source.getCrs() ?? 'unknown' };
 
-        this.addController<string>(source, 'type').name('Type');
-        this.addController<string>(source, 'colorSpace').name('Color space');
-        this.addController<number>(source, 'datatype').name('Data type');
-        this.addController<boolean>(source, 'flipY').name('Flip Y');
-        this.addController<boolean>(source, 'synchronous').name('Synchronous');
-        this.addController<string>(obj, 'crs').name('CRS');
+        this.addController(source, 'type').name('Type');
+        this.addController(source, 'colorSpace').name('Color space');
+        this.addController(source, 'datatype').name('Data type');
+        this.addController(source, 'flipY').name('Flip Y');
+        this.addController(source, 'synchronous').name('Synchronous');
+        this.addController(obj, 'crs').name('CRS');
         this.addController(source, 'update').name('Update');
 
-        this.addController<string>(this, 'cpuMemoryUsage').name('Memory usage (CPU)');
-        this.addController<string>(this, 'gpuMemoryUsage').name('Memory usage (GPU)');
+        this.addController(this, 'cpuMemoryUsage').name('Memory usage (CPU)');
+        this.addController(this, 'gpuMemoryUsage').name('Memory usage (GPU)');
 
         if (source instanceof GeoTIFFSource) {
             this.url = source.url.toString();
-            this.addController<string>(this, 'url').name('URL');
+            this.addController(this, 'url').name('URL');
             if (source.channels) {
                 this.cogChannels = JSON.stringify(source.channels);
-                this.addController<string>(this, 'cogChannels')
+                this.addController(this, 'cogChannels')
                     .name('Channel mapping')
                     .onChange(v => {
                         const channels = JSON.parse(v);
@@ -68,7 +68,7 @@ class SourceInspector extends Panel {
             this.addController(this, 'loadedPercent').name('Loaded/Requested');
             this.processOpenLayersSource(source.source);
         } else if (source instanceof VectorSource) {
-            this.addController<number>(source, 'featureCount').name('Feature count');
+            this.addController(source, 'featureCount').name('Feature count');
         }
     }
 
@@ -100,13 +100,13 @@ class SourceInspector extends Panel {
 
         if (proj) {
             this.crs = proj.getCode();
-            this.addController<string>(this, 'crs').name('CRS');
+            this.addController(this, 'crs').name('CRS');
         }
 
         const res = source.getResolutions();
         if (res) {
             this.resolutions = res.length;
-            this.addController<number>(this, 'resolutions').name('Zoom levels');
+            this.addController(this, 'resolutions').name('Zoom levels');
         }
 
         if (source instanceof UrlTile) {
@@ -115,13 +115,13 @@ class SourceInspector extends Panel {
             if (urls && urls.length > 0) {
                 this.url = urls[0];
             }
-            this.addController<string>(this, 'url').name('Main URL');
+            this.addController(this, 'url').name('Main URL');
         }
 
         if (source.constructor.name) {
             this.subtype = source.constructor.name;
         }
-        this.addController<string>(this, 'subtype').name('Inner source');
+        this.addController(this, 'subtype').name('Inner source');
     }
 }
 

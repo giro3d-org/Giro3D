@@ -70,7 +70,10 @@ class EntityPanel extends Panel {
      * @example
      * EntityPanel.registerInspector('Map', MyCustomMapInspector);
      */
-    static registerInspector(type: string, inspector: typeof EntityInspector) {
+    static registerInspector<T extends Entity3D = Entity3D>(
+        type: string,
+        inspector: typeof EntityInspector<T>,
+    ) {
         customInspectors[type] = inspector;
     }
 

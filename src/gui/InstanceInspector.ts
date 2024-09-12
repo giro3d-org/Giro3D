@@ -26,11 +26,11 @@ class InstanceInspector extends Panel {
 
         this.instanceCrs = this.instance.referenceCrs;
         this.clearAlpha = this.instance.renderer.getClearAlpha();
-        this.addController<string>(this, 'instanceCrs').name('CRS');
+        this.addController(this, 'instanceCrs').name('CRS');
 
-        this.addController<string>(this, 'cpuMemoryUsage').name('Memory usage (CPU)');
-        this.addController<string>(this, 'gpuMemoryUsage').name('Memory usage (GPU)');
-        this.addController<number>(this.instance.mainLoop, 'frameCount').name('Frames');
+        this.addController(this, 'cpuMemoryUsage').name('Memory usage (CPU)');
+        this.addController(this, 'gpuMemoryUsage').name('Memory usage (GPU)');
+        this.addController(this.instance.mainLoop, 'frameCount').name('Frames');
 
         this.clearColor = this.instance.renderer.getClearColor(new Color()).convertLinearToSRGB();
         this.addColorController(this, 'clearColor')
@@ -40,7 +40,7 @@ class InstanceInspector extends Panel {
                 this.instance.engine.clearAlpha = this.clearAlpha;
                 this.notify();
             });
-        this.addController<number>(this, 'clearAlpha')
+        this.addController(this, 'clearAlpha')
             .name('Clear alpha')
             .min(0)
             .max(1)
@@ -51,8 +51,8 @@ class InstanceInspector extends Panel {
             });
 
         this.state = 'idle';
-        this.addController<string>(this, 'state').name('Status');
-        this.addController<never>(this, 'triggerUpdate').name('Trigger update');
+        this.addController(this, 'state').name('Status');
+        this.addController(this, 'triggerUpdate').name('Trigger update');
 
         this.webGlRendererPanel = new WebGLRendererInspector(this.gui, instance);
         this.enginePanel = new RenderingInspector(this.gui, instance);

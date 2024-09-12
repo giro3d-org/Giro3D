@@ -19,6 +19,7 @@ class PackageInfoInspector extends Panel {
         this.giro3dVersion = VERSION;
 
         this.addController(this, 'giro3dVersion').name('Giro3D version');
+        // @ts-expect-error property not present on window
         this.addController(window, '__THREE__').name('THREE.js version');
         this.addController(this, 'olversion').name('OpenLayers version');
     }

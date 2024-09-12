@@ -97,19 +97,35 @@ Inspector.attach('inspector', instance);
 StatusBar.bind(instance);
 
 const resultsTable = document.getElementById('results-body');
-const formatter = new Intl.NumberFormat();
 
 let highlighted;
 let highlightColor = new Color(0xff7171);
 
+let canPick = true;
+
+/**
+ * @param {MouseEvent} evt
+ */
 function highlight(evt) {
-    const picked = instance.pickObjectsAt(evt, { radius: 5, limit: 10, where: [ifc] });
+    if (!canPick) {
+        return;
+    }
+
+    const picked = instance.pickObjectsAt(evt, {
+        radius: 5,
+        limit: 10,
+        where: [ifc],
+        filter: pick => pick.object.visible, // Ignore invisible objects, such as IfcSpace elements
+    });
+
     if (highlighted) {
         // reset style
-        highlighted.material.color.copy(highlighted.material.userData.oldColor);
-        highlighted.material.needsUpdate = true;
+        const material = highlighted.material;
+        material.color.copy(material.userData.oldColor);
+
         instance.notifyChange(highlighted);
     }
+
     if (picked.length === 0) {
         const row = document.createElement('tr');
         const count = document.createElement('th');
@@ -150,8 +166,12 @@ function highlight(evt) {
                 rows.push(row);
             }
         }
+
         resultsTable.replaceChildren(...rows);
     }
 }
 
-instance.domElement.addEventListener('click', highlight);
+// Prevent picking if user is dragging mouse
+instance.domElement.addEventListener('mousedown', () => (canPick = true));
+instance.domElement.addEventListener('mousemove', () => (canPick = false));
+instance.domElement.addEventListener('mouseup', highlight);

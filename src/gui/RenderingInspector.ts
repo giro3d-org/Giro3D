@@ -10,30 +10,28 @@ class RenderingInspector extends Panel {
     constructor(parentGui: GUI, instance: Instance) {
         super(parentGui, instance, 'Visual parameters');
 
-        this.addController<boolean>(instance.renderingOptions, 'enableEDL')
+        this.addController(instance.renderingOptions, 'enableMSAA')
+            .name('MSAA')
+            .onChange(() => this.notify());
+        this.addController(instance.renderingOptions, 'enableEDL')
             .name('EDL')
             .onChange(() => this.notify());
-        this.addController<number>(instance.renderingOptions, 'EDLRadius', 0, 2)
+        this.addController(instance.renderingOptions, 'EDLRadius', 0, 2)
             .name('EDL Radius')
             .onChange(() => this.notify());
-        this.addController<number>(instance.renderingOptions, 'EDLStrength', 0, 2)
+        this.addController(instance.renderingOptions, 'EDLStrength', 0, 2)
             .name('EDL Strength')
             .onChange(() => this.notify());
-        this.addController<boolean>(instance.renderingOptions, 'enableInpainting')
+        this.addController(instance.renderingOptions, 'enableInpainting')
             .name('Inpainting')
             .onChange(() => this.notify());
-        this.addController<number>(instance.renderingOptions, 'inpaintingSteps', 1, 6)
+        this.addController(instance.renderingOptions, 'inpaintingSteps', 1, 6)
             .name('Inpainting steps')
             .onChange(() => this.notify());
-        this.addController<number>(
-            instance.renderingOptions,
-            'inpaintingDepthContribution',
-            0.01,
-            1,
-        )
+        this.addController(instance.renderingOptions, 'inpaintingDepthContribution', 0.01, 1)
             .name('Inpainting depth contrib.')
             .onChange(() => this.notify());
-        this.addController<boolean>(instance.renderingOptions, 'enablePointCloudOcclusion')
+        this.addController(instance.renderingOptions, 'enablePointCloudOcclusion')
             .name('Point cloud occlusion')
             .onChange(() => this.notify());
     }

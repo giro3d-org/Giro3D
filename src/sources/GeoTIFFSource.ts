@@ -226,7 +226,7 @@ export interface GeoTIFFSourceOptions extends ImageSourceOptions {
 }
 
 /**
- * Provides data from a GeoTIFF file.
+ * Provides data from a remote GeoTIFF file.
  *
  * Features:
  * - supports tiled and untiled TIFF images
@@ -236,6 +236,9 @@ export interface GeoTIFFSourceOptions extends ImageSourceOptions {
  * - supports grayscale (e.g elevation data) and color images,
  * - support high-dynamic range colors (8-bit, 16-bit and 32-bit floating point pixels),
  * - dynamic channel mapping,
+ *
+ * Note: performance might be degraded if the GeoTIFF is not optimized for streaming. We recommend
+ * using [Cloud Optimized GeoTIFFs (COGs)](https://www.cogeo.org/) for best performance.
  */
 class GeoTIFFSource extends ImageSource {
     readonly isGeoTIFFSource: boolean = true as const;

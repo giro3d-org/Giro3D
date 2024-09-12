@@ -104,7 +104,13 @@ export type SegmentLabelFormatOptions = {
      * The length of the segment or line, in CRS units.
      */
     length: number;
+    /**
+     * The coordinate of the segment start.
+     */
     start: Vector3;
+    /**
+     * The coordinate of the segment end.
+     */
     end: Vector3;
 };
 
@@ -287,6 +293,10 @@ export type ShapePickResult = PickResult & {
     // eslint-disable-next-line no-use-before-define
     entity: Shape;
 };
+
+export function isShapePickResult(obj?: unknown): obj is ShapePickResult {
+    return (obj as ShapePickResult)?.isShapePickResult;
+}
 
 export type ShapeExportOptions = {
     /**
@@ -489,7 +499,10 @@ function getClosedPolygon(points: Vector3[]): Vector3[] {
     return points;
 }
 
-function computeArea(points: Vector3[]): {
+function computeArea(
+    points: Vector3[],
+    computeGeometry: boolean,
+): {
     area?: number;
     geometry?: BufferGeometry;
     origin?: Vector3;
@@ -505,10 +518,13 @@ function computeArea(points: Vector3[]): {
     const coordinateAsNumbers = toNumberArray(closedPolygon, origin);
     const indices = earcut(toNumberArray(points, origin), undefined, 3);
 
-    const geometry = new BufferGeometry();
-    geometry.setAttribute('position', new Float32BufferAttribute(coordinateAsNumbers, 3));
-    geometry.setIndex(indices);
-    geometry.computeBoundingBox();
+    let geometry: BufferGeometry | undefined = undefined;
+    if (computeGeometry) {
+        geometry = new BufferGeometry();
+        geometry.setAttribute('position', new Float32BufferAttribute(coordinateAsNumbers, 3));
+        geometry.setIndex(indices);
+        geometry.computeBoundingBox();
+    }
 
     const triangleCount = indices.length / 3;
 
@@ -1095,7 +1111,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     private readonly _segments: Line3[] = [];
 
     // Formatters
-    private readonly _formatLength: LineLabelFormatter = defaultLengthFormatter;
+    private readonly _formatLine: LineLabelFormatter = defaultLengthFormatter;
     private readonly _formatSegment: SegmentLabelFormatter = defaultLengthFormatter;
     private readonly _formatVerticalLine: VerticalLineLabelFormatter = defaultVerticalLineFormatter;
     private readonly _formatSurface: SurfaceLabelFormatter = defaultAreaFormatter;
@@ -1256,7 +1272,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
             transparent: true,
         });
 
-        this._formatLength = options?.lineLabelFormatter ?? this._formatLength;
+        this._formatLine = options?.lineLabelFormatter ?? this._formatLine;
         this._formatSurface = options?.surfaceLabelFormatter ?? this._formatSurface;
         this._surfaceLabelPlacement = options?.surfaceLabelPlacement ?? this._surfaceLabelPlacement;
         this._formatVertex = options?.vertexLabelFormatter ?? this._formatVertex;
@@ -1555,9 +1571,11 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     }
 
     /**
-     * Returns the current vertex collection.
+     * Returns the current vertex collection as a read-only array.
+     *
+     * Note: to modify the point collection, use {@link setPoints} instead.
      */
-    get points() {
+    get points(): Readonly<Vector3[]> {
         return this._points;
     }
 
@@ -1712,6 +1730,45 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
                 return null;
             }
         }
+    }
+
+    /**
+     * Gets the area of this shape, if any.
+     *
+     * Note: if the shape is not a closed shape, returns `null`.
+     * @returns The area, in CRS units.
+     */
+    getArea(): number | null {
+        if (this.isClosed) {
+            const result = computeArea(this._points, false);
+            return result.area ?? null;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Gets the length of the line of this shape, if any. If the shape has less than 2 points,
+     * returns `null`.
+     *
+     * Note: if the shape is a closed shape, this equals the perimeter of the shape.
+     *
+     * @returns The length, in CRS units.
+     */
+    getLength(): number | null {
+        if (this._points.length < 2) {
+            return null;
+        }
+
+        let length = 0;
+        for (let i = 0; i < this._points.length - 1; i++) {
+            const p0 = this._points[i + 0];
+            const p1 = this._points[i + 1];
+
+            length += p0.distanceTo(p1);
+        }
+
+        return length;
     }
 
     /**
@@ -2218,7 +2275,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         }
 
         if (this._showSurface) {
-            const { geometry, origin } = computeArea(this._points);
+            const { geometry, origin } = computeArea(this._points, true);
             if (geometry && origin) {
                 this._surface = new Mesh(geometry, this._surfaceMaterial);
                 this._surface.name = 'surface';
@@ -2238,7 +2295,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         }
 
         if (this._showSurfaceLabel && this._points.length > 2) {
-            const { area } = computeArea(this._points);
+            const { area } = computeArea(this._points, false);
 
             if (area) {
                 const labelText = this._formatSurface({
@@ -2341,7 +2398,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
             }
 
             if (this._showLineLabel && curve) {
-                const labelText = this._formatLength({
+                const labelText = this._formatLine({
                     shape: this,
                     defaultFormatter: defaultLengthFormatter,
                     length: curve.getLength(),

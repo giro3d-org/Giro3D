@@ -17,18 +17,47 @@
   <a href="https://matrix.to/#/#giro3d:matrix.org"><img alt="Giro3D matrix chatroom badge" src="https://img.shields.io/matrix/giro3d:matrix.org"></a>
 </div>
 
-<hr/>
+<br>
+
+| ![draw tool](examples/screenshots/drawtool.jpg)        | ![Potree point cloud](examples/screenshots/potree_pointcloud.jpg) | ![GeoTIFF elevation](examples/screenshots/cog_elevation.jpg) |
+| ------------------------------------------------------ | ----------------------------------------------------------------- | ------------------------------------------------------------ |
+| ![alt text](examples/screenshots/3dtiles_building.jpg) | ![alt text](examples/screenshots/axisgrid.jpg)                    | ![alt text](examples/screenshots/cog_color.jpg)              |
+
+<div align="center">
+  <a href="https://giro3d.org/latest/examples/index.html">Examples</a> ·
+  <a href="https://giro3d.org/latest/apidoc/index.html">Documentation</a> ·
+  <a href="https://gitlab.com/giro3d/giro3d/-/blob/main/CHANGELOG.md">Changelog</a> ·
+  <a href="https://giro3d.org/faq.html">FAQ</a>
+</div>
+
+## What is Giro3D ?
+
+[**Giro3D**](https://giro3d.org) is a **Web library** written in TypeScript to build 2D and 3D geospatial scenes. It is powered by **[three.js](https://threejs.org)** and WebGL. It aims to **support major geospatial standards** and provide a rich feature set to help visualize data in a 3D environment.
+
+## Features
+
+-   2D and 3D maps with **unlimited color layers**, real-time lighting and a broad range of data sources (tiled images, GeoTIFFs, static images, vector data, including Vector tiles).
+-   **High-resolution terrain rendering** with elevation querying / elevation profile
+-   Point clouds colored by **classification**, **colormaps** or **color layer**
+-   Create **shapes** and **annotations**, including height measurements and angular sectors.
+-   Easy to integrate with **GUI frameworks** such as Vue and React.
+-   Limit visibility of datasets using **cross-sections**
+-   Display 3D features with a **rich style API**
 
 ## Supported data sources
 
 [Giro3D](https://giro3d.org) is powered by **[OpenLayers](https://openlayers.org/)** for maps,
-and **[Three.js](https://threejs.org)** for 3d assets, and can be easily extended to support more. Below is a non-exhaustive list of supported data sources.
+and **[three.js](https://threejs.org)** for 3D assets, and can be easily extended to support more.
 
-### Maps
+Below is a non-exhaustive list of supported data sources.
+
+### Image data
 
 -   [WMTS](https://www.ogc.org/standards/wmts)
 -   [WMS](https://www.ogc.org/standards/wms)
 -   [TMS](https://www.ogc.org/standards/tms)
+-   [GeoTIFF](https://www.ogc.org/standard/geotiff/), with support for [Cloud Optimized GeoTIFFs (COG)](https://www.cogeo.org/)
+-   Static images
 
 ### Elevation data
 
@@ -38,6 +67,8 @@ and **[Three.js](https://threejs.org)** for 3d assets, and can be easily extende
 
 -   [Mapbox Vector Tiles](https://docs.mapbox.com/data/tilesets/guides/vector-tiles-introduction/)
 -   [GeoJSON](https://geojson.org/)
+-   [TopoJSON](https://github.com/topojson/topojson/)
+-   [KML](https://www.ogc.org/standard/kml/)
 -   [GPS Exchange Format (GPX)](https://en.wikipedia.org/wiki/GPS_Exchange_Format)
 
 ### 3D assets
@@ -48,6 +79,10 @@ and **[Three.js](https://threejs.org)** for 3d assets, and can be easily extende
 
 # Getting started
 
+💡 To test Giro3D without installing anything, check the [interactive examples](https://giro3d.org/latest/examples/index.html).
+
+## Install from the NPM package
+
 To install with [npm](https://www.npmjs.com/) (recommended method):
 
 ```bash
@@ -56,8 +91,7 @@ npm install --save @giro3d/giro3d
 
 This package contains both original sources (under `src/`) and slightly processed sources (dead code elimination, inlining shader code...).
 
-If you're using a module bundler (like [wepback](https://webpack.js.org/)) or plan on targeting recent enough browser, you can
-directly import it as such:
+If you're using a module bundler (like [wepback](https://webpack.js.org/)) or plan on targeting recent enough browser, you can directly import it as such:
 
 ```js
 import Instance from '@giro3d/giro3d/core/Instance.js';
@@ -69,9 +103,7 @@ You can also import the original, untranspiled sources, by adding `src` after `@
 import Instance from '@giro3d/giro3d/src/core/Instance.js';
 ```
 
-This will probably limit browser compatibility though, without application specific process or
-loader. Also, non `.js` files (such as `.glsl` files) will need to be inlined at client application
-level.
+This will probably limit browser compatibility though, without application specific process or loader. Also, non `.js` files (such as `.glsl` files) will need to be inlined at client application level.
 
 ## From a release bundle
 

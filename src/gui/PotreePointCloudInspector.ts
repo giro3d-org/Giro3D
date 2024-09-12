@@ -33,19 +33,19 @@ class PotreePointCloudInspector extends EntityInspector<PotreePointCloud> {
 
         this.budgetThousands = entity.pointBudget ? entity.pointBudget / 1000 : 2000;
 
-        this.addController<number>(this, 'budgetThousands')
+        this.addController(this, 'budgetThousands')
             .min(1)
             .max(10000)
             .name('Point budget (thousands)')
             .onChange(v => this.updatePointBudget(v));
 
-        this.addController<number>(this.entity, 'pointSize')
+        this.addController(this.entity, 'pointSize')
             .min(1)
             .max(10)
             .name('Point size (pixels)')
             .onChange(() => this.notify());
 
-        this.addController<number>(this, 'sse')
+        this.addController(this, 'sse')
             .min(0.01)
             .max(100)
             .name('Screen Space Error')

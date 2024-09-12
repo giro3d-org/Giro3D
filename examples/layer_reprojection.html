@@ -2,7 +2,7 @@
 title: Layer reprojection
 shortdesc: Reproject layers with heterogenous coordinate systems.
 longdesc: A <code>Layer</code> can reproject the images produced by the <code>ImageSource</code> to conform to the CRS of the instance.
-attribution: © <a target="_blank" href="https://www.mapbox.com/">Mapbox</a>
+attribution: © <a target="_blank" href="https://www.mapbox.com/">Mapbox</a>, CRS data provided by <a target="_blank" href="https://www.epsg.io/">epsg.io</a>
 tags: [map, layers, reprojection]
 ---
 
@@ -10,7 +10,7 @@ tags: [map, layers, reprojection]
     <div class="mh-100 overflow-y-auto">
         <div class="card" id="currentCrsSection">
             <!-- CRS code -->
-            <div class="card-header" id="currentCrsCode">EPSG:2154</div>
+            <div class="card-header">Parameters</div>
 
             <!-- tooltip -->
             <span
@@ -28,31 +28,35 @@ tags: [map, layers, reprojection]
 
             <!-- CRS name and area -->
             <div class="card-body">
-                <h5 class="card-title" id="currentCrsName">RGF93 v1 / Lambert-93 -- France</h5>
-                <p class="card-text" id="currentCrsArea">
+                <!-- CRS selector -->
+                <div class="input-group">
+                    <span class="input-group-text" id="code-label">CRS</span>
+                    <input
+                        type="text"
+                        class="form-control"
+                        id="code"
+                        placeholder="EPSG code (e.g EPSG:3857)"
+                        value="EPSG:2154"
+                        aria-label="EpsgCode"
+                        autocomplete="off"
+                        aria-describedby="code-label"
+                    />
+                    <button class="input-group-text btn btn-primary" id="create">Update</button>
+                </div>
+
+                <hr />
+                <h5 class="card-title" id="name">RGF93 v1 / Lambert-93 -- France</h5>
+                <h6 class="card-subtitle text-body-secondary mb-2" id="srid">EPSG:2154</h6>
+                <p class="card-text" id="description">
                     France - onshore and offshore, mainland and Corsica (France métropolitaine
                     including Corsica).
                 </p>
+                <a id="link" target="_blank">See on epsg.io</a>
             </div>
         </div>
 
-        <!-- CRS selector -->
-        <div class="input-group mt-3">
-            <span class="input-group-text" id="epsgCodeLabel">CRS</span>
-            <input
-                type="text"
-                class="form-control"
-                id="epsgCode"
-                placeholder="EPSG code (e.g EPSG:3857)"
-                value="EPSG:2154"
-                aria-label="EpsgCode"
-                aria-describedby="epsgCodeLabel"
-            />
-            <button class="input-group-text btn btn-primary" id="createSceneBtn">Update</button>
-        </div>
-
         <!-- Error message -->
-        <div class="alert alert-danger mt-3" id="errorMessage" style="display: none" role="alert">
+        <div class="alert alert-danger mt-3" id="message" style="display: none" role="alert">
             A simple primary alert—check it out!
         </div>
     </div>

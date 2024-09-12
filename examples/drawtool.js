@@ -18,6 +18,7 @@ import DrawTool, {
 import Shape, {
     DEFAULT_SURFACE_OPACITY,
     angleSegmentFormatter,
+    isShapePickResult,
     slopeSegmentFormatter,
 } from '@giro3d/giro3d/entities/Shape.js';
 import Fetcher from '@giro3d/giro3d/utils/Fetcher.js';
@@ -69,17 +70,14 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
     format: new BilFormat(),
     noDataValue,
 })
-    .then(elevationWmts => {
+    .then(source => {
         map.addLayer(
             new ElevationLayer({
-                name: 'wmts_elevation',
                 extent: map.extent,
-                resolutionFactor: 1,
+                preloadImages: true,
+                resolutionFactor: 0.5,
                 minmax: { min: 500, max: 1500 },
-                noDataOptions: {
-                    replaceNoData: false,
-                },
-                source: elevationWmts,
+                source: source,
             }),
         );
     })
@@ -88,11 +86,12 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
 WmtsSource.fromCapabilities(capabilitiesUrl, {
     layer: 'HR.ORTHOIMAGERY.ORTHOPHOTOS',
 })
-    .then(orthophotoWmts => {
+    .then(source => {
         map.addLayer(
             new ColorLayer({
+                preloadImages: true,
                 extent: map.extent,
-                source: orthophotoWmts,
+                source: source,
             }),
         );
     })
@@ -465,32 +464,83 @@ bindColorPicker('color', v => {
     });
 });
 
-function dimLabels(mouseEvent) {
+function pickShape(mouseEvent) {
+    const pickResults = instance.pickObjectsAt(mouseEvent, { where: shapes });
+    const first = pickResults[0];
+    if (isShapePickResult(first)) {
+        return first.entity;
+    }
+
+    return null;
+}
+
+let isEditModeActive = false;
+let highlightHoveredShape = false;
+let editedShape = null;
+
+const editButton = bindButton('edit-clicked-shape', () => {
+    highlightHoveredShape = true;
+    editButton.disabled = true;
+
+    const onclick = (/** @type {MouseEvent} */ mouseEvent) => {
+        if (mouseEvent.button === 0) {
+            instance.domElement.removeEventListener('click', onclick);
+            const shape = pickShape(mouseEvent);
+
+            if (shape) {
+                editedShape = shape;
+                isEditModeActive = true;
+                highlightHoveredShape = false;
+
+                shape.color = 'yellow';
+
+                tool.enterEditMode({
+                    shapesToEdit: [shape],
+                });
+            }
+        }
+    };
+
+    const onrightlick = () => {
+        editButton.disabled = false;
+        tool.exitEditMode();
+        isEditModeActive = false;
+        if (editedShape) {
+            editedShape.color = options.color;
+            editedShape = null;
+        }
+        instance.domElement.removeEventListener('contextmenu', onrightlick);
+    };
+
+    instance.domElement.addEventListener('click', onclick);
+    instance.domElement.addEventListener('contextmenu', onrightlick);
+});
+
+function mousemove(mouseEvent) {
     if (shapes.length === 0) {
         return;
     }
-
-    const pickResults = instance.pickObjectsAt(mouseEvent, { where: shapes });
 
     for (const shape of shapes) {
         shape.labelOpacity = 1;
     }
 
-    if (pickResults.length > 0) {
-        const picked = pickResults[0];
-        /** @type {Shape} */
-        // @ts-expect-error typing
-        const shape = picked.entity;
+    if (isEditModeActive || highlightHoveredShape) {
+        const shape = pickShape(mouseEvent);
 
-        // Dim labels so the user can properly insert vertices on segments.
-        shape.labelOpacity = 0.5;
+        if (shape) {
+            if (isEditModeActive && shape === editedShape) {
+                // Dim labels so the user can properly insert vertices on segments.
+                shape.labelOpacity = 0.5;
+            }
+            if (highlightHoveredShape) {
+                shape.color = new Color(options.color).offsetHSL(0, 0, 0.2);
+            }
+        }
     }
 }
 
-instance.domElement.addEventListener('mousemove', dimLabels);
-
-// We allow editing existing shapes
-tool.enterEditMode();
+instance.domElement.addEventListener('mousemove', mousemove);
 
 // We want to prevent moving the camera while dragging a point
 tool.addEventListener('start-drag', () => {

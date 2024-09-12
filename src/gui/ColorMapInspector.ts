@@ -1,14 +1,19 @@
 import type GUI from 'lil-gui';
 import type Instance from '../core/Instance';
 import type ColorMap from '../core/layer/ColorMap';
-import { ColorMapMode } from '../core/layer/ColorMap';
 import type Layer from '../core/layer/Layer';
 import Panel from './Panel';
+
+type Mode = 'Elevation' | 'Slope' | 'Aspect';
+
+const modes: Mode[] = ['Elevation', 'Slope', 'Aspect'];
 
 /**
  * Inspector for a {@link ColorMap}.
  */
 class ColorMapInspector extends Panel {
+    mode: Mode = 'Elevation';
+
     /**
      * @param gui - The GUI.
      * @param instance - The Giro3D instance.
@@ -19,21 +24,26 @@ class ColorMapInspector extends Panel {
         super(gui, instance, 'Color map');
 
         if (colorMap != null) {
-            this.addController<boolean>(colorMap, 'active')
+            this.mode = modes[colorMap.mode - 1];
+
+            this.addController(colorMap, 'active')
                 .name('Enabled')
                 .onChange(() => this.notify(layer));
 
-            this.addController<ColorMapMode>(colorMap, 'mode', ColorMapMode)
+            this.addController(this, 'mode', modes)
                 .name('Mode')
-                .onChange(() => this.notify(layer));
+                .onChange(v => {
+                    colorMap.mode = modes.indexOf(v) + 1;
+                    this.notify(layer);
+                });
 
-            this.addController<number>(colorMap, 'min')
+            this.addController(colorMap, 'min')
                 .name('Lower bound')
                 .min(-8000)
                 .max(8000)
                 .onChange(() => this.notify(layer));
 
-            this.addController<number>(colorMap, 'max')
+            this.addController(colorMap, 'max')
                 .name('Upper bound')
                 .min(-8000)
                 .max(8000)

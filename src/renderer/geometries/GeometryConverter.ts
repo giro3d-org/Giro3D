@@ -86,14 +86,14 @@ export type BaseOptions = {
     ignoreZ?: boolean;
 };
 
-type PointOptions = BaseOptions & Partial<PointStyle>;
-type PolygonOptions = BaseOptions & {
+export type PointOptions = BaseOptions & Partial<PointStyle>;
+export type PolygonOptions = BaseOptions & {
     fill?: FillStyle;
     stroke?: StrokeStyle;
     extrusionOffset?: number[] | number;
     elevation?: number[] | number;
 };
-type LineOptions = BaseOptions & StrokeStyle;
+export type LineOptions = BaseOptions & StrokeStyle;
 
 export interface OptionMap {
     Point: PointOptions;
@@ -416,28 +416,28 @@ export default class GeometryConverter<
      * @param geometry - The `Point` to convert.
      * @param options  - The options.
      */
-    build(geometry: Point, options: PointOptions): PointMesh<UserData>;
+    build(geometry: Point, options?: PointOptions): PointMesh<UserData>;
 
     /**
      * Converts a {@link MultiPoint}.
      * @param geometry - The `MultiPoint` to convert.
      * @param options  - The options.
      */
-    build(geometry: MultiPoint, options: PointOptions): MultiPointMesh<UserData>;
+    build(geometry: MultiPoint, options?: PointOptions): MultiPointMesh<UserData>;
 
     /**
      * Converts a {@link MultiPoint} or {@link Point}.
      * @param geometry - The `MultiPoint` or `Point` to convert.
      * @param options  - The options.
      */
-    build(geometry: Point | MultiPoint, options: PointOptions): SimpleGeometryMesh<UserData>;
+    build(geometry: Point | MultiPoint, options?: PointOptions): SimpleGeometryMesh<UserData>;
 
     /**
      * Converts a {@link Polygon}.
      * @param geometry - The `Polygon` to convert.
      * @param options  - The options.
      */
-    build(geometry: Polygon, options: PolygonOptions): PolygonMesh<UserData>;
+    build(geometry: Polygon, options?: PolygonOptions): PolygonMesh<UserData>;
 
     /**
      * Converts a {@link MultiPolygon}.
@@ -448,7 +448,7 @@ export default class GeometryConverter<
      */
     build(
         geometry: MultiPolygon,
-        options: PolygonOptions,
+        options?: PolygonOptions,
     ): PolygonMesh<UserData> | MultiPolygonMesh<UserData>;
 
     /**
@@ -456,14 +456,14 @@ export default class GeometryConverter<
      * @param geometry - The `Polygon` to convert.
      * @param options  - The options.
      */
-    build(geometry: Polygon | MultiPolygon, options: PolygonOptions): SimpleGeometryMesh<UserData>;
+    build(geometry: Polygon | MultiPolygon, options?: PolygonOptions): SimpleGeometryMesh<UserData>;
 
     /**
      * Converts a {@link LineString}.
      * @param geometry - The `LineString` to convert.
      * @param options  - The options.
      */
-    build(geometry: LineString, options: LineOptions): LineStringMesh<UserData>;
+    build(geometry: LineString, options?: LineOptions): LineStringMesh<UserData>;
 
     /**
      * Converts a {@link MultiLineString}.
@@ -474,7 +474,7 @@ export default class GeometryConverter<
      */
     build(
         geometry: MultiLineString,
-        options: LineOptions,
+        options?: LineOptions,
     ): MultiLineStringMesh<UserData> | LineStringMesh<UserData>;
 
     /**
@@ -486,7 +486,7 @@ export default class GeometryConverter<
      */
     build(
         geometry: LineString | MultiLineString,
-        options: LineOptions,
+        options?: LineOptions,
     ): SimpleGeometryMesh<UserData>;
 
     /**
@@ -497,9 +497,11 @@ export default class GeometryConverter<
      */
     build<K extends keyof OutputMap>(
         geometry: InputMap[K],
-        options: OptionMap[K],
+        options?: OptionMap[K],
     ): OutputMap<UserData>[K] {
         type ReturnType = OutputMap<UserData>[K];
+
+        options = options ?? {};
 
         this.setDefaultOrigin(geometry, options);
 
@@ -564,6 +566,7 @@ export default class GeometryConverter<
                 ring.update({
                     material: lineMaterial,
                     opacity: stroke.opacity,
+                    renderOrder: stroke.renderOrder,
                 }),
             );
         }
@@ -585,6 +588,7 @@ export default class GeometryConverter<
             mesh.surface.update({
                 material: surfacematerial,
                 opacity: fill.opacity,
+                renderOrder: fill.renderOrder,
             });
         }
     }
@@ -604,6 +608,7 @@ export default class GeometryConverter<
         mesh.update({
             material: lineMaterial,
             opacity: style.opacity,
+            renderOrder: style.renderOrder,
         });
     }
 
@@ -614,6 +619,7 @@ export default class GeometryConverter<
             material,
             pointSize: fullStyle.pointSize,
             opacity: fullStyle.opacity,
+            renderOrder: fullStyle.renderOrder,
         });
     }
 
@@ -636,9 +642,6 @@ export default class GeometryConverter<
 
         object.traverse(desc => {
             desc.updateMatrix();
-            if (options.renderOrder) {
-                desc.renderOrder = options.renderOrder;
-            }
         });
         object.updateMatrixWorld(true);
     }
@@ -709,6 +712,8 @@ export default class GeometryConverter<
         if (options.extrusionOffset != null) {
             geometry.computeVertexNormals();
         }
+
+        surface.renderOrder = fill.renderOrder;
 
         return surface;
     }
@@ -784,17 +789,19 @@ export default class GeometryConverter<
 
         const coordinate = point.getCoordinates();
 
-        const result = new PointMesh({
+        const pointMesh = new PointMesh({
             material,
             opacity: style.opacity,
             pointSize: style.pointSize,
         });
 
-        result.position.setX(coordinate[0] ?? 0);
-        result.position.setY(coordinate[1] ?? 0);
-        result.position.setZ(coordinate[2] ?? 0);
+        pointMesh.renderOrder = style.renderOrder;
 
-        return result;
+        pointMesh.position.setX(coordinate[0] ?? 0);
+        pointMesh.position.setY(coordinate[1] ?? 0);
+        pointMesh.position.setZ(coordinate[2] ?? 0);
+
+        return pointMesh;
     }
 
     private buildPoint(point: Point, options: PointOptions): PointMesh {
@@ -983,13 +990,15 @@ export default class GeometryConverter<
         options: OptionMap['LineString'],
     ): LineStringMesh {
         const fullStyle = getFullStrokeStyle(options);
-        const obj = new LineStringMesh(
+        const lineStringMesh = new LineStringMesh(
             this.getLineGeometry(geometry.getCoordinates(), options),
             this._lineMaterialGenerator(fullStyle),
             fullStyle.opacity,
         );
 
-        return obj;
+        lineStringMesh.renderOrder = fullStyle.renderOrder;
+
+        return lineStringMesh;
     }
 
     private buildMultiLineString(
@@ -1003,22 +1012,14 @@ export default class GeometryConverter<
             return this.buildLineString(lineStrings[0], options);
         }
 
-        const fullStyle = getFullStrokeStyle(options);
-        const material = this._lineMaterialGenerator(fullStyle);
-
-        const lines: LineStringMesh[] = [];
+        const meshes: LineStringMesh[] = [];
         for (const line of lineStrings) {
-            const obj = new LineStringMesh(
-                this.getLineGeometry(line.getCoordinates(), options),
-                material,
-                fullStyle.opacity,
-            );
+            const lineStringMesh = this.buildLineString(line, options);
 
-            lines.push(obj);
+            meshes.push(lineStringMesh);
         }
 
-        const result = new MultiLineStringMesh(lines);
-        return result;
+        return new MultiLineStringMesh(meshes);
     }
 
     /**

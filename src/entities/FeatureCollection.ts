@@ -631,7 +631,9 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         this.prepare(obj, feature, style);
     }
 
-    private assignRenderOrder(obj: Object3D) {
+    // We override this because the render order of the features depends on their style,
+    // so we have to cumulate that with the render order of the entity.
+    protected override assignRenderOrder(obj: Object3D) {
         const renderOrder = this.renderOrder;
 
         // Note that the final render order of the mesh is the sum of

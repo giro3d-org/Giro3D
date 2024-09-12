@@ -47,6 +47,11 @@ class RenderingOptions {
      * @defaultValue false
      */
     enablePointCloudOcclusion: boolean;
+    /**
+     * Enables Multisampling Antialiasing (MSAA) on post-processing.
+     * @defaultValue true
+     */
+    enableMSAA: boolean;
 
     constructor() {
         this.enableEDL = false;
@@ -56,6 +61,7 @@ class RenderingOptions {
         this.inpaintingSteps = 2;
         this.inpaintingDepthContribution = 0.5;
         this.enablePointCloudOcclusion = false;
+        this.enableMSAA = true;
     }
 }
 

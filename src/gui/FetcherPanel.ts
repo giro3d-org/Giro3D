@@ -11,9 +11,9 @@ class FetcherPanel extends Panel {
     constructor(parentGui: GUI, instance: Instance) {
         super(parentGui, instance, 'Fetcher');
         this.updateValues();
-        this.addController<number>(this, 'pendingRequests').name('Pending requests');
-        this.addController<number>(this, 'runningRequests').name('Running requests');
-        this.addController<number>(this, 'completedRequests').name('Completed requests');
+        this.addController(this, 'pendingRequests').name('Pending requests');
+        this.addController(this, 'runningRequests').name('Running requests');
+        this.addController(this, 'completedRequests').name('Completed requests');
     }
 
     updateValues() {
