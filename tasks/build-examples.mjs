@@ -15,7 +15,7 @@ import webpackDevServer from 'webpack-dev-server';
 
 import { handleModification } from '../observer.mjs';
 import { copyAssets } from './build-static-site.mjs';
-import { getGitVersion, getPackageVersion } from './prepare-package.mjs';
+import { getPackageVersion } from './prepare-package.mjs';
 import { log, logOk } from './utils.mjs';
 
 const baseDir = dirname(fileURLToPath(import.meta.url));
@@ -302,11 +302,7 @@ export async function getWebpackConfig(parameters) {
     const entry = findExamplesEntries();
 
     if (!parameters.version) {
-        if (parameters.releaseName === 'next') {
-            parameters.version = await getGitVersion();
-        } else {
-            parameters.version = await getPackageVersion();
-        }
+        parameters.version = await getPackageVersion();
     }
 
     if (!fse.existsSync(path.join(parameters.output, '..', '..', 'assets'))) {

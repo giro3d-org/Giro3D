@@ -7,7 +7,7 @@ import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 import { copyAssets } from './build-static-site.mjs';
-import { getGitVersion, getPackageVersion } from './prepare-package.mjs';
+import { getPackageVersion } from './prepare-package.mjs';
 import { createStaticServer } from './serve.mjs';
 import { log, logOk, logWatched } from './utils.mjs';
 
@@ -32,11 +32,7 @@ export async function cleanApidoc(parameters) {
 
 export async function buildApidoc(parameters) {
     if (!parameters.version) {
-        if (parameters.releaseName === 'next') {
-            parameters.version = await getGitVersion();
-        } else {
-            parameters.version = await getPackageVersion();
-        }
+        parameters.version = await getPackageVersion();
     }
 
     fse.mkdirpSync(tmpDir);
