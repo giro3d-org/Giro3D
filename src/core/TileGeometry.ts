@@ -145,7 +145,7 @@ class TileGeometry extends BufferGeometry implements MemoryUsage {
          * Note: the sampling does not perform any interpolation.
          */
         function getElevation(u: number, v: number): number {
-            if (!heightMap) {
+            if (heightMap == null) {
                 return 0;
             }
 

@@ -145,7 +145,7 @@ class ComposerTileMaterial extends ShaderMaterial {
             heightOffset: new Uniform(options.convertRGFloatToRGBAUnsignedByte?.offset ?? 20000),
         };
 
-        if (options) {
+        if (options != null) {
             this.init(options);
         }
     }
@@ -181,7 +181,7 @@ class ComposerTileMaterial extends ShaderMaterial {
         const channelCount = TextureGenerator.getChannelCount(this.pixelFormat);
         this.uniforms.channelCount.value = channelCount;
         if (options.showImageOutlines) {
-            if (!GRID_TEXTURE) {
+            if (GRID_TEXTURE == null) {
                 GRID_TEXTURE = createGridTexture();
             }
             this.uniforms.gridTexture.value = GRID_TEXTURE;

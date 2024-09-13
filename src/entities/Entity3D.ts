@@ -71,7 +71,7 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
      */
     constructor(object3d: Object3D) {
         super();
-        if (!object3d || !object3d.isObject3D) {
+        if (object3d == null || !object3d.isObject3D) {
             throw new Error(
                 'Missing/Invalid object3d parameter (must be a three.js Object3D instance)',
             );
@@ -185,9 +185,7 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
      */
     updateVisibility() {
         // Default implementation
-        if (this.object3d) {
-            this.object3d.visible = this.visible;
-        }
+        this.object3d.visible = this.visible;
     }
 
     /**
@@ -273,12 +271,8 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
      * @returns the resulting bounding box, or `null` if it could not be computed.
      */
     getBoundingBox(): Box3 | null {
-        if (this.object3d) {
-            const box = new Box3().setFromObject(this.object3d);
-            return box;
-        }
-
-        return null;
+        const box = new Box3().setFromObject(this.object3d);
+        return box;
     }
 
     /**
@@ -384,13 +378,11 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
     traverseMeshes(callback: (arg0: Mesh) => void, root: Object3D | undefined = undefined) {
         const origin = root ?? this.object3d;
 
-        if (origin) {
-            origin.traverse(o => {
-                if ((o as Mesh).isMesh) {
-                    callback(o as Mesh);
-                }
-            });
-        }
+        origin.traverse(o => {
+            if ((o as Mesh).isMesh) {
+                callback(o as Mesh);
+            }
+        });
     }
 
     /**
@@ -403,9 +395,7 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
     traverse(callback: (arg0: Object3D) => void, root: Object3D | undefined = undefined) {
         const origin = root ?? this.object3d;
 
-        if (origin) {
-            origin.traverse(callback);
-        }
+        origin.traverse(callback);
     }
 
     pick(canvasCoords: Vector2, options?: PickOptions): PickResult[] {

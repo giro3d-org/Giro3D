@@ -111,7 +111,7 @@ class FirstPersonControls {
         this._instance = instance;
         this.enabled = true;
         this._moves = new Set();
-        if (options.panoramaRatio) {
+        if (options.panoramaRatio != null) {
             const radius = (options.panoramaRatio * 200) / (2 * Math.PI);
             options.verticalFOV =
                 options.panoramaRatio === 2
@@ -136,7 +136,7 @@ class FirstPersonControls {
         this.reset();
 
         const domElement = instance.domElement;
-        if (!options.disableEventListeners) {
+        if (options.disableEventListeners !== true) {
             domElement.addEventListener('mousedown', this.onMouseDown.bind(this), false);
             domElement.addEventListener('touchstart', this.onTouchStart.bind(this), false);
             domElement.addEventListener('mousemove', this.onMouseMove.bind(this), false);
@@ -151,10 +151,10 @@ class FirstPersonControls {
         this._instance.addEventListener('after-camera-update', this.update.bind(this));
 
         // focus policy
-        if (options.focusOnMouseOver) {
+        if (options.focusOnMouseOver === true) {
             domElement.addEventListener('mouseover', () => domElement.focus());
         }
-        if (options.focusOnClick) {
+        if (options.focusOnClick === true) {
             domElement.addEventListener('click', () => domElement.focus());
         }
     }
@@ -351,7 +351,7 @@ class FirstPersonControls {
             return;
         }
         const move = MOVEMENTS[e.keyCode];
-        if (move) {
+        if (move != null) {
             this._moves.delete(move);
             this._instance.notifyChange(undefined);
             e.preventDefault();
@@ -363,7 +363,7 @@ class FirstPersonControls {
             return;
         }
         const move = MOVEMENTS[e.keyCode];
-        if (move) {
+        if (move != null) {
             this._moves.add(move);
             this._instance.notifyChange(undefined);
             e.preventDefault();

@@ -208,7 +208,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
     private _right: Side | null = null;
     private _height: number | null = null;
     private _midHeight: number | null = null;
-    private _needsRebuild: boolean | null = null;
+    private _needsRebuild = false;
 
     showHelpers: boolean;
 
@@ -255,7 +255,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
         this._boundingSphere = new Sphere();
         this._boundingBoxCenter = new Vector3();
 
-        if (!options.volume) {
+        if (options.volume == null) {
             throw new Error('options.volume is undefined');
         }
 
@@ -920,7 +920,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
         const showHelpers = this.showHelpers;
 
         edge.traverse((c: Object3D) => {
-            if (c instanceof CSS2DObject && c.element) {
+            if (c instanceof CSS2DObject && c.element != null) {
                 c.visible = visible;
                 if (visible) {
                     const style = c.element.style;

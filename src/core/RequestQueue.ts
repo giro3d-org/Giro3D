@@ -41,7 +41,7 @@ class Task {
     }
 
     getPriority() {
-        if (this._signal?.aborted) {
+        if (this._signal?.aborted === true) {
             // means "drop the request"
             return Infinity;
         }
@@ -50,7 +50,7 @@ class Task {
     }
 
     execute() {
-        if (this._signal?.aborted) {
+        if (this._signal?.aborted === true) {
             this.reject(PromiseUtils.abortError());
             return Promise.reject();
         }
@@ -186,7 +186,7 @@ class RequestQueue extends EventDispatcher<RequestQueueEvents> implements Progre
 
         const priority = options.priority ?? 0;
 
-        if (signal?.aborted) {
+        if (signal?.aborted === true) {
             return Promise.reject(PromiseUtils.abortError());
         }
 

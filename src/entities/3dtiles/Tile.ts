@@ -41,7 +41,7 @@ class Tile extends Object3D {
         this.frustumCulled = false;
 
         // parse metadata
-        if (metadata.transformMatrix) {
+        if (metadata.transformMatrix != null) {
             this.applyMatrix4(metadata.transformMatrix);
         }
         this.geometricError = metadata.geometricError;

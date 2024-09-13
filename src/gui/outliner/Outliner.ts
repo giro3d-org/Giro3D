@@ -194,7 +194,7 @@ function createTreeViewNodeWithDescendants(
 }
 
 function setAncestorsVisible(obj: OutlinedObject3D) {
-    if (obj) {
+    if (obj != null) {
         obj.treeviewVisible = true;
         setAncestorsVisible(obj.parent as OutlinedObject3D);
     }
@@ -247,7 +247,7 @@ function applySearchFilter(obj: OutlinedObject3D, filter: Filter) {
         obj.treeviewVisible = false;
     }
 
-    if (obj.children) {
+    if (obj.children != null) {
         obj.children.forEach((c: OutlinedObject3D) => applySearchFilter(c, filter));
     }
 }

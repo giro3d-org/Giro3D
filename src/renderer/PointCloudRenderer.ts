@@ -442,9 +442,9 @@ class PointCloudRenderer {
                     0,
                     0,
                     // @ts-expect-error camera.width is not defined ? // FIXME
-                    output ? output.width : camera.width,
+                    output != null ? output.width : camera.width,
                     // @ts-expect-error camera.height is not defined ? // FIXME
-                    output ? output.height : camera.height,
+                    output != null ? output.height : camera.height,
                 );
 
                 if (material) {

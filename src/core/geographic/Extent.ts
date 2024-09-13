@@ -656,7 +656,7 @@ class Extent {
             const e = nonNull(extents[i]);
 
             valid = true;
-            if (crs) {
+            if (crs != null) {
                 if (crs !== e.crs) {
                     throw new Error(
                         `Unsupported union between different CRSes (${e.crs} and ${crs} differ)`,

@@ -44,7 +44,6 @@ import { MVT } from 'ol/format.js';
 import type FeatureFormat from 'ol/format/Feature.js';
 import type { Geometry } from 'ol/geom';
 import type { Projection } from 'ol/proj';
-import type { OrderFunction } from 'ol/render';
 import type { StyleFunction } from 'ol/style/Style';
 import type Extent from '../core/geographic/Extent';
 import EmptyTexture from '../renderer/EmptyTexture';
@@ -107,7 +106,7 @@ function renderFeature(
     styles: Style | Style[],
     builderGroup: CanvasBuilderGroup,
 ) {
-    if (!styles) {
+    if (styles == null) {
         return false;
     }
     let loading = false;
@@ -265,7 +264,7 @@ class VectorTileSource extends ImageSource {
             throw new Error('could not acquire 2d context');
         }
 
-        if (this.backgroundColor) {
+        if (this.backgroundColor != null) {
             ctx.fillStyle = this.backgroundColor;
             ctx.fillRect(0, 0, width, height);
         }
@@ -308,7 +307,6 @@ class VectorTileSource extends ImageSource {
         const tileGrid = source.getTileGridForProjection(sourceProjection);
         const resolution = tileGrid.getResolution(tile.getTileCoord()[0]);
         const tileExtent = tileGrid.getTileCoordExtent(tile.wrappedTileCoord);
-        const renderOrder: OrderFunction | null = null;
         const pixelRatio = 1;
 
         const tmpExtent2 = createEmptyExtent();
@@ -342,16 +340,13 @@ class VectorTileSource extends ImageSource {
                 } else {
                     styles = defaultStyle as Style | Style[];
                 }
-                if (styles) {
+                if (styles != null) {
                     const dirty = renderFeature(feature, squaredTolerance, styles, builderGroup);
                     replayState.dirty = replayState.dirty || dirty;
                 }
             };
 
             const features = sourceTile.getFeatures();
-            if (renderOrder && renderOrder !== replayState.renderedRenderOrder) {
-                features.sort(renderOrder);
-            }
 
             for (let i = 0, ii = features.length; i < ii; ++i) {
                 const feature = features[i] as Feature;
@@ -375,7 +370,6 @@ class VectorTileSource extends ImageSource {
             }
         }
         replayState.renderedRevision = 1;
-        replayState.renderedRenderOrder = renderOrder;
         return empty;
     }
 
@@ -429,7 +423,7 @@ class VectorTileSource extends ImageSource {
             const tile = source.getTile(z, i, j, 1, this._sourceProjection);
             const coord = tile.getTileCoord();
             const id = `${z}-${i}-${j}`;
-            if (coord) {
+            if (coord != null) {
                 const tileExtent = OpenLayersUtils.fromOLExtent(
                     tileGrid.getTileCoordExtent(coord),
                     crs,

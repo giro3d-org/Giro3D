@@ -466,7 +466,7 @@ class TileMesh
     processNeighbours(neighbours: NeighbourList<TileMesh>) {
         for (let i = 0; i < neighbours.length; i++) {
             const neighbour = neighbours[i];
-            if (neighbour && neighbour.material && neighbour.material.visible) {
+            if (neighbour != null && neighbour.material != null && neighbour.material.visible) {
                 this.processNeighbour(neighbour, i);
             } else {
                 const uniform = this.material.uniforms.neighbours.value[i];
@@ -569,7 +569,11 @@ class TileMesh
         // the color layers will display correctly.
         const LOD_MARGIN = 3;
         while (ancestorLevel < LOD_MARGIN && current != null) {
-            if (current && current.material && current.material.isElevationLayerTextureLoaded()) {
+            if (
+                current != null &&
+                current.material != null &&
+                current.material.isElevationLayerTextureLoaded()
+            ) {
                 return true;
             }
             ancestorLevel++;
@@ -758,7 +762,7 @@ class TileMesh
             const heightMap = this._heightMap.payload;
             const elevation = heightMap.getValue(uv.x, uv.y);
 
-            if (elevation) {
+            if (elevation != null) {
                 const dims = this.extent.dimensions(tempVec2);
                 const xRes = dims.x / heightMap.width;
                 const yRes = dims.y / heightMap.height;
@@ -797,7 +801,7 @@ class TileMesh
      * @returns the resulting common ancestor
      */
     findCommonAncestor(tile: TileMesh): TileMesh | null {
-        if (!tile) {
+        if (tile == null) {
             return null;
         }
         if (tile.level === this.level) {

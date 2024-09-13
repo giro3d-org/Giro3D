@@ -123,7 +123,7 @@ const tmpIntersectList: Intersection<TileMesh>[] = [];
 const tmpNeighbours: NeighbourList<TileMesh> = [null, null, null, null, null, null, null, null];
 
 function getContourLineOptions(input?: boolean | ContourLineOptions): Required<ContourLineOptions> {
-    if (!input) {
+    if (input == null) {
         // Default values
         return {
             enabled: false,
@@ -227,7 +227,7 @@ function getColorimetryOptions(input?: ColorimetryOptions): ColorimetryOptions {
 }
 
 function getHillshadingOptions(input?: boolean | HillshadingOptions): Required<HillshadingOptions> {
-    if (!input) {
+    if (input == null) {
         // Default values
         return {
             enabled: false,
@@ -588,7 +588,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         this._onTileElevationChanged = this.onTileElevationChanged.bind(this);
         this._onLayerVisibilityChanged = this.onLayerVisibilityChanged.bind(this);
 
-        this._segments = options.segments || DEFAULT_MAP_SEGMENTS;
+        this._segments = options.segments ?? DEFAULT_MAP_SEGMENTS;
 
         this._materialOptions = {
             showColliderMeshes: false,
@@ -1016,7 +1016,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     pick(coordinates: Vector2, options?: PickOptions): MapPickResult[] {
-        if (options?.gpuPicking) {
+        if (options?.gpuPicking === true) {
             return pickTilesAt(this.instance, coordinates, this, options);
         } else {
             return this.pickUsingRaycast(coordinates, options);
@@ -1064,7 +1064,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
         const radius = options?.radius;
 
-        if (!radius) {
+        if (radius == null || radius === 0) {
             this.raycastAtCoordinate(coordinates, results, options);
         } else {
             const originX = coordinates.x;
@@ -1462,7 +1462,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         }
 
         if (this._layerIds.has(layer.id)) {
-            throw new Error(`layer ${layer.name || layer.id} is already present in this map`);
+            throw new Error(`layer ${layer.name ?? layer.id} is already present in this map`);
         }
 
         this._layerIds.add(layer.id);
@@ -1517,7 +1517,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
             disposeLayer?: boolean;
         } = {},
     ): boolean {
-        if (!layer) {
+        if (layer == null) {
             return false;
         }
 
@@ -1538,7 +1538,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
             this.reorderLayers();
             this.dispatchEvent({ type: 'layer-removed', layer });
             this.notifyChange(this);
-            if (options.disposeLayer) {
+            if (options.disposeLayer === true) {
                 layer.dispose();
             }
             return true;
@@ -1613,7 +1613,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         // Dispose all tiles so that every layer will unload data relevant to those tiles.
         this.traverseTiles(t => this.disposeTile(t));
 
-        if (options.disposeLayers) {
+        if (options.disposeLayers === true) {
             this.getLayers().forEach(layer => layer.dispose());
         }
 
@@ -1642,7 +1642,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
             for (const layer of elevationLayers) {
                 const minmax = layer.minmax;
-                if (minmax) {
+                if (minmax != null) {
                     if (min == null || max == null) {
                         min = min ?? minmax.min;
                         max = max ?? minmax.max;
@@ -1728,7 +1728,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     traverseTiles(callback: (arg0: TileMesh) => void, root: Object3D | undefined = undefined) {
         const origin = root ?? this.object3d;
 
-        if (origin) {
+        if (origin != null) {
             origin.traverse(o => {
                 if (isTileMesh(o)) {
                     callback(o);

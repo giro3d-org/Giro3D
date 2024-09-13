@@ -40,7 +40,7 @@ const tmpCoords = new Coordinates('EPSG:4326', 0, 0);
  */
 function onTextureUploaded(texture: Texture) {
     // The texture is empty.
-    if (!texture.image) {
+    if (texture.image == null) {
         return;
     }
 
@@ -326,7 +326,7 @@ class LayerComposer implements MemoryUsage {
         // but in UV space in the shader. A conversion is necessary.
         let noDataRadiusInUVSpace = 1; // Default is no limit.
         if (
-            options.fillNoData &&
+            options.fillNoData === true &&
             options.fillNoDataRadius != null &&
             Number.isFinite(options.fillNoDataRadius)
         ) {

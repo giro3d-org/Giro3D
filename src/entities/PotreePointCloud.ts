@@ -186,7 +186,7 @@ function markForDeletion(elt: OctreeItem) {
         elt.obj.material.visible = false;
     }
 
-    if (!elt.notVisibleSince) {
+    if (elt.notVisibleSince == null) {
         elt.notVisibleSince = Date.now();
         // Set .sse to an invalid value
         elt.sse = -1;
@@ -357,7 +357,7 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
     }
 
     updateOpacity() {
-        if (this.material) {
+        if (this.material != null) {
             // This is necessary because update() does copy the material's properties
             // to the tile's material, and we are losing any custom opacity.
             this.material.opacity = this.opacity;
@@ -410,7 +410,7 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
         const normal =
             Array.isArray(this._metadata.pointAttributes) &&
             this._metadata.pointAttributes.find(elem => elem.startsWith('NORMAL'));
-        if (normal) {
+        if (normal != null) {
             // @ts-expect-error the define is dynamically set
             this.material.defines[normal] = 1;
         }
@@ -512,7 +512,7 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
     }
 
     getBoundingBox() {
-        if (this.root && this.root.bbox) {
+        if (this.root && this.root.bbox != null) {
             return this.root.bbox;
         }
 
@@ -536,7 +536,7 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
             view.preSSE = (view.height * camera.near) / (camera.top - camera.bottom);
         }
 
-        if (this.material) {
+        if (this.material != null) {
             this.material.visible = this.visible;
             this.material.opacity = this.opacity;
             const currentTransparent = this.material.transparent;
@@ -565,7 +565,7 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
             // filter sources that belong to our entity
             if (obj.isPoints && this.isOwned(obj)) {
                 const name = octreeItem.name;
-                if (!commonAncestorName) {
+                if (commonAncestorName == null) {
                     commonAncestorName = name;
                 } else {
                     const nameLength = Math.min(name.length, commonAncestorName.length);
@@ -582,7 +582,7 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
                 }
             }
         }
-        if (commonAncestorName) {
+        if (commonAncestorName != null) {
             this._fastUpdateHint = commonAncestorName;
         }
 
@@ -636,7 +636,7 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
         // pick the best bounding box
         const bbox = elt.tightbbox ? elt.tightbbox : elt.bbox;
 
-        if (this._fastUpdateHint && !elt.name.startsWith(this._fastUpdateHint)) {
+        if (this._fastUpdateHint != null && !elt.name.startsWith(this._fastUpdateHint)) {
             if (!elt.visible) {
                 return null;
             }
@@ -701,13 +701,13 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
                 }
             }
 
-            if (elt.children && elt.children.length) {
+            if (elt.children != null && elt.children.length > 0) {
                 elt.sse = this.computeScreenSpaceError(context, elt, distance) / this.sseThreshold;
             }
         }
 
-        if (elt.children && elt.children.length) {
-            if (elt.sse && elt.sse >= 1) {
+        if (elt.children != null && elt.children.length > 0) {
+            if (elt.sse != null && elt.sse >= 1) {
                 return elt.children;
             }
             for (const child of elt.children) {
@@ -733,7 +733,7 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     postUpdate(context: Context, changeSource: Set<unknown>) {
-        if (!this.group) {
+        if (this.group == null) {
             return;
         }
 
@@ -751,7 +751,7 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
 
         if (this.displayedCount > this.pointBudget) {
             // 2 different point count limit implementation, depending on the pointcloud source
-            if (this.supportsProgressiveDisplay) {
+            if (this.supportsProgressiveDisplay === true) {
                 // In this format, points are evenly distributed within a node,
                 // so we can draw a percentage of each node and still get a correct
                 // representation
@@ -800,7 +800,7 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
         for (let i = this.group.children.length - 1; i >= 0; i--) {
             const obj = this.group.children[i] as PotreeTilePointCloud;
 
-            if (!obj.userData || !obj.userData.metadata) {
+            if (obj.userData == null || obj.userData.metadata == null) {
                 continue;
             }
 

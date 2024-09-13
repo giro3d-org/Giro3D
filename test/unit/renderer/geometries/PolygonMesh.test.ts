@@ -44,7 +44,7 @@ export function makeRings(options?: {
     const material = options?.material ?? new LineMaterial();
     for (let i = 0; i < count; i++) {
         const geometry = new LineGeometry();
-        if (options?.vertexCount) {
+        if (options?.vertexCount != null) {
             geometry.setFromPoints(new Array<Vector3>(options.vertexCount).fill(new Vector3()));
         }
         result.push(new LineStringMesh(geometry, material, options?.opacity ?? 1));

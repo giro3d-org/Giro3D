@@ -34,7 +34,7 @@ class DebugSource extends ImageSource {
         super(options);
         const { delay, subdivisions, opacity, extent, color } = options;
 
-        if (delay) {
+        if (delay != null) {
             if (typeof delay === 'function') {
                 this._delay = delay;
             } else if (typeof delay === 'number') {

@@ -22,7 +22,7 @@ class PotreeSource {
 
         this.url = url;
         this.filename = filename;
-        this.networkOptions = networkOptions || {};
+        this.networkOptions = networkOptions ?? {};
     }
 }
 

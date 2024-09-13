@@ -121,7 +121,7 @@ function shouldCancel(node: LayerNode): boolean {
         return true;
     }
 
-    if (!node.parent || !node.material) {
+    if (node.parent == null || node.material == null) {
         return true;
     }
 
@@ -469,7 +469,7 @@ abstract class Layer<
         this.extent = options.extent ?? null;
         this.resolutionFactor = options.resolutionFactor ?? 1;
 
-        if (!options.source || !(options.source instanceof ImageSource)) {
+        if (options.source == null || !(options.source instanceof ImageSource)) {
             throw new Error('missing or invalid source');
         }
         this.source = options.source;
@@ -758,7 +758,7 @@ abstract class Layer<
         const composer = nonNull(this._composer);
 
         for (const { id, request } of results) {
-            if (!request || composer.has(id)) {
+            if (request == null || composer.has(id)) {
                 continue;
             }
 
@@ -814,7 +814,7 @@ abstract class Layer<
         const composer = nonNull(this._composer);
 
         for (const { id, request } of results) {
-            if (!request || composer.has(id)) {
+            if (request == null || composer.has(id)) {
                 continue;
             }
 
@@ -1140,7 +1140,7 @@ abstract class Layer<
 
         const { material } = node;
 
-        if (!node.parent || !material) {
+        if (node.parent == null || material == null) {
             return;
         }
 

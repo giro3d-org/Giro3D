@@ -9,7 +9,7 @@ const BLACK = new Color(0, 0, 0);
 const raycaster = new Raycaster();
 
 function findEntityInParent(obj: Object3D): Entity3D | null {
-    if (obj.userData.parentEntity) {
+    if (obj.userData?.parentEntity != null) {
         return obj.userData.parentEntity as Entity3D;
     }
     if (obj.parent) {
@@ -44,7 +44,7 @@ function pickObjectsAt(
     const clearG = Math.round(255 * clearColor.g);
     const clearB = Math.round(255 * clearColor.b);
 
-    if (options.gpuPicking) {
+    if (options.gpuPicking === true) {
         // Instead of doing N raycast (1 per x,y returned by traversePickingCircle),
         // we force render the zone of interest.
         // Then we'll only do raycasting for the pixels where something was drawn.
@@ -74,7 +74,7 @@ function pickObjectsAt(
         const xi = x + radius;
         const yi = y + radius;
         const offset = (yi * (radius * 2 + 1) + xi) * 4;
-        if (options.gpuPicking) {
+        if (options.gpuPicking === true) {
             const r = pixels[offset];
             const g = pixels[offset + 1];
             const b = pixels[offset + 2];

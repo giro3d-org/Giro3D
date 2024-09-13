@@ -110,7 +110,7 @@ export function cullingTest(
         return cullingTestViewer(viewerRequestVolume, camera, tileMatrixWorld);
     }
 
-    if (boundingVolume) {
+    if (boundingVolume != null) {
         return cullingTestBoundingVolume(boundingVolume, camera, tileMatrixWorld);
     }
     return false;

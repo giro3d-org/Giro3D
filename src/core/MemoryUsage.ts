@@ -79,7 +79,7 @@ export function format(bytes: number, locale: string | undefined = undefined): s
 function iterateMaterials(obj: unknown, callback: (material: Material) => void) {
     const withMaterials = obj as { material: Material | Material[] };
 
-    if (!withMaterials.material) {
+    if (withMaterials.material == null) {
         return;
     }
 

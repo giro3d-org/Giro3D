@@ -361,7 +361,7 @@ export const angleFormatter: Formatter<VertexFormatOptions> = (params: VertexFor
     const B = position;
     const C = shape.getNextPoint(index);
 
-    if (A && B && C) {
+    if (A != null && B != null && C != null) {
         const angleRadians = getAngle(A, B, C);
         const angleDegrees = MathUtils.radToDeg(angleRadians);
 
@@ -1209,7 +1209,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         this._showSurfaceLabel = options?.showSurfaceLabel ?? this._showSurfaceLabel;
         this._showVertexLabels = options?.showVertexLabels ?? this._showVertexLabels;
 
-        this._color = options?.color ? new Color(options.color) : this._color;
+        this._color = options?.color != null ? new Color(options.color) : this._color;
         this._contrastColor = new Color(getContrastColor(this._color));
 
         this._vertexRadius = options?.vertexRadius ?? this._vertexRadius;
@@ -2255,7 +2255,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
             container.style.paddingBottom = '3rem';
         }
 
-        if (options?.vertical) {
+        if (options?.vertical === true) {
             innerContainer.style.rotate = '90deg';
         }
 
@@ -2297,14 +2297,14 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         if (this._showSurfaceLabel && this._points.length > 2) {
             const { area } = computeArea(this._points, false);
 
-            if (area) {
+            if (area != null) {
                 const labelText = this._formatSurface({
                     shape: this,
                     defaultFormatter: defaultAreaFormatter,
                     area,
                 });
 
-                if (labelText) {
+                if (labelText != null) {
                     const label = this.createLabel(labelText);
                     this._areaLabel = label;
                     const labelPlacement = this._surfaceLabelPlacement({ shape: this });
@@ -2382,7 +2382,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
                         end,
                     });
 
-                    if (labelText) {
+                    if (labelText != null) {
                         const label = this.createLabel(labelText);
                         label.name = 'label';
                         label.position.copy(midPoint);
@@ -2404,7 +2404,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
                     length: curve.getLength(),
                 });
 
-                if (labelText) {
+                if (labelText != null) {
                     const label = this.createLabel(labelText);
                     this._lengthLabels.push(label);
 
@@ -2440,7 +2440,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
                     position,
                 });
 
-                if (labelText) {
+                if (labelText != null) {
                     const label = this.createLabel(labelText, {
                         alignment: 'right',
                     });
@@ -2572,7 +2572,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     }
 
     private raycastLabel(label: Label, raycaster: Raycaster, intersects: Intersection[]) {
-        if (label.userData.hover) {
+        if (label.userData.hover === true) {
             intersects.push({
                 object: label,
                 point: label.position,
@@ -2668,7 +2668,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
 
             const { x, y, z } = proj.transform(src, dst, tmp);
 
-            if (options?.includeAltitudes) {
+            if (options?.includeAltitudes === true) {
                 return [x, y, z];
             } else {
                 return [x, y];

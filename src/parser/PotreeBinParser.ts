@@ -119,7 +119,7 @@ export default {
      * @returns a promise that resolves with a BufferGeometry.
      */
     parse: function parse(buffer: ArrayBuffer, pointAttributes: AttributeName[]) {
-        if (!buffer) {
+        if (buffer == null) {
             throw new Error('No array buffer provided.');
         }
 

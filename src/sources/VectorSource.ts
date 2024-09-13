@@ -61,7 +61,7 @@ function renderFeature(
     builderGroup: CanvasBuilderGroup,
     onStyleChanged: (arg0: BaseEvent) => void,
 ) {
-    if (!styles) {
+    if (styles == null) {
         return;
     }
 
@@ -260,7 +260,7 @@ class VectorSource extends ImageSource {
 
         this._targetProjection = opts.targetProjection;
         const shouldReproject =
-            this.dataProjection && this.dataProjection !== this._targetProjection;
+            this.dataProjection != null && this.dataProjection !== this._targetProjection;
 
         if (shouldReproject) {
             for (const feature of this.source.getFeatures()) {
@@ -299,7 +299,7 @@ class VectorSource extends ImageSource {
      * @param feature - The feature to add.
      */
     addFeature(feature: Feature) {
-        if (feature) {
+        if (feature != null) {
             this.source.addFeature(feature);
         }
     }
@@ -309,7 +309,7 @@ class VectorSource extends ImageSource {
      * @param features - The features to add.
      */
     addFeatures(features: Feature[]) {
-        if (features) {
+        if (features != null) {
             this.source.addFeatures(features);
         }
     }
@@ -319,7 +319,7 @@ class VectorSource extends ImageSource {
      * @param feature - The feature to remove.
      */
     removeFeature(feature: Feature) {
-        if (feature) {
+        if (feature != null) {
             this.source.removeFeature(feature);
         }
     }
@@ -432,7 +432,7 @@ class VectorSource extends ImageSource {
             } else {
                 styles = defaultStyle as Style | Style[];
             }
-            if (styles) {
+            if (styles != null) {
                 renderFeature(feature, squaredTolerance, styles, builderGroup, onStyleChanged);
             }
             used = true;

@@ -7,7 +7,7 @@ function isColor(o: unknown): o is Color {
 }
 
 function hasUUID(obj: unknown): obj is { uuid: string } {
-    if (!obj) {
+    if (obj == null) {
         return false;
     }
     if (typeof obj !== 'object') {

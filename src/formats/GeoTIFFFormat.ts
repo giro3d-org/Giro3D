@@ -48,7 +48,7 @@ class GeoTIFFFormat extends ImageFormat {
 
         let dataType;
         let opaqueValue;
-        const nodata = options?.noDataValue || image.getGDALNoData() || undefined;
+        const nodata = options?.noDataValue ?? image.getGDALNoData() ?? undefined;
 
         if (image.getBitsPerSample() === 8) {
             dataType = UnsignedByteType;
@@ -61,7 +61,7 @@ class GeoTIFFFormat extends ImageFormat {
         const spp = image.getSamplesPerPixel();
 
         // Let's use web workers to decode TIFF in the background
-        if (window.Worker && !geotiffWorkerPool) {
+        if (window.Worker != null && geotiffWorkerPool == null) {
             geotiffWorkerPool = new Pool();
         }
 

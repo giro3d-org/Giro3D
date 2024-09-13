@@ -415,7 +415,7 @@ async function decodeBlob(
         case 'image/jpeg': {
             // Use the browser capabilities to decode the image
             const img = await createImageBitmap(blob, {
-                imageOrientation: options.flipY ? 'flipY' : 'none',
+                imageOrientation: options.flipY === true ? 'flipY' : 'none',
             });
             let tex;
 
@@ -427,7 +427,7 @@ async function decodeBlob(
                 );
             }
 
-            if (options.createDataTexture) {
+            if (options.createDataTexture === true) {
                 const buf = getPixels(img);
                 tex = new DataTexture(buf, img.width, img.height, RGBAFormat, UnsignedByteType);
             } else {
@@ -617,7 +617,7 @@ function computeMinMaxFromBuffer(
             throw new Error('not implemented');
     }
 
-    if (interpretation.negateValues) {
+    if (interpretation.negateValues === true) {
         return { min: -max, max: -min };
     }
     return { min, max };
@@ -679,7 +679,7 @@ function computeMinMax(
 }
 
 function isEmptyTexture(texture: Texture) {
-    if (!texture) {
+    if (texture == null) {
         return true;
     }
     if ((texture as EmptyTexture).isEmptyTexture) {
@@ -698,13 +698,13 @@ function isEmptyTexture(texture: Texture) {
 }
 
 function getTextureMemoryUsage(context: GetMemoryUsageContext, texture: Texture) {
-    if (!texture) {
+    if (texture == null) {
         return;
     }
 
     if (isEmptyTexture(texture)) {
         context.objects.set(texture.id, { gpuMemory: 0, cpuMemory: 0 });
-    } else if (texture.userData?.memoryUsage) {
+    } else if (texture.userData?.memoryUsage != null) {
         const existing: MemoryUsageReport = texture.userData.memoryUsage;
         context.objects.set(texture.id, existing);
     } else if (isCanvasTexture(texture)) {
@@ -742,7 +742,7 @@ function getMemoryUsage(context: GetMemoryUsageContext, texture: Texture | Rende
         getTextureMemoryUsage(context, texture);
     } else if (isRenderTarget(texture)) {
         if (texture.depthBuffer) {
-            if (texture.depthTexture) {
+            if (texture.depthTexture != null) {
                 getTextureMemoryUsage(context, texture.depthTexture);
             } else {
                 getDepthBufferMemoryUsage(context, texture);
@@ -828,7 +828,7 @@ function getCompatibleTextureFilter<
     const gl = renderer?.getContext();
 
     // This would happen when running unit test in a case where WebGL is not supported.
-    if (!gl) {
+    if (gl == null) {
         return filter;
     }
 

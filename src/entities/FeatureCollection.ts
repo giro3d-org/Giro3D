@@ -373,7 +373,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         });
         this._geometryConverter.addEventListener('texture-loaded', () => this.notifyChange(this));
 
-        if (!options.extent) {
+        if (options.extent == null) {
             throw new Error('Error while initializing FeatureCollection: missing options.extent');
         }
         if (!options.extent.isValid()) {
@@ -381,7 +381,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
                 'Invalid extent: minX must be less than maxX and minY must be less than maxY.',
             );
         }
-        if (!options.source) {
+        if (options.source == null) {
             throw new Error('options.source is mandatory.');
         }
         this._ignoreZ = options.ignoreZ ?? false;
@@ -815,14 +815,14 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         const cacheKey = this.getCacheKey(node);
         const cachedFeatures = GlobalCache.get(cacheKey) as SimpleGeometryMesh<MeshUserData>[];
 
-        if (cachedFeatures) {
+        if (cachedFeatures != null) {
             return Promise.resolve(cachedFeatures);
         }
 
         const request = () =>
             new Promise<Feature[]>((resolve, reject) => {
                 let extent = node.userData.extent;
-                if (this.dataProjection) {
+                if (this.dataProjection != null) {
                     extent = extent.as(this.dataProjection);
                 }
 
@@ -1036,7 +1036,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
     }
 
     private updateMinMaxDistance(cameraPlane: Plane, node: FeatureTile) {
-        if (node.boundingBox) {
+        if (node.boundingBox != null) {
             const bbox = node.boundingBox.clone().applyMatrix4(node.matrixWorld);
             const distance = cameraPlane.distanceToPoint(bbox.getCenter(vector));
             const radius = bbox.getSize(vector).length() * 0.5;

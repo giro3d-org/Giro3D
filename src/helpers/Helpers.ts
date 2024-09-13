@@ -112,7 +112,7 @@ function create3dTileRegion(region: OBB, color: Color) {
  */
 function makeLocalBbox(object: Object3D, precise = false): Box3 {
     // The object provides a specific bounding box
-    if ((object as HasBoundingBox).boundingBox) {
+    if ((object as HasBoundingBox).boundingBox != null) {
         return (object as HasBoundingBox).boundingBox;
     }
 
@@ -407,7 +407,7 @@ class Helpers {
         if (!hasBoundingVolumeHelper(obj)) {
             return;
         }
-        if (properties.color) {
+        if (properties.color != null) {
             obj.boundingVolumeHelper.object3d.material.color = properties.color;
         }
     }

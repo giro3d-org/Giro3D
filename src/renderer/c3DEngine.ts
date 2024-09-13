@@ -71,17 +71,18 @@ function createErrorMessage() {
     element.style.padding = '1.5em';
     element.style.width = '400px';
     element.style.margin = '5em auto 0';
-    element.innerHTML = window.WebGLRenderingContext
-        ? [
-              'Your graphics card does not seem to support <a href="http://khronos.org/webgl/wiki/Getting_a_WebGL_Implementation" style="color:#000">WebGL</a>.<br />',
-              'Find out how to get it <a href="http://get.webgl.org/" style="color:#000">here</a>.<br>',
-              'See also <a href="https://www.khronos.org/webgl/wiki/BlacklistsAndWhitelists">graphics card blacklisting</a>',
-          ].join('\n')
-        : [
-              'Your browser does not seem to support <a href="http://khronos.org/webgl/wiki/Getting_a_WebGL_Implementation" style="color:#000">WebGL</a>.<br/>',
-              'Find out how to get it <a href="http://get.webgl.org/" style="color:#000">here</a>.<br>',
-              'You can also try another browser like Firefox or Chrome.',
-          ].join('\n');
+    element.innerHTML =
+        window.WebGLRenderingContext != null
+            ? [
+                  'Your graphics card does not seem to support <a href="http://khronos.org/webgl/wiki/Getting_a_WebGL_Implementation" style="color:#000">WebGL</a>.<br />',
+                  'Find out how to get it <a href="http://get.webgl.org/" style="color:#000">here</a>.<br>',
+                  'See also <a href="https://www.khronos.org/webgl/wiki/BlacklistsAndWhitelists">graphics card blacklisting</a>',
+              ].join('\n')
+            : [
+                  'Your browser does not seem to support <a href="http://khronos.org/webgl/wiki/Getting_a_WebGL_Implementation" style="color:#000">WebGL</a>.<br/>',
+                  'Find out how to get it <a href="http://get.webgl.org/" style="color:#000">here</a>.<br>',
+                  'You can also try another browser like Firefox or Chrome.',
+              ].join('\n');
 
     return element;
 }
@@ -342,7 +343,7 @@ class C3DEngine {
 
         const { scene, camera } = options;
 
-        if (options.clearColor) {
+        if (options.clearColor != null) {
             this.renderer.setClearColor(options.clearColor, 1);
         }
 
@@ -389,7 +390,7 @@ class C3DEngine {
         target: WebGLRenderTarget,
         zone: RenderToBufferZone,
     ): WebGLRenderTarget {
-        if (!target) {
+        if (target == null) {
             target = this.acquireRenderTarget(UnsignedByteType);
         }
 
@@ -398,7 +399,7 @@ class C3DEngine {
         // Don't use setViewport / setScissor on renderer because they would affect
         // on screen rendering as well. Instead set them on the render target.
         target.viewport.set(0, 0, target.width, target.height);
-        if (zone) {
+        if (zone != null) {
             target.scissor.set(
                 Math.max(0, zone.x),
                 Math.max(target.height - (zone.y + zone.height)),

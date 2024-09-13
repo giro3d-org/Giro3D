@@ -91,7 +91,7 @@ class ElevationLayer<UserData extends LayerUserData = LayerUserData> extends Lay
     protected async onInitialized() {
         // Compute a min/max approximation using the background images that
         // are already present on the composer.
-        if (!this.minmax || this.minmax.isDefault) {
+        if (this.minmax == null || this.minmax.isDefault === true) {
             const extent = nonNull(
                 this.getExtent(),
                 'neither this layer nor the source has an extent',

@@ -20,7 +20,7 @@ class OutlinerPropertyView extends Panel {
     }
 
     createControllers(obj: object, gui: GUI) {
-        if (!obj) {
+        if (obj == null) {
             return;
         }
 
@@ -80,7 +80,7 @@ class OutlinerPropertyView extends Panel {
         this._controllers.push(scale.add(obj.scale, 'y').onChange(() => this.updateObject(obj)));
         this._controllers.push(scale.add(obj.scale, 'z').onChange(() => this.updateObject(obj)));
 
-        if ('material' in obj && obj.material) {
+        if ('material' in obj && obj.material != null) {
             const material = this.gui.addFolder('Material');
             this._folders.push(material);
             material.close();
@@ -93,12 +93,12 @@ class OutlinerPropertyView extends Panel {
             geometry.close();
             this.createControllers(obj.geometry, geometry);
 
-            if (obj.geometry.attributes) {
+            if (obj.geometry.attributes != null) {
                 const attrs = obj.geometry.attributes;
                 const attributes = geometry.addFolder('Attributes');
                 Object.keys(attrs).forEach(p => {
                     const attrValue = attrs[p];
-                    if (p && attrValue) {
+                    if (p && attrValue != null) {
                         const attr = attributes.addFolder(p);
                         attr.close();
                         attr.add(attrValue, 'normalized');

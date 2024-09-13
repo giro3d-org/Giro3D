@@ -67,7 +67,7 @@ class LayerInspector extends Panel {
         this.addController(this.layer, 'id').name('Identifier');
         this.addController(this, 'cpuMemoryUsage').name('Memory usage (CPU)');
         this.addController(this, 'gpuMemoryUsage').name('Memory usage (GPU)');
-        if (layer.name) {
+        if (layer.name != null) {
             this.addController(this.layer, 'name').name('Name');
         }
         this.addController(this, 'sourceCrs').name('Source CRS');
@@ -154,7 +154,7 @@ class LayerInspector extends Panel {
 
         this.colorMapInspector = new ColorMapInspector(this.gui, instance, layer, layer.colorMap);
 
-        if (this.layer.source) {
+        if (this.layer.source != null) {
             this.sourceInspector = new SourceInspector(this.gui, instance, layer.source);
         }
 
@@ -227,7 +227,7 @@ class LayerInspector extends Panel {
         this.visible = this.layer.visible || true;
         this.composerImages = this.layer.composer?.images?.size ?? 0;
         if (isElevationLayer(this.layer)) {
-            if (this.layer.minmax && this.minmax) {
+            if (this.layer.minmax != null && this.minmax != null) {
                 this.minmax.min = this.layer.minmax.min;
                 this.minmax.max = this.layer.minmax.max;
             }

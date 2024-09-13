@@ -217,7 +217,7 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
     unregisterNode(node: LayerNode) {
         super.unregisterNode(node);
         const material = node.material;
-        if (material) {
+        if (material != null) {
             if (material.indexOfColorLayer(this) !== -1) {
                 material.removeColorLayer(this);
             }
@@ -287,7 +287,7 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
     ): Feature[] {
         const layerProjection = this.getExtent()?.crs;
 
-        if (!layerProjection) {
+        if (layerProjection == null) {
             return [];
         }
 
@@ -365,7 +365,7 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
     getVectorFeaturesInExtent(extent: Extent): Feature[] {
         if ((this.source as VectorSource).isVectorSource && this.visible) {
             const layerProjection = this.getExtent()?.crs;
-            if (!layerProjection) {
+            if (layerProjection == null) {
                 return [];
             }
 

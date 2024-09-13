@@ -21,7 +21,7 @@ function applyOptionalCesiumRTC(data: ArrayBuffer, gltf: Group) {
     const contentArray = new Uint8Array(data, 20, headerView.getUint32(12, true));
     const content = utf8Decoder.decode(new Uint8Array(contentArray));
     const json = JSON.parse(content);
-    if (json.extensions && json.extensions.CESIUM_RTC) {
+    if (json.extensions != null && json.extensions.CESIUM_RTC != null) {
         gltf.position.fromArray(json.extensions.CESIUM_RTC.center);
         gltf.updateMatrixWorld(true);
     }
@@ -72,7 +72,7 @@ export default {
     parse(buffer: ArrayBuffer, options: B3dmParserOptions) {
         const { gltfUpAxis } = options;
         const { urlBase } = options;
-        if (!buffer) {
+        if (buffer == null) {
             throw new Error('No array buffer provided.');
         }
 
@@ -150,10 +150,10 @@ export default {
                             }
                             const mesh = obj;
                             mesh.frustumCulled = false;
-                            if (!mesh.material || Array.isArray(mesh.material)) {
+                            if (mesh.material == null || Array.isArray(mesh.material)) {
                                 return;
                             }
-                            if (options.overrideMaterials) {
+                            if (options.overrideMaterials != null) {
                                 mesh.material.dispose();
                                 if (
                                     typeof options.overrideMaterials === 'object' &&
@@ -166,7 +166,7 @@ export default {
                             } else if (
                                 Capabilities.isLogDepthBufferSupported() &&
                                 (mesh.material as RawShaderMaterial).isRawShaderMaterial &&
-                                !options.doNotPatchMaterial
+                                options.doNotPatchMaterial !== true
                             ) {
                                 shaderUtils.patchMaterialForLogDepthSupport(
                                     mesh.material as RawShaderMaterial,

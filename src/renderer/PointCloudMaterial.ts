@@ -294,7 +294,7 @@ class PointCloudMaterial extends ShaderMaterial {
      * @defaultValue {@link ASPRS_CLASSIFICATIONS} (see https://www.asprs.org/wp-content/uploads/2010/12/LAS_Specification.pdf)
      */
     get classifications(): Classification[] {
-        if (!this.uniforms.classifications) {
+        if (this.uniforms.classifications == null) {
             // Initialize with default values
             this.uniforms.classifications = new Uniform(ASPRS_CLASSIFICATIONS);
         }
@@ -318,7 +318,7 @@ class PointCloudMaterial extends ShaderMaterial {
             }
         }
 
-        if (!this.uniforms.classifications) {
+        if (this.uniforms.classifications == null) {
             // Initialize with default values
             this.uniforms.classifications = new Uniform(actual);
         }
@@ -339,7 +339,7 @@ class PointCloudMaterial extends ShaderMaterial {
     set enableClassification(enable: boolean) {
         MaterialUtils.setDefine(this, 'CLASSIFICATION', enable);
 
-        if (enable && !this.uniforms.classifications) {
+        if (enable && this.uniforms.classifications == null) {
             // Initialize with default values
             this.uniforms.classifications = new Uniform(ASPRS_CLASSIFICATIONS);
         }
