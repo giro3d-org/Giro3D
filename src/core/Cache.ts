@@ -189,7 +189,7 @@ class Cache implements MemoryUsage {
      * @param value - The value.
      * @param options - The options.
      */
-    set(key: string, value: object, options: CacheOptions = {}) {
+    set<T extends object>(key: string, value: T, options: CacheOptions = {}): T {
         if (!this.enabled) {
             return value;
         }
