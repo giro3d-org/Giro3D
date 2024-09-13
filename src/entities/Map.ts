@@ -22,9 +22,12 @@ import type ColorimetryOptions from '../core/ColorimetryOptions';
 import { defaultColorimetryOptions } from '../core/ColorimetryOptions';
 import type Context from '../core/Context';
 import type ContourLineOptions from '../core/ContourLineOptions';
+import type ElevationProvider from '../core/ElevationProvider';
 import type ElevationRange from '../core/ElevationRange';
 import Coordinates from '../core/geographic/Coordinates';
 import type Extent from '../core/geographic/Extent';
+import type GetElevationOptions from '../core/GetElevationOptions';
+import type GetElevationResult from '../core/GetElevationResult';
 import type GraticuleOptions from '../core/GraticuleOptions';
 import type HillshadingOptions from '../core/HillshadingOptions';
 import ColorLayer, { isColorLayer } from '../core/layer/ColorLayer';
@@ -69,8 +72,6 @@ import TextureGenerator from '../utils/TextureGenerator';
 import { nonNull } from '../utils/tsutils';
 import type { EntityUserData } from './Entity';
 import Entity3D, { type Entity3DEventMap } from './Entity3D';
-import type GetElevationOptions from './GetElevationOptions';
-import type GetElevationResult from './GetElevationResult';
 
 /**
  * The default background color of maps.
@@ -513,6 +514,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     implements
         Pickable<MapPickResult>,
         PickableFeatures<unknown, MapPickResult>,
+        ElevationProvider,
         HasLayers,
         MemoryUsage
 {
@@ -1710,7 +1712,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
             if (tile.extent.isPointInside(coordinates)) {
                 const sample = tile.getElevation(options);
                 if (sample) {
-                    result.samples.push({ ...sample, map: this });
+                    result.samples.push({ ...sample, source: this });
                 }
             }
         });

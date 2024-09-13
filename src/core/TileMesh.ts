@@ -17,7 +17,6 @@ import {
     type WebGLRenderTarget,
 } from 'three';
 
-import type GetElevationOptions from '../entities/GetElevationOptions';
 import { readRGRenderTargetIntoRGBAU8Buffer } from '../renderer/composition/WebGLComposer';
 import type LayeredMaterial from '../renderer/LayeredMaterial';
 import type { MaterialOptions } from '../renderer/LayeredMaterial';
@@ -25,6 +24,7 @@ import MemoryTracker from '../renderer/MemoryTracker';
 import type RenderingState from '../renderer/RenderingState';
 import type Disposable from './Disposable';
 import type Extent from './geographic/Extent';
+import type GetElevationOptions from './GetElevationOptions';
 import HeightMap from './HeightMap';
 import type Instance from './Instance';
 import ElevationLayer from './layer/ElevationLayer';

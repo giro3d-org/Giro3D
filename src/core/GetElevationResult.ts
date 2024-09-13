@@ -1,5 +1,5 @@
-import type Coordinates from '../core/geographic/Coordinates';
 import type ElevationSample from './ElevationSample';
+import type Coordinates from './geographic/Coordinates';
 
 type GetElevationResult = {
     /**
