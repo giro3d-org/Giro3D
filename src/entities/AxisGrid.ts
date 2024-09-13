@@ -1,4 +1,4 @@
-import type { Object3D } from 'three';
+import type { ColorRepresentation, Object3D } from 'three';
 import {
     BufferGeometry,
     Color,
@@ -48,7 +48,7 @@ const tmp = {
     sphere: new Sphere(),
 };
 
-const DEFAULT_STYLE = {
+export const DEFAULT_STYLE = {
     color: new Color('white'),
     fontSize: 10,
     numberFormat: new Intl.NumberFormat(),
@@ -83,7 +83,7 @@ export interface Volume {
  */
 export interface Style {
     /** The grid line and label colors. */
-    color: Color;
+    color: ColorRepresentation;
     /** The fontsize, in points (pt). */
     fontSize: number;
     /** The number format for the labels. */
@@ -120,8 +120,8 @@ class Edge extends Group {
     }
 }
 
-function getCssColor(color: Color) {
-    return `#${color.getHexString()}`;
+function getCssColor(color: ColorRepresentation) {
+    return `#${new Color(color).getHexString()}`;
 }
 
 function createLabelElement(text: string, color: string, opacity: number, fontSize: number) {
@@ -216,12 +216,27 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
      * Creates an instance of AxisGrid.
      *
      * @param options - The options.
-     * @param options -.volume The grid volume.
-     * @param options -.origin The origin of the ticks.
-     * @param options -.ticks The distance between grid lines.
-     * @param options -.style The styling options.
      */
-    constructor(options: { volume: Volume; origin?: TickOrigin; ticks?: Ticks; style?: Style }) {
+    constructor(options: {
+        /**
+         * The grid volume
+         */
+        volume: Volume;
+        /**
+         * The origin of the ticks volume
+         * @defaultValue {@link TickOrigin.Relative}
+         */
+        origin?: TickOrigin;
+        /**
+         * The distance between grid lines.
+         * @defaultValue 100 on each axis.
+         */
+        ticks?: Ticks;
+        /**
+         * The style to apply to lines and labels.
+         */
+        style?: Partial<Style>;
+    }) {
         super(new Group());
 
         this._root = this.object3d as Group;
@@ -229,7 +244,11 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
         this._labelRoot = new Group();
         this._labelRoot.name = 'labels';
         this._labels = [];
-        this._style = options.style || DEFAULT_STYLE;
+        this._style = {
+            color: options.style?.color ?? DEFAULT_STYLE.color,
+            fontSize: options.style?.fontSize ?? DEFAULT_STYLE.fontSize,
+            numberFormat: options.style?.numberFormat ?? DEFAULT_STYLE.numberFormat,
+        };
         this.onObjectCreated(this._labelRoot);
         this._root.add(this._labelRoot);
         this._labelElements = [];
@@ -241,8 +260,8 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
         }
 
         this._volume = options.volume;
-        this._ticks = options.ticks || { x: 100, y: 100, z: 100 };
-        this._origin = options.origin || TickOrigin.Relative;
+        this._ticks = options.ticks ?? { x: 100, y: 100, z: 100 };
+        this._origin = options.origin ?? TickOrigin.Relative;
 
         const unit = crsToUnit(this.volume.extent.crs);
         switch (unit) {
@@ -257,7 +276,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
                 break;
         }
 
-        const color = new Color(this.style.color || 'white');
+        const color = new Color(this.style.color);
         this._material = new LineBasicMaterial({ color });
 
         this._cameraForward = new Vector3();
@@ -343,7 +362,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
     }
 
     set color(color) {
-        this._material.color = color;
+        this._material.color = new Color(color);
         this.style.color = color;
         const cssColor = getCssColor(color);
         this._labelElements.forEach(l => {
