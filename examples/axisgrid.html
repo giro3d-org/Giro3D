@@ -9,7 +9,25 @@ tags: [map, axisgrid, tiles, xyz]
 
 <div class="side-pane-with-status-bar">
     <div class="card">
+        <div class="card-header">Parameters</div>
         <div class="card-body">
+            <!-- Color -->
+            <label class="form-check-label w-100 mb-2" for="color">
+                <div class="row">
+                    <div class="col">Color</div>
+                    <div class="col">
+                        <input
+                            type="color"
+                            class="form-control form-control-color float-end h-100 w-100"
+                            id="color"
+                            value="#ffffff"
+                            title="color"
+                            autocomplete="off"
+                        />
+                    </div>
+                </div>
+            </label>
+
             <!-- Show/Hide AxisGrid -->
             <div class="form-check form-switch">
                 <input

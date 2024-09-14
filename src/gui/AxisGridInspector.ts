@@ -1,5 +1,5 @@
 import type GUI from 'lil-gui';
-import type { Color } from 'three';
+import type { ColorRepresentation } from 'three';
 import type Instance from '../core/Instance';
 import type AxisGrid from '../entities/AxisGrid';
 import { TickOrigin } from '../entities/AxisGrid';
@@ -76,7 +76,7 @@ class AxisGridInspector extends EntityInspector<AxisGrid> {
         this.notify(this.entity);
     }
 
-    updateGridColor(v: Color) {
+    updateGridColor(v: ColorRepresentation) {
         this.entity.color = v;
         this.notify(this.entity);
     }

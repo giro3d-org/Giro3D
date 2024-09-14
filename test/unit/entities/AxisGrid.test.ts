@@ -1,6 +1,6 @@
 import type Context from '@giro3d/giro3d/core/Context';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
-import AxisGrid, { type Volume } from '@giro3d/giro3d/entities/AxisGrid';
+import AxisGrid, { DEFAULT_STYLE, type Volume } from '@giro3d/giro3d/entities/AxisGrid';
 import View from '@giro3d/giro3d/renderer/View';
 import * as THREE from 'three';
 
@@ -34,6 +34,25 @@ describe('AxisGrid', () => {
             const grid = new AxisGrid({ volume: defaultVolume });
 
             expect(grid.volume.extent).toBe(DEFAULT_EXTENT);
+        });
+
+        it('should assign the default style', () => {
+            const grid = new AxisGrid({ volume: defaultVolume });
+
+            expect(grid.style).toEqual(DEFAULT_STYLE);
+        });
+
+        it('should assign the remaining values of a partial style', () => {
+            const grid = new AxisGrid({
+                volume: defaultVolume,
+                style: {
+                    fontSize: 999,
+                },
+            });
+
+            expect(grid.style.color).toEqual(DEFAULT_STYLE.color);
+            expect(grid.style.fontSize).toEqual(999);
+            expect(grid.style.numberFormat).toEqual(DEFAULT_STYLE.numberFormat);
         });
 
         it('should assign the object3d property', () => {

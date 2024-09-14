@@ -324,7 +324,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
          * It can be a constant for every feature, or a callback.
          * The callback version is particularly useful to derive the elevation
          * from the properties of the feature.
-         * Requires {@link _ignoreZ} to be `false`.
+         * Requires `ignoreZ` to be `false`.
          */
         elevation?: number | number[] | FeatureElevationCallback;
         /**

@@ -19,6 +19,7 @@ import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/layer/ColorMap.js';
 import StatusBar from './widgets/StatusBar.js';
 import { bindSlider } from './widgets/bindSlider.js';
 import { bindToggle } from './widgets/bindToggle.js';
+import { bindColorPicker } from './widgets/bindColorPicker.js';
 
 const x = -13602000;
 const y = 5812000;
@@ -100,6 +101,11 @@ function bindAxisStep(axis) {
 bindAxisStep('x');
 bindAxisStep('y');
 bindAxisStep('z');
+
+bindColorPicker('color', color => {
+    axisGrid.color = color;
+    instance.notifyChange(axisGrid);
+});
 
 bindToggle('entity', v => {
     axisGrid.visible = v;
