@@ -166,7 +166,7 @@ export default class HeightMap {
             for (let j = bottomRight.y; j <= topLeft.y; j++) {
                 const z = this.getValueRaw(i, j, true);
 
-                if (z) {
+                if (z != null) {
                     min = Math.min(z, min);
                     max = Math.max(z, max);
                 }

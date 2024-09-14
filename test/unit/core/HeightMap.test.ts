@@ -216,35 +216,40 @@ describe('HeightMap', () => {
 
         describe('getMinMax', () => {
             it('should return the correct value for identity offset/scale', () => {
-                const width = 30;
-                const height = 42;
+                for (let i = 0; i < 100; i++) {
+                    const width = 30;
+                    const height = 42;
 
-                const buffer = new Uint16Array(width * height);
+                    const buffer = new Uint16Array(width * height * 2);
 
-                let min = +Infinity;
-                let max = -Infinity;
+                    let min = +Infinity;
+                    let max = -Infinity;
 
-                for (let i = 0; i < buffer.length; i++) {
-                    const z = MathUtils.randInt(0, 10_000);
-                    min = Math.min(z, min);
-                    max = Math.max(z, max);
-                    buffer[i] = z;
+                    for (let i = 0; i < buffer.length; i += 2) {
+                        const z = MathUtils.randInt(0, 10_000);
+                        min = Math.min(z, min);
+                        max = Math.max(z, max);
+                        buffer[i + 0] = z;
+                        buffer[i + 1] = 1;
+                    }
+
+                    const heightMap = new HeightMap(
+                        buffer,
+                        width,
+                        height,
+                        OffsetScale.identity(),
+                        RGFormat,
+                        UnsignedShortType,
+                        1,
+                        0,
+                    );
+
+                    const minmax = heightMap.getMinMax(new Rect(0, 1, 0, 1));
+
+                    expect(minmax).toBeDefined();
+                    expect(minmax?.min).toEqual(min);
+                    expect(minmax?.max).toEqual(max);
                 }
-
-                const heightMap = new HeightMap(
-                    buffer,
-                    width,
-                    height,
-                    OffsetScale.identity(),
-                    RedFormat,
-                    UnsignedShortType,
-                );
-
-                const minmax = heightMap.getMinMax(new Rect(0, 1, 0, 1));
-
-                expect(minmax).toBeDefined();
-                expect(minmax.min).toEqual(min);
-                expect(minmax.max).toEqual(max);
             });
         });
     });
