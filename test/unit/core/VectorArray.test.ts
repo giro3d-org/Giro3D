@@ -146,6 +146,27 @@ describe('Vector2Array', () => {
         });
     });
 
+    describe('push', () => {
+        it('should resize the array', () => {
+            const size = 3;
+            const array = new Vector2Array(new Int32Array(2 * size));
+
+            expect(array).toHaveLength(3);
+
+            array.setX(0, 555);
+            array.setY(2, 123);
+
+            expect(array.getX(0)).toEqual(555);
+            expect(array.getY(2)).toEqual(123);
+
+            array.push(-1, -2);
+
+            expect(array).toHaveLength(4);
+            expect(array.getX(3)).toEqual(-1);
+            expect(array.getY(3)).toEqual(-2);
+        });
+    });
+
     describe('setX/Y/Z/W', () => {
         it('should ignore Z and W', () => {
             const array = new Vector2Array(new Int32Array(4 * 3));
@@ -371,6 +392,30 @@ describe('Vector4Array', () => {
         });
     });
 
+    describe('push', () => {
+        it('should resize the array', () => {
+            const size = 3;
+            const array = new Vector3Array(new Int32Array(3 * size));
+
+            expect(array).toHaveLength(3);
+
+            array.setX(0, 555);
+            array.setY(2, 123);
+            array.setZ(1, 998);
+
+            expect(array.getX(0)).toEqual(555);
+            expect(array.getY(2)).toEqual(123);
+            expect(array.getZ(1)).toEqual(998);
+
+            array.push(-1, -2, -3);
+
+            expect(array).toHaveLength(4);
+            expect(array.getX(3)).toEqual(-1);
+            expect(array.getY(3)).toEqual(-2);
+            expect(array.getZ(3)).toEqual(-3);
+        });
+    });
+
     describe('setVector', () => {
         it('should assign correct values at correct locations', () => {
             const array = new Vector4Array(new Int32Array(4 * 3));
@@ -519,6 +564,33 @@ describe('Vector4Array', () => {
             expect(array.getY(2)).toEqual(123);
             expect(array.getZ(1)).toEqual(998);
             expect(array.getW(0)).toEqual(2);
+        });
+
+        describe('push', () => {
+            it('should resize the array', () => {
+                const size = 3;
+                const array = new Vector4Array(new Int32Array(4 * size));
+
+                expect(array).toHaveLength(3);
+
+                array.setX(0, 555);
+                array.setY(2, 123);
+                array.setZ(1, 998);
+                array.setW(0, 2);
+
+                expect(array.getX(0)).toEqual(555);
+                expect(array.getY(2)).toEqual(123);
+                expect(array.getZ(1)).toEqual(998);
+                expect(array.getW(0)).toEqual(2);
+
+                array.push(-1, -2, -3, -4);
+
+                expect(array).toHaveLength(4);
+                expect(array.getX(3)).toEqual(-1);
+                expect(array.getY(3)).toEqual(-2);
+                expect(array.getZ(3)).toEqual(-3);
+                expect(array.getW(3)).toEqual(-4);
+            });
         });
     });
 });

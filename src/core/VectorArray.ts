@@ -1,5 +1,5 @@
 import type { TypedArray, Vector } from 'three';
-import { Vector2, Vector3, Vector4 } from 'three';
+import { MathUtils, Vector2, Vector3, Vector4 } from 'three';
 import { nonNull } from '../utils/tsutils';
 
 export type Dimension = 2 | 3 | 4;
@@ -21,7 +21,10 @@ export abstract class VectorArray<
 > {
     private readonly _dimension: Dimension;
 
+    private _capacity: number;
     protected _array: Buffer;
+    private _length: number;
+    private _lastExpansion = 0;
 
     /**
      * The length in bytes of the array.
@@ -44,10 +47,19 @@ export abstract class VectorArray<
      */
     toFloat32Array(): Float32Array {
         if (this._array instanceof Float32Array) {
-            return this._array;
+            if (this._array.length === this._length * this._dimension) {
+                // Return the same array as it is already in the correct format and size
+                return this._array;
+            } else {
+                // Return a slice of the same array as it is already in the correct format
+                return this._array.slice(0, this._length * this._dimension);
+            }
         }
 
-        return new Float32Array(this._array);
+        // Create an intermediate array in the original format
+        // TODO might be more efficient to allocate the array directly with the correct size,
+        // then copy elements individually ?
+        return new Float32Array(this._array.slice(0, this._length * this._dimension));
     }
 
     protected constructor(buffer: Buffer, dimension: Dimension) {
@@ -58,13 +70,15 @@ export abstract class VectorArray<
             );
         }
         this._array = buffer;
+        this._capacity = this._array.length / this._dimension;
+        this._length = this._capacity;
     }
 
     /**
      * Returns the number of vectors in this array.
      */
     get length() {
-        return this._array.length / this._dimension;
+        return this._length;
     }
 
     /**
@@ -188,6 +202,70 @@ export abstract class VectorArray<
         }
     }
 
+    private computeExpansionSize() {
+        if (this._lastExpansion === 0) {
+            this._lastExpansion = 32;
+        } else {
+            this._lastExpansion *= 2;
+            this._lastExpansion = MathUtils.clamp(this._lastExpansion, 32, 65536);
+        }
+
+        return this._lastExpansion;
+    }
+
+    /**
+     * Removes unused capacity.
+     */
+    trim(): void {
+        if (this._capacity > this._length) {
+            this._capacity = this._length;
+            this._array = this._array.slice(0, this._length * 3) as Buffer;
+        }
+    }
+
+    /**
+     * Adds capacity at the end of the array using a growing expansion size (i.e the first time
+     * this method is called, a small amount is added, and the amount grows every time this method
+     * is called up to a certain point).
+     * Contrary to {@link expand}, the length is left untouched (the expanded area is not considered
+     * used.)
+     */
+    private allocateIfFull(): void {
+        if (this._capacity === this._length) {
+            const currentLength = this._length;
+            this.expand((this._length += this.computeExpansionSize()));
+            this._capacity = this._array.length / this._dimension;
+            this._length = currentLength;
+        }
+    }
+
+    /**
+     * Pushes a vector at the end of the array, allocating memory if necessary.
+     */
+    push(x: number, y: number, z?: number, w?: number): void {
+        this.allocateIfFull();
+
+        this.setX(this._length, x);
+        this.setY(this._length, y);
+        if (z) {
+            this.setZ(this._length, z);
+        }
+        if (w) {
+            this.setW(this._length, w);
+        }
+
+        this._length++;
+    }
+
+    /**
+     * Pushes a vector at the end of the array, allocating memory if necessary.
+     */
+    pushVector(v: V): void {
+        this.allocateIfFull();
+        this.assignVector(this._length / this._dimension, v);
+        this._length++;
+    }
+
     /**
      * Allocates a new underlying array to match the new size, then copy the content
      * of the previous array at the beginning of the new array.
@@ -198,6 +276,8 @@ export abstract class VectorArray<
         const newArray = new this.array.constructor(newSize * this._dimension);
         newArray.set(this._array);
         this._array = newArray;
+        this._capacity = this._array.length / this._dimension;
+        this._length = this._capacity;
 
         return this;
     }
@@ -205,7 +285,9 @@ export abstract class VectorArray<
     /** @internal */
     protected abstract getTempVector(): V;
     /** @internal */
-    protected abstract assignVector(rawIndex: number, tempVector: V): void;
+    protected abstract readVector(rawIndex: number, tempVector: V): void;
+    /** @internal */
+    protected abstract assignVector(rawIndex: number, v: Readonly<V>): void;
 
     /**
      * Performs the specified action for each element in an array.
@@ -238,7 +320,7 @@ export abstract class VectorArray<
 
         // Raw index is the index to the first component of each vector, not the vector itself
         for (let rawIndex = 0; rawIndex < this._array.length; rawIndex += stride) {
-            this.assignVector(rawIndex, value);
+            this.readVector(rawIndex, value);
 
             const vectorIndex = rawIndex / stride;
             callbackfn(value, vectorIndex, this);
@@ -280,9 +362,14 @@ export class Vector2Array<Buffer extends TypedArray = TypedArray> extends Vector
         return new Vector2();
     }
 
-    protected assignVector(rawIndex: number, tempVector: Vector2): void {
+    protected readVector(rawIndex: number, tempVector: Vector2): void {
         const arr = this._array;
         tempVector.set(arr[rawIndex + X], arr[rawIndex + Y]);
+    }
+
+    protected assignVector(rawIndex: number, v: Readonly<Vector2>): void {
+        this._array[rawIndex + X] = v.x;
+        this._array[rawIndex + Y] = v.y;
     }
 }
 
@@ -315,9 +402,15 @@ export class Vector3Array<Buffer extends TypedArray = TypedArray> extends Vector
         return new Vector3();
     }
 
-    protected assignVector(rawIndex: number, tempVector: Vector3): void {
+    protected readVector(rawIndex: number, tempVector: Vector3): void {
         const arr = this._array;
         tempVector.set(arr[rawIndex + X], arr[rawIndex + Y], arr[rawIndex + Z]);
+    }
+
+    protected assignVector(rawIndex: number, v: Readonly<Vector3>): void {
+        this._array[rawIndex + X] = v.x;
+        this._array[rawIndex + Y] = v.y;
+        this._array[rawIndex + Z] = v.z;
     }
 }
 
@@ -355,8 +448,15 @@ export class Vector4Array<Buffer extends TypedArray = TypedArray> extends Vector
         return new Vector4();
     }
 
-    protected assignVector(rawIndex: number, tempVector: Vector4): void {
+    protected readVector(rawIndex: number, tempVector: Vector4): void {
         const arr = this._array;
         tempVector.set(arr[rawIndex + X], arr[rawIndex + Y], arr[rawIndex + Z], arr[rawIndex + W]);
+    }
+
+    protected assignVector(rawIndex: number, v: Readonly<Vector4>): void {
+        this._array[rawIndex + X] = v.x;
+        this._array[rawIndex + Y] = v.y;
+        this._array[rawIndex + Z] = v.z;
+        this._array[rawIndex + W] = v.w;
     }
 }
