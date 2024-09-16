@@ -2071,7 +2071,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     }
 
     /**
-     * Returns the OpenLayers feature (in WGS84 coordiantes) equivalent to this shape.
+     * Returns the OpenLayers feature (in WGS84 coordinates) equivalent to this shape.
      */
     toOpenLayersFeature(options?: ShapeExportOptions) {
         return GeoJSONUtils.getOpenLayersFeature(this.toGeoJSON(options));
