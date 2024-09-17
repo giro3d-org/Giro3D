@@ -394,7 +394,7 @@ class WebGLComposer {
 
         const previousState = this.saveState();
 
-        if (this._clearColor) {
+        if (this._clearColor != null) {
             this._renderer.setClearColor(this._clearColor);
         } else {
             this._renderer.setClearColor(DEFAULT_CLEAR, 0);

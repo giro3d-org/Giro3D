@@ -340,7 +340,7 @@ function createPositionBuffer(coordinates: Coordinate[], options: BaseOptions): 
 
         const x = p[0];
         const y = p[1];
-        const z = ignoreZ ? 0 : p[2] ?? 0;
+        const z = ignoreZ === true ? 0 : p[2] ?? 0;
 
         result[i0 + 0] = x - origin.x;
         result[i0 + 1] = y - origin.y;
@@ -685,7 +685,7 @@ export default class GeometryConverter<
                 return;
         }
 
-        if (first) {
+        if (first != null) {
             const x = first[0] ?? 0;
             const y = first[1] ?? 0;
             const z = first[2] ?? 0;
@@ -813,7 +813,7 @@ export default class GeometryConverter<
     }
 
     private getShadedSurfaceMaterial(style: Required<FillStyle>): MeshLambertMaterial {
-        if (!style) {
+        if (style == null) {
             throw new Error('missing style');
         }
 
@@ -840,7 +840,7 @@ export default class GeometryConverter<
     }
 
     private getUnshadedSurfaceMaterial(style: Required<FillStyle>): MeshBasicMaterial {
-        if (!style) {
+        if (style == null) {
             throw new Error('missing style');
         }
 
@@ -867,7 +867,7 @@ export default class GeometryConverter<
     }
 
     private getSpriteMaterial(style: Required<PointStyle>): SpriteMaterial {
-        if (!style) {
+        if (style == null) {
             throw new Error('missing style');
         }
 
@@ -950,7 +950,7 @@ export default class GeometryConverter<
     }
 
     private getLineMaterial(style: Required<StrokeStyle>): LineMaterial {
-        if (!style) {
+        if (style == null) {
             throw new Error('missing style');
         }
 

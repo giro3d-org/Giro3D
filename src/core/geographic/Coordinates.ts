@@ -48,7 +48,7 @@ export function crsToUnit(crs: string) {
             return UNIT.METER;
         default: {
             const p = proj4.defs(crs);
-            if (!p) {
+            if (p == null) {
                 return undefined;
             }
             return unitFromProj4Unit(p.units);
@@ -65,7 +65,7 @@ function crsToUnitWithError(crs: string) {
 }
 
 export function assertCrsIsValid(crs: string) {
-    if (!proj4.defs(crs)) {
+    if (proj4.defs(crs) == null) {
         throw new Error(`Invalid crs parameter value '${crs}'. Did you define it with proj4?`);
     }
 }

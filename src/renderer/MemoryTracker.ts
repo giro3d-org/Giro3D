@@ -134,7 +134,7 @@ class MemoryTracker {
             const value = weakref.deref();
             if (value) {
                 const key = value.constructor.name;
-                if (!map[key]) {
+                if (map[key] == null) {
                     map[key] = [];
                 }
                 map[key].push({ name, value });

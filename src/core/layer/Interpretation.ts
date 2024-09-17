@@ -109,7 +109,7 @@ class Interpretation {
      * Returns `true` if this interpretation does not perform any transformation to source pixels.
      */
     isDefault() {
-        return this.mode === Mode.Raw && !this.negateValues;
+        return this.mode === Mode.Raw && this.negateValues !== true;
     }
 
     /**

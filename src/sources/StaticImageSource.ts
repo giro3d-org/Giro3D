@@ -68,10 +68,10 @@ export default class StaticImageSource extends ImageSource<StaticImageSourceEven
             is8bit: true,
         });
 
-        if (!options.source) {
+        if (options.source == null) {
             throw new Error('invalid source');
         }
-        if (!options.extent) {
+        if (options.extent == null) {
             throw new Error('invalid extent');
         }
 

@@ -8,7 +8,6 @@ import {
     Scene,
     Vector2,
     Vector3,
-    type Box3,
     type ColorRepresentation,
     type WebGLRenderer,
     type WebGLRendererParameters,
@@ -330,7 +329,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
 
         this._entities = new Set();
 
-        if (window.ResizeObserver) {
+        if (window.ResizeObserver != null) {
             this._resizeObserver = new ResizeObserver(() => {
                 this._updateRendererSize(this.viewport);
             });
@@ -457,7 +456,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         // Since we are only interested in the last size, we must discard intermediate
         // resizes to avoid the flickering effect due to the canvas going blank.
 
-        if (this._resizeTimeout) {
+        if (this._resizeTimeout != null) {
             // If there's already a timeout in progress, discard it
             clearTimeout(this._resizeTimeout);
         }
@@ -511,7 +510,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * or rejected if any error occurred.
      */
     async add<T extends Object3D | Entity>(object: T): Promise<T> {
-        if (!object) {
+        if (object == null) {
             throw new Error('object is undefined');
         }
 
@@ -543,7 +542,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
 
         if (
             entity instanceof Entity3D &&
-            entity.object3d &&
+            entity.object3d != null &&
             !entity.object3d.parent &&
             entity.object3d !== this._scene
         ) {
@@ -728,7 +727,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * @returns canvas coordinates (in pixels, 0-0 = top-left of the instance)
      */
     eventToCanvasCoords(event: MouseEvent | TouchEvent, target: Vector2, touchIdx = 0): Vector2 {
-        if (window.TouchEvent && event instanceof TouchEvent) {
+        if (window.TouchEvent != null && event instanceof TouchEvent) {
             const touchEvent = event as TouchEvent;
             const br = this.domElement.getBoundingClientRect();
             return target.set(
@@ -890,7 +889,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
             results.forEach(result => {
                 if (result.entity && isPickableFeatures(result.entity)) {
                     result.entity.pickFeaturesFrom(result, pickFeaturesOptions);
-                } else if (result.object && isPickableFeatures(result.object)) {
+                } else if (result.object != null && isPickableFeatures(result.object)) {
                     result.object.pickFeaturesFrom(result, pickFeaturesOptions);
                 }
             });
@@ -923,8 +922,8 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
             cam.lookAt(lookat);
             cam.updateMatrixWorld(true);
         } else if ('getBoundingBox' in obj && typeof obj.getBoundingBox === 'function') {
-            const box = obj.getBoundingBox() as Box3;
-            if (box && !box.isEmpty()) {
+            const box = obj.getBoundingBox();
+            if (box != null && !box.isEmpty()) {
                 const center = box.getCenter(vectors.pos);
                 const size = box.getSize(vectors.size);
                 const positionCamera = center.clone();

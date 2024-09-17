@@ -39,7 +39,7 @@ export interface WmtsFromCapabilitiesOptions extends WmtsSourceOptions {
 async function getCapabilities(url: string): Promise<unknown> {
     const cached = GlobalCache.get(url);
 
-    if (cached) {
+    if (cached != null) {
         return cached;
     }
 
@@ -110,10 +110,10 @@ export default class WmtsSource extends TiledImageSource {
             layer: options.layer,
         };
 
-        if (options.matrixSet) {
+        if (options.matrixSet != null) {
             config.matrixSet = options.matrixSet;
         }
-        if (options.imageFormat) {
+        if (options.imageFormat != null) {
             config.format = options.imageFormat;
             delete options.imageFormat;
         }

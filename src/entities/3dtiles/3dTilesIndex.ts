@@ -93,7 +93,7 @@ class $3dTilesIndex {
         // The only reason to store _worldFromLocalTransform is because of extendTileset where we
         // need the transform chain for one node.
         indexedNode.worldFromLocalTransform = indexedNode.transformMatrix;
-        if (parent && parent.worldFromLocalTransform) {
+        if (parent && parent.worldFromLocalTransform != null) {
             if (indexedNode.transform) {
                 indexedNode.worldFromLocalTransform = new Matrix4().multiplyMatrices(
                     parent.worldFromLocalTransform,
@@ -107,7 +107,7 @@ class $3dTilesIndex {
         // this._inverseTileTransform.copy(node._worldFromLocalTransform).invert();
         // getBox only use this._inverseTileTransform for volume.region so let's not
         // compute the inverse matrix each time
-        if (indexedNode.worldFromLocalTransform) {
+        if (indexedNode.worldFromLocalTransform != null) {
             this._inverseTileTransform.copy(indexedNode.worldFromLocalTransform).invert();
         } else {
             this._inverseTileTransform.identity();

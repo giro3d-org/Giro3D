@@ -112,7 +112,7 @@ interface EntityInspectorOptions {
 }
 
 function getTitle(entity: Entity3D): string {
-    if (entity.name) {
+    if (entity.name != null) {
         return `${entity.name} (${entity.type})`;
     }
     return entity.type;
@@ -170,7 +170,7 @@ class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
 
         this.clippingPlanePanel = new ClippingPlanePanel(entity, this.gui, instance);
 
-        if (options.visibility) {
+        if (options.visibility === true) {
             this.addController(this, 'visible')
                 .name('Visible')
                 .onChange(v => this.toggleVisibility(v));
@@ -178,18 +178,18 @@ class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
         this.addController(this.entity, 'frozen')
             .name('Freeze updates')
             .onChange(() => this.notify(this.entity));
-        if (options.opacity) {
+        if (options.opacity === true) {
             this.addController(this.entity, 'opacity')
                 .name('Opacity')
                 .min(0)
                 .max(1)
                 .onChange(() => this.notify(this.entity));
         }
-        if (options.boundingBoxes) {
+        if (options.boundingBoxes === true) {
             this.addController(this, 'boundingBoxes')
                 .name('Show volumes')
                 .onChange(v => this.toggleBoundingBoxes(v));
-            if (options.boundingBoxColor) {
+            if (options.boundingBoxColor === true) {
                 this.addColorController(this, 'boundingBoxColor')
                     .name('Volume color')
                     .onChange(v => this.updateBoundingBoxColor(v));
@@ -261,7 +261,7 @@ class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
     addOrRemoveBoundingBox(obj: Object3D, add: boolean, color: Color) {
         if (add) {
             if ('material' in obj && isMaterial(obj.material)) {
-                if (obj.visible && obj.material && obj.material.visible) {
+                if (obj.visible && obj.material != null && obj.material.visible) {
                     Helpers.addBoundingBox(obj, color);
                 }
             }

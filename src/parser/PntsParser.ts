@@ -210,7 +210,7 @@ export default {
      * and a batch table (batchTable).
      */
     parse: async function parse(buffer: ArrayBuffer): Promise<Pnts> {
-        if (!buffer) {
+        if (buffer == null) {
             throw new Error('No array buffer provided.');
         }
         const view = new DataView(buffer);

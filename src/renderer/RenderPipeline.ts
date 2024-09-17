@@ -244,7 +244,7 @@ export default class RenderPipeline {
             const mesh = obj as Object3DWithMaterial;
             const material = mesh.material;
 
-            if (mesh.visible && material && material.visible) {
+            if (mesh.visible && material != null && material.visible) {
                 material.visible = false;
 
                 if ((mesh as PointCloud).isPointCloud) {

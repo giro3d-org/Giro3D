@@ -59,7 +59,7 @@ let sharedPool: Pool | undefined = undefined;
 export type ChannelMapping = [number] | [number, number, number] | [number, number, number, number];
 
 function getPool(): Pool | undefined {
-    if (!sharedPool && window.Worker) {
+    if (sharedPool == null && window.Worker != null) {
         sharedPool = new Pool();
     }
 
@@ -81,7 +81,7 @@ type CachedBlock = {
 function isMask(image: GeoTIFFImage) {
     const FILETYPE_MASK = 4;
     const fileDirectory = image.fileDirectory;
-    const type = fileDirectory.NewSubfileType || 0;
+    const type = fileDirectory.NewSubfileType ?? 0;
 
     return (type & FILETYPE_MASK) === FILETYPE_MASK;
 }
@@ -132,10 +132,7 @@ export class FetcherResponse extends BaseResponse {
 
     // @ts-expect-error (incorrectly typed base method, should be a Promise, but is an ArrayBuffer)
     async getData(): Promise<ArrayBuffer> {
-        const data = this.response.arrayBuffer
-            ? await this.response.arrayBuffer()
-            : // @ts-expect-error (no buffer() in response)
-              (await this.response.buffer()).buffer;
+        const data = await this.response.arrayBuffer();
         return data;
     }
 }
@@ -262,7 +259,7 @@ class GeoTIFFSource extends ImageSource {
     private _extent?: Extent;
     private _dimensions?: Vector2;
     private _sampleCount?: number;
-    private _initialized?: boolean;
+    private _initialized = false;
     private _origin?: number[];
     private _nodata?: number | null;
     private _initializePromise?: Promise<void>;
@@ -618,7 +615,7 @@ class GeoTIFFSource extends ImageSource {
         if (buffers == null) {
             texture = new Texture();
         } else {
-            if (mask && buffers.length === 3) {
+            if (mask != null && buffers.length === 3) {
                 const alpha = await this.processTransparencyMask(mask, actualExtent, signal, id);
                 if (alpha) {
                     buffers.push(alpha);
@@ -752,7 +749,7 @@ class GeoTIFFSource extends ImageSource {
 
         const cacheKey = `${this._cacheId}-${id}-${channels.join(',')}`;
         const cached = this._cache.get(cacheKey);
-        if (cached) {
+        if (cached != null) {
             return cached as TypedArray[];
         }
 

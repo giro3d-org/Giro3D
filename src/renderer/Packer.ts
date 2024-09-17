@@ -28,7 +28,7 @@ export interface Block {
 }
 
 function findNode(root: Node, w: number, h: number): Node | null {
-    if (root.used) {
+    if (root.used === true) {
         const used = root as UsedNode;
         return findNode(used.right, w, h) || findNode(used.down, w, h);
     }

@@ -96,7 +96,7 @@ describe('Instance', () => {
 
     describe('eventToNormalizedCoords', () => {
         it('should return the passed target, using TouchEvent', () => {
-            if (window.TouchEvent) {
+            if (window.TouchEvent != null) {
                 const target = new Vector2();
                 const result = instance.eventToNormalizedCoords(touchEvent, target);
                 expect(result).toBe(target);
@@ -116,7 +116,7 @@ describe('Instance', () => {
 
     describe('eventToCanvasCoords', () => {
         it('should return the passed target', () => {
-            if (window.TouchEvent) {
+            if (window.TouchEvent != null) {
                 const target = new Vector2();
                 const result = instance.eventToCanvasCoords(touchEvent, target);
                 expect(result).toBe(target);

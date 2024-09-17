@@ -2,7 +2,6 @@ import type Context from '@giro3d/giro3d/core/Context';
 import type { PotreeMetadata } from '@giro3d/giro3d/entities/PotreePointCloud';
 import PotreePointCloud from '@giro3d/giro3d/entities/PotreePointCloud';
 import PotreeSource from '@giro3d/giro3d/sources/PotreeSource';
-import assert from 'assert';
 import { PerspectiveCamera } from 'three';
 
 // @ts-expect-error incomplete
@@ -84,35 +83,37 @@ describe('PotreePointCloud', () => {
 
             entity.parseMetadata(metadata);
             const normalDefined =
-                entity.material.defines.NORMAL ||
-                entity.material.defines.NORMAL_SPHEREMAPPED ||
-                entity.material.defines.NORMAL_OCT16;
-            assert.ok(!normalDefined);
+                entity.material.defines.NORMAL !== undefined ||
+                entity.material.defines.NORMAL_SPHEREMAPPED !== undefined ||
+                entity.material.defines.NORMAL_OCT16 !== undefined;
+
+            expect(normalDefined).toBe(false);
 
             // normals as vector
             metadata.pointAttributes = ['NORMAL', 'CLASSIFICATION'];
             entity.parseMetadata(metadata);
-            assert.ok(entity.material.defines.NORMAL);
-            assert.ok(!entity.material.defines.NORMAL_SPHEREMAPPED);
-            assert.ok(!entity.material.defines.NORMAL_OCT16);
+            expect(entity.material.defines.NORMAL).toBeDefined();
+            expect(entity.material.defines.NORMAL_SPHEREMAPPED).toBeUndefined();
+            expect(entity.material.defines.NORMAL_OCT16).toBeUndefined();
 
             // spheremapped normals
             // @ts-expect-error invalid
             entity.material = { defines: {} };
             metadata.pointAttributes = ['COLOR_PACKED', 'NORMAL_SPHEREMAPPED'];
             entity.parseMetadata(metadata);
-            assert.ok(!entity.material.defines.NORMAL);
-            assert.ok(entity.material.defines.NORMAL_SPHEREMAPPED);
-            assert.ok(!entity.material.defines.NORMAL_OCT16);
+
+            expect(entity.material.defines.NORMAL).toBeUndefined();
+            expect(entity.material.defines.NORMAL_SPHEREMAPPED).toBeDefined();
+            expect(entity.material.defines.NORMAL_OCT16).toBeUndefined();
 
             // oct16 normals
             // @ts-expect-error invalid
             entity.material = { defines: {} };
             metadata.pointAttributes = ['COLOR_PACKED', 'CLASSIFICATION', 'NORMAL_OCT16'];
             entity.parseMetadata(metadata);
-            assert.ok(!entity.material.defines.NORMAL);
-            assert.ok(!entity.material.defines.NORMAL_SPHEREMAPPED);
-            assert.ok(entity.material.defines.NORMAL_OCT16);
+            expect(entity.material.defines.NORMAL).toBeUndefined();
+            expect(entity.material.defines.NORMAL_SPHEREMAPPED).toBeUndefined();
+            expect(entity.material.defines.NORMAL_OCT16).toBeDefined();
         });
     });
 });

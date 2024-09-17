@@ -15,7 +15,7 @@ const keyParts: string[] = [];
 function getUniqueKey(url: string, options?: FetchOptions): string {
     keyParts.length = 0;
 
-    if (options?.method) {
+    if (options?.method != null) {
         keyParts.push(options.method);
     }
 

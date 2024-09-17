@@ -90,7 +90,7 @@ class TextureInfo {
     }
 
     get mode() {
-        return (this.layer as MaskLayer).maskMode || 0;
+        return (this.layer as MaskLayer).maskMode ?? 0;
     }
 }
 export const DEFAULT_OUTLINE_COLOR = 'red';
@@ -546,7 +546,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
                 const tex = info.texture;
                 let textureSize = new Vector2(0, 0);
                 const image = tex.image;
-                if (image) {
+                if (image != null) {
                     textureSize = new Vector2(image.width, image.height);
                 }
 
@@ -670,8 +670,8 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
 
             const layerTexture = this._texturesInfo.color.infos[idx].texture;
 
-            const w = layerTexture?.image?.width || EMPTY_IMAGE_SIZE;
-            const h = layerTexture?.image?.height || EMPTY_IMAGE_SIZE;
+            const w = layerTexture?.image?.width ?? EMPTY_IMAGE_SIZE;
+            const h = layerTexture?.image?.height ?? EMPTY_IMAGE_SIZE;
 
             updateOffsetScale(
                 new Vector2(w, h),
@@ -682,7 +682,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
                 this._texturesInfo.color.infos[idx].offsetScale,
             );
 
-            if (layerTexture) {
+            if (layerTexture != null) {
                 drawImageOnAtlas(w, h, nonNull(composer), atlas, layerTexture);
             }
         }
@@ -844,11 +844,11 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         const elevationColorMap = this._elevationLayer?.colorMap;
 
         const elevationUniform = this.uniforms.elevationColorMap;
-        if (elevationColorMap?.active) {
+        if (elevationColorMap?.active === true) {
             elevationUniform.value.mode = elevationColorMap?.mode ?? COLORMAP_DISABLED;
             elevationUniform.value.min = elevationColorMap?.min ?? 0;
             elevationUniform.value.max = elevationColorMap?.max ?? 0;
-            elevationUniform.value.offset = atlas?.getOffset(elevationColorMap) || 0;
+            elevationUniform.value.offset = atlas?.getOffset(elevationColorMap) ?? 0;
         } else {
             elevationUniform.value.mode = COLORMAP_DISABLED;
             elevationUniform.value.min = 0;
@@ -867,7 +867,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
             const colorMap = texInfo.layer.colorMap;
 
             const uniform: ColorMapUniform = {
-                mode: colorMap?.active ? colorMap.mode : COLORMAP_DISABLED,
+                mode: colorMap?.active === true ? colorMap.mode : COLORMAP_DISABLED,
                 min: colorMap?.min ?? 0,
                 max: colorMap?.max ?? 0,
                 offset: colorMap ? atlas?.getOffset(colorMap) ?? 0 : 0,
@@ -894,57 +894,51 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
                 this.updateColorMaps();
             }
 
-            if (materialOptions.backgroundColor) {
-                const a = materialOptions.backgroundOpacity;
-                const c = materialOptions.backgroundColor;
-                const vec4 = new Vector4(c.r, c.g, c.b, a);
-                this.uniforms.backgroundColor.value.copy(vec4);
-            }
+            // Background
+            const a = materialOptions.backgroundOpacity;
+            const c = materialOptions.backgroundColor;
+            const vec4 = new Vector4(c.r, c.g, c.b, a);
+            this.uniforms.backgroundColor.value.copy(vec4);
 
-            if (materialOptions.graticule) {
-                const options = materialOptions.graticule;
-                const enabled = options.enabled ?? false;
-                MaterialUtils.setDefine(this, 'ENABLE_GRATICULE', enabled);
-                if (enabled) {
-                    const uniform = this.uniforms.graticule.value;
-                    uniform.thickness = options.thickness;
-                    uniform.position.set(
-                        options.xOffset,
-                        options.yOffset,
-                        options.xStep,
-                        options.yStep,
-                    );
-                    const rgb = getColor(options.color);
-                    uniform.color.set(rgb.r, rgb.g, rgb.b, options.opacity ?? 0);
-                }
-            }
-
-            if (materialOptions.colorimetry) {
-                const opts = materialOptions.colorimetry;
-                this.uniforms.brightnessContrastSaturation.value.set(
-                    opts.brightness,
-                    opts.contrast,
-                    opts.saturation,
+            // Graticule
+            const options = materialOptions.graticule;
+            const enabled = options.enabled ?? false;
+            MaterialUtils.setDefine(this, 'ENABLE_GRATICULE', enabled);
+            if (enabled) {
+                const uniform = this.uniforms.graticule.value;
+                uniform.thickness = options.thickness;
+                uniform.position.set(
+                    options.xOffset,
+                    options.yOffset,
+                    options.xStep,
+                    options.yStep,
                 );
+                const rgb = getColor(options.color);
+                uniform.color.set(rgb.r, rgb.g, rgb.b, options.opacity ?? 0);
             }
 
-            if (materialOptions.contourLines) {
-                const opts = materialOptions.contourLines;
+            // Colorimetry
+            const opts = materialOptions.colorimetry;
+            this.uniforms.brightnessContrastSaturation.value.set(
+                opts.brightness,
+                opts.contrast,
+                opts.saturation,
+            );
 
-                if (opts.enabled) {
-                    const c = getColor(opts.color);
-                    const a = opts.opacity;
+            // Contour lines
+            const contourLines = materialOptions.contourLines;
+            if (contourLines.enabled) {
+                const c = getColor(contourLines.color);
+                const a = contourLines.opacity;
 
-                    this.uniforms.contourLines.value = {
-                        thickness: opts.thickness ?? 1,
-                        primaryInterval: opts.interval ?? 100,
-                        secondaryInterval: opts.secondaryInterval ?? 0,
-                        color: new Vector4(c.r, c.g, c.b, a),
-                    };
-                }
-
-                MaterialUtils.setDefine(this, 'ENABLE_CONTOUR_LINES', opts.enabled);
+                this.uniforms.contourLines.value = {
+                    thickness: contourLines.thickness ?? 1,
+                    primaryInterval: contourLines.interval ?? 100,
+                    secondaryInterval: contourLines.secondaryInterval ?? 0,
+                    color: new Vector4(c.r, c.g, c.b, a),
+                };
             }
+            MaterialUtils.setDefine(this, 'ENABLE_CONTOUR_LINES', contourLines.enabled);
 
             if (materialOptions.elevationRange) {
                 const { min, max } = materialOptions.elevationRange;
@@ -954,11 +948,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
             MaterialUtils.setDefine(this, 'ELEVATION_LAYER', this._elevationLayer?.visible);
             MaterialUtils.setDefine(this, 'ENABLE_OUTLINES', materialOptions.showTileOutlines);
             if (materialOptions.showTileOutlines) {
-                if (materialOptions.tileOutlineColor) {
-                    this.uniforms.tileOutlineColor.value = getColor(
-                        materialOptions.tileOutlineColor,
-                    );
-                }
+                this.uniforms.tileOutlineColor.value = getColor(materialOptions.tileOutlineColor);
             }
             MaterialUtils.setDefine(
                 this,
@@ -966,31 +956,21 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
                 materialOptions.discardNoData,
             );
 
-            if (materialOptions.terrain) {
-                MaterialUtils.setDefine(
-                    this,
-                    'TERRAIN_DEFORMATION',
-                    materialOptions.terrain.enabled,
-                );
-                MaterialUtils.setDefine(this, 'STITCHING', materialOptions.terrain.stitching);
-            }
+            MaterialUtils.setDefine(this, 'TERRAIN_DEFORMATION', materialOptions.terrain.enabled);
+            MaterialUtils.setDefine(this, 'STITCHING', materialOptions.terrain.stitching);
 
             const hillshadingParams = materialOptions.hillshading;
-            if (hillshadingParams) {
-                const uniform = this.uniforms.hillshading.value;
-                uniform.zenith = hillshadingParams.zenith ?? DEFAULT_ZENITH;
-                uniform.azimuth = hillshadingParams.azimuth ?? DEFAULT_AZIMUTH;
-                uniform.intensity = hillshadingParams.intensity ?? 1;
-                uniform.zFactor = hillshadingParams.zFactor ?? 1;
-                MaterialUtils.setDefine(this, 'ENABLE_HILLSHADING', hillshadingParams.enabled);
-                MaterialUtils.setDefine(
-                    this,
-                    'APPLY_SHADING_ON_COLORLAYERS',
-                    !hillshadingParams.elevationLayersOnly,
-                );
-            } else {
-                MaterialUtils.setDefine(this, 'ENABLE_HILLSHADING', false);
-            }
+            const uniform = this.uniforms.hillshading.value;
+            uniform.zenith = hillshadingParams.zenith ?? DEFAULT_ZENITH;
+            uniform.azimuth = hillshadingParams.azimuth ?? DEFAULT_AZIMUTH;
+            uniform.intensity = hillshadingParams.intensity ?? 1;
+            uniform.zFactor = hillshadingParams.zFactor ?? 1;
+            MaterialUtils.setDefine(this, 'ENABLE_HILLSHADING', hillshadingParams.enabled);
+            MaterialUtils.setDefine(
+                this,
+                'APPLY_SHADING_ON_COLORLAYERS',
+                !hillshadingParams.elevationLayersOnly,
+            );
 
             const newSide = materialOptions.side;
             if (this.side !== newSide) {
@@ -1087,8 +1067,8 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
                 const texture = this._texturesInfo.color.infos[i].texture;
 
                 // compute offset / scale
-                const w = texture?.image?.width || EMPTY_IMAGE_SIZE;
-                const h = texture?.image?.height || EMPTY_IMAGE_SIZE;
+                const w = texture?.image?.width ?? EMPTY_IMAGE_SIZE;
+                const h = texture?.image?.height ?? EMPTY_IMAGE_SIZE;
                 const xRatio = w / this.composerWidth;
                 const yRatio = h / this.composerHeight;
                 this._texturesInfo.color.infos[i].offsetScale = new OffsetScale(
@@ -1221,7 +1201,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
     isColorLayerTextureLoaded(layer: ColorLayer) {
         const index = this.indexOfColorLayer(layer);
         if (index < 0) {
-            return null;
+            return false;
         }
         return this._texturesInfo.color.infos[index].texture !== emptyTexture;
     }

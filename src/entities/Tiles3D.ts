@@ -83,8 +83,8 @@ function _cleanupObject3D(n: Object3D): void {
 
 function isTilesetContentReady(tileset: $3dTilesTile, node: Tile): boolean {
     return (
-        tileset &&
-        node && // is tileset loaded ?
+        tileset != null &&
+        node != null && // is tileset loaded ?
         node.children.length === 1 && // is tileset root loaded ?
         node.children[0].children.length > 0
     );
@@ -154,11 +154,11 @@ class Tiles3D<
     constructor(source: Tiles3DSource, options: Tiles3DOptions<TMaterial> = {}) {
         super(options.object3d || new Group());
 
-        if (!source) {
+        if (source == null) {
             throw new Error('missing source');
         }
 
-        if (!source.url) {
+        if (source.url == null) {
             throw new Error('missing source.url');
         }
 
@@ -370,7 +370,7 @@ class Tiles3D<
         const cleanable = this._cleanableTiles;
         const first = cleanable[0];
 
-        if (first && now - (first.cleanableSince as number) > this.cleanupDelay) {
+        if (first != null && now - (first.cleanableSince as number) > this.cleanupDelay) {
             while (cleanable.length > 0) {
                 const elt = this._cleanableTiles[0];
                 if (now - (elt.cleanableSince as number) > this.cleanupDelay) {
@@ -392,7 +392,7 @@ class Tiles3D<
         const parent = nonNull(node.parent);
 
         // early exit if parent's subdivision is in progress
-        if (parent.pendingSubdivision && !parent.additiveRefinement) {
+        if (parent.pendingSubdivision === true && !parent.additiveRefinement) {
             node.visible = false;
             return undefined;
         }
@@ -413,10 +413,10 @@ class Tiles3D<
             node.calculateCameraDistance(context.view.camera);
 
             if (!this.frozen) {
-                if (node.pendingSubdivision || this.subdivisionTest(context, node)) {
+                if (node.pendingSubdivision === true || this.subdivisionTest(context, node)) {
                     this.subdivideNode(context, node);
                     // display iff children aren't ready
-                    if (node.additiveRefinement || node.pendingSubdivision) {
+                    if (node.additiveRefinement || node.pendingSubdivision === true) {
                         node.setDisplayed(true);
                     } else {
                         // If one of our child is a tileset, this node must be displayed until this
@@ -479,7 +479,7 @@ class Tiles3D<
                 if (this.material) {
                     node.content.traverse(o => {
                         const pointcloud = o as PointCloud;
-                        if (this.isOwned(pointcloud) && pointcloud.material) {
+                        if (this.isOwned(pointcloud) && pointcloud.material != null) {
                             if (pointcloud.isPoints) {
                                 if (
                                     PointCloudMaterial.isPointCloudMaterial(pointcloud.material) &&
@@ -517,14 +517,14 @@ class Tiles3D<
     }
 
     protected markTileForDeletion(node: Tile) {
-        if (!node.cleanableSince) {
+        if (node.cleanableSince == null) {
             node.markForDeletion();
             this._cleanableTiles.push(node);
         }
     }
 
     protected unmarkTileForDeletion(node: Tile | undefined) {
-        if (node && node.cleanableSince) {
+        if (node && node.cleanableSince != null) {
             this._cleanableTiles.splice(this._cleanableTiles.indexOf(node), 1);
             node.unmarkForDeletion();
         }
@@ -596,7 +596,7 @@ class Tiles3D<
             // 'child' is only metadata (it's *not* a Object3D). 'cullingTest' needs
             // a matrixWorld, so we compute it: it's node's matrixWorld x child's transform
             let overrideMatrixWorld = node.matrixWorld;
-            if (child.transformMatrix) {
+            if (child.transformMatrix != null) {
                 overrideMatrixWorld = tmpMatrix.multiplyMatrices(
                     node.matrixWorld,
                     child.transformMatrix,
@@ -639,7 +639,7 @@ class Tiles3D<
 
     protected subdivideNodeSubstractive(node: Tile): void {
         // Subdivision in progress => nothing to do
-        if (node.pendingSubdivision) {
+        if (node.pendingSubdivision === true) {
             return;
         }
 
@@ -729,7 +729,7 @@ class Tiles3D<
         material.clippingPlanes = this.clippingPlanes;
         // this object can already be transparent with opacity < 1.0
         // we need to honor it, even when we change the whole entity's opacity
-        if (!material.userData.originalOpacity) {
+        if (material.userData.originalOpacity == null) {
             material.userData.originalOpacity = material.opacity;
         }
         this.setMaterialOpacity(material);
@@ -742,10 +742,10 @@ class Tiles3D<
         // (metadata.content.uri)
         let path: string | undefined = undefined;
         if (metadata.content) {
-            if (metadata.content.url) {
+            if (metadata.content.url != null) {
                 // 3D Tiles pre 1.0 version
                 path = metadata.content.url;
-            } else if (metadata.content.uri) {
+            } else if (metadata.content.uri != null) {
                 // 3D Tiles 1.0 version
                 path = metadata.content.uri;
             }
@@ -754,10 +754,10 @@ class Tiles3D<
         const setupObject = (obj: Object3D) => {
             this.onObjectCreated(obj);
         };
-        if (path) {
+        if (path != null) {
             // Check if we have relative or absolute url (with tileset's lopocs for example)
             const url = path.startsWith('http') ? path : metadata.baseURL + path;
-            const dl = (GlobalCache.get(url) ||
+            const dl = (GlobalCache.get(url) ??
                 GlobalCache.set(
                     url,
                     Fetcher.arrayBuffer(url, this._networkOptions),
@@ -788,7 +788,7 @@ class Tiles3D<
                     tile.content = content.object3d;
                     content.object3d.name = path;
 
-                    if ('batchTable' in content && content.batchTable) {
+                    if ('batchTable' in content && content.batchTable != null) {
                         tile.batchTable = content.batchTable;
                     }
                     tile.add(content.object3d);
@@ -823,7 +823,7 @@ class Tiles3D<
         }
 
         // tile visible but doesn't need subdivision anymore
-        if (node.sse && node.sse < this.sseThreshold) {
+        if (node.sse != null && node.sse < this.sseThreshold) {
             return false;
         }
 

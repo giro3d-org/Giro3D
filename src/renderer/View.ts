@@ -83,7 +83,7 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
     }
 
     set camera(c: PerspectiveCamera | OrthographicCamera) {
-        if (c) {
+        if (c != null) {
             this._camera = c;
         } else {
             throw new Error('a camera is required');
@@ -237,7 +237,7 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
     }
 
     private resize(width?: number, height?: number) {
-        if (width && height) {
+        if (width != null && height != null) {
             this._width = width;
             this._height = height;
             const ratio = width / height;
@@ -266,7 +266,7 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
      * @returns Coordinates object holding camera's position
      */
     position(crs?: string) {
-        return new Coordinates(this.crs, this.camera.position).as(crs || this.crs);
+        return new Coordinates(this.crs, this.camera.position).as(crs ?? this.crs);
     }
 
     isBox3Visible(box3: Box3, matrixWorld?: Matrix4) {

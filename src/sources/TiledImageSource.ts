@@ -422,7 +422,7 @@ export default class TiledImageSource extends ImageSource {
                 if (this.shouldLoad(tileExtent)) {
                     const url = this._getTileUrl(coord, 1, this.olprojection);
 
-                    if (url) {
+                    if (url != null) {
                         const request = () =>
                             this.loadTile(id, url, tileExtent, createDataTexture, signal);
 

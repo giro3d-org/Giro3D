@@ -8,7 +8,7 @@ import EntityInspector from './EntityInspector';
 type HasMaterial = Object3D & { material: Material };
 
 function hasMaterial(obj: Object3D): obj is HasMaterial {
-    if (!obj) {
+    if (obj == null) {
         return false;
     }
 
@@ -58,7 +58,7 @@ class FeatureCollectionInspector extends EntityInspector<FeatureCollection> {
 
         this.wireframe = false;
         this.frozen = this.entity.frozen ?? false;
-        this.dataProjection = this.entity.dataProjection || '';
+        this.dataProjection = this.entity.dataProjection ?? '';
 
         this.showGrid = false;
 

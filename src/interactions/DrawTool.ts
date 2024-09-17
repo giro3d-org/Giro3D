@@ -552,7 +552,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
 
             const onMouseMove = (e: MouseEvent) => {
                 const point = pick(e)[0]?.point;
-                if (point) {
+                if (point != null) {
                     points[points.length - 1].copy(point);
                     updatePoints();
                     if (options?.onTemporaryPointMoved) {
@@ -576,7 +576,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
 
                 if (e.button === LEFT_BUTTON) {
                     const point = pick(e)[0]?.point;
-                    if (point) {
+                    if (point != null) {
                         clickCount++;
 
                         if (maxPoints != null && points.length < maxPoints) {
@@ -600,7 +600,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
 
                     if (minPoints != null && clickCount >= minPoints) {
                         shape.setPoints(points.slice(0, -1));
-                        if (options?.closeRing) {
+                        if (options?.closeRing === true) {
                             shape.makeClosed();
                         }
 

@@ -145,6 +145,7 @@ module.exports = {
             rules: {
                 '@typescript-eslint/no-non-null-assertion': 'error',
                 '@typescript-eslint/consistent-type-imports': 'error',
+                '@typescript-eslint/strict-boolean-expressions': 'error',
                 '@typescript-eslint/no-unused-vars': [
                     'error', // or "error"
                     {

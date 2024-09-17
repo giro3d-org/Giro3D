@@ -122,7 +122,7 @@ class Tiles3dInspector extends EntityInspector<Tiles3D> {
         this.rootObject.traverseOnce(obj => {
             if (visible) {
                 const { metadata } = obj.userData;
-                if (metadata) {
+                if (metadata != null) {
                     const result = Helpers.create3DTileBoundingVolume(
                         this.entity,
                         obj,

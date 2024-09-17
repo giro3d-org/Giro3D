@@ -109,7 +109,7 @@ function pickTilesAt(
 
         const tile = map.tileIndex.getTile(id) as TileMesh;
 
-        if (tile && tile.isTileMesh) {
+        if (tile != null && tile.isTileMesh) {
             const ex = tile.extent;
             tmpCoords.set(
                 crs,

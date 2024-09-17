@@ -94,7 +94,7 @@ class MainLoop {
             immediate?: boolean;
         },
     ) {
-        if (changeSource) {
+        if (changeSource != null) {
             if (Array.isArray(changeSource)) {
                 changeSource.forEach(s => this._changeSources.add(s));
             } else {

@@ -54,7 +54,7 @@ class SourceInspector extends Panel {
         if (source instanceof GeoTIFFSource) {
             this.url = source.url.toString();
             this.addController(this, 'url').name('URL');
-            if (source.channels) {
+            if (source.channels != null) {
                 this.cogChannels = JSON.stringify(source.channels);
                 this.addController(this, 'cogChannels')
                     .name('Channel mapping')

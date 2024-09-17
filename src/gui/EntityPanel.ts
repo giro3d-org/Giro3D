@@ -94,7 +94,7 @@ class EntityPanel extends Panel {
             .forEach(obj => {
                 const entity = obj as Entity3D;
                 const type = entity.type;
-                if (customInspectors[type]) {
+                if (customInspectors[type] != null) {
                     const inspector = new customInspectors[type](this.gui, this.instance, entity);
                     this.inspectors.push(inspector);
                     this.folders.push(inspector.gui);
