@@ -1,0 +1,39 @@
+import type ElevationProvider from '@giro3d/giro3d/core/ElevationProvider';
+import { aggregateElevationProviders } from '@giro3d/giro3d/core/ElevationProvider';
+import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';
+
+describe('ElevationProvider', () => {
+    describe('aggregateProviders', () => {
+        it('should throw if no provider is provided', () => {
+            expect(() => aggregateElevationProviders()).toThrow(/expected at least one provider/);
+        });
+
+        it('should return the original provider if it is the only one provided', () => {
+            const provider: ElevationProvider = {
+                getElevation: jest.fn(),
+            };
+            expect(aggregateElevationProviders(provider)).toBe(provider);
+        });
+
+        it('should call use each provider when getElevation() is called', () => {
+            const provider1: ElevationProvider = {
+                getElevation: jest.fn(),
+            };
+            const provider2: ElevationProvider = {
+                getElevation: jest.fn(),
+            };
+            const provider3: ElevationProvider = {
+                getElevation: jest.fn(),
+            };
+
+            const aggregate = aggregateElevationProviders(provider1, provider2, provider3);
+
+            const coordinates = new Coordinates('EPSG:3857', 0, 0);
+            aggregate.getElevation({ coordinates });
+
+            expect(provider1.getElevation).toHaveBeenCalled();
+            expect(provider2.getElevation).toHaveBeenCalled();
+            expect(provider3.getElevation).toHaveBeenCalled();
+        });
+    });
+});

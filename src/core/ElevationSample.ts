@@ -1,20 +1,19 @@
-import type Map from './Map';
+import type ElevationProvider from './ElevationProvider';
 
 /**
  * Contains information about an elevation sample taken on a map.
  */
 interface ElevationSample {
     /**
-     * The map on which the sample was done.
+     * The provider on which the sample was done.
      */
-    // eslint-disable-next-line no-use-before-define
-    map: Map;
+    source: ElevationProvider;
     /**
      * The elevation at the sample location.
      */
     elevation: number;
     /**
-     * The resolution of the elevation raster this sample was taken from.
+     * The resolution of the sample.
      */
     resolution: number;
 }

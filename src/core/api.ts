@@ -3,9 +3,14 @@ import type ColorimetryOptions from './ColorimetryOptions';
 import type Context from './Context';
 import type ContourLineOptions from './ContourLineOptions';
 import type Disposable from './Disposable';
+import type ElevationProvider from './ElevationProvider';
+import { type aggregateElevationProviders } from './ElevationProvider';
 import type ElevationRange from './ElevationRange';
+import type ElevationSample from './ElevationSample';
 import type * as features from './FeatureTypes';
 import type * as geographic from './geographic/api';
+import GetElevationOptions from './GetElevationOptions';
+import GetElevationResult from './GetElevationResult';
 import type GraticuleOptions from './GraticuleOptions';
 import type HillshadingOptions from './HillshadingOptions';
 import type Instance from './Instance';
@@ -73,6 +78,11 @@ export {
     DEFAULT_ENABLE_CPU_TERRAIN,
     GraticuleOptions,
     HillshadingOptions,
+    GetElevationOptions,
+    ElevationProvider,
+    aggregateElevationProviders,
+    ElevationSample,
+    GetElevationResult,
     VectorArray,
     Vector2Array,
     Vector3Array,
