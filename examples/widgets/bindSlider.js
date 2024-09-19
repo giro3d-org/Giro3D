@@ -1,5 +1,5 @@
 /**
- * @typedef {(v: number) => void} SliderCallback
+ * @typedef {(v: number, min?: number, max?: number, step?: number) => void} SliderCallback
  */
 
 /**
@@ -21,7 +21,15 @@ export function bindSlider(id, onChange) {
         onChange(element.valueAsNumber);
     };
 
-    const setValue = v => {
+    const setValue = (v, min, max, step) => {
+        if (min != null && max != null) {
+            element.min = min.toString();
+            element.max = max.toString();
+
+            if (step != null) {
+                element.step = step;
+            }
+        }
         element.valueAsNumber = v;
         onChange(element.valueAsNumber);
     };
