@@ -3,6 +3,12 @@ import type Progress from './Progress';
 
 export interface OperationCounterEvents {
     /**
+     * Raised when the counter is changed.
+     */
+    changed: {
+        /** empty */
+    };
+    /**
      * Raised when all operations are completed.
      */
     complete: {
@@ -56,6 +62,8 @@ class OperationCounter extends EventDispatcher<OperationCounterEvents> implement
         this._operations--;
         this._completed++;
 
+        this.dispatchEvent({ type: 'changed' });
+
         if (this._operations === 0) {
             this._total = 0;
             this._completed = 0;
@@ -79,6 +87,7 @@ class OperationCounter extends EventDispatcher<OperationCounterEvents> implement
     increment() {
         this._operations++;
         this._total++;
+        this.dispatchEvent({ type: 'changed' });
     }
 }
 
