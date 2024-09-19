@@ -64,6 +64,16 @@ class OperationCounter extends EventDispatcher<OperationCounterEvents> implement
     }
 
     /**
+     * Increments the counter before starting the promise, then decrements it safely when the
+     * promises resolves or fails.
+     */
+    wrap<T>(promise: Promise<T>): Promise<T> {
+        this.increment();
+
+        return promise.finally(() => this.decrement());
+    }
+
+    /**
      * Increment the number of pending operations.
      */
     increment() {

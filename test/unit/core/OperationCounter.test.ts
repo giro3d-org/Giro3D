@@ -17,7 +17,48 @@ describe('OperationCounter', () => {
         });
     });
 
+    describe('wrap', () => {
+        it('should increment and decrement accordingly', async () => {
+            const promise = new Promise<void>(resolve => {
+                resolve();
+            });
+
+            expect(counter.progress).toEqual(1);
+
+            const wrapped = counter.wrap(promise);
+
+            expect(counter.progress).toEqual(0);
+
+            await wrapped;
+
+            expect(counter.progress).toEqual(1);
+        });
+
+        it('should increment and decrement even if promise rejects', async () => {
+            try {
+                await counter.wrap(
+                    new Promise<void>((_, reject) => {
+                        reject();
+                    }),
+                );
+            } catch {
+                // Do nothing
+            } finally {
+                expect(counter.progress).toEqual(1);
+            }
+        });
+    });
+
     describe('decrement', () => {
+        it('should do nothing if no operation is running', () => {
+            let shouldNotHappen = false;
+
+            counter.addEventListener('changed', () => (shouldNotHappen = true));
+
+            counter.decrement();
+
+            expect(shouldNotHappen).toEqual(false);
+        });
         it('should set loading to false if task count reaches zero', () => {
             counter.increment();
             counter.increment();
