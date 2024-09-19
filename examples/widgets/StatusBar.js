@@ -188,11 +188,10 @@ function bind(instance, options = {}) {
         }
     }
 
-    setInterval(updateUrl, 200);
-
     instance.addEventListener('update-end', updateProgressFrameRequester);
 
     if (!options.disableUrlUpdate) {
+        setInterval(updateUrl, 200);
         processUrl(instance, document.URL);
     }
 }
