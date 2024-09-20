@@ -75,7 +75,7 @@ class PointCloud<M extends PointCloudMaterial = PointCloudMaterial>
 
     constructor(opts: PointCloudOptions<M>) {
         super(opts.geometry, opts.material);
-        this.extent = undefined;
+        this.extent = opts.extent ?? undefined;
         this.textureSize = opts.textureSize;
         this.disposed = false;
 
