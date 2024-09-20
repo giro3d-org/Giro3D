@@ -8,7 +8,7 @@ import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 import { parseCss, parseExample } from './build-examples.mjs';
-import { getGitVersion, getPackageVersion } from './prepare-package.mjs';
+import { getPackageVersion } from './prepare-package.mjs';
 import { createStaticServer } from './serve.mjs';
 import { log, logOk, logWatched } from './utils.mjs';
 
@@ -56,11 +56,7 @@ export async function buildTutorials(parameters) {
     }
 
     if (!parameters.version) {
-        if (parameters.releaseName === 'next') {
-            parameters.version = await getGitVersion();
-        } else {
-            parameters.version = await getPackageVersion();
-        }
+        parameters.version = await getPackageVersion();
     }
 
     log('tutorials', `Building ${Object.keys(TUTORIALS).length} tutorials...`);
