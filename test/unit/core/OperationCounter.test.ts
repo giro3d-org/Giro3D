@@ -15,6 +15,22 @@ describe('OperationCounter', () => {
             counter.increment();
             expect(counter.loading).toBeTruthy();
         });
+
+        it('should honor the number to increment', () => {
+            expect(counter.loading).toBeFalsy();
+
+            counter.increment(3);
+            expect(counter.loading).toBeTruthy();
+
+            counter.decrement();
+            expect(counter.loading).toBeTruthy();
+
+            counter.decrement();
+            expect(counter.loading).toBeTruthy();
+
+            counter.decrement();
+            expect(counter.loading).toBeFalsy();
+        });
     });
 
     describe('wrap', () => {

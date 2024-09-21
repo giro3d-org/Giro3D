@@ -83,10 +83,11 @@ class OperationCounter extends EventDispatcher<OperationCounterEvents> implement
 
     /**
      * Increment the number of pending operations.
+     * @param count - How many increments to do. Default is 1.
      */
-    increment() {
-        this._operations++;
-        this._total++;
+    increment(count = 1) {
+        this._operations += count;
+        this._total += count;
         this.dispatchEvent({ type: 'changed' });
     }
 }
