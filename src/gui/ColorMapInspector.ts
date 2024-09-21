@@ -1,7 +1,6 @@
 import type GUI from 'lil-gui';
 import type Instance from '../core/Instance';
 import type ColorMap from '../core/layer/ColorMap';
-import type Layer from '../core/layer/Layer';
 import Panel from './Panel';
 
 type Mode = 'Elevation' | 'Slope' | 'Aspect';
@@ -20,34 +19,32 @@ class ColorMapInspector extends Panel {
      * @param layer - The color map owner.
      * @param colorMap - The color map to inspect.
      */
-    constructor(gui: GUI, instance: Instance, layer: Layer, colorMap: ColorMap | null) {
+    constructor(gui: GUI, instance: Instance, colorMap: ColorMap | null, notify: () => void) {
         super(gui, instance, 'Color map');
 
         if (colorMap != null) {
             this.mode = modes[colorMap.mode - 1];
 
-            this.addController(colorMap, 'active')
-                .name('Enabled')
-                .onChange(() => this.notify(layer));
+            this.addController(colorMap, 'active').name('Enabled').onChange(notify);
 
             this.addController(this, 'mode', modes)
                 .name('Mode')
                 .onChange(v => {
                     colorMap.mode = modes.indexOf(v) + 1;
-                    this.notify(layer);
+                    notify();
                 });
 
             this.addController(colorMap, 'min')
                 .name('Lower bound')
                 .min(-8000)
                 .max(8000)
-                .onChange(() => this.notify(layer));
+                .onChange(notify);
 
             this.addController(colorMap, 'max')
                 .name('Upper bound')
                 .min(-8000)
                 .max(8000)
-                .onChange(() => this.notify(layer));
+                .onChange(notify);
         }
     }
 }
