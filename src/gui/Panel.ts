@@ -10,6 +10,22 @@ export interface TypedController<T> extends Controller {
     setValue: (value: T) => this;
 }
 
+function parsePascalCase(text: string): string {
+    const result: string[] = [text[0].toUpperCase()];
+
+    const SPACE = ' ';
+
+    for (let i = 1; i < text.length; i++) {
+        const char = text[i];
+        if (char.toUpperCase() === char) {
+            result.push(SPACE);
+        }
+        result.push(char.toLowerCase());
+    }
+
+    return result.join('');
+}
+
 /**
  * Base class for the panels in the inspector.
  */
@@ -90,6 +106,7 @@ abstract class Panel {
         step?: number,
     ) {
         const controller = this.gui.add(obj, prop, $1, max, step) as TypedController<T[K]>;
+        controller.name(parsePascalCase(prop));
         this._controllers.push(controller);
         return controller;
     }
