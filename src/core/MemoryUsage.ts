@@ -17,6 +17,7 @@ export type GetMemoryUsageContext = {
  * Trait of objects that can report their memory usage.
  */
 export default interface MemoryUsage {
+    /** Readonly flag to indicate that his object implements {@link MemoryUsage}. */
     isMemoryUsage: true;
     /**
      * Returns an approximation of the memory used by this object, in bytes.
