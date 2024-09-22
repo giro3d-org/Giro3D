@@ -81,6 +81,10 @@ export abstract class VectorArray<
         return this._length;
     }
 
+    set length(v: number) {
+        this._length = v;
+    }
+
     /**
      * Gets the vector at the specified index.
      */
@@ -247,10 +251,10 @@ export abstract class VectorArray<
 
         this.setX(this._length, x);
         this.setY(this._length, y);
-        if (z) {
+        if (z != null) {
             this.setZ(this._length, z);
         }
-        if (w) {
+        if (w != null) {
             this.setW(this._length, w);
         }
 
