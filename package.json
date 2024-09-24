@@ -59,7 +59,8 @@
         "serve-site": "npm run build && node tasks/build-site.mjs --build-latest --watch",
         "start": "npm run build && concurrently \"node tasks/build-examples.mjs --watch --mode=development\" \"tsc --declaration --declarationMap --emitDeclarationOnly --watch\"",
         "test-unit": "jest test/unit",
-        "test-with-coverage": "jest test/unit --coverage",
+        "check-coverage": "jest --coverage",
+        "test-with-coverage": "npm run check-coverage test/unit",
         "test": "npm run lint -- --max-warnings=0 && npm run build && npm run test-with-coverage",
         "watch": "node observer.mjs ./src ./build/giro3d",
         "prepare": "husky"
