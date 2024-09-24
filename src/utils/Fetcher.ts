@@ -135,13 +135,13 @@ export type FetchOptions = RequestInit & {
  * to benefit from automatic configuration from the {@link HttpConfiguration} module.
  *
  * fires `error` event On Network/HTTP error.
- * @param url - the URL to fetch
+ * @param input - the fetch input
  * @param options - fetch options (passed directly to `fetch()`)
  * @returns The response object.
  */
-async function fetchInternal(url: string, options?: FetchOptions): Promise<Response> {
-    const augmentedOptions = HttpConfiguration.applyConfiguration(url, options);
-    const req = new Request(url, augmentedOptions);
+async function fetchInternal(input: RequestInfo | URL, options?: FetchOptions): Promise<Response> {
+    const augmentedOptions = HttpConfiguration.applyConfiguration(input, options);
+    const req = new Request(input, augmentedOptions);
     const response = await enqueue(req).catch(error => {
         eventTarget.dispatchEvent({ type: 'error', error });
         throw error;
@@ -155,7 +155,7 @@ async function fetchInternal(url: string, options?: FetchOptions): Promise<Respo
                 await PromiseUtils.delay(retryDelay);
             }
 
-            return fetchInternal(url, {
+            return fetchInternal(input, {
                 ...options,
                 retries: retries - 1,
             });

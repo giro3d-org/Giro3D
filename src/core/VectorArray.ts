@@ -33,6 +33,10 @@ export abstract class VectorArray<
         return this.array.byteLength;
     }
 
+    get capacity(): number {
+        return this.array.length / this._dimension;
+    }
+
     /**
      * Gets the underlying {@link Buffer}.
      */
@@ -223,7 +227,7 @@ export abstract class VectorArray<
     trim(): void {
         if (this._capacity > this._length) {
             this._capacity = this._length;
-            this._array = this._array.slice(0, this._length * 3) as Buffer;
+            this._array = this._array.slice(0, this._length * this._dimension) as Buffer;
         }
     }
 
@@ -237,7 +241,7 @@ export abstract class VectorArray<
     private allocateIfFull(): void {
         if (this._capacity === this._length) {
             const currentLength = this._length;
-            this.expand((this._length += this.computeExpansionSize()));
+            this.expand(this._length + this.computeExpansionSize());
             this._capacity = this._array.length / this._dimension;
             this._length = currentLength;
         }
@@ -266,7 +270,7 @@ export abstract class VectorArray<
      */
     pushVector(v: V): void {
         this.allocateIfFull();
-        this.assignVector(this._length / this._dimension, v);
+        this.assignVector(this._length * this._dimension, v);
         this._length++;
     }
 

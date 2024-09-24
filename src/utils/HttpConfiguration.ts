@@ -27,7 +27,7 @@ const perHostProperties: Map<string, Array<PrefixEntry>> = new Map();
 /**
  * Update the request options with stored configuration applicable to this URL.
  *
- * @param url - The URL.
+ * @param input - The URL.
  * @param options - The request options.
  * @returns The updated options, if any. If no options object is passed, and no
  * configuration applies to this URL, then returns `undefined`.
@@ -58,12 +58,24 @@ const perHostProperties: Map<string, Array<PrefixEntry>> = new Map();
  * // We can now send our HTTP request with correct headers
  * fetch('http://example.com/index.html', fetchOptions);
  */
-function applyConfiguration(url: string, options?: RequestInit): RequestInit | undefined {
+function applyConfiguration(
+    input: RequestInfo | URL,
+    options?: RequestInit,
+): RequestInit | undefined {
     if (perHostProperties.size === 0) {
         return options;
     }
 
-    const urlObj = new URL(url);
+    let urlObj: URL;
+
+    if (typeof input === 'string') {
+        urlObj = new URL(input);
+    } else if (input instanceof URL) {
+        urlObj = input;
+    } else {
+        urlObj = new URL(input.url);
+    }
+
     const properties = perHostProperties.get(urlObj.hostname);
     if (!properties) {
         // Nothing to do
@@ -75,8 +87,10 @@ function applyConfiguration(url: string, options?: RequestInit): RequestInit | u
     }
     const headers = (options.headers ?? {}) as Record<string, string>;
 
+    const urlString = urlObj.toString();
+
     for (const entry of properties) {
-        if (url.startsWith(entry.urlPrefix)) {
+        if (urlString.startsWith(entry.urlPrefix)) {
             for (const [k, v] of entry.headers.entries()) {
                 if (headers[k]) {
                     // The request already has a header with the same name.

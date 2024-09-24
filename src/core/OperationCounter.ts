@@ -3,6 +3,12 @@ import type Progress from './Progress';
 
 export interface OperationCounterEvents {
     /**
+     * Raised when the counter is changed.
+     */
+    changed: {
+        /** empty */
+    };
+    /**
      * Raised when all operations are completed.
      */
     complete: {
@@ -56,6 +62,8 @@ class OperationCounter extends EventDispatcher<OperationCounterEvents> implement
         this._operations--;
         this._completed++;
 
+        this.dispatchEvent({ type: 'changed' });
+
         if (this._operations === 0) {
             this._total = 0;
             this._completed = 0;
@@ -64,11 +72,23 @@ class OperationCounter extends EventDispatcher<OperationCounterEvents> implement
     }
 
     /**
-     * Increment the number of pending operations.
+     * Increments the counter before starting the promise, then decrements it safely when the
+     * promises resolves or fails.
      */
-    increment() {
-        this._operations++;
-        this._total++;
+    wrap<T>(promise: Promise<T>): Promise<T> {
+        this.increment();
+
+        return promise.finally(() => this.decrement());
+    }
+
+    /**
+     * Increment the number of pending operations.
+     * @param count - How many increments to do. Default is 1.
+     */
+    increment(count = 1) {
+        this._operations += count;
+        this._total += count;
+        this.dispatchEvent({ type: 'changed' });
     }
 }
 

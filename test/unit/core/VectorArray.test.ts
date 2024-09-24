@@ -1,6 +1,10 @@
 import { Vector2Array, Vector3Array, Vector4Array } from '@giro3d/giro3d/core/VectorArray';
 import { Vector2, Vector3, Vector4 } from 'three';
 
+const SIZEOF_Uint8 = 1;
+const SIZEOF_Uint16 = 2;
+const SIZEOF_Float32 = 4;
+
 describe('Vector2Array', () => {
     describe('constructor', () => {
         it('should throw if provided Float32Array has an incorrect size', () => {
@@ -48,6 +52,29 @@ describe('Vector2Array', () => {
         });
     });
 
+    describe('trim', () => {
+        it('should resize the underlying buffer accordingly', () => {
+            const capacity = 100;
+            const array = new Vector2Array(new Float32Array(2 * capacity));
+
+            array.length = 50;
+            array.trim();
+
+            expect(array).toHaveLength(50);
+            expect(array.array).toHaveLength(50 * array.dimension);
+        });
+
+        it('should do nothing if full', () => {
+            const capacity = 100;
+            const buf = new Float32Array(2 * capacity);
+            const array = new Vector2Array(buf);
+
+            array.trim();
+
+            expect(array.array).toBe(buf);
+        });
+    });
+
     describe('copyItem', () => {
         it('correctly copy the item from source to target index', () => {
             const array = new Vector2Array(new Float32Array(2 * 3));
@@ -84,6 +111,22 @@ describe('Vector2Array', () => {
             expect(array.get(0)).toEqual(v0);
             expect(array.get(1)).toEqual(v1);
             expect(array.get(2)).toEqual(v2);
+        });
+    });
+
+    describe('byteLength', () => {
+        it('should return the byte length of the underlying array', () => {
+            const length = 12;
+
+            expect(new Vector2Array(new Float32Array(2 * length)).byteLength).toEqual(
+                2 * length * SIZEOF_Float32,
+            );
+            expect(new Vector2Array(new Uint8Array(2 * length)).byteLength).toEqual(
+                2 * length * SIZEOF_Uint8,
+            );
+            expect(new Vector2Array(new Uint16Array(2 * length)).byteLength).toEqual(
+                2 * length * SIZEOF_Uint16,
+            );
         });
     });
 
@@ -146,6 +189,24 @@ describe('Vector2Array', () => {
         });
     });
 
+    describe('pushVector', () => {
+        it('should add a vector at the length end', () => {
+            const capacity = 3;
+            const array = new Vector2Array(new Int32Array(2 * capacity));
+
+            array.length = 0;
+
+            array.pushVector(new Vector2(1, -1));
+            array.pushVector(new Vector2(2, -2));
+            array.pushVector(new Vector2(3, -3));
+
+            expect(array).toHaveLength(3);
+            expect(array.get(0)).toEqual(new Vector2(1, -1));
+            expect(array.get(1)).toEqual(new Vector2(2, -2));
+            expect(array.get(2)).toEqual(new Vector2(3, -3));
+        });
+    });
+
     describe('push', () => {
         it('should resize the array', () => {
             const size = 3;
@@ -164,6 +225,43 @@ describe('Vector2Array', () => {
             expect(array).toHaveLength(4);
             expect(array.getX(3)).toEqual(-1);
             expect(array.getY(3)).toEqual(-2);
+        });
+
+        it('should resize the array with an expansion series', () => {
+            const size = 4;
+            const array = new Vector2Array(new Int32Array(2 * size));
+
+            // Trigger first reallocation
+            array.push(0, 0);
+
+            expect(array).toHaveLength(size + 1);
+            expect(array.capacity).toEqual(size + 32);
+
+            let delta = array.capacity - array.length;
+
+            // Fill array
+            for (let i = 0; i < delta; i++) {
+                array.push(0, 0);
+            }
+
+            // Trigger second reallocation
+            array.push(0, 0);
+
+            expect(array).toHaveLength(size + 32 + 1);
+            expect(array.capacity).toEqual(size + 32 + 64);
+
+            delta = array.capacity - array.length;
+
+            // Fill array
+            for (let i = 0; i < delta; i++) {
+                array.push(0, 0);
+            }
+
+            // Trigger third reallocation
+            array.push(0, 0);
+
+            expect(array).toHaveLength(size + 32 + 64 + 1);
+            expect(array.capacity).toEqual(size + 32 + 64 + 128);
         });
     });
 
@@ -259,6 +357,40 @@ describe('Vector3Array', () => {
         });
     });
 
+    describe('byteLength', () => {
+        it('should return the byte length of the underlying array', () => {
+            const length = 12;
+
+            expect(new Vector3Array(new Float32Array(3 * length)).byteLength).toEqual(
+                3 * length * SIZEOF_Float32,
+            );
+            expect(new Vector3Array(new Uint8Array(3 * length)).byteLength).toEqual(
+                3 * length * SIZEOF_Uint8,
+            );
+            expect(new Vector3Array(new Uint16Array(3 * length)).byteLength).toEqual(
+                3 * length * SIZEOF_Uint16,
+            );
+        });
+    });
+
+    describe('pushVector', () => {
+        it('should add a vector at the length end', () => {
+            const capacity = 3;
+            const array = new Vector3Array(new Int32Array(3 * capacity));
+
+            array.length = 0;
+
+            array.pushVector(new Vector3(1, -1, 5));
+            array.pushVector(new Vector3(2, -2, 6));
+            array.pushVector(new Vector3(3, -3, 7));
+
+            expect(array).toHaveLength(3);
+            expect(array.get(0)).toEqual(new Vector3(1, -1, 5));
+            expect(array.get(1)).toEqual(new Vector3(2, -2, 6));
+            expect(array.get(2)).toEqual(new Vector3(3, -3, 7));
+        });
+    });
+
     describe('setVector', () => {
         it('should assign correct values at correct locations', () => {
             const array = new Vector3Array(new Float32Array(3 * 3));
@@ -310,6 +442,19 @@ describe('Vector3Array', () => {
 
             expect(array.getZ(0)).toEqual(7);
             expect(array.getW(0)).toBeNull();
+        });
+    });
+
+    describe('trim', () => {
+        it('should resize the underlying buffer accordingly', () => {
+            const capacity = 100;
+            const array = new Vector3Array(new Float32Array(3 * capacity));
+
+            array.length = 50;
+            array.trim();
+
+            expect(array).toHaveLength(50);
+            expect(array.array).toHaveLength(50 * array.dimension);
         });
     });
 
@@ -416,6 +561,22 @@ describe('Vector4Array', () => {
         });
     });
 
+    describe('byteLength', () => {
+        it('should return the byte length of the underlying array', () => {
+            const length = 12;
+
+            expect(new Vector4Array(new Float32Array(4 * length)).byteLength).toEqual(
+                4 * length * SIZEOF_Float32,
+            );
+            expect(new Vector4Array(new Uint8Array(4 * length)).byteLength).toEqual(
+                4 * length * SIZEOF_Uint8,
+            );
+            expect(new Vector4Array(new Uint16Array(4 * length)).byteLength).toEqual(
+                4 * length * SIZEOF_Uint16,
+            );
+        });
+    });
+
     describe('setVector', () => {
         it('should assign correct values at correct locations', () => {
             const array = new Vector4Array(new Int32Array(4 * 3));
@@ -467,6 +628,37 @@ describe('Vector4Array', () => {
 
             expect(array.getZ(0)).toEqual(7);
             expect(array.getW(0)).toEqual(9);
+        });
+    });
+
+    describe('trim', () => {
+        it('should resize the underlying buffer accordingly', () => {
+            const capacity = 100;
+            const array = new Vector4Array(new Float32Array(4 * capacity));
+
+            array.length = 50;
+            array.trim();
+
+            expect(array).toHaveLength(50);
+            expect(array.array).toHaveLength(50 * array.dimension);
+        });
+    });
+
+    describe('pushVector', () => {
+        it('should add a vector at the length end', () => {
+            const capacity = 3;
+            const array = new Vector4Array(new Int32Array(4 * capacity));
+
+            array.length = 0;
+
+            array.pushVector(new Vector4(1, -1, 5, 9));
+            array.pushVector(new Vector4(2, -2, 6, 10));
+            array.pushVector(new Vector4(3, -3, 7, 11));
+
+            expect(array).toHaveLength(3);
+            expect(array.get(0)).toEqual(new Vector4(1, -1, 5, 9));
+            expect(array.get(1)).toEqual(new Vector4(2, -2, 6, 10));
+            expect(array.get(2)).toEqual(new Vector4(3, -3, 7, 11));
         });
     });
 
@@ -536,6 +728,23 @@ describe('Vector4Array', () => {
             const float32 = array.toFloat32Array();
             expect(float32).not.toBe(array.array);
             expect(float32).toBeInstanceOf(Float32Array);
+        });
+
+        it('should return a different array if resizing is required', () => {
+            const array = new Vector4Array(new Float32Array(4 * 3));
+
+            array.set(0, 1, 2, 3, 4);
+            array.set(1, 5, 6, 7, 8);
+            array.set(2, 9, 10, 11, 12);
+
+            array.length = 2;
+
+            const float32 = array.toFloat32Array();
+            expect(float32).not.toBe(array.array);
+
+            expect(float32).toHaveLength(4 * 2);
+
+            expect([...float32]).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
         });
 
         it('should return a correctly filled array', () => {

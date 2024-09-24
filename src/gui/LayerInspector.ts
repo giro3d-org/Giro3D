@@ -152,7 +152,9 @@ class LayerInspector extends Panel {
             .name('Extent color')
             .onChange(() => this.updateExtentColor());
 
-        this.colorMapInspector = new ColorMapInspector(this.gui, instance, layer, layer.colorMap);
+        this.colorMapInspector = new ColorMapInspector(this.gui, instance, layer.colorMap, () =>
+            this.notify(layer),
+        );
 
         if (this.layer.source != null) {
             this.sourceInspector = new SourceInspector(this.gui, instance, layer.source);

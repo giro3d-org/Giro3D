@@ -7,6 +7,9 @@ import type Instance from '../core/Instance';
 /* eslint class-methods-use-this: 0 */
 
 export interface EntityEventMap {
+    initialized: {
+        /** empty */
+    };
     'frozen-property-changed': { frozen: boolean };
 }
 
@@ -191,6 +194,7 @@ abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserDa
         await this.preprocess(opts);
 
         this._ready = true;
+        this.dispatchEvent({ type: 'initialized' });
     }
 
     /**
