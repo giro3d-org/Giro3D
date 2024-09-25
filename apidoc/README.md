@@ -54,7 +54,7 @@ For example, the [`Map`](./classes/entities.Map.html) entity represents a 2D or 
 ```js
 class MyCustomEntity extends Entity3D {
     constructor() {
-        super(id, new THREE.Group());
+        super(new THREE.Group());
     }
 }
 ```
@@ -66,7 +66,7 @@ Various classes in Giro3D provide the `progress` and `loading` API. This API can
 -   `loading` is a boolean that indicates whether the object is currently performing an asynchronous task.
 -   `progress` is a number (between zero and one) that indicates the percentage of progress of the tasks this object is performing.
 
-💡 To help implementing this API, you can use the [`OperationCounter`](./classes/core.OperationCounter.html) class.
+💡 To implement this interface on your own classes, you can use the [`OperationCounter`](./classes/core.OperationCounter.html) class.
 
 ## Memory management
 
