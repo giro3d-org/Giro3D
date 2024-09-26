@@ -16,7 +16,6 @@ import type ColorLayer from '../core/layer/ColorLayer';
 import ColorMap from '../core/layer/ColorMap';
 import type { TextureAndPitch } from '../core/layer/Layer';
 import OffsetScale from '../core/OffsetScale';
-import Capabilities from '../core/system/Capabilities';
 import MaterialUtils, { type VertexAttributeType } from './MaterialUtils';
 import PointsFS from './shader/PointsFS.glsl';
 import PointsVS from './shader/PointsVS.glsl';
@@ -173,7 +172,6 @@ export type Defines = {
     DEFORMATION_SUPPORT?: 1;
     NUM_TRANSFO?: number;
     USE_LOGDEPTHBUF?: 1;
-    USE_LOGDEPTHBUF_EXT?: 1;
     NORMAL_OCT16?: 1;
     NORMAL_SPHEREMAPPED?: 1;
 
@@ -368,11 +366,6 @@ class PointCloudMaterial extends ShaderMaterial {
         this.defines = {
             INTENSITY_TYPE: 'uint',
         };
-
-        if (Capabilities.isLogDepthBufferSupported()) {
-            this.defines.USE_LOGDEPTHBUF = 1;
-            this.defines.USE_LOGDEPTHBUF_EXT = 1;
-        }
 
         for (const key of Object.keys(MODE)) {
             if (Object.prototype.hasOwnProperty.call(MODE, key)) {
