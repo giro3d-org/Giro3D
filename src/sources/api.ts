@@ -1,3 +1,4 @@
+import COPCSource, { COPCSourceOptions } from './COPCSource';
 import GeoTIFFSource, {
     type ChannelMapping,
     type GeoTIFFCacheOptions,
@@ -11,6 +12,8 @@ import ImageSource, {
     type ImageSourceEvents,
     type ImageSourceOptions,
 } from './ImageSource';
+import * as las from './las/api';
+import LASSource, { LASSourceOptions } from './LASSource';
 import {
     GetNodeDataOptions,
     PointCloudAttribute,
@@ -39,6 +42,8 @@ import WmtsSource, { type WmtsFromCapabilitiesOptions, type WmtsSourceOptions } 
  */
 export {
     ChannelMapping,
+    COPCSource,
+    COPCSourceOptions,
     CustomContainsFn,
     GeoTIFFCacheOptions,
     GeoTIFFSource,
@@ -50,6 +55,9 @@ export {
     ImageSource,
     ImageSourceEvents,
     ImageSourceOptions,
+    las,
+    LASSource,
+    LASSourceOptions,
     PointCloudAttribute,
     PointCloudCrs,
     PointCloudMetadata,

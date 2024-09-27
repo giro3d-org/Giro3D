@@ -84,6 +84,7 @@
     ],
     "dependencies": {
         "chart.js": "^3.9.1",
+        "copc": "^0.0.7",
         "earcut": "^2.2.4",
         "geotiff": "^2.1.0",
         "lil-gui": "^0.17.0",
