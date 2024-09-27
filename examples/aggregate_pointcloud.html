@@ -1,0 +1,120 @@
+---
+title: Massive point cloud
+shortdesc: Display a massive point cloud by aggregating dozens of datasets.
+attribution: © <a target="_blank" href="https://geoservices.ign.fr/lidarhd">IGN</a>
+tags: ['point cloud', 'las', 'copc', 'ign']
+---
+
+<div class="side-pane-with-status-bar" style="width: 25rem">
+    <!--Parameters -->
+    <div class="card">
+        <div class="card-header">Parameters</div>
+
+        <div class="card-body">
+            <div class="progress" role="progressbar">
+                <div
+                    class="progress-bar bg-info progress-bar-striped progress-bar-animated text-dark"
+                    id="progress"
+                    style="width: 0%"
+                >
+                    Loading metadata...
+                </div>
+            </div>
+
+            <div id="options" style="display: none">
+                <ul class="list-group mb-3" id="table">
+                    <li class="list-group-item">
+                        Total points
+                        <b id="point-count" class="d-float float-end"></b>
+                    </li>
+                    <li class="list-group-item" title="The number of points currently displayed">
+                        Displayed points
+                        <b id="displayed-point-count" class="d-float float-end"></b>
+                    </li>
+                    <li class="list-group-item">
+                        Files: <b id="file-count" class="d-float float-end"></b>
+                    </li>
+                </ul>
+
+                <!-- Active attribute selector -->
+                <div class="input-group" id="attribute-group">
+                    <label class="input-group-text col-5" for="attribute">Dimension</label>
+                    <select
+                        class="form-select"
+                        id="attribute"
+                        autocomplete="off"
+                        title="Sets the active attribute of the point cloud"
+                    ></select>
+                </div>
+
+                <!-- Point budget -->
+                <div class="input-group mt-1" id="attribute-group">
+                    <label class="input-group-text col-5" for="attribute">Point budget</label>
+                    <input
+                        type="number"
+                        min="-1"
+                        max="99999999999"
+                        value="-1"
+                        step="1"
+                        class="form-control"
+                        id="point-budget"
+                        autocomplete="off"
+                    />
+                </div>
+
+                <!-- Show volume -->
+                <div class="form-check form-switch mt-2">
+                    <input
+                        class="form-check-input"
+                        type="checkbox"
+                        role="switch"
+                        checked
+                        id="show-volume"
+                        autocomplete="off"
+                    />
+                    <label
+                        title="Show the volume of the octree"
+                        class="form-check-label"
+                        for="show-volume"
+                        >Show dataset volume</label
+                    >
+                </div>
+
+                <!-- Show octree volumes -->
+                <div class="form-check form-switch">
+                    <input
+                        class="form-check-input"
+                        type="checkbox"
+                        role="switch"
+                        id="show-tile-volumes"
+                        autocomplete="off"
+                    />
+                    <label
+                        title="Show the volume of the octree"
+                        class="form-check-label"
+                        for="show-tile-volumes"
+                        >Show octrees</label
+                    >
+                </div>
+
+                <!-- Eye Dome Lighting -->
+                <div class="form-check form-switch">
+                    <input
+                        class="form-check-input"
+                        type="checkbox"
+                        role="switch"
+                        checked
+                        id="edl"
+                        autocomplete="off"
+                    />
+                    <label
+                        title="Toggles Eye Dome Lighting post-processing effect"
+                        class="form-check-label"
+                        for="edl"
+                        >Eye Dome Lighting</label
+                    >
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
