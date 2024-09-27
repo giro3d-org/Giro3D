@@ -71,11 +71,19 @@ Below is a non-exhaustive list of supported data sources.
 -   [KML](https://www.ogc.org/standard/kml/)
 -   [GPS Exchange Format (GPX)](https://en.wikipedia.org/wiki/GPS_Exchange_Format)
 
+### Point clouds
+
+-   [Potree](https://github.com/potree/potree) datasets
+    -   Regular (bin file) point clouds
+    -   LAZ Potree point clouds
+-   [Cloud Optimized Point Clouds (COPC)](https://copc.io/)
+-   LAS/LAZ files
+-   3D Tiles with `.pnts` tiles (you can generate them with [py3dtiles](https://py3dtiles.org/))
+
 ### 3D assets
 
 -   [3D Tiles](https://github.com/CesiumGS/3d-tiles) for optimized massive 3D datasets, including point clouds
 -   [glTF](https://github.com/KhronosGroup/glTF) for individual models
--   [Potree point clouds](https://github.com/potree/potree)
 
 # Getting started
 
