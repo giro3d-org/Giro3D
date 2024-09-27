@@ -11,6 +11,17 @@ import ImageSource, {
     type ImageSourceEvents,
     type ImageSourceOptions,
 } from './ImageSource';
+import {
+    GetNodeDataOptions,
+    PointCloudAttribute,
+    PointCloudCrs,
+    PointCloudMetadata,
+    PointCloudNode,
+    PointCloudNodeData,
+    PointCloudSource,
+    PointCloudSourceBase,
+    PointCloudSourceEventMap,
+} from './PointCloudSource';
 import PotreeSource from './PotreeSource';
 import StaticImageSource, {
     type StaticImageSourceEvents,
@@ -33,11 +44,20 @@ export {
     GeoTIFFSource,
     GeoTIFFSourceOptions,
     GetImageOptions,
+    GetNodeDataOptions,
     ImageResponse,
     ImageResult,
     ImageSource,
     ImageSourceEvents,
     ImageSourceOptions,
+    PointCloudAttribute,
+    PointCloudCrs,
+    PointCloudMetadata,
+    PointCloudNode,
+    PointCloudNodeData,
+    PointCloudSource,
+    PointCloudSourceBase,
+    PointCloudSourceEventMap,
     PotreeSource,
     StaticImageSource,
     StaticImageSourceEvents,
