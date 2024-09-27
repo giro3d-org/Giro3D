@@ -117,6 +117,7 @@
         "babel-plugin-inline-import": "^3.0.0",
         "babel-plugin-minify-dead-code-elimination": "^0.5.2",
         "babel-plugin-minify-replace": "^0.5.0",
+        "babel-plugin-transform-import-meta": "^2.2.1",
         "babel-polyfill": "^6.26.0",
         "bootstrap": "^5.3.3",
         "bootstrap-icons": "^1.11.3",

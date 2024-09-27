@@ -8,6 +8,7 @@ module.exports = {
     env: {
         test: {
             presets: ['jest', ['@babel/preset-env']],
+            plugins: ['babel-plugin-transform-import-meta'],
         },
     },
 };
