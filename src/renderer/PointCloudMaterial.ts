@@ -113,6 +113,12 @@ export interface PointCloudMaterialOptions {
      */
     size?: number;
     /**
+     * The point decimation.
+     *
+     * @defaultValue 1
+     */
+    decimation?: number;
+    /**
      * An additional color to use.
      *
      * @defaultValue `new Vector4(0, 0, 0, 0)`
@@ -144,8 +150,8 @@ interface Uniforms {
     opacity: IUniform<number>;
     brightnessContrastSaturation: IUniform<Vector3>;
     size: IUniform<number>;
-    mode: IUniform<MODE>;
     decimation: IUniform<number>;
+    mode: IUniform<MODE>;
     pickingId: IUniform<number>;
     overlayColor: IUniform<Vector4>;
     hasOverlayTexture: IUniform<number>;

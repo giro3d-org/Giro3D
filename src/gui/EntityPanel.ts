@@ -7,6 +7,7 @@ import type EntityInspector from './EntityInspector';
 import FeatureCollectionInspector from './FeatureCollectionInspector';
 import MapInspector from './MapInspector';
 import Panel from './Panel';
+import PointCloudInspector from './PointCloudInspector';
 import PotreePointCloudInspector from './PotreePointCloudInspector';
 import ShapeInspector from './ShapeInspector';
 import Tiles3dInspector from './Tiles3dInspector';
@@ -18,6 +19,7 @@ const customInspectors: Record<string, typeof EntityInspector<Entity3D>> = {
     AxisGrid: AxisGridInspector,
     Shape: ShapeInspector,
     FeatureCollection: FeatureCollectionInspector,
+    PointCloud: PointCloudInspector,
 };
 
 /**
