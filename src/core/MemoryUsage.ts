@@ -27,7 +27,7 @@ export default interface MemoryUsage {
 }
 
 export function isMemoryUsage(obj: unknown): obj is MemoryUsage {
-    return (obj as MemoryUsage)?.isMemoryUsage;
+    return (obj as MemoryUsage)?.isMemoryUsage ?? false;
 }
 
 export function aggregateMemoryUsage(context: GetMemoryUsageContext): MemoryUsageReport {
