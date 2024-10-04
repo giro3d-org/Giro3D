@@ -127,7 +127,9 @@ function pickPointsAt(
         };
 
         if (idx * 4 < 0 || (idx + 1) * 4 > buffer.length) {
-            console.error('azadaz');
+            console.error(
+                'Index out of bounds: The calculated index is either negative or exceeds the buffer length.',
+            );
         }
 
         const data = buffer.slice(idx * 4, idx * 4 + 4);
