@@ -5,54 +5,305 @@ attribution: © <a target="_blank" href="https://potree.github.io/">Potree</a>
 tags: [potree, 'point cloud']
 ---
 
-<div class="side-pane-with-status-bar">
-    <div class="card">
-        <div class="card-header">Parameters</div>
-        <div class="card-body">
-            <!-- EDL toggle -->
-            <div class="form-check form-switch">
-                <input
-                    class="form-check-input"
-                    type="checkbox"
-                    checked="true"
-                    role="switch"
-                    id="edl"
-                    autocomplete="off"
-                />
-                <label class="form-check-label" for="edl">Eye dome lighting</label>
-            </div>
+<div class="side-pane-with-status-bar" style="width: 20rem">
+    <div class="progress" role="progressbar">
+        <div
+            class="progress-bar bg-info progress-bar-striped progress-bar-animated text-dark"
+            id="progress"
+            style="width: 0%"
+        >
+            Loading metadata...
+        </div>
+    </div>
 
-            <!-- Inpainting toggle -->
-            <div class="form-check form-switch">
-                <input
-                    class="form-check-input"
-                    type="checkbox"
-                    checked="true"
-                    role="switch"
-                    id="inpainting"
-                    autocomplete="off"
-                />
-                <label class="form-check-label" for="inpainting">Inpainting</label>
-            </div>
+    <!-- Error message -->
+    <div class="alert alert-danger mt-0 mb-0" id="message" style="display: none" role="alert">
+        A simple primary alert—check it out!
+    </div>
 
-            <!-- Point size slider -->
-            <div class="row mt-2">
-                <div class="col-auto">
-                    <label for="size" style="width: 8rem" id="size-label" class="form-label"
-                        >Point size: 4</label
+    <!--Parameters -->
+    <div class="card-body">
+        <!-- Accordion -->
+        <div class="accordion" style="display: none" id="accordion">
+            <!-- Section: info -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button
+                        class="accordion-button"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#section-info"
+                        aria-expanded="true"
+                        aria-controls="section-info"
                     >
+                        Info
+                    </button>
+                </h2>
+                <div
+                    id="section-info"
+                    class="accordion-collapse collapse show"
+                    data-bs-parent="#accordion"
+                >
+                    <ul
+                        class="list-group list-group-flush"
+                        id="table"
+                        style="display: none; font-size: 0.875rem"
+                    >
+                        <li
+                            class="list-group-item"
+                            title="The total number of points in the dataset"
+                        >
+                            Total points <b id="point-count" class="d-float float-end"></b>
+                        </li>
+                        <li
+                            class="list-group-item"
+                            title="The number of points currently displayed"
+                        >
+                            Displayed points
+                            <b id="displayed-point-count" class="d-float float-end"></b>
+                        </li>
+                    </ul>
                 </div>
-                <div class="col">
+            </div>
+
+            <!-- Section: options -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button
+                        class="accordion-button"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#section-options"
+                        aria-expanded="false"
+                        aria-controls="section-options"
+                    >
+                        Options
+                    </button>
+                </h2>
+
+                <div
+                    id="section-options"
+                    class="accordion-collapse collapse p-2"
+                    data-bs-parent="#accordion"
+                >
+                    <!-- Show volume -->
+                    <div class="form-check form-switch">
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id="show-volume"
+                            autocomplete="off"
+                        />
+                        <label
+                            title="Show the volume of the dataset"
+                            class="form-check-label"
+                            for="show-volume"
+                            >Show dataset volume</label
+                        >
+                    </div>
+
+                    <!-- Show octree volumes -->
+                    <div class="form-check form-switch">
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id="show-tile-volumes"
+                            autocomplete="off"
+                        />
+                        <label
+                            title="Show the volumes of the octree cells"
+                            class="form-check-label"
+                            for="show-tile-volumes"
+                            >Show octree volumes</label
+                        >
+                    </div>
+
+                    <!-- Show basemap -->
+                    <div class="form-check form-switch" style="display: none" id="basemap-group">
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            checked
+                            id="show-basemap"
+                            autocomplete="off"
+                        />
+                        <label title="Show the basemap" class="form-check-label" for="show-basemap"
+                            >Show basemap</label
+                        >
+                    </div>
+
+                    <!-- Show cloud -->
+                    <div class="form-check form-switch">
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            checked
+                            id="show-dataset"
+                            autocomplete="off"
+                        />
+                        <label class="form-check-label" for="show-dataset">Show dataset</label>
+                    </div>
+
+                    <!-- Eye Dome Lighting -->
+                    <div class="form-check form-switch">
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            checked
+                            id="edl"
+                            autocomplete="off"
+                        />
+                        <label
+                            title="Toggles Eye Dome Lighting post-processing effect"
+                            class="form-check-label"
+                            for="edl"
+                            >Eye Dome Lighting</label
+                        >
+                    </div>
+
+                    <!-- Inpainting -->
+                    <div class="form-check form-switch">
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id="inpainting"
+                            autocomplete="off"
+                        />
+                        <label title="Toggles inpainting" class="form-check-label" for="inpainting"
+                            >Inpainting</label
+                        >
+                    </div>
+
+                    <!-- Point size slider -->
+                    <label for="point-size" class="form-label mt-2" id="point-size-label"
+                        >Point size: <b>auto</b></label
+                    >
                     <input
                         type="range"
                         min="0"
-                        max="20"
+                        max="50"
                         step="1"
-                        value="4"
+                        value="0"
+                        title="The point size, in pixels"
                         class="form-range"
-                        id="size"
+                        id="point-size"
                         autocomplete="off"
                     />
+
+                    <!-- Subdivision threshold slider -->
+                    <label
+                        for="subdivision-threshold"
+                        id="subdivision-threshold-label"
+                        class="form-label"
+                        >Subdvision threshold: <b>1.0</b></label
+                    >
+                    <input
+                        type="range"
+                        min="0.1"
+                        max="3"
+                        step="0.1"
+                        value="1"
+                        title="The subdivision threshold of the point cloud. The lower, the higher the number of points simultaneously displayed."
+                        class="form-range"
+                        id="subdivision-threshold"
+                        autocomplete="off"
+                    />
+                </div>
+            </div>
+
+            <!-- Section: coloring -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button
+                        class="accordion-button"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#section-coloring"
+                        aria-expanded="false"
+                        aria-controls="section-coloring"
+                    >
+                        Coloring
+                    </button>
+                </h2>
+
+                <div
+                    id="section-coloring"
+                    class="accordion-collapse collapse p-2"
+                    data-bs-parent="#accordion"
+                >
+                    <!-- Active attribute selector -->
+                    <div class="input-group mt-1" id="attribute-group">
+                        <label class="input-group-text col-5" for="attribute">Dimension</label>
+                        <select
+                            class="form-select"
+                            id="attribute"
+                            autocomplete="off"
+                            title="Sets the active attribute of the point cloud"
+                        ></select>
+                    </div>
+
+                    <!-- Color ramp selector -->
+                    <div id="ramp-group" class="input-group mt-2">
+                        <label class="input-group-text col-5" for="ramp">Color ramp</label>
+                        <select class="form-select" id="ramp" autocomplete="off">
+                            <option value="viridis">Viridis</option>
+                            <option value="jet">Jet</option>
+                            <option value="greys" selected>Greys</option>
+                            <option value="blackbody">Blackbody</option>
+                            <option value="earth">Earth</option>
+                            <option value="bathymetry">Bathymetry</option>
+                            <option value="magma">Magma</option>
+                            <option value="par">Par</option>
+                            <option value="rdbu">RdBu</option>
+                        </select>
+
+                        <!-- Bound sliders -->
+                        <div class="input-group border rounded p-2 mt-2" id="bounds">
+                            <label
+                                for="min"
+                                id="label-bounds"
+                                class="form-label"
+                                style="font-size: 0.8rem"
+                                >Bounds: 123 - 456</label
+                            >
+                            <div class="input-group">
+                                <input
+                                    type="range"
+                                    min="780"
+                                    max="3574"
+                                    value="0"
+                                    class="form-range"
+                                    id="min"
+                                    autocomplete="off"
+                                />
+                            </div>
+
+                            <div class="input-group">
+                                <input
+                                    type="range"
+                                    min="780"
+                                    max="3574"
+                                    value="3574"
+                                    class="form-range"
+                                    id="max"
+                                    autocomplete="off"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Classification list -->
+                    <div id="classification-group" class="mt-2">
+                        <fieldset id="classifications" class="border rounded p-2">
+                            <!-- Classifications are added dynamically from the JS example -->
+                        </fieldset>
+                    </div>
                 </div>
             </div>
         </div>

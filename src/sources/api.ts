@@ -25,7 +25,7 @@ import {
     PointCloudSourceBase,
     PointCloudSourceEventMap,
 } from './PointCloudSource';
-import PotreeSource from './PotreeSource';
+import PotreeSource, { PotreeSourceOptions } from './PotreeSource';
 import StaticImageSource, {
     type StaticImageSourceEvents,
     type StaticImageSourceOptions,
@@ -67,6 +67,7 @@ export {
     PointCloudSourceBase,
     PointCloudSourceEventMap,
     PotreeSource,
+    PotreeSourceOptions,
     StaticImageSource,
     StaticImageSourceEvents,
     StaticImageSourceOptions,
