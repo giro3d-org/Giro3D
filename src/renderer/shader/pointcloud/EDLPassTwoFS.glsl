@@ -15,5 +15,5 @@ void main() {
     } else {
         gl_FragColor = vec4(source.rgb * edl, source.a);
     }
-    gl_FragDepthEXT = texture2D(depthTexture, vUv).r;
+    gl_FragDepth = texture2D(depthTexture, vUv).r;
 }

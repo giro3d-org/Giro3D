@@ -31,18 +31,22 @@ void main() {
     const int max_n = 4;
 
     float step = 2.0 * 3.1415926 / float(directions);
-    for (int i=0; i<max_k; i++) {
+
+    for (int i = 0; i < max_k; i++) {
         if (i == directions) {
             // workaround for loop index cannot be compared with non-constant expression
             break;
         }
-        for (int j=1; j<=max_n; j++) {
+
+        for (int j = 1; j <= max_n; j++) {
             if (j > n) {
                 // workaround for loop index cannot be compared with non-constant expression
                 break;
             }
+
             float distance = radius * float(j);
             float rad = float(i) * step;
+
             vec2 offset = vec2(
                 cos(rad) * distance,
                 sin(rad) * distance) / resolution;
@@ -56,6 +60,8 @@ void main() {
     s = s / float(directions) / float(n);
 
     float A = 300.0 * strength;
+
     s = exp(-s * A);
+
     gl_FragColor = vec4(s, s, s, 1.0);
 }

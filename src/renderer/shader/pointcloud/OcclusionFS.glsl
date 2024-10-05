@@ -103,16 +103,16 @@ void main() {
 
         if (m < threshold) {
             gl_FragColor = texture2D(colorTexture, vUv);
-            gl_FragDepthEXT = depth;
+            gl_FragDepth = depth;
         } else if (showRemoved) {
             gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
-            gl_FragDepthEXT = 1.0;
+            gl_FragDepth = 1.0;
         } else {
             gl_FragColor.a = 0.0;
-            gl_FragDepthEXT = 1.0;
+            gl_FragDepth = 1.0;
         }
     } else {
         gl_FragColor.a = 0.0;
-        gl_FragDepthEXT = 1.0;
+        gl_FragDepth = 1.0;
     }
 }
