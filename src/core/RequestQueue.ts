@@ -1,5 +1,5 @@
 import PriorityQueue from 'ol/structs/PriorityQueue';
-import { EventDispatcher } from 'three';
+import { EventDispatcher, MathUtils } from 'three';
 import PromiseUtils from '../utils/PromiseUtils';
 import OperationCounter from './OperationCounter';
 import type Progress from './Progress';
@@ -215,3 +215,14 @@ const DefaultQueue: RequestQueue = new RequestQueue();
 export { DefaultQueue };
 
 export default RequestQueue;
+
+/**
+ * Defers the action by queueing it to the default queue.
+ */
+export function defer<T>(action: () => T, signal?: AbortSignal): Promise<T> {
+    return DefaultQueue.enqueue({
+        id: MathUtils.generateUUID(),
+        request: () => Promise.resolve(action()),
+        shouldExecute: () => signal == null || !signal.aborted,
+    });
+}
