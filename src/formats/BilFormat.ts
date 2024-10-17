@@ -43,7 +43,7 @@ class BilFormat extends ImageFormat {
      * @param blob - the data to decode
      * @param options - the decoding options
      */
-    // eslint-disable-next-line class-methods-use-this
+
     async decode(blob: Blob, options: DecodeOptions) {
         const buf = await blob.arrayBuffer();
         const floatArray = new Float32Array(buf);

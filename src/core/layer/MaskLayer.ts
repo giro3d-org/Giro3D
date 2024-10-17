@@ -52,7 +52,7 @@ class MaskLayer<UserData extends LayerUserData = LayerUserData> extends ColorLay
         super(options);
         this.isMaskLayer = true;
         this.type = 'MaskLayer';
-        this._maskMode = options.maskMode || MaskMode.Normal;
+        this._maskMode = options.maskMode ?? MaskMode.Normal;
     }
 
     /**
@@ -66,7 +66,6 @@ class MaskLayer<UserData extends LayerUserData = LayerUserData> extends ColorLay
         this._maskMode = v;
     }
 
-    // eslint-disable-next-line class-methods-use-this
     override getRenderTargetDataType(): TextureDataType {
         return UnsignedByteType;
     }
@@ -87,12 +86,10 @@ class MaskLayer<UserData extends LayerUserData = LayerUserData> extends ColorLay
         });
     }
 
-    // eslint-disable-next-line class-methods-use-this
     override getVectorFeaturesAtCoordinate(): Feature<Geometry>[] {
         return [];
     }
 
-    // eslint-disable-next-line class-methods-use-this
     override getVectorFeaturesInExtent(): Feature<Geometry>[] {
         return [];
     }

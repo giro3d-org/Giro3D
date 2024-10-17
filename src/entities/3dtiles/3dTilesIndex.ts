@@ -130,7 +130,7 @@ class $3dTilesIndex {
             for (const child of indexedNode.children) {
                 try {
                     this._recurse(child, baseURL, indexedNode);
-                } catch (error) {
+                } catch {
                     // FIXME
                     // @ts-expect-error invalid operation
                     indexedNode.children[node.children.indexOf(child)] = undefined;

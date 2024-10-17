@@ -5,7 +5,7 @@ import TextureGenerator from '@giro3d/giro3d/utils/TextureGenerator';
 describe('Fetcher', () => {
     beforeAll(() => {
         // @ts-expect-error property does not exist
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
         window.Request = function Request(input: RequestInfo | URL, init?: RequestInit) {
             // @ts-expect-error unknown property
             this.url = input;

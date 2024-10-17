@@ -1,5 +1,3 @@
-// Number.isNan is quite slow, so we use n !== n
-/* eslint-disable no-self-compare */
 import type { WebGLRenderTarget } from 'three';
 import {
     AlphaFormat,

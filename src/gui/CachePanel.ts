@@ -56,7 +56,6 @@ class CachePanel extends Panel {
         this.update();
     }
 
-    // eslint-disable-next-line class-methods-use-this
     dump() {
         console.log([...GlobalCache.entries()]);
     }

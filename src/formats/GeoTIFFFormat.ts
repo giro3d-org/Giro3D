@@ -38,7 +38,7 @@ class GeoTIFFFormat extends ImageFormat {
      * @param blob - the data to decode
      * @param options - the decoding options
      */
-    // eslint-disable-next-line class-methods-use-this
+
     async decode(blob: Blob, options?: DecodeOptions) {
         const tiff = await fromBlob(blob);
         const image = await tiff.getImage();

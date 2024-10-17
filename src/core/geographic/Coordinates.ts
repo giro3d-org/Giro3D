@@ -156,7 +156,7 @@ class Coordinates {
      *
      * @returns The normal vector.
      */
-    // eslint-disable-next-line class-methods-use-this
+
     get geodesicNormal() {
         return planarNormal;
     }

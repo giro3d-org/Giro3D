@@ -78,12 +78,8 @@ function makeRaycastableGeometry(extent: Extent, segments: number) {
 }
 
 export interface TileMeshEventMap extends Object3DEventMap {
-    'visibility-changed': {
-        /** empty */
-    };
-    dispose: {
-        /** empty */
-    };
+    'visibility-changed': unknown;
+    dispose: unknown;
 }
 
 class TileVolume {

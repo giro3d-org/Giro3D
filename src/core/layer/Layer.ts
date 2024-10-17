@@ -51,12 +51,8 @@ const tmpDims = new Vector2();
  * Events for nodes.
  */
 export interface LayerNodeEventMap extends Object3DEventMap {
-    dispose: {
-        /** empty */
-    };
-    'visibility-changed': {
-        /** empty */
-    };
+    dispose: unknown;
+    'visibility-changed': unknown;
 }
 
 /**
@@ -722,7 +718,6 @@ abstract class Layer<
     /**
      * Called when the layer has finished initializing.
      */
-    // eslint-disable-next-line class-methods-use-this
     protected async onInitialized() {
         // Implemented in derived classes.
     }
@@ -873,7 +868,6 @@ abstract class Layer<
         }
     }
 
-    // eslint-disable-next-line class-methods-use-this
     protected adjustExtent(extent: Extent): Extent {
         return extent;
     }
@@ -886,7 +880,6 @@ abstract class Layer<
      * @param originalHeight - The height, in pixels, of the original extent.
      * @returns And object containing the adjusted extent, as well as adjusted pixel size.
      */
-    // eslint-disable-next-line class-methods-use-this
     protected adjustExtentAndPixelSize(
         originalExtent: Extent,
         originalWidth: number,
@@ -1305,7 +1298,7 @@ abstract class Layer<
         return this._composer;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars, class-methods-use-this
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected updateMaterial(material: Material) {
         // Implemented in derived classes
     }

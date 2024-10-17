@@ -31,9 +31,7 @@ export interface StaticImageSourceEvents extends ImageSourceEvents {
     /**
      * Raised when the remote image has been loaded.
      */
-    loaded: {
-        /** empty */
-    };
+    loaded: unknown;
     /**
      * Raised when the remote image failed to load.
      */

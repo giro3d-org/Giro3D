@@ -22,7 +22,7 @@ class TestSource extends ImageSource {
         return this.extent;
     }
 
-    // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     getImages(options: GetImageOptions): ImageResponse[] {
         throw new Error('Method not implemented.');
     }

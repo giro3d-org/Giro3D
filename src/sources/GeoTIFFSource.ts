@@ -442,7 +442,7 @@ class GeoTIFFSource extends ImageSource {
 
         // We want to preserve the order of the overviews so we await them inside
         // the loop not to have the smallest overviews coming before the biggest
-        /* eslint-disable no-await-in-loop */
+
         for (let i = 1; i < rawImageCount; i++) {
             const image = await this._tiffImage.getImage(i);
             const level = makeLevel(image, image.getResolution(firstImage));

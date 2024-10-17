@@ -760,7 +760,6 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         return Promise.resolve(true);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     pushColorLayer(newLayer: ColorLayer) {
         if (this._colorLayers.includes(newLayer)) {
             return;

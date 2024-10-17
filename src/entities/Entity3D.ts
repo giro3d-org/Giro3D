@@ -330,8 +330,6 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
         obj.renderOrder = this.renderOrder;
     }
 
-    /* eslint-enable class-methods-use-this */
-
     /**
      * Test whether this entity contains the given object.
      *
@@ -340,7 +338,7 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
      * @param obj - The object to test.
      * @returns true if the entity contains the object.
      */
-    // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     contains(obj: unknown): boolean {
         return false;
     }

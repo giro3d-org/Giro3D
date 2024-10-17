@@ -53,7 +53,7 @@ class TileIndex<T extends Tile> {
      */
     addTile(tile: T) {
         const key = TileIndex.getKey(tile.x, tile.y, tile.z);
-        const wr = new WeakRef(tile); // eslint-disable-line no-undef
+        const wr = new WeakRef(tile);
         this.tiles.set(key, wr);
         this.tilesById.set(tile.id, wr);
     }

@@ -25,7 +25,7 @@ describe('RequestQueue', () => {
             while (executedTasks < totalTasks) {
                 expect(queue.loading).toEqual(true);
                 expect(queue.progress).toBeCloseTo(executedTasks / totalTasks, 1);
-                // eslint-disable-next-line no-await-in-loop
+
                 await null;
             }
 

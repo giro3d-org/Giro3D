@@ -74,7 +74,7 @@ class FeatureCollectionInspector extends EntityInspector<FeatureCollection> {
      * @param add - If true, bounding box is added, otherwise it is removed.
      * @param color - The bounding box color.
      */
-    // eslint-disable-next-line class-methods-use-this
+
     addOrRemoveBoundingBox(tile: Object3D, add: boolean, color: Color) {
         if (add && 'boundingBox' in tile && tile.visible) {
             Helpers.addBoundingBox(tile, color);

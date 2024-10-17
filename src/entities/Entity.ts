@@ -7,9 +7,7 @@ import type Instance from '../core/Instance';
 /* eslint class-methods-use-this: 0 */
 
 export interface EntityEventMap {
-    initialized: {
-        /** empty */
-    };
+    initialized: unknown;
     'frozen-property-changed': { frozen: boolean };
 }
 
@@ -131,7 +129,6 @@ abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserDa
         super();
 
         this.id = MathUtils.generateUUID();
-        this.name;
         this.type = 'Entity';
         this._frozen = false;
         // @ts-expect-error {} cannot be assigned to TUserData, but it's better than null/undefined.

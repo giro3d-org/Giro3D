@@ -1,7 +1,6 @@
 import { ShaderChunk } from 'three';
 
 // We use non camel-case file names to be as consistent as possible with three.js naming scheme
-/* eslint-disable camelcase */
 import giro3d_colormap_pars_fragment from './giro3d_colormap_pars_fragment.glsl';
 import giro3d_common from './giro3d_common.glsl';
 import giro3d_compose_layers_pars_fragment from './giro3d_compose_layers_pars_fragment.glsl';
@@ -42,4 +41,3 @@ export default function registerChunks() {
     Giro3dShaderChunk.giro3d_graticule_fragment = giro3d_graticule_fragment;
     Giro3dShaderChunk.giro3d_graticule_pars_fragment = giro3d_graticule_pars_fragment;
 }
-/* eslint-enable camelcase */

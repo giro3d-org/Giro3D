@@ -533,22 +533,18 @@ class PointCloudMaterial extends ShaderMaterial {
         this.uniforms.offsetScale.value.copy(pitch);
     }
 
-    // eslint-disable-next-line class-methods-use-this
     setLayerVisibility() {
         // no-op
     }
 
-    // eslint-disable-next-line class-methods-use-this
     setLayerOpacity() {
         // no-op
     }
 
-    // eslint-disable-next-line class-methods-use-this
     setLayerElevationRange() {
         // no-op
     }
 
-    // eslint-disable-next-line class-methods-use-this
     setColorimetry(
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         layer: ColorLayer,
