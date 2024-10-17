@@ -204,12 +204,10 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
         }
     }
 
-    // eslint-disable-next-line class-methods-use-this
     getRenderTargetPixelFormat(): PixelFormat {
         return RGBAFormat;
     }
 
-    // eslint-disable-next-line class-methods-use-this
     protected canFetchImages(target: Target): boolean {
         return target.node.canProcessColorLayer();
     }

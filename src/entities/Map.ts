@@ -10,12 +10,12 @@ import {
     UnsignedByteType,
     Vector2,
     Vector3,
-    type Camera as ThreeCamera,
     type ColorRepresentation,
     type Intersection,
     type Object3D,
     type Side,
     type TextureDataType,
+    type Camera as ThreeCamera,
 } from 'three';
 
 import type ColorimetryOptions from '../core/ColorimetryOptions';
@@ -327,9 +327,7 @@ function getWidestDataType(layers: Layer[]): TextureDataType {
 
 export interface MapEventMap extends Entity3DEventMap {
     /** Fires when a the layer ordering changes. */
-    'layer-order-changed': {
-        /** empty */
-    };
+    'layer-order-changed': unknown;
     /** Fires when a layer is added to the map. */
     'layer-added': { layer: Layer };
     /** Fires when a layer is removed from the map. */

@@ -234,4 +234,4 @@ class Cache implements MemoryUsage {
  */
 const GlobalCache: Cache = new Cache();
 
-export { GlobalCache, Cache, CacheOptions, DEFAULT_TTL, DEFAULT_CAPACITY, DEFAULT_MAX_ENTRIES };
+export { Cache, CacheOptions, DEFAULT_CAPACITY, DEFAULT_MAX_ENTRIES, DEFAULT_TTL, GlobalCache };

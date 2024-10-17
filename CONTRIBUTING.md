@@ -83,20 +83,22 @@ Any contributor is welcomed to help triaging existing issues, but requires a bit
 Triaging consists mainly in settings labels. Labels provide a clear view on what an issue is about. There are multiple categories of labels:
 
 -   What the issue is - all issues should have one among these:
-    | Label | Description | Typical use case | Example |
-    |-------|-------------|------------------|---------|
-    | ~"type::bug" | a behavior is unexpected | "xxx doesn't work" | #286 |
-    | ~"type::feature" | a feature that does not exist, or extending a feature that already exists | "I'd like tu support xxx use case which is not possible currently" | #247 |
-    | ~"type::refactor" | a code change that does not fix any bug or add any feature | "xxx should be rewritten for clarity" | #130 |
-    | ~"type::support" | a question, or unclear if bug or not | "I don't know if xxx is expected or not" | #89 |
-    | ~"type::discussion" | ask for a discussion, doesn't necessarily imply a code change, or might lead to the creation of other issues | "should we do xxx?" | #264 |
+
+    | Label               | Description                                                                                                  | Typical use case                                                   | Example |
+    | ------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------ | ------- |
+    | ~"type::bug"        | a behavior is unexpected                                                                                     | "xxx doesn't work"                                                 | #286    |
+    | ~"type::feature"    | a feature that does not exist, or extending a feature that already exists                                    | "I'd like tu support xxx use case which is not possible currently" | #247    |
+    | ~"type::refactor"   | a code change that does not fix any bug or add any feature                                                   | "xxx should be rewritten for clarity"                              | #130    |
+    | ~"type::support"    | a question, or unclear if bug or not                                                                         | "I don't know if xxx is expected or not"                           | #89     |
+    | ~"type::discussion" | ask for a discussion, doesn't necessarily imply a code change, or might lead to the creation of other issues | "should we do xxx?"                                                | #264    |
 
 -   What the issue impacts - all issues should have at least one among these:
-    | Label | Description |
-    |-------|-------------|
-    | ~"build" | About the build/packaging system, not the code itself - _may_ impact the API |
-    | ~"documentation" | Documentation of Giro3D, including the website |
-    | ~"example" | Examples provided on the website |
+
+    | Label            | Description                                                                  |
+    | ---------------- | ---------------------------------------------------------------------------- |
+    | ~"build"         | About the build/packaging system, not the code itself - _may_ impact the API |
+    | ~"documentation" | Documentation of Giro3D, including the website                               |
+    | ~"example"       | Examples provided on the website                                             |
 
     TODO:
 
@@ -104,16 +106,18 @@ Triaging consists mainly in settings labels. Labels provide a clear view on what
     -   add relevant areas/modules: "Map", "Controls", "Sources", "Core", etc.
 
 -   Other metadata:
-    | Label | Description |
-    |-------|-------------|
-    | ~"critical" | Usually for a bug, should be resolved in next release |
+
+    | Label               | Description                                                      |
+    | ------------------- | ---------------------------------------------------------------- |
+    | ~"critical"         | Usually for a bug, should be resolved in next release            |
     | ~"good first issue" | A beginner friendly issue that can be solved by new contributors |
-    | ~"perf" | Affects performances |
+    | ~"perf"             | Affects performances                                             |
 
 -   Internal scoped-labels may be added by contributors who own them:
-    | Label | Owner |
-    |-------|-------|
-    | ~"R&D::XXXX" | Oslandia |
+
+    | Label            | Owner    |
+    | ---------------- | -------- |
+    | ~"R&D::XXXX"     | Oslandia |
     | ~"project::XXXX" | Oslandia |
 
 ### Merge Requests guidelines

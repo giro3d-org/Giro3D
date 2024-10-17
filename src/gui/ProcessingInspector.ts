@@ -33,7 +33,6 @@ class ProcessingInspector extends Panel {
         this.addController(this, 'dumpTrackedTextures').name('Dump tracked textures to console');
     }
 
-    // eslint-disable-next-line class-methods-use-this
     dumpTrackedObjects() {
         console.log(MemoryTracker.getTrackedObjects());
     }

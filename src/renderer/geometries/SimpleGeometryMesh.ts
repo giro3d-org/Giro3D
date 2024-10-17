@@ -3,9 +3,7 @@ import type { Object3D, Object3DEventMap } from 'three';
 export type DefaultUserData = Record<string, unknown>;
 
 export interface SimpleGeometryMeshEventMap extends Object3DEventMap {
-    dispose: {
-        /** empty */
-    };
+    dispose: unknown;
 }
 
 export type SimpleGeometryMeshTypes =

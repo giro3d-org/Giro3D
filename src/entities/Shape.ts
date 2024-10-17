@@ -430,7 +430,7 @@ export const vertexHeightFormatter: Formatter<VertexFormatOptions> = (
  * Formats the length into a readable string.
  * @param length - The length of the line or segment.
  */
-// eslint-disable-next-line no-use-before-define
+
 function defaultLengthFormatter(opts: { length: number }) {
     let unit: string;
     let value: number;

@@ -152,7 +152,7 @@ abstract class ImageSource<Events extends ImageSourceEvents = ImageSourceEvents>
         this.type = 'ImageSource';
 
         this.flipY = options.flipY ?? false;
-        this.datatype = options.is8bit ?? true ? UnsignedByteType : FloatType;
+        this.datatype = (options.is8bit ?? true) ? UnsignedByteType : FloatType;
         this._customColorSpace = options.colorSpace;
 
         this.containsFn = options.containsFn;
@@ -188,13 +188,12 @@ abstract class ImageSource<Events extends ImageSourceEvents = ImageSourceEvents>
      * @param margin - The margin, in pixels, around the initial extent.
      * @returns The adjusted parameters.
      */
-    // eslint-disable-next-line class-methods-use-this
+
     adjustExtentAndPixelSize(
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         requestExtent: Extent,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
         requestWidth: number,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
         requestHeight: number,
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         margin = 0,
@@ -266,8 +265,8 @@ abstract class ImageSource<Events extends ImageSourceEvents = ImageSourceEvents>
      * @param options - Options.
      * @returns A promise that resolves when the source is initialized.
      */
-    // eslint-disable-next-line max-len
-    // eslint-disable-next-line class-methods-use-this, no-unused-vars, @typescript-eslint/no-unused-vars
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     initialize(options: {
         /** The target projection. Only useful for sources that are able
          * to reproject their data on the fly (typically vector sources). */
@@ -282,13 +281,13 @@ abstract class ImageSource<Events extends ImageSourceEvents = ImageSourceEvents>
      * @param options - The options.
      * @returns An array containing the functions to generate the images asynchronously.
      */
-    // eslint-disable-next-line class-methods-use-this, no-unused-vars
+
     abstract getImages(options: GetImageOptions): Array<ImageResponse>;
 
     /**
      * Disposes unmanaged resources of this source.
      */
-    // eslint-disable-next-line class-methods-use-this
+
     dispose() {
         // Implement this in derived classes to cleanup unmanaged resources,
         // such as cached objects.

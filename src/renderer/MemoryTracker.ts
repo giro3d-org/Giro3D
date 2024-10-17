@@ -81,7 +81,6 @@ class MemoryTracker {
      */
     static track(obj: object, name: string) {
         if (enabled) {
-            // eslint-disable-next-line no-undef
             allocated.push({ name, weakref: new WeakRef(obj) });
             counter++;
 

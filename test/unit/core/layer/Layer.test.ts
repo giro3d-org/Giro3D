@@ -12,7 +12,6 @@ import { setupGlobalMocks } from '../../mocks';
 
 // @ts-expect-error missing implementations of abstract superclass
 class TestLayer<T, U> extends Layer<T, U> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars, class-methods-use-this
     registerNode(_node: LayerNode, _extent: Extent): void {
         /** empty */
     }

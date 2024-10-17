@@ -75,15 +75,11 @@ export interface RequestQueueEvents {
     /**
      * Raised when a task has been executed.
      */
-    'task-executed': {
-        /** empty */
-    };
+    'task-executed': unknown;
     /**
      * Raised when a task has been cancelled.
      */
-    'task-cancelled': {
-        /** empty */
-    };
+    'task-cancelled': unknown;
 }
 
 /**

@@ -130,7 +130,6 @@ abstract class Panel {
      * Updates the values of the controller sources.
      *
      */
-    // eslint-disable-next-line class-methods-use-this
     updateValues() {
         /** empty */
     }

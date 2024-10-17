@@ -8,13 +8,13 @@ import type { PromiseStatus } from './PromiseUtils';
 
 export {
     Fetcher,
-    FetchOptions,
     FetcherEventDispatcher,
     FetcherEventMap,
-    HttpError,
+    FetchOptions,
     GeoJSONUtils,
     HttpConfiguration,
-    PromiseUtils,
-    PromiseStatus,
+    HttpError,
     OpenLayersUtils,
+    PromiseStatus,
+    PromiseUtils,
 };

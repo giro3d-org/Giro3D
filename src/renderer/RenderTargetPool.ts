@@ -10,9 +10,7 @@ import NestedMap from '../utils/NestedMap';
 import TextureGenerator from '../utils/TextureGenerator';
 
 export interface RenderTargetPoolEvents {
-    cleanup: {
-        /** nothing */
-    };
+    cleanup: unknown;
 }
 
 const createPool = () => [];

@@ -257,7 +257,7 @@ class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
      * @param add - If true, bounding box is added, otherwise it is removed.
      * @param color - The bounding box color.
      */
-    // eslint-disable-next-line class-methods-use-this
+
     addOrRemoveBoundingBox(obj: Object3D, add: boolean, color: Color) {
         if (add) {
             if ('material' in obj && isMaterial(obj.material)) {

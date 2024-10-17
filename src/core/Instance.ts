@@ -70,15 +70,11 @@ export interface InstanceEvents {
     /**
      * Fires when an entity is added to the instance.
      */
-    'entity-added': {
-        /** empty */
-    };
+    'entity-added': unknown;
     /**
      * Fires when an entity is removed from the instance.
      */
-    'entity-removed': {
-        /** empty */
-    };
+    'entity-removed': unknown;
     /**
      * Fires at the start of the update
      */
@@ -111,9 +107,7 @@ export interface InstanceEvents {
      * Fires at the end of the update
      */
     'update-end': FrameEventPayload;
-    'picking-start': {
-        /** empty */
-    };
+    'picking-start': unknown;
     'picking-end': {
         /**
          * The duration of the picking, in seconds.

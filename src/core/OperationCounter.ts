@@ -5,15 +5,11 @@ export interface OperationCounterEvents {
     /**
      * Raised when the counter is changed.
      */
-    changed: {
-        /** empty */
-    };
+    changed: unknown;
     /**
      * Raised when all operations are completed.
      */
-    complete: {
-        /** empty */
-    };
+    complete: unknown;
 }
 
 /**

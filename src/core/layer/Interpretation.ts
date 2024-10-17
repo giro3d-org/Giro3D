@@ -236,6 +236,6 @@ class Interpretation {
     }
 }
 
-export { Mode, InterpretationOptions };
+export { InterpretationOptions, Mode };
 
 export default Interpretation;

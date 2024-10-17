@@ -11,9 +11,8 @@ import { Color } from 'three';
 export function makeColorRamp(preset, discrete = false, invert = false, mirror = false) {
     let nshades = discrete ? 10 : 256;
 
-    // eslint-disable-next-line no-undef
     const values = colormap({ colormap: preset, nshades });
-    // eslint-disable-next-line no-undef
+
     const colors = values.map(v => new Color(v));
 
     if (invert) {

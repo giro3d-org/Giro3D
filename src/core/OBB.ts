@@ -17,7 +17,6 @@ class OBB extends Object3D {
         this.update();
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     clone(): this {
         const cOBB = new OBB(this.natBox.min, this.natBox.max);
         cOBB.position.copy(this.position);

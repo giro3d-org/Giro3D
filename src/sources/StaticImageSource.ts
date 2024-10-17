@@ -31,9 +31,7 @@ export interface StaticImageSourceEvents extends ImageSourceEvents {
     /**
      * Raised when the remote image has been loaded.
      */
-    loaded: {
-        /** empty */
-    };
+    loaded: unknown;
     /**
      * Raised when the remote image failed to load.
      */
@@ -64,7 +62,7 @@ export default class StaticImageSource extends ImageSource<StaticImageSourceEven
     constructor(options: StaticImageSourceOptions) {
         super({
             colorSpace: 'srgb',
-            flipY: typeof options.source === 'string' ? false : options.flipY ?? true,
+            flipY: typeof options.source === 'string' ? false : (options.flipY ?? true),
             is8bit: true,
         });
 

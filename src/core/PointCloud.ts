@@ -14,12 +14,8 @@ import type Disposable from './Disposable';
 import type Extent from './geographic/Extent';
 
 export interface PointCloudEventMap extends Object3DEventMap {
-    'visibility-changed': {
-        /** empty */
-    };
-    dispose: {
-        /** empty */
-    };
+    'visibility-changed': unknown;
+    dispose: unknown;
 }
 
 /** Options for constructing {@link PointCloud} */
@@ -114,7 +110,6 @@ class PointCloud<M extends PointCloudMaterial = PointCloudMaterial>
         return this.getPointValue(pointIndex, 'classification');
     }
 
-    // eslint-disable-next-line class-methods-use-this
     canProcessColorLayer(): boolean {
         return true;
     }

@@ -1,19 +1,19 @@
 import esMain from 'es-main';
-import glob from 'glob';
+import { globSync } from 'glob';
 import { exit } from 'process';
 
 async function main() {
     const args = process.argv;
 
     for (const folder of args.slice(2)) {
-        glob(`${folder}/**/[A-Z]*/`, {}, (err, dirs) => {
-            if (dirs && dirs.length > 0) {
-                for (const invalid of dirs) {
-                    console.error(`invalid directory name: ${invalid}`);
-                }
-                exit(1);
+        const dirs = globSync(`${folder}/**/[A-Z]*/`, {});
+
+        if (dirs && dirs.length > 0) {
+            for (const invalid of dirs) {
+                console.error(`invalid directory name: ${invalid}`);
             }
-        });
+            exit(1);
+        }
     }
 }
 
