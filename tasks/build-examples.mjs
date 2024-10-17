@@ -8,7 +8,7 @@ import frontMatter from 'front-matter';
 import fse from 'fs-extra';
 import path, { dirname } from 'path';
 import * as prettier from 'prettier';
-import shiki from 'shiki';
+import * as shiki from 'shiki';
 import { fileURLToPath } from 'url';
 import webpack from 'webpack';
 import webpackDevServer from 'webpack-dev-server';
@@ -144,7 +144,7 @@ export async function generateIndex(htmlFiles, parameters) {
     return indexHtmlContent;
 }
 
-export async function generateExample(htmlFile, highlighter, parameters) {
+export async function generateExample(htmlFile, parameters) {
     const htmlFilename = path.basename(htmlFile);
     const jsFilename = htmlFilename.replace('.html', '.js');
 
@@ -180,7 +180,7 @@ export async function generateExample(htmlFile, highlighter, parameters) {
         dependencies: attributes.dependencies,
     };
 
-    if (highlighter) {
+    if (parameters.mode === 'production') {
         const htmlCodeTemplate = readTemplate('published_html.ejs');
 
         let htmlCode = htmlCodeTemplate(variables);
@@ -202,9 +202,16 @@ export async function generateExample(htmlFile, highlighter, parameters) {
         // Format the code with Prettier
         sourceCode = await prettier.format(sourceCode, { parser: 'babel' });
 
-        variables['highlightedJsCode'] = highlighter.codeToHtml(sourceCode, { lang: 'js' });
-        variables['highlightedHtmlCode'] = highlighter.codeToHtml(htmlCode, { lang: 'html' });
-        variables['highlightedPackageCode'] = highlighter.codeToHtml(packageJson, {
+        variables['highlightedJsCode'] = await shiki.codeToHtml(sourceCode, {
+            theme: 'github-light',
+            lang: 'js',
+        });
+        variables['highlightedHtmlCode'] = await shiki.codeToHtml(htmlCode, {
+            theme: 'github-light',
+            lang: 'html',
+        });
+        variables['highlightedPackageCode'] = await shiki.codeToHtml(packageJson, {
+            theme: 'github-light',
             lang: 'json',
         });
     }
@@ -311,14 +318,6 @@ export async function getWebpackConfig(parameters) {
         });
     }
 
-    let highlighter;
-    if (parameters.mode === 'production') {
-        highlighter = await shiki.getHighlighter({
-            theme: 'github-light',
-            langs: ['js', 'html', 'json'],
-        });
-    }
-
     /** @type {webpack.Configuration} */
     const webpackConfig = {
         mode: parameters.mode,
@@ -399,8 +398,7 @@ export async function getWebpackConfig(parameters) {
                     {
                         from: '*.html',
                         to: '.',
-                        transform: (content, from) =>
-                            generateExample(from, highlighter, parameters),
+                        transform: (content, from) => generateExample(from, parameters),
                     },
                     { from: 'css', to: 'css' },
                     { from: 'image', to: 'image' },
