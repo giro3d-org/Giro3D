@@ -451,7 +451,7 @@ export async function watchExamples(parameters) {
     const sourceFolder = path.join(rootDir, 'src');
 
     chokidar
-        .watch(`${sourceFolder}/**/*.*`)
+        .watch(sourceFolder)
         .on('change', p => handleModification(p, sourceFolder, giro3dPackageDir));
 }
 

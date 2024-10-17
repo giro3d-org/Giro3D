@@ -111,9 +111,7 @@ function main() {
 
     console.log(`watching folder ${sourceFolder} -> ${destFolder}`);
 
-    chokidar
-        .watch(`${sourceFolder}/**/*.*`)
-        .on('change', p => handleModification(p, sourceFolder, destFolder));
+    chokidar.watch(sourceFolder).on('change', p => handleModification(p, sourceFolder, destFolder));
 
     return 0;
 }
