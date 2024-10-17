@@ -13,16 +13,16 @@ import type View from './View';
 import type { CameraOptions, ExternalControls } from './View';
 
 export {
-    View,
+    ASPRS_CLASSIFICATIONS,
     CameraOptions,
+    Classification,
+    ConstantSizeSphere,
     ExternalControls,
     MemoryTracker,
     PointCloudMaterial,
     PointCloudMaterialOptions,
-    Classification,
-    ConstantSizeSphere,
-    ASPRS_CLASSIFICATIONS,
-    RenderingOptions,
     RenderingContextHandler,
+    RenderingOptions,
     SimpleGeometry,
+    View,
 };

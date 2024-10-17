@@ -340,7 +340,7 @@ function createPositionBuffer(coordinates: Coordinate[], options: BaseOptions): 
 
         const x = p[0];
         const y = p[1];
-        const z = ignoreZ === true ? 0 : p[2] ?? 0;
+        const z = ignoreZ === true ? 0 : (p[2] ?? 0);
 
         result[i0 + 0] = x - origin.x;
         result[i0 + 1] = y - origin.y;

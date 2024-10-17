@@ -5,4 +5,4 @@ import type {
     SimpleGeometryMeshTypes,
 } from './SimpleGeometryMesh';
 
-export { SimpleGeometryMesh, SimpleGeometryMeshEventMap, SimpleGeometryMeshTypes, DefaultUserData };
+export { DefaultUserData, SimpleGeometryMesh, SimpleGeometryMeshEventMap, SimpleGeometryMeshTypes };

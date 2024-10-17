@@ -870,7 +870,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
                 mode: colorMap?.active === true ? colorMap.mode : COLORMAP_DISABLED,
                 min: colorMap?.min ?? 0,
                 max: colorMap?.max ?? 0,
-                offset: colorMap ? atlas?.getOffset(colorMap) ?? 0 : 0,
+                offset: colorMap ? (atlas?.getOffset(colorMap) ?? 0) : 0,
             };
 
             uniforms.push(uniform);

@@ -10,17 +10,17 @@ import { isVectorPickFeature, type VectorPickFeature } from './PickResult';
 import { isMapPickResult, type MapPickResult } from './PickTilesAt';
 
 export {
-    Pickable,
-    isPickable,
-    PickableFeatures,
-    isPickableFeatures,
-    PickOptions,
-    PickFilterCallback,
-    PickResult,
-    MapPickResult,
     isMapPickResult,
-    VectorPickFeature,
-    isVectorPickFeature,
-    PointsPickResult,
+    isPickable,
+    isPickableFeatures,
     isPointsPickResult,
+    isVectorPickFeature,
+    MapPickResult,
+    Pickable,
+    PickableFeatures,
+    PickFilterCallback,
+    PickOptions,
+    PickResult,
+    PointsPickResult,
+    VectorPickFeature,
 };

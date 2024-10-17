@@ -9,11 +9,11 @@ import type {
 } from './DrawTool';
 
 export {
-    DrawTool,
-    PickCallback,
-    DrawToolEventMap,
+    CommonCreationOptions,
     CreateShapeOptions,
     CreationOptions,
-    CommonCreationOptions,
+    DrawTool,
+    DrawToolEventMap,
     MouseCallback,
+    PickCallback,
 };

@@ -6,4 +6,4 @@ import MapboxTerrainFormat from './MapboxTerrainFormat';
 /**
  * Data decoders, such as image formats.
  */
-export { ImageFormat, DecodeOptions, GeoTIFFFormat, BilFormat, MapboxTerrainFormat };
+export { BilFormat, DecodeOptions, GeoTIFFFormat, ImageFormat, MapboxTerrainFormat };

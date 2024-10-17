@@ -152,7 +152,7 @@ abstract class ImageSource<Events extends ImageSourceEvents = ImageSourceEvents>
         this.type = 'ImageSource';
 
         this.flipY = options.flipY ?? false;
-        this.datatype = options.is8bit ?? true ? UnsignedByteType : FloatType;
+        this.datatype = (options.is8bit ?? true) ? UnsignedByteType : FloatType;
         this._customColorSpace = options.colorSpace;
 
         this.containsFn = options.containsFn;

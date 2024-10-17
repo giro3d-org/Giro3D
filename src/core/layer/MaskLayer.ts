@@ -104,4 +104,4 @@ function isMaskLayer(obj: unknown): obj is MaskLayer {
 
 export default MaskLayer;
 
-export { MaskMode, isMaskLayer };
+export { isMaskLayer, MaskMode };
