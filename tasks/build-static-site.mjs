@@ -4,7 +4,7 @@ import { program } from 'commander';
 import ejs from 'ejs';
 import esMain from 'es-main';
 import fse from 'fs-extra';
-import glob from 'glob';
+import { globSync } from 'glob';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -73,7 +73,7 @@ export async function copyAssets(parameters) {
 
 export async function copySite(parameters) {
     log('static-site', 'Building site...');
-    const ejsFiles = glob.sync(path.join(siteDir, '*.ejs'));
+    const ejsFiles = globSync(path.join(siteDir, '*.ejs'));
     const availableVersions = await getVersions();
 
     ejsFiles.forEach(ejsFile => {

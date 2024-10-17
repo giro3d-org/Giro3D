@@ -28,7 +28,7 @@
     ],
     "scripts": {
         "typecheck": "tsc --noEmit",
-        "_check-folders": "node tasks/check-folders.mjs src test",
+        "_check-folders": "node tasks/check-folders.mjs src test examples",
         "_generate-type-definitions": "tsc --declaration --declarationMap --emitDeclarationOnly",
         "_transpile": "shx rm -rf build/giro3d && shx mkdir -p build/giro3d && shx cp -rf src build/giro3d/src && cross-env BABEL_DISABLE_CACHE=1 babel --extensions .ts,.js src --out-dir build/giro3d",
         "build-apidoc": "node tasks/build-apidoc.mjs",
@@ -147,7 +147,7 @@
         "fs": "^0.0.2",
         "fs-extra": "^11.2.0",
         "function-curve-editor": "^1.0.16",
-        "glob": "^8.1.0",
+        "glob": "11.0.0",
         "husky": "^9.1.6",
         "jest": "^29.7.0",
         "jest-environment-jsdom": "29.7.0",

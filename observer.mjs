@@ -2,7 +2,7 @@ import * as babel from '@babel/core';
 import chokidar from 'chokidar';
 import esMain from 'es-main';
 import fs from 'fs';
-import glob from 'glob';
+import { globSync } from 'glob';
 import path from 'path';
 
 function usage() {
@@ -19,20 +19,20 @@ function usage() {
 function searchInlinedFiles(glslFile, sourceFolder, callback) {
     const glslFilename = path.basename(glslFile);
 
-    glob(`${sourceFolder}/**/*.*`, (er, files) => {
-        files.forEach(file => {
-            fs.readFile(file, (err, data) => {
-                if (err) {
-                    console.error(`error while reading ${file}: ${err}`);
-                } else if (data.includes(glslFilename)) {
-                    if (file.endsWith('.glsl')) {
-                        // This GLSL is inlined by another GLSL, let's continue searching.
-                        searchInlinedFiles(file, sourceFolder, callback);
-                    } else {
-                        callback(file);
-                    }
+    const files = globSync(`${sourceFolder}/**/*.*`);
+
+    files.forEach(file => {
+        fs.readFile(file, (err, data) => {
+            if (err) {
+                console.error(`error while reading ${file}: ${err}`);
+            } else if (data.includes(glslFilename)) {
+                if (file.endsWith('.glsl')) {
+                    // This GLSL is inlined by another GLSL, let's continue searching.
+                    searchInlinedFiles(file, sourceFolder, callback);
+                } else {
+                    callback(file);
                 }
-            });
+            }
         });
     });
 }
