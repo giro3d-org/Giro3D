@@ -128,7 +128,7 @@
         "colormap": "^2.3.2",
         "commander": "^12.1.0",
         "concurrently": "^8.2.2",
-        "copy-webpack-plugin": "^11.0.0",
+        "copy-webpack-plugin": "12.0.2",
         "cross-env": "^3.2.4",
         "docco-next": "^0.9.14",
         "es-main": "^1.3.0",
