@@ -1,4 +1,5 @@
 import type GUI from 'lil-gui';
+import type { Vector3 } from 'three';
 import { Object3D } from 'three';
 import type Instance from '../../core/Instance';
 import { isBufferGeometry } from '../../utils/predicates';
@@ -65,22 +66,24 @@ class OutlinerPropertyView extends Panel {
         const position = this.gui.addFolder('Position');
         position.close();
         this._folders.push(position);
-        this._controllers.push(
-            position.add(obj.position, 'x').onChange(() => this.updateObject(obj)),
-        );
-        this._controllers.push(
-            position.add(obj.position, 'y').onChange(() => this.updateObject(obj)),
-        );
-        this._controllers.push(
-            position.add(obj.position, 'z').onChange(() => this.updateObject(obj)),
-        );
+
+        const update = () => this.updateObject(obj);
+
+        function bindVector<K extends string & keyof Vector3>(gui: GUI, v: Vector3, key: K) {
+            return gui.add(v, key).step(0.01);
+        }
+
+        this._controllers.push(bindVector(position, obj.position, 'x').onChange(update));
+        this._controllers.push(bindVector(position, obj.position, 'y').onChange(update));
+        this._controllers.push(bindVector(position, obj.position, 'z').onChange(update));
 
         const scale = this.gui.addFolder('Scale');
         scale.close();
         this._folders.push(scale);
-        this._controllers.push(scale.add(obj.scale, 'x').onChange(() => this.updateObject(obj)));
-        this._controllers.push(scale.add(obj.scale, 'y').onChange(() => this.updateObject(obj)));
-        this._controllers.push(scale.add(obj.scale, 'z').onChange(() => this.updateObject(obj)));
+
+        this._controllers.push(bindVector(scale, obj.scale, 'x').onChange(update));
+        this._controllers.push(bindVector(scale, obj.scale, 'y').onChange(update));
+        this._controllers.push(bindVector(scale, obj.scale, 'z').onChange(update));
 
         if ('material' in obj && obj.material != null) {
             const material = this.gui.addFolder('Material');
