@@ -491,7 +491,13 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
 
     /**
      * Add THREE object or Entity to the instance.
-     * The entity `id` must be unique.
+     *
+     * If the object or entity has no parent, it will be added to the default tree (i.e under
+     * `.scene` for entities and under `.threeObjects` for regular Object3Ds.).
+     *
+     * If the object or entity already has a parent, then it will not be changed. Check that this
+     * parent is present in the scene graph (i.e has the `.scene` object as ancestor), otherwise it
+     * will **never be displayed**.
      *
      * @example
      * // Add Map to instance
@@ -515,7 +521,10 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         if (isObject3D(object)) {
             // case of a simple THREE.js object3D
             const object3d = object as Object3D;
-            this._threeObjects.add(object3d);
+            if (object.parent == null) {
+                // Add to default scene graph
+                this._threeObjects.add(object3d);
+            }
             this.notifyChange(object3d);
             return object3d as T;
         }
@@ -537,9 +546,10 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         if (
             entity instanceof Entity3D &&
             entity.object3d != null &&
-            !entity.object3d.parent &&
+            entity.object3d.parent == null &&
             entity.object3d !== this._scene
         ) {
+            // Add to default scene graph
             this._scene.add(entity.object3d);
         }
 
@@ -554,22 +564,20 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * @param object - the object to remove.
      */
     remove(object: Object3D | Entity): void {
-        if (isEntity(object)) {
+        if (isDisposable(object)) {
             object.dispose();
+        }
 
+        if (isEntity(object)) {
             if (isEntity3D(object)) {
-                this._scene.remove(object.object3d);
+                object.object3d.removeFromParent();
             }
 
             this._entities.delete(object);
 
             this.dispatchEvent({ type: 'entity-removed' });
         } else if (isObject3D(object)) {
-            if (isDisposable(object)) {
-                object.dispose();
-            }
-
-            this._threeObjects.remove(object);
+            object.removeFromParent();
         }
 
         this.notifyChange(this._view.camera);
