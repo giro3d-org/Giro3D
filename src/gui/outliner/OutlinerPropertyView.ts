@@ -26,18 +26,20 @@ class OutlinerPropertyView extends Panel {
 
         const notify = () => this.instance.notifyChange();
 
-        const entries = Object.entries(obj).sort((a, b) => a[0].localeCompare(b[0]));
+        const entries = Object.entries(obj);
 
         entries.forEach(([name, value]) => {
-            switch (typeof value) {
-                case 'string':
-                case 'number':
-                case 'bigint':
-                case 'boolean':
-                    if (value != null) {
-                        this._controllers.push(gui.add(obj, name).onChange(notify));
-                    }
-                    break;
+            if (!name.startsWith('___outliner')) {
+                switch (typeof value) {
+                    case 'string':
+                    case 'number':
+                    case 'bigint':
+                    case 'boolean':
+                        if (value != null) {
+                            this._controllers.push(gui.add(obj, name).onChange(notify));
+                        }
+                        break;
+                }
             }
         });
     }
