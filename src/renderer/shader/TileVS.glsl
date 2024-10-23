@@ -12,12 +12,12 @@ uniform LayerInfo   elevationLayer;
 struct Neighbour {
     vec4            offsetScale;
     float           diffLevel;
-    sampler2D       elevationTexture;
 };
 
 uniform Neighbour   neighbours[8];
 uniform float       segments;
 uniform vec2        tileDimensions;
+uniform sampler2D   neighbourTextures[8];
 #endif
 
 // Outputs
@@ -58,26 +58,26 @@ float readNeighbourElevation(vec2 uv, int neighbour, float defaultElevation) {
     vec4 offsetScale = neighbours[neighbour].offsetScale;
     vec2 neighbourUv = computeUv(vv, offsetScale.xy, offsetScale.zw);
 
-    // Why can't we simply do neighbours[neighbour].elevationTexture ?
+    // Why can't we simply do neighbourTextures[neighbour] ?
     // It's because of a limitation of GLSL ES : texture arrays cannot be indexed dynamically.
     // They must be indexed by a constant expression (a literal or a constant).
     // See https://stackoverflow.com/a/60110986/2704779
     if (neighbour == TOP)
-        return getElevationOrDefault(neighbours[TOP].elevationTexture, neighbourUv, defaultElevation);
+        return getElevationOrDefault(neighbourTextures[TOP], neighbourUv, defaultElevation);
     if (neighbour == TOP_RIGHT)
-        return getElevationOrDefault(neighbours[TOP_RIGHT].elevationTexture, neighbourUv, defaultElevation);
+        return getElevationOrDefault(neighbourTextures[TOP_RIGHT], neighbourUv, defaultElevation);
     if (neighbour == RIGHT)
-        return getElevationOrDefault(neighbours[RIGHT].elevationTexture, neighbourUv, defaultElevation);
+        return getElevationOrDefault(neighbourTextures[RIGHT], neighbourUv, defaultElevation);
     if (neighbour == BOTTOM_RIGHT)
-        return getElevationOrDefault(neighbours[BOTTOM_RIGHT].elevationTexture, neighbourUv, defaultElevation);
+        return getElevationOrDefault(neighbourTextures[BOTTOM_RIGHT], neighbourUv, defaultElevation);
     if (neighbour == BOTTOM)
-        return getElevationOrDefault(neighbours[BOTTOM].elevationTexture, neighbourUv, defaultElevation);
+        return getElevationOrDefault(neighbourTextures[BOTTOM], neighbourUv, defaultElevation);
     if (neighbour == BOTTOM_LEFT)
-        return getElevationOrDefault(neighbours[BOTTOM_LEFT].elevationTexture, neighbourUv, defaultElevation);
+        return getElevationOrDefault(neighbourTextures[BOTTOM_LEFT], neighbourUv, defaultElevation);
     if (neighbour == LEFT)
-        return getElevationOrDefault(neighbours[LEFT].elevationTexture, neighbourUv, defaultElevation);
+        return getElevationOrDefault(neighbourTextures[LEFT], neighbourUv, defaultElevation);
     if (neighbour == TOP_LEFT)
-        return getElevationOrDefault(neighbours[TOP_LEFT].elevationTexture, neighbourUv, defaultElevation);
+        return getElevationOrDefault(neighbourTextures[TOP_LEFT], neighbourUv, defaultElevation);
 }
 
 // Returns the seam or corner that this UV belongs to.

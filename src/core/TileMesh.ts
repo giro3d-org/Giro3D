@@ -8,7 +8,6 @@ import {
     UnsignedByteType,
     Vector2,
     Vector3,
-    Vector4,
     type Intersection,
     type Object3D,
     type Object3DEventMap,
@@ -31,7 +30,7 @@ import ElevationLayer from './layer/ElevationLayer';
 import type Layer from './layer/Layer';
 import type MemoryUsage from './MemoryUsage';
 import { type GetMemoryUsageContext } from './MemoryUsage';
-import type OffsetScale from './OffsetScale';
+import OffsetScale from './OffsetScale';
 import Rect from './Rect';
 import TileGeometry from './TileGeometry';
 import { type NeighbourList } from './TileIndex';
@@ -51,7 +50,7 @@ const helperMaterial = new MeshBasicMaterial({
 });
 
 const NO_NEIGHBOUR = -99;
-const VECTOR4_ZERO = new Vector4(0, 0, 0, 0);
+const NO_OFFSET_SCALE = new OffsetScale(0, 0, 0, 0);
 const tempVec2 = new Vector2();
 const tempVec3 = new Vector3();
 
@@ -444,16 +443,13 @@ class TileMesh
     private processNeighbour(neighbour: TileMesh, location: number) {
         const diff = neighbour.level - this.level;
 
-        const uniform = this.material.uniforms.neighbours.value[location];
         const neighbourTexture = neighbour.material.getElevationTexture();
         const neighbourOffsetScale = neighbour.material.getElevationOffsetScale();
 
         const offsetScale = this.extent.offsetToParent(neighbour.extent);
         const nOffsetScale = neighbourOffsetScale.combine(offsetScale);
 
-        uniform.offsetScale = nOffsetScale;
-        uniform.diffLevel = diff;
-        uniform.elevationTexture = neighbourTexture;
+        this.material.updateNeighbour(location, diff, nOffsetScale, neighbourTexture);
     }
 
     /**
@@ -465,10 +461,7 @@ class TileMesh
             if (neighbour != null && neighbour.material != null && neighbour.material.visible) {
                 this.processNeighbour(neighbour, i);
             } else {
-                const uniform = this.material.uniforms.neighbours.value[i];
-                uniform.diffLevel = NO_NEIGHBOUR;
-                uniform.offsetScale = VECTOR4_ZERO;
-                uniform.elevationTexture = null;
+                this.material.updateNeighbour(i, NO_NEIGHBOUR, NO_OFFSET_SCALE, null);
             }
         }
     }

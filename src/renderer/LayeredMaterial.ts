@@ -257,7 +257,6 @@ type ColorLayerUniform = LayerUniform & {
 type NeighbourUniform = {
     offsetScale: Vector4 | null;
     diffLevel: number;
-    elevationTexture: Texture | null;
 };
 
 type ColorMapUniform = {
@@ -303,6 +302,7 @@ interface Uniforms {
     brightnessContrastSaturation: IUniform<Vector3>;
     renderingState: IUniform<RenderingState>;
     neighbours: IUniform<NeighbourUniform[]>;
+    neighbourTextures: IUniform<(Texture | null)[]>;
     colorMapAtlas: IUniform<Texture | null>;
     layersColorMaps: IUniform<ColorMapUniform[]>;
     elevationColorMap: IUniform<ColorMapUniform>;
@@ -457,11 +457,11 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
                     {
                         diffLevel: 0,
                         offsetScale: null,
-                        elevationTexture: null,
                     },
                     8,
                 ),
             ),
+            neighbourTextures: new Uniform([null, null, null, null, null, null, null, null]),
 
             // Elevation texture
             elevationTexture: new Uniform(elevInfo.texture),
@@ -508,6 +508,17 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
      */
     set segments(v: number) {
         this.uniforms.segments.value = v;
+    }
+
+    updateNeighbour(
+        neighbour: number,
+        diffLevel: number,
+        offsetScale: OffsetScale,
+        texture: Texture | null,
+    ): void {
+        this.uniforms.neighbours.value[neighbour].diffLevel = diffLevel;
+        this.uniforms.neighbours.value[neighbour].offsetScale = offsetScale;
+        this.uniforms.neighbourTextures.value[neighbour] = texture;
     }
 
     onBeforeCompile(parameters: WebGLProgramParametersWithUniforms): void {
