@@ -404,6 +404,10 @@ export default class TiledImageSource extends ImageSource {
 
         const fullTileRange = tileGrid.getFullTileRange(zoom);
 
+        if (fullTileRange == null) {
+            return [];
+        }
+
         const promises = [];
 
         for (let i = tileRange.minX; i <= tileRange.maxX; i++) {
