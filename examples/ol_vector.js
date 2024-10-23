@@ -67,7 +67,7 @@ const ecoRegionLayerStyle = feature => {
 
 const ecoRegionSource = new VectorSource({
     data: {
-        url: 'https://openlayers.org/data/vector/ecoregions.json',
+        url: 'https://3d.oslandia.com/giro3d/vectors/ecoregions.json',
         format: new GeoJSON(),
     },
     dataProjection: 'EPSG:4326',
@@ -95,7 +95,7 @@ const countryLayer = new ColorLayer({
     extent,
     source: new VectorSource({
         data: {
-            url: 'https://openlayers.org/en/v5.3.0/examples/data/geojson/countries.geojson',
+            url: 'https://3d.oslandia.com/giro3d/vectors/countries.geojson',
             format: new GeoJSON(),
         },
         dataProjection: 'EPSG:4326',
