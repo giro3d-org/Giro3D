@@ -1,5 +1,7 @@
 #include <giro3d_precision_qualifiers>
 #include <giro3d_common>
+
+#include <common>
 #include <logdepthbuf_pars_vertex>
 #include <clipping_planes_pars_vertex>
 #include <fog_pars_vertex>
@@ -14,7 +16,6 @@ uniform float opacity;
 uniform vec4 overlayColor;
 attribute vec3 color;
 attribute vec4 unique_id;
-
 
 struct PointCloudColorMap {
     float min;

@@ -21,7 +21,7 @@ float zview(float depth) {
 
 void main() {
     float depth = texture2D(depthTexture, vUv).x;
-    gl_FragDepthEXT = depth;
+    gl_FragDepth = depth;
 
     // non empty pixel
     if (depth < 1.0) {
@@ -64,7 +64,7 @@ void main() {
 
         if (total_weight > 0.0) {
             gl_FragColor = averageColor / total_weight;
-            gl_FragDepthEXT = averageDepth / total_weight;
+            gl_FragDepth = averageDepth / total_weight;
         } else {
             gl_FragColor.a = 0.0;
             discard;
