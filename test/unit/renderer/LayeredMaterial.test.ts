@@ -1,9 +1,10 @@
-import type { ColorLayer } from '@giro3d/giro3d/core/layer';
+import type ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer';
+import OffsetScale from '@giro3d/giro3d/core/OffsetScale';
 import type { AtlasInfo } from '@giro3d/giro3d/renderer/AtlasBuilder';
 import type { MaterialOptions } from '@giro3d/giro3d/renderer/LayeredMaterial';
 import LayeredMaterial from '@giro3d/giro3d/renderer/LayeredMaterial';
 import type { WebGLRenderer } from 'three';
-import { Color, DoubleSide, FrontSide, UnsignedByteType } from 'three';
+import { Color, DoubleSide, FrontSide, Texture, UnsignedByteType } from 'three';
 
 // @ts-expect-error invalid definition
 const defaultAtlasInfo: AtlasInfo = { minX: 0, maxX: 1 };
@@ -12,6 +13,7 @@ const defaultRenderer: WebGLRenderer = {};
 const getIndexFn = () => 0;
 
 const defaultOptions: MaterialOptions = {
+    depthTest: true,
     backgroundColor: new Color('white'),
     backgroundOpacity: 1,
     colorimetry: { brightness: 0, contrast: 0, saturation: 1 },
@@ -187,6 +189,42 @@ describe('LayeredMaterial', () => {
             });
 
             expect(disabled.defines.TERRAIN_DEFORMATION).not.toBeDefined();
+        });
+    });
+
+    describe('updateNeighbour', () => {
+        it('should update the correct uniforms', () => {
+            const mat = new LayeredMaterial({
+                options: { ...defaultOptions, elevationRange: null },
+                renderer: defaultRenderer,
+                atlasInfo: defaultAtlasInfo,
+                getIndexFn,
+                hasElevationLayer: false,
+                maxTextureImageUnits: 15,
+                textureDataType: UnsignedByteType,
+            });
+
+            expect(mat.uniforms.neighbours.value).toHaveLength(8);
+            expect(mat.uniforms.neighbourTextures.value).toHaveLength(8);
+            expect(mat.uniforms.neighbourTextures.value).toEqual([
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+            ]);
+
+            const texture = new Texture();
+            mat.updateNeighbour(3, 3, new OffsetScale(1, 2, 3, 4), texture);
+
+            expect(mat.uniforms.neighbours.value[3].diffLevel).toEqual(3);
+            expect(mat.uniforms.neighbours.value[3].offsetScale).toEqual(
+                new OffsetScale(1, 2, 3, 4),
+            );
+            expect(mat.uniforms.neighbourTextures.value[3]).toBe(texture);
         });
     });
 
