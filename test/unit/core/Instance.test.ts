@@ -1,5 +1,6 @@
 import Instance from '@giro3d/giro3d/core/Instance';
 import Entity from '@giro3d/giro3d/entities/Entity';
+import Entity3D from '@giro3d/giro3d/entities/Entity3D';
 import Fetcher from '@giro3d/giro3d/utils/Fetcher';
 import proj4 from 'proj4';
 import { Group, Object3D, Vector2, WebGLRenderer } from 'three';
@@ -26,6 +27,7 @@ jest.mock('@giro3d/giro3d/renderer/c3DEngine', () => {
 });
 
 class FakeEntity extends Entity {}
+class FakeEntity3D extends Entity3D {}
 
 describe('Instance', () => {
     let viewerDiv: HTMLDivElement;
@@ -149,11 +151,39 @@ describe('Instance', () => {
             expect(instance.threeObjects.children).toContain(o);
         });
 
+        it('should not add the object to threeObjects if it already has a parent', () => {
+            const parented = new Object3D();
+            const parent = new Object3D();
+
+            parent.add(parented);
+            instance.add(parented);
+            expect(instance.threeObjects.children).not.toContain(parented);
+        });
+
         it('should add an entity', () => {
             const entity = new FakeEntity();
             return instance.add(entity).then(() => {
                 expect(instance.getObjects()).toStrictEqual([entity]);
             });
+        });
+
+        it('should add the entity object3D to the default location if it has no parent', async () => {
+            const entity1 = new FakeEntity3D(new Object3D());
+
+            await instance.add(entity1);
+
+            expect(instance.scene.children).toContain(entity1.object3d);
+        });
+        it('should honor the entity object3D location in scenegraph if it has a parent', async () => {
+            const entity1 = new FakeEntity3D(new Object3D());
+
+            const parent = new Object3D();
+
+            parent.add(entity1.object3d);
+
+            await instance.add(entity1);
+
+            expect(instance.scene.children).not.toContain(entity1.object3d);
         });
 
         it('should add a THREE.js Object3D', () => {
@@ -179,6 +209,18 @@ describe('Instance', () => {
     });
 
     describe('remove', () => {
+        it('should remove the entity object3d from the scenegraph', async () => {
+            const entity1 = new FakeEntity3D(new Object3D());
+
+            entity1.object3d.removeFromParent = jest.fn();
+
+            await instance.add(entity1);
+
+            instance.remove(entity1);
+
+            expect(entity1.object3d.removeFromParent).toHaveBeenCalled();
+        });
+
         it('should remove the object from the list', () => {
             const entity1 = new FakeEntity();
             const entity2 = new FakeEntity();
