@@ -1,4 +1,4 @@
-import type { ColorLayer } from '@giro3d/giro3d/core/layer';
+import type ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer';
 import type { AtlasInfo } from '@giro3d/giro3d/renderer/AtlasBuilder';
 import type { MaterialOptions } from '@giro3d/giro3d/renderer/LayeredMaterial';
 import LayeredMaterial from '@giro3d/giro3d/renderer/LayeredMaterial';
@@ -12,6 +12,7 @@ const defaultRenderer: WebGLRenderer = {};
 const getIndexFn = () => 0;
 
 const defaultOptions: MaterialOptions = {
+    depthTest: true,
     backgroundColor: new Color('white'),
     backgroundOpacity: 1,
     colorimetry: { brightness: 0, contrast: 0, saturation: 1 },
