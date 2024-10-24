@@ -10,7 +10,9 @@ import Panel from '../Panel';
 import OutlinerPropertyView from './OutlinerPropertyView';
 
 type OutlinedObject3D = Object3D & {
-    treeviewVisible?: boolean;
+    // We use underscores to avoid potential naming conflicts with existing properties
+    ___outlinerTreeviewVisible?: boolean;
+    ___outlinerTreeviewCollapsed?: boolean;
 };
 type ClickHandler = (obj: OutlinedObject3D) => void;
 interface Filter {
@@ -23,6 +25,7 @@ interface Filter {
 type TreeviewNode = {
     object: OutlinedObject3D;
     root: HTMLElement;
+    collapseButton: HTMLElement;
     name: HTMLParagraphElement;
     textColor: string;
     opacity?: string;
@@ -116,10 +119,29 @@ function createTreeViewNode(
     object: OutlinedObject3D,
     marginLeft: number,
     clickHandler: ClickHandler,
+    onUpdate: () => void,
 ): TreeviewNode {
     const root = document.createElement('button');
+    root.style.width = 'unset';
     root.style.textAlign = 'left';
     root.onclick = () => clickHandler(object);
+
+    const collapseButton = document.createElement('button');
+    collapseButton.style.width = '1rem';
+    collapseButton.style.height = '1rem';
+    collapseButton.title = 'collapse sub-tree';
+    collapseButton.style.backgroundColor = 'grey';
+    collapseButton.style.margin = '2px';
+    collapseButton.style.borderRadius = '3px';
+    collapseButton.innerText = object.___outlinerTreeviewCollapsed === true ? '➕' : '➖';
+    collapseButton.onclick = function onclick() {
+        if (object.___outlinerTreeviewCollapsed == null) {
+            object.___outlinerTreeviewCollapsed = false;
+        }
+        object.___outlinerTreeviewCollapsed = !object.___outlinerTreeviewCollapsed;
+        collapseButton.innerText = object.___outlinerTreeviewCollapsed ? '➕' : '➖';
+        onUpdate();
+    };
 
     const name = document.createElement('p');
     name.style.marginLeft = `${marginLeft}px`;
@@ -132,7 +154,7 @@ function createTreeViewNode(
 
     root.appendChild(name);
 
-    return { root, name, object, textColor, opacity: undefined };
+    return { root, collapseButton, name, object, textColor, opacity: undefined };
 }
 
 function updateNode(node: TreeviewNode) {
@@ -164,10 +186,11 @@ function updateNode(node: TreeviewNode) {
 function createTreeViewNodeWithDescendants(
     obj: OutlinedObject3D,
     clickHandler: ClickHandler,
+    onUpdate: () => void,
     map: Map<number, TreeviewNode>,
     level = 0,
 ) {
-    if (obj.type !== 'Scene' && obj.treeviewVisible === false) {
+    if (obj.type !== 'Scene' && obj.___outlinerTreeviewVisible === false) {
         return undefined;
     }
 
@@ -177,25 +200,38 @@ function createTreeViewNodeWithDescendants(
 
     // create the DOM element for the object itself
     const marginLeft = level * 15;
-    const node = createTreeViewNode(obj, marginLeft, clickHandler);
+    const node = createTreeViewNode(obj, marginLeft, clickHandler, onUpdate);
     map.set(obj.id, node);
+    div.appendChild(node.collapseButton);
     div.appendChild(node.root);
 
-    // recursively create the DOM elements for the children
-    const childLevel = level + 1;
-    obj.children.forEach((child: OutlinedObject3D) => {
-        const childNode = createTreeViewNodeWithDescendants(child, clickHandler, map, childLevel);
-        if (childNode) {
-            div.appendChild(childNode);
-        }
-    });
+    if (obj.___outlinerTreeviewCollapsed === undefined) {
+        obj.___outlinerTreeviewCollapsed = false;
+    }
+
+    if (obj.___outlinerTreeviewCollapsed !== true) {
+        // recursively create the DOM elements for the children
+        const childLevel = level + 1;
+        obj.children.forEach((child: OutlinedObject3D) => {
+            const childNode = createTreeViewNodeWithDescendants(
+                child,
+                clickHandler,
+                onUpdate,
+                map,
+                childLevel,
+            );
+            if (childNode) {
+                div.appendChild(childNode);
+            }
+        });
+    }
 
     return div;
 }
 
 function setAncestorsVisible(obj: OutlinedObject3D) {
     if (obj != null) {
-        obj.treeviewVisible = true;
+        obj.___outlinerTreeviewVisible = true;
         setAncestorsVisible(obj.parent as OutlinedObject3D);
     }
 }
@@ -244,7 +280,7 @@ function applySearchFilter(obj: OutlinedObject3D, filter: Filter) {
     if (shouldBeDisplayedInTree(obj, filter)) {
         setAncestorsVisible(obj);
     } else {
-        obj.treeviewVisible = false;
+        obj.___outlinerTreeviewVisible = false;
     }
 
     if (obj.children != null) {
@@ -393,9 +429,16 @@ class Outliner extends Panel {
 
             this._nodes.clear();
 
+            const onUpdate = () =>
+                queueMicrotask(() => {
+                    this.sceneHash = undefined;
+                    this.updateTreeView();
+                });
+
             this.rootNode = createTreeViewNodeWithDescendants(
                 this.instance.scene as unknown as OutlinedObject3D,
                 obj => this.onNodeClicked(obj),
+                onUpdate,
                 this._nodes,
             );
             if (this.rootNode) {

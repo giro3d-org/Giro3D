@@ -645,6 +645,9 @@ function setOnBeforeRender(material: LineMaterial) {
 }
 
 class Label extends CSS2DObject {
+    readonly type = 'Label' as const;
+    readonly isLabel = true as const;
+
     readonly span: HTMLSpanElement;
 
     get pickable() {
@@ -2384,7 +2387,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
 
                     if (labelText != null) {
                         const label = this.createLabel(labelText);
-                        label.name = 'label';
+                        label.name = labelText;
                         label.position.copy(midPoint);
                         this.object3d.add(label);
                         label.updateMatrixWorld(true);
