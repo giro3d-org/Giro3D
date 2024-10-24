@@ -15,8 +15,10 @@ import {
     type WebGLRenderer,
 } from 'three';
 
+const DEFAULT_SCALE = new Vector3(1, 1, 1);
 const tmpOrigin = new Vector3();
 const tmpPosition = new Vector3();
+const tmpScale = new Vector3();
 const tmpSize = new Vector2();
 
 const DEFAULT_MATERIAL = new MeshStandardMaterial({ color: 'red' });
@@ -70,6 +72,8 @@ export default class ConstantSizeSphere extends Mesh {
     }
 
     onBeforeRender(renderer: WebGLRenderer, _scene: Scene, camera: Camera): void {
+        this.updateWorldMatrix(true, false);
+
         const scale = getWorldSpaceRadius(
             renderer,
             camera,
@@ -77,8 +81,17 @@ export default class ConstantSizeSphere extends Mesh {
             this.radius,
         );
 
-        this.scale.set(scale, scale, scale);
-        this.updateMatrixWorld(true);
+        const parentScale = this.parent?.getWorldScale(tmpScale) ?? DEFAULT_SCALE;
+
+        // We want the sphere to ignore the world scale,
+        // as it should have a constant size on screen.
+        this.scale.set(
+            (1 / parentScale.x) * scale,
+            (1 / parentScale.y) * scale,
+            (1 / parentScale.z) * scale,
+        );
+
+        this.updateMatrixWorld();
     }
 }
 
