@@ -342,18 +342,38 @@ export async function getWebpackConfig(parameters) {
             devtoolModuleFilenameTemplate: 'webpack://[namespace]/[resource-path]?[loaders]',
             devtoolNamespace: 'giro3d',
         },
-        performance: {
-            maxEntrypointSize: 1024000 * 5, // 5MB
-            maxAssetSize: 1024000 * 3, // 5MB
-        },
         optimization: {
             minimize: parameters.mode === 'production',
             splitChunks: {
-                chunks(chunk) {
-                    return chunk.name !== 'index';
+                minSize: 17000,
+                minRemainingSize: 0,
+                minChunks: 1,
+                maxAsyncRequests: 30,
+                maxInitialRequests: 30,
+                automaticNameDelimiter: '_',
+                enforceSizeThreshold: 30000,
+                cacheGroups: {
+                    // we are opting out of defaultVendors, so rest of the node modules will be part of default cacheGroup
+                    defaultVendors: false,
+                    ol: {
+                        test: /[\\/]node_modules[\\/]ol[\\/]/,
+                        name: '__ol',
+                        chunks: 'all',
+                        priority: 100,
+                    },
+                    three: {
+                        test: /[\\/]node_modules[\\/]three[\\/]/,
+                        name: '__three',
+                        chunks: 'all',
+                        priority: 100,
+                    },
+                    vendor: {
+                        test: /[\\/]node_modules[\\/]/,
+                        name: '__vendor',
+                        chunks: 'all',
+                        priority: 10,
+                    },
                 },
-                // TODO: better chunking
-                name: 'shared',
             },
         },
         devServer: {
