@@ -81,7 +81,6 @@
         "Firefox ESR"
     ],
     "dependencies": {
-        "@babel/runtime": "^7.17.9",
         "chart.js": "^3.9.1",
         "earcut": "^2.2.4",
         "geotiff": "^2.1.0",
