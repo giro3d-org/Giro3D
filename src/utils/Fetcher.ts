@@ -172,12 +172,12 @@ async function fetchInternal(input: RequestInfo | URL, options?: FetchOptions): 
  * Wrapper over `fetch`, then returns the blob of the response.
  *
  * fires `error` event On Network/HTTP error.
- * @param url - the URL to fetch
+ * @param input - the URL to fetch, or the resource request.
  * @param options - fetch options (passed directly to `fetch()`)
  * @returns The response blob.
  */
-async function blob(url: string, options?: RequestInit): Promise<Blob> {
-    const response = await fetchInternal(url, options);
+async function blob(input: RequestInfo | URL, options?: RequestInit): Promise<Blob> {
+    const response = await fetchInternal(input, options);
     return response.blob();
 }
 
@@ -185,12 +185,12 @@ async function blob(url: string, options?: RequestInit): Promise<Blob> {
  * Wrapper over `fetch` to get some text
  *
  * fires `error` event On Network/HTTP error.
- * @param url - the URL to fetch
+ * @param input - the URL to fetch, or the resource request.
  * @param options - fetch options (passed directly to `fetch()`)
  * @returns the promise containing the text
  */
-async function text(url: string, options?: RequestInit): Promise<string> {
-    const response = await fetchInternal(url, options);
+async function text(input: RequestInfo | URL, options?: RequestInit): Promise<string> {
+    const response = await fetchInternal(input, options);
     return response.text();
 }
 
@@ -198,12 +198,12 @@ async function text(url: string, options?: RequestInit): Promise<string> {
  * Wrapper over `fetch` to get some JSON
  *
  * fires `error` event On Network/HTTP error.
- * @param url - the URL to fetch
+ * @param input - the URL to fetch, or the resource request.
  * @param options - fetch options (passed directly to `fetch()`)
  * @returns the promise containing the JSON
  */
-async function json<T = unknown>(url: string, options?: RequestInit): Promise<T> {
-    const response = await fetchInternal(url, options);
+async function json<T = unknown>(input: RequestInfo | URL, options?: RequestInit): Promise<T> {
+    const response = await fetchInternal(input, options);
     return response.json();
 }
 
@@ -211,12 +211,12 @@ async function json<T = unknown>(url: string, options?: RequestInit): Promise<T>
  * Wrapper over `fetch` to get some XML.
  *
  * fires `error` event On Network/HTTP error.
- * @param url - the URL to fetch
+ * @param input - the URL to fetch, or the resource request.
  * @param options - fetch options (passed directly to `fetch()`)
  * @returns the promise containing the XML
  */
-async function xml(url: string, options?: RequestInit): Promise<Document> {
-    const response = await fetchInternal(url, options);
+async function xml(input: RequestInfo | URL, options?: RequestInit): Promise<Document> {
+    const response = await fetchInternal(input, options);
     const txt = await response.text();
     return new window.DOMParser().parseFromString(txt, 'text/xml');
 }
@@ -225,12 +225,12 @@ async function xml(url: string, options?: RequestInit): Promise<Document> {
  * Wrapper over `fetch` to get some `ArrayBuffer`
  *
  * fires `error` event On Network/HTTP error.
- * @param url - the URL to fetch
+ * @param input - the URL to fetch, or the resource request.
  * @param options - fetch options (passed directly to `fetch()`)
  * @returns the promise containing the ArrayBuffer
  */
-async function arrayBuffer(url: string, options?: RequestInit): Promise<ArrayBuffer> {
-    const response = await fetchInternal(url, options);
+async function arrayBuffer(input: RequestInfo | URL, options?: RequestInit): Promise<ArrayBuffer> {
+    const response = await fetchInternal(input, options);
     return response.arrayBuffer();
 }
 
@@ -238,15 +238,15 @@ async function arrayBuffer(url: string, options?: RequestInit): Promise<ArrayBuf
  * Downloads a remote image and converts it into a texture.
  *
  * fires `error` event On Network/HTTP error.
- * @param url - the URL to fetch
+ * @param input - the URL to fetch, or the resource request.
  * @param options - Texture creation options and fetch options (passed directly to `fetch()`)
  * @returns the promise containing the texture
  */
 async function texture(
-    url: string,
+    input: RequestInfo | URL,
     options?: RequestInit & { createDataTexture?: boolean; flipY?: boolean },
 ): Promise<Texture> {
-    const data = await blob(url, options);
+    const data = await blob(input, options);
     return TextureGenerator.decodeBlob(data, options);
 }
 
