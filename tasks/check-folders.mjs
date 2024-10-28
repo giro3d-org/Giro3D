@@ -2,18 +2,25 @@ import esMain from 'es-main';
 import { globSync } from 'glob';
 import { exit } from 'process';
 
+/**
+ * Check that folders are in lowercase.
+ */
 async function main() {
     const args = process.argv;
 
+    let error = 0;
     for (const folder of args.slice(2)) {
-        const dirs = globSync(`${folder}/**/[A-Z]*/`, {});
+        const dirs = globSync(`${folder}/**/`);
 
-        if (dirs && dirs.length > 0) {
-            for (const invalid of dirs) {
-                console.error(`invalid directory name: ${invalid}`);
+        for (const dir of dirs) {
+            if (dir.toLocaleLowerCase() !== dir) {
+                error++;
+                console.error(`invalid directory name: ${dir}`);
             }
-            exit(1);
         }
+    }
+    if (error > 0) {
+        exit(1);
     }
 }
 
