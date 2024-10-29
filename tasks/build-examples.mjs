@@ -116,9 +116,7 @@ export function findExamples() {
 }
 
 export function findExamplesEntries() {
-    const entry = {
-        index: [path.join(examplesDir, 'index.js')],
-    };
+    const entry = {};
     const examples = findExamples(examplesDir);
     examples.forEach(example => {
         const jsFile = `${example}.js`;
@@ -407,6 +405,11 @@ export async function getWebpackConfig(parameters) {
             }),
             new CopyPlugin({
                 patterns: [
+                    {
+                        // Don't webpack index.js
+                        from: 'index.js',
+                        to: 'index.js',
+                    },
                     {
                         from: 'index.js',
                         to: 'index.html',
