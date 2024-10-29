@@ -1,17 +1,41 @@
-import { FloatType } from 'three';
-import TextureGenerator from '../utils/TextureGenerator';
+import { DataTexture, FloatType, LinearFilter, RGFormat } from 'three';
+import WorkerPool from '../utils/WorkerPool';
 import type { DecodeOptions } from './ImageFormat';
 import ImageFormat from './ImageFormat';
+import type { DecodeMapboxTerrainResult, MessageMap, MessageType } from './mapboxWorker';
+import { decodeMapboxTerrainImage } from './mapboxWorker';
+
+let workerPool: WorkerPool<MessageType, MessageMap> | null = null;
+
+function createWorker() {
+    return new Worker(new URL('./mapboxWorker.js', import.meta.url), {
+        type: 'module',
+        name: 'mapbox',
+    });
+}
 
 /**
  * Decoder for [Mapbox Terrain](https://docs.mapbox.com/data/tilesets/reference/mapbox-terrain-dem-v1/) images.
  */
 class MapboxTerrainFormat extends ImageFormat {
-    readonly isMapboxTerrainFormat: boolean = true;
-    constructor() {
+    readonly isMapboxTerrainFormat: boolean = true as const;
+    readonly type = 'MapboxTerrainFormat' as const;
+
+    private readonly _enableWorkers: boolean = true;
+
+    /**
+     * @param options - Decoder options.
+     */
+    constructor(options?: {
+        /**
+         * Enables processing raster data in web workers.
+         * @defaultValue true
+         */
+        enableWorkers?: boolean;
+    }) {
         super(true, FloatType);
 
-        this.type = 'MapboxTerrainFormat';
+        this._enableWorkers = options?.enableWorkers ?? true;
     }
 
     /**
@@ -24,24 +48,49 @@ class MapboxTerrainFormat extends ImageFormat {
      */
     async decode(blob: Blob, options?: DecodeOptions) {
         const bitmap = await createImageBitmap(blob);
+        const { width, height } = bitmap;
 
-        const { data, width, height } = TextureGenerator.decodeMapboxTerrainImage(bitmap);
+        let result: DecodeMapboxTerrainResult;
 
-        const { texture, min, max } = TextureGenerator.createDataTexture(
-            {
-                width,
-                height,
-                nodata: options?.noDataValue,
-            },
+        if (this._enableWorkers) {
+            result = await this.getHeightValuesUsingWorker(bitmap, options?.noDataValue);
+        } else {
+            result = decodeMapboxTerrainImage(bitmap, options?.noDataValue);
+        }
+
+        const texture = new DataTexture(
+            new Float32Array(result.data),
+            width,
+            height,
+            RGFormat,
             FloatType,
-            data,
         );
+
+        texture.needsUpdate = true;
+        texture.generateMipmaps = false;
+        texture.magFilter = LinearFilter;
+        texture.minFilter = LinearFilter;
 
         return {
             texture,
-            min,
-            max,
+            min: result.min,
+            max: result.max,
         };
+    }
+
+    private async getHeightValuesUsingWorker(
+        bitmap: ImageBitmap,
+        noData?: number,
+    ): Promise<DecodeMapboxTerrainResult> {
+        if (workerPool == null) {
+            workerPool = new WorkerPool({ createWorker });
+        }
+
+        const result = await workerPool.queue('DecodeMapboxTerrainMessage', { bitmap, noData }, [
+            bitmap,
+        ]);
+
+        return result;
     }
 }
 

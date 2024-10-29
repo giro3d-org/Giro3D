@@ -777,42 +777,6 @@ function isCanvasEmpty(canvas: HTMLCanvasElement): boolean {
     return true; // Canvas is empty
 }
 
-export type DecodeMapboxTerrainResult = {
-    width: number;
-    height: number;
-    data: Float32Array;
-};
-
-function decodeMapboxTerrainImage(
-    source: ImageBitmap | OffscreenCanvas | HTMLCanvasElement,
-): DecodeMapboxTerrainResult {
-    const pixelData = getImageData(source);
-
-    const stride = pixelData.length % 3 === 0 ? 3 : 4;
-
-    const length = pixelData.length / stride;
-    const data = new Float32Array(length);
-
-    let k = 0;
-
-    for (let i = 0; i < pixelData.length; i += stride) {
-        const r = pixelData[i + 0];
-        const g = pixelData[i + 1];
-        const b = pixelData[i + 2];
-
-        const elevation = -10000 + (r * 256 * 256 + g * 256 + b) * 0.1;
-
-        data[k] = elevation;
-
-        k += 1;
-    }
-
-    const width = source.width;
-    const height = source.height;
-
-    return { width, height, data };
-}
-
 /**
  * Returns a texture filter that is compatible with the texture.
  * @param filter - The requested filter.
@@ -869,7 +833,6 @@ export default {
     computeMinMaxFromBuffer,
     computeMinMaxFromImage,
     estimateSize,
-    decodeMapboxTerrainImage,
     shouldExpandRGB,
     isCanvasEmpty,
     getMemoryUsage,
