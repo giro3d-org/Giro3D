@@ -77,7 +77,6 @@ build_current:
     # Don't have to wait for audit to finish
     needs: []
     image: node:current-alpine
-    allow_failure: true
     script:
         - export NODE_OPTIONS=--openssl-legacy-provider
         - npm i
@@ -161,7 +160,6 @@ test_unit_current:
     # Start as soon as build is done
     needs:
         - build_current
-    allow_failure: true
     coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
     image: node:current-alpine
     script:
