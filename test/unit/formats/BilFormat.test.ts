@@ -5,7 +5,8 @@ import path from 'path';
 import { cwd } from 'process';
 
 describe('BilFormat', () => {
-    const format = new BilFormat();
+    // Workers do not exist in Node.js
+    const format = new BilFormat({ enableWorkers: false });
 
     describe('constructor', () => {
         it('should set flipY to true', () => {
