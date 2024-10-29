@@ -55,7 +55,9 @@
     </button>
 </div>
 
-<script type="module" src="<%= locals.path ?? '' %>shared.js"></script>
+<script type="module" src="<%= locals.path ?? '' %>__vendor.js"></script>
+<script type="module" src="<%= locals.path ?? '' %>__three.js"></script>
+<script type="module" src="<%= locals.path ?? '' %>__ol.js"></script>
 <script type="module" src="<%= locals.path ?? '' %><%= js %>"></script>
 <script>
     /* activate popovers */
