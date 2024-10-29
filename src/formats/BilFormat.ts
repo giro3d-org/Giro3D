@@ -1,7 +1,18 @@
-import { FloatType } from 'three';
-import TextureGenerator from '../utils/TextureGenerator';
+import { DataTexture, FloatType, LinearFilter, RGFormat } from 'three';
+import WorkerPool from '../utils/WorkerPool';
 import type { DecodeOptions } from './ImageFormat';
 import ImageFormat from './ImageFormat';
+import type { DecodeBilTerrainResult, MessageMap, MessageType } from './bilWorker';
+import { decodeRaster } from './bilWorker';
+
+let workerPool: WorkerPool<MessageType, MessageMap> | null = null;
+
+function createWorker() {
+    return new Worker(new URL('./bilWorker.js', import.meta.url), {
+        type: 'module',
+        name: 'bil',
+    });
+}
 
 /**
  * Decoder for [BIL](https://desktop.arcgis.com/en/arcmap/10.3/manage-data/raster-and-images/bil-bip-and-bsq-raster-files.htm) images.
@@ -28,11 +39,24 @@ import ImageFormat from './ImageFormat';
  *
  */
 class BilFormat extends ImageFormat {
-    readonly isBilFormat: boolean = true;
-    constructor() {
+    readonly isBilFormat: boolean = true as const;
+    readonly type = 'BilFormat' as const;
+
+    private _enableWorkers: boolean = true;
+
+    /**
+     * @param options - Decoder options.
+     */
+    constructor(options?: {
+        /**
+         * Enables processing raster data in web workers.
+         * @defaultValue true
+         */
+        enableWorkers?: boolean;
+    }) {
         super(true, FloatType);
 
-        this.type = 'BilFormat';
+        this._enableWorkers = options?.enableWorkers ?? true;
     }
 
     /**
@@ -45,34 +69,36 @@ class BilFormat extends ImageFormat {
      */
 
     async decode(blob: Blob, options: DecodeOptions) {
-        const buf = await blob.arrayBuffer();
-        const floatArray = new Float32Array(buf);
-
-        let min = +Infinity;
-        let max = -Infinity;
+        const buffer = await blob.arrayBuffer();
+        const floatArray = new Float32Array(buffer);
 
         const noData = options?.noDataValue;
+        let result: DecodeBilTerrainResult;
 
-        // NOTE for BIL format, we consider everything that is under noDataValue as noDataValue
-        // this is consistent with the servers behaviour we tested but if you see services that
-        // expects something different, don't hesitate to question the next loop
-        for (let i = 0; i < floatArray.length; i++) {
-            const value = floatArray[i];
-            if (noData != null && value <= noData) {
-                floatArray[i] = noData;
-            } else {
-                min = Math.min(value, min);
-                max = Math.max(value, max);
+        if (this._enableWorkers) {
+            if (workerPool == null) {
+                workerPool = new WorkerPool({ createWorker });
             }
+
+            result = await workerPool.queue('DecodeBilTerrainMessage', { buffer, noData });
+        } else {
+            result = decodeRaster(floatArray, noData);
         }
 
-        const opts = {
-            width: options.width,
-            height: options.height,
-            nodata: options.noDataValue,
-        };
-        const { texture } = TextureGenerator.createDataTexture(opts, FloatType, floatArray);
-        return { texture, min, max };
+        const texture = new DataTexture(
+            new Float32Array(result.data),
+            options.width,
+            options.height,
+            RGFormat,
+            FloatType,
+        );
+
+        texture.needsUpdate = true;
+        texture.generateMipmaps = false;
+        texture.magFilter = LinearFilter;
+        texture.minFilter = LinearFilter;
+
+        return { texture, min: result.min, max: result.max };
     }
 }
 
