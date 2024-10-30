@@ -14,7 +14,10 @@ export type Message<T = unknown> = {
     payload: T;
 };
 
-export type Response<T = unknown> = { requestId: number } & ({ payload: T } | { error: string });
+export type BaseResponse = { requestId: number };
+export type SuccessResponse<T = unknown> = BaseResponse & { payload: T };
+export type ErrorResponse = BaseResponse & { error: string };
+export type Response<T = unknown> = SuccessResponse<T> | ErrorResponse;
 
 export class WorkerError extends Error {
     readonly messageId: number;

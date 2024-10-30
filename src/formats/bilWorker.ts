@@ -1,4 +1,4 @@
-import type { BaseMessageMap, Message, Response } from '../utils/WorkerPool';
+import type { BaseMessageMap, Message, SuccessResponse } from '../utils/WorkerPool';
 import { createErrorResponse } from '../utils/WorkerPool';
 
 export type DecodeBilTerrainResult = { data: ArrayBuffer; min: number; max: number };
@@ -32,8 +32,8 @@ export function decodeRaster(bil: Float32Array, noData?: number): DecodeBilTerra
 // Web worker implementation
 
 type DecodeBilTerrainRequest = { buffer: ArrayBuffer; noData?: number };
-export type DecodeBilTerrainMessageResponse = Message<DecodeBilTerrainResult>;
 export type DecodeBilTerrainMessage = Message<DecodeBilTerrainRequest>;
+export type DecodeBilTerrainMessageResponse = SuccessResponse<DecodeBilTerrainResult>;
 
 export type MessageType = 'DecodeBilTerrainMessage';
 
@@ -53,7 +53,7 @@ onmessage = function onmessage(ev: MessageEvent<DecodeBilTerrainMessage>) {
                 new Float32Array(message.payload.buffer),
                 message.payload.noData,
             );
-            const response: Response<DecodeBilTerrainResult> = {
+            const response: DecodeBilTerrainMessageResponse = {
                 requestId: message.id,
                 payload: result,
             };

@@ -1,4 +1,4 @@
-import type { BaseMessageMap, Response } from '../utils/WorkerPool';
+import type { BaseMessageMap, SuccessResponse } from '../utils/WorkerPool';
 import { createErrorResponse, type Message } from '../utils/WorkerPool';
 
 /**
@@ -94,7 +94,7 @@ onmessage = function onmessage(ev: MessageEvent<DecodeMapboxTerrainMessage>) {
     try {
         if (message.type === 'DecodeMapboxTerrainMessage') {
             const result = decodeMapboxTerrainImage(message.payload.bitmap, message.payload.noData);
-            const response: Response<DecodeMapboxTerrainResult> = {
+            const response: SuccessResponse<DecodeMapboxTerrainResult> = {
                 requestId: message.id,
                 payload: result,
             };
