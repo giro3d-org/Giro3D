@@ -44,6 +44,11 @@ import { type GetMemoryUsageContext, type MemoryUsageReport } from '../core/Memo
 import Capabilities from '../core/system/Capabilities';
 import EmptyTexture from '../renderer/EmptyTexture';
 import type * as decoder from './imageDecoderWorker';
+import {
+    createPixelBuffer,
+    createTypedArrayFromBuffer,
+    getTypedArrayType,
+} from './imageDecoderWorker';
 import WorkerPool from './WorkerPool';
 
 export const OPAQUE_BYTE = 255;
@@ -122,176 +127,6 @@ function getDataTypeString(dataType: TextureDataType): string {
         default:
             throw new Error(`unknown data type: ${dataType}`);
     }
-}
-
-export type FillBufferOptions<Buf extends TypedArray | ArrayBuffer = TypedArray> = {
-    input: Buf[];
-    bufferSize: number;
-    dataType: TextureDataType;
-    nodata?: number;
-    opaqueValue: number;
-};
-
-export type FillBufferResult<Buf extends TypedArray | ArrayBuffer = TypedArray> = {
-    buffer: Buf;
-    min: number;
-    max: number;
-    isTransparent: boolean;
-};
-
-// Important note : a lot of code is duplicated to avoid putting
-// conditional branches inside loops, as this can severely reduce performance.
-
-// Note: we don't use Number.isNan(x) in the loops as it slows down the loop due to function
-// invocation. Instead, we use x !== x, as a NaN is never equal to itself.
-function fillBuffer<T extends TypedArray>(options: FillBufferOptions<T>): FillBufferResult<T> {
-    const pixelData = options.input;
-    const opaqueValue = options.opaqueValue;
-    let buf: TypedArray;
-    if (options.bufferSize && options.dataType) {
-        switch (options.dataType) {
-            case FloatType:
-                buf = new Float32Array(options.bufferSize);
-                break;
-            case UnsignedByteType:
-                buf = new Uint8ClampedArray(options.bufferSize);
-                break;
-            default:
-                throw new Error('unrecognized buffer type: ' + options.dataType);
-        }
-    } else {
-        console.error('missing values');
-        throw new Error('missing values');
-    }
-
-    let min = +Infinity;
-    let max = -Infinity;
-
-    let isTransparent = true;
-
-    if (pixelData.length === 1) {
-        const v = pixelData[0];
-        const length = v.length;
-        for (let i = 0; i < length; i++) {
-            const idx = i * 2;
-            let value: number;
-            let a: number;
-            const raw = v[i];
-            if (raw !== raw || raw === options.nodata) {
-                value = DEFAULT_NODATA;
-                a = TRANSPARENT;
-            } else {
-                value = raw;
-                a = opaqueValue;
-                isTransparent = false;
-            }
-            min = Math.min(min, value);
-            max = Math.max(max, value);
-
-            buf[idx + 0] = value;
-            buf[idx + 1] = a;
-        }
-    }
-    if (pixelData.length === 2) {
-        const v = pixelData[0];
-        const a = pixelData[1];
-        const length = v.length;
-        for (let i = 0; i < length; i++) {
-            const idx = i * 2;
-            let value: number;
-            const raw = v[i];
-            const alpha = a[i];
-
-            if (raw !== raw || raw === options.nodata) {
-                value = DEFAULT_NODATA;
-            } else {
-                value = raw;
-            }
-
-            if (alpha > 0) {
-                isTransparent = false;
-            }
-
-            min = Math.min(min, value);
-            max = Math.max(max, value);
-
-            buf[idx + 0] = value;
-            buf[idx + 1] = a[i];
-        }
-    }
-    if (pixelData.length === 3) {
-        const rChannel = pixelData[0];
-        const gChannel = pixelData[1];
-        const bChannel = pixelData[2];
-        const length = rChannel.length;
-        let a;
-        for (let i = 0; i < length; i++) {
-            const idx = i * 4;
-
-            let r = rChannel[i];
-            let g = gChannel[i];
-            let b = bChannel[i];
-
-            if (
-                (r !== r || r === options.nodata) &&
-                (g !== g || g === options.nodata) &&
-                (b !== b || b === options.nodata)
-            ) {
-                r = DEFAULT_NODATA;
-                g = DEFAULT_NODATA;
-                b = DEFAULT_NODATA;
-                a = TRANSPARENT;
-            } else {
-                a = opaqueValue;
-                isTransparent = false;
-            }
-
-            buf[idx + 0] = r;
-            buf[idx + 1] = g;
-            buf[idx + 2] = b;
-            buf[idx + 3] = a;
-        }
-    }
-    if (pixelData.length === 4) {
-        const rChannel = pixelData[0];
-        const gChannel = pixelData[1];
-        const bChannel = pixelData[2];
-        const aChannel = pixelData[3];
-        const length = rChannel.length;
-        for (let i = 0; i < length; i++) {
-            const idx = i * 4;
-            let r = rChannel[i];
-            let g = gChannel[i];
-            let b = bChannel[i];
-            let a = aChannel[i];
-
-            if (
-                (r !== r || r === options.nodata) &&
-                (g !== g || g === options.nodata) &&
-                (b !== b || b === options.nodata)
-            ) {
-                r = DEFAULT_NODATA;
-                g = DEFAULT_NODATA;
-                b = DEFAULT_NODATA;
-                a = TRANSPARENT;
-            } else {
-                if (a > 0) {
-                    isTransparent = false;
-                }
-            }
-
-            buf[idx + 0] = r;
-            buf[idx + 1] = g;
-            buf[idx + 2] = b;
-            buf[idx + 3] = a;
-        }
-    }
-    return {
-        buffer: buf as T,
-        min,
-        max,
-        isTransparent,
-    };
 }
 
 /**
@@ -501,6 +336,94 @@ export type CreateDataTextureResult = {
     max: number;
 };
 
+function createTextureFromPixelBuffer(
+    result: decoder.CreatePixelBufferResult,
+    width: number,
+    height: number,
+    format: PixelFormat,
+    type: TextureDataType,
+) {
+    const texture = result.isTransparent
+        ? new EmptyTexture()
+        : new DataTexture(
+              createTypedArrayFromBuffer(result.buffer, type),
+              width,
+              height,
+              format,
+              type,
+          );
+
+    if (!isEmptyTexture(texture)) {
+        texture.needsUpdate = true;
+        texture.generateMipmaps = false;
+        texture.magFilter = LinearFilter;
+        texture.minFilter = LinearFilter;
+    }
+
+    return {
+        texture,
+        min: result.min,
+        max: result.max,
+    };
+}
+
+function getPixelFormat(channelCount: number): PixelFormat {
+    switch (channelCount) {
+        case 1:
+        case 2:
+            return RGFormat;
+        default:
+            return RGBAFormat;
+    }
+}
+
+function getCreatePixelBufferOptions(
+    options: {
+        width: number;
+        height: number;
+        type: TextureDataType;
+        nodata: number | undefined;
+        makeCopyOfBuffers: boolean;
+    },
+    ...pixelData: TypedArray[]
+): decoder.CreatePixelBufferOptions {
+    const { width, height, type, nodata } = options;
+    const pixelCount = width * height;
+
+    const targetDataType = type;
+
+    let channelCount: number;
+    switch (pixelData.length) {
+        case 1:
+        case 2:
+            channelCount = 2;
+            break;
+        default:
+            channelCount = 4;
+            break;
+    }
+
+    let opaqueValue: number;
+
+    switch (targetDataType) {
+        case FloatType:
+            opaqueValue = OPAQUE_FLOAT;
+            break;
+        default:
+            opaqueValue = OPAQUE_BYTE;
+            break;
+    }
+
+    return {
+        bufferSize: pixelCount * channelCount,
+        inputType: getTypedArrayType(pixelData[0]), // Assume all arrays have the same type
+        dataType: targetDataType,
+        input: pixelData.map(p => (options.makeCopyOfBuffers ? p.buffer.slice(0) : p.buffer)),
+        opaqueValue,
+        nodata,
+    };
+}
+
 /**
  * Returns a {@link DataTexture} initialized with the specified data.
  *
@@ -526,61 +449,96 @@ function createDataTexture(
     sourceDataType: TextureDataType,
     ...pixelData: TypedArray[]
 ): CreateDataTextureResult {
-    const width = options.width;
-    const height = options.height;
-    const pixelCount = width * height;
+    const pixelBufferOptions = getCreatePixelBufferOptions(
+        {
+            width: options.width,
+            height: options.height,
+            type: sourceDataType,
+            nodata: options.nodata,
+            makeCopyOfBuffers: false,
+        },
+        ...pixelData,
+    );
 
-    const targetDataType = sourceDataType;
+    const result = createPixelBuffer(pixelBufferOptions);
 
-    let format: PixelFormat;
-    let channelCount: number;
-    switch (pixelData.length) {
-        case 1:
-        case 2:
-            format = RGFormat;
-            channelCount = 2;
-            break;
-        default:
-            format = RGBAFormat;
-            channelCount = 4;
-            break;
+    const format = getPixelFormat(pixelData.length);
+
+    return createTextureFromPixelBuffer(
+        result,
+        options.width,
+        options.height,
+        format,
+        pixelBufferOptions.dataType,
+    );
+}
+
+/**
+ * Returns a {@link DataTexture} initialized with the specified data.
+ *
+ * @param options - The creation options.
+ * @param sourceDataType - The data type of the input pixel data.
+ * @param pixelData - The pixel data
+ * for each input channels. Must be either one, three, or four channels.
+ */
+async function createDataTextureAsync(
+    options: {
+        /** The texture width */
+        width: number;
+        /** The texture height */
+        height: number;
+        /**
+         * The no-data value. If specified, if a pixel has this value,
+         * then the alpha value will be transparent. Otherwise it will be opaque.
+         * If unspecified, the alpha will be opaque. This only applies to 1-channel data.
+         * Ignored for 3 and 4-channel data.
+         */
+        nodata?: number;
+        /**
+         * Enable processing in workers.
+         * @defaultValue true
+         */
+        enableWorkers?: boolean;
+    },
+    sourceDataType: TextureDataType,
+    ...pixelData: TypedArray[]
+): Promise<CreateDataTextureResult> {
+    const pixelBufferOptions = getCreatePixelBufferOptions(
+        {
+            width: options.width,
+            height: options.height,
+            type: sourceDataType,
+            nodata: options.nodata,
+            makeCopyOfBuffers: true, // Since we are going to send them to a worker
+        },
+        ...pixelData,
+    );
+
+    let result: decoder.CreatePixelBufferResult;
+
+    const enableWorkers = options?.enableWorkers ?? true;
+
+    if (enableWorkers && window.Worker != null) {
+        const pool = getDecoderPool();
+
+        result = await pool.queue(
+            'CreatePixelBuffer',
+            pixelBufferOptions,
+            pixelBufferOptions.input,
+        );
+    } else {
+        result = createPixelBuffer(pixelBufferOptions);
     }
 
-    let opaqueValue: number;
+    const format = getPixelFormat(pixelData.length);
 
-    switch (targetDataType) {
-        case FloatType:
-            opaqueValue = OPAQUE_FLOAT;
-            break;
-        default:
-            opaqueValue = OPAQUE_BYTE;
-            break;
-    }
-
-    const result = fillBuffer({
-        bufferSize: pixelCount * channelCount,
-        dataType: targetDataType,
-        input: pixelData,
-        opaqueValue,
-        nodata: options.nodata,
-    });
-
-    const texture = result.isTransparent
-        ? new EmptyTexture()
-        : new DataTexture(result.buffer, width, height, format, targetDataType);
-
-    if (!isEmptyTexture(texture)) {
-        texture.needsUpdate = true;
-        texture.generateMipmaps = false;
-        texture.magFilter = LinearFilter;
-        texture.minFilter = LinearFilter;
-    }
-
-    return {
-        texture,
-        min: result.min,
-        max: result.max,
-    };
+    return createTextureFromPixelBuffer(
+        result,
+        options.width,
+        options.height,
+        format,
+        pixelBufferOptions.dataType,
+    );
 }
 
 /**
@@ -869,9 +827,9 @@ function ensureCompatibility(texture: Texture, renderer: WebGLRenderer) {
 
 export default {
     createDataTexture,
+    createDataTextureAsync,
     isEmptyTexture,
     decodeBlob,
-    fillBuffer,
     getChannelCount,
     getBytesPerChannel,
     getWiderType,
