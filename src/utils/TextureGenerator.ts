@@ -43,6 +43,8 @@ import Interpretation, { Mode } from '../core/layer/Interpretation';
 import { type GetMemoryUsageContext, type MemoryUsageReport } from '../core/MemoryUsage';
 import Capabilities from '../core/system/Capabilities';
 import EmptyTexture from '../renderer/EmptyTexture';
+import type * as decoder from './imageDecoderWorker';
+import WorkerPool from './WorkerPool';
 
 export const OPAQUE_BYTE = 255;
 export const OPAQUE_FLOAT = 1.0;
@@ -385,6 +387,43 @@ function getPixels(image: ImageBitmap | HTMLImageElement | HTMLCanvasElement): U
     return context.getImageData(0, 0, image.width, image.height).data;
 }
 
+let decoderWorkerPool: WorkerPool<decoder.MessageType, decoder.MessageMap> | null = null;
+
+function getDecoderPool(): NonNullable<typeof decoderWorkerPool> {
+    if (decoderWorkerPool == null) {
+        const createWorker = () =>
+            new Worker(new URL('./imageDecoderWorker.js', import.meta.url), {
+                type: 'module',
+            });
+        decoderWorkerPool = new WorkerPool({ createWorker, concurrency: 2 });
+    }
+    return decoderWorkerPool;
+}
+
+async function createImageBitmapUsingWorker(
+    blob: Blob,
+    options?: ImageBitmapOptions,
+): Promise<ImageBitmap> {
+    if (window.Worker != null) {
+        const pool = getDecoderPool();
+
+        const buffer = await blob.arrayBuffer();
+        const img = await pool.queue(
+            'CreateImageBitmap',
+            {
+                buffer,
+                options,
+            },
+            [buffer],
+        );
+
+        return img;
+    } else {
+        // Fallback to main-thread decoding
+        return createImageBitmap(blob, options);
+    }
+}
+
 /**
  * Decodes the blob according to its media type, then returns a texture for this blob.
  *
@@ -401,6 +440,11 @@ async function decodeBlob(
         createDataTexture?: boolean;
         /** Should the image be flipped vertically ? */
         flipY?: boolean;
+        /**
+         * Enable web workers.
+         * @defaultValue true
+         */
+        enableWorkers?: boolean;
     } = {},
 ): Promise<Texture> {
     // media types are in the form 'type;args', for example: 'text/html; charset=UTF-8;
@@ -411,10 +455,17 @@ async function decodeBlob(
         case 'image/png':
         case 'image/jpg': // not a valid media type, but we support it for compatibility
         case 'image/jpeg': {
-            // Use the browser capabilities to decode the image
-            const img = await createImageBitmap(blob, {
+            const enableWorker = options?.enableWorkers ?? true;
+            let img: ImageBitmap;
+            const decodeOptions: ImageBitmapOptions = {
                 imageOrientation: options.flipY === true ? 'flipY' : 'none',
-            });
+            };
+            if (enableWorker) {
+                img = await createImageBitmapUsingWorker(blob, decodeOptions);
+            } else {
+                img = await createImageBitmap(blob, decodeOptions);
+            }
+
             let tex;
 
             const max = Capabilities.getMaxTextureSize();
