@@ -8,6 +8,8 @@ import { createErrorResponse, type Message } from '../utils/WorkerPool';
 export type DecodeMapboxTerrainResult = {
     min: number;
     max: number;
+    width: number;
+    height: number;
     /**
      * An array buffer that can be turned into a Float32Array.
      */
@@ -29,19 +31,21 @@ function getPixels(image: ImageBitmap): Uint8ClampedArray {
     return context.getImageData(0, 0, image.width, image.height).data;
 }
 
-export function decodeMapboxTerrainImage(
-    image: ImageBitmap,
+export async function decodeMapboxTerrainImage(
+    blob: Blob,
     noData?: number,
-): DecodeMapboxTerrainResult {
+): Promise<DecodeMapboxTerrainResult> {
+    const image = await createImageBitmap(blob);
     const pixelData = getPixels(image);
 
-    return decodeMapboxTerrainBuffer(pixelData, noData);
+    return {
+        ...decodeMapboxTerrainBuffer(pixelData, noData),
+        width: image.width,
+        height: image.height,
+    };
 }
 
-export function decodeMapboxTerrainBuffer(
-    pixelData: Uint8ClampedArray,
-    noData?: number,
-): DecodeMapboxTerrainResult {
+function decodeMapboxTerrainBuffer(pixelData: Uint8ClampedArray, noData?: number) {
     const stride = pixelData.length % 3 === 0 ? 3 : 4;
 
     const length = pixelData.length / stride;
@@ -77,23 +81,24 @@ export function decodeMapboxTerrainBuffer(
 
 // Web worker implementation
 
-export type DecodeMapboxTerrainMessage = Message<{ bitmap: ImageBitmap; noData?: number }>;
+export type DecodeMapboxTerrainMessage = Message<{ buffer: ArrayBuffer; noData?: number }>;
 
 export type MessageType = 'DecodeMapboxTerrainMessage';
 
 export interface MessageMap extends BaseMessageMap<MessageType> {
     DecodeMapboxTerrainMessage: {
-        payload: { bitmap: ImageBitmap; noData?: number };
+        payload: DecodeMapboxTerrainMessage['payload'];
         response: DecodeMapboxTerrainResult;
     };
 }
 
-onmessage = function onmessage(ev: MessageEvent<DecodeMapboxTerrainMessage>) {
+onmessage = async function onmessage(ev: MessageEvent<DecodeMapboxTerrainMessage>) {
     const message = ev.data;
 
     try {
         if (message.type === 'DecodeMapboxTerrainMessage') {
-            const result = decodeMapboxTerrainImage(message.payload.bitmap, message.payload.noData);
+            const blob = new Blob([message.payload.buffer], { type: 'image/png' });
+            const result = await decodeMapboxTerrainImage(blob, message.payload.noData);
             const response: SuccessResponse<DecodeMapboxTerrainResult> = {
                 requestId: message.id,
                 payload: result,

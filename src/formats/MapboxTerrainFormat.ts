@@ -47,21 +47,18 @@ class MapboxTerrainFormat extends ImageFormat {
      * @param options - the decoding options
      */
     async decode(blob: Blob, options?: DecodeOptions) {
-        const bitmap = await createImageBitmap(blob);
-        const { width, height } = bitmap;
-
         let result: DecodeMapboxTerrainResult;
 
         if (this._enableWorkers) {
-            result = await this.getHeightValuesUsingWorker(bitmap, options?.noDataValue);
+            result = await this.getHeightValuesUsingWorker(blob, options?.noDataValue);
         } else {
-            result = decodeMapboxTerrainImage(bitmap, options?.noDataValue);
+            result = await decodeMapboxTerrainImage(blob, options?.noDataValue);
         }
 
         const texture = new DataTexture(
             new Float32Array(result.data),
-            width,
-            height,
+            result.width,
+            result.height,
             RGFormat,
             FloatType,
         );
@@ -79,15 +76,17 @@ class MapboxTerrainFormat extends ImageFormat {
     }
 
     private async getHeightValuesUsingWorker(
-        bitmap: ImageBitmap,
+        blob: Blob,
         noData?: number,
     ): Promise<DecodeMapboxTerrainResult> {
         if (workerPool == null) {
             workerPool = new WorkerPool({ createWorker });
         }
 
-        const result = await workerPool.queue('DecodeMapboxTerrainMessage', { bitmap, noData }, [
-            bitmap,
+        const buffer = await blob.arrayBuffer();
+
+        const result = await workerPool.queue('DecodeMapboxTerrainMessage', { buffer, noData }, [
+            buffer,
         ]);
 
         return result;
