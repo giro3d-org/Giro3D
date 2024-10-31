@@ -220,6 +220,11 @@ export interface GeoTIFFSourceOptions extends ImageSourceOptions {
      * Advanced caching options.
      */
     cacheOptions?: GeoTIFFCacheOptions;
+    /**
+     * Enables web workers for CPU-intensive processing.
+     * @defaultValue true
+     */
+    enableWorkers?: boolean;
 }
 
 /**
@@ -248,6 +253,7 @@ class GeoTIFFSource extends ImageSource {
     private readonly _cacheOptions?: GeoTIFFCacheOptions;
     private readonly _cache: Cache = GlobalCache;
     private readonly _pool: Pool | undefined;
+    private readonly _enableWorkers: boolean;
 
     private _imageCount: number;
     private _images: Level[];
@@ -274,7 +280,8 @@ class GeoTIFFSource extends ImageSource {
 
         this.url = options.url;
         this.crs = options.crs;
-        this._pool = getPool();
+        this._enableWorkers = options.enableWorkers ?? true;
+        this._pool = this._enableWorkers ? getPool() : undefined;
         this._imageCount = 0;
         this._images = [];
         this._masks = [];
@@ -501,18 +508,19 @@ class GeoTIFFSource extends ImageSource {
      * @param buffers - The buffers (one buffer per band)
      * @returns The generated texture.
      */
-    private createTexture(buffers: SizedArray<TypedArray>) {
+    private async createTexture(buffers: SizedArray<TypedArray>) {
         // Width and height in pixels of the returned data.
         // The geotiff.js patches the arrays with the width and height properties.
         const { width, height }: SizedArray<TypedArray> = buffers;
 
         const dataType = this.datatype;
 
-        const { texture, min, max } = TextureGenerator.createDataTexture(
+        const { texture, min, max } = await TextureGenerator.createDataTextureAsync(
             {
                 width,
                 height,
                 nodata: this._nodata ?? undefined,
+                enableWorkers: this._enableWorkers,
             },
             dataType,
             ...buffers,
@@ -622,7 +630,7 @@ class GeoTIFFSource extends ImageSource {
                 }
             }
 
-            const result = this.createTexture(buffers as SizedArray<TypedArray>);
+            const result = await this.createTexture(buffers as SizedArray<TypedArray>);
             texture = result.texture;
             min = result.min;
             max = result.max;
