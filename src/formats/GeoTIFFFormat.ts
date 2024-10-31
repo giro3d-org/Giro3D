@@ -15,8 +15,21 @@ class GeoTIFFFormat extends ImageFormat {
     readonly isGeoTIFFFormat: boolean = true as const;
     readonly type = 'GeoTIFFFormat';
 
-    constructor() {
+    private readonly _enableWorkers: boolean;
+
+    /**
+     * @param options - Decoder options.
+     */
+    constructor(options?: {
+        /**
+         * Enables processing raster data in web workers.
+         * @defaultValue true
+         */
+        enableWorkers?: boolean;
+    }) {
         super(true, FloatType);
+
+        this._enableWorkers = options?.enableWorkers ?? true;
     }
 
     /**
@@ -94,8 +107,8 @@ class GeoTIFFFormat extends ImageFormat {
                 throw new Error(`unsupported channel count: ${spp}`);
         }
 
-        const result = TextureGenerator.createDataTexture(
-            { width, height, nodata },
+        const result = await TextureGenerator.createDataTextureAsync(
+            { width, height, nodata, enableWorkers: this._enableWorkers },
             dataType,
             ...inputBuffers,
         );
