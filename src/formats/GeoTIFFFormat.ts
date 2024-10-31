@@ -1,17 +1,7 @@
 import { fromBlob, Pool } from 'geotiff';
 import type { TypedArray } from 'three';
-import {
-    DataTexture,
-    FloatType,
-    LinearFilter,
-    RGBAFormat,
-    RGFormat,
-    UnsignedByteType,
-    type PixelFormat,
-    type Texture,
-} from 'three';
-import EmptyTexture from '../renderer/EmptyTexture';
-import TextureGenerator, { OPAQUE_BYTE, OPAQUE_FLOAT } from '../utils/TextureGenerator';
+import { FloatType, UnsignedByteType } from 'three';
+import TextureGenerator from '../utils/TextureGenerator';
 import type { DecodeOptions } from './ImageFormat';
 import ImageFormat from './ImageFormat';
 
@@ -22,12 +12,11 @@ let geotiffWorkerPool: Pool;
  *
  */
 class GeoTIFFFormat extends ImageFormat {
-    readonly isGeoTIFFFormat: boolean = true;
+    readonly isGeoTIFFFormat: boolean = true as const;
+    readonly type = 'GeoTIFFFormat';
 
     constructor() {
         super(true, FloatType);
-
-        this.type = 'GeoTIFFFormat';
     }
 
     /**
@@ -47,15 +36,12 @@ class GeoTIFFFormat extends ImageFormat {
         const width = image.getWidth();
 
         let dataType;
-        let opaqueValue;
         const nodata = options?.noDataValue ?? image.getGDALNoData() ?? undefined;
 
         if (image.getBitsPerSample() === 8) {
             dataType = UnsignedByteType;
-            opaqueValue = OPAQUE_BYTE;
         } else {
             dataType = FloatType;
-            opaqueValue = OPAQUE_FLOAT;
         }
 
         const spp = image.getSamplesPerPixel();
@@ -65,8 +51,6 @@ class GeoTIFFFormat extends ImageFormat {
             geotiffWorkerPool = new Pool();
         }
 
-        let format: PixelFormat;
-        let bufferSize: number;
         let inputBuffers: TypedArray[];
 
         switch (spp) {
@@ -76,8 +60,6 @@ class GeoTIFFFormat extends ImageFormat {
                     const [v] = (await image.readRasters({
                         pool: geotiffWorkerPool,
                     })) as TypedArray[];
-                    format = RGFormat;
-                    bufferSize = width * height * 2;
                     inputBuffers = [v];
                 }
                 break;
@@ -87,8 +69,6 @@ class GeoTIFFFormat extends ImageFormat {
                     const [v, a] = (await image.readRasters({
                         pool: geotiffWorkerPool,
                     })) as TypedArray[];
-                    format = RGFormat;
-                    bufferSize = width * height * 2;
                     inputBuffers = [v, a];
                 }
                 break;
@@ -98,8 +78,6 @@ class GeoTIFFFormat extends ImageFormat {
                     const [r, g, b] = (await image.readRasters({
                         pool: geotiffWorkerPool,
                     })) as TypedArray[];
-                    format = RGBAFormat;
-                    bufferSize = width * height * 4;
                     inputBuffers = [r, g, b];
                 }
                 break;
@@ -109,8 +87,6 @@ class GeoTIFFFormat extends ImageFormat {
                     const [r, g, b, a] = (await image.readRasters({
                         pool: geotiffWorkerPool,
                     })) as TypedArray[];
-                    format = RGBAFormat;
-                    bufferSize = width * height * 4;
                     inputBuffers = [r, g, b, a];
                 }
                 break;
@@ -118,26 +94,13 @@ class GeoTIFFFormat extends ImageFormat {
                 throw new Error(`unsupported channel count: ${spp}`);
         }
 
-        const fillResult = TextureGenerator.fillBuffer({
-            bufferSize,
+        const result = TextureGenerator.createDataTexture(
+            { width, height, nodata },
             dataType,
-            nodata,
-            opaqueValue,
-            input: inputBuffers,
-        });
+            ...inputBuffers,
+        );
 
-        let texture: Texture;
-
-        if (fillResult.isTransparent) {
-            texture = new EmptyTexture();
-        } else {
-            texture = new DataTexture(fillResult.buffer, width, height, format, dataType);
-            texture.magFilter = LinearFilter;
-            texture.minFilter = LinearFilter;
-            texture.needsUpdate = true;
-        }
-
-        return { texture, min: fillResult.min, max: fillResult.max };
+        return { texture: result.texture, min: result.min, max: result.max };
     }
 }
 
