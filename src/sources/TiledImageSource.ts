@@ -132,7 +132,7 @@ export default class TiledImageSource extends ImageSource {
 
         const projection = nonNull(
             this.source.getProjection(),
-            'could not get projection froms source',
+            'could not get projection from source',
         );
         this.olprojection = projection;
         const tileGrid: TileGrid = this.source.getTileGridForProjection(projection);
