@@ -355,6 +355,7 @@ function createShape(button, callback, specificOptions) {
             signal: abortController.signal,
             ...options,
             ...specificOptions,
+            onTemporaryPointMoved: () => console.log('onTemporaryPointMoved'),
         })
         .then(shape => {
             if (shape) {

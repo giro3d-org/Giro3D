@@ -530,25 +530,27 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
         const promise = new Promise<Shape | null>((resolve, reject) => {
             let clickCount = 0;
 
+            let removeListeners: (() => void) | undefined = undefined;
+
             const finalize = (shape: Shape | null) => {
                 if (shape) {
                     shape.pickableLabels = pickableLabels;
+                }
+                if (removeListeners) {
+                    removeListeners();
                 }
                 this.exitCreateMode();
                 resolve(shape);
             };
 
-            if (options?.signal) {
-                const signal = options.signal;
-
-                const onAbort = () => {
-                    this._instance.remove(shape);
-                    this.exitCreateMode();
-                    reject(new AbortError());
-                };
-
-                signal.addEventListener('abort', onAbort);
-            }
+            const onAbort = () => {
+                this._instance.remove(shape);
+                if (removeListeners) {
+                    removeListeners();
+                }
+                this.exitCreateMode();
+                reject(new AbortError());
+            };
 
             const onMouseMove = (e: MouseEvent) => {
                 const point = pick(e)[0]?.point;
@@ -567,13 +569,6 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
             const onMouseDown = (e: MouseEvent) => {
                 e.stopPropagation();
 
-                const removeListeners = () => {
-                    domElement.removeEventListener('mousedown', onMouseDown);
-                    domElement.removeEventListener('mousemove', onMouseMove);
-                    domElement.removeEventListener('mouseup', inhibit);
-                    domElement.removeEventListener('contextmenu', inhibit);
-                };
-
                 if (e.button === LEFT_BUTTON) {
                     const point = pick(e)[0]?.point;
                     if (point != null) {
@@ -590,14 +585,10 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
                         updatePoints();
 
                         if (clickCount === maxPoints) {
-                            removeListeners();
                             finalize(shape);
                         }
                     }
                 } else if (e.button === RIGHT_BUTTON) {
-                    // Finalize the shape
-                    removeListeners();
-
                     if (minPoints != null && clickCount >= minPoints) {
                         shape.setPoints(points.slice(0, -1));
                         if (options?.closeRing === true) {
@@ -613,10 +604,23 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
                 }
             };
 
+            const signal = options.signal;
+
+            removeListeners = () => {
+                domElement.removeEventListener('mousedown', onMouseDown);
+                domElement.removeEventListener('mousemove', onMouseMove);
+                domElement.removeEventListener('mouseup', inhibit);
+                domElement.removeEventListener('contextmenu', inhibit);
+
+                signal?.removeEventListener('abort', onAbort);
+            };
+
             this._domElement.addEventListener('mousemove', onMouseMove);
             this._domElement.addEventListener('mousedown', onMouseDown);
             this._domElement.addEventListener('mouseup', inhibit);
             this._domElement.addEventListener('contextmenu', inhibit);
+
+            signal?.addEventListener('abort', onAbort);
         });
 
         return promise;
