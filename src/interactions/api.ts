@@ -1,19 +1,35 @@
 import type DrawTool from './DrawTool';
 import type {
+    afterRemovePointOfRing,
+    afterUpdatePointOfRing,
     CommonCreationOptions,
     CreateShapeOptions,
     CreationOptions,
     DrawToolEventMap,
+    inhibitHook,
+    limitRemovePointHook,
     MouseCallback,
     PickCallback,
+    PointInsertedCallback,
+    PointRemovedCallback,
+    PointUpdatedCallback,
+    ShapeModifiedCallback,
 } from './DrawTool';
 
 export {
+    afterRemovePointOfRing,
+    afterUpdatePointOfRing,
     CommonCreationOptions,
     CreateShapeOptions,
     CreationOptions,
     DrawTool,
     DrawToolEventMap,
+    inhibitHook,
+    limitRemovePointHook,
     MouseCallback,
     PickCallback,
+    PointInsertedCallback,
+    PointRemovedCallback,
+    PointUpdatedCallback,
+    ShapeModifiedCallback,
 };

@@ -29,6 +29,9 @@ type ShapeUserData = {
     permissions?: Permissions;
 };
 
+/**
+ * A pick function that is used by the drawtool to interact with the scene.
+ */
 export type PickCallback = (event: MouseEvent) => PickResult[];
 
 export type CommonCreationOptions = {
@@ -122,12 +125,22 @@ export interface DrawToolEventMap {
     'end-drag': Record<string, unknown>;
 }
 
+/**
+ * A hook that prevents the operation from occuring.
+ */
 export const inhibitHook = () => false;
 
+/**
+ * A hook that prevents the removal of a point if the new number of points is below a limit (e.g
+ * removing a point of a 2-point LineString).
+ */
 export const limitRemovePointHook = (limit: number) => (options: { shape: Shape }) => {
     return options.shape.points.length > limit;
 };
 
+/**
+ * A hook that ensures the ring remains closed after the first or last point of the ring is removed.
+ */
 export const afterRemovePointOfRing = (options: { shape: Shape; index: number }) => {
     const { shape, index } = options;
 
@@ -142,6 +155,9 @@ export const afterRemovePointOfRing = (options: { shape: Shape; index: number })
     shape.makeClosed();
 };
 
+/**
+ * A hook that ensures the ring remains closed after the first or last point of the ring is moved.
+ */
 export const afterUpdatePointOfRing = (options: {
     shape: Shape;
     index: number;
@@ -150,10 +166,10 @@ export const afterUpdatePointOfRing = (options: {
     const { index, shape, newPosition } = options;
 
     if (index === 0) {
-        // Also remove last point
+        // Also update last point
         shape.updatePoint(shape.points.length - 1, newPosition);
     } else if (index === shape.points.length - 1) {
-        // Also remove first point
+        // Also update first point
         shape.updatePoint(0, newPosition);
     }
 };
@@ -188,6 +204,56 @@ function leftButton(e: MouseEvent): boolean {
  * If the function returns `true`, the associated action is executed.
  */
 export type MouseCallback = (e: MouseEvent) => boolean;
+
+/**
+ * A callback that is called after a shape has been modified.
+ */
+export type ShapeModifiedCallback<T> = (
+    arg: {
+        /**
+         * The modified shape.
+         */
+        shape: Shape;
+    } & T,
+) => void;
+
+/**
+ * Called when a point has been inserted in a shape during edition.
+ */
+export type PointInsertedCallback = ShapeModifiedCallback<{
+    /**
+     * The index of the inserted point.
+     */
+    pointIndex: number;
+    /**
+     * The position of the inserted point.
+     */
+    position: Vector3;
+}>;
+
+/**
+ * Called when a point has been removed in a shape during edition.
+ */
+export type PointRemovedCallback = ShapeModifiedCallback<{
+    /**
+     * The index of the inserted point.
+     */
+    pointIndex: number;
+}>;
+
+/**
+ * Called when a point has been moved during edition.
+ */
+export type PointUpdatedCallback = ShapeModifiedCallback<{
+    /**
+     * The index of the updated point.
+     */
+    pointIndex: number;
+    /**
+     * The new position of the updated point.
+     */
+    newPosition: Vector3;
+}>;
 
 /**
  * A tool that allows interactive creation and edition of {@link Shape}s.
@@ -311,6 +377,18 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
          */
         onSegmentClicked?: MouseCallback;
         /**
+         * An optional callback called when a point has been inserted.
+         */
+        onPointInserted?: PointInsertedCallback;
+        /**
+         * An optional callback called when a point has been removed.
+         */
+        onPointRemoved?: PointRemovedCallback;
+        /**
+         * An optional callback called when a point has been updated (i.e moved).
+         */
+        onPointUpdated?: PointUpdatedCallback;
+        /**
          * The shapes to edit. If `undefined` or empty, all shapes become editable.
          */
         shapesToEdit?: Shape[];
@@ -328,6 +406,10 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
             options?.onBeforePointRemoved ?? middleButtonOrLeftButtonAndAlt;
         const onBeforePointMoved = options?.onBeforePointMoved ?? leftButton;
         const onBeforePointInserted = options?.onSegmentClicked ?? leftButton;
+        const noOp = () => {};
+        const onPointInserted = options?.onPointInserted ?? noOp;
+        const onPointRemoved = options?.onPointRemoved ?? noOp;
+        const onPointUpdated = options?.onPointUpdated ?? noOp;
 
         const pick: PickCallback = options?.pick ?? this.defaultPick.bind(this);
         const pickFirstShape = (e: MouseEvent) => {
@@ -384,6 +466,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
                         if (onBeforePointInserted(e)) {
                             index = segment + 1;
                             shape.insertPoint(index, picked.point);
+                            onPointInserted({ shape, pointIndex: index, position: picked.point });
                         }
                     }
 
@@ -406,6 +489,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
 
                         if (isOperationAllowed(shape, 'removePoint') && onBeforePointRemoved(e)) {
                             shape.removePoint(index);
+                            onPointRemoved({ shape, pointIndex: index });
                         }
                     }
                 }
@@ -435,6 +519,11 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
                     const position = pickNonShapes(e)?.point;
                     if (position) {
                         pickedShape.updatePoint(pickedVertexIndex, position);
+                        onPointUpdated({
+                            shape: pickedShape,
+                            pointIndex: pickedVertexIndex,
+                            newPosition: position,
+                        });
 
                         if (this._selectedVertexMarker) {
                             this._selectedVertexMarker.visible = true;

@@ -497,6 +497,9 @@ const editButton = bindButton('edit-clicked-shape', () => {
 
                 tool.enterEditMode({
                     shapesToEdit: [shape],
+                    onPointInserted: arg => console.log('onPointInserted', arg),
+                    onPointUpdated: arg => console.log('onPointMoved', arg),
+                    onPointRemoved: arg => console.log('onPointRemoved', arg),
                 });
             }
         }
