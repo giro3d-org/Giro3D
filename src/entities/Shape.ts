@@ -515,11 +515,11 @@ function computeArea(
     const origin = points[0];
 
     const closedPolygon = getClosedPolygon(points);
-    const coordinateAsNumbers = toNumberArray(closedPolygon, origin);
     const indices = earcut(toNumberArray(points, origin), undefined, 3);
 
     let geometry: BufferGeometry | undefined = undefined;
     if (computeGeometry) {
+        const coordinateAsNumbers = toNumberArray(closedPolygon, origin);
         geometry = new BufferGeometry();
         geometry.setAttribute('position', new Float32BufferAttribute(coordinateAsNumbers, 3));
         geometry.setIndex(indices);
