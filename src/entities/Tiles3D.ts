@@ -132,7 +132,6 @@ class Tiles3D<
     private _opCounter: OperationCounter;
     private _queue: RequestQueue;
     readonly imageSize = new Vector2(128, 128);
-    private _tileset?: $3dTilesTileset;
     private _tileIndex?: $3dTilesIndex;
     private _asset?: $3dTilesAsset;
     get asset(): $3dTilesAsset {
@@ -276,19 +275,16 @@ class Tiles3D<
         tileset.root.transform = undefined;
         // Replace root
         tileset.root = fakeroot;
-        this._tileset = tileset;
 
         const urlPrefix = this._url.slice(0, this._url.lastIndexOf('/') + 1);
         // Note: Constructing $3dTilesIndex makes tileset.root become a Tileset object !
         this._tileIndex = new $3dTilesIndex(tileset, urlPrefix);
         this._asset = tileset.asset;
 
-        const tile = await this.requestNewTile(this._tileset.root as ProcessedTile);
+        const tile = await this.requestNewTile(tileset.root as ProcessedTile);
         if (tile == null) {
             throw new Error('Could not load root tile');
         }
-
-        delete this._tileset;
 
         this.object3d.add(tile);
         tile.updateMatrixWorld();
