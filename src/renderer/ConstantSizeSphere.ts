@@ -110,8 +110,8 @@ export function getWorldSpaceRadius(
     let fieldOfViewHeight: number;
 
     if (isPerspectiveCamera(camera)) {
-        const fovRads = MathUtils.degToRad(camera.fov);
-        fieldOfViewHeight = Math.tan(fovRads) * dist;
+        const fovRads = MathUtils.degToRad(camera.fov) / 2;
+        fieldOfViewHeight = 2 * Math.tan(fovRads) * dist;
     } else if (isOrthographicCamera(camera)) {
         fieldOfViewHeight = Math.abs(camera.top - camera.bottom);
     } else {
