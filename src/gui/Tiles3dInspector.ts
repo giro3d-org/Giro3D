@@ -127,7 +127,7 @@ class Tiles3dInspector extends EntityInspector<Tiles3D> {
                         this.entity,
                         obj,
                         metadata,
-                        this.boundingBoxColor,
+                        obj === this.entity.root ? 'cyan' : this.boundingBoxColor,
                     );
                     if (result) {
                         if (result.absolute) {

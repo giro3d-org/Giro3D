@@ -1,3 +1,4 @@
+import type { Box3 } from 'three';
 import { Group, MathUtils, Matrix4, Vector2, Vector3, type Material, type Object3D } from 'three';
 import { GlobalCache } from '../core/Cache';
 import type Context from '../core/Context';
@@ -25,7 +26,11 @@ import { nonNull } from '../utils/tsutils';
 import utf8Decoder from '../utils/Utf8Decoder';
 import $3dTilesIndex, { type ProcessedTile } from './3dtiles/3dTilesIndex';
 import $3dTilesLoader from './3dtiles/3dTilesLoader';
-import { boundingVolumeToExtent, cullingTest } from './3dtiles/BoundingVolume';
+import {
+    boundingVolumeToBox3,
+    boundingVolumeToExtent,
+    cullingTest,
+} from './3dtiles/BoundingVolume';
 import Tile from './3dtiles/Tile';
 import type { $3dTilesAsset, $3dTilesTile, $3dTilesTileset } from './3dtiles/types';
 import { type EntityUserData } from './Entity';
@@ -178,6 +183,14 @@ class Tiles3D<
     onRenderingContextRestored(): void {
         this.forEachLayer(layer => layer.onRenderingContextRestored());
         this.instance.notifyChange(this);
+    }
+
+    getBoundingBox(): Box3 | null {
+        if (this._root != null) {
+            return boundingVolumeToBox3(this._root.boundingVolume, this._root.matrixWorld);
+        }
+
+        return super.getBoundingBox();
     }
 
     getMemoryUsage(context: GetMemoryUsageContext) {
