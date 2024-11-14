@@ -1,20 +1,20 @@
-import { Fill, Stroke, Style, RegularShape } from 'ol/style.js';
-import TileWMS from 'ol/source/TileWMS.js';
-import GPX from 'ol/format/GPX.js';
-import KML from 'ol/format/KML.js';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import GML32 from 'ol/format/GML32.js';
+import GPX from 'ol/format/GPX.js';
+import KML from 'ol/format/KML.js';
+import { XYZ } from 'ol/source.js';
+import { Fill, RegularShape, Stroke, Style } from 'ol/style.js';
 
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
-import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
-import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
+import MapboxTerrainFormat from '@giro3d/giro3d/formats/MapboxTerrainFormat.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
+import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
@@ -36,46 +36,36 @@ const map = new Map({ extent });
 
 instance.add(map);
 
-const colorSource = new TiledImageSource({
-    source: new TileWMS({
-        url: 'https://data.geopf.fr/wms-r',
-        projection: 'EPSG:3946',
-        params: {
-            LAYERS: ['HR.ORTHOIMAGERY.ORTHOPHOTOS'],
-            FORMAT: 'image/jpeg',
-        },
-    }),
-});
+const key =
+    'pk.eyJ1IjoidG11Z3VldCIsImEiOiJjbGJ4dTNkOW0wYWx4M25ybWZ5YnpicHV6In0.KhDJ7W5N3d1z3ArrsDjX_A';
 
-const colorLayer = new ColorLayer({
-    name: 'wms_imagery',
-    extent,
-    source: colorSource,
-});
-map.addLayer(colorLayer);
-
-// Adds a WMS elevation layer
-const elevationSource = new TiledImageSource({
-    source: new TileWMS({
-        url: 'https://data.geopf.fr/wms-r',
-        projection: 'EPSG:3946',
-        crossOrigin: 'anonymous',
-        params: {
-            LAYERS: ['ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES'],
-            FORMAT: 'image/x-bil;bits=32',
-        },
-    }),
-    format: new BilFormat(),
-    noDataValue: -1000,
-});
-
+// Adds a XYZ elevation layer with MapBox terrain RGB tileset
 const elevationLayer = new ElevationLayer({
-    name: 'wms_elevation',
     extent,
-    source: elevationSource,
+    resolutionFactor: 0.25,
+    source: new TiledImageSource({
+        format: new MapboxTerrainFormat(),
+        source: new XYZ({
+            url: `https://api.mapbox.com/v4/mapbox.terrain-rgb/{z}/{x}/{y}.pngraw?access_token=${key}`,
+            projection: 'EPSG:3857',
+            crossOrigin: 'anonymous',
+        }),
+    }),
 });
-
 map.addLayer(elevationLayer);
+
+// Adds a XYZ color layer with MapBox satellite tileset
+const satelliteLayer = new ColorLayer({
+    extent,
+    source: new TiledImageSource({
+        source: new XYZ({
+            url: `https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.webp?access_token=${key}`,
+            projection: 'EPSG:3857',
+            crossOrigin: 'anonymous',
+        }),
+    }),
+});
+map.addLayer(satelliteLayer);
 
 // Adds our first layer from a GeoJSON file
 // Initial source: https://data.grandlyon.com/jeux-de-donnees/parcs-places-jardins-indice-canopee-metropole-lyon/info
