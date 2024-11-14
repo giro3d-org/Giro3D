@@ -50,6 +50,28 @@ export function boundingVolumeToExtent(
     throw new Error('the volume property does not have neither a box, a region or a volume');
 }
 
+/**
+ * Returns the Box3 equivalent of the bounding volume.
+ *
+ * @param volume - The bounding volume of the tile.
+ * @param transform - The world matrix of the object.
+ */
+export function boundingVolumeToBox3(volume: BoundingVolume, transform: Matrix4): Box3 {
+    if (volume.region) {
+        throw new Error('boundingVolume.region is not yet supported');
+    }
+    if (volume.box) {
+        const box = tmp.b.copy(volume.box).applyMatrix4(transform);
+        return box.clone();
+    }
+    if (volume.sphere) {
+        const sphere = tmp.s.copy(volume.sphere).applyMatrix4(transform);
+        return sphere.getBoundingBox(new Box3());
+    }
+
+    throw new Error('the volume property does not have neither a box, a region or a volume');
+}
+
 export function cullingTestViewer(
     boundingVolume: BoundingVolume,
     camera: View,
