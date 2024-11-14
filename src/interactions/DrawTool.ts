@@ -684,6 +684,11 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
                 canUpdateFloor = false;
                 const height = position.z;
                 shape.floorElevation = height;
+
+                shape.showFloorLine = true;
+                shape.showVerticalLines = true;
+                shape.showFloorVertices = true;
+                shape.showVerticalLineLabels = true;
             }
 
             updateDashSize(shape);
@@ -719,10 +724,10 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
         };
 
         return this.createShape({
-            showFloorLine: true,
-            showVerticalLines: true,
-            showFloorVertices: true,
-            showVerticalLineLabels: true,
+            showFloorLine: false,
+            showVerticalLines: false,
+            showFloorVertices: false,
+            showVerticalLineLabels: false,
             showSegmentLabels: true,
             constraints: {
                 insertPoint: false,

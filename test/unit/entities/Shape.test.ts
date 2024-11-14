@@ -10,6 +10,35 @@ describe('Shape', () => {
         });
     });
 
+    describe('setPoints', () => {
+        it('should make a copy of the passed Vector3s', () => {
+            const shape = new Shape();
+
+            const points = [new Vector3(), new Vector3()];
+
+            shape.setPoints(points);
+
+            expect(shape.points[0]).not.toBe(points[0]);
+            expect(shape.points[1]).not.toBe(points[1]);
+        });
+    });
+
+    describe('updatePoint', () => {
+        it('should make a copy of the passed Vector3', () => {
+            const shape = new Shape();
+
+            const points = [new Vector3(), new Vector3()];
+
+            shape.setPoints(points);
+
+            const newPoint = new Vector3(1, 1);
+            shape.updatePoint(0, newPoint);
+
+            expect(shape.points[0]).toEqual(newPoint);
+            expect(shape.points[0]).not.toBe(newPoint);
+        });
+    });
+
     describe('getLength', () => {
         it('should return null when point count is less than 2', () => {
             const shape = new Shape();

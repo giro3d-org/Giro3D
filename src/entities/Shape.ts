@@ -1656,7 +1656,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
             return;
         }
 
-        this._points[index] = newPosition;
+        this._points[index] = newPosition.clone();
         this._segments.length = 0;
 
         this.rebuildGeometries();
@@ -1674,7 +1674,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         if (points == null || points.length === 0) {
             this._points.length = 0;
         } else {
-            this._points.splice(0, this._points.length, ...points);
+            this._points.splice(0, this._points.length, ...points.map(p => p.clone()));
         }
 
         this._segments.length = 0;
