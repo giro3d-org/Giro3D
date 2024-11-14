@@ -88,13 +88,13 @@ function initializeCamera() {
 
     instance.add(grid);
     grid.updateMatrixWorld(true);
+
+    StatusBar.bind(instance);
 }
 
 instance.add(ifc).then(initializeCamera);
 
 Inspector.attach('inspector', instance);
-
-StatusBar.bind(instance);
 
 const resultsTable = document.getElementById('results-body');
 
