@@ -13,6 +13,8 @@ import ConstantSizeSphere from '../renderer/ConstantSizeSphere';
 import { AbortError } from '../utils/PromiseUtils';
 
 const DEFAULT_MARKER_RADIUS = 5;
+const MIN_MARKER_RADIUS = 4;
+const MARKER_BORDER_WIDTH = 2;
 const OPACITY_OVER_VERTEX = 0.4;
 const OPACITY_OVER_EDGE = 0.4;
 
@@ -255,6 +257,25 @@ export type PointUpdatedCallback = ShapeModifiedCallback<{
     newPosition: Vector3;
 }>;
 
+function computeMarkerRadius(shape: Shape, type: 'vertex' | 'segment') {
+    let baseRadius: number;
+
+    // If we display the vertex marker on a vertex, we need it to be slightly
+    // bigger than the vertex. Otherwise, make it slightly bigger than the line.
+    switch (type) {
+        case 'vertex':
+            baseRadius = shape.showVertices
+                ? shape.vertexRadius + shape.borderWidth
+                : DEFAULT_MARKER_RADIUS;
+            break;
+        case 'segment':
+            baseRadius = shape.lineWidth / 2 + shape.borderWidth;
+            break;
+    }
+
+    return Math.max(MIN_MARKER_RADIUS, baseRadius + MARKER_BORDER_WIDTH);
+}
+
 /**
  * A tool that allows interactive creation and edition of {@link Shape}s.
  *
@@ -467,6 +488,15 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
                             index = segment + 1;
                             shape.insertPoint(index, picked.point);
                             onPointInserted({ shape, pointIndex: index, position: picked.point });
+
+                            const radius = computeMarkerRadius(shape, 'vertex');
+
+                            this.displayVertexMarker(
+                                shape,
+                                picked.point,
+                                radius,
+                                OPACITY_OVER_VERTEX,
+                            );
                         }
                     }
 
@@ -477,10 +507,12 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
                             isDragging = true;
                             pickedShape = shape;
 
+                            const radius = computeMarkerRadius(shape, 'vertex');
+
                             this.displayVertexMarker(
                                 shape,
                                 picked.point,
-                                shape.vertexRadius + shape.borderWidth,
+                                radius,
                                 OPACITY_OVER_VERTEX,
                             );
 
@@ -526,9 +558,12 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
                         });
 
                         if (this._selectedVertexMarker) {
-                            this._selectedVertexMarker.visible = true;
-                            this._selectedVertexMarker.position.copy(position);
-                            this._selectedVertexMarker.updateMatrixWorld(true);
+                            this.displayVertexMarker(
+                                pickedShape,
+                                position,
+                                computeMarkerRadius(pickedShape, 'vertex'),
+                                OPACITY_OVER_VERTEX,
+                            );
                         }
                     }
                 }
@@ -541,13 +576,11 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
 
                     const shape = picked.entity;
 
-                    const radius = shape.showVertices
-                        ? shape.vertexRadius + shape.borderWidth
-                        : DEFAULT_MARKER_RADIUS;
-
                     const opacity = isVertex ? OPACITY_OVER_VERTEX : OPACITY_OVER_EDGE;
 
                     if (isVertex || (isSegment && isOperationAllowed(shape, 'insertPoint'))) {
+                        const radius = computeMarkerRadius(shape, isVertex ? 'vertex' : 'segment');
+
                         this.displayVertexMarker(shape, picked.point, radius, opacity);
                     } else {
                         this.hideVertexMarker();
