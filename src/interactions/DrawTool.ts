@@ -91,6 +91,11 @@ function isOperationAllowed<K extends keyof Permissions>(
     return shape.userData.permissions[constraint] ?? true;
 }
 
+const isFirstVertexPicked = (shape: Shape, e: MouseEvent) => {
+    const pickSelf = shape.pick(new Vector2(e.clientX, e.clientY));
+    return pickSelf.length > 0 && pickSelf[0].pickedVertexIndex === 0;
+};
+
 /**
  * Options for the {@link DrawTool.createShape} method.
  */
@@ -721,7 +726,12 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
             const onMouseMove = (e: MouseEvent) => {
                 const point = pick(e)[0]?.point;
                 if (point != null) {
-                    points[points.length - 1].copy(point);
+                    if (options.closeRing === true && isFirstVertexPicked(shape, e)) {
+                        // Snap to first vertex to close the ring
+                        points[points.length - 1].copy(shape.points[0]);
+                    } else {
+                        points[points.length - 1].copy(point);
+                    }
                     updatePoints();
                     if (options?.onTemporaryPointMoved) {
                         options.onTemporaryPointMoved(shape, point);
@@ -783,19 +793,30 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
                         if (point != null) {
                             clickCount++;
 
-                            // Let's create a new point
-                            if (maxPoints != null && points.length < maxPoints) {
-                                if (options?.onPointCreated) {
-                                    const pointIndex = clickCount - 1;
-                                    options.onPointCreated(shape, pointIndex, point);
+                            if (
+                                clickCount > 2 &&
+                                options.closeRing === true &&
+                                isFirstVertexPicked(shape, e)
+                            ) {
+                                // Special case: in the case of rings, if the user clicks on the first
+                                // point, we close the ring and finish the drawing.
+                                points.pop();
+                                finishDrawing();
+                            } else {
+                                // Let's create a new point
+                                if (maxPoints != null && points.length < maxPoints) {
+                                    if (options?.onPointCreated) {
+                                        const pointIndex = clickCount - 1;
+                                        options.onPointCreated(shape, pointIndex, point);
+                                    }
+                                    points.push(point);
                                 }
-                                points.push(point);
-                            }
 
-                            updatePoints();
+                                updatePoints();
 
-                            if (clickCount === maxPoints) {
-                                finalize(shape);
+                                if (clickCount === maxPoints) {
+                                    finalize(shape);
+                                }
                             }
                         }
                     }
