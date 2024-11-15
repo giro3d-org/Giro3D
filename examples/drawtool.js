@@ -482,6 +482,7 @@ let editedShape = null;
 const editButton = bindButton('edit-clicked-shape', () => {
     highlightHoveredShape = true;
     editButton.disabled = true;
+    removeShapesButton.disabled = true;
 
     const onclick = (/** @type {MouseEvent} */ mouseEvent) => {
         if (mouseEvent.button === 0) {
@@ -507,6 +508,7 @@ const editButton = bindButton('edit-clicked-shape', () => {
 
     const onrightlick = () => {
         editButton.disabled = false;
+        removeShapesButton.disabled = shapes.length === 0;
         tool.exitEditMode();
         isEditModeActive = false;
         if (editedShape) {
