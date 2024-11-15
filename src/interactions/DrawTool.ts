@@ -1,4 +1,11 @@
-import { AdditiveBlending, BackSide, EventDispatcher, MeshBasicMaterial, Vector3 } from 'three';
+import {
+    AdditiveBlending,
+    BackSide,
+    EventDispatcher,
+    MeshBasicMaterial,
+    Vector2,
+    Vector3,
+} from 'three';
 import type Disposable from '../core/Disposable';
 import type Instance from '../core/Instance';
 import type PickResult from '../core/picking/PickResult';
@@ -17,6 +24,7 @@ const MIN_MARKER_RADIUS = 4;
 const MARKER_BORDER_WIDTH = 2;
 const OPACITY_OVER_VERTEX = 0.4;
 const OPACITY_OVER_EDGE = 0.4;
+const SQUARE_DISTANCE_LIMIT_FOR_CLICK_DETECTION = 25; // 5 pixels squared
 
 /**
  * Various constraints that can be applied to shapes created by this tool.
@@ -30,6 +38,12 @@ interface Permissions {
 type ShapeUserData = {
     permissions?: Permissions;
 };
+
+/**
+ * A callback that can be used to test for a mouse button or key combination.
+ * If the function returns `true`, the associated action is executed.
+ */
+export type MouseCallback = (e: MouseEvent) => boolean;
 
 /**
  * A pick function that is used by the drawtool to interact with the scene.
@@ -51,6 +65,12 @@ export type CommonCreationOptions = {
      * @param position - The position of the point.
      */
     onTemporaryPointMoved?: (shape: Shape, position: Vector3) => void;
+    /**
+     * The input required to finish drawing the shape.
+     * Does not apply to shapes that require a fixed number of points (i.e point, segment, etc).
+     * @defaultValue right click
+     */
+    endCondition?: MouseCallback;
 };
 
 export type CreationOptions = Partial<ShapeConstructorOptions> & CommonCreationOptions;
@@ -106,6 +126,17 @@ function inhibit(e: Event) {
     e.preventDefault();
     e.stopImmediatePropagation();
     e.stopPropagation();
+}
+
+function equals(a: Vector3, b: Vector3): boolean {
+    // 1 centimeter if the CRS is in meters, which is the case for 99% of the scenes,
+    // otherwise (if the CRS is in feet), it would 1/100th of a foot.
+    const epsilon = 0.01;
+    return (
+        Math.abs(a.x - b.x) < epsilon &&
+        Math.abs(a.y - b.y) < epsilon &&
+        Math.abs(a.z - b.z) < epsilon
+    );
 }
 
 const verticalLengthFormatter: VerticalLineLabelFormatter = (params: {
@@ -180,32 +211,81 @@ const LEFT_BUTTON = 0;
 const MIDDLE_BUTTON = 1;
 const RIGHT_BUTTON = 2;
 
-function middleButtonOrLeftButtonAndAlt(e: MouseEvent): boolean {
-    if (e.button === MIDDLE_BUTTON) {
-        return true;
-    }
+function middleButtonOrLeftButtonAndAlt(e: Event) {
+    if (e.type === 'mousedown') {
+        const mouseEvent = e as MouseEvent;
+        if (mouseEvent.button === MIDDLE_BUTTON) {
+            return true;
+        }
 
-    // OpenLayers style
-    if (e.button === LEFT_BUTTON && e.altKey) {
-        return true;
-    }
-
-    return false;
-}
-
-function leftButton(e: MouseEvent): boolean {
-    if (e.button === LEFT_BUTTON) {
-        return true;
+        // OpenLayers style
+        if (mouseEvent.button === LEFT_BUTTON && mouseEvent.altKey) {
+            return true;
+        }
     }
 
     return false;
 }
 
-/**
- * A callback that can be used to test for a mouse button or key combination.
- * If the function returns `true`, the associated action is executed.
- */
-export type MouseCallback = (e: MouseEvent) => boolean;
+function leftButton(e: Event) {
+    if (e.type === 'mousedown') {
+        if ((e as MouseEvent).button === LEFT_BUTTON) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+let lastMousePosition: Vector2 | null = null;
+let mouseCumulativeDistance: Vector2 | null = null;
+
+const rightClick: MouseCallback = e => {
+    if (e.type === 'mousedown' && e.button === RIGHT_BUTTON) {
+        mouseCumulativeDistance = new Vector2(0, 0);
+        lastMousePosition = new Vector2(e.screenX, e.screenY);
+    } else if (e.type === 'mousemove') {
+        if (lastMousePosition != null && mouseCumulativeDistance != null) {
+            const deltaX = Math.abs(e.screenX - lastMousePosition.x);
+            const deltaY = Math.abs(e.screenY - lastMousePosition.y);
+            mouseCumulativeDistance.x += deltaX;
+            mouseCumulativeDistance.y += deltaY;
+        }
+
+        lastMousePosition?.set(e.screenX, e.screenY);
+    } else if (e.type === 'mouseup' && e.button === RIGHT_BUTTON) {
+        const sqDistance = mouseCumulativeDistance?.lengthSq() ?? 0;
+
+        // We don't want the prevent the user from using the right button for other purposes,
+        // e.g rotating the camera, so let's ensure that any dragging motion of the mouse is
+        // not intepreted as a click. Note that the "contextmenu" event is not 100% equivalent
+        // to a right click, so we're not using it.
+        if (sqDistance < SQUARE_DISTANCE_LIMIT_FOR_CLICK_DETECTION) {
+            e.stopPropagation();
+            mouseCumulativeDistance = null;
+            lastMousePosition = null;
+            return true;
+        }
+    }
+
+    return false;
+};
+
+const doubleClick: MouseCallback = e => {
+    if (e.type === 'dblclick') {
+        if ((e as MouseEvent).button === LEFT_BUTTON) {
+            e.stopPropagation();
+            return true;
+        }
+    }
+
+    return false;
+};
+
+export const conditions = {
+    rightClick,
+    doubleClick,
+};
 
 /**
  * A callback that is called after a shape has been modified.
@@ -634,6 +714,8 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
 
         this._inhibitEdition = true;
 
+        const endCondition = options.endCondition ?? rightClick;
+
         const domElement = this._domElement;
 
         const { minPoints, maxPoints } = options;
@@ -643,7 +725,10 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
         this._instance.add(shape);
 
         const firstPoint = new Vector3();
-        const points = [firstPoint];
+        let points = [firstPoint];
+
+        const lastPointerLocation = new Vector2();
+        const currentPointerLocation = new Vector2();
 
         function updatePoints() {
             shape.setPoints([...points]);
@@ -688,61 +773,112 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
                 }
             };
 
-            const onMouseDown = (e: MouseEvent) => {
-                e.stopPropagation();
-
-                if (e.button === LEFT_BUTTON) {
-                    const point = pick(e)[0]?.point;
-                    if (point != null) {
-                        clickCount++;
-
-                        if (maxPoints != null && points.length < maxPoints) {
-                            if (options?.onPointCreated) {
-                                const pointIndex = clickCount - 1;
-                                options.onPointCreated(shape, pointIndex, point);
-                            }
-                            points.push(point);
+            const finishDrawing = () => {
+                if (minPoints != null && clickCount >= minPoints) {
+                    // Remove consecutive duplicate points
+                    points = points.filter((v, i, array) => {
+                        if (i > 0 && equals(v, array[i - 1])) {
+                            return false;
                         }
 
-                        updatePoints();
+                        return true;
+                    });
 
-                        if (clickCount === maxPoints) {
-                            finalize(shape);
-                        }
+                    shape.setPoints(points);
+
+                    if (options?.closeRing === true) {
+                        shape.makeClosed();
                     }
-                } else if (e.button === RIGHT_BUTTON) {
-                    if (minPoints != null && clickCount >= minPoints) {
-                        shape.setPoints(points.slice(0, -1));
-                        if (options?.closeRing === true) {
-                            shape.makeClosed();
+
+                    finalize(shape);
+                } else {
+                    this._instance.remove(shape);
+
+                    finalize(null);
+                }
+            };
+
+            const onMouseDown = (e: MouseEvent) => {
+                lastPointerLocation.set(e.screenX, e.screenY);
+            };
+
+            const onClick = (e: MouseEvent) => {
+                // Not a simple click
+                if (e.detail !== 1) {
+                    return;
+                }
+
+                e.stopPropagation();
+                currentPointerLocation.set(e.screenX, e.screenY);
+
+                // Check that the mouse is not dragging (might be a camera movement)
+                const distance = currentPointerLocation.distanceToSquared(lastPointerLocation);
+
+                if (distance <= SQUARE_DISTANCE_LIMIT_FOR_CLICK_DETECTION) {
+                    lastPointerLocation.copy(currentPointerLocation);
+
+                    if (e.button === LEFT_BUTTON) {
+                        const point = pick(e)[0]?.point;
+
+                        if (point != null) {
+                            clickCount++;
+
+                            // Let's create a new point
+                            if (maxPoints != null && points.length < maxPoints) {
+                                if (options?.onPointCreated) {
+                                    const pointIndex = clickCount - 1;
+                                    options.onPointCreated(shape, pointIndex, point);
+                                }
+                                points.push(point);
+                            }
+
+                            updatePoints();
+
+                            if (clickCount === maxPoints) {
+                                finalize(shape);
+                            }
                         }
-
-                        finalize(shape);
-                    } else {
-                        this._instance.remove(shape);
-
-                        finalize(null);
                     }
                 }
             };
 
             const signal = options.signal;
 
+            const handleEvent = (event: MouseEvent) => {
+                if (endCondition(event)) {
+                    finishDrawing();
+                } else {
+                    switch (event.type) {
+                        case 'click':
+                            onClick(event);
+                            break;
+                        case 'mousedown':
+                            onMouseDown(event);
+                            break;
+                        case 'mousemove':
+                            onMouseMove(event);
+                            break;
+                    }
+                }
+            };
+
             removeListeners = () => {
-                domElement.removeEventListener('mousedown', onMouseDown);
-                domElement.removeEventListener('mousemove', onMouseMove);
-                domElement.removeEventListener('mouseup', inhibit);
-                domElement.removeEventListener('contextmenu', inhibit);
+                domElement.removeEventListener('mousedown', handleEvent);
+                domElement.removeEventListener('mousemove', handleEvent);
+                domElement.removeEventListener('mouseup', handleEvent);
+                domElement.removeEventListener('dblclick', handleEvent);
+                domElement.removeEventListener('click', handleEvent);
 
                 signal?.removeEventListener('abort', onAbort);
             };
 
-            this._domElement.addEventListener('mousemove', onMouseMove);
-            this._domElement.addEventListener('mousedown', onMouseDown);
-            this._domElement.addEventListener('mouseup', inhibit);
-            this._domElement.addEventListener('contextmenu', inhibit);
+            domElement.addEventListener('mousedown', handleEvent, { signal });
+            domElement.addEventListener('mousemove', handleEvent, { signal });
+            domElement.addEventListener('mouseup', handleEvent, { signal });
+            domElement.addEventListener('dblclick', handleEvent, { signal });
+            domElement.addEventListener('click', handleEvent, { signal });
 
-            signal?.addEventListener('abort', onAbort);
+            signal?.addEventListener('abort', onAbort, { signal });
         });
 
         return promise;

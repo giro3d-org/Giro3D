@@ -12,6 +12,7 @@ import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
 import DrawTool, {
     afterRemovePointOfRing,
     afterUpdatePointOfRing,
+    conditions,
     inhibitHook,
     limitRemovePointHook,
 } from '@giro3d/giro3d/interactions/DrawTool.js';
@@ -121,6 +122,7 @@ const options = {
     areaUnit: 'm',
     lengthUnit: 'm',
     slopeUnit: 'deg',
+    endCondition: 'rightclick',
     surfaceOpacity: DEFAULT_SURFACE_OPACITY,
 };
 
@@ -355,6 +357,10 @@ function createShape(button, callback, specificOptions) {
             signal: abortController.signal,
             ...options,
             ...specificOptions,
+            endCondition:
+                options.endCondition === 'rightclick'
+                    ? conditions.rightClick
+                    : conditions.doubleClick,
             onTemporaryPointMoved: () => console.log('onTemporaryPointMoved'),
         })
         .then(shape => {
@@ -423,6 +429,9 @@ bindDropDown('length-unit', v => {
 bindDropDown('slope-unit', v => {
     options.slopeUnit = v;
     shapes.forEach(shape => shape.rebuildLabels());
+});
+bindDropDown('end-condition', v => {
+    options.endCondition = v;
 });
 bindButton('vertical-measurement', button => {
     createShape(button, tool.createVerticalMeasure, {
