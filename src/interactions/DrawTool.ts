@@ -13,6 +13,7 @@ import type { ShapePickResult, VerticalLineLabelFormatter } from '../entities/Sh
 import Shape, {
     angleFormatter,
     isShape,
+    isShapePickResult,
     slopeSegmentFormatter,
     type ShapeConstructorOptions,
 } from '../entities/Shape';
@@ -25,6 +26,8 @@ const MARKER_BORDER_WIDTH = 2;
 const OPACITY_OVER_VERTEX = 0.4;
 const OPACITY_OVER_EDGE = 0.4;
 const SQUARE_DISTANCE_LIMIT_FOR_CLICK_DETECTION = 25; // 5 pixels squared
+
+const tmpVec2 = new Vector2();
 
 /**
  * Various constraints that can be applied to shapes created by this tool.
@@ -92,6 +95,11 @@ function isOperationAllowed<K extends keyof Permissions>(
     return shape.userData.permissions[constraint] ?? true;
 }
 
+const isFirstVertexPicked = (shape: Shape, e: MouseEvent) => {
+    const pickSelf = shape.pick(tmpVec2.set(e.offsetX, e.offsetY));
+    return pickSelf.length > 0 && pickSelf[0].pickedVertexIndex === 0;
+};
+
 /**
  * Options for the {@link DrawTool.createShape} method.
  */
@@ -126,17 +134,6 @@ function inhibit(e: Event) {
     e.preventDefault();
     e.stopImmediatePropagation();
     e.stopPropagation();
-}
-
-function equals(a: Vector3, b: Vector3): boolean {
-    // 1 centimeter if the CRS is in meters, which is the case for 99% of the scenes,
-    // otherwise (if the CRS is in feet), it would 1/100th of a foot.
-    const epsilon = 0.01;
-    return (
-        Math.abs(a.x - b.x) < epsilon &&
-        Math.abs(a.y - b.y) < epsilon &&
-        Math.abs(a.z - b.z) < epsilon
-    );
 }
 
 const verticalLengthFormatter: VerticalLineLabelFormatter = (params: {
@@ -725,7 +722,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
         this._instance.add(shape);
 
         const firstPoint = new Vector3();
-        let points = [firstPoint];
+        const points = [firstPoint];
 
         const lastPointerLocation = new Vector2();
         const currentPointerLocation = new Vector2();
@@ -760,11 +757,41 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
             };
 
             const onMouseMove = (e: MouseEvent) => {
-                const point = pick(e)[0]?.point;
-                if (point != null) {
-                    points[points.length - 1].copy(point);
+                // When moving the temporary point around, we ecounter two possible scenarios:
+                // - we picked the first point of the shape
+                // - we picked something else
+                const picked = pick(e);
+
+                if (picked.length > 0) {
+                    let point: Vector3 | null = null;
+
+                    const shapePickResults = picked.filter(p => isShapePickResult(p));
+
+                    // First scenario: we clicked on the first point of the shape and the shape
+                    // is marked as a closed ring. We have to complete the drawing by closing the shape.
+                    if (
+                        options.closeRing === true &&
+                        shapePickResults.length > 0 &&
+                        shapePickResults[0].pickedVertexIndex === 0
+                    ) {
+                        // Snap to first vertex to close the ring
+                        points[points.length - 1].copy(shape.points[0]);
+                        point = shape.points[0];
+                    } else {
+                        // Second scenario: we didn't pick the first point of the shape
+                        // in ring mode. Let's see if we did actually pick the environment.
+                        // If not, then we didn't really pick anything and shouldn't
+                        // update the shape. Note that we don't want to pick the shape here,
+                        // although we might want to consider picking the shape to provide a
+                        // "snap" feature in the future. But for now, let's keep things simple.
+                        const nonShapeResults = picked.filter(p => !isShapePickResult(p));
+                        if (nonShapeResults.length > 0) {
+                            point = nonShapeResults[0].point;
+                            points[points.length - 1].copy(point);
+                        }
+                    }
                     updatePoints();
-                    if (options?.onTemporaryPointMoved) {
+                    if (point != null && options?.onTemporaryPointMoved) {
                         options.onTemporaryPointMoved(shape, point);
                     }
                     shape.visible = true;
@@ -775,15 +802,6 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
 
             const finishDrawing = () => {
                 if (minPoints != null && clickCount >= minPoints) {
-                    // Remove consecutive duplicate points
-                    points = points.filter((v, i, array) => {
-                        if (i > 0 && equals(v, array[i - 1])) {
-                            return false;
-                        }
-
-                        return true;
-                    });
-
                     shape.setPoints(points);
 
                     if (options?.closeRing === true) {
@@ -823,19 +841,30 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
                         if (point != null) {
                             clickCount++;
 
-                            // Let's create a new point
-                            if (maxPoints != null && points.length < maxPoints) {
-                                if (options?.onPointCreated) {
-                                    const pointIndex = clickCount - 1;
-                                    options.onPointCreated(shape, pointIndex, point);
+                            if (
+                                clickCount > 2 &&
+                                options.closeRing === true &&
+                                isFirstVertexPicked(shape, e)
+                            ) {
+                                // Special case: in the case of rings, if the user clicks on the first
+                                // point, we close the ring and finish the drawing.
+                                points.pop();
+                                finishDrawing();
+                            } else {
+                                // Let's create a new point
+                                if (maxPoints != null && points.length < maxPoints) {
+                                    if (options?.onPointCreated) {
+                                        const pointIndex = clickCount - 1;
+                                        options.onPointCreated(shape, pointIndex, point);
+                                    }
+                                    points.push(point);
                                 }
-                                points.push(point);
-                            }
 
-                            updatePoints();
+                                updatePoints();
 
-                            if (clickCount === maxPoints) {
-                                finalize(shape);
+                                if (clickCount === maxPoints) {
+                                    finalize(shape);
+                                }
                             }
                         }
                     }
