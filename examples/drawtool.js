@@ -506,7 +506,7 @@ const editButton = bindButton('edit-clicked-shape', () => {
         }
     };
 
-    const onrightlick = () => {
+    const ondoubleclick = () => {
         editButton.disabled = false;
         removeShapesButton.disabled = shapes.length === 0;
         tool.exitEditMode();
@@ -515,11 +515,11 @@ const editButton = bindButton('edit-clicked-shape', () => {
             editedShape.color = options.color;
             editedShape = null;
         }
-        instance.domElement.removeEventListener('contextmenu', onrightlick);
+        instance.domElement.removeEventListener('dblclick', ondoubleclick);
     };
 
     instance.domElement.addEventListener('click', onclick);
-    instance.domElement.addEventListener('contextmenu', onrightlick);
+    instance.domElement.addEventListener('dblclick', ondoubleclick);
 });
 
 function mousemove(mouseEvent) {
