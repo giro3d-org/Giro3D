@@ -1,5 +1,64 @@
 # Changelog
 
+## v0.40.0 (2024-11-18)
+
+This release mostly brings bugfixes and performance improvements, notably by using Web Workers for texture processing.
+
+### BREAKING CHANGE
+
+-   The `GetElevationOptions`, `GetElevationResult` and
+    `ElevationSample` types are moved from `entities` to `core` namespace.
+    `ElevationSample.map` is renamed `ElevationSample.source` and its type
+    is now `ElevationProvider`:
+-   The minimum supported OpenLayers version is 9.0.0.
+
+### Feat
+
+-   add `ElevationProvider` interface (#519)
+-   **DrawTool**: add callbacks when a shape has been updated (#538)
+-   **Outliner**: add toggle to collapse an object's own hierarchy
+-   **Entity**: raise event when initialization is complete
+-   **OperationCounter**: increment() now takes optional count argument
+-   **OperationCounter**: add the wrap() method to wrap a promise in an increment/decrement pair
+-   **Inspector**: assign default names to entry by parsing the pascal case property names
+-   **Cache**: `set()` is now generic over the type of cached object
+-   **AxisGrid**: accept partial style definition
+
+### Fix
+
+-   **DrawTool**: improve readability of edition marker for any background color
+-   **Shape**: ensure that `Vector3`s passed to the Shape are `clone()`d
+-   **DrawTool**: stop calling callbacks when edition is aborted (#539)
+-   **ColorLayer**: fix flickering when the source is synchronous (#525)
+-   **Tiles3D**: implement `getBoundingBox()` with the root tile's volume (#527)
+-   **ConstantSizeSphere**: fix incorrect size computation (#503)
+-   **TiledImageSource**: typo in projection not found error msg
+-   **Fetcher**: use exact same API as `fetch()` for all fetch functions
+-   **TileVS.glsl**: put neighbour textures in own array (#533)
+-   **Outliner**: use a step of 0.01 for `Vector3` controllers
+-   **ConstantSizeSphere**: ignore world scale (#532)
+-   **PointCloudMaterial**: fix incorrect support for logarithmic depth buffer
+-   **Instance**: honor entity parent when adding/removing (#531)
+-   **PickPointAt.ts**: use an explicit error message
+-   **PointCloud**: honor extent passed in constructor options
+-   **ColorMapInspector**: remove dependency to layer
+-   fix eslint issues raised by @typescript-eslint/strict-boolean-expressions
+-   **Map**: getElevation() automatically converts the coordinates to the correct CRS
+-   **HeightMap**: fix faulty boolean evaluation in `getMinMax()`
+
+### Perf
+
+-   **Shape**: don't compute uncessary values in `computeArea()`
+-   **TiledImageSource**: use worker-accelerated image decoding
+-   **GeoTIFFSource**: use worker-accelerated texture processing
+-   **GeoTIFFFormat**: use worker-accelerated texture processing
+-   **TextureGenerator**: accelerate pixel buffer creation using workers
+-   **TextureGenerator**: perform blob decoding in worker by default
+-   **MapboxTerrainFormat**: perform image decoding in worker
+-   **FeatureCollection**: avoid using `Feature.setId()` (#543)
+-   **BilFormat**: perform processing in web worker
+-   **MapboxTerrainFormat**: perform decoding in web worker
+
 ## v0.39.0 (2024-09-03)
 
 This release brings **color layer blending modes** as well as many fixes and API improvements.
