@@ -54,6 +54,9 @@ const CACHE_TTL = 30_000; // 30 seconds
 
 const vector = new Vector3();
 
+// A unique property name to avoid conflicting with existing feature attributes
+const ID_PROPERTY = '___37499262-65c9-FeatureCollection_ID';
+
 /**
  * The content of the `.userData` property of the {@link SimpleGeometryMesh}es created by this entity.
  */
@@ -136,7 +139,7 @@ class FeatureTile extends Group {
             if (isSimpleGeometryMesh<MeshUserData>(obj)) {
                 obj.dispose();
                 const feature = nonNull(obj.userData.feature);
-                const id = nonNull(feature.getId());
+                const id = nonNull(feature.get(ID_PROPERTY));
                 set.delete(id);
             }
         });
@@ -717,10 +720,14 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         const meshes: SimpleGeometryMesh<MeshUserData>[] = [];
 
         for (const feature of features) {
-            let id = feature.getId();
+            let id = feature.get(ID_PROPERTY);
             if (id == null) {
                 id = MathUtils.generateUUID();
-                feature.setId(id);
+                // We used to use the Feature.setId() method, but it is atrociously slow
+                // as it forces re-indexing the features in the source. Since we don't want
+                // that, we use an arbitrary property name instead.
+                // https://gitlab.com/giro3d/giro3d/-/issues/543
+                feature.set(ID_PROPERTY, id);
             }
 
             if (this._tileIdSet.has(id)) {
@@ -898,7 +905,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
                         }
 
                         for (const mesh of meshes) {
-                            const id = nonNull(mesh.userData.feature?.getId());
+                            const id = nonNull(mesh.userData.feature?.get(ID_PROPERTY));
 
                             if (!this._tileIdSet.has(id) || id == null) {
                                 this._tileIdSet.add(id);
