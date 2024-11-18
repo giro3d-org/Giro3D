@@ -1,6 +1,6 @@
 {
     "name": "@giro3d/giro3d",
-    "version": "0.40.0-dev",
+    "version": "0.41.0-dev",
     "description": "A JS/WebGL framework for 3D geospatial data visualization",
     "keywords": [
         "front-end",
