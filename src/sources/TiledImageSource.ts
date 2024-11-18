@@ -57,6 +57,11 @@ export interface TiledImageSourceOptions extends ImageSourceOptions {
      * @defaultValue 3
      */
     retries?: number;
+    /**
+     * Enable web workers.
+     * @defaultValue true
+     */
+    enableWorkers?: boolean;
 }
 
 /**
@@ -104,6 +109,7 @@ export default class TiledImageSource extends ImageSource {
     private readonly _getTileUrl: UrlFunction;
     private readonly _sourceExtent: Extent;
     private readonly _downloader: ConcurrentDownloader;
+    private readonly _enableWorkers: boolean;
 
     /** @internal */
     readonly info = {
@@ -125,6 +131,7 @@ export default class TiledImageSource extends ImageSource {
 
         this.source = options.source;
         this.format = options.format;
+        this._enableWorkers = options.enableWorkers ?? true;
         this._downloader = new ConcurrentDownloader({
             retry: options.retries ?? DEFAULT_RETRIES,
             timeout: options.httpTimeout ?? DEFAULT_TIMEOUT,
@@ -348,6 +355,7 @@ export default class TiledImageSource extends ImageSource {
             texture = await TextureGenerator.decodeBlob(blob, {
                 createDataTexture,
                 flipY: true,
+                enableWorkers: this._enableWorkers,
             });
             texture.flipY = false;
         }
