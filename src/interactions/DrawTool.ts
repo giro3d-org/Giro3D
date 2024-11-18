@@ -13,6 +13,8 @@ import ConstantSizeSphere from '../renderer/ConstantSizeSphere';
 import { AbortError } from '../utils/PromiseUtils';
 
 const DEFAULT_MARKER_RADIUS = 5;
+const MIN_MARKER_RADIUS = 4;
+const MARKER_BORDER_WIDTH = 2;
 const OPACITY_OVER_VERTEX = 0.4;
 const OPACITY_OVER_EDGE = 0.4;
 
@@ -29,6 +31,9 @@ type ShapeUserData = {
     permissions?: Permissions;
 };
 
+/**
+ * A pick function that is used by the drawtool to interact with the scene.
+ */
 export type PickCallback = (event: MouseEvent) => PickResult[];
 
 export type CommonCreationOptions = {
@@ -122,12 +127,22 @@ export interface DrawToolEventMap {
     'end-drag': Record<string, unknown>;
 }
 
+/**
+ * A hook that prevents the operation from occuring.
+ */
 export const inhibitHook = () => false;
 
+/**
+ * A hook that prevents the removal of a point if the new number of points is below a limit (e.g
+ * removing a point of a 2-point LineString).
+ */
 export const limitRemovePointHook = (limit: number) => (options: { shape: Shape }) => {
     return options.shape.points.length > limit;
 };
 
+/**
+ * A hook that ensures the ring remains closed after the first or last point of the ring is removed.
+ */
 export const afterRemovePointOfRing = (options: { shape: Shape; index: number }) => {
     const { shape, index } = options;
 
@@ -142,6 +157,9 @@ export const afterRemovePointOfRing = (options: { shape: Shape; index: number })
     shape.makeClosed();
 };
 
+/**
+ * A hook that ensures the ring remains closed after the first or last point of the ring is moved.
+ */
 export const afterUpdatePointOfRing = (options: {
     shape: Shape;
     index: number;
@@ -150,10 +168,10 @@ export const afterUpdatePointOfRing = (options: {
     const { index, shape, newPosition } = options;
 
     if (index === 0) {
-        // Also remove last point
+        // Also update last point
         shape.updatePoint(shape.points.length - 1, newPosition);
     } else if (index === shape.points.length - 1) {
-        // Also remove first point
+        // Also update first point
         shape.updatePoint(0, newPosition);
     }
 };
@@ -188,6 +206,75 @@ function leftButton(e: MouseEvent): boolean {
  * If the function returns `true`, the associated action is executed.
  */
 export type MouseCallback = (e: MouseEvent) => boolean;
+
+/**
+ * A callback that is called after a shape has been modified.
+ */
+export type ShapeModifiedCallback<T> = (
+    arg: {
+        /**
+         * The modified shape.
+         */
+        shape: Shape;
+    } & T,
+) => void;
+
+/**
+ * Called when a point has been inserted in a shape during edition.
+ */
+export type PointInsertedCallback = ShapeModifiedCallback<{
+    /**
+     * The index of the inserted point.
+     */
+    pointIndex: number;
+    /**
+     * The position of the inserted point.
+     */
+    position: Vector3;
+}>;
+
+/**
+ * Called when a point has been removed in a shape during edition.
+ */
+export type PointRemovedCallback = ShapeModifiedCallback<{
+    /**
+     * The index of the inserted point.
+     */
+    pointIndex: number;
+}>;
+
+/**
+ * Called when a point has been moved during edition.
+ */
+export type PointUpdatedCallback = ShapeModifiedCallback<{
+    /**
+     * The index of the updated point.
+     */
+    pointIndex: number;
+    /**
+     * The new position of the updated point.
+     */
+    newPosition: Vector3;
+}>;
+
+function computeMarkerRadius(shape: Shape, type: 'vertex' | 'segment') {
+    let baseRadius: number;
+
+    // If we display the vertex marker on a vertex, we need it to be slightly
+    // bigger than the vertex. Otherwise, make it slightly bigger than the line.
+    switch (type) {
+        case 'vertex':
+            baseRadius = shape.showVertices
+                ? shape.vertexRadius + shape.borderWidth
+                : DEFAULT_MARKER_RADIUS;
+            break;
+        case 'segment':
+            baseRadius = shape.lineWidth / 2 + shape.borderWidth;
+            break;
+    }
+
+    return Math.max(MIN_MARKER_RADIUS, baseRadius + MARKER_BORDER_WIDTH);
+}
 
 /**
  * A tool that allows interactive creation and edition of {@link Shape}s.
@@ -311,6 +398,18 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
          */
         onSegmentClicked?: MouseCallback;
         /**
+         * An optional callback called when a point has been inserted.
+         */
+        onPointInserted?: PointInsertedCallback;
+        /**
+         * An optional callback called when a point has been removed.
+         */
+        onPointRemoved?: PointRemovedCallback;
+        /**
+         * An optional callback called when a point has been updated (i.e moved).
+         */
+        onPointUpdated?: PointUpdatedCallback;
+        /**
          * The shapes to edit. If `undefined` or empty, all shapes become editable.
          */
         shapesToEdit?: Shape[];
@@ -328,6 +427,10 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
             options?.onBeforePointRemoved ?? middleButtonOrLeftButtonAndAlt;
         const onBeforePointMoved = options?.onBeforePointMoved ?? leftButton;
         const onBeforePointInserted = options?.onSegmentClicked ?? leftButton;
+        const noOp = () => {};
+        const onPointInserted = options?.onPointInserted ?? noOp;
+        const onPointRemoved = options?.onPointRemoved ?? noOp;
+        const onPointUpdated = options?.onPointUpdated ?? noOp;
 
         const pick: PickCallback = options?.pick ?? this.defaultPick.bind(this);
         const pickFirstShape = (e: MouseEvent) => {
@@ -384,6 +487,16 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
                         if (onBeforePointInserted(e)) {
                             index = segment + 1;
                             shape.insertPoint(index, picked.point);
+                            onPointInserted({ shape, pointIndex: index, position: picked.point });
+
+                            const radius = computeMarkerRadius(shape, 'vertex');
+
+                            this.displayVertexMarker(
+                                shape,
+                                picked.point,
+                                radius,
+                                OPACITY_OVER_VERTEX,
+                            );
                         }
                     }
 
@@ -394,10 +507,12 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
                             isDragging = true;
                             pickedShape = shape;
 
+                            const radius = computeMarkerRadius(shape, 'vertex');
+
                             this.displayVertexMarker(
                                 shape,
                                 picked.point,
-                                shape.vertexRadius + shape.borderWidth,
+                                radius,
                                 OPACITY_OVER_VERTEX,
                             );
 
@@ -406,6 +521,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
 
                         if (isOperationAllowed(shape, 'removePoint') && onBeforePointRemoved(e)) {
                             shape.removePoint(index);
+                            onPointRemoved({ shape, pointIndex: index });
                         }
                     }
                 }
@@ -435,11 +551,19 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
                     const position = pickNonShapes(e)?.point;
                     if (position) {
                         pickedShape.updatePoint(pickedVertexIndex, position);
+                        onPointUpdated({
+                            shape: pickedShape,
+                            pointIndex: pickedVertexIndex,
+                            newPosition: position,
+                        });
 
                         if (this._selectedVertexMarker) {
-                            this._selectedVertexMarker.visible = true;
-                            this._selectedVertexMarker.position.copy(position);
-                            this._selectedVertexMarker.updateMatrixWorld(true);
+                            this.displayVertexMarker(
+                                pickedShape,
+                                position,
+                                computeMarkerRadius(pickedShape, 'vertex'),
+                                OPACITY_OVER_VERTEX,
+                            );
                         }
                     }
                 }
@@ -452,13 +576,11 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
 
                     const shape = picked.entity;
 
-                    const radius = shape.showVertices
-                        ? shape.vertexRadius + shape.borderWidth
-                        : DEFAULT_MARKER_RADIUS;
-
                     const opacity = isVertex ? OPACITY_OVER_VERTEX : OPACITY_OVER_EDGE;
 
                     if (isVertex || (isSegment && isOperationAllowed(shape, 'insertPoint'))) {
+                        const radius = computeMarkerRadius(shape, isVertex ? 'vertex' : 'segment');
+
                         this.displayVertexMarker(shape, picked.point, radius, opacity);
                     } else {
                         this.hideVertexMarker();
@@ -530,25 +652,27 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
         const promise = new Promise<Shape | null>((resolve, reject) => {
             let clickCount = 0;
 
+            let removeListeners: (() => void) | undefined = undefined;
+
             const finalize = (shape: Shape | null) => {
                 if (shape) {
                     shape.pickableLabels = pickableLabels;
+                }
+                if (removeListeners) {
+                    removeListeners();
                 }
                 this.exitCreateMode();
                 resolve(shape);
             };
 
-            if (options?.signal) {
-                const signal = options.signal;
-
-                const onAbort = () => {
-                    this._instance.remove(shape);
-                    this.exitCreateMode();
-                    reject(new AbortError());
-                };
-
-                signal.addEventListener('abort', onAbort);
-            }
+            const onAbort = () => {
+                this._instance.remove(shape);
+                if (removeListeners) {
+                    removeListeners();
+                }
+                this.exitCreateMode();
+                reject(new AbortError());
+            };
 
             const onMouseMove = (e: MouseEvent) => {
                 const point = pick(e)[0]?.point;
@@ -567,13 +691,6 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
             const onMouseDown = (e: MouseEvent) => {
                 e.stopPropagation();
 
-                const removeListeners = () => {
-                    domElement.removeEventListener('mousedown', onMouseDown);
-                    domElement.removeEventListener('mousemove', onMouseMove);
-                    domElement.removeEventListener('mouseup', inhibit);
-                    domElement.removeEventListener('contextmenu', inhibit);
-                };
-
                 if (e.button === LEFT_BUTTON) {
                     const point = pick(e)[0]?.point;
                     if (point != null) {
@@ -590,14 +707,10 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
                         updatePoints();
 
                         if (clickCount === maxPoints) {
-                            removeListeners();
                             finalize(shape);
                         }
                     }
                 } else if (e.button === RIGHT_BUTTON) {
-                    // Finalize the shape
-                    removeListeners();
-
                     if (minPoints != null && clickCount >= minPoints) {
                         shape.setPoints(points.slice(0, -1));
                         if (options?.closeRing === true) {
@@ -613,10 +726,23 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
                 }
             };
 
+            const signal = options.signal;
+
+            removeListeners = () => {
+                domElement.removeEventListener('mousedown', onMouseDown);
+                domElement.removeEventListener('mousemove', onMouseMove);
+                domElement.removeEventListener('mouseup', inhibit);
+                domElement.removeEventListener('contextmenu', inhibit);
+
+                signal?.removeEventListener('abort', onAbort);
+            };
+
             this._domElement.addEventListener('mousemove', onMouseMove);
             this._domElement.addEventListener('mousedown', onMouseDown);
             this._domElement.addEventListener('mouseup', inhibit);
             this._domElement.addEventListener('contextmenu', inhibit);
+
+            signal?.addEventListener('abort', onAbort);
         });
 
         return promise;
@@ -680,6 +806,11 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
                 canUpdateFloor = false;
                 const height = position.z;
                 shape.floorElevation = height;
+
+                shape.showFloorLine = true;
+                shape.showVerticalLines = true;
+                shape.showFloorVertices = true;
+                shape.showVerticalLineLabels = true;
             }
 
             updateDashSize(shape);
@@ -715,10 +846,10 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
         };
 
         return this.createShape({
-            showFloorLine: true,
-            showVerticalLines: true,
-            showFloorVertices: true,
-            showVerticalLineLabels: true,
+            showFloorLine: false,
+            showVerticalLines: false,
+            showFloorVertices: false,
+            showVerticalLineLabels: false,
             showSegmentLabels: true,
             constraints: {
                 insertPoint: false,

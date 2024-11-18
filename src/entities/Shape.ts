@@ -515,11 +515,11 @@ function computeArea(
     const origin = points[0];
 
     const closedPolygon = getClosedPolygon(points);
-    const coordinateAsNumbers = toNumberArray(closedPolygon, origin);
     const indices = earcut(toNumberArray(points, origin), undefined, 3);
 
     let geometry: BufferGeometry | undefined = undefined;
     if (computeGeometry) {
+        const coordinateAsNumbers = toNumberArray(closedPolygon, origin);
         geometry = new BufferGeometry();
         geometry.setAttribute('position', new Float32BufferAttribute(coordinateAsNumbers, 3));
         geometry.setIndex(indices);
@@ -1656,7 +1656,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
             return;
         }
 
-        this._points[index] = newPosition;
+        this._points[index] = newPosition.clone();
         this._segments.length = 0;
 
         this.rebuildGeometries();
@@ -1674,7 +1674,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         if (points == null || points.length === 0) {
             this._points.length = 0;
         } else {
-            this._points.splice(0, this._points.length, ...points);
+            this._points.splice(0, this._points.length, ...points.map(p => p.clone()));
         }
 
         this._segments.length = 0;

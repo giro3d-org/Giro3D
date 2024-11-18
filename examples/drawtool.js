@@ -355,6 +355,7 @@ function createShape(button, callback, specificOptions) {
             signal: abortController.signal,
             ...options,
             ...specificOptions,
+            onTemporaryPointMoved: () => console.log('onTemporaryPointMoved'),
         })
         .then(shape => {
             if (shape) {
@@ -481,6 +482,7 @@ let editedShape = null;
 const editButton = bindButton('edit-clicked-shape', () => {
     highlightHoveredShape = true;
     editButton.disabled = true;
+    removeShapesButton.disabled = true;
 
     const onclick = (/** @type {MouseEvent} */ mouseEvent) => {
         if (mouseEvent.button === 0) {
@@ -496,6 +498,9 @@ const editButton = bindButton('edit-clicked-shape', () => {
 
                 tool.enterEditMode({
                     shapesToEdit: [shape],
+                    onPointInserted: arg => console.log('onPointInserted', arg),
+                    onPointUpdated: arg => console.log('onPointMoved', arg),
+                    onPointRemoved: arg => console.log('onPointRemoved', arg),
                 });
             }
         }
@@ -503,6 +508,7 @@ const editButton = bindButton('edit-clicked-shape', () => {
 
     const onrightlick = () => {
         editButton.disabled = false;
+        removeShapesButton.disabled = shapes.length === 0;
         tool.exitEditMode();
         isEditModeActive = false;
         if (editedShape) {
