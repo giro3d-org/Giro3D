@@ -20,6 +20,17 @@ const styles = `
 }
 `;
 
+function visit(root: Element, callbackFn: (element: Element) => void) {
+    if (root != null) {
+        callbackFn(root);
+        if (root.childElementCount > 0) {
+            for (const child of root.children) {
+                visit(child, callbackFn);
+            }
+        }
+    }
+}
+
 const styleSheet = document.createElement('style');
 styleSheet.type = 'text/css';
 styleSheet.innerText = styles;
@@ -143,6 +154,16 @@ class Inspector {
 
     update() {
         this.folders.forEach(f => f.update());
+
+        // Remove autocomplete on all Input elements to avoid causing issues on some browsers
+        // See https://gitlab.com/giro3d/giro3d/-/issues/526
+        // Note: we have to do it for each iteration because the content of the inspector can change
+        // over time (e.g entities added and removed)
+        visit(this.gui.domElement, element => {
+            if (element instanceof HTMLInputElement) {
+                element.autocomplete = 'off';
+            }
+        });
     }
 }
 
