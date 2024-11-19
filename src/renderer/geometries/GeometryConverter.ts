@@ -637,9 +637,10 @@ export default class GeometryConverter<
         } else if (options.fill && mesh.surface) {
             const fill = getFullFillStyle(options.fill);
 
-            const surfacematerial = mesh.isExtruded
-                ? this._shadedSurfaceMaterialGenerator(fill)
-                : this._unshadedSurfaceMaterialGenerator(fill);
+            const surfacematerial =
+                fill.shading === true
+                    ? this._shadedSurfaceMaterialGenerator(fill)
+                    : this._unshadedSurfaceMaterialGenerator(fill);
 
             mesh.surface.update({
                 material: surfacematerial,
@@ -751,12 +752,10 @@ export default class GeometryConverter<
     }
 
     private getSurfaceMesh(polygon: Polygon, options: PolygonOptions): SurfaceMesh {
-        // In the case of 3D surfaces, we opt for a shaded material,
-        // whereas in the case of flat polygons, we use an unshaded material.
         const fill = getFullFillStyle(options.fill);
 
         const material =
-            options.extrusionOffset != null
+            fill.shading === true
                 ? this._shadedSurfaceMaterialGenerator(fill)
                 : this._unshadedSurfaceMaterialGenerator(fill);
 
@@ -765,7 +764,7 @@ export default class GeometryConverter<
         const surface = new SurfaceMesh({ geometry, material, opacity: fill.opacity });
 
         // Surfaces can either be extruded (3D) or non-extruded (2D).
-        if (options.extrusionOffset != null) {
+        if (fill.shading === true) {
             geometry.computeVertexNormals();
         }
 

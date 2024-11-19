@@ -164,6 +164,7 @@ const buildingStyle = feature => {
     return {
         fill: {
             color: fill,
+            shading: true,
         },
         stroke: {
             color: clicked ? 'yellow' : hovered ? 'white' : 'black',
