@@ -30,6 +30,8 @@ const points = [
     new Vector3(),
 ];
 
+const IDENTITY = new Matrix4();
+
 export interface CameraOptions {
     /** the THREE camera to use */
     camera?: PerspectiveCamera;
@@ -60,6 +62,7 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
     private _minNear: number = DEFAULT_MIN_NEAR_PLANE;
     private _controls: ExternalControls | null = null;
     private _onControlsUpdated = () => this.dispatchEvent({ type: 'change' });
+    private _frustum: Frustum = new Frustum();
 
     /**
      * The width, in pixels, of this view.
@@ -234,6 +237,8 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
             this.camera.projectionMatrix,
             this.camera.matrixWorldInverse,
         );
+
+        this._frustum.setFromProjectionMatrix(this._viewMatrix);
     }
 
     private resize(width?: number, height?: number) {
@@ -270,23 +275,23 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
     }
 
     isBox3Visible(box3: Box3, matrixWorld?: Matrix4) {
-        if (matrixWorld) {
+        if (matrixWorld && !matrixWorld.equals(IDENTITY)) {
             tmp.matrix.multiplyMatrices(this._viewMatrix, matrixWorld);
             tmp.frustum.setFromProjectionMatrix(tmp.matrix);
+            return tmp.frustum.intersectsBox(box3);
         } else {
-            tmp.frustum.setFromProjectionMatrix(this._viewMatrix);
+            return this._frustum.intersectsBox(box3);
         }
-        return tmp.frustum.intersectsBox(box3);
     }
 
     isSphereVisible(sphere: Sphere, matrixWorld?: Matrix4) {
-        if (matrixWorld) {
+        if (matrixWorld && !matrixWorld.equals(IDENTITY)) {
             tmp.matrix.multiplyMatrices(this._viewMatrix, matrixWorld);
             tmp.frustum.setFromProjectionMatrix(tmp.matrix);
+            return tmp.frustum.intersectsSphere(sphere);
         } else {
-            tmp.frustum.setFromProjectionMatrix(this._viewMatrix);
+            return this._frustum.intersectsSphere(sphere);
         }
-        return tmp.frustum.intersectsSphere(sphere);
     }
 
     box3SizeOnScreen(box3: Box3, matrixWorld: Matrix4) {
