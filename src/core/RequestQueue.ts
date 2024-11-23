@@ -110,6 +110,10 @@ class RequestQueue extends EventDispatcher<RequestQueueEvents> implements Progre
         this._maxConcurrentRequests = options.maxConcurrentRequests ?? MAX_CONCURRENT_REQUESTS;
     }
 
+    get length() {
+        return this._queue.getCount();
+    }
+
     get progress() {
         return this._opCounter.progress;
     }

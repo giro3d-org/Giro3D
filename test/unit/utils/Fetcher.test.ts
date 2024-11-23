@@ -18,6 +18,7 @@ describe('Fetcher', () => {
         delete global.fetch;
         // @ts-expect-error property does not exist
         Fetcher._eventTarget._listeners = {};
+        HttpConfiguration.clear();
     });
 
     describe('FetcherEventDispatcher', () => {
@@ -76,12 +77,30 @@ describe('Fetcher', () => {
 
             await expect(Fetcher.fetch('http://example.com')).resolves.toEqual({ ok: true });
 
-            expect(global.fetch).toHaveBeenCalledWith({
-                url: 'http://example.com',
-                headers: {
-                    Authorization: 'the auth',
+            expect(global.fetch).toHaveBeenCalledWith(
+                {
+                    url: 'http://example.com',
+                    headers: {
+                        Authorization: 'the auth',
+                    },
                 },
-            });
+                {
+                    priority: undefined,
+                },
+            );
+        });
+
+        it('should honor request priority', async () => {
+            global.fetch = jest.fn(() => Promise.resolve({ ok: true })) as jest.Mock;
+
+            await expect(
+                Fetcher.fetch('http://example.com', { priority: 'high' }),
+            ).resolves.toEqual({ ok: true });
+
+            expect(global.fetch).toHaveBeenCalledWith(
+                { url: 'http://example.com', headers: {} },
+                { priority: 'high' },
+            );
         });
 
         it('should honor existing headers', async () => {
@@ -96,13 +115,18 @@ describe('Fetcher', () => {
             };
             await expect(Fetcher.fetch('http://example.com', opts)).resolves.toEqual({ ok: true });
 
-            expect(global.fetch).toHaveBeenCalledWith({
-                url: 'http://example.com',
-                headers: {
-                    Authorization: 'the auth',
-                    ExistingHeader: 'value',
+            expect(global.fetch).toHaveBeenCalledWith(
+                {
+                    url: 'http://example.com',
+                    headers: {
+                        Authorization: 'the auth',
+                        ExistingHeader: 'value',
+                    },
                 },
-            });
+                {
+                    priority: undefined,
+                },
+            );
         });
     });
 
