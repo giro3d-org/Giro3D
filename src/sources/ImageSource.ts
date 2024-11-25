@@ -105,6 +105,11 @@ export interface ImageSourceOptions {
      * Is this source able to generate images synchronously ?
      */
     synchronous?: boolean;
+    /**
+     * The relative [priority](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit#priority) of HTTP requests emitted by this source.
+     * @defaultValue `'auto'`
+     */
+    requestPriority?: RequestPriority;
 }
 
 export interface ImageSourceEvents {
@@ -125,6 +130,8 @@ abstract class ImageSource<Events extends ImageSourceEvents = ImageSourceEvents>
     readonly isMemoryUsage = true as const;
     readonly isImageSource: boolean = true;
     readonly type: string;
+
+    readonly priority: RequestPriority = 'auto';
 
     private readonly _customColorSpace: ColorSpace | undefined;
 
@@ -154,6 +161,7 @@ abstract class ImageSource<Events extends ImageSourceEvents = ImageSourceEvents>
         this.flipY = options.flipY ?? false;
         this.datatype = (options.is8bit ?? true) ? UnsignedByteType : FloatType;
         this._customColorSpace = options.colorSpace;
+        this.priority = options.requestPriority ?? 'auto';
 
         this.containsFn = options.containsFn;
 
