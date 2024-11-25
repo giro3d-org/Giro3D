@@ -196,9 +196,11 @@ class VectorTileSource extends ImageSource {
             format: options.format ?? new MVT(),
         });
 
+        const priority = this.priority;
+
         async function tileLoadFunction(image: Tile, url: string) {
             if (image instanceof VectorTile) {
-                const response = await Fetcher.fetch(url);
+                const response = await Fetcher.fetch(url, { priority });
                 if (response.status === 200) {
                     const imageData = await response.arrayBuffer();
                     const features = image.getFormat().readFeatures(imageData, {
