@@ -147,6 +147,12 @@ class FetcherClient extends BaseClient {
         retry: 3,
         timeout: 10000,
     });
+    private _priority: RequestPriority;
+
+    constructor(url: string, options: { priority: RequestPriority }) {
+        super(url);
+        this._priority = options.priority;
+    }
 
     // @ts-expect-error (untyped base method)
     async request({ headers, credentials, signal } = {}): Promise<FetcherResponse> {
@@ -154,6 +160,7 @@ class FetcherClient extends BaseClient {
             headers,
             credentials,
             signal,
+            priority: this._priority,
         });
         return new FetcherResponse(response);
     }
@@ -404,7 +411,7 @@ class GeoTIFFSource extends ImageSource {
             blockSize: this._cacheOptions?.blockSize,
         };
         const url = this.url;
-        const client = new FetcherClient(url);
+        const client = new FetcherClient(url, { priority: this.priority });
         // We are using a custom client to ensure that outgoing requests are done through
         // the Fetcher so we can benefit from automatic HTTP configuration and control over
         // outgoing requests.
