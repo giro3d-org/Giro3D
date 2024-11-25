@@ -276,7 +276,10 @@ export default class TiledImageSource extends ImageSource {
 
     private async fetchData(url: string, signal: AbortSignal | undefined) {
         try {
-            const response = await this._downloader.fetch(url, { signal });
+            const response = await this._downloader.fetch(url, {
+                signal,
+                priority: this.priority,
+            });
 
             // If the response is 204 No Content for example, we have nothing to do.
             // This happens when a tile request is valid, but points to a region with no data.
