@@ -87,7 +87,7 @@ export default class StaticImageSource extends ImageSource<StaticImageSourceEven
 
     private async fetchTexture(url: string): Promise<Texture> {
         // We directly flip the texture during decoding, which is why we don't need to flip it in the layer itself.
-        return Fetcher.texture(url, { flipY: true })
+        return Fetcher.texture(url, { flipY: true, priority: this.priority })
             .then(texture => {
                 this.dispatchEvent({ type: 'loaded' });
                 return texture;
