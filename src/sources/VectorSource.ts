@@ -236,7 +236,7 @@ class VectorSource extends ImageSource {
             this.source.addFeatures(this.data);
         } else if ('url' in this.data) {
             const { url, format } = this.data;
-            const content = await Fetcher.text(url.toString());
+            const content = await Fetcher.text(url.toString(), { priority: this.priority });
             const features = this.loadFeaturesFromContent(content, format);
             this.source.addFeatures(features);
         } else if ('content' in this.data) {
