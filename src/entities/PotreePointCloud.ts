@@ -21,10 +21,7 @@ import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../core/Memo
 import OperationCounter from '../core/OperationCounter';
 import type Pickable from '../core/picking/Pickable';
 import type PickOptions from '../core/picking/PickOptions';
-import pickPointsAt, {
-    preparePointGeometryForPicking,
-    type PointsPickResult,
-} from '../core/picking/PickPointsAt';
+import pickPointsAt, { type PointsPickResult } from '../core/picking/PickPointsAt';
 import PointCloud from '../core/PointCloud';
 import type RequestQueue from '../core/RequestQueue';
 import { DefaultQueue } from '../core/RequestQueue';
@@ -858,9 +855,6 @@ class PotreePointCloud<UserData extends EntityUserData = EntityUserData>
             extent: Extent.fromBox3(this.instance.referenceCrs, metadata.bbox),
         });
         points.name = `r${metadata.name}.${this.extension}`;
-        if (PointCloudMaterial.isPointCloudMaterial(points.material)) {
-            preparePointGeometryForPicking(points.geometry);
-        }
         points.frustumCulled = false;
         points.matrixAutoUpdate = false;
         points.position.copy(metadata.bbox.min);

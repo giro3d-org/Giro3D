@@ -1,12 +1,4 @@
-import {
-    BufferAttribute,
-    Color,
-    UnsignedByteType,
-    Vector3,
-    type BufferGeometry,
-    type Points,
-    type Vector2,
-} from 'three';
+import { Color, FloatType, Vector3, type Points, type Vector2 } from 'three';
 import type Entity3D from '../../entities/Entity3D';
 import PointCloudMaterial from '../../renderer/PointCloudMaterial';
 import type Instance from '../Instance';
@@ -42,23 +34,6 @@ interface PickPointsCandidate {
     coord: { x: number; y: number; z: number };
 }
 
-export function preparePointGeometryForPicking(pointsGeometry: BufferGeometry) {
-    // generate unique id for picking
-    const numPoints = pointsGeometry.attributes.position.count;
-    // reserve 12 bits for the entity id
-    if (numPoints >= 1 << 20) {
-        console.warn(`picking issue: only ${1 << 20} points per Points object supported`);
-    }
-    const ids = new Uint8Array(4 * numPoints);
-    for (let i = 0; i < numPoints; i++) {
-        ids[4 * i + 0] = 0;
-        ids[4 * i + 1] = (i & 0x000f0000) >> 16;
-        ids[4 * i + 2] = (i & 0x0000ff00) >> 8;
-        ids[4 * i + 3] = (i & 0x000000ff) >> 0;
-    }
-    pointsGeometry.setAttribute('unique_id', new BufferAttribute(ids, 4, true));
-}
-
 /**
  * Pick points from a PointCloud-like entity.
  *
@@ -81,9 +56,7 @@ function pickPointsAt(
 
     // Enable picking mode for points material, by assigning
     // a unique id to each Points instance.
-    let visibleId = 1;
-    // 12 bits reserved for the ids (= 4096 instances)
-    const maxVisibleId = 1 << 12;
+    let objectId = 1;
     entity.object3d.traverse(o => {
         if (!('isPoints' in o) || o.isPoints !== true || !o.visible) {
             return;
@@ -95,11 +68,7 @@ function pickPointsAt(
 
         const mat = pts.material;
         if (mat.visible && typeof mat.enablePicking === 'function') {
-            mat.enablePicking(visibleId++);
-
-            if (visibleId === maxVisibleId) {
-                console.warn("Too much visible point instance. The next one won't be pickable");
-            }
+            mat.enablePicking(objectId++);
         }
     });
 
@@ -108,14 +77,14 @@ function pickPointsAt(
         camera: instance.view.camera,
         scene: entity.object3d,
         clearColor: BLACK,
-        datatype: UnsignedByteType,
+        datatype: FloatType,
         zone: {
             x: Math.max(0, canvasCoords.x - radius),
             y: Math.max(0, canvasCoords.y - radius),
             width: 1 + radius * 2,
             height: 1 + radius * 2,
         },
-    });
+    }) as Float32Array;
 
     const candidates: PickPointsCandidate[] = [];
 
@@ -132,23 +101,17 @@ function pickPointsAt(
             );
         }
 
-        const data = buffer.slice(idx * 4, idx * 4 + 4);
+        // The point index is in the red channel, and the object ID is in the green channel.
+        const pointIndex = buffer[idx * 4 + 0];
+        const objectId = buffer[idx * 4 + 1];
 
-        if (data[0] === 255 && data[1] === 255) {
-            return null;
+        if (objectId > objectId) {
+            console.warn(`weird: pickingId (${objectId}) > visibleId (${objectId})`);
         }
-        // 12 first bits (so data[0] and half of data[1]) = pickingId
-        const pickingId = data[0] + ((data[1] & 0xf0) << 4);
-
-        if (pickingId > visibleId) {
-            console.warn(`weird: pickingId (${pickingId}) > visibleId (${visibleId})`);
-        }
-        // the remaining 20 bits = the point index
-        const index = ((data[1] & 0x0f) << 16) + (data[2] << 8) + data[3];
 
         const r: PickPointsCandidate = {
-            pickingId,
-            index,
+            pickingId: objectId,
+            index: pointIndex,
             coord,
         };
 

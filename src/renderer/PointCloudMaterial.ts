@@ -470,7 +470,6 @@ class PointCloudMaterial extends ShaderMaterial {
             this.needsUpdate = true;
             this.size = source.size;
             this.mode = source.mode;
-            this.pickingId = source.pickingId;
             this.overlayColor.copy(source.overlayColor);
             this.classifications = source.classifications;
             this.brightness = source.brightness;

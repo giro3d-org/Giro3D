@@ -15,7 +15,6 @@ uniform int mode;
 uniform float opacity;
 uniform vec4 overlayColor;
 attribute vec3 color;
-attribute vec4 unique_id;
 
 struct PointCloudColorMap {
     float min;
@@ -111,21 +110,9 @@ void main() {
 #endif
 
     if (pickingId > 0) {
-        vColor = unique_id;
-
-        int left4bitsShift = 16; // << 4 <=> * 2^4
-        int left8bitsShift = left4bitsShift * left4bitsShift;
-        // 20 bits for 'unique_id' (= the point index in the buffer)
-        // 12 bits for 'pickingId' (= the point instance id)
-        // (see Picking.js)
-        //     = |4bits||     8 bits     |
-        //          ^ left-most 4 bits of the green channel
-        //                     ^ red channel
-        int upperPart = pickingId / left8bitsShift;
-        int lowerPart = pickingId - upperPart * left8bitsShift; // 8 bits
-        vColor.r = float(lowerPart) / 255.0;
-        vColor.g += float(upperPart * 8) / 255.0; // << 4
-        // vColor.g += float(upperPart * left4bitsShift) / 255.0;
+        // In picking mode, we simply output the point id in the red channel and the object id in the green channel.
+        // No need to encode them because we are rendering to a float texture.
+        vColor = vec4(float(gl_VertexID), float(pickingId), 0, 1);
 #if defined(INTENSITY)
     } else if (mode == MODE_INTENSITY) {
         vColor = sampleColorMap(float(intensity), colorMap.min, colorMap.max, colorMap.lut, 0.0);
