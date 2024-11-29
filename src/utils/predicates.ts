@@ -11,6 +11,8 @@ import type {
     PerspectiveCamera,
     RenderTarget,
     Texture,
+    Vector2,
+    Vector3,
 } from 'three';
 import { Color } from 'three';
 
@@ -56,6 +58,12 @@ export function isMaterial(obj: unknown): obj is Material {
 }
 export function isColor(obj: unknown): obj is Color {
     return (obj as Color)?.isColor;
+}
+export function isVector2(obj: unknown): obj is Vector2 {
+    return (obj as Vector2)?.isVector2;
+}
+export function isVector3(obj: unknown): obj is Vector3 {
+    return (obj as Vector3)?.isVector3;
 }
 export function isFiniteNumber(obj: unknown): obj is number {
     if (typeof obj === 'number' && Number.isFinite(obj)) {
