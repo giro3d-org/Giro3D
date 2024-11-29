@@ -19,6 +19,7 @@ import Shape, {
 } from '../entities/Shape';
 import ConstantSizeSphere from '../renderer/ConstantSizeSphere';
 import { AbortError } from '../utils/PromiseUtils';
+import { isVector2 } from '../utils/predicates';
 
 const DEFAULT_MARKER_RADIUS = 5;
 const MIN_MARKER_RADIUS = 4;
@@ -51,7 +52,7 @@ export type MouseCallback = (e: MouseEvent) => boolean;
 /**
  * A pick function that is used by the drawtool to interact with the scene.
  */
-export type PickCallback = (event: MouseEvent) => PickResult[];
+export type PickCallback = (eventOrCanvasCoordinate: MouseEvent | Vector2) => PickResult[];
 
 export type CommonCreationOptions = {
     /**
@@ -95,8 +96,9 @@ function isOperationAllowed<K extends keyof Permissions>(
     return shape.userData.permissions[constraint] ?? true;
 }
 
-const isFirstVertexPicked = (shape: Shape, e: MouseEvent) => {
-    const pickSelf = shape.pick(tmpVec2.set(e.offsetX, e.offsetY));
+const isFirstVertexPicked = (shape: Shape, e: MouseEvent | Vector2) => {
+    const canvasCoordinates = isVector2(e) ? e : tmpVec2.set(e.offsetX, e.offsetY);
+    const pickSelf = shape.pick(canvasCoordinates);
     return pickSelf.length > 0 && pickSelf[0].pickedVertexIndex === 0;
 };
 
@@ -389,6 +391,8 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
     private _selectedVertexMarker?: ConstantSizeSphere;
     private _editionModeController?: AbortController;
     private _inhibitEdition = false;
+    private _mouseEventHandler: (e: MouseEvent) => void;
+    private _lastMouseCoordinate: Vector2 | null = null;
 
     constructor(options: {
         /**
@@ -412,9 +416,25 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
             transparent: true,
             blending: AdditiveBlending,
         });
+
+        // We listen to the global mousemove event to track the mouse location without
+        // relying on a mousemove event on the DOM element (which might not be focused yet).
+        // This will be used to preview the shape being created, even when the mouse has not been
+        // moved after the creation started. This can happen if the creation is triggered by a
+        // key press rather than a click for example.
+        this._mouseEventHandler = this.onMouseEvent.bind(this);
+        window.addEventListener('mousemove', this._mouseEventHandler);
     }
 
-    private defaultPick(e: MouseEvent): PickResult[] {
+    private onMouseEvent(e: MouseEvent) {
+        const rect = this._domElement.getBoundingClientRect();
+        const x = e.clientX - rect.x;
+        const y = e.clientY - rect.y;
+
+        this._lastMouseCoordinate = new Vector2(x, y);
+    }
+
+    private defaultPick(e: MouseEvent | Vector2): PickResult[] {
         return this._instance.pickObjectsAt(e);
     }
 
@@ -702,6 +722,8 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
     createShape(options: CreateShapeOptions): Promise<Shape | null> {
         const shape = new Shape<ShapeUserData>({ ...options });
 
+        shape.visible = false;
+
         shape.userData.permissions = options.constraints;
 
         const pickableLabels = shape.pickableLabels;
@@ -756,7 +778,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
                 reject(new AbortError());
             };
 
-            const onMouseMove = (e: MouseEvent) => {
+            const updateTemporaryPoint = (e: MouseEvent | Vector2) => {
                 // When moving the temporary point around, we ecounter two possible scenarios:
                 // - we picked the first point of the shape
                 // - we picked something else
@@ -798,6 +820,10 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
                 } else {
                     shape.visible = clickCount > 0;
                 }
+            };
+
+            const onMouseMove = (e: MouseEvent) => {
+                updateTemporaryPoint(e);
             };
 
             const finishDrawing = () => {
@@ -908,6 +934,14 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
             domElement.addEventListener('click', handleEvent, { signal });
 
             signal?.addEventListener('abort', onAbort, { signal });
+
+            // Show the temporary point at the last mouse coordinate.
+            // Useful if the user started the creation by something else than a
+            // mouse action (e.g a keyboars shortcut), which would otherwise not
+            // display the point until the first mouse move event.
+            if (this._lastMouseCoordinate != null) {
+                updateTemporaryPoint(this._lastMouseCoordinate);
+            }
         });
 
         return promise;
@@ -1128,5 +1162,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
             this._instance.remove(this._selectedVertexMarker);
             this._selectedVertexMarker = undefined;
         }
+
+        window.removeEventListener('mousemove', this._mouseEventHandler);
     }
 }
