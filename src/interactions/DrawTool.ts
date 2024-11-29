@@ -52,7 +52,9 @@ export type MouseCallback = (e: MouseEvent) => boolean;
 /**
  * A pick function that is used by the drawtool to interact with the scene.
  */
-export type PickCallback = (eventOrCanvasCoordinate: MouseEvent | Vector2) => PickResult[];
+export type PickCallback<T extends PickResult = PickResult> = (
+    eventOrCanvasCoordinate: MouseEvent | Vector2,
+) => T[];
 
 export type CommonCreationOptions = {
     /**
@@ -434,8 +436,15 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
         this._lastMouseCoordinate = new Vector2(x, y);
     }
 
+    private defaultPickShapes(e: MouseEvent | Vector2, shapes?: Shape[]): ShapePickResult[] {
+        return this._instance.pickObjectsAt(e, {
+            where: shapes,
+            sortByDistance: true,
+        }) as ShapePickResult[];
+    }
+
     private defaultPick(e: MouseEvent | Vector2): PickResult[] {
-        return this._instance.pickObjectsAt(e);
+        return this._instance.pickObjectsAt(e, { sortByDistance: true });
     }
 
     private hideVertexMarker() {
@@ -479,6 +488,10 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
          * The custom picking function. If unspecified, the default one will be used.
          */
         pick?: PickCallback;
+        /**
+         * A picking function to pick **shapes only**. If unspecified, the default one will be used.
+         */
+        pickShapes?: PickCallback<ShapePickResult>;
         /**
          * The optional callback called just before a point is clicked, to determine if it can be deleted.
          * By default, points are removed with a **click on the middle mouse button** or **Alt + Left click**.
@@ -530,12 +543,14 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
         const onPointUpdated = options?.onPointUpdated ?? noOp;
 
         const pick: PickCallback = options?.pick ?? this.defaultPick.bind(this);
-        const pickFirstShape = (e: MouseEvent) => {
-            const picked = pick(e);
+        const pickShapes: PickCallback<ShapePickResult> =
+            options?.pickShapes ?? (e => this.defaultPickShapes(e, options?.shapesToEdit));
 
+        const pickFirstShape = (e: MouseEvent) => {
+            const picked = pickShapes(e);
             for (const item of picked) {
                 const entity = item.entity;
-                if (isShape(entity) && (ids == null || ids.has(entity.id))) {
+                if (ids == null || ids.has(entity.id)) {
                     return item as ShapePickResult;
                 }
             }
