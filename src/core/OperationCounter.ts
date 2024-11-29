@@ -29,6 +29,20 @@ class OperationCounter extends EventDispatcher<OperationCounterEvents> implement
     }
 
     /**
+     * Gets the number of pending operations.
+     */
+    get operations() {
+        return this._operations;
+    }
+
+    /**
+     * Gets the number of completed operations.
+     */
+    get completed() {
+        return this._completed;
+    }
+
+    /**
      * Gets whether at least one operation is being executed.
      */
     get loading() {

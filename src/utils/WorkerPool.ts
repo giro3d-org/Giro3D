@@ -241,7 +241,7 @@ export default class WorkerPool<
         }
 
         // All workers are busy and impossible to create one, just return the least busy.
-        workers.sort((a, b) => b.counter.progress - a.counter.progress);
+        workers.sort((a, b) => a.counter.operations - b.counter.operations);
 
         const leastBusy = workers[0];
 
