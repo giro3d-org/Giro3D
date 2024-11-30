@@ -19,16 +19,18 @@ float sqLength(in vec2 v) {
 }
 
 void main() {
-    #include <clipping_planes_fragment>
-
     if (vColor.a < 0.001) {
         discard;
+        return;
     }
 
     // circular point rendering
     if (sqLength(gl_PointCoord - POINT_CENTER) > HALF_LENGTH_SQUARED){
         discard;
+        return;
     }
+
+    #include <clipping_planes_fragment>
 
     gl_FragColor = vec4(adjustBrightnessContrastSaturation(vColor.rgb, brightnessContrastSaturation), vColor.a);
 

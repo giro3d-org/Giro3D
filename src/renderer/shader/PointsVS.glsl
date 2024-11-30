@@ -97,7 +97,6 @@ uniform Deformation deformations[NUM_TRANSFO];
 #endif
 
 void main() {
-
 #if defined(NORMAL_OCT16)
     vec3  normal = decodeOct16Normal(oct16Normal);
 #elif defined(NORMAL_SPHEREMAPPED)
