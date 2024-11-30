@@ -46,6 +46,7 @@ attribute vec2 sphereMappedNormal;
 #endif
 
 uniform sampler2D overlayTexture;
+uniform int decimation;
 uniform float hasOverlayTexture;
 uniform vec4 offsetScale;
 uniform vec2 extentBottomLeft;
@@ -97,6 +98,14 @@ uniform Deformation deformations[NUM_TRANSFO];
 #endif
 
 void main() {
+    if (decimation > 1 && gl_VertexID % decimation != 0) {
+        // Move the vertex out of the render area to prevent calling the fragment shader for
+        // this point, saving a lot of GPU processing time when millions of points are displayed.
+        gl_PointSize = 0.0;
+        gl_Position = vec4(-9999.0, -9999.0, -9999.0, 0.0);
+        return;
+    }
+
 #if defined(NORMAL_OCT16)
     vec3  normal = decodeOct16Normal(oct16Normal);
 #elif defined(NORMAL_SPHEREMAPPED)
