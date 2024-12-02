@@ -152,8 +152,11 @@ class LayerInspector extends Panel {
             .name('Extent color')
             .onChange(() => this.updateExtentColor());
 
-        this.colorMapInspector = new ColorMapInspector(this.gui, instance, layer.colorMap, () =>
-            this.notify(layer),
+        this.colorMapInspector = new ColorMapInspector(
+            this.gui,
+            instance,
+            () => layer.colorMap,
+            () => this.notify(layer),
         );
 
         if (this.layer.source != null) {
@@ -220,6 +223,11 @@ class LayerInspector extends Panel {
         }
 
         this.notify(this.layer);
+    }
+
+    updateControllers(): void {
+        super.updateControllers();
+        this.colorMapInspector?.updateControllers();
     }
 
     updateValues() {

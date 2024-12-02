@@ -266,6 +266,10 @@ class MapInspector extends EntityInspector<Map> {
         this.notify(this.entity);
     }
 
+    updateControllers(): void {
+        this.layers.forEach(insp => insp.updateControllers());
+    }
+
     updateBackgroundOpacity(a: number) {
         this.backgroundOpacity = a;
         this.entity.backgroundOpacity = a;

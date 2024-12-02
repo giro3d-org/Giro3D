@@ -113,6 +113,7 @@ abstract class Panel {
 
     removeController(controller: Controller) {
         this._controllers.slice(this._controllers.indexOf(controller));
+        controller.destroy();
         this.updateControllers();
     }
 
