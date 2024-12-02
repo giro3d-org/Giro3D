@@ -1,7 +1,7 @@
 import type { WebGLRenderer } from 'three';
-import { Line2 } from 'three/examples/jsm/lines/Line2';
-import type { LineGeometry } from 'three/examples/jsm/lines/LineGeometry';
-import type { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
+import { Line2 } from 'three/examples/jsm/lines/Line2.js';
+import type { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
+import type { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import type SimpleGeometryMesh from './SimpleGeometryMesh';
 import { type DefaultUserData } from './SimpleGeometryMesh';
 

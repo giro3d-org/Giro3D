@@ -7,9 +7,9 @@ import {
     UnsignedByteType,
     WebGLRenderTarget,
 } from 'three';
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
-import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass';
-import { TexturePass } from 'three/examples/jsm/postprocessing/TexturePass';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { TexturePass } from 'three/examples/jsm/postprocessing/TexturePass.js';
 import type PointCloud from '../core/PointCloud';
 import PointCloudRenderer from './PointCloudRenderer';
 import type RenderingOptions from './RenderingOptions';

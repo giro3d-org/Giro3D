@@ -12,7 +12,7 @@ import {
     type WebGLRenderer,
     type WebGLRendererParameters,
 } from 'three';
-import type { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer';
+import type { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 import type Entity from '../entities/Entity';
 import { isEntity } from '../entities/Entity';
 import Entity3D, { isEntity3D } from '../entities/Entity3D';
