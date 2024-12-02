@@ -12,7 +12,7 @@
         "allowJs": true,
         // We don't want to check the external libraries, only our
         "skipLibCheck": true,
-        "moduleResolution": "node",
+        "moduleResolution": "bundler",
         // Types should go into this directory.
         // Removing this would place the .d.ts files
         // next to the .js files

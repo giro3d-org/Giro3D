@@ -18,7 +18,7 @@ import {
     type Object3D,
     type Sphere,
 } from 'three';
-import type { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry';
+import type { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
 import type OBB from '../core/OBB.js';
 import type { ProcessedTile } from '../entities/3dtiles/3dTilesIndex';
 import type Tiles3D from '../entities/Tiles3D';

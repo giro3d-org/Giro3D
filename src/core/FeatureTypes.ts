@@ -1,6 +1,6 @@
 import type Feature from 'ol/Feature';
 import type { Color, ColorRepresentation, Material, SpriteMaterial, Texture } from 'three';
-import type { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
+import type { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 
 function isColor(o: unknown): o is Color {
     return (o as Color)?.isColor ?? false;
