@@ -10,17 +10,27 @@
 varying vec4 vColor;
 uniform vec3 brightnessContrastSaturation;
 
-void main() {
-    #include <clipping_planes_fragment>
+const float HALF_LENGTH = 0.5;
+const vec2 POINT_CENTER = vec2(HALF_LENGTH, HALF_LENGTH);
+const float HALF_LENGTH_SQUARED = HALF_LENGTH * HALF_LENGTH;
 
+float sqLength(in vec2 v) {
+    return v.x * v.x + v.y * v.y;
+}
+
+void main() {
     if (vColor.a < 0.001) {
         discard;
+        return;
     }
 
     // circular point rendering
-    if (length(gl_PointCoord - 0.5) > 0.5){
+    if (sqLength(gl_PointCoord - POINT_CENTER) > HALF_LENGTH_SQUARED){
         discard;
+        return;
     }
+
+    #include <clipping_planes_fragment>
 
     gl_FragColor = vec4(adjustBrightnessContrastSaturation(vColor.rgb, brightnessContrastSaturation), vColor.a);
 

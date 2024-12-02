@@ -145,6 +145,7 @@ interface Uniforms {
     brightnessContrastSaturation: IUniform<Vector3>;
     size: IUniform<number>;
     mode: IUniform<MODE>;
+    decimation: IUniform<number>;
     pickingId: IUniform<number>;
     overlayColor: IUniform<Vector4>;
     hasOverlayTexture: IUniform<number>;
@@ -215,6 +216,18 @@ class PointCloudMaterial extends ShaderMaterial {
 
     set size(value: number) {
         this.uniforms.size.value = value;
+    }
+
+    /**
+     * Gets or sets the point decimation value.
+     * A decimation value of N means that we take every Nth point and discard the rest.
+     */
+    get decimation() {
+        return this.uniforms.decimation.value;
+    }
+
+    set decimation(value: number) {
+        this.uniforms.decimation.value = value;
     }
 
     /**
@@ -383,6 +396,7 @@ class PointCloudMaterial extends ShaderMaterial {
             fogDensity: new Uniform(0.00025),
             fogNear: new Uniform(1),
             fogFar: new Uniform(2000),
+            decimation: new Uniform(1),
             fogColor: new Uniform(new Color(0xffffff)),
             classifications: new Uniform(ASPRS_CLASSIFICATIONS),
 
@@ -476,6 +490,7 @@ class PointCloudMaterial extends ShaderMaterial {
             this.contrast = source.contrast;
             this.saturation = source.saturation;
             this.colorMap = source.colorMap;
+            this.decimation = source.decimation;
         }
         this.updateUniforms();
         if (source) {
