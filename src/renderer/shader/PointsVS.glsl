@@ -10,7 +10,7 @@
 
 uniform float size;
 
-uniform int pickingId;
+uniform uint pickingId;
 uniform int mode;
 uniform float opacity;
 uniform vec4 overlayColor;
@@ -117,7 +117,7 @@ void main() {
     vec3 normal = color;
 #endif
 
-    if (pickingId > 0) {
+    if (pickingId > uint(0)) {
         // In picking mode, we simply output the point id in the red channel and the object id in the green channel.
         // No need to encode them because we are rendering to a float texture.
         vColor = vec4(float(gl_VertexID), float(pickingId), 0, 1);
