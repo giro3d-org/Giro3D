@@ -7,6 +7,7 @@ import Tiles3DSource from '@giro3d/giro3d/sources/Tiles3DSource.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import PointCloudMaterial from '@giro3d/giro3d/renderer/PointCloudMaterial.js';
 
 const tmpVec3 = new Vector3();
 
@@ -24,6 +25,7 @@ const instance = new Instance({
 // Configure Point Cloud
 const pointcloud = new Tiles3D(
     new Tiles3DSource('https://3d.oslandia.com/3dtiles/eglise_saint_blaise_arles/tileset.json'),
+    { material: new PointCloudMaterial() },
 );
 
 function placeCamera(position, lookAt) {
