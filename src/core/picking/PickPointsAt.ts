@@ -140,15 +140,22 @@ function pickPointsAt(
             return;
         }
 
+        const positions = pts.geometry.getAttribute('position');
+
         for (let i = 0; i < candidates.length; i++) {
             if (candidates[i].pickingId === mat.pickingId) {
-                const position = new Vector3()
-                    .fromArray(pts.geometry.attributes.position.array, 3 * candidates[i].index)
-                    .applyMatrix4(o.matrixWorld);
+                const index = candidates[i].index;
+
+                const x = positions.getX(index);
+                const y = positions.getY(index);
+                const z = positions.getZ(index);
+
+                const position = new Vector3(x, y, z).applyMatrix4(o.matrixWorld);
+
                 const p: PointsPickResult = {
                     isPointsPickResult: true,
                     object: pts,
-                    index: candidates[i].index,
+                    index,
                     entity,
                     point: position,
                     coord: candidates[i].coord,
