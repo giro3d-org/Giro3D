@@ -102,8 +102,12 @@ function pickPointsAt(
         }
 
         // The point index is in the red channel, and the object ID is in the green channel.
-        const pointIndex = buffer[idx * 4 + 0];
-        const objectId = buffer[idx * 4 + 1];
+        // Points are encoded into floats in the shader, so we have to round them to eliminate
+        // potential rounding errors.
+        const RED = 0;
+        const GREEN = 1;
+        const pointIndex = Math.round(buffer[idx * 4 + RED]);
+        const objectId = Math.round(buffer[idx * 4 + GREEN]);
 
         if (objectId > objectId) {
             console.warn(`weird: pickingId (${objectId}) > visibleId (${objectId})`);
