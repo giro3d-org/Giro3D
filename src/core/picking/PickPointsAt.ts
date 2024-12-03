@@ -102,8 +102,12 @@ function pickPointsAt(
         }
 
         // The point index is in the red channel, and the object ID is in the green channel.
-        const pointIndex = buffer[idx * 4 + 0];
-        const objectId = buffer[idx * 4 + 1];
+        // Points are encoded into floats in the shader, so we have to round them to eliminate
+        // potential rounding errors.
+        const RED = 0;
+        const GREEN = 1;
+        const pointIndex = Math.round(buffer[idx * 4 + RED]);
+        const objectId = Math.round(buffer[idx * 4 + GREEN]);
 
         if (objectId > objectId) {
             console.warn(`weird: pickingId (${objectId}) > visibleId (${objectId})`);
@@ -140,15 +144,22 @@ function pickPointsAt(
             return;
         }
 
+        const positions = pts.geometry.getAttribute('position');
+
         for (let i = 0; i < candidates.length; i++) {
             if (candidates[i].pickingId === mat.pickingId) {
-                const position = new Vector3()
-                    .fromArray(pts.geometry.attributes.position.array, 3 * candidates[i].index)
-                    .applyMatrix4(o.matrixWorld);
+                const index = candidates[i].index;
+
+                const x = positions.getX(index);
+                const y = positions.getY(index);
+                const z = positions.getZ(index);
+
+                const position = new Vector3(x, y, z).applyMatrix4(o.matrixWorld);
+
                 const p: PointsPickResult = {
                     isPointsPickResult: true,
                     object: pts,
-                    index: candidates[i].index,
+                    index,
                     entity,
                     point: position,
                     coord: candidates[i].coord,
