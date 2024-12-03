@@ -58,6 +58,8 @@ const map = new Map({
     },
 });
 
+map.name = 'map';
+
 instance.add(map);
 
 const noDataValue = -1000;
@@ -105,6 +107,8 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
 const pointcloud = new Tiles3D(new Tiles3DSource('https://3d.oslandia.com/lidar_hd/tileset.json'), {
     material: new PointCloudMaterial(),
 });
+
+pointcloud.name = 'point cloud';
 
 instance.add(pointcloud);
 
@@ -205,7 +209,7 @@ function updateResultTable(pickResults) {
         tr.appendChild(column(`${index}`));
         // entity
         const entity = pickResult.entity;
-        tr.appendChild(column(entity ? `<code>${pickResult.entity?.id}</code>` : 'none'));
+        tr.appendChild(column(entity ? `<code>${pickResult.entity?.name}</code>` : 'none'));
         // picked object
         const type = pickResult.object.type;
         tr.appendChild(column(`<span class="badge rounded-pill text-bg-primary">${type}</span>`));
