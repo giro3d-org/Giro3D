@@ -23,6 +23,10 @@ export default class DrawToolPanel extends Panel {
 
     color: Color = new Color(DEFAULT_COLOR);
 
+    get pendingColor() {
+        return new Color(this.color).offsetHSL(0, 0, -0.1);
+    }
+
     constructor(parent: GUI, instance: Instance) {
         super(parent, instance, 'DrawTool');
 
@@ -33,6 +37,13 @@ export default class DrawToolPanel extends Panel {
         this.addController(this, 'createPolygon').name('Polygon');
         this.addController(this, 'createPoint').name('Point');
         this.addController(this, 'clear').name('Clear');
+    }
+
+    private onShapeFinished(shape: Shape | null) {
+        if (shape != null) {
+            shape.color = this.color;
+            this._shapes.push(shape);
+        }
     }
 
     private createDrawToolIfNecessary() {
@@ -51,12 +62,8 @@ export default class DrawToolPanel extends Panel {
 
         tool.createSegment({
             showLineLabel: true,
-            color: this.color,
-        }).then(segment => {
-            if (segment) {
-                this._shapes.push(segment);
-            }
-        });
+            color: this.pendingColor,
+        }).then(shape => this.onShapeFinished(shape));
     }
 
     createPoint() {
@@ -65,12 +72,8 @@ export default class DrawToolPanel extends Panel {
         tool.createPoint({
             vertexLabelFormatter: vertexLabelFormatter(this.instance),
             showVertexLabels: true,
-            color: this.color,
-        }).then(segment => {
-            if (segment) {
-                this._shapes.push(segment);
-            }
-        });
+            color: this.pendingColor,
+        }).then(shape => this.onShapeFinished(shape));
     }
 
     createPolygon() {
@@ -78,12 +81,8 @@ export default class DrawToolPanel extends Panel {
 
         tool.createPolygon({
             showSurfaceLabel: true,
-            color: this.color,
-        }).then(segment => {
-            if (segment) {
-                this._shapes.push(segment);
-            }
-        });
+            color: this.pendingColor,
+        }).then(shape => this.onShapeFinished(shape));
     }
 
     clear() {

@@ -1978,8 +1978,8 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         return { point: result, previousPointIndex };
     }
 
-    pick(coordinates: Vector2, _options?: PickOptions): ShapePickResult[] {
-        const normalized = this.instance.canvasToNormalizedCoords(coordinates, tmpNDC);
+    pick(canvasCoordinates: Vector2, _options?: PickOptions): ShapePickResult[] {
+        const normalized = this.instance.canvasToNormalizedCoords(canvasCoordinates, tmpNDC);
         const raycaster = new Raycaster();
         raycaster.params.Line2 = {
             threshold: this.lineWidth * 8,

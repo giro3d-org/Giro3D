@@ -1,4 +1,11 @@
-import { AdditiveBlending, BackSide, EventDispatcher, MeshBasicMaterial, Vector3 } from 'three';
+import {
+    AdditiveBlending,
+    BackSide,
+    EventDispatcher,
+    MeshBasicMaterial,
+    Vector2,
+    Vector3,
+} from 'three';
 import type Disposable from '../core/Disposable';
 import type Instance from '../core/Instance';
 import type PickResult from '../core/picking/PickResult';
@@ -6,17 +13,22 @@ import type { ShapePickResult, VerticalLineLabelFormatter } from '../entities/Sh
 import Shape, {
     angleFormatter,
     isShape,
+    isShapePickResult,
     slopeSegmentFormatter,
     type ShapeConstructorOptions,
 } from '../entities/Shape';
 import ConstantSizeSphere from '../renderer/ConstantSizeSphere';
 import { AbortError } from '../utils/PromiseUtils';
+import { isVector2 } from '../utils/predicates';
 
 const DEFAULT_MARKER_RADIUS = 5;
 const MIN_MARKER_RADIUS = 4;
 const MARKER_BORDER_WIDTH = 2;
 const OPACITY_OVER_VERTEX = 0.4;
 const OPACITY_OVER_EDGE = 0.4;
+const SQUARE_DISTANCE_LIMIT_FOR_CLICK_DETECTION = 25; // 5 pixels squared
+
+const tmpVec2 = new Vector2();
 
 /**
  * Various constraints that can be applied to shapes created by this tool.
@@ -32,9 +44,17 @@ type ShapeUserData = {
 };
 
 /**
+ * A callback that can be used to test for a mouse button or key combination.
+ * If the function returns `true`, the associated action is executed.
+ */
+export type MouseCallback = (e: MouseEvent) => boolean;
+
+/**
  * A pick function that is used by the drawtool to interact with the scene.
  */
-export type PickCallback = (event: MouseEvent) => PickResult[];
+export type PickCallback<T extends PickResult = PickResult> = (
+    eventOrCanvasCoordinate: MouseEvent | Vector2,
+) => T[];
 
 export type CommonCreationOptions = {
     /**
@@ -51,6 +71,12 @@ export type CommonCreationOptions = {
      * @param position - The position of the point.
      */
     onTemporaryPointMoved?: (shape: Shape, position: Vector3) => void;
+    /**
+     * The input required to finish drawing the shape.
+     * Does not apply to shapes that require a fixed number of points (i.e point, segment, etc).
+     * @defaultValue right click
+     */
+    endCondition?: MouseCallback;
 };
 
 export type CreationOptions = Partial<ShapeConstructorOptions> & CommonCreationOptions;
@@ -71,6 +97,12 @@ function isOperationAllowed<K extends keyof Permissions>(
 
     return shape.userData.permissions[constraint] ?? true;
 }
+
+const isFirstVertexPicked = (shape: Shape, e: MouseEvent | Vector2) => {
+    const canvasCoordinates = isVector2(e) ? e : tmpVec2.set(e.offsetX, e.offsetY);
+    const pickSelf = shape.pick(canvasCoordinates);
+    return pickSelf.length > 0 && pickSelf[0].pickedVertexIndex === 0;
+};
 
 /**
  * Options for the {@link DrawTool.createShape} method.
@@ -180,32 +212,81 @@ const LEFT_BUTTON = 0;
 const MIDDLE_BUTTON = 1;
 const RIGHT_BUTTON = 2;
 
-function middleButtonOrLeftButtonAndAlt(e: MouseEvent): boolean {
-    if (e.button === MIDDLE_BUTTON) {
-        return true;
-    }
+function middleButtonOrLeftButtonAndAlt(e: Event) {
+    if (e.type === 'mousedown') {
+        const mouseEvent = e as MouseEvent;
+        if (mouseEvent.button === MIDDLE_BUTTON) {
+            return true;
+        }
 
-    // OpenLayers style
-    if (e.button === LEFT_BUTTON && e.altKey) {
-        return true;
-    }
-
-    return false;
-}
-
-function leftButton(e: MouseEvent): boolean {
-    if (e.button === LEFT_BUTTON) {
-        return true;
+        // OpenLayers style
+        if (mouseEvent.button === LEFT_BUTTON && mouseEvent.altKey) {
+            return true;
+        }
     }
 
     return false;
 }
 
-/**
- * A callback that can be used to test for a mouse button or key combination.
- * If the function returns `true`, the associated action is executed.
- */
-export type MouseCallback = (e: MouseEvent) => boolean;
+function leftButton(e: Event) {
+    if (e.type === 'mousedown') {
+        if ((e as MouseEvent).button === LEFT_BUTTON) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+let lastMousePosition: Vector2 | null = null;
+let mouseCumulativeDistance: Vector2 | null = null;
+
+const rightClick: MouseCallback = e => {
+    if (e.type === 'mousedown' && e.button === RIGHT_BUTTON) {
+        mouseCumulativeDistance = new Vector2(0, 0);
+        lastMousePosition = new Vector2(e.screenX, e.screenY);
+    } else if (e.type === 'mousemove') {
+        if (lastMousePosition != null && mouseCumulativeDistance != null) {
+            const deltaX = Math.abs(e.screenX - lastMousePosition.x);
+            const deltaY = Math.abs(e.screenY - lastMousePosition.y);
+            mouseCumulativeDistance.x += deltaX;
+            mouseCumulativeDistance.y += deltaY;
+        }
+
+        lastMousePosition?.set(e.screenX, e.screenY);
+    } else if (e.type === 'mouseup' && e.button === RIGHT_BUTTON) {
+        const sqDistance = mouseCumulativeDistance?.lengthSq() ?? 0;
+
+        // We don't want the prevent the user from using the right button for other purposes,
+        // e.g rotating the camera, so let's ensure that any dragging motion of the mouse is
+        // not intepreted as a click. Note that the "contextmenu" event is not 100% equivalent
+        // to a right click, so we're not using it.
+        if (sqDistance < SQUARE_DISTANCE_LIMIT_FOR_CLICK_DETECTION) {
+            e.stopPropagation();
+            mouseCumulativeDistance = null;
+            lastMousePosition = null;
+            return true;
+        }
+    }
+
+    return false;
+};
+
+const doubleClick: MouseCallback = e => {
+    if (e.type === 'dblclick') {
+        if ((e as MouseEvent).button === LEFT_BUTTON) {
+            e.stopPropagation();
+            return true;
+        }
+    }
+
+    return false;
+};
+
+export const conditions = {
+    rightClick,
+    doubleClick,
+};
 
 /**
  * A callback that is called after a shape has been modified.
@@ -312,6 +393,8 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
     private _selectedVertexMarker?: ConstantSizeSphere;
     private _editionModeController?: AbortController;
     private _inhibitEdition = false;
+    private _mouseEventHandler: (e: MouseEvent) => void;
+    private _lastMouseCoordinate: Vector2 | null = null;
 
     constructor(options: {
         /**
@@ -335,10 +418,33 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
             transparent: true,
             blending: AdditiveBlending,
         });
+
+        // We listen to the global mousemove event to track the mouse location without
+        // relying on a mousemove event on the DOM element (which might not be focused yet).
+        // This will be used to preview the shape being created, even when the mouse has not been
+        // moved after the creation started. This can happen if the creation is triggered by a
+        // key press rather than a click for example.
+        this._mouseEventHandler = this.onMouseEvent.bind(this);
+        window.addEventListener('mousemove', this._mouseEventHandler);
     }
 
-    private defaultPick(e: MouseEvent): PickResult[] {
-        return this._instance.pickObjectsAt(e);
+    private onMouseEvent(e: MouseEvent) {
+        const rect = this._domElement.getBoundingClientRect();
+        const x = e.clientX - rect.x;
+        const y = e.clientY - rect.y;
+
+        this._lastMouseCoordinate = new Vector2(x, y);
+    }
+
+    private defaultPickShapes(e: MouseEvent | Vector2, shapes?: Shape[]): ShapePickResult[] {
+        return this._instance.pickObjectsAt(e, {
+            where: shapes,
+            sortByDistance: true,
+        }) as ShapePickResult[];
+    }
+
+    private defaultPick(e: MouseEvent | Vector2): PickResult[] {
+        return this._instance.pickObjectsAt(e, { sortByDistance: true });
     }
 
     private hideVertexMarker() {
@@ -382,6 +488,10 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
          * The custom picking function. If unspecified, the default one will be used.
          */
         pick?: PickCallback;
+        /**
+         * A picking function to pick **shapes only**. If unspecified, the default one will be used.
+         */
+        pickShapes?: PickCallback<ShapePickResult>;
         /**
          * The optional callback called just before a point is clicked, to determine if it can be deleted.
          * By default, points are removed with a **click on the middle mouse button** or **Alt + Left click**.
@@ -433,12 +543,14 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
         const onPointUpdated = options?.onPointUpdated ?? noOp;
 
         const pick: PickCallback = options?.pick ?? this.defaultPick.bind(this);
-        const pickFirstShape = (e: MouseEvent) => {
-            const picked = pick(e);
+        const pickShapes: PickCallback<ShapePickResult> =
+            options?.pickShapes ?? (e => this.defaultPickShapes(e, options?.shapesToEdit));
 
+        const pickFirstShape = (e: MouseEvent) => {
+            const picked = pickShapes(e);
             for (const item of picked) {
                 const entity = item.entity;
-                if (isShape(entity) && (ids == null || ids.has(entity.id))) {
+                if (ids == null || ids.has(entity.id)) {
                     return item as ShapePickResult;
                 }
             }
@@ -625,6 +737,8 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
     createShape(options: CreateShapeOptions): Promise<Shape | null> {
         const shape = new Shape<ShapeUserData>({ ...options });
 
+        shape.visible = false;
+
         shape.userData.permissions = options.constraints;
 
         const pickableLabels = shape.pickableLabels;
@@ -633,6 +747,8 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
         shape.pickableLabels = false;
 
         this._inhibitEdition = true;
+
+        const endCondition = options.endCondition ?? rightClick;
 
         const domElement = this._domElement;
 
@@ -644,6 +760,9 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
 
         const firstPoint = new Vector3();
         const points = [firstPoint];
+
+        const lastPointerLocation = new Vector2();
+        const currentPointerLocation = new Vector2();
 
         function updatePoints() {
             shape.setPoints([...points]);
@@ -674,12 +793,42 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
                 reject(new AbortError());
             };
 
-            const onMouseMove = (e: MouseEvent) => {
-                const point = pick(e)[0]?.point;
-                if (point != null) {
-                    points[points.length - 1].copy(point);
+            const updateTemporaryPoint = (e: MouseEvent | Vector2) => {
+                // When moving the temporary point around, we ecounter two possible scenarios:
+                // - we picked the first point of the shape
+                // - we picked something else
+                const picked = pick(e);
+
+                if (picked.length > 0) {
+                    let point: Vector3 | null = null;
+
+                    const shapePickResults = picked.filter(p => isShapePickResult(p));
+
+                    // First scenario: we clicked on the first point of the shape and the shape
+                    // is marked as a closed ring. We have to complete the drawing by closing the shape.
+                    if (
+                        options.closeRing === true &&
+                        shapePickResults.length > 0 &&
+                        shapePickResults[0].pickedVertexIndex === 0
+                    ) {
+                        // Snap to first vertex to close the ring
+                        points[points.length - 1].copy(shape.points[0]);
+                        point = shape.points[0];
+                    } else {
+                        // Second scenario: we didn't pick the first point of the shape
+                        // in ring mode. Let's see if we did actually pick the environment.
+                        // If not, then we didn't really pick anything and shouldn't
+                        // update the shape. Note that we don't want to pick the shape here,
+                        // although we might want to consider picking the shape to provide a
+                        // "snap" feature in the future. But for now, let's keep things simple.
+                        const nonShapeResults = picked.filter(p => !isShapePickResult(p));
+                        if (nonShapeResults.length > 0) {
+                            point = nonShapeResults[0].point;
+                            points[points.length - 1].copy(point);
+                        }
+                    }
                     updatePoints();
-                    if (options?.onTemporaryPointMoved) {
+                    if (point != null && options?.onTemporaryPointMoved) {
                         options.onTemporaryPointMoved(shape, point);
                     }
                     shape.visible = true;
@@ -688,61 +837,126 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
                 }
             };
 
-            const onMouseDown = (e: MouseEvent) => {
-                e.stopPropagation();
+            const onMouseMove = (e: MouseEvent) => {
+                updateTemporaryPoint(e);
+            };
 
-                if (e.button === LEFT_BUTTON) {
-                    const point = pick(e)[0]?.point;
-                    if (point != null) {
-                        clickCount++;
+            const finishDrawing = () => {
+                if (minPoints != null && clickCount >= minPoints) {
+                    shape.setPoints(points);
 
-                        if (maxPoints != null && points.length < maxPoints) {
-                            if (options?.onPointCreated) {
-                                const pointIndex = clickCount - 1;
-                                options.onPointCreated(shape, pointIndex, point);
-                            }
-                            points.push(point);
-                        }
-
-                        updatePoints();
-
-                        if (clickCount === maxPoints) {
-                            finalize(shape);
-                        }
+                    if (options?.closeRing === true) {
+                        shape.makeClosed();
                     }
-                } else if (e.button === RIGHT_BUTTON) {
-                    if (minPoints != null && clickCount >= minPoints) {
-                        shape.setPoints(points.slice(0, -1));
-                        if (options?.closeRing === true) {
-                            shape.makeClosed();
+
+                    finalize(shape);
+                } else {
+                    this._instance.remove(shape);
+
+                    finalize(null);
+                }
+            };
+
+            const onMouseDown = (e: MouseEvent) => {
+                lastPointerLocation.set(e.screenX, e.screenY);
+            };
+
+            const onClick = (e: MouseEvent) => {
+                // Not a simple click
+                if (e.detail !== 1) {
+                    return;
+                }
+
+                e.stopPropagation();
+                currentPointerLocation.set(e.screenX, e.screenY);
+
+                // Check that the mouse is not dragging (might be a camera movement)
+                const distance = currentPointerLocation.distanceToSquared(lastPointerLocation);
+
+                if (distance <= SQUARE_DISTANCE_LIMIT_FOR_CLICK_DETECTION) {
+                    lastPointerLocation.copy(currentPointerLocation);
+
+                    if (e.button === LEFT_BUTTON) {
+                        const point = pick(e)[0]?.point;
+
+                        if (point != null) {
+                            clickCount++;
+
+                            if (
+                                clickCount > 2 &&
+                                options.closeRing === true &&
+                                isFirstVertexPicked(shape, e)
+                            ) {
+                                // Special case: in the case of rings, if the user clicks on the first
+                                // point, we close the ring and finish the drawing.
+                                points.pop();
+                                finishDrawing();
+                            } else {
+                                // Let's create a new point
+                                if (maxPoints != null && points.length < maxPoints) {
+                                    if (options?.onPointCreated) {
+                                        const pointIndex = clickCount - 1;
+                                        options.onPointCreated(shape, pointIndex, point);
+                                    }
+                                    points.push(point);
+                                }
+
+                                updatePoints();
+
+                                if (clickCount === maxPoints) {
+                                    finalize(shape);
+                                }
+                            }
                         }
-
-                        finalize(shape);
-                    } else {
-                        this._instance.remove(shape);
-
-                        finalize(null);
                     }
                 }
             };
 
             const signal = options.signal;
 
+            const handleEvent = (event: MouseEvent) => {
+                if (endCondition(event)) {
+                    finishDrawing();
+                } else {
+                    switch (event.type) {
+                        case 'click':
+                            onClick(event);
+                            break;
+                        case 'mousedown':
+                            onMouseDown(event);
+                            break;
+                        case 'mousemove':
+                            onMouseMove(event);
+                            break;
+                    }
+                }
+            };
+
             removeListeners = () => {
-                domElement.removeEventListener('mousedown', onMouseDown);
-                domElement.removeEventListener('mousemove', onMouseMove);
-                domElement.removeEventListener('mouseup', inhibit);
-                domElement.removeEventListener('contextmenu', inhibit);
+                domElement.removeEventListener('mousedown', handleEvent);
+                domElement.removeEventListener('mousemove', handleEvent);
+                domElement.removeEventListener('mouseup', handleEvent);
+                domElement.removeEventListener('dblclick', handleEvent);
+                domElement.removeEventListener('click', handleEvent);
 
                 signal?.removeEventListener('abort', onAbort);
             };
 
-            this._domElement.addEventListener('mousemove', onMouseMove);
-            this._domElement.addEventListener('mousedown', onMouseDown);
-            this._domElement.addEventListener('mouseup', inhibit);
-            this._domElement.addEventListener('contextmenu', inhibit);
+            domElement.addEventListener('mousedown', handleEvent, { signal });
+            domElement.addEventListener('mousemove', handleEvent, { signal });
+            domElement.addEventListener('mouseup', handleEvent, { signal });
+            domElement.addEventListener('dblclick', handleEvent, { signal });
+            domElement.addEventListener('click', handleEvent, { signal });
 
-            signal?.addEventListener('abort', onAbort);
+            signal?.addEventListener('abort', onAbort, { signal });
+
+            // Show the temporary point at the last mouse coordinate.
+            // Useful if the user started the creation by something else than a
+            // mouse action (e.g a keyboars shortcut), which would otherwise not
+            // display the point until the first mouse move event.
+            if (this._lastMouseCoordinate != null) {
+                updateTemporaryPoint(this._lastMouseCoordinate);
+            }
         });
 
         return promise;
@@ -963,5 +1177,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
             this._instance.remove(this._selectedVertexMarker);
             this._selectedVertexMarker = undefined;
         }
+
+        window.removeEventListener('mousemove', this._mouseEventHandler);
     }
 }

@@ -69,6 +69,20 @@ tags: [drawing, picking, map]
                     </div>
                 </div>
 
+                <!-- End condition -->
+                <div class="input-group mt-2">
+                    <label
+                        class="input-group-text"
+                        title="The condition to complete a drawing. Only applies to shapes with unlimited number of points (LineString, Polygon, MultiPoint)"
+                        for="end-condition"
+                        >End with</label
+                    >
+                    <select class="form-select" id="end-condition" autocomplete="off">
+                        <option value="rightclick" selected>Right-click</option>
+                        <option value="doubleclick">Double click</option>
+                    </select>
+                </div>
+
                 <hr />
 
                 <button
