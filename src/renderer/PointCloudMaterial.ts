@@ -361,7 +361,6 @@ class PointCloudMaterial extends ShaderMaterial {
     }
 
     set colorMap(colorMap: ColorMap) {
-        this._colorMap?.dispose();
         this._colorMap = colorMap;
     }
 
