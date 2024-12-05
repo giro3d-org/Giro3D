@@ -1,7 +1,18 @@
-import { ClampToEdgeWrapping, MathUtils, NearestFilter, type Color, type DataTexture } from 'three';
+import {
+    ClampToEdgeWrapping,
+    EventDispatcher,
+    MathUtils,
+    NearestFilter,
+    type Color,
+    type DataTexture,
+} from 'three';
 import TextureGenerator from '../../utils/TextureGenerator';
 import { nonNull } from '../../utils/tsutils';
 import ColorMapMode from './ColorMapMode';
+
+export type ColorMapEvents = {
+    updated: unknown;
+};
 
 /**
  * Represents a 1D color gradient bounded by a `min` and `max` values.
@@ -46,7 +57,7 @@ import ColorMapMode from './ColorMapMode';
  * // When finished with this color map, dispose it.
  * colorMap.dispose();
  */
-class ColorMap {
+class ColorMap extends EventDispatcher<ColorMapEvents> {
     private _min: number;
     private _max: number;
     private _mode: ColorMapMode;
@@ -69,6 +80,8 @@ class ColorMap {
         max: number,
         mode: ColorMapMode = ColorMapMode.Elevation,
     ) {
+        super();
+
         if (colors === undefined) {
             throw new Error('colors is undefined');
         }
@@ -100,7 +113,12 @@ class ColorMap {
     set mode(v) {
         if (this._mode !== v) {
             this._mode = v;
+            this.notifyChange();
         }
+    }
+
+    private notifyChange() {
+        this.dispatchEvent({ type: 'updated' });
     }
 
     /**
@@ -111,7 +129,10 @@ class ColorMap {
     }
 
     set active(v) {
-        this._active = v;
+        if (this._active !== v) {
+            this._active = v;
+            this.notifyChange();
+        }
     }
 
     /**
@@ -124,6 +145,7 @@ class ColorMap {
     set min(v) {
         if (this._min !== v) {
             this._min = v;
+            this.notifyChange();
         }
     }
 
@@ -137,6 +159,7 @@ class ColorMap {
     set max(v) {
         if (this._max !== v) {
             this._max = v;
+            this.notifyChange();
         }
     }
 
@@ -158,6 +181,7 @@ class ColorMap {
                 this._opacity = null;
             }
             this._shouldRecreateTexture = true;
+            this.notifyChange();
         }
     }
 
@@ -181,6 +205,7 @@ class ColorMap {
             this._opacity = v;
             this._shouldRecreateTexture = true;
         }
+        this.notifyChange();
     }
 
     /**
