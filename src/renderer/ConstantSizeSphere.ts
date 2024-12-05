@@ -113,14 +113,14 @@ export function getWorldSpaceRadius(
         const fovRads = MathUtils.degToRad(camera.fov) / 2;
         fieldOfViewHeight = 2 * Math.tan(fovRads) * dist;
     } else if (isOrthographicCamera(camera)) {
-        fieldOfViewHeight = Math.abs(camera.top - camera.bottom);
+        fieldOfViewHeight = Math.abs(camera.top - camera.bottom) / camera.zoom;
     } else {
         throw new Error('unsupported camera type');
     }
 
     const size = renderer.getSize(tmpSize);
 
-    const pixelRatio = screenSpaceRadius / size.y;
+    const pixelRatio = screenSpaceRadius / size.height;
 
     const worldSpaceRadius = fieldOfViewHeight * pixelRatio;
 
