@@ -1,5 +1,6 @@
 import { ClampToEdgeWrapping, MathUtils, NearestFilter, type Color, type DataTexture } from 'three';
 import TextureGenerator from '../../utils/TextureGenerator';
+import { nonNull } from '../../utils/tsutils';
 import ColorMapMode from './ColorMapMode';
 
 /**
@@ -51,6 +52,7 @@ class ColorMap {
     private _mode: ColorMapMode;
     private _colors: Color[];
     private _opacity: number[] | null;
+    private _shouldRecreateTexture = true;
     private _cachedTexture: DataTexture | null;
     private _active: boolean;
     /**
@@ -155,8 +157,7 @@ class ColorMap {
             if (this._opacity && this._opacity.length !== v.length) {
                 this._opacity = null;
             }
-            this._cachedTexture?.dispose();
-            this._cachedTexture = null;
+            this._shouldRecreateTexture = true;
         }
     }
 
@@ -178,8 +179,7 @@ class ColorMap {
         }
         if (this._opacity !== v) {
             this._opacity = v;
-            this._cachedTexture?.dispose();
-            this._cachedTexture = null;
+            this._shouldRecreateTexture = true;
         }
     }
 
@@ -223,7 +223,9 @@ class ColorMap {
      * @returns The resulting texture.
      */
     getTexture(): DataTexture {
-        if (this._cachedTexture == null) {
+        if (this._shouldRecreateTexture || this._cachedTexture == null) {
+            this._cachedTexture?.dispose();
+
             this._cachedTexture = TextureGenerator.create1DTexture(
                 this._colors,
                 this._opacity ?? undefined,
@@ -232,9 +234,11 @@ class ColorMap {
             this._cachedTexture.magFilter = NearestFilter;
             this._cachedTexture.wrapS = ClampToEdgeWrapping;
             this._cachedTexture.wrapT = ClampToEdgeWrapping;
+
+            this._shouldRecreateTexture = false;
         }
 
-        return this._cachedTexture;
+        return nonNull(this._cachedTexture);
     }
 
     /**
