@@ -174,13 +174,13 @@ bindSlider('opacity', v => {
     pointcloud.opacity = v;
     document.getElementById('opacityLabel').innerText =
         `Point cloud opacity: ${Math.round(v * 100)}%`;
-    instance.notifyChange();
+    instance.notifyChange(pointcloud);
 });
 
 bindColorMapBounds((min, max) => {
     material.colorMap.min = min;
     material.colorMap.max = max;
-    instance.notifyChange();
+    instance.notifyChange(pointcloud);
 });
 
 const colorMapGroup = document.getElementById('colormapGroup');

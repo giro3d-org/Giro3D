@@ -518,6 +518,7 @@ class Tiles3D<
                 PointCloud.isPointCloud(obj) &&
                 PointCloudMaterial.isPointCloudMaterial(obj.material)
             ) {
+                obj.material.updateUniforms();
                 this.forEachLayer(layer => layer.update(context, obj));
             }
         });

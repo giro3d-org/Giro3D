@@ -478,7 +478,7 @@ class PointCloudMaterial extends ShaderMaterial {
     }
 
     onBeforeRender() {
-        this.updateUniforms();
+        this.uniforms.opacity.value = this.opacity;
     }
 
     update(source?: PointCloudMaterial) {
