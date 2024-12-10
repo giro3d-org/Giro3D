@@ -539,10 +539,9 @@ class PointCloudMaterial extends ShaderMaterial {
     }
 
     setColorTextures(layer: ColorLayer, textureAndPitch: TextureAndPitch) {
-        const { texture, pitch } = textureAndPitch;
+        const { texture } = textureAndPitch;
         this.uniforms.overlayTexture.value = texture;
         this.uniforms.hasOverlayTexture.value = 1;
-        this.uniforms.offsetScale.value.copy(pitch);
     }
 
     setLayerVisibility() {
