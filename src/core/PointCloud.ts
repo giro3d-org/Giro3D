@@ -1,14 +1,12 @@
 import {
     Points,
-    type BufferAttribute,
     type BufferGeometry,
     type EventDispatcher,
     type Material,
     type Object3DEventMap,
     type Vector2,
 } from 'three';
-import MaterialUtils from '../renderer/MaterialUtils';
-import PointCloudMaterial from '../renderer/PointCloudMaterial';
+import type PointCloudMaterial from '../renderer/PointCloudMaterial';
 import { enablePointCloudPostProcessing } from '../renderer/RenderPipeline';
 import { nonNull } from '../utils/tsutils';
 import type Disposable from './Disposable';
@@ -28,21 +26,6 @@ export interface PointCloudOptions<M extends Material = Material> {
     /** Texture size */
     textureSize: Vector2;
     extent?: Extent;
-}
-
-function setupMaterial(material: PointCloudMaterial, geometry: BufferGeometry) {
-    material.enableClassification = geometry.hasAttribute('classification');
-
-    if (geometry.hasAttribute('intensity')) {
-        const intensityType = MaterialUtils.getVertexAttributeType(
-            geometry.getAttribute('intensity') as BufferAttribute,
-        );
-
-        MaterialUtils.setDefine(material, 'INTENSITY', true);
-        MaterialUtils.setDefineValue(material, 'INTENSITY_TYPE', intensityType);
-    } else {
-        MaterialUtils.setDefine(material, 'INTENSITY', false);
-    }
 }
 
 /**
@@ -80,14 +63,6 @@ class PointCloud<M extends PointCloudMaterial = PointCloudMaterial>
         this.extent = opts.extent ?? undefined;
         this.textureSize = opts.textureSize;
         this.disposed = false;
-
-        this.setupMaterial();
-    }
-
-    setupMaterial() {
-        if (PointCloudMaterial.isPointCloudMaterial(this.material)) {
-            setupMaterial(this.material, this.geometry);
-        }
     }
 
     private getPointValue(pointIndex: number, attribute: string): number | undefined {

@@ -1127,9 +1127,9 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
     }
 
     private updateMaterial(mesh: PointCloudMesh) {
-        mesh.setupMaterial();
-
         const material = mesh.material;
+
+        material.setupFromGeometry(mesh.geometry);
 
         material.visible = this._showPoints;
         material.depthTest = this._depthTest;
