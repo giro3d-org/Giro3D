@@ -10,6 +10,7 @@ register(proj4);
 export const UNIT = {
     DEGREE: 1,
     METER: 2,
+    FOOT: 3,
 };
 
 /**
@@ -28,6 +29,10 @@ function unitFromProj4Unit(projunit: string | undefined) {
         case 'meter':
         case 'meters':
             return UNIT.METER;
+        case 'ft':
+        case 'foot':
+        case 'feet':
+            return UNIT.FOOT;
         default:
             return undefined;
     }
