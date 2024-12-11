@@ -9,6 +9,7 @@ import {
 } from 'three';
 import MaterialUtils from '../renderer/MaterialUtils';
 import PointCloudMaterial from '../renderer/PointCloudMaterial';
+import { enablePointCloudPostProcessing } from '../renderer/RenderPipeline';
 import { nonNull } from '../utils/tsutils';
 import type Disposable from './Disposable';
 import type Extent from './geographic/Extent';
@@ -73,6 +74,9 @@ class PointCloud<M extends PointCloudMaterial = PointCloudMaterial>
 
     constructor(opts: PointCloudOptions<M>) {
         super(opts.geometry, opts.material);
+
+        enablePointCloudPostProcessing(this);
+
         this.extent = opts.extent ?? undefined;
         this.textureSize = opts.textureSize;
         this.disposed = false;

@@ -19,6 +19,7 @@ import PointCloud from '../core/PointCloud';
 import type RequestQueue from '../core/RequestQueue';
 import { DefaultQueue } from '../core/RequestQueue';
 import PointCloudMaterial from '../renderer/PointCloudMaterial';
+import { USE_POINTCLOUD_POSTPROCESSING } from '../renderer/RenderPipeline';
 import type Tiles3DSource from '../sources/Tiles3DSource';
 import Fetcher from '../utils/Fetcher';
 import { isBufferGeometry } from '../utils/predicates';
@@ -490,6 +491,7 @@ class Tiles3D<
                         const pointcloud = o as PointCloud;
                         if (this.isOwned(pointcloud) && pointcloud.material != null) {
                             if (pointcloud.isPoints) {
+                                pointcloud.userData[USE_POINTCLOUD_POSTPROCESSING] = true;
                                 if (
                                     PointCloudMaterial.isPointCloudMaterial(pointcloud.material) &&
                                     PointCloudMaterial.isPointCloudMaterial(this.material)
