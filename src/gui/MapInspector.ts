@@ -267,6 +267,7 @@ class MapInspector extends EntityInspector<Map> {
     }
 
     updateControllers(): void {
+        super.updateControllers();
         this.layers.forEach(insp => insp.updateControllers());
     }
 
