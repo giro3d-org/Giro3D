@@ -74,8 +74,8 @@ const extent = new Extent('EPSG:3946', xmin, xmax, ymin, ymax);
 
 // #### Create the Map object
 
-// Now we can create the Map. Let's give it a nice identifier,
-// and the extent in the constructor options.
+// Now we can create the Map. The only mandatory parameter is the extent
+// but you can experiment with the other options if you'd like.
 const map = new Map({ extent });
 
 // Let's add the map to the instance.
@@ -207,7 +207,13 @@ instance.view.setControls(controls);
 
 Inspector.attach('inspector', instance);
 
-// Initialize the coordinate bar widget on our instance.
+// ### The StatusBar
+
+// This widget is no part of the Giro3D library, but is used in the examples
+// to display various informations about the scene, such as the geographic
+// coordinates of the mouse cursor.
+
+// Let's initialize the coordinate bar widget on our instance.
 StatusBar.bind(instance);
 
 // ### Moving around
