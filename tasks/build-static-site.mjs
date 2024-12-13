@@ -14,6 +14,7 @@ import { log, logOk, logWatched } from './utils.mjs';
 
 const baseDir = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.join(baseDir, '..');
+const nodeModulesDir = path.join(rootDir, 'node_modules');
 const siteDir = path.join(rootDir, 'site');
 const graphicsDir = path.join(rootDir, 'graphics');
 const templatesDir = path.join(siteDir, 'templates');
@@ -42,13 +43,29 @@ function readTemplate(template) {
     });
 }
 
+function copyWasmFiles(nodeModulesDir, outputDir) {
+    const copy = (...src) => {
+        const sourceFile = path.join(nodeModulesDir, ...src);
+        const filename = path.basename(sourceFile);
+        const destFile = path.join(outputDir, filename);
+
+        fse.copyFileSync(sourceFile, destFile);
+    };
+
+    copy('laz-perf', 'lib', 'laz-perf.wasm');
+}
+
 export async function copyAssets(parameters) {
     log('static-site', 'Generating assets...');
     const assetsDir = path.join(parameters.output, 'assets');
     const fontsDir = path.join(assetsDir, 'fonts');
+    const wasmDir = path.join(assetsDir, 'wasm');
     const imagesDir = path.join(parameters.output, 'images');
     fse.mkdirpSync(fontsDir);
     fse.mkdirpSync(imagesDir);
+    fse.mkdirpSync(wasmDir);
+
+    copyWasmFiles(nodeModulesDir, wasmDir);
 
     const scss = ['bootstrap-custom', 'index'];
 
