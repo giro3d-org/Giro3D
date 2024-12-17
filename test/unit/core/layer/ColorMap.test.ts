@@ -49,6 +49,16 @@ describe('ColorMap', () => {
 
             expect(cm.mode).toEqual(ColorMapMode.Slope);
         });
+
+        it('should raise the updated event', () => {
+            const cm = new ColorMap([], 0, 1);
+            const listener = jest.fn();
+            cm.addEventListener('updated', listener);
+
+            cm.mode = ColorMapMode.Slope;
+
+            expect(listener).toHaveBeenCalled();
+        });
     });
 
     describe('active', () => {
@@ -61,6 +71,15 @@ describe('ColorMap', () => {
             cm.active = true;
             expect(cm.active).toEqual(true);
         });
+
+        it('should raise the updated event', () => {
+            const cm = new ColorMap([], 0, 1);
+            const listener = jest.fn();
+            cm.addEventListener('updated', listener);
+
+            cm.active = false;
+            expect(listener).toHaveBeenCalled();
+        });
     });
 
     describe('min', () => {
@@ -71,6 +90,16 @@ describe('ColorMap', () => {
 
             expect(cm.min).toEqual(-34);
         });
+
+        it('should raise the updated event', () => {
+            const cm = new ColorMap([], 0, 1);
+            const listener = jest.fn();
+            cm.addEventListener('updated', listener);
+
+            cm.min = -34;
+
+            expect(listener).toHaveBeenCalled();
+        });
     });
 
     describe('max', () => {
@@ -80,6 +109,16 @@ describe('ColorMap', () => {
             cm.max = 32432;
 
             expect(cm.max).toEqual(32432);
+        });
+
+        it('should raise the updated event', () => {
+            const cm = new ColorMap([], 0, 1);
+            const listener = jest.fn();
+            cm.addEventListener('updated', listener);
+
+            cm.max = 32432;
+
+            expect(listener).toHaveBeenCalled();
         });
     });
 
@@ -93,18 +132,15 @@ describe('ColorMap', () => {
             expect(cm.colors).toBe(newValue);
         });
 
-        it('should dispose the cached texture, if any', () => {
-            const tex = { dispose: jest.fn() };
+        it('should raise the updated event', () => {
             const cm = new ColorMap([], 0, 1);
+            const listener = jest.fn();
+            cm.addEventListener('updated', listener);
 
-            // @ts-expect-error property is private
-            cm._cachedTexture = tex;
             const newValue = [new Color('red')];
             cm.colors = newValue;
 
-            expect(tex.dispose).toHaveBeenCalled();
-            // @ts-expect-error property is private
-            expect(cm._cachedTexture).toBeNull();
+            expect(listener).toHaveBeenCalled();
         });
 
         it('should remove the transparency array if it no longer has the same length', () => {
@@ -163,9 +199,25 @@ describe('ColorMap', () => {
             const cm = new ColorMap([], 0, 1);
 
             // @ts-expect-error property is private
+            cm._shouldRecreateTexture = false;
+            // @ts-expect-error property is private
             cm._cachedTexture = tex;
 
             expect(cm.getTexture()).toBe(tex);
+        });
+
+        it('should dispose the obsolete cached texture, if any', () => {
+            const tex = { dispose: jest.fn() };
+            const cm = new ColorMap([], 0, 1);
+
+            // @ts-expect-error property is private
+            cm._cachedTexture = tex;
+            const newValue = [new Color('red')];
+            cm.colors = newValue;
+
+            cm.getTexture();
+
+            expect(tex.dispose).toHaveBeenCalled();
         });
 
         it('should handle the opacity array', () => {

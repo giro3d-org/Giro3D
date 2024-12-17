@@ -16,7 +16,7 @@ import Map, {
     type MapConstructorOptions,
     type MapEventMap,
 } from './Map';
-import PotreePointCloud from './PotreePointCloud';
+import PointCloud, { PointCloudOptions, UnsupportedAttributeError } from './PointCloud';
 import Shape, * as shape from './Shape';
 import Tiles3D, { type Tiles3DOptions, type Tiles3DPickResult } from './Tiles3D';
 
@@ -41,10 +41,12 @@ export {
     MapConstructorOptions,
     MapEventMap,
     MeshUserData,
-    PotreePointCloud,
+    PointCloud,
+    PointCloudOptions,
     Shape,
     shape,
     Tiles3D,
     Tiles3DOptions,
     Tiles3DPickResult,
+    UnsupportedAttributeError,
 };

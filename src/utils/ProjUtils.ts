@@ -3,6 +3,9 @@ import type { Vector3 } from 'three';
 import { MathUtils, Vector2, type TypedArray } from 'three';
 import { getConverter } from '../core/geographic/ProjectionCache';
 
+// @ts-expect-error no types
+import parseCode from 'proj4/lib/parseCode';
+
 const ZERO = new Vector2(0, 0);
 
 /**
@@ -76,7 +79,46 @@ function transformVectors<T extends Vector2 | Vector3>(
     }
 }
 
+export type ID = Record<string, number>;
+export type Authority = Record<string, number>;
+
+export type ProjCS = {
+    AUTHORITY: Authority;
+};
+
+export type ProjCRS = {
+    ID: ID;
+};
+
+export type CompoundCS = {
+    PROJCS: ProjCS;
+};
+
+function getCode(authority: Authority): string {
+    const [auth, code] = Object.entries(authority)[0];
+
+    return `${auth}:${code}`;
+}
+
+function getWKTCrsCode(wkt: string): string | undefined {
+    const parsed = parseCode(wkt) as ProjCRS | ProjCS | CompoundCS;
+
+    if ('ID' in parsed) {
+        // WKT 2 / PROJCRS
+        return getCode(parsed.ID);
+    } else if ('PROJCS' in parsed) {
+        // WKT 1 / COMPD_CS
+        return getCode(parsed['PROJCS'].AUTHORITY);
+    } else if ('AUTHORITY' in parsed) {
+        // WKT 1 / PROJCS
+        return getCode(parsed.AUTHORITY);
+    }
+
+    return undefined;
+}
+
 export default {
     transformBufferInPlace,
     transformVectors,
+    getWKTCrsCode,
 };

@@ -113,6 +113,12 @@ export interface PointCloudMaterialOptions {
      */
     size?: number;
     /**
+     * The point decimation.
+     *
+     * @defaultValue 1
+     */
+    decimation?: number;
+    /**
      * An additional color to use.
      *
      * @defaultValue `new Vector4(0, 0, 0, 0)`
@@ -144,8 +150,8 @@ interface Uniforms {
     opacity: IUniform<number>;
     brightnessContrastSaturation: IUniform<Vector3>;
     size: IUniform<number>;
-    mode: IUniform<MODE>;
     decimation: IUniform<number>;
+    mode: IUniform<MODE>;
     pickingId: IUniform<number>;
     overlayColor: IUniform<Vector4>;
     hasOverlayTexture: IUniform<number>;
@@ -361,7 +367,6 @@ class PointCloudMaterial extends ShaderMaterial {
     }
 
     set colorMap(colorMap: ColorMap) {
-        this._colorMap?.dispose();
         this._colorMap = colorMap;
     }
 
@@ -473,7 +478,7 @@ class PointCloudMaterial extends ShaderMaterial {
     }
 
     onBeforeRender() {
-        this.updateUniforms();
+        this.uniforms.opacity.value = this.opacity;
     }
 
     update(source?: PointCloudMaterial) {
@@ -534,10 +539,9 @@ class PointCloudMaterial extends ShaderMaterial {
     }
 
     setColorTextures(layer: ColorLayer, textureAndPitch: TextureAndPitch) {
-        const { texture, pitch } = textureAndPitch;
+        const { texture } = textureAndPitch;
         this.uniforms.overlayTexture.value = texture;
         this.uniforms.hasOverlayTexture.value = 1;
-        this.uniforms.offsetScale.value.copy(pitch);
     }
 
     setLayerVisibility() {

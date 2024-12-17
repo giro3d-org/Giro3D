@@ -1,3 +1,4 @@
+import COPCSource, { COPCSourceOptions } from './COPCSource';
 import GeoTIFFSource, {
     type ChannelMapping,
     type GeoTIFFCacheOptions,
@@ -11,7 +12,20 @@ import ImageSource, {
     type ImageSourceEvents,
     type ImageSourceOptions,
 } from './ImageSource';
-import PotreeSource from './PotreeSource';
+import * as las from './las/api';
+import LASSource, { LASSourceOptions } from './LASSource';
+import {
+    GetNodeDataOptions,
+    PointCloudAttribute,
+    PointCloudCrs,
+    PointCloudMetadata,
+    PointCloudNode,
+    PointCloudNodeData,
+    PointCloudSource,
+    PointCloudSourceBase,
+    PointCloudSourceEventMap,
+} from './PointCloudSource';
+import PotreeSource, { PotreeSourceOptions } from './PotreeSource';
 import StaticImageSource, {
     type StaticImageSourceEvents,
     type StaticImageSourceOptions,
@@ -28,17 +42,32 @@ import WmtsSource, { type WmtsFromCapabilitiesOptions, type WmtsSourceOptions } 
  */
 export {
     ChannelMapping,
+    COPCSource,
+    COPCSourceOptions,
     CustomContainsFn,
     GeoTIFFCacheOptions,
     GeoTIFFSource,
     GeoTIFFSourceOptions,
     GetImageOptions,
+    GetNodeDataOptions,
     ImageResponse,
     ImageResult,
     ImageSource,
     ImageSourceEvents,
     ImageSourceOptions,
+    las,
+    LASSource,
+    LASSourceOptions,
+    PointCloudAttribute,
+    PointCloudCrs,
+    PointCloudMetadata,
+    PointCloudNode,
+    PointCloudNodeData,
+    PointCloudSource,
+    PointCloudSourceBase,
+    PointCloudSourceEventMap,
     PotreeSource,
+    PotreeSourceOptions,
     StaticImageSource,
     StaticImageSourceEvents,
     StaticImageSourceOptions,

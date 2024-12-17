@@ -39,6 +39,8 @@ function setupMaterial(material: PointCloudMaterial, geometry: BufferGeometry) {
 
         MaterialUtils.setDefine(material, 'INTENSITY', true);
         MaterialUtils.setDefineValue(material, 'INTENSITY_TYPE', intensityType);
+    } else {
+        MaterialUtils.setDefine(material, 'INTENSITY', false);
     }
 }
 
@@ -75,6 +77,10 @@ class PointCloud<M extends PointCloudMaterial = PointCloudMaterial>
         this.textureSize = opts.textureSize;
         this.disposed = false;
 
+        this.setupMaterial();
+    }
+
+    setupMaterial() {
         if (PointCloudMaterial.isPointCloudMaterial(this.material)) {
             setupMaterial(this.material, this.geometry);
         }
