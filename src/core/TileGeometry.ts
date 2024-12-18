@@ -4,6 +4,25 @@ import type HeightMap from './HeightMap';
 import type MemoryUsage from './MemoryUsage';
 import { type GetMemoryUsageContext } from './MemoryUsage';
 
+const normalBufferPool = new Map<number, Float32Array>();
+
+function getNormalBuffer(length: number) {
+    let buffer = normalBufferPool.get(length);
+    if (!buffer) {
+        buffer = new Float32Array(length);
+        for (let i = 0; i < buffer.length; i += 3) {
+            // Z-up vector
+            buffer[i + 0] = 0;
+            buffer[i + 1] = 0;
+            buffer[i + 2] = 1;
+        }
+
+        normalBufferPool.set(length, buffer);
+    }
+
+    return buffer;
+}
+
 export interface TileGeometryOptions {
     dimensions: Vector2;
     segments: number;
@@ -278,6 +297,7 @@ class TileGeometry extends BufferGeometry implements MemoryUsage {
         }
         this.setAttribute('uv', new BufferAttribute(uvs, 2));
         this.setAttribute('position', new BufferAttribute(positions, 3));
+        this.setAttribute('normal', new BufferAttribute(getNormalBuffer(positions.length), 3));
         this.setIndex(new BufferAttribute(indices, 1));
     }
 }
