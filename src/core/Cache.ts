@@ -21,6 +21,18 @@ interface CacheOptions {
     onDelete?: (entry: unknown) => void;
 }
 
+interface CacheConfiguration {
+    /**
+     * The default TTL (time to live) of entries.
+     * Can be overriden for each entry (see {@link CacheOptions}).
+     */
+    ttl?: number;
+    /** The capacity, in bytes, of the cache. */
+    byteCapacity?: number;
+    /** The capacity, in number of entries, of the cache. */
+    maxNumberOfEntries?: number;
+}
+
 const SECONDS = 1000;
 
 /**
@@ -54,17 +66,7 @@ class Cache implements MemoryUsage {
      * @param opts - The options.
      */
     constructor(
-        opts: {
-            /**
-             * The default TTL (time to live) of entries.
-             * Can be overriden for each entry (see {@link CacheOptions}).
-             */
-            ttl?: number;
-            /** The capacity, in bytes, of the cache. */
-            byteCapacity?: number;
-            /** The capacity, in number of entries, of the cache. */
-            maxNumberOfEntries?: number;
-        } = {
+        opts: CacheConfiguration = {
             ttl: DEFAULT_TTL,
             byteCapacity: DEFAULT_CAPACITY,
             maxNumberOfEntries: DEFAULT_MAX_ENTRIES,
@@ -232,4 +234,12 @@ class Cache implements MemoryUsage {
  */
 const GlobalCache: Cache = new Cache();
 
-export { Cache, CacheOptions, DEFAULT_CAPACITY, DEFAULT_MAX_ENTRIES, DEFAULT_TTL, GlobalCache };
+export {
+    Cache,
+    CacheConfiguration,
+    CacheOptions,
+    DEFAULT_CAPACITY,
+    DEFAULT_MAX_ENTRIES,
+    DEFAULT_TTL,
+    GlobalCache,
+};
