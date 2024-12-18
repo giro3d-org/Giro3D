@@ -1,5 +1,4 @@
 import { LRUCache } from 'lru-cache';
-import { MathUtils } from 'three';
 import type MemoryUsage from './MemoryUsage';
 import { isMemoryUsage, type GetMemoryUsageContext } from './MemoryUsage';
 
@@ -45,7 +44,6 @@ const DEFAULT_CAPACITY: number = 512 * 1024 * 1024;
  */
 class Cache implements MemoryUsage {
     readonly isMemoryUsage = true as const;
-    private readonly _id = MathUtils.generateUUID();
     private readonly _deleteHandlers: Map<string, (entry: object) => void>;
     private readonly _lru: LRUCache<string, object>;
     private _enabled: boolean;
