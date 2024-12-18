@@ -1,5 +1,7 @@
+import type { Side } from 'three';
 import {
     Box3,
+    FrontSide,
     Matrix4,
     Mesh,
     MeshBasicMaterial,
@@ -19,6 +21,7 @@ import {
 import { readRGRenderTargetIntoRGBAU8Buffer } from '../renderer/composition/WebGLComposer';
 import type LayeredMaterial from '../renderer/LayeredMaterial';
 import type { MaterialOptions } from '../renderer/LayeredMaterial';
+import MaterialUtils from '../renderer/MaterialUtils';
 import MemoryTracker from '../renderer/MemoryTracker';
 import type RenderingState from '../renderer/RenderingState';
 import type Disposable from './Disposable';
@@ -173,6 +176,7 @@ class TileMesh
     readonly extent: Extent;
     readonly textureSize: Vector2;
     private readonly _volume: TileVolume;
+    private _materialSide: Side = FrontSide;
     readonly level: number;
     readonly x: number;
     readonly y: number;
@@ -414,6 +418,57 @@ class TileMesh
         }
     }
 
+    private saveMaterialProperties() {
+        // Some shadow map rendering forces backside on the material. Since we are not using
+        // a distinct material for shadows, we need to reset the side to the correct value after
+        // shadows are rendered.
+        this._materialSide = this.material.side;
+    }
+
+    private restoreMaterialProperties() {
+        // Reset shadow map specific defines
+        this.material.isMeshDistanceMaterial = false;
+
+        MaterialUtils.setDefine(this.material, 'DEPTH_RENDER', false);
+        MaterialUtils.setDefine(this.material, 'DISTANCE_RENDER', false);
+
+        MaterialUtils.setDefine(this.material, 'COLOR_RENDER', true);
+
+        this.material.side = this._materialSide;
+    }
+
+    // @ts-expect-error customDepthMaterial is supposed to be a property
+    get customDepthMaterial() {
+        this.saveMaterialProperties();
+
+        // Instead of using a different material, which would have to be synchronized with
+        // the main material, we simply use the main material and set it to depth render.
+        MaterialUtils.setDefine(this.material, 'COLOR_RENDER', false);
+        MaterialUtils.setDefine(this.material, 'DEPTH_RENDER', true);
+        this.material.onBeforeRender();
+
+        return this.material;
+    }
+
+    // @ts-expect-error customDistanceMaterial is supposed to be a property
+    get customDistanceMaterial() {
+        this.saveMaterialProperties();
+
+        this.material.isMeshDistanceMaterial = true;
+
+        // Instead of using a different material, which would have to be synchronized with
+        // the main material, we simply use the main material and set it to distance render.
+        MaterialUtils.setDefine(this.material, 'COLOR_RENDER', false);
+        MaterialUtils.setDefine(this.material, 'DISTANCE_RENDER', true);
+        this.material.onBeforeRender();
+
+        return this.material;
+    }
+
+    onAfterShadow(): void {
+        this.restoreMaterialProperties();
+    }
+
     private updateHeightMapIfNecessary(): void {
         if (this._shouldUpdateHeightMap && this._enableCPUTerrain) {
             this._shouldUpdateHeightMap = false;
@@ -473,6 +528,9 @@ class TileMesh
                 this._shouldUpdateHeightMap = true;
             }
         }
+
+        this.castShadow = materialOptions.lighting.castShadows;
+        this.receiveShadow = materialOptions.lighting.receiveShadows;
 
         this.showHelpers = materialOptions.showColliderMeshes ?? false;
     }

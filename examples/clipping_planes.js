@@ -106,7 +106,7 @@ const options = {
 // create a map
 const map = new Map({
     extent,
-    hillshading: false,
+    lighting: false,
     discardNoData: true,
     side: DoubleSide,
 });

@@ -76,7 +76,7 @@ const map = new Map({
     extent,
     side: DoubleSide,
     backgroundOpacity: 0,
-    hillshading: true,
+    lighting: true,
     discardNoData: true,
 });
 

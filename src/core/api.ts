@@ -14,7 +14,6 @@ import type * as geographic from './geographic/api';
 import GetElevationOptions from './GetElevationOptions';
 import GetElevationResult from './GetElevationResult';
 import type GraticuleOptions from './GraticuleOptions';
-import type HillshadingOptions from './HillshadingOptions';
 import type Instance from './Instance';
 import type {
     EntityEventPayload,
@@ -67,7 +66,6 @@ export {
     GetElevationResult,
     GetMemoryUsageContext,
     GraticuleOptions,
-    HillshadingOptions,
     Instance,
     InstanceEvents,
     InstanceOptions,

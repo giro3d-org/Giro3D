@@ -33,7 +33,7 @@ const instance = new Instance({
 
 const map = new Map({
     extent,
-    hillshading: {
+    lighting: {
         enabled: true,
         elevationLayersOnly: true,
     },

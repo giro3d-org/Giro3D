@@ -14,6 +14,7 @@ import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import StatusBar from './widgets/StatusBar.js';
 import { bindToggle } from './widgets/bindToggle.js';
 import { bindSlider } from './widgets/bindSlider.js';
+import { MapLightingMode } from '@giro3d/giro3d/entities/MapLightingOptions.js';
 
 Instance.registerCRS(
     'EPSG:3946',
@@ -30,9 +31,9 @@ const instance = new Instance({
 const map = new Map({
     extent,
     // Enables hillshading on this map
-    hillshading: {
+    lighting: {
         enabled: true,
-        elevationLayersOnly: false,
+        mode: MapLightingMode.Hillshade,
     },
     backgroundColor: 'white',
 });
@@ -101,22 +102,22 @@ StatusBar.bind(instance);
 // Example GUI
 
 const [, , colorLayersToggle] = bindToggle('colorLayers', state => {
-    map.hillshading.elevationLayersOnly = !state;
+    map.lighting.elevationLayersOnly = !state;
     instance.notifyChange(map);
 });
 
 const [, , azimuthSlider] = bindSlider('azimuth', azimuth => {
-    map.hillshading.azimuth = azimuth;
+    map.lighting.hillshadeAzimuth = azimuth;
     instance.notifyChange(map);
 });
 
 const [, , zenithSlider] = bindSlider('zenith', zenith => {
-    map.hillshading.zenith = zenith;
+    map.lighting.hillshadeZenith = zenith;
     instance.notifyChange(map);
 });
 
 bindToggle('enabled', state => {
-    map.hillshading.enabled = state;
+    map.lighting.enabled = state;
     instance.notifyChange(map);
 
     colorLayersToggle.disabled = !state;
@@ -132,12 +133,12 @@ const [, , opacitySlider] = bindSlider('opacity', percentage => {
 });
 
 bindSlider('intensity', intensity => {
-    map.hillshading.intensity = intensity;
+    map.lighting.hillshadeIntensity = intensity;
     instance.notifyChange(map);
 });
 
 bindSlider('zFactor', zFactor => {
-    map.hillshading.zFactor = zFactor;
+    map.lighting.zFactor = zFactor;
     instance.notifyChange(map);
 });
 

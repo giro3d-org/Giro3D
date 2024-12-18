@@ -41,7 +41,7 @@ const map = new Map({
     extent,
     backgroundColor: 'gray',
     maxSubdivisionLevel: 13,
-    hillshading: {
+    lighting: {
         enabled: true,
         zFactor: 8,
     },

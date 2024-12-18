@@ -13,8 +13,8 @@ import ColorimetryPanel from './ColorimetryPanel';
 import ContourLinePanel from './ContourLinePanel';
 import EntityInspector from './EntityInspector';
 import GraticulePanel from './GraticulePanel';
-import HillshadingPanel from './HillshadingPanel';
 import LayerInspector from './LayerInspector';
+import MapLightingPanel from './MapLightingPanel';
 import MapTerrainPanel from './MapTerrainPanel';
 
 function createTileLabel() {
@@ -47,7 +47,7 @@ class MapInspector extends EntityInspector<Map> {
     showTileInfo: boolean;
     extentHelper: BoundingBoxHelper | null;
     labels: globalThis.Map<number, CSS2DObject>;
-    hillshadingPanel: HillshadingPanel;
+    lightingPanel: MapLightingPanel;
     contourLinePanel: ContourLinePanel;
     colorimetryPanel: ColorimetryPanel;
     graticulePanel: GraticulePanel;
@@ -154,7 +154,7 @@ class MapInspector extends EntityInspector<Map> {
 
         this.terrainPanel = new MapTerrainPanel(this.entity, this.gui, instance);
 
-        this.hillshadingPanel = new HillshadingPanel(this.entity.hillshading, this.gui, instance);
+        this.lightingPanel = new MapLightingPanel(this.entity.lighting, this.gui, instance);
 
         this.graticulePanel = new GraticulePanel(this.entity.graticule, this.gui, instance);
 

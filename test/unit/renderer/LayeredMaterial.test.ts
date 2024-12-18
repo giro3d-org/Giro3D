@@ -1,13 +1,18 @@
+import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import type ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer';
 import OffsetScale from '@giro3d/giro3d/core/OffsetScale';
+import { MapLightingMode } from '@giro3d/giro3d/entities/MapLightingOptions';
 import type { AtlasInfo } from '@giro3d/giro3d/renderer/AtlasBuilder';
 import type { MaterialOptions } from '@giro3d/giro3d/renderer/LayeredMaterial';
 import LayeredMaterial from '@giro3d/giro3d/renderer/LayeredMaterial';
 import type { WebGLRenderer } from 'three';
-import { Color, DoubleSide, FrontSide, Texture, UnsignedByteType } from 'three';
+import { Color, DoubleSide, FrontSide, Texture, UnsignedByteType, Vector2 } from 'three';
 
 // @ts-expect-error invalid definition
 const defaultAtlasInfo: AtlasInfo = { minX: 0, maxX: 1 };
+const defaultTextureSize: Vector2 = new Vector2(128, 128);
+const defaultTileDimensions: Vector2 = new Vector2(100, 100);
+const defaultExtent = new Extent('EPSG:3857', 0, 10, 0, 10);
 // @ts-expect-error invalid definition
 const defaultRenderer: WebGLRenderer = {};
 const getIndexFn = () => 0;
@@ -40,12 +45,15 @@ const defaultOptions: MaterialOptions = {
         xStep: 1,
         yStep: 1,
     },
-    hillshading: {
+    lighting: {
         enabled: false,
-        intensity: 1,
+        castShadows: false,
+        receiveShadows: false,
+        mode: MapLightingMode.Hillshade,
+        hillshadeIntensity: 1,
         zFactor: 1,
-        zenith: 0,
-        azimuth: 0,
+        hillshadeZenith: 0,
+        hillshadeAzimuth: 0,
         elevationLayersOnly: false,
     },
     segments: 32,
@@ -67,6 +75,9 @@ describe('LayeredMaterial', () => {
                 renderer: defaultRenderer,
                 atlasInfo: defaultAtlasInfo,
                 getIndexFn,
+                extent: defaultExtent,
+                textureSize: defaultTextureSize,
+                tileDimensions: defaultTileDimensions,
                 hasElevationLayer: false,
                 maxTextureImageUnits: 15,
                 textureDataType: UnsignedByteType,
@@ -74,6 +85,9 @@ describe('LayeredMaterial', () => {
             const ds = new LayeredMaterial({
                 options: { ...defaultOptions, side: DoubleSide },
                 renderer: defaultRenderer,
+                extent: defaultExtent,
+                textureSize: defaultTextureSize,
+                tileDimensions: defaultTileDimensions,
                 atlasInfo: defaultAtlasInfo,
                 getIndexFn,
                 hasElevationLayer: false,
@@ -91,6 +105,9 @@ describe('LayeredMaterial', () => {
                 renderer: defaultRenderer,
                 atlasInfo: defaultAtlasInfo,
                 getIndexFn,
+                extent: defaultExtent,
+                textureSize: defaultTextureSize,
+                tileDimensions: defaultTileDimensions,
                 hasElevationLayer: false,
                 maxTextureImageUnits: 15,
                 textureDataType: UnsignedByteType,
@@ -103,6 +120,9 @@ describe('LayeredMaterial', () => {
                 renderer: defaultRenderer,
                 atlasInfo: defaultAtlasInfo,
                 getIndexFn,
+                extent: defaultExtent,
+                textureSize: defaultTextureSize,
+                tileDimensions: defaultTileDimensions,
                 hasElevationLayer: false,
                 maxTextureImageUnits: 15,
                 textureDataType: UnsignedByteType,
@@ -124,6 +144,9 @@ describe('LayeredMaterial', () => {
                 renderer: defaultRenderer,
                 atlasInfo: defaultAtlasInfo,
                 getIndexFn,
+                extent: defaultExtent,
+                textureSize: defaultTextureSize,
+                tileDimensions: defaultTileDimensions,
                 hasElevationLayer: false,
                 maxTextureImageUnits: 15,
                 textureDataType: UnsignedByteType,
@@ -143,6 +166,9 @@ describe('LayeredMaterial', () => {
                 renderer: defaultRenderer,
                 atlasInfo: defaultAtlasInfo,
                 getIndexFn,
+                extent: defaultExtent,
+                textureSize: defaultTextureSize,
+                tileDimensions: defaultTileDimensions,
                 hasElevationLayer: false,
                 maxTextureImageUnits: 15,
                 textureDataType: UnsignedByteType,
@@ -164,6 +190,9 @@ describe('LayeredMaterial', () => {
                 renderer: defaultRenderer,
                 atlasInfo: defaultAtlasInfo,
                 getIndexFn,
+                extent: defaultExtent,
+                textureSize: defaultTextureSize,
+                tileDimensions: defaultTileDimensions,
                 hasElevationLayer: false,
                 maxTextureImageUnits: 15,
                 textureDataType: UnsignedByteType,
@@ -183,6 +212,9 @@ describe('LayeredMaterial', () => {
                 renderer: defaultRenderer,
                 atlasInfo: defaultAtlasInfo,
                 getIndexFn,
+                extent: defaultExtent,
+                textureSize: defaultTextureSize,
+                tileDimensions: defaultTileDimensions,
                 hasElevationLayer: false,
                 maxTextureImageUnits: 15,
                 textureDataType: UnsignedByteType,
@@ -199,6 +231,9 @@ describe('LayeredMaterial', () => {
                 renderer: defaultRenderer,
                 atlasInfo: defaultAtlasInfo,
                 getIndexFn,
+                extent: defaultExtent,
+                textureSize: defaultTextureSize,
+                tileDimensions: defaultTileDimensions,
                 hasElevationLayer: false,
                 maxTextureImageUnits: 15,
                 textureDataType: UnsignedByteType,
@@ -235,6 +270,9 @@ describe('LayeredMaterial', () => {
                 renderer: defaultRenderer,
                 atlasInfo: defaultAtlasInfo,
                 getIndexFn,
+                extent: defaultExtent,
+                textureSize: defaultTextureSize,
+                tileDimensions: defaultTileDimensions,
                 hasElevationLayer: false,
                 maxTextureImageUnits: 15,
                 textureDataType: UnsignedByteType,

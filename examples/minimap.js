@@ -38,7 +38,7 @@ const extent = new Extent('EPSG:2154', -111629.52, 1275028.84, 5976033.79, 72301
 const map = new Map({
     extent,
     backgroundColor: 'gray',
-    hillshading: {
+    lighting: {
         enabled: true,
         elevationLayersOnly: true,
     },

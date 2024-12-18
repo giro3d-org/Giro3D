@@ -90,7 +90,7 @@ const map = new Map({
     extent,
     backgroundColor: 'cyan',
     side: DoubleSide,
-    hillshading: {
+    lighting: {
         enabled: true,
         elevationLayersOnly: true,
     },
