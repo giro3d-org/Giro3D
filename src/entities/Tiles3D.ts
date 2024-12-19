@@ -1,99 +1,111 @@
-import type { Box3 } from 'three';
-import { Group, MathUtils, Matrix4, Vector2, Vector3, type Material, type Object3D } from 'three';
-import { GlobalCache } from '../core/Cache';
+import type { LRUCache, PriorityQueue, Tile } from '3d-tiles-renderer';
+import { TilesRenderer } from '3d-tiles-renderer';
+import {
+    DebugTilesPlugin,
+    GLTFExtensionsPlugin,
+    ImplicitTilingPlugin,
+    UnloadTilesPlugin,
+} from '3d-tiles-renderer/plugins';
+import type { Material, Object3D } from 'three';
+import { Box3, Color, Group, REVISION, Vector3 } from 'three';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
+import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
+import ColorMap from '../core/ColorMap';
 import type Context from '../core/Context';
-import { isDisposable } from '../core/Disposable';
-import type Extent from '../core/geographic/Extent';
+import Extent from '../core/geographic/Extent';
 import type ColorLayer from '../core/layer/ColorLayer';
 import type HasLayers from '../core/layer/HasLayers';
 import type Layer from '../core/layer/Layer';
-import type { LayerEvents } from '../core/layer/Layer';
+import type { LayerNode } from '../core/layer/Layer';
 import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../core/MemoryUsage';
-import OperationCounter from '../core/OperationCounter';
 import type Pickable from '../core/picking/Pickable';
-import pickObjectsAt from '../core/picking/PickObjectsAt';
-import type PickOptions from '../core/picking/PickOptions';
-import pickPointsAt, { type PointsPickResult } from '../core/picking/PickPointsAt';
+import type { PointsPickResult } from '../core/picking/PickPointsAt';
 import type PickResult from '../core/picking/PickResult';
-import PointCloud from '../core/PointCloud';
-import type RequestQueue from '../core/RequestQueue';
-import { DefaultQueue } from '../core/RequestQueue';
-import PointCloudMaterial from '../renderer/PointCloudMaterial';
-import { USE_POINTCLOUD_POSTPROCESSING } from '../renderer/RenderPipeline';
-import type Tiles3DSource from '../sources/Tiles3DSource';
-import Fetcher from '../utils/Fetcher';
-import { isBufferGeometry } from '../utils/predicates';
+import type {
+    Classification,
+    Mode,
+    Mode as PointCloudMaterialMode,
+} from '../renderer/PointCloudMaterial';
+import PointCloudMaterial, { ASPRS_CLASSIFICATIONS, MODE } from '../renderer/PointCloudMaterial';
+import { isBufferGeometry, isObject3D } from '../utils/predicates';
 import { nonNull } from '../utils/tsutils';
-import utf8Decoder from '../utils/Utf8Decoder';
-import $3dTilesIndex, { type ProcessedTile } from './3dtiles/3dTilesIndex';
-import $3dTilesLoader from './3dtiles/3dTilesLoader';
-import {
-    boundingVolumeToBox3,
-    boundingVolumeToExtent,
-    cullingTest,
-} from './3dtiles/BoundingVolume';
-import Tile from './3dtiles/Tile';
-import type { $3dTilesAsset, $3dTilesTile, $3dTilesTileset } from './3dtiles/types';
-import { type EntityUserData } from './Entity';
-import Entity3D, { type Entity3DEventMap } from './Entity3D';
+import FetchPlugin from './3dtiles/FetchPlugin';
+import type PointCloudParameters from './3dtiles/PointCloudParameters';
+import PointCloudPlugin, { isPNTSScene } from './3dtiles/PointCloudPlugin';
+import type { EntityPreprocessOptions, EntityUserData } from './Entity';
+import type { Entity3DEventMap } from './Entity3D';
+import Entity3D from './Entity3D';
 
-type ObjectWithExtent = Object3D & { extent: Extent };
+type Listener<T> = (args: T & object) => void;
 
 /** Options to create a Tiles3D object. */
-export interface Tiles3DOptions<TMaterial extends Material> {
+export type Tiles3DOptions = {
     /**
-     * The delay, in milliseconds, to cleanup unused objects.
-     *
-     * @defaultvalue 1000
+     * The URL to the root tileset.
+     * Might be `undefined` if the URL is provided externally (for example by the `GoogleCloudAuthPlugin`)
      */
-    cleanupDelay?: number;
-    /**
-     * The Screen Space Error (SSE) threshold to use for this tileset.
-     *
-     * @defaultvalue 16
-     */
-    sseThreshold?: number;
-    /**
-     * The optional 3d object to use as the root object of this entity.
-     * If none provided, a new one will be created.
-     */
-    object3d?: Object3D;
-    /** The optional material to use. */
-    material?: TMaterial;
-}
+    url?: string;
 
+    /**
+     * The path to the DRACO library files.
+     * @defaultValue `'https://unpkg.com/three@0.${REVISION}.0/examples/jsm/libs/draco/gltf/'`
+     */
+    dracoDecoderPath?: string;
+
+    /**
+     * The path to the KTX2 library files.
+     * @defaultValue `'https://unpkg.com/three@0.${REVISION}.0/examples/jsm/libs/basis/'`
+     */
+    ktx2DecoderPath?: string;
+
+    /**
+     * The display mode for point clouds.
+     * Note: only applies to point cloud tiles.
+     * @defaultValue color
+     */
+    pointCloudMode?: Mode;
+
+    /**
+     * The point size for point clouds.
+     * Note: only applies to point cloud tiles.
+     * @defaultValue automatic size computation
+     */
+    pointSize?: number;
+
+    /**
+     * The colormap used for point cloud coloring.
+     * Note: only applies to point cloud tiles.
+     */
+    colorMap?: ColorMap;
+
+    /**
+     * The error target that drives tile subdivision.
+     * @defaultValue 8
+     */
+    errorTarget?: number;
+
+    /**
+     * The classifications for point clouds.
+     * Note: only applies to point cloud tiles.
+     *
+     * @defaultValue {@link ASPRS_CLASSIFICATIONS}
+     */
+    classifications?: Classification[];
+};
+
+const tmpBox3 = new Box3();
 const tmpVector = new Vector3();
-const tmpMatrix = new Matrix4();
 
-// This function is used to cleanup a Object3D hierarchy.
-// (no 3dtiles spectific code here because this is managed by cleanup3dTileset)
-function _cleanupObject3D(n: Object3D): void {
-    // all children of 'n' are raw Object3D
-    for (const child of n.children) {
-        _cleanupObject3D(child);
+export function isLayerNode(obj: object): obj is LayerNode {
+    if (obj == null) {
+        return false;
     }
 
-    if ('dispose' in n && typeof n.dispose === 'function') {
-        n.dispose();
-    } else {
-        // free resources
-        if ('material' in n && isDisposable(n.material)) {
-            n.material.dispose();
-        }
-        if ('geometry' in n && isDisposable(n.geometry)) {
-            n.geometry.dispose();
-        }
+    if ('material' in obj && PointCloudMaterial.isPointCloudMaterial(obj.material)) {
+        return true;
     }
-    n.remove(...n.children);
-}
 
-function isTilesetContentReady(tileset: $3dTilesTile, node: Tile): boolean {
-    return (
-        tileset != null &&
-        node != null && // is tileset loaded ?
-        node.children.length === 1 && // is tileset root loaded ?
-        node.children[0].children.length > 0
-    );
+    return false;
 }
 
 /**
@@ -104,81 +116,159 @@ function isTilesetContentReady(tileset: $3dTilesTile, node: Tile): boolean {
  */
 export type Tiles3DPickResult = PointsPickResult | PickResult;
 
+export interface Tiles3DEventMap extends Entity3DEventMap {
+    /** Fires when a layer is added to the entity. */
+    'layer-added': { layer: Layer };
+    /** Fires when a layer is removed from the entity. */
+    'layer-removed': { layer: Layer };
+}
+
+const shared: {
+    downloadQueue: PriorityQueue | null;
+    parseQueue: PriorityQueue | null;
+    lruCache: LRUCache | null;
+} = {
+    downloadQueue: null,
+    parseQueue: null,
+    lruCache: null,
+};
+
 /**
- * A [3D Tiles](https://www.ogc.org/standards/3DTiles) dataset.
- *
+ * Displays a [3D Tiles Tileset](https://www.ogc.org/publications/standard/3dtiles/). This entity
+ * uses the [3d-tiles-renderer](https://github.com/NASA-AMMOS/3DTilesRendererJS) package.
  */
-class Tiles3D<
-        TMaterial extends Material = Material,
-        UserData extends EntityUserData = EntityUserData,
-    >
-    extends Entity3D<Entity3DEventMap, UserData>
+export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
+    extends Entity3D<Tiles3DEventMap, UserData>
     implements Pickable<Tiles3DPickResult>, HasLayers
 {
-    readonly type = 'Tiles3D' as const;
+    readonly isPickable = true as const;
     readonly hasLayers = true as const;
-    readonly isMemoryUsage = true as const;
-    /** Read-only flag to check if a given object is of type Tiles3D. */
     readonly isTiles3D = true as const;
-    private readonly _url: string;
-    private _networkOptions?: RequestInit;
-    private _colorLayer?: ColorLayer;
+    readonly type = 'Tiles3D';
 
-    get url() {
-        return this._url;
-    }
+    private readonly _debugPlugin: DebugTilesPlugin;
+    private readonly _fetchPlugin: FetchPlugin;
+    private readonly _pointCloudPlugin: PointCloudPlugin;
+    private readonly _tiles: TilesRenderer;
+    private readonly _ktx2Loader: KTX2Loader;
 
-    /** The Screen Space Error (SSE) threshold to use for this tileset. */
-    sseThreshold: number;
-    /** The delay, in milliseconds, to cleanup unused objects. */
-    cleanupDelay: number;
-    /** The material to use */
-    material?: TMaterial;
-    private _cleanableTiles: Tile[];
-    private _opCounter: OperationCounter;
-    private _queue: RequestQueue;
-    readonly imageSize = new Vector2(128, 128);
-    private _tileIndex?: $3dTilesIndex;
-    private _asset?: $3dTilesAsset;
-    get asset(): $3dTilesAsset {
-        return nonNull(this._asset);
+    private readonly _debugOptions = {
+        displayBoxBounds: false,
+        displaySphereBounds: false,
+        displayRegionBounds: false,
+    };
+
+    // Settings that only applies to point cloud tiles
+    private readonly _pointCloudParameters: PointCloudParameters = {
+        pointSize: 0, // Automatic size
+        pointCloudMode: MODE.COLOR,
+        pointCloudColorMap: new ColorMap({
+            colors: [new Color('black'), new Color('white')],
+            min: 0,
+            max: 100,
+        }),
+        classifications: ASPRS_CLASSIFICATIONS.map(c => c.clone()),
+    };
+
+    private readonly _listeners: {
+        onModelLoaded: Listener<object>;
+        onColorMapUpdated: Listener<unknown>;
+        onTileVisibilityChanged: Listener<{ scene: Object3D; tile: Tile; visible: boolean }>;
+        onTileDisposed: Listener<{ scene: Object3D; tile: Tile }>;
+    };
+
+    private _colorLayer: ColorLayer | null = null;
+
+    constructor(options?: Tiles3DOptions) {
+        super(new Group());
+
+        this._tiles = new TilesRenderer(options?.url);
+
+        // Share resources between instances
+        if (shared.lruCache && shared.downloadQueue && shared.parseQueue) {
+            this._tiles.lruCache = shared.lruCache;
+            this._tiles.downloadQueue = shared.downloadQueue;
+            this._tiles.parseQueue = shared.parseQueue;
+        } else {
+            shared.lruCache = this._tiles.lruCache;
+            shared.downloadQueue = this._tiles.downloadQueue;
+            shared.parseQueue = this._tiles.parseQueue;
+        }
+
+        this._tiles.errorTarget = options?.errorTarget ?? 8;
+        this.object3d.add(this._tiles.group);
+
+        this._listeners = {
+            onModelLoaded: this.onModelLoaded.bind(this),
+            onTileVisibilityChanged: this.onTileVisibilityChanged.bind(this),
+            onColorMapUpdated: this.onColorMapUpdated.bind(this),
+            onTileDisposed: this.onTileDisposed.bind(this),
+        };
+
+        this._tiles.addEventListener('load-model', this._listeners.onModelLoaded);
+        this._tiles.addEventListener(
+            'tile-visibility-change',
+            this._listeners.onTileVisibilityChanged,
+        );
+        this._tiles.addEventListener('dispose-model', this._listeners.onTileDisposed);
+
+        this._debugPlugin = new DebugTilesPlugin();
+        this._tiles.registerPlugin(this._debugPlugin);
+        this.updateDebugPluginState();
+        this._tiles.registerPlugin(new ImplicitTilingPlugin());
+        this._tiles.registerPlugin(new UnloadTilesPlugin({ delay: 5000, bytesTarget: +Infinity }));
+
+        // Giro3D specific plugins
+        this._fetchPlugin = new FetchPlugin();
+        this._pointCloudPlugin = new PointCloudPlugin(this._pointCloudParameters);
+        this._tiles.registerPlugin(this._pointCloudPlugin);
+        this._tiles.registerPlugin(this._fetchPlugin);
+
+        const dracoLoader = new DRACOLoader(this._tiles.manager).setDecoderPath(
+            options?.dracoDecoderPath ??
+                `https://unpkg.com/three@0.${REVISION}.0/examples/jsm/libs/draco/gltf/`,
+        );
+
+        const ktxLoader = new KTX2Loader(this._tiles.manager).setTranscoderPath(
+            options?.ktx2DecoderPath ??
+                `https://unpkg.com/three@0.${REVISION}.0/examples/jsm/libs/basis/`,
+        );
+
+        this._ktx2Loader = ktxLoader;
+
+        this._tiles.registerPlugin(
+            new GLTFExtensionsPlugin({
+                dracoLoader,
+                ktxLoader,
+                // FIXME the following parameters are optional but the .d.ts file makes them mandatory
+                // https://github.com/NASA-AMMOS/3DTilesRendererJS/pull/908
+                metadata: true,
+                rtc: true,
+                autoDispose: true,
+                plugins: [],
+            }),
+        );
+
+        this._pointCloudParameters.pointCloudMode =
+            options?.pointCloudMode ?? this._pointCloudParameters.pointCloudMode;
+        this._pointCloudParameters.pointSize =
+            options?.pointSize ?? this._pointCloudParameters.pointSize;
+        this._pointCloudParameters.pointCloudColorMap =
+            options?.colorMap ?? this._pointCloudParameters.pointCloudColorMap;
+        this._pointCloudParameters.classifications =
+            options?.classifications ?? this._pointCloudParameters.classifications;
+
+        this._pointCloudParameters.pointCloudColorMap.addEventListener(
+            'updated',
+            this._listeners.onColorMapUpdated,
+        );
     }
-    private _root?: Tile;
-    public get root(): Tile {
-        return nonNull(this._root);
-    }
-    private _extent?: Extent;
-    wireframe?: boolean;
 
     /**
-     * Constructs a Tiles3D object.
-     *
-     * @param source - The data source.
-     * @param options - Optional properties.
+     * Returns the underlying renderer.
      */
-    constructor(source: Tiles3DSource, options: Tiles3DOptions<TMaterial> = {}) {
-        super(options.object3d || new Group());
-
-        if (source == null) {
-            throw new Error('missing source');
-        }
-
-        if (source.url == null) {
-            throw new Error('missing source.url');
-        }
-
-        this.type = 'Tiles3D';
-        this._url = source.url;
-        this._networkOptions = source.networkOptions;
-        this.sseThreshold = options.sseThreshold ?? 16;
-        this.cleanupDelay = options.cleanupDelay ?? 1000;
-        this.material = options.material ?? undefined;
-
-        this._cleanableTiles = [];
-
-        this._opCounter = new OperationCounter();
-
-        this._queue = DefaultQueue;
+    get tiles(): TilesRenderer {
+        return this._tiles;
     }
 
     onRenderingContextRestored(): void {
@@ -187,11 +277,10 @@ class Tiles3D<
     }
 
     getBoundingBox(): Box3 | null {
-        if (this._root != null) {
-            return boundingVolumeToBox3(this._root.boundingVolume, this._root.matrixWorld);
-        }
+        const box = new Box3();
+        this._tiles.getBoundingBox(box);
 
-        return super.getBoundingBox();
+        return box;
     }
 
     getMemoryUsage(context: GetMemoryUsageContext) {
@@ -208,17 +297,12 @@ class Tiles3D<
         }
     }
 
-    async attach(colorLayer: ColorLayer) {
-        this._colorLayer = colorLayer;
-        await colorLayer.initialize({ instance: this.instance });
-    }
-
     get loading() {
-        return this._opCounter.loading || (this._colorLayer?.loading ?? false);
+        return this.tiles.loadProgress !== 1 || (this._colorLayer?.loading ?? false);
     }
 
     get progress() {
-        let sum = this._opCounter.progress;
+        let sum = this.tiles.loadProgress;
         let count = 1;
         if (this._colorLayer) {
             sum += this._colorLayer.progress;
@@ -227,7 +311,7 @@ class Tiles3D<
         return sum / count;
     }
 
-    getLayers(predicate?: (arg0: Layer) => boolean): Layer<LayerEvents>[] {
+    getLayers(predicate?: (arg0: Layer) => boolean): Layer[] {
         if (this._colorLayer) {
             if (typeof predicate != 'function' || predicate(this._colorLayer)) {
                 return [this._colorLayer];
@@ -243,6 +327,31 @@ class Tiles3D<
         }
     }
 
+    removeColorLayer(): void {
+        if (this._colorLayer) {
+            this.dispatchEvent({ type: 'layer-removed', layer: this._colorLayer });
+            this.traverse(obj => {
+                if (isLayerNode(obj)) {
+                    this._colorLayer?.unregisterNode(obj);
+                }
+            });
+            this._colorLayer = null;
+        }
+    }
+
+    /**
+     * Sets the color layer used to colorize tiles.
+     * Note: this feature only works with point cloud tiles.
+     */
+    async setColorLayer(layer: ColorLayer): Promise<void> {
+        if (this._colorLayer) {
+            this.removeColorLayer();
+        }
+        this._colorLayer = layer;
+        await layer.initialize({ instance: this.instance });
+        this.dispatchEvent({ type: 'layer-removed', layer });
+    }
+
     get layerCount(): number {
         if (this._colorLayer) {
             return 1;
@@ -251,477 +360,69 @@ class Tiles3D<
     }
 
     updateOpacity() {
-        if (this.material) {
-            // This is necessary because update() does copy the material's properties
-            // to the tile's material, and we are losing any custom opacity.
-            this.material.opacity = this.opacity;
-            this.material.transparent = this.opacity < 1;
-            // in the case we have a material for the whole entity, we can ignore the object's
-            // original opacity and the Entity3D implementation is fine
-            super.updateOpacity();
-        } else {
-            // if we *don't* have an entity-wise material, we need to be a bit more subtle and take
-            // the original opacity into account
-            this.traverseMaterials(material => {
-                this.setMaterialOpacity(material);
-            });
-        }
+        this.traverseMaterials(material => {
+            this.setMaterialOpacity(material);
+        });
     }
 
-    async preprocess(): Promise<void> {
-        // Download the root tileset to complete the preparation.
-        const tileset = (await Fetcher.json(this._url, this._networkOptions)) as $3dTilesTileset;
-        if (!tileset.root.refine) {
-            tileset.root.refine = tileset.refine;
-        }
+    protected preprocess(opts: EntityPreprocessOptions): Promise<void> {
+        return new Promise(resolve => {
+            const instance = opts.instance;
 
-        // Add a tile which acts as root of the tileset but has no content.
-        // This way we can safely cleanup the root of the tileset in the processing
-        // code, and keep a valid layer.root tile.
-        const fakeroot: $3dTilesTile = {
-            boundingVolume: tileset.root.boundingVolume,
-            geometricError: tileset.geometricError * 10,
-            refine: tileset.root.refine,
-            transform: tileset.root.transform,
-            children: [tileset.root],
-        };
-        // Remove transform which has been moved up to fakeroot
-        tileset.root.transform = undefined;
-        // Replace root
-        tileset.root = fakeroot;
+            // Preprocessing is done when the root tileset is loaded
+            const listener = () => {
+                this._tiles.removeEventListener('load-content', listener);
+                resolve();
+            };
+            this._tiles.addEventListener('load-content', listener);
 
-        const urlPrefix = this._url.slice(0, this._url.lastIndexOf('/') + 1);
-        // Note: Constructing $3dTilesIndex makes tileset.root become a Tileset object !
-        this._tileIndex = new $3dTilesIndex(tileset, urlPrefix);
-        this._asset = tileset.asset;
+            const camera = instance.view.camera;
+            if (this._tiles.hasCamera(camera) === false) {
+                this._tiles.setCamera(camera);
+                this._tiles.setResolutionFromRenderer(camera, instance.renderer);
+            }
 
-        const tile = await this.requestNewTile(tileset.root as ProcessedTile);
-        if (tile == null) {
-            throw new Error('Could not load root tile');
-        }
+            this._ktx2Loader.detectSupport(instance.renderer);
 
-        this.object3d.add(tile);
-        tile.updateMatrixWorld();
+            this._tiles.update();
 
-        nonNull(this._tileIndex).get(tile).obj = tile;
-        this._root = tile;
-        this._extent = boundingVolumeToExtent(
-            this.instance.referenceCrs,
-            tile.boundingVolume,
-            tile.matrixWorld,
-        );
-    }
-
-    private async requestNewTile(
-        metadata: ProcessedTile,
-        parent?: Tile,
-    ): Promise<Tile | undefined> {
-        if (metadata.obj) {
-            const tileset = metadata as ProcessedTile;
-            this.unmarkTileForDeletion(tileset.obj);
-            this.instance.notifyChange(parent);
-            return tileset.obj;
-        }
-
-        this._opCounter.increment();
-
-        let priority;
-        if (!parent || parent.additiveRefinement) {
-            // Additive refinement can be done independently for each child,
-            // so we can compute a per child priority
-            const box = nonNull(metadata.boundingVolumeObject.box);
-            const size = box
-                .clone()
-                .applyMatrix4(metadata.worldFromLocalTransform)
-                .getSize(tmpVector);
-            priority = size.x * size.y;
-        } else {
-            // But the 'replace' refinement needs to download all children at
-            // the same time.
-            // If one of the children is very small, its priority will be low,
-            // and it will delay the display of its siblings.
-            // So we compute a priority based on the size of the parent
-            // TODO cache the computation of world bounding volume ?
-            const box = nonNull(parent.boundingVolume.box);
-            const size = box.clone().applyMatrix4(parent.matrixWorld).getSize(tmpVector);
-            priority = size.x * size.y; // / this.tileIndex.index[parent.tileId].children.length;
-        }
-
-        const request = {
-            id: MathUtils.generateUUID(),
-            priority,
-            shouldExecute: () => this.shouldExecute(parent),
-            request: () => this.executeCommand(metadata, parent),
-        };
-
-        try {
-            const node = (await this._queue.enqueue(request)) as Tile;
-            metadata.obj = node;
             this.notifyChange(this);
-            return node;
-        } catch (e) {
-            if (e instanceof Error && e.name !== 'AbortError') {
-                throw e;
-            }
-        } finally {
-            this._opCounter.decrement();
-        }
+        });
     }
 
-    preUpdate(): Tile[] {
-        if (!this.visible) {
-            return [];
+    preUpdate(context: Context): unknown[] | null {
+        if (this.frozen || !this.visible) {
+            return null;
         }
 
-        // Elements removed are added in the this._cleanableTiles list.
-        // Since we simply push in this array, the first item is always
-        // the oldest one.
-        const now = Date.now();
-        const cleanable = this._cleanableTiles;
-        const first = cleanable[0];
+        const camera = context.view.camera;
 
-        if (first != null && now - (first.cleanableSince as number) > this.cleanupDelay) {
-            while (cleanable.length > 0) {
-                const elt = this._cleanableTiles[0];
-                if (now - (elt.cleanableSince as number) > this.cleanupDelay) {
-                    this.cleanup3dTileset(elt);
-                } else {
-                    // later entries are younger
-                    break;
-                }
-            }
-        }
+        this._tiles.setResolutionFromRenderer(camera, this.instance.renderer);
+        this._tiles.update();
 
-        return [nonNull(this._root)];
-    }
-
-    update(context: Context, node: Tile): Tile[] | undefined {
-        // Remove deleted children (?)
-        node.remove(...node.children.filter(c => c.deleted));
-
-        const parent = nonNull(node.parent);
-
-        // early exit if parent's subdivision is in progress
-        if (parent.pendingSubdivision === true && !parent.additiveRefinement) {
-            node.visible = false;
-            return undefined;
-        }
-        let returnValue;
-
-        // do proper culling
-        const isVisible = !cullingTest(context.view, node, node.matrixWorld);
-        node.visible = isVisible;
-
-        if (isVisible) {
-            this.unmarkTileForDeletion(node);
-
-            // We need distance for 2 things:
-            // - subdivision testing
-            // - near / far calculation in MainLoop. For this one, we need the distance for *all*
-            // displayed tiles.
-            // For this last reason, we need to calculate this here, and not in subdivisionControl
-            node.calculateCameraDistance(context.view.camera);
-
-            if (!this.frozen) {
-                if (node.pendingSubdivision === true || this.subdivisionTest(context, node)) {
-                    this.subdivideNode(context, node);
-                    // display iff children aren't ready
-                    if (node.additiveRefinement || node.pendingSubdivision === true) {
-                        node.setDisplayed(true);
-                    } else {
-                        // If one of our child is a tileset, this node must be displayed until this
-                        // child content is ready, to avoid hiding our content too early (= when our
-                        // child is loaded but its content is not)
-                        const index = nonNull(this._tileIndex);
-                        const children = nonNull(index.get(node).children);
-                        const subtilesets = children.filter(tile => tile.isProcessedTile);
-
-                        if (subtilesets.length) {
-                            let allReady = true;
-                            for (const tileset of subtilesets) {
-                                const subTilesetNode = node.children.filter(
-                                    n => n.tileId === tileset.tileId,
-                                )[0];
-                                if (!isTilesetContentReady(tileset, subTilesetNode)) {
-                                    allReady = false;
-                                    break;
-                                }
-                            }
-                            node.setDisplayed(allReady);
-                        } else {
-                            node.setDisplayed(true);
-                        }
-                    }
-                    returnValue = node.getChildTiles();
-                } else {
-                    node.setDisplayed(true);
-
-                    for (const n of node.getChildTiles()) {
-                        n.visible = false;
-                        this.markTileForDeletion(n);
-                    }
-                }
-            } else {
-                returnValue = node.getChildTiles();
-            }
-
-            // update material
-            if (node.content && node.content.visible) {
-                // it will therefore contribute to near / far calculation
-                if (node.boundingVolume.region) {
-                    throw new Error('boundingVolume.region is not yet supported');
-                } else if (node.boundingVolume.box) {
-                    this._distance.min = Math.min(this._distance.min, node.distance.min);
-                    this._distance.max = Math.max(this._distance.max, node.distance.max);
-                } else if (node.boundingVolume.sphere) {
-                    this._distance.min = Math.min(this._distance.min, node.distance.min);
-                    this._distance.max = Math.max(this._distance.max, node.distance.max);
-                }
-                node.content.traverse(o => {
-                    const mesh = o as Object3D;
-                    if (this.isOwned(mesh) && 'material' in mesh) {
-                        const m = mesh.material as Material;
-                        if ('wireframe' in m) {
-                            m.wireframe = this.wireframe;
-                        }
-                    }
-                });
-                if (this.material) {
-                    node.content.traverse(o => {
-                        const pointcloud = o as PointCloud;
-                        if (this.isOwned(pointcloud) && pointcloud.material != null) {
-                            if (pointcloud.isPoints) {
-                                pointcloud.userData[USE_POINTCLOUD_POSTPROCESSING] = true;
-                                if (
-                                    PointCloudMaterial.isPointCloudMaterial(pointcloud.material) &&
-                                    PointCloudMaterial.isPointCloudMaterial(this.material)
-                                ) {
-                                    pointcloud.material.update(this.material);
-                                } else if (this.material != null) {
-                                    pointcloud.material.copy(this.material);
-                                }
-                            }
-                        }
-                    });
-                }
-            }
-        } else if (node !== this._root) {
-            if (node.parent && node.parent.additiveRefinement) {
-                this.markTileForDeletion(node);
-            }
-        }
-
-        return returnValue;
+        return null;
     }
 
     postUpdate(context: Context): void {
+        if (this.frozen || !this.visible) {
+            return;
+        }
+
         this.traverse(obj => {
-            if (
-                PointCloud.isPointCloud(obj) &&
-                PointCloudMaterial.isPointCloudMaterial(obj.material)
-            ) {
-                obj.material.updateUniforms();
-                this.forEachLayer(layer => layer.update(context, obj));
+            if (obj.visible) {
+                this.updateCameraDistances(context, obj);
+
+                if ('material' in obj && PointCloudMaterial.isPointCloudMaterial(obj.material)) {
+                    obj.material.updateUniforms();
+                    if (isLayerNode(obj)) {
+                        this.prepareLayerNode(obj);
+                        this.forEachLayer(layer => layer.update(context, obj));
+                    }
+                }
             }
         });
 
         this.forEachLayer(layer => layer.postUpdate());
-    }
-
-    protected markTileForDeletion(node: Tile) {
-        if (node.cleanableSince == null) {
-            node.markForDeletion();
-            this._cleanableTiles.push(node);
-        }
-    }
-
-    protected unmarkTileForDeletion(node: Tile | undefined) {
-        if (node && node.cleanableSince != null) {
-            this._cleanableTiles.splice(this._cleanableTiles.indexOf(node), 1);
-            node.unmarkForDeletion();
-        }
-    }
-
-    // Cleanup all 3dtiles|three.js starting from a given node n.
-    // n's children can be of 2 types:
-    //   - have a 'content' attribute -> it's a tileset and must
-    //     be cleaned with cleanup3dTileset()
-    //   - doesn't have 'content' -> it's a raw Object3D object,
-    //     and must be cleaned with _cleanupObject3D()
-    protected cleanup3dTileset(n: Tile, depth = 0): void {
-        this.unmarkTileForDeletion(n);
-
-        const tileset = nonNull(this._tileIndex).get(n);
-
-        if (tileset.obj) {
-            tileset.obj.deleted = Date.now();
-            tileset.obj = undefined;
-        }
-
-        // clean children tiles recursively
-        for (const child of n.getChildTiles()) {
-            this.cleanup3dTileset(child, depth + 1);
-            n.remove(child);
-        }
-
-        if (n.content) {
-            // clean content
-            n.content.traverse(_cleanupObject3D);
-            n.remove(n.content);
-            delete n.content;
-        }
-
-        if ('dispose' in n && typeof n.dispose === 'function') {
-            n.dispose();
-        }
-
-        // and finally remove from parent
-        // if (depth === 0 && n.parent) {
-        //     n.parent.remove(n);
-        // }
-    }
-
-    protected subdivisionTest(context: Context, node: Tile): boolean {
-        const tileset = nonNull(this._tileIndex).get(node);
-        if (tileset.children === undefined) {
-            return false;
-        }
-        if (tileset.isProcessedTile) {
-            return true;
-        }
-
-        const sse = node.computeNodeSSE(context.view);
-        node.sse = sse;
-
-        return sse > this.sseThreshold;
-    }
-
-    protected subdivideNodeAdditive(context: Context, node: Tile): void {
-        const children = nonNull(nonNull(this._tileIndex).get(node).children);
-
-        for (const child of children) {
-            // child being downloaded or already added => skip
-            if (child.promise || node.children.filter(n => n.tileId === child.tileId).length > 0) {
-                continue;
-            }
-
-            // 'child' is only metadata (it's *not* a Object3D). 'cullingTest' needs
-            // a matrixWorld, so we compute it: it's node's matrixWorld x child's transform
-            let overrideMatrixWorld = node.matrixWorld;
-            if (child.transformMatrix != null) {
-                overrideMatrixWorld = tmpMatrix.multiplyMatrices(
-                    node.matrixWorld,
-                    child.transformMatrix,
-                );
-            }
-
-            const isVisible = !cullingTest(context.view, child, overrideMatrixWorld);
-
-            // child is not visible => skip
-            if (!isVisible) {
-                continue;
-            }
-
-            child.promise = this.requestNewTile(child, node)
-                .then(tile => {
-                    if (!tile || !node.parent) {
-                        // cancelled promise or node has been deleted
-                    } else {
-                        node.add(tile);
-                        tile.updateMatrixWorld();
-
-                        const extent = boundingVolumeToExtent(
-                            nonNull(this._extent).crs,
-                            tile.boundingVolume,
-                            tile.matrixWorld,
-                        );
-                        tile.traverse(obj => {
-                            (obj as ObjectWithExtent).extent = extent;
-                        });
-
-                        this.notifyChange(child);
-                    }
-                })
-                .catch(e => {
-                    console.error('Cannot subdivide node', node, e);
-                })
-                .finally(() => delete child.promise);
-        }
-    }
-
-    protected subdivideNodeSubstractive(node: Tile): void {
-        // Subdivision in progress => nothing to do
-        if (node.pendingSubdivision === true) {
-            return;
-        }
-
-        if (node.getChildTiles().length > 0) {
-            return;
-        }
-
-        const index = nonNull(this._tileIndex);
-
-        // No child => nothing to do either
-        const childrenTiles = index.get(node).children;
-        if (childrenTiles === undefined || childrenTiles.length === 0) {
-            return;
-        }
-
-        node.pendingSubdivision = true;
-
-        // Substractive (refine = 'REPLACE') is an all or nothing subdivision mode
-        const promises: Promise<void>[] = [];
-        for (const child of childrenTiles) {
-            const p = this.requestNewTile(child, node)
-                .then(tile => {
-                    if (!tile || !node.parent) {
-                        // cancelled promise or node has been deleted
-                    } else {
-                        node.add(tile);
-                        tile.updateMatrixWorld();
-
-                        const extent = boundingVolumeToExtent(
-                            nonNull(this._extent).crs,
-                            tile.boundingVolume,
-                            tile.matrixWorld,
-                        );
-                        tile.traverse(obj => {
-                            (obj as ObjectWithExtent).extent = extent;
-                        });
-                    }
-                })
-                .catch(e => {
-                    console.error('Cannot subdivide node', node, e);
-                });
-            promises.push(p);
-        }
-
-        Promise.all(promises).then(
-            () => {
-                node.pendingSubdivision = false;
-                this.notifyChange(node);
-            },
-            () => {
-                node.pendingSubdivision = false;
-
-                // delete other children
-                for (const n of node.getChildTiles()) {
-                    n.visible = false;
-                    this.markTileForDeletion(n);
-                }
-            },
-        );
-    }
-
-    protected subdivideNode(context: Context, node: Tile): void {
-        if (node.additiveRefinement) {
-            // Additive refinement can only fetch visible children.
-            this.subdivideNodeAdditive(context, node);
-        } else {
-            // Substractive refinement on the other hand requires to replace
-            // node with all of its children
-            this.subdivideNodeSubstractive(node);
-        }
     }
 
     /**
@@ -737,6 +438,201 @@ class Tiles3D<
         material.needsUpdate = currentTransparent !== material.transparent;
     }
 
+    private onColorMapUpdated() {
+        this.traversePointCloudMaterials(m => m.updateUniforms());
+    }
+
+    get errorTarget() {
+        return this._tiles.errorTarget;
+    }
+
+    set errorTarget(v: number) {
+        if (this._tiles.errorTarget !== v) {
+            this._tiles.errorTarget = v;
+            this.notifyChange(this);
+        }
+    }
+
+    /**
+     * Gets or sets the size of points. Only applies to point cloud tiles.
+     */
+    get pointSize() {
+        return this._pointCloudParameters.pointSize;
+    }
+
+    set pointSize(v: number) {
+        if (this._pointCloudParameters.pointSize !== v) {
+            this._pointCloudParameters.pointSize = v;
+            this.traversePointCloudMaterials(m => {
+                m.size = v;
+            });
+            this.notifyChange(this);
+        }
+    }
+
+    /**
+     * Gets or sets display mode of point clouds. Only applies to point cloud tiles.
+     */
+    get pointCloudMode() {
+        return this._pointCloudParameters.pointCloudMode;
+    }
+
+    set pointCloudMode(v: PointCloudMaterialMode) {
+        if (this._pointCloudParameters.pointCloudMode !== v) {
+            this._pointCloudParameters.pointCloudMode = v;
+            this.traversePointCloudMaterials(m => (m.mode = v));
+            this.notifyChange(this);
+        }
+    }
+
+    /**
+     * Gets the classifications for point clouds. Only applies to point cloud tiles.
+     */
+    get pointCloudClassifications() {
+        return this._pointCloudParameters.classifications;
+    }
+
+    /**
+     * Gets the colormap used for point clouds. Only applies to point cloud tiles.
+     */
+    get colorMap() {
+        return this._pointCloudParameters.pointCloudColorMap;
+    }
+
+    private traversePointCloudMaterials(callback: (m: PointCloudMaterial) => void) {
+        this.traverseMaterials(m => {
+            if (PointCloudMaterial.isPointCloudMaterial(m)) {
+                callback(m);
+            }
+        });
+    }
+
+    private setDebugParam<K extends keyof DebugTilesPlugin>(key: K, value: DebugTilesPlugin[K]) {
+        // This plugin has a severe performance cost until it can be disabled at runtime
+        // See https://github.com/NASA-AMMOS/3DTilesRendererJS/issues/647
+        let plugin = this._tiles.getPluginByName('DEBUG_TILES_PLUGIN') as DebugTilesPlugin;
+        if (plugin == null) {
+            plugin = new DebugTilesPlugin();
+            this._tiles.registerPlugin(plugin);
+        }
+        if (plugin != null && plugin[key] !== value) {
+            plugin[key] = value;
+            this.notifyChange(this);
+        }
+
+        this.updateDebugPluginState();
+    }
+
+    private updateDebugPluginState() {
+        this._debugPlugin.enabled =
+            this._debugOptions.displayBoxBounds ||
+            this._debugOptions.displayRegionBounds ||
+            this._debugOptions.displaySphereBounds;
+    }
+
+    /**
+     * Toggles the display of box volumes.
+     */
+    get displayBoxBounds(): boolean {
+        return this._debugOptions.displayBoxBounds;
+    }
+
+    set displayBoxBounds(v: boolean) {
+        if (this._debugOptions.displayBoxBounds !== v) {
+            this._debugOptions.displayBoxBounds = v;
+            this.setDebugParam('displayBoxBounds', v);
+        }
+    }
+
+    /**
+     * Toggles the display of sphere volumes.
+     */
+    get displaySphereBounds(): boolean {
+        return this._debugOptions.displaySphereBounds;
+    }
+
+    set displaySphereBounds(v: boolean) {
+        if (this._debugOptions.displaySphereBounds !== v) {
+            this._debugOptions.displaySphereBounds = v;
+            this.setDebugParam('displaySphereBounds', v);
+        }
+    }
+
+    /**
+     * Toggles the display of region volumes.
+     */
+    get displayRegionBounds(): boolean {
+        return this._debugOptions.displayRegionBounds;
+    }
+
+    set displayRegionBounds(v: boolean) {
+        if (this._debugOptions.displayRegionBounds !== v) {
+            this._debugOptions.displayRegionBounds = v;
+            this.setDebugParam('displayRegionBounds', v);
+        }
+    }
+
+    /**
+     * Prepares the object so that it can receive a color layer.
+     */
+    private prepareLayerNode(node: LayerNode) {
+        if (node.visible && node.userData.extent == null) {
+            const localBox = node.userData.boundingBox as Box3;
+            const worldBox = localBox.clone().applyMatrix4(node.matrixWorld);
+            const extent = Extent.fromBox3(this.instance.referenceCrs, worldBox);
+            node.userData.extent = extent;
+        }
+    }
+
+    private onTileDisposed(e: { scene: Object3D; tile: Tile }) {
+        const { scene } = e;
+
+        if (this.layerCount !== 0 && isLayerNode(scene)) {
+            this.forEachLayer(layer => layer.unregisterNode(scene));
+        }
+
+        this.notifyChange(this);
+    }
+
+    private onTileVisibilityChanged(e: { scene: Object3D; tile: Tile; visible: boolean }) {
+        const { scene, visible } = e;
+
+        if (this.layerCount !== 0 && isLayerNode(scene)) {
+            if (visible && scene.userData.extent == null) {
+                this.prepareLayerNode(scene);
+            }
+
+            // We have to unregister the node when the tile becomes invisible
+            // because currently, the library does not delete invisible tiles
+            // See https://github.com/NASA-AMMOS/3DTilesRendererJS/pull/874
+            // for a future plugin that will actually unload the tiles.
+            if (!visible) {
+                this.forEachLayer(layer => layer.unregisterNode(scene));
+            }
+            scene.dispatchEvent({ type: 'visibility-changed' });
+        }
+
+        if (visible) {
+            this.updateMaterial(scene);
+        }
+
+        this.notifyChange(this);
+    }
+
+    private updateMaterial(scene: Object3D) {
+        if (isPNTSScene(scene)) {
+            this._pointCloudPlugin.updateMaterial(scene);
+        }
+    }
+
+    private onModelLoaded(e: unknown) {
+        if (typeof e === 'object' && e != null && 'scene' in e && isObject3D(e.scene)) {
+            this.onObjectCreated(e.scene as Object3D);
+            this.updateMaterial(e.scene);
+            this.notifyChange(this);
+        }
+    }
+
     protected setupMaterial(material: Material) {
         material.clippingPlanes = this.clippingPlanes;
         // this object can already be transparent with opacity < 1.0
@@ -747,109 +643,39 @@ class Tiles3D<
         this.setMaterialOpacity(material);
     }
 
-    async executeCommand(metadata: ProcessedTile, requester?: Tile): Promise<Tile> {
-        const tile = new Tile(metadata, requester);
+    private updateCameraDistances(context: Context, obj: Object3D) {
+        const plane = context.distance.plane;
 
-        // Patch for supporting 3D Tiles pre 1.0 (metadata.content.url) and 1.0
-        // (metadata.content.uri)
-        let path: string | undefined = undefined;
-        if (metadata.content) {
-            if (metadata.content.url != null) {
-                // 3D Tiles pre 1.0 version
-                path = metadata.content.url;
-            } else if (metadata.content.uri != null) {
-                // 3D Tiles 1.0 version
-                path = metadata.content.uri;
+        if (obj.visible && 'geometry' in obj && isBufferGeometry(obj.geometry)) {
+            const geometry = obj.geometry;
+
+            if (geometry.boundingBox == null) {
+                geometry.computeBoundingBox();
             }
+
+            // Note: this algorithm is exactly the same as the one used by the map
+            // TODO We might want to extract it and commonalize.
+            // https://gitlab.com/giro3d/giro3d/-/issues/540
+            const bbox = tmpBox3.copy(nonNull(geometry.boundingBox)).applyMatrix4(obj.matrixWorld);
+
+            const distance = plane.distanceToPoint(bbox.getCenter(tmpVector));
+            const radius = bbox.getSize(tmpVector).length() * 0.5;
+
+            this._distance.min = Math.min(this._distance.min, distance - radius);
+            this._distance.max = Math.max(this._distance.max, distance + radius);
         }
-
-        const setupObject = (obj: Object3D) => {
-            this.onObjectCreated(obj);
-        };
-        if (path != null) {
-            // Check if we have relative or absolute url (with tileset's lopocs for example)
-            const url = path.startsWith('http') ? path : metadata.baseURL + path;
-            const dl = (GlobalCache.get(url) ??
-                GlobalCache.set(
-                    url,
-                    Fetcher.arrayBuffer(url, this._networkOptions),
-                )) as Promise<ArrayBuffer>;
-
-            const result = await dl;
-            if (result !== undefined) {
-                let content;
-                const magic = utf8Decoder.decode(new Uint8Array(result, 0, 4));
-                metadata.magic = magic;
-                if (magic[0] === '{') {
-                    const { newTileset, newPrefix } = await $3dTilesLoader.jsonParse(
-                        result,
-                        this,
-                        url,
-                    );
-                    nonNull(this._tileIndex).extendTileset(newTileset, metadata.tileId, newPrefix);
-                } else if (magic === 'b3dm') {
-                    content = await $3dTilesLoader.b3dmToMesh(result, this, url);
-                } else if (magic === 'pnts') {
-                    content = await $3dTilesLoader.pntsParse(result, this);
-                } else {
-                    throw new Error(`Unsupported magic code ${magic}`);
-                }
-
-                if (content) {
-                    // TODO: request should be delayed if there is a viewerRequestVolume
-                    tile.content = content.object3d;
-                    content.object3d.name = path;
-
-                    if ('batchTable' in content && content.batchTable != null) {
-                        tile.batchTable = content.batchTable;
-                    }
-                    tile.add(content.object3d);
-                    tile.traverse(setupObject);
-                    return tile;
-                }
-            }
-            tile.traverse(setupObject);
-            return tile;
-        }
-        tile.traverse(setupObject);
-        return tile;
     }
 
-    /**
-     * @param node - The tile to evaluate;
-     * @returns true if the request can continue, false if it must be cancelled.
-     */
-    shouldExecute(node: Tile | undefined): boolean {
-        if (!node) {
-            return true;
-        }
-
-        // node was removed from the hierarchy
-        if (!node.parent) {
-            return false;
-        }
-
-        // tile not visible anymore
-        if (!node.visible) {
-            return false;
-        }
-
-        // tile visible but doesn't need subdivision anymore
-        if (node.sse != null && node.sse < this.sseThreshold) {
-            return false;
-        }
-
-        return true;
-    }
-
-    pick(coordinates: Vector2, options?: PickOptions): Tiles3DPickResult[] {
-        if (this.material && PointCloudMaterial.isPointCloudMaterial(this.material)) {
-            return pickPointsAt(this.instance, coordinates, this, options);
-        }
-        return pickObjectsAt(this.instance, coordinates, this.object3d, options);
+    dispose(): void {
+        this._tiles.removeEventListener('load-model', this._listeners.onModelLoaded);
+        this._tiles.removeEventListener(
+            'tile-visibility-change',
+            this._listeners.onTileVisibilityChanged,
+        );
+        this._tiles.removeEventListener('dispose-model', this._listeners.onTileDisposed);
+        this._pointCloudParameters.pointCloudColorMap.removeEventListener(
+            'updated',
+            this._listeners.onColorMapUpdated,
+        );
     }
 }
-
-export default Tiles3D;
-
-export { boundingVolumeToExtent };

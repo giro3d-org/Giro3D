@@ -1,15 +1,14 @@
 import TileWMS from 'ol/source/TileWMS.js';
 
-import { Vector3, CubeTextureLoader } from 'three';
+import { CubeTextureLoader, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
+import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import Tiles3D from '@giro3d/giro3d/entities/Tiles3D.js';
-import Tiles3DSource from '@giro3d/giro3d/sources/Tiles3DSource.js';
-import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
+import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
@@ -30,26 +29,17 @@ controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 instance.view.setControls(controls);
 
-// Adds a WMS imagery layer
-const wmsOthophotoSource = new TiledImageSource({
-    source: new TileWMS({
-        url: 'https://data.geopf.fr/wms-r',
-        projection: 'EPSG:2154',
-        crossOrigin: 'anonymous',
-        params: {
-            LAYERS: ['ORTHOIMAGERY.ORTHOPHOTOS'],
-            FORMAT: 'image/jpeg',
-        },
-    }),
+const pointcloud = new Tiles3D({
+    url: 'https://3d.oslandia.com/lidar_hd/tileset.json',
+    errorTarget: 15,
 });
 
-const pointcloud = new Tiles3D(new Tiles3DSource('https://3d.oslandia.com/lidar_hd/tileset.json'));
-
 // add pointcloud to scene
-function initializeCameraPosition(layer) {
-    const bbox = layer.root.bbox
-        ? layer.root.bbox
-        : layer.root.boundingVolume.box.clone().applyMatrix4(layer.root.matrixWorld);
+/**
+ * @param {Tiles3D} entity
+ */
+function initializeCameraPosition(entity) {
+    const bbox = entity.getBoundingBox();
 
     // configure camera
     instance.view.camera.far = 2.0 * bbox.getSize(tmpVec3).length();
@@ -57,7 +47,7 @@ function initializeCameraPosition(layer) {
     const ratio = bbox.getSize(tmpVec3).x / bbox.getSize(tmpVec3).z;
     const position = bbox.min
         .clone()
-        .add(bbox.getSize(tmpVec3).multiply({ x: 0, y: 0, z: ratio * 0.5 }));
+        .add(bbox.getSize(tmpVec3).multiply(new Vector3(0, 0, ratio * 0.5)));
     const lookAt = bbox.getCenter(tmpVec3);
     lookAt.z = bbox.min.z;
     instance.view.camera.position.set(position.x, position.y, position.z);
@@ -65,15 +55,21 @@ function initializeCameraPosition(layer) {
     controls.target.copy(lookAt);
     controls.saveState();
 
-    const colorLayer = new ColorLayer({
-        name: 'orthophoto-ign',
-        // The extent is useful to restrict the processing of the image layer
-        // (which is much bigger than our point cloud).
-        extent: Extent.fromBox3('EPSG:2154', bbox),
-        source: wmsOthophotoSource,
-    });
-
-    pointcloud.attach(colorLayer);
+    // Let's build the color layer from the WMTS capabilities
+    const url = 'https://data.geopf.fr/wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetCapabilities';
+    WmtsSource.fromCapabilities(url, {
+        layer: 'HR.ORTHOIMAGERY.ORTHOPHOTOS',
+    })
+        .then(orthophotoWmts => {
+            pointcloud.setColorLayer(
+                new ColorLayer({
+                    name: 'color',
+                    extent: Extent.fromBox3('EPSG:2154', bbox),
+                    source: orthophotoWmts,
+                }),
+            );
+        })
+        .catch(console.error);
 
     instance.renderingOptions.enableEDL = true;
     instance.renderingOptions.enableInpainting = true;

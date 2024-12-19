@@ -3,7 +3,6 @@ import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import Tiles3D from '@giro3d/giro3d/entities/Tiles3D.js';
-import Tiles3DSource from '@giro3d/giro3d/sources/Tiles3DSource.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 
 import StatusBar from './widgets/StatusBar.js';
@@ -38,17 +37,19 @@ const ambientLight = new AmbientLight(0xffffff, 1);
 instance.scene.add(ambientLight);
 instance.view.minNearPlane = 0.5;
 
-const ifc = new Tiles3D(
-    new Tiles3DSource('https://3d.oslandia.com/3dtiles/19_rue_Marc_Antoine_Petit_ifc/tileset.json'),
-);
+const ifc = new Tiles3D({
+    url: 'https://3d.oslandia.com/3dtiles/19_rue_Marc_Antoine_Petit_ifc/tileset.json',
+});
 
 // Hide some elements that don't bring visual value
 ifc.addEventListener('object-created', evt => {
-    const obj = evt.obj;
-    if (obj.userData?.class === 'IfcSpace') {
-        obj.visible = false;
-        instance.notifyChange();
-    }
+    const scene = evt.obj;
+    scene.traverse(obj => {
+        if (obj.userData?.class === 'IfcSpace') {
+            obj.visible = false;
+            instance.notifyChange();
+        }
+    });
 });
 
 function placeCamera(position, lookAt) {
@@ -67,7 +68,7 @@ function placeCamera(position, lookAt) {
 
 // add pointcloud to scene
 function initializeCamera() {
-    const bbox = ifc.root.boundingVolume.box.clone().applyMatrix4(ifc.root.matrixWorld);
+    const bbox = ifc.getBoundingBox();
 
     const ratio = bbox.getSize(tmpVec3).x / bbox.getSize(tmpVec3).z;
 

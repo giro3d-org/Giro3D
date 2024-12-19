@@ -34,7 +34,6 @@ import StaticImageSource, {
     type StaticImageSourceOptions,
 } from './StaticImageSource';
 import TiledImageSource, { type TiledImageSourceOptions } from './TiledImageSource';
-import Tiles3DSource from './Tiles3DSource';
 import VectorSource, { type VectorSourceOptions } from './VectorSource';
 import VectorTileSource, { type VectorTileSourceOptions } from './VectorTileSource';
 import WmsSource, { type WmsSourceOptions } from './WmsSource';
@@ -78,7 +77,6 @@ export {
     StaticImageSourceOptions,
     TiledImageSource,
     TiledImageSourceOptions,
-    Tiles3DSource,
     VectorSource,
     VectorSourceOptions,
     VectorTileSource,

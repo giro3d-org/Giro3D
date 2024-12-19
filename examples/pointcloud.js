@@ -3,11 +3,9 @@ import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import Tiles3D from '@giro3d/giro3d/entities/Tiles3D.js';
-import Tiles3DSource from '@giro3d/giro3d/sources/Tiles3DSource.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 
 import StatusBar from './widgets/StatusBar.js';
-import PointCloudMaterial from '@giro3d/giro3d/renderer/PointCloudMaterial.js';
 
 const tmpVec3 = new Vector3();
 
@@ -23,10 +21,9 @@ const instance = new Instance({
 });
 
 // Configure Point Cloud
-const pointcloud = new Tiles3D(
-    new Tiles3DSource('https://3d.oslandia.com/3dtiles/eglise_saint_blaise_arles/tileset.json'),
-    { material: new PointCloudMaterial() },
-);
+const pointcloud = new Tiles3D({
+    url: 'https://3d.oslandia.com/3dtiles/eglise_saint_blaise_arles/tileset.json',
+});
 
 function placeCamera(position, lookAt) {
     instance.view.camera.position.set(position.x, position.y, position.z);
@@ -43,9 +40,7 @@ function placeCamera(position, lookAt) {
 
 // add pointcloud to scene
 function initializeCamera() {
-    const bbox = pointcloud.root.boundingVolume.box
-        .clone()
-        .applyMatrix4(pointcloud.root.matrixWorld);
+    const bbox = pointcloud.getBoundingBox();
 
     instance.view.camera.far = 2.0 * bbox.getSize(tmpVec3).length();
 

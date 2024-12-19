@@ -103,10 +103,13 @@ interface Uniforms {
 
 class ComposerTileMaterial extends ShaderMaterial {
     readonly isComposerTileMaterial = true as const;
-    readonly type = 'ComposerTileMaterial' as const;
 
     dataType?: TextureDataType;
     pixelFormat?: AnyPixelFormat;
+
+    get type() {
+        return 'ComposerTileMaterial';
+    }
 
     // @ts-expect-error property is not assignable.
     override readonly uniforms: Uniforms;

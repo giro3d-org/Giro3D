@@ -1,38 +1,36 @@
-import colormap from 'colormap';
-
 import {
-    Vector3,
-    Mesh,
-    BoxGeometry,
-    MeshBasicMaterial,
     Box3,
     Box3Helper,
-    Group,
-    Plane,
+    BoxGeometry,
     DoubleSide,
+    Group,
+    Mesh,
+    MeshBasicMaterial,
+    Plane,
+    Vector3,
 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
+import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
-import Tiles3D from '@giro3d/giro3d/entities/Tiles3D.js';
-import Tiles3DSource from '@giro3d/giro3d/sources/Tiles3DSource.js';
-import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
+import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
-import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
-import PointCloudMaterial, { MODE } from '@giro3d/giro3d/renderer/PointCloudMaterial.js';
+import Tiles3D from '@giro3d/giro3d/entities/Tiles3D.js';
+import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
+import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import DrawTool from '@giro3d/giro3d/interactions/DrawTool.js';
+import { MODE } from '@giro3d/giro3d/renderer/PointCloudMaterial.js';
 import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-import { makeColorRamp } from './widgets/makeColorRamp.js';
-import { bindToggle } from './widgets/bindToggle.js';
-import { bindDropDown } from './widgets/bindDropDown.js';
 import { bindButton } from './widgets/bindButton.js';
+import { bindDropDown } from './widgets/bindDropDown.js';
 import { bindSlider } from './widgets/bindSlider.js';
+import { bindToggle } from './widgets/bindToggle.js';
+import { makeColorRamp } from './widgets/makeColorRamp.js';
 
 Instance.registerCRS(
     'EPSG:2154',
@@ -56,17 +54,10 @@ controls.dampingFactor = 0.2;
 
 instance.view.setControls(controls);
 
-const material = new PointCloudMaterial({
-    size: 4,
-    mode: MODE.ELEVATION,
-});
-
-material.colorMap.colors = makeColorRamp('rdbu').reverse();
-material.colorMap.min = 200;
-material.colorMap.max = 1800;
-
-const pointCloud = new Tiles3D(new Tiles3DSource('https://3d.oslandia.com/lidar_hd/tileset.json'), {
-    material,
+const pointCloud = new Tiles3D({
+    url: 'https://3d.oslandia.com/lidar_hd/tileset.json',
+    pointCloudMode: MODE.ELEVATION,
+    colorMap: new ColorMap({ colors: makeColorRamp('rdbu').reverse(), min: 200, max: 1800 }),
 });
 
 instance.add(pointCloud);

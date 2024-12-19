@@ -3,8 +3,8 @@ import { Vector3 } from 'three';
 import FirstPersonControls from '@giro3d/giro3d/controls/FirstPersonControls.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import Tiles3D from '@giro3d/giro3d/entities/Tiles3D.js';
-import Tiles3DSource from '@giro3d/giro3d/sources/Tiles3DSource.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
+import { MODE } from '@giro3d/giro3d/renderer/PointCloudMaterial.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
@@ -19,9 +19,10 @@ const instance = new Instance({
     backgroundColor: null,
 });
 
-const pointCloud = new Tiles3D(
-    new Tiles3DSource('https://3d.oslandia.com/3dtiles/eglise_saint_blaise_arles/tileset.json'),
-);
+const pointCloud = new Tiles3D({
+    url: 'https://3d.oslandia.com/3dtiles/eglise_saint_blaise_arles/tileset.json',
+    pointCloudMode: MODE.COLOR,
+});
 
 instance.add(pointCloud);
 
