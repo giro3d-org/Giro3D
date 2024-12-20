@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.40.1 (2024-12-19)
+## v0.41.0 (2024-12-19)
 
 This release brings support for LAS-based point clouds, such as LAS/LAZ files, COPC files and Potree 1 tilesets with LAZ tiles (not Potree 2.x tilesets however). Those data sources are now consumed by the new `PointCloud` entity. The new `AggregatePointCloudSource` allows users to display many point cloud datasets under a single entity.
 
