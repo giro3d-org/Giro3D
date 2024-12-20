@@ -1,5 +1,4 @@
 import { LRUCache } from 'lru-cache';
-import { MathUtils } from 'three';
 import type MemoryUsage from './MemoryUsage';
 import { isMemoryUsage, type GetMemoryUsageContext } from './MemoryUsage';
 
@@ -22,22 +21,39 @@ interface CacheOptions {
     onDelete?: (entry: unknown) => void;
 }
 
-const SECONDS = 1000;
-
 /**
  * The default max number of entries.
  */
 const DEFAULT_MAX_ENTRIES = 8192;
 
 /**
- * The default TTL (time to live).
+ * The default TTL (time to live), in milliseconds.
  */
-const DEFAULT_TTL: number = 240 * SECONDS;
+const DEFAULT_TTL: number = 240_000; // 240 seconds
 
 /**
  * The default capacity, in bytes.
  */
-const DEFAULT_CAPACITY: number = 512 * 1024 * 1024;
+const DEFAULT_CAPACITY: number = 536_870_912; // 512 MB
+
+interface CacheConfiguration {
+    /**
+     * The default TTL (time to live) of entries, in milliseconds.
+     * Can be overriden for each entry (see {@link CacheOptions}).
+     * @defaultValue {@link DEFAULT_TTL}
+     */
+    ttl?: number;
+    /**
+     * The capacity, in bytes, of the cache.
+     * @defaultValue {@link DEFAULT_CAPACITY}
+     */
+    byteCapacity?: number;
+    /**
+     * The capacity, in number of entries, of the cache.
+     * @defaultValue {@link DEFAULT_MAX_ENTRIES}
+     */
+    maxNumberOfEntries?: number;
+}
 
 /**
  * The cache.
@@ -45,9 +61,8 @@ const DEFAULT_CAPACITY: number = 512 * 1024 * 1024;
  */
 class Cache implements MemoryUsage {
     readonly isMemoryUsage = true as const;
-    private readonly _id = MathUtils.generateUUID();
     private readonly _deleteHandlers: Map<string, (entry: object) => void>;
-    private readonly _lru: LRUCache<string, object>;
+    private _lru: LRUCache<string, object>;
     private _enabled: boolean;
 
     /**
@@ -55,37 +70,36 @@ class Cache implements MemoryUsage {
      *
      * @param opts - The options.
      */
-    constructor(
-        opts: {
-            /**
-             * The default TTL (time to live) of entries.
-             * Can be overriden for each entry (see {@link CacheOptions}).
-             */
-            ttl?: number;
-            /** The capacity, in bytes, of the cache. */
-            byteCapacity?: number;
-            /** The capacity, in number of entries, of the cache. */
-            maxNumberOfEntries?: number;
-        } = {
-            ttl: DEFAULT_TTL,
-            byteCapacity: DEFAULT_CAPACITY,
-            maxNumberOfEntries: DEFAULT_MAX_ENTRIES,
-        },
-    ) {
+    constructor(opts?: CacheConfiguration) {
         this._deleteHandlers = new Map();
 
         this._enabled = true;
-        this._lru = new LRUCache({
-            ttl: opts.ttl ?? DEFAULT_TTL,
+        this._lru = this.createLRUCache(opts);
+    }
+
+    private createLRUCache(opts?: CacheConfiguration) {
+        return new LRUCache<string, object>({
+            ttl: opts?.ttl ?? DEFAULT_TTL,
             ttlResolution: 1000, // 1 second
             updateAgeOnGet: true,
-            maxSize: opts.byteCapacity ?? DEFAULT_CAPACITY,
-            max: opts.maxNumberOfEntries ?? DEFAULT_MAX_ENTRIES,
+            maxSize: opts?.byteCapacity ?? DEFAULT_CAPACITY,
+            max: opts?.maxNumberOfEntries ?? DEFAULT_MAX_ENTRIES,
             allowStale: false,
             dispose: (value, key) => {
                 this.onDisposed(key, value);
             },
         });
+    }
+
+    /**
+     * Configure the cache with the specified configuration. The cache must be
+     * empty otherwise this method will throw an error.
+     */
+    configure(config: CacheConfiguration) {
+        if (this.count > 0) {
+            throw new Error('cannot configure the cache as it is not empty.');
+        }
+        this._lru = this.createLRUCache(config);
     }
 
     getMemoryUsage(context: GetMemoryUsageContext) {
@@ -234,4 +248,12 @@ class Cache implements MemoryUsage {
  */
 const GlobalCache: Cache = new Cache();
 
-export { Cache, CacheOptions, DEFAULT_CAPACITY, DEFAULT_MAX_ENTRIES, DEFAULT_TTL, GlobalCache };
+export {
+    Cache,
+    CacheConfiguration,
+    CacheOptions,
+    DEFAULT_CAPACITY,
+    DEFAULT_MAX_ENTRIES,
+    DEFAULT_TTL,
+    GlobalCache,
+};

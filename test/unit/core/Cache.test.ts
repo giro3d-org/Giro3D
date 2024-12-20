@@ -1,4 +1,4 @@
-import { Cache } from '@giro3d/giro3d/core/Cache';
+import { Cache, DEFAULT_CAPACITY, DEFAULT_TTL } from '@giro3d/giro3d/core/Cache';
 
 let now = 0;
 let cache: Cache;
@@ -11,6 +11,38 @@ describe('Cache', () => {
     beforeEach(() => {
         performance.now = () => now;
         cache = new Cache();
+    });
+
+    describe('configure', () => {
+        it('should throw if cache is not empty', () => {
+            cache.set('foo', { bar: 123 });
+
+            expect(() => cache.configure({})).toThrow(
+                /cannot configure the cache as it is not empty/,
+            );
+        });
+
+        it('should not throw if cache has been cleared', () => {
+            cache.set('foo', { bar: 123 });
+
+            cache.clear();
+
+            expect(() => cache.configure({})).not.toThrow();
+        });
+
+        it('should honor passed configuration', () => {
+            cache.configure({ maxNumberOfEntries: 123 });
+
+            expect(cache.capacity).toEqual(123);
+            expect(cache.defaultTtl).toEqual(DEFAULT_TTL);
+            expect(cache.maxSize).toEqual(DEFAULT_CAPACITY);
+
+            cache.configure({ maxNumberOfEntries: 245, ttl: 202, byteCapacity: 998 });
+
+            expect(cache.capacity).toEqual(245);
+            expect(cache.defaultTtl).toEqual(202);
+            expect(cache.maxSize).toEqual(998);
+        });
     });
 
     describe('clear()', () => {
