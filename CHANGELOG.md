@@ -2,7 +2,7 @@
 
 ## v0.40.1 (2024-12-19)
 
-This release brings support for LAS-based point clouds, such as LAS/LAZ files, COPC files and Potree tilesets with LAZ tiles. Those data sources are now consumed by the new `PointCloud` entity. The new `AggregatePointCloudSource` allows users to display many point cloud datasets under a single entity.
+This release brings support for LAS-based point clouds, such as LAS/LAZ files, COPC files and Potree 1 tilesets with LAZ tiles (not Potree 2.x tilesets however). Those data sources are now consumed by the new `PointCloud` entity. The new `AggregatePointCloudSource` allows users to display many point cloud datasets under a single entity.
 
 The `DrawTool` is also improved with performance optimizations as well as better configurability.
 
@@ -11,26 +11,23 @@ The `DrawTool` is also improved with performance optimizations as well as better
 -   `PotreePointCloud` is removed. Use the `PointCloud`
     entity with a `PotreeSource` instead.
 -   `PotreeSource` constructor options have changed to match other
-    point cloud sources
+    point cloud sources.
 
 ### Feat
 
--   **sources**: add AggregatePointCloudSource
--   **sources**: add COPCSource and LASSource (#292)
--   **entities**: add PointCloud entity
--   **sources**: add PointCloudSource
+-   **entities**: add `PointCloud` entity
+-   **sources**: add `PointCloudSource`
+-   **sources**: add `COPCSource` and `LASSource` (#292)
+-   **sources**: add `AggregatePointCloudSource`
 -   **DrawTool**: end drawing polygons when clicking on first point (#542)
 -   **DrawTool**: allow specifying end condition (#541)
--   **DrawToolPanel**: use a slightly different color for shapes being drawn
+-   **Cache**: add `configure()` method (#545)
 
 ### Fix
 
 -   **PointCloudMaterial**: stop applying the offset scale from the layer
 -   **PointCloudMaterial**: don't dispose the colormap in the setter
--   **MapInspector**: add missing call to super.updateControllers()
 -   **ConstantSizeSphere**: honor camera zoom for size computation (#549)
--   **PickPointsAt**: round point index and object ID values from the shader
--   **PointsVS.glsl**: use a uint for pickingID
 -   **DrawTool**: ensure that the new shape is immediately displayed (#547)
 -   **Inspector**: disable autocomplete on `<input>` elements (#526)
 -   **WorkerPool**: use a better metric to select the least busy worker
@@ -40,7 +37,7 @@ The `DrawTool` is also improved with performance optimizations as well as better
 
 -   **PointCloudMaterial**: don't automatically update colormap uniforms
 -   **ColorMap**: dispose the cached texture as late as possible
--   **PotreeSource**: migrate to new PointCloud entity
+-   **PotreeSource**: migrate to new `PointCloud` entity
 -   **PickPointsAt**: improve readability of point picking logic
 
 ### Perf
