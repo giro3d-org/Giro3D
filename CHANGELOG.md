@@ -1,5 +1,53 @@
 # Changelog
 
+## v0.41.0 (2024-12-19)
+
+This release brings support for LAS-based point clouds, such as LAS/LAZ files, COPC files and Potree 1 tilesets with LAZ tiles (not Potree 2.x tilesets however). Those data sources are now consumed by the new `PointCloud` entity. The new `AggregatePointCloudSource` allows users to display many point cloud datasets under a single entity.
+
+The `DrawTool` is also improved with performance optimizations as well as better configurability.
+
+### BREAKING CHANGE
+
+-   `PotreePointCloud` is removed. Use the `PointCloud`
+    entity with a `PotreeSource` instead.
+-   `PotreeSource` constructor options have changed to match other
+    point cloud sources.
+
+### Feat
+
+-   **entities**: add `PointCloud` entity
+-   **sources**: add `PointCloudSource`
+-   **sources**: add `COPCSource` and `LASSource` (#292)
+-   **sources**: add `AggregatePointCloudSource`
+-   **DrawTool**: end drawing polygons when clicking on first point (#542)
+-   **DrawTool**: allow specifying end condition (#541)
+-   **Cache**: add `configure()` method (#545)
+
+### Fix
+
+-   **PointCloudMaterial**: stop applying the offset scale from the layer
+-   **PointCloudMaterial**: don't dispose the colormap in the setter
+-   **ConstantSizeSphere**: honor camera zoom for size computation (#549)
+-   **DrawTool**: ensure that the new shape is immediately displayed (#547)
+-   **Inspector**: disable autocomplete on `<input>` elements (#526)
+-   **WorkerPool**: use a better metric to select the least busy worker
+-   **PickPointsAt**: remove limits on point count per mesh (#537)
+
+### Refactor
+
+-   **PointCloudMaterial**: don't automatically update colormap uniforms
+-   **ColorMap**: dispose the cached texture as late as possible
+-   **PotreeSource**: migrate to new `PointCloud` entity
+-   **PickPointsAt**: improve readability of point picking logic
+
+### Perf
+
+-   **DrawTool**: optimize edition by picking only shapes when possible (#548)
+-   **PointsVS.glsl**: add support for decimation
+-   **PointsFS.glsl**: avoid useless computations if point should be discarded
+-   **PointsFS.glsl**: use a square length computation instead of a length
+-   **View**: optimize performance of `isBox3Visible()` and `isSphereVisible()`
+
 ## v0.40.0 (2024-11-18)
 
 This release mostly brings bugfixes and performance improvements, notably by using Web Workers for texture processing.
