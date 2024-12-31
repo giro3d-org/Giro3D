@@ -1,10 +1,11 @@
 import { EventDispatcher, type EventListener, type Texture } from 'three';
+import RequestQueue from '../core/RequestQueue';
 import HttpConfiguration from './HttpConfiguration';
-import HttpQueue from './HttpQueue';
 import PromiseUtils from './PromiseUtils';
 import TextureGenerator from './TextureGenerator';
 
 const DEFAULT_RETRY_DELAY_MS = 1000;
+const DEFAULT_CONCURRENT_REQUESTS_PER_HOST = 10;
 
 export interface FetcherEventMap {
     /**
@@ -69,22 +70,48 @@ function removeEventListener<T extends keyof FetcherEventMap>(
     eventTarget.removeEventListener(type, listener);
 }
 
-const hostQueues: Map<string, HttpQueue> = new Map();
+const hostQueues: Map<string, RequestQueue> = new Map();
+
+let id = 0;
+
+function toNumericalPriority(priority?: RequestPriority): number | undefined {
+    if (priority == null || priority === 'auto') {
+        return undefined;
+    }
+
+    if (priority === 'high') {
+        return 1;
+    }
+
+    return -1;
+}
 
 /**
  * Queue an HTTP request.
  *
  * @param req - The request to queue.
  */
-function enqueue(req: Request) {
+function enqueue(req: Request, init?: RequestInit) {
     const url = new URL(req.url);
 
     let queue = hostQueues.get(url.hostname);
     if (!queue) {
-        queue = new HttpQueue();
+        queue = new RequestQueue({ maxConcurrentRequests: DEFAULT_CONCURRENT_REQUESTS_PER_HOST });
         hostQueues.set(url.hostname, queue);
     }
-    return queue.enqueue(req);
+
+    const doFetch = async () => {
+        req.signal?.throwIfAborted();
+        const res = await fetch(req, init);
+        return res;
+    };
+
+    return queue.enqueue({
+        id: (id++).toString(),
+        request: () => doFetch(),
+        shouldExecute: req.signal == null ? undefined : () => !req.signal.aborted,
+        priority: toNumericalPriority(init?.priority),
+    });
 }
 
 /**
@@ -92,14 +119,10 @@ function enqueue(req: Request) {
  */
 function getInfo() {
     let pending = 0;
-    let running = 0;
-    let complete = 0;
     hostQueues.forEach(queue => {
-        pending += queue.size;
-        running += queue.concurrentRequests;
-        complete += queue.completedRequests;
+        pending += queue.length;
     });
-    return { pending, running, complete };
+    return { pending };
 }
 
 /**
@@ -142,7 +165,7 @@ export type FetchOptions = RequestInit & {
 async function fetchInternal(input: RequestInfo | URL, options?: FetchOptions): Promise<Response> {
     const augmentedOptions = HttpConfiguration.applyConfiguration(input, options);
     const req = new Request(input, augmentedOptions);
-    const response = await enqueue(req).catch(error => {
+    const response = await enqueue(req, { priority: options?.priority }).catch(error => {
         eventTarget.dispatchEvent({ type: 'error', error });
         throw error;
     });

@@ -18,6 +18,7 @@ describe('Fetcher', () => {
         delete global.fetch;
         // @ts-expect-error property does not exist
         Fetcher._eventTarget._listeners = {};
+        HttpConfiguration.clear();
     });
 
     describe('FetcherEventDispatcher', () => {
@@ -29,21 +30,21 @@ describe('Fetcher', () => {
 
             expect(Fetcher.hasEventListener('error', mycallback)).toBe(false);
             Fetcher._eventTarget.dispatchEvent({ type: 'error', error: new Error('Foo') });
-            expect(mycallback).not.toBeCalled();
+            expect(mycallback).not.toHaveBeenCalled();
             expect(events).toBe(0);
 
             Fetcher.addEventListener('error', mycallback);
             expect(Fetcher.hasEventListener('error', mycallback)).toBe(true);
             Fetcher._eventTarget.dispatchEvent({ type: 'error', error: new Error('Foo') });
-            expect(mycallback).toBeCalledTimes(1);
+            expect(mycallback).toHaveBeenCalledTimes(1);
             expect(events).toBe(1);
             Fetcher._eventTarget.dispatchEvent({ type: 'error', error: new Error('Foo') });
-            expect(mycallback).toBeCalledTimes(2);
+            expect(mycallback).toHaveBeenCalledTimes(2);
             expect(events).toBe(2);
 
             Fetcher.removeEventListener('error', mycallback);
             expect(Fetcher.hasEventListener('error', mycallback)).toBe(false);
-            expect(mycallback).toBeCalledTimes(2);
+            expect(mycallback).toHaveBeenCalledTimes(2);
             expect(events).toBe(2);
         });
     });
@@ -76,12 +77,30 @@ describe('Fetcher', () => {
 
             await expect(Fetcher.fetch('http://example.com')).resolves.toEqual({ ok: true });
 
-            expect(global.fetch).toHaveBeenCalledWith({
-                url: 'http://example.com',
-                headers: {
-                    Authorization: 'the auth',
+            expect(global.fetch).toHaveBeenCalledWith(
+                {
+                    url: 'http://example.com',
+                    headers: {
+                        Authorization: 'the auth',
+                    },
                 },
-            });
+                {
+                    priority: undefined,
+                },
+            );
+        });
+
+        it('should honor request priority', async () => {
+            global.fetch = jest.fn(() => Promise.resolve({ ok: true })) as jest.Mock;
+
+            await expect(
+                Fetcher.fetch('http://example.com', { priority: 'high' }),
+            ).resolves.toEqual({ ok: true });
+
+            expect(global.fetch).toHaveBeenCalledWith(
+                { url: 'http://example.com', headers: {} },
+                { priority: 'high' },
+            );
         });
 
         it('should honor existing headers', async () => {
@@ -96,13 +115,18 @@ describe('Fetcher', () => {
             };
             await expect(Fetcher.fetch('http://example.com', opts)).resolves.toEqual({ ok: true });
 
-            expect(global.fetch).toHaveBeenCalledWith({
-                url: 'http://example.com',
-                headers: {
-                    Authorization: 'the auth',
-                    ExistingHeader: 'value',
+            expect(global.fetch).toHaveBeenCalledWith(
+                {
+                    url: 'http://example.com',
+                    headers: {
+                        Authorization: 'the auth',
+                        ExistingHeader: 'value',
+                    },
                 },
-            });
+                {
+                    priority: undefined,
+                },
+            );
         });
     });
 
@@ -286,7 +310,7 @@ describe('Fetcher', () => {
             await expect(Fetcher.texture('http://example.com')).resolves.toBe('Bar');
 
             expect(global.fetch).toHaveBeenCalled();
-            expect(TextureGenerator.decodeBlob).toBeCalledWith('Foo', undefined);
+            expect(TextureGenerator.decodeBlob).toHaveBeenCalledWith('Foo', undefined);
         });
 
         it('decoding errors should not be captured', async () => {

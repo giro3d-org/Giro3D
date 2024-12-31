@@ -12,15 +12,11 @@ class FetcherPanel extends Panel {
         super(parentGui, instance, 'Fetcher');
         this.updateValues();
         this.addController(this, 'pendingRequests').name('Pending requests');
-        this.addController(this, 'runningRequests').name('Running requests');
-        this.addController(this, 'completedRequests').name('Completed requests');
     }
 
     updateValues() {
-        const { pending, running, complete } = Fetcher.getInfo();
+        const { pending } = Fetcher.getInfo();
         this.pendingRequests = pending;
-        this.runningRequests = running;
-        this.completedRequests = complete;
     }
 }
 

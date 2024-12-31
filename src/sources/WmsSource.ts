@@ -59,6 +59,7 @@ export default class WmsSource extends TiledImageSource {
      */
     constructor(options: WmsSourceOptions) {
         super({
+            requestPriority: options.requestPriority,
             source: new TileWMS({
                 url: options.url,
                 projection: options.projection,
