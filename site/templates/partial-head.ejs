@@ -1,9 +1,38 @@
-<title><%= title %></title>
+<title><%= title %> - Giro3D</title>
 <meta charset="UTF-8" />
-<meta name="name" content="<%= name %>" />
+<meta name="name" content="<%= name %> - Giro3D" />
 <meta name="description" content="<%= description %>" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <link rel="icon" href="/images/favicon.svg" />
 <link href="/assets/bootstrap-custom.css" rel="stylesheet" />
 <script src="/assets/bootstrap.bundle.min.js"></script>
+
+<!-- OpenGraph -->
+<meta
+    property="og:description"
+    content="A versatile framework to visualize geospatial data in the browser."
+/>
+<meta
+    property="og:image"
+    content="<%= locals.thumbnail || 'https://giro3d.org/images/giro3d_logo_opengraph.jpg' %>"
+/>
+<meta property="og:locale" content="en_US" />
+<meta property="og:title" content="<%= name %> - Giro3D" />
+<meta property="og:site_name" content="Giro3D" />
+<meta property="og:type" content="object" />
+<meta property="og:url" content="<%= locals.url || 'https://giro3d.org' %>" />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta
+    name="twitter:description"
+    content="A versatile framework to visualize geospatial data in the browser."
+/>
+<meta name="twitter:dnt" content="on" />
+<meta
+    name="twitter:image"
+    content="<%= locals.thumbnail || 'https://giro3d.org/images/giro3d_logo_opengraph.jpg' %>"
+/>
+<meta name="twitter:title" content="<%= name %> - Giro3D" />
+<meta name="twitter:widgets:align" content="center" />

@@ -1,36 +1,16 @@
 <!doctype html>
 <html>
     <head>
-        <%- include('partial-head') %>
+        <%- include('partial-head', {
+            title: title,
+            name: title,
+            description: description,
+            url: `https://giro3d.org/${releaseName}/examples/${name}.html`,
+            thumbnail: `https://giro3d.org/${releaseName}/examples/screenshots/${name}.jpg`,
+        }) %>
 
         <link rel="stylesheet" type="text/css" href="css/example.css" />
         <%- customcss %>
-
-        <!-- OpenGraph -->
-        <meta property="og:description" content="<%= description %>" />
-        <meta
-            property="og:image"
-            content="https://giro3d.org/<%= releaseName %>/examples/screenshots/<%= name %>.jpg"
-        />
-        <meta property="og:locale" content="en_US" />
-        <meta property="og:title" content="Giro3D - <%= title %>" />
-        <meta property="og:site_name" content="Giro3D" />
-        <meta property="og:type" content="object" />
-        <meta
-            property="og:url"
-            content="https://giro3d.org/<%= releaseName %>/examples/<%= name %>.html"
-        />
-
-        <!-- Twitter -->
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:description" content="<%= description %>" />
-        <meta name="twitter:dnt" content="on" />
-        <meta
-            name="twitter:image"
-            content="https://giro3d.org/<%= releaseName %>/examples/screenshots/<%= name %>.jpg"
-        />
-        <meta name="twitter:title" content="Giro3D - <%= title %>" />
-        <meta name="twitter:widgets:align" content="center" />
     </head>
     <body class="bg-light">
         <%- include('navbar-version', { activeId: 'examples' }) %>
