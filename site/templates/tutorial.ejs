@@ -2,24 +2,12 @@
 <html>
 <head>
     <link rel="stylesheet" media="all" href="docco.css" />
-    <%%- include('partial-head') %>
-
-    <!-- OpenGraph -->
-    <meta property="og:description" content="A versatile framework to visualize geospatial data in the browser.">
-    <meta property="og:image" content="https://giro3d.org/images/giro3d_logo_big.jpg">
-    <meta property="og:locale" content="en_US" />
-    <meta property="og:title" content="<%= title %>">
-    <meta property="og:site_name" content="Giro3D">
-    <meta property="og:type" content="object">
-    <meta property="og:url" content="https://giro3d.org/<%%= releaseName %>/tutorials/getting-started.html">
-
-    <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:description" content="A versatile framework to visualize geospatial data in the browser.">
-    <meta name="twitter:dnt" content="on">
-    <meta name="twitter:image" content="https://giro3d.org/images/giro3d_logo_big.jpg">
-    <meta name="twitter:title" content="<%= title %>">
-    <meta name="twitter:widgets:align" content="center">
+    <%%- include('partial-head', {
+      title: 'Getting started',
+      name: 'Getting started',
+      description: 'A versatile framework to visualize geospatial data in the browser.',
+      url: `https://giro3d.org/${releaseName}/tutorials/getting-started.html`,
+  }) %>
 
     <link rel="stylesheet" media="all" href="../examples/css/example.css" />
     <%%- customcss %>

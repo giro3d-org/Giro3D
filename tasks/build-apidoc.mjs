@@ -45,7 +45,7 @@ export async function buildApidoc(parameters) {
         out: parameters.output,
         theme: 'custom',
         plugin: [path.join(apidocDir, 'theme.js')],
-        name: `Giro3D API (${parameters.version})`,
+        name: `API (${parameters.version}) - Giro3D`,
         readme: path.join(apidocDir, 'README.md'),
         basePath: sourceDir,
         customCss: path.join(apidocDir, 'theme.css'),

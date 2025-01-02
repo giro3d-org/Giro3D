@@ -132,8 +132,8 @@ export async function generateIndex(htmlFiles, parameters) {
 
     const indexHtmlTemplate = readTemplate('index.ejs');
     const indexHtmlContent = indexHtmlTemplate({
-        title: `Giro3D - Examples (${parameters.version})`,
-        name: `Giro3D - Examples (${parameters.version})`,
+        title: `Examples (${parameters.version})`,
+        name: `Examples (${parameters.version})`,
         description: parameters.name,
         examples: thumbnails,
         releaseName: parameters.releaseName,
