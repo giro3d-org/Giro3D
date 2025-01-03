@@ -1,4 +1,4 @@
-import type { TypedArray, Vector } from 'three';
+import type { TypedArray } from 'three';
 import { MathUtils, Vector2, Vector3, Vector4 } from 'three';
 import { nonNull } from '../utils/tsutils';
 
@@ -8,6 +8,8 @@ const X = 0;
 const Y = 1;
 const Z = 2;
 const W = 3;
+
+export type Vector = Vector2 | Vector3 | Vector4;
 
 /**
  * A typed array of three.js {@link Vector}s.

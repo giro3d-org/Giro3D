@@ -12,7 +12,6 @@ import {
     RGBAFormat,
     Scene,
     ShaderMaterial,
-    UnsignedByteType,
     Vector2,
     WebGLRenderTarget,
 } from 'three';
@@ -139,7 +138,6 @@ class PointCloudRenderer {
                     blending: NormalBlending,
                     vertexShader: BasicVS,
                     fragmentShader: EDLPassZeroFS,
-                    extensions: { fragDepth: true },
                 }),
                 // EDL 1st pass material
                 // This pass is writing a single value per pixel, describing the depth
@@ -175,7 +173,6 @@ class PointCloudRenderer {
                     blending: NormalBlending,
                     vertexShader: BasicVS,
                     fragmentShader: EDLPassTwoFS,
-                    extensions: { fragDepth: true },
                 }),
             ],
             enabled: true,
@@ -235,7 +232,6 @@ class PointCloudRenderer {
                     blending: NormalBlending,
                     vertexShader: BasicVS,
                     fragmentShader: OcclusionFS,
-                    extensions: { fragDepth: true },
                 }),
             ],
             enabled: true,
@@ -289,7 +285,6 @@ class PointCloudRenderer {
                     blending: NormalBlending,
                     vertexShader: BasicVS,
                     fragmentShader: InpaintingFS,
-                    extensions: { fragDepth: true },
                 }),
             ],
             enabled: true,
@@ -345,7 +340,6 @@ class PointCloudRenderer {
     }
 
     createRenderTarget(width: number, height: number, depthBuffer: boolean) {
-        const supportsFloatTextures = this.renderer.capabilities.floatFragmentTextures;
         return new WebGLRenderTarget(width, height, {
             format: RGBAFormat,
             depthBuffer,
@@ -353,13 +347,7 @@ class PointCloudRenderer {
             generateMipmaps: false,
             minFilter: NearestFilter,
             magFilter: NearestFilter,
-            depthTexture: depthBuffer
-                ? new DepthTexture(
-                      width,
-                      height,
-                      supportsFloatTextures ? FloatType : UnsignedByteType,
-                  )
-                : undefined,
+            depthTexture: depthBuffer ? new DepthTexture(width, height, FloatType) : undefined,
         });
     }
 
