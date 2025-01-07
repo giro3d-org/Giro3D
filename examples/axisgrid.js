@@ -14,7 +14,7 @@ import AxisGrid, { TickOrigin } from '@giro3d/giro3d/entities/AxisGrid.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import Interpretation from '@giro3d/giro3d/core/layer/Interpretation.js';
 import GeoTIFFFormat from '@giro3d/giro3d/formats/GeoTIFFFormat.js';
-import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/layer/ColorMap.js';
+import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/ColorMap.js';
 
 import StatusBar from './widgets/StatusBar.js';
 import { bindSlider } from './widgets/bindSlider.js';

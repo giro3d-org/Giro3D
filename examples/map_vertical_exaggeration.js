@@ -6,7 +6,7 @@ import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import ColorMap from '@giro3d/giro3d/core/layer/ColorMap.js';
+import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
 import AxisGrid from '@giro3d/giro3d/entities/AxisGrid.js';
 import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';

@@ -1,7 +1,7 @@
 import { Color } from 'three';
 
 import Instance from '@giro3d/giro3d/core/Instance.js';
-import ColorMap from '@giro3d/giro3d/core/layer/ColorMap.js';
+import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
 import PointCloud from '@giro3d/giro3d/entities/PointCloud.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import PotreeSource from '@giro3d/giro3d/sources/PotreeSource.js';

@@ -10,7 +10,7 @@ import {
     Vector3,
     type Material,
 } from 'three';
-import ColorMap from '../core/layer/ColorMap';
+import ColorMap from '../core/ColorMap';
 // TODO rename pointcloud object to PointCloudMesh
 import type Context from '../core/Context';
 import Extent from '../core/geographic/Extent';

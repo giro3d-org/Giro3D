@@ -20,6 +20,7 @@ import {
 
 import type ColorimetryOptions from '../core/ColorimetryOptions';
 import { defaultColorimetryOptions } from '../core/ColorimetryOptions';
+import type ColorMap from '../core/ColorMap';
 import type Context from '../core/Context';
 import type ContourLineOptions from '../core/ContourLineOptions';
 import type ElevationProvider from '../core/ElevationProvider';
@@ -31,7 +32,6 @@ import type GetElevationResult from '../core/GetElevationResult';
 import type GraticuleOptions from '../core/GraticuleOptions';
 import type HillshadingOptions from '../core/HillshadingOptions';
 import ColorLayer, { isColorLayer } from '../core/layer/ColorLayer';
-import type ColorMap from '../core/layer/ColorMap';
 import ElevationLayer, { isElevationLayer } from '../core/layer/ElevationLayer';
 import type HasLayers from '../core/layer/HasLayers';
 import Layer from '../core/layer/Layer';

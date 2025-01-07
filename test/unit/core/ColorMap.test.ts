@@ -1,5 +1,5 @@
-import ColorMap from '@giro3d/giro3d/core/layer/ColorMap';
-import ColorMapMode from '@giro3d/giro3d/core/layer/ColorMapMode';
+import ColorMap from '@giro3d/giro3d/core/ColorMap';
+import ColorMapMode from '@giro3d/giro3d/core/ColorMapMode';
 import { ClampToEdgeWrapping, Color, NearestFilter, RGBAFormat, UnsignedByteType } from 'three';
 
 describe('ColorMap', () => {

@@ -6,8 +6,8 @@ import {
     type Color,
     type DataTexture,
 } from 'three';
-import TextureGenerator from '../../utils/TextureGenerator';
-import { nonNull } from '../../utils/tsutils';
+import TextureGenerator from '../utils/TextureGenerator';
+import { nonNull } from '../utils/tsutils';
 import ColorMapMode from './ColorMapMode';
 
 export type ColorMapEvents = {

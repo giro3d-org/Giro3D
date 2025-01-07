@@ -1,8 +1,6 @@
 import type BlendingMode from './BlendingMode';
 import type ColorLayer from './ColorLayer';
 import type { ColorLayerEvents, ColorLayerOptions } from './ColorLayer';
-import type ColorMap from './ColorMap';
-import type ColorMapMode from './ColorMapMode';
 import type ElevationLayer from './ElevationLayer';
 import type { ElevationLayerOptions } from './ElevationLayer';
 import type HasLayers from './HasLayers';
@@ -27,8 +25,6 @@ export {
     ColorLayer,
     ColorLayerEvents,
     ColorLayerOptions,
-    ColorMap,
-    ColorMapMode,
     ElevationLayer,
     ElevationLayerOptions,
     hasLayers,

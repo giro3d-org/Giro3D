@@ -1,6 +1,6 @@
 import type GUI from 'lil-gui';
+import ColorMap from '../core/ColorMap';
 import type Instance from '../core/Instance';
-import ColorMap from '../core/layer/ColorMap';
 import Panel from './Panel';
 
 type Mode = 'Elevation' | 'Slope' | 'Aspect';

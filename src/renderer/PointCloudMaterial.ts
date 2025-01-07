@@ -11,9 +11,9 @@ import {
     Vector3,
     Vector4,
 } from 'three';
+import ColorMap from '../core/ColorMap';
 import type Extent from '../core/geographic/Extent';
 import type ColorLayer from '../core/layer/ColorLayer';
-import ColorMap from '../core/layer/ColorMap';
 import type { TextureAndPitch } from '../core/layer/Layer';
 import OffsetScale from '../core/OffsetScale';
 import MaterialUtils, { type VertexAttributeType } from './MaterialUtils';
