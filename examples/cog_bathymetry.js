@@ -51,7 +51,12 @@ const axisGrid = new AxisGrid({
 
 instance.add(axisGrid);
 
-const colorMap = new ColorMap(makeColorRamp('bathymetry'), min, max, ColorMapMode.Elevation);
+const colorMap = new ColorMap({
+    colors: makeColorRamp('bathymetry'),
+    min,
+    max,
+    mode: ColorMapMode.Elevation,
+});
 
 map.addLayer(
     new ElevationLayer({

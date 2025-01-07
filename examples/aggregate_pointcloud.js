@@ -39,8 +39,8 @@ instance.renderingOptions.enableEDL = true;
 instance.renderingOptions.EDLStrength = 5;
 
 const colormaps = {
-    Intensity: new ColorMap(makeColorRamp('jet'), 0, 100),
-    Z: new ColorMap(makeColorRamp('portland'), 0, 100),
+    Intensity: new ColorMap({ colors: makeColorRamp('jet'), min: 0, max: 100 }),
+    Z: new ColorMap({ colors: makeColorRamp('portland'), min: 0, max: 100 }),
 };
 
 const datasets = [

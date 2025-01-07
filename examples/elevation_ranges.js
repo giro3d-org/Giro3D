@@ -53,7 +53,7 @@ const elevationLayer = new ElevationLayer({
             crossOrigin: 'anonymous',
         }),
     }),
-    colorMap: new ColorMap(colorRamp, 700, 2500),
+    colorMap: new ColorMap({ colors: colorRamp, min: 700, max: 2500 }),
 });
 map.addLayer(elevationLayer);
 

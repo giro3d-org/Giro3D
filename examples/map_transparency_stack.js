@@ -44,7 +44,7 @@ const max = 300;
 
 const values = colormap({ colormap: 'viridis', nshades: 256 });
 const colors = values.map(v => new Color(v));
-const colorMap = new ColorMap(colors, min, max);
+const colorMap = new ColorMap({ colors, min, max });
 
 const elevationLayer = new ElevationLayer({
     name: 'terrain',

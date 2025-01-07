@@ -225,7 +225,7 @@ async function load(url) {
     }
 
     // Create the color map. The color ramp and bounds will be set later.
-    entity.colorMap = new ColorMap([], 0, 1);
+    entity.colorMap = new ColorMap({ colors: [], min: 0, max: 1 });
 
     instance.addEventListener('update-end', () =>
         updateDisplayedPointCounts(entity.pointCount, entity.displayedPointCount),

@@ -56,7 +56,7 @@ const dem = new ElevationLayer({
     name: 'dem',
     source,
     extent,
-    colorMap: new ColorMap(colors, floor, ceiling, ColorMapMode.Elevation),
+    colorMap: new ColorMap({ colors, min: floor, max: ceiling }),
 });
 
 map.addLayer(dem);

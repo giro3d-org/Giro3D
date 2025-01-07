@@ -188,7 +188,7 @@ export type Defines = {
 
 function createDefaultColorMap(): ColorMap {
     const colors = [new Color('black'), new Color('white')];
-    return new ColorMap(colors, 0, 1000);
+    return new ColorMap({ colors, min: 0, max: 1000 });
 }
 
 /**

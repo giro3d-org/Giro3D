@@ -62,7 +62,11 @@ const elevationLayer = new ElevationLayer({
     source,
     minmax: { min: minAltitude, max: maxAltitude },
     preloadImages: true,
-    colorMap: new ColorMap(makeColorRamp('bathymetry'), minAltitude + 200, maxAltitude - 200),
+    colorMap: new ColorMap({
+        colors: makeColorRamp('bathymetry'),
+        min: minAltitude + 200,
+        max: maxAltitude - 200,
+    }),
 });
 
 map.addLayer(elevationLayer);

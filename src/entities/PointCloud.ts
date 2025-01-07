@@ -52,7 +52,11 @@ type NodeState = 'empty' | 'hidden' | 'loading' | 'displayed';
 const DEFAULT_CLEANUP_DELAY = 5000;
 const TEXTURE_SIZE = new Vector2(256, 256);
 const tmpVector3 = new Vector3();
-const DEFAULT_COLORMAP = new ColorMap([new Color('black'), new Color('white')], 0, 1000);
+const DEFAULT_COLORMAP = new ColorMap({
+    colors: [new Color('black'), new Color('white')],
+    min: 0,
+    max: 1000,
+});
 
 const DATA_VOLUME_HELPER_COLOR = new Color('#d8eb34');
 

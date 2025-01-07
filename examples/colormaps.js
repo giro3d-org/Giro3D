@@ -124,14 +124,24 @@ const elevationLayer = new ElevationLayer({
     name: 'elevation',
     extent,
     source,
-    colorMap: new ColorMap(parameters.colors, elevationMin, elevationMax, ColorMapMode.Elevation),
+    colorMap: new ColorMap({
+        colors: parameters.colors,
+        min: elevationMin,
+        max: elevationMax,
+        mode: ColorMapMode.Elevation,
+    }),
 });
 
 const colorLayer = new ColorLayer({
     name: 'color',
     extent,
     source,
-    colorMap: new ColorMap(parameters.colors, elevationMin, elevationMax, ColorMapMode.Elevation),
+    colorMap: new ColorMap({
+        colors: parameters.colors,
+        min: elevationMin,
+        max: elevationMax,
+        mode: ColorMapMode.Elevation,
+    }),
 });
 
 map.addLayer(elevationLayer);

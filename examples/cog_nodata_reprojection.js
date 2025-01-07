@@ -55,7 +55,7 @@ const colors = values.map(v => new Color(v));
 const min = 263;
 const max = 4347;
 
-const colorMap = new ColorMap(colors, min, max, ColorMapMode.Elevation);
+const colorMap = new ColorMap({ colors, min, max, mode: ColorMapMode.Elevation });
 
 const noDataOptions = {
     alpha: 0,

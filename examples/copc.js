@@ -382,7 +382,7 @@ async function load(url) {
     const volume = entity.getBoundingBox();
 
     // Create the color map. The color ramp and bounds will be set later.
-    entity.colorMap = new ColorMap([], 0, 1);
+    entity.colorMap = new ColorMap({ colors: [], min: 0, max: 1 });
 
     // Such as setting the min and max of the colormap bounds.
     setMin(volume.min.z, volume.min.z, volume.max.z);

@@ -50,8 +50,18 @@ const min = 263;
 const max = 4347;
 
 // Display it as elevation and color
-const viridis = new ColorMap(makeColorRamp('viridis'), min, max, ColorMapMode.Elevation);
-const magma = new ColorMap(makeColorRamp('magma'), min, max, ColorMapMode.Elevation);
+const viridis = new ColorMap({
+    colors: makeColorRamp('viridis'),
+    min,
+    max,
+    mode: ColorMapMode.Elevation,
+});
+const magma = new ColorMap({
+    colors: makeColorRamp('magma'),
+    min,
+    max,
+    mode: ColorMapMode.Elevation,
+});
 
 // Attach the inspector
 Inspector.attach('inspector', instance);

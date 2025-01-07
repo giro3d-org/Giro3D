@@ -73,7 +73,11 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
                 noDataOptions: {
                     replaceNoData: false,
                 },
-                colorMap: new ColorMap(makeColorRamp('bathymetry'), 500, 1800),
+                colorMap: new ColorMap({
+                    colors: makeColorRamp('bathymetry'),
+                    min: 500,
+                    max: 1800,
+                }),
                 source: elevationWmts,
             }),
         );
