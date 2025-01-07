@@ -13,8 +13,8 @@ import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import MapboxTerrainFormat from '@giro3d/giro3d/formats/MapboxTerrainFormat.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import ColorMap from '@giro3d/giro3d/core/layer/ColorMap.js';
-import ColorMapMode from '@giro3d/giro3d/core/layer/ColorMapMode.js';
+import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
+import ColorMapMode from '@giro3d/giro3d/core/ColorMapMode.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 
@@ -124,14 +124,24 @@ const elevationLayer = new ElevationLayer({
     name: 'elevation',
     extent,
     source,
-    colorMap: new ColorMap(parameters.colors, elevationMin, elevationMax, ColorMapMode.Elevation),
+    colorMap: new ColorMap({
+        colors: parameters.colors,
+        min: elevationMin,
+        max: elevationMax,
+        mode: ColorMapMode.Elevation,
+    }),
 });
 
 const colorLayer = new ColorLayer({
     name: 'color',
     extent,
     source,
-    colorMap: new ColorMap(parameters.colors, elevationMin, elevationMax, ColorMapMode.Elevation),
+    colorMap: new ColorMap({
+        colors: parameters.colors,
+        min: elevationMin,
+        max: elevationMax,
+        mode: ColorMapMode.Elevation,
+    }),
 });
 
 map.addLayer(elevationLayer);

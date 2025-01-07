@@ -11,9 +11,9 @@ import {
     Vector3,
     Vector4,
 } from 'three';
+import ColorMap from '../core/ColorMap';
 import type Extent from '../core/geographic/Extent';
 import type ColorLayer from '../core/layer/ColorLayer';
-import ColorMap from '../core/layer/ColorMap';
 import type { TextureAndPitch } from '../core/layer/Layer';
 import OffsetScale from '../core/OffsetScale';
 import MaterialUtils, { type VertexAttributeType } from './MaterialUtils';
@@ -188,7 +188,7 @@ export type Defines = {
 
 function createDefaultColorMap(): ColorMap {
     const colors = [new Color('black'), new Color('white')];
-    return new ColorMap(colors, 0, 1000);
+    return new ColorMap({ colors, min: 0, max: 1000 });
 }
 
 /**

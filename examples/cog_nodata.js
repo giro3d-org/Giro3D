@@ -11,7 +11,7 @@ import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import MaskLayer from '@giro3d/giro3d/core/layer/MaskLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/layer/ColorMap.js';
+import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/ColorMap.js';
 
 import StatusBar from './widgets/StatusBar.js';
 import { bindNumericalDropDown } from './widgets/bindNumericalDropDown.js';
@@ -54,7 +54,7 @@ const colors = values.map(v => new Color(v));
 const min = 227;
 const max = 2538;
 
-const colorMap = new ColorMap(colors, min, max, ColorMapMode.Elevation);
+const colorMap = new ColorMap({ colors, min, max, mode: ColorMapMode.Elevation });
 
 const noDataOptions = {
     alpha: 0,

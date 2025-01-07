@@ -12,7 +12,7 @@ import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import ColorMap from '@giro3d/giro3d/core/layer/ColorMap.js';
+import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
 import MapboxTerrainFormat from '@giro3d/giro3d/formats/MapboxTerrainFormat.js';
 
 import StatusBar from './widgets/StatusBar.js';
@@ -53,7 +53,7 @@ const elevationLayer = new ElevationLayer({
             crossOrigin: 'anonymous',
         }),
     }),
-    colorMap: new ColorMap(colorRamp, 700, 2500),
+    colorMap: new ColorMap({ colors: colorRamp, min: 700, max: 2500 }),
 });
 map.addLayer(elevationLayer);
 

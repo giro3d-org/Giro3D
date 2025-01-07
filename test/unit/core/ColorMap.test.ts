@@ -1,11 +1,11 @@
-import ColorMap from '@giro3d/giro3d/core/layer/ColorMap';
-import ColorMapMode from '@giro3d/giro3d/core/layer/ColorMapMode';
+import ColorMap from '@giro3d/giro3d/core/ColorMap';
+import ColorMapMode from '@giro3d/giro3d/core/ColorMapMode';
 import { ClampToEdgeWrapping, Color, NearestFilter, RGBAFormat, UnsignedByteType } from 'three';
 
 describe('ColorMap', () => {
     describe('constructor', () => {
         it('should set default properties', () => {
-            const cm = new ColorMap([], 0, 1);
+            const cm = new ColorMap({ colors: [], min: 0, max: 1 });
 
             expect(cm.mode).toEqual(ColorMapMode.Elevation);
             expect(cm.active).toEqual(true);
@@ -14,18 +14,33 @@ describe('ColorMap', () => {
         });
 
         it('should honor mode', () => {
-            const elevation = new ColorMap([], 0, 1, ColorMapMode.Elevation);
+            const elevation = new ColorMap({
+                colors: [],
+                min: 0,
+                max: 1,
+                mode: ColorMapMode.Elevation,
+            });
             expect(elevation.mode).toEqual(ColorMapMode.Elevation);
 
-            const aspect = new ColorMap([], 0, 1, ColorMapMode.Aspect);
+            const aspect = new ColorMap({
+                colors: [],
+                min: 0,
+                max: 1,
+                mode: ColorMapMode.Aspect,
+            });
             expect(aspect.mode).toEqual(ColorMapMode.Aspect);
 
-            const slope = new ColorMap([], 0, 1, ColorMapMode.Slope);
+            const slope = new ColorMap({
+                colors: [],
+                min: 0,
+                max: 1,
+                mode: ColorMapMode.Slope,
+            });
             expect(slope.mode).toEqual(ColorMapMode.Slope);
         });
 
         it('should honor min and max', () => {
-            const cm = new ColorMap([], -1312.4, 204242.2);
+            const cm = new ColorMap({ colors: [], min: -1312.4, max: 204242.2 });
             expect(cm.min).toEqual(-1312.4);
             expect(cm.max).toEqual(204242.2);
         });
@@ -36,14 +51,14 @@ describe('ColorMap', () => {
             colors.push(new Color('blue'));
             colors.push(new Color('green'));
 
-            const cm = new ColorMap(colors, 0, 1);
+            const cm = new ColorMap({ colors, min: 0, max: 1 });
             expect(cm.colors).toBe(colors);
         });
     });
 
     describe('mode', () => {
         it('should set the value of the property', () => {
-            const cm = new ColorMap([], 0, 1);
+            const cm = new ColorMap({ colors: [], min: 0, max: 1 });
 
             cm.mode = ColorMapMode.Slope;
 
@@ -51,7 +66,7 @@ describe('ColorMap', () => {
         });
 
         it('should raise the updated event', () => {
-            const cm = new ColorMap([], 0, 1);
+            const cm = new ColorMap({ colors: [], min: 0, max: 1 });
             const listener = jest.fn();
             cm.addEventListener('updated', listener);
 
@@ -63,7 +78,7 @@ describe('ColorMap', () => {
 
     describe('active', () => {
         it('should set the value of the property', () => {
-            const cm = new ColorMap([], 0, 1);
+            const cm = new ColorMap({ colors: [], min: 0, max: 1 });
 
             cm.active = false;
             expect(cm.active).toEqual(false);
@@ -73,7 +88,7 @@ describe('ColorMap', () => {
         });
 
         it('should raise the updated event', () => {
-            const cm = new ColorMap([], 0, 1);
+            const cm = new ColorMap({ colors: [], min: 0, max: 1 });
             const listener = jest.fn();
             cm.addEventListener('updated', listener);
 
@@ -84,7 +99,7 @@ describe('ColorMap', () => {
 
     describe('min', () => {
         it('should set the value of the property', () => {
-            const cm = new ColorMap([], 0, 1);
+            const cm = new ColorMap({ colors: [], min: 0, max: 1 });
 
             cm.min = -34;
 
@@ -92,7 +107,7 @@ describe('ColorMap', () => {
         });
 
         it('should raise the updated event', () => {
-            const cm = new ColorMap([], 0, 1);
+            const cm = new ColorMap({ colors: [], min: 0, max: 1 });
             const listener = jest.fn();
             cm.addEventListener('updated', listener);
 
@@ -104,7 +119,7 @@ describe('ColorMap', () => {
 
     describe('max', () => {
         it('should set the value of the property', () => {
-            const cm = new ColorMap([], 0, 1);
+            const cm = new ColorMap({ colors: [], min: 0, max: 1 });
 
             cm.max = 32432;
 
@@ -112,7 +127,7 @@ describe('ColorMap', () => {
         });
 
         it('should raise the updated event', () => {
-            const cm = new ColorMap([], 0, 1);
+            const cm = new ColorMap({ colors: [], min: 0, max: 1 });
             const listener = jest.fn();
             cm.addEventListener('updated', listener);
 
@@ -124,7 +139,7 @@ describe('ColorMap', () => {
 
     describe('colors', () => {
         it('should set the value of the property', () => {
-            const cm = new ColorMap([], 0, 1);
+            const cm = new ColorMap({ colors: [], min: 0, max: 1 });
 
             const newValue = [new Color('red')];
             cm.colors = newValue;
@@ -133,7 +148,7 @@ describe('ColorMap', () => {
         });
 
         it('should raise the updated event', () => {
-            const cm = new ColorMap([], 0, 1);
+            const cm = new ColorMap({ colors: [], min: 0, max: 1 });
             const listener = jest.fn();
             cm.addEventListener('updated', listener);
 
@@ -148,7 +163,7 @@ describe('ColorMap', () => {
             const green = new Color('green');
             const blue = new Color('blue');
 
-            const colorMap = new ColorMap([red, green, blue], 0, 100);
+            const colorMap = new ColorMap({ colors: [red, green, blue], min: 0, max: 100 });
             colorMap.opacity = [0, 0.5, 1];
 
             colorMap.colors = [red, green];
@@ -162,7 +177,7 @@ describe('ColorMap', () => {
             const green = new Color('green');
             const blue = new Color('blue');
 
-            const colorMap = new ColorMap([red, green, blue], 0, 100);
+            const colorMap = new ColorMap({ colors: [red, green, blue], min: 0, max: 100 });
 
             expect(colorMap.sample(0)).toEqual(red);
             expect(colorMap.sample(50)).toEqual(green);
@@ -180,7 +195,7 @@ describe('ColorMap', () => {
             const green = new Color('green');
             const blue = new Color('blue');
 
-            const colorMap = new ColorMap([red, green, blue], 0, 100);
+            const colorMap = new ColorMap({ colors: [red, green, blue], min: 0, max: 100 });
             colorMap.opacity = [1, 0, 0.5];
 
             expect(colorMap.sampleOpacity(0)).toEqual(1);
@@ -196,7 +211,7 @@ describe('ColorMap', () => {
     describe('getTexture', () => {
         it('should return the cached texture, if any', () => {
             const tex = { id: 1 };
-            const cm = new ColorMap([], 0, 1);
+            const cm = new ColorMap({ colors: [], min: 0, max: 1 });
 
             // @ts-expect-error property is private
             cm._shouldRecreateTexture = false;
@@ -208,7 +223,7 @@ describe('ColorMap', () => {
 
         it('should dispose the obsolete cached texture, if any', () => {
             const tex = { dispose: jest.fn() };
-            const cm = new ColorMap([], 0, 1);
+            const cm = new ColorMap({ colors: [], min: 0, max: 1 });
 
             // @ts-expect-error property is private
             cm._cachedTexture = tex;
@@ -222,7 +237,7 @@ describe('ColorMap', () => {
 
         it('should handle the opacity array', () => {
             const colors = [new Color('red'), new Color('white'), new Color('cyan')];
-            const cm = new ColorMap(colors, 0, 1);
+            const cm = new ColorMap({ colors, min: 0, max: 1 });
 
             cm.opacity = [0.2, 1, 0.5];
 
@@ -236,7 +251,7 @@ describe('ColorMap', () => {
 
         it('should return a new texture if cached texture does not exist', () => {
             const colors = [new Color('red'), new Color('white'), new Color('cyan')];
-            const cm = new ColorMap(colors, 0, 1);
+            const cm = new ColorMap({ colors, min: 0, max: 1 });
 
             const texture = cm.getTexture();
 
@@ -269,7 +284,7 @@ describe('ColorMap', () => {
 
         it('should return a texture with NearestFilter and ClampToEdgeWrapping', () => {
             const colors = [new Color('red'), new Color('white'), new Color('cyan')];
-            const cm = new ColorMap(colors, 0, 1);
+            const cm = new ColorMap({ colors, min: 0, max: 1 });
 
             const texture = cm.getTexture();
 

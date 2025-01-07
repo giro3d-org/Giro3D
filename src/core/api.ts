@@ -1,5 +1,7 @@
 import type * as cache from './Cache';
 import type ColorimetryOptions from './ColorimetryOptions';
+import type ColorMap from './ColorMap';
+import type ColorMapMode from './ColorMapMode';
 import type Context from './Context';
 import type ContourLineOptions from './ContourLineOptions';
 import type Disposable from './Disposable';
@@ -46,6 +48,8 @@ export {
     aggregateElevationProviders,
     cache,
     ColorimetryOptions,
+    ColorMap,
+    ColorMapMode,
     Context,
     ContourLineOptions,
     DEFAULT_ENABLE_CPU_TERRAIN,

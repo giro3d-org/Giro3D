@@ -13,7 +13,7 @@ import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import Interpretation from '@giro3d/giro3d/core/layer/Interpretation.js';
 import GeoTIFFFormat from '@giro3d/giro3d/formats/GeoTIFFFormat.js';
-import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/layer/ColorMap.js';
+import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/ColorMap.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
@@ -74,7 +74,7 @@ const dem = new ElevationLayer({
     extent,
     interpretation: Interpretation.Raw,
     source,
-    colorMap: new ColorMap(colors, floor, ceiling, ColorMapMode.Elevation),
+    colorMap: new ColorMap({ colors, min: floor, max: ceiling, mode: ColorMapMode.Elevation }),
 });
 
 map.addLayer(dem);

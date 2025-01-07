@@ -17,7 +17,7 @@ import Shape from '@giro3d/giro3d/entities/Shape.js';
 import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
-import ColorMap from '@giro3d/giro3d/core/layer/ColorMap.js';
+import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
@@ -73,7 +73,11 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
                 noDataOptions: {
                     replaceNoData: false,
                 },
-                colorMap: new ColorMap(makeColorRamp('bathymetry'), 500, 1800),
+                colorMap: new ColorMap({
+                    colors: makeColorRamp('bathymetry'),
+                    min: 500,
+                    max: 1800,
+                }),
                 source: elevationWmts,
             }),
         );

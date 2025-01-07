@@ -6,8 +6,8 @@ import {
     type Color,
     type DataTexture,
 } from 'three';
-import TextureGenerator from '../../utils/TextureGenerator';
-import { nonNull } from '../../utils/tsutils';
+import TextureGenerator from '../utils/TextureGenerator';
+import { nonNull } from '../utils/tsutils';
 import ColorMapMode from './ColorMapMode';
 
 export type ColorMapEvents = {
@@ -47,7 +47,7 @@ export type ColorMapEvents = {
  * @example
  * // Create a color map for elevations between 0 and 2500 meters.
  * const colors = makeColorRamp(); // Use whatever library to generate the ramp.
- * const colorMap = new ColorMap(colors, 0, 2500, ColorMapMode.Elevation);
+ * const colorMap = new ColorMap(\{ colors, min: 0, max: 2500, mode: ColorMapMode.Elevation \});
  *
  * const texture = colorMap.getTexture();
  *
@@ -62,7 +62,7 @@ class ColorMap extends EventDispatcher<ColorMapEvents> {
     private _max: number;
     private _mode: ColorMapMode;
     private _colors: Color[];
-    private _opacity: number[] | null;
+    private _opacity: number[] | null = null;
     private _shouldRecreateTexture = true;
     private _cachedTexture: DataTexture | null;
     private _active: boolean;
@@ -74,22 +74,43 @@ class ColorMap extends EventDispatcher<ColorMapEvents> {
      * @param max - The upper bound of the color map range.
      * @param mode - The mode of the color map.
      */
-    constructor(
-        colors: Color[],
-        min: number,
-        max: number,
-        mode: ColorMapMode = ColorMapMode.Elevation,
-    ) {
+    constructor(options: {
+        /**
+         * The colors of this color map.
+         */
+        colors: Color[];
+        /**
+         * The lower bound of the color map range.
+         */
+        min: number;
+        /**
+         * The upper bound of the color map range.
+         */
+        max: number;
+        /**
+         * The mode of the color map
+         */
+        mode?: ColorMapMode;
+        /**
+         * The opacity values of the color map. If defined, must have the same number of
+         * values as the colors array.
+         */
+        opacities?: number[];
+    }) {
         super();
 
-        if (colors === undefined) {
-            throw new Error('colors is undefined');
+        this._min = options.min;
+        this._max = options.max;
+        this._mode = options.mode ?? ColorMapMode.Elevation;
+        this._colors = nonNull(options.colors, 'missing colors parameter');
+
+        if (options.opacities != null) {
+            if (options.opacities.length !== this._colors.length) {
+                throw new Error('the opacity array must have the same length as the color array');
+            }
+
+            this._opacity = options.opacities ?? null;
         }
-        this._min = min;
-        this._max = max;
-        this._mode = mode;
-        this._colors = colors;
-        this._opacity = null;
         this._cachedTexture = null;
         this._active = true;
     }
@@ -99,7 +120,7 @@ class ColorMap extends EventDispatcher<ColorMapEvents> {
      *
      * @example
      * // Start with an elevation gradient, ranging from 100 to 1500 meters.
-     * const colorMap = new ColorMap(colors, 100, 1500, ColorMapMode.Elevation);
+     * const colorMap = new ColorMap(\{ colors, min: 100, max: 1500, mode: ColorMapMode.Elevation \});
      *
      * // Change mode to slope, and set min and max to 0-90 degrees.
      * colorMap.mode = ColorMapMode.Slope;

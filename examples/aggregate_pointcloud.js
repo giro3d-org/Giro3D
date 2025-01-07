@@ -8,7 +8,7 @@ import AggregatePointCloudSource from '@giro3d/giro3d/sources/AggregatePointClou
 import COPCSource from '@giro3d/giro3d/sources/COPCSource.js';
 import { setLazPerfPath } from '@giro3d/giro3d/sources/las/config.js';
 
-import ColorMap from '@giro3d/giro3d/core/layer/ColorMap.js';
+import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
 import { bindDropDown } from './widgets/bindDropDown.js';
 import { bindNumberInput } from './widgets/bindNumberInput.js';
 import { bindProgress } from './widgets/bindProgress.js';
@@ -39,8 +39,8 @@ instance.renderingOptions.enableEDL = true;
 instance.renderingOptions.EDLStrength = 5;
 
 const colormaps = {
-    Intensity: new ColorMap(makeColorRamp('jet'), 0, 100),
-    Z: new ColorMap(makeColorRamp('portland'), 0, 100),
+    Intensity: new ColorMap({ colors: makeColorRamp('jet'), min: 0, max: 100 }),
+    Z: new ColorMap({ colors: makeColorRamp('portland'), min: 0, max: 100 }),
 };
 
 const datasets = [

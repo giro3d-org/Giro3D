@@ -10,7 +10,7 @@ import Instance from '@giro3d/giro3d/core/Instance.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import GeoTIFFFormat from '@giro3d/giro3d/formats/GeoTIFFFormat.js';
-import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/layer/ColorMap.js';
+import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/ColorMap.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 
@@ -56,7 +56,7 @@ const dem = new ElevationLayer({
     name: 'dem',
     source,
     extent,
-    colorMap: new ColorMap(colors, floor, ceiling, ColorMapMode.Elevation),
+    colorMap: new ColorMap({ colors, min: floor, max: ceiling }),
 });
 
 map.addLayer(dem);

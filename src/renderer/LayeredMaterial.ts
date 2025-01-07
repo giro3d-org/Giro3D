@@ -20,13 +20,13 @@ import {
     Vector4,
 } from 'three';
 import type ColorimetryOptions from '../core/ColorimetryOptions';
+import type ColorMapMode from '../core/ColorMapMode';
 import type ContourLineOptions from '../core/ContourLineOptions';
 import type ElevationRange from '../core/ElevationRange';
 import type GraticuleOptions from '../core/GraticuleOptions';
 import type HillshadingOptions from '../core/HillshadingOptions';
 import type BlendingMode from '../core/layer/BlendingMode';
 import type ColorLayer from '../core/layer/ColorLayer';
-import type ColorMapMode from '../core/layer/ColorMapMode';
 import type ElevationLayer from '../core/layer/ElevationLayer';
 import type Layer from '../core/layer/Layer';
 import type { TextureAndPitch } from '../core/layer/Layer';

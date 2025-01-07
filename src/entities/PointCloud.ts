@@ -10,7 +10,7 @@ import {
     Vector3,
     type Material,
 } from 'three';
-import ColorMap from '../core/layer/ColorMap';
+import ColorMap from '../core/ColorMap';
 // TODO rename pointcloud object to PointCloudMesh
 import type Context from '../core/Context';
 import Extent from '../core/geographic/Extent';
@@ -52,7 +52,11 @@ type NodeState = 'empty' | 'hidden' | 'loading' | 'displayed';
 const DEFAULT_CLEANUP_DELAY = 5000;
 const TEXTURE_SIZE = new Vector2(256, 256);
 const tmpVector3 = new Vector3();
-const DEFAULT_COLORMAP = new ColorMap([new Color('black'), new Color('white')], 0, 1000);
+const DEFAULT_COLORMAP = new ColorMap({
+    colors: [new Color('black'), new Color('white')],
+    min: 0,
+    max: 1000,
+});
 
 const DATA_VOLUME_HELPER_COLOR = new Color('#d8eb34');
 

@@ -5,7 +5,7 @@ import XYZ from 'ol/source/XYZ.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
-import ColorMap from '@giro3d/giro3d/core/layer/ColorMap.js';
+import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import PointCloud from '@giro3d/giro3d/entities/PointCloud.js';
@@ -382,7 +382,7 @@ async function load(url) {
     const volume = entity.getBoundingBox();
 
     // Create the color map. The color ramp and bounds will be set later.
-    entity.colorMap = new ColorMap([], 0, 1);
+    entity.colorMap = new ColorMap({ colors: [], min: 0, max: 1 });
 
     // Such as setting the min and max of the colormap bounds.
     setMin(volume.min.z, volume.min.z, volume.max.z);

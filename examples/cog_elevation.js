@@ -11,7 +11,7 @@ import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Interpretation from '@giro3d/giro3d/core/layer/Interpretation.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/layer/ColorMap.js';
+import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/ColorMap.js';
 
 import StatusBar from './widgets/StatusBar.js';
 import { makeColorRamp } from './widgets/makeColorRamp.js';
@@ -50,8 +50,18 @@ const min = 263;
 const max = 4347;
 
 // Display it as elevation and color
-const viridis = new ColorMap(makeColorRamp('viridis'), min, max, ColorMapMode.Elevation);
-const magma = new ColorMap(makeColorRamp('magma'), min, max, ColorMapMode.Elevation);
+const viridis = new ColorMap({
+    colors: makeColorRamp('viridis'),
+    min,
+    max,
+    mode: ColorMapMode.Elevation,
+});
+const magma = new ColorMap({
+    colors: makeColorRamp('magma'),
+    min,
+    max,
+    mode: ColorMapMode.Elevation,
+});
 
 // Attach the inspector
 Inspector.attach('inspector', instance);

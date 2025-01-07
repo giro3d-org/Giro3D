@@ -16,7 +16,7 @@ import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
-import ColorMap from '@giro3d/giro3d/core/layer/ColorMap.js';
+import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
@@ -44,7 +44,7 @@ const max = 300;
 
 const values = colormap({ colormap: 'viridis', nshades: 256 });
 const colors = values.map(v => new Color(v));
-const colorMap = new ColorMap(colors, min, max);
+const colorMap = new ColorMap({ colors, min, max });
 
 const elevationLayer = new ElevationLayer({
     name: 'terrain',

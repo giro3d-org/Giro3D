@@ -9,7 +9,7 @@ import Instance from '@giro3d/giro3d/core/Instance.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer';
 import Map from '@giro3d/giro3d/entities/Map';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/layer/ColorMap.js';
+import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/ColorMap.js';
 
 import StatusBar from './widgets/StatusBar.js';
 import { bindToggle } from './widgets/bindToggle.js';
@@ -55,7 +55,7 @@ const colors = values.map(v => new Color(v));
 const min = 263;
 const max = 4347;
 
-const colorMap = new ColorMap(colors, min, max, ColorMapMode.Elevation);
+const colorMap = new ColorMap({ colors, min, max, mode: ColorMapMode.Elevation });
 
 const noDataOptions = {
     alpha: 0,
