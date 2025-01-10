@@ -1,3 +1,6 @@
+import AggregatePointCloudSource, {
+    AggregatePointCloudSourceOptions,
+} from './AggregatePointCloudSource';
 import COPCSource, { COPCSourceOptions } from './COPCSource';
 import GeoTIFFSource, {
     type ChannelMapping,
@@ -41,6 +44,8 @@ import WmtsSource, { type WmtsFromCapabilitiesOptions, type WmtsSourceOptions } 
  * Data sources.
  */
 export {
+    AggregatePointCloudSource,
+    AggregatePointCloudSourceOptions,
     ChannelMapping,
     COPCSource,
     COPCSourceOptions,
