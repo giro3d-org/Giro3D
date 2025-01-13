@@ -135,6 +135,10 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
         return this.camera.near;
     }
 
+    get frustum(): Readonly<Frustum> {
+        return this._frustum;
+    }
+
     /**
      * Gets or sets the distance to the near plane. The distance will be clamped to be within
      * the bounds defined by {@link minNearPlane} and {@link maxFarPlane}.

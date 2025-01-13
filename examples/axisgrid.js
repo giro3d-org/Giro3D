@@ -30,7 +30,7 @@ const extent = new Extent('EPSG:3857', x - halfWidth, x + halfWidth, y - halfWid
 const instance = new Instance({
     target: 'view',
     crs: extent.crs,
-    backgroundColor: 0x0a3b59,
+    backgroundColor: null,
 });
 
 const map = new Map({
@@ -126,6 +126,15 @@ bindToggle('floor', v => {
 });
 bindToggle('sides', v => {
     axisGrid.showSideGrids = v;
+    instance.notifyChange(axisGrid);
+});
+bindToggle('adaptive-labels', v => {
+    axisGrid.adaptiveLabels = v;
+    instance.notifyChange(axisGrid);
+});
+bindToggle('label-background', v => {
+    axisGrid.style.showLabelBackground = v;
+    axisGrid.refresh();
     instance.notifyChange(axisGrid);
 });
 

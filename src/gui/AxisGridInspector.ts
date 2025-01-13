@@ -23,30 +23,18 @@ class AxisGridInspector extends EntityInspector<AxisGrid> {
 
         this.absoluteTicks = this.entity.origin === TickOrigin.Absolute;
 
-        this.addColorController(this.entity, 'color')
-            .name('Grid color')
-            .onChange(v => this.updateGridColor(v));
-        this.addController(this.entity.style, 'fontSize', 1, 20, 1)
-            .name('Font size')
-            .onChange(() => this._rebuild());
-        this.addController(this.entity, 'showHelpers')
-            .name('Show debug helpers')
-            .onChange(() => this.notify(this.entity));
-        this.addController(this.entity, 'showLabels')
-            .name('Show labels')
-            .onChange(() => this.notify(this.entity));
-        this.addController(this, 'absoluteTicks')
-            .name('Absolute ticks')
-            .onChange(v => this.updateTickOrigin(v));
-        this.addController(this.entity, 'showFloorGrid')
-            .name('Show floor grid')
-            .onChange(() => this.notify(this.entity));
-        this.addController(this.entity, 'showCeilingGrid')
-            .name('Show ceiling grid')
-            .onChange(() => this.notify(this.entity));
-        this.addController(this.entity, 'showSideGrids')
-            .name('Show side grids')
-            .onChange(() => this.notify(this.entity));
+        this.addColorController(this.entity, 'color').onChange(v => this.updateGridColor(v));
+        this.addController(this.entity.style, 'fontSize', 1, 20, 1).onChange(() => this._rebuild());
+        this.addController(this.entity.style, 'showLabelBackground').onChange(() =>
+            this._rebuild(),
+        );
+        this.addController(this.entity, 'showHelpers').onChange(() => this.notify(this.entity));
+        this.addController(this.entity, 'showLabels').onChange(() => this.notify(this.entity));
+        this.addController(this.entity, 'adaptiveLabels');
+        this.addController(this, 'absoluteTicks').onChange(v => this.updateTickOrigin(v));
+        this.addController(this.entity, 'showFloorGrid').onChange(() => this.notify(this.entity));
+        this.addController(this.entity, 'showCeilingGrid').onChange(() => this.notify(this.entity));
+        this.addController(this.entity, 'showSideGrids').onChange(() => this.notify(this.entity));
 
         this.addController(this.entity.volume, 'floor')
             .name('Floor elevation')
