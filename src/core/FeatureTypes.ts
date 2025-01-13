@@ -64,6 +64,11 @@ export type FillStyle = BaseStyle & {
      * @defaultValue {@link DEFAULT_SURFACE_COLOR}
      */
     color?: ColorRepresentation;
+    /**
+     * Whether to use shaded materials or flat materials.
+     * @defaultValue false
+     */
+    shading?: boolean;
 };
 
 /**
@@ -126,8 +131,9 @@ export function getFullFillStyle(style?: Partial<FillStyle>): Required<FillStyle
     const color = style?.color ?? DEFAULT_SURFACE_COLOR;
     const depthTest = style?.depthTest ?? true;
     const renderOrder = style?.renderOrder ?? 0;
+    const shading = style?.shading ?? false;
 
-    return { opacity, color, depthTest, renderOrder };
+    return { opacity, color, depthTest, renderOrder, shading };
 }
 
 /**

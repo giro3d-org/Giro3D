@@ -28,6 +28,19 @@ const SIMPLE_SQUARE = [
 const SIMPLE_SQUARE_VERTICES = new Float32Array([0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0]);
 const SIMPLE_SQUARE_INDICES = new Uint16Array([1, 0, 3, 3, 2, 1]);
 
+const SIMPLE_SQUARE_ON_VERTICAL_PLANE = [
+    [
+        [0, 0, 0],
+        [0, 0, 1],
+        [1, 0, 1],
+        [1, 0, 0],
+        [0, 0, 0],
+    ],
+];
+const SIMPLE_SQUARE_ON_VERTICAL_PLANE_VERTICES = new Float32Array([
+    0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0,
+]);
+
 /*
  * More or less this shape
  * *----------*
@@ -175,6 +188,18 @@ describe('build', () => {
             // NOTE: last (closing) vertex removed
             expect(mesh.surface!.geometry.getAttribute('position').array).toEqual(
                 SIMPLE_SQUARE_VERTICES,
+            );
+            expect(mesh.surface!.geometry.index!.array).toEqual(SIMPLE_SQUARE_INDICES);
+        });
+
+        it('should return correct geometry for square case when vertices lie in a vertical plane', () => {
+            const polygon = new Polygon(SIMPLE_SQUARE_ON_VERTICAL_PLANE);
+
+            const fill = getFullFillStyle();
+            const mesh = generator.build(polygon, { fill });
+            // NOTE: last (closing) vertex removed
+            expect(mesh.surface!.geometry.getAttribute('position').array).toEqual(
+                SIMPLE_SQUARE_ON_VERTICAL_PLANE_VERTICES,
             );
             expect(mesh.surface!.geometry.index!.array).toEqual(SIMPLE_SQUARE_INDICES);
         });
