@@ -63,8 +63,8 @@ class MyCustomEntity extends Entity3D {
 
 Various classes in Giro3D provide the `progress` and `loading` API. This API can be used to determine if the object is currently performing asynchronous operations.
 
--   `loading` is a boolean that indicates whether the object is currently performing an asynchronous task.
--   `progress` is a number (between zero and one) that indicates the percentage of progress of the tasks this object is performing.
+- `loading` is a boolean that indicates whether the object is currently performing an asynchronous task.
+- `progress` is a number (between zero and one) that indicates the percentage of progress of the tasks this object is performing.
 
 💡 To implement this interface on your own classes, you can use the [`OperationCounter`](./classes/core.OperationCounter.html) class.
 
@@ -80,9 +80,9 @@ However, some objects, such as three.js [textures](https://threejs.org/docs/?q=t
 
 Giro3D can combine many different coordinate systems (CRS):
 
--   The `Instance` has its own coordinate system, accessible from the [`referenceCrs`](./classes/core.Instance.html#referenceCrs) property. Once specified in the `Instance` constructor, this cannot be changed.
+- The `Instance` has its own coordinate system, accessible from the [`referenceCrs`](./classes/core.Instance.html#referenceCrs) property. Once specified in the `Instance` constructor, this cannot be changed.
 
--   Some entities supports various CRS transformations, while others only supports a single CRS (of their data source). In the latter case, this CRS must be compatible with referenceCRS to be displayed correctly.
+- Some entities supports various CRS transformations, while others only supports a single CRS (of their data source). In the latter case, this CRS must be compatible with referenceCRS to be displayed correctly.
 
 ### Register a custom CRS
 
