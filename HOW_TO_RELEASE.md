@@ -16,14 +16,14 @@ This will install the `cz` utility in your python packages folder (by default `$
 
 Giro3D follows [semantic versioning](https://semver.org/). Until 1.0.0 is released, versions are noted `0.Y.Z`, with:
 
--   `Y` being the minor version - incremented when breaking changes or non-breaking changes are introduced to the public API,
--   `Z` being the patch version - incremented when only non-breaking bugfixes are introduced.
+- `Y` being the minor version - incremented when breaking changes or non-breaking changes are introduced to the public API,
+- `Z` being the patch version - incremented when only non-breaking bugfixes are introduced.
 
 When 1.0.0 will be released, versions will be noted `X.Y.Z`, with:
 
--   `X` being the major version - incremented when breaking changes are introduced to the public API,
--   `Y` being the minor version - incremented when new non-breaking changes are introduced to the public API,
--   `Z` being the patch version - incremented when only non-breaking bugfixes are introduced.
+- `X` being the major version - incremented when breaking changes are introduced to the public API,
+- `Y` being the minor version - incremented when new non-breaking changes are introduced to the public API,
+- `Z` being the patch version - incremented when only non-breaking bugfixes are introduced.
 
 ## Normal workflow: major/minor release
 

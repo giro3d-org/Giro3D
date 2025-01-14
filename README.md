@@ -36,13 +36,13 @@
 
 ## Features
 
--   2D and 3D maps with **unlimited color layers**, real-time lighting and a broad range of data sources (tiled images, GeoTIFFs, static images, vector data, including Vector tiles).
--   **High-resolution terrain rendering** with elevation querying / elevation profile
--   Point clouds colored by **classification**, **colormaps** or **color layer**
--   Create **shapes** and **annotations**, including height measurements and angular sectors.
--   Easy to integrate with **GUI frameworks** such as Vue and React.
--   Limit visibility of datasets using **cross-sections**
--   Display 3D features with a **rich style API**
+- 2D and 3D maps with **unlimited color layers**, real-time lighting and a broad range of data sources (tiled images, GeoTIFFs, static images, vector data, including Vector tiles).
+- **High-resolution terrain rendering** with elevation querying / elevation profile
+- Point clouds colored by **classification**, **colormaps** or **color layer**
+- Create **shapes** and **annotations**, including height measurements and angular sectors.
+- Easy to integrate with **GUI frameworks** such as Vue and React.
+- Limit visibility of datasets using **cross-sections**
+- Display 3D features with a **rich style API**
 
 ## Supported data sources
 
@@ -53,37 +53,37 @@ Below is a non-exhaustive list of supported data sources.
 
 ### Image data
 
--   [WMTS](https://www.ogc.org/standards/wmts)
--   [WMS](https://www.ogc.org/standards/wms)
--   [TMS](https://www.ogc.org/standards/tms)
--   [GeoTIFF](https://www.ogc.org/standard/geotiff/), with support for [Cloud Optimized GeoTIFFs (COG)](https://www.cogeo.org/)
--   Static images
+- [WMTS](https://www.ogc.org/standards/wmts)
+- [WMS](https://www.ogc.org/standards/wms)
+- [TMS](https://www.ogc.org/standards/tms)
+- [GeoTIFF](https://www.ogc.org/standard/geotiff/), with support for [Cloud Optimized GeoTIFFs (COG)](https://www.cogeo.org/)
+- Static images
 
 ### Elevation data
 
--   [DEM/DTM/DSM](https://gisgeography.com/dem-dsm-dtm-differences/) through [WMTS](https://www.ogc.org/standards/wmts)
+- [DEM/DTM/DSM](https://gisgeography.com/dem-dsm-dtm-differences/) through [WMTS](https://www.ogc.org/standards/wmts)
 
 ### Vector data
 
--   [Mapbox Vector Tiles](https://docs.mapbox.com/data/tilesets/guides/vector-tiles-introduction/)
--   [GeoJSON](https://geojson.org/)
--   [TopoJSON](https://github.com/topojson/topojson/)
--   [KML](https://www.ogc.org/standard/kml/)
--   [GPS Exchange Format (GPX)](https://en.wikipedia.org/wiki/GPS_Exchange_Format)
+- [Mapbox Vector Tiles](https://docs.mapbox.com/data/tilesets/guides/vector-tiles-introduction/)
+- [GeoJSON](https://geojson.org/)
+- [TopoJSON](https://github.com/topojson/topojson/)
+- [KML](https://www.ogc.org/standard/kml/)
+- [GPS Exchange Format (GPX)](https://en.wikipedia.org/wiki/GPS_Exchange_Format)
 
 ### Point clouds
 
--   [Potree](https://github.com/potree/potree) datasets
-    -   Regular (bin file) point clouds
-    -   LAZ Potree point clouds
--   [Cloud Optimized Point Clouds (COPC)](https://copc.io/)
--   LAS/LAZ files
--   3D Tiles with `.pnts` tiles (you can generate them with [py3dtiles](https://py3dtiles.org/))
+- [Potree](https://github.com/potree/potree) datasets
+    - Regular (bin file) point clouds
+    - LAZ Potree point clouds
+- [Cloud Optimized Point Clouds (COPC)](https://copc.io/)
+- LAS/LAZ files
+- 3D Tiles with `.pnts` tiles (you can generate them with [py3dtiles](https://py3dtiles.org/))
 
 ### 3D assets
 
--   [3D Tiles](https://github.com/CesiumGS/3d-tiles) for optimized massive 3D datasets, including point clouds
--   [glTF](https://github.com/KhronosGroup/glTF) for individual models
+- [3D Tiles](https://github.com/CesiumGS/3d-tiles) for optimized massive 3D datasets, including point clouds
+- [glTF](https://github.com/KhronosGroup/glTF) for individual models
 
 # Getting started
 
