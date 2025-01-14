@@ -34,7 +34,7 @@ const colorSource = new TiledImageSource({
         url: 'https://data.geopf.fr/wms-r',
         projection: 'EPSG:3946',
         params: {
-            LAYERS: ['HR.ORTHOIMAGERY.ORTHOPHOTOS'],
+            LAYERS: ['ORTHOIMAGERY.ORTHOPHOTOS'],
             FORMAT: 'image/jpeg',
         },
     }),

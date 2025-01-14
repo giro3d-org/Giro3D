@@ -37,7 +37,7 @@ const wmsOthophotoSource = new TiledImageSource({
         projection: 'EPSG:2154',
         crossOrigin: 'anonymous',
         params: {
-            LAYERS: ['HR.ORTHOIMAGERY.ORTHOPHOTOS'],
+            LAYERS: ['ORTHOIMAGERY.ORTHOPHOTOS'],
             FORMAT: 'image/jpeg',
         },
     }),
