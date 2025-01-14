@@ -42,7 +42,7 @@ instance.add(map);
 const satelliteSource = new WmsSource({
     url: 'https://data.geopf.fr/wms-r',
     projection: 'EPSG:3946',
-    layer: 'HR.ORTHOIMAGERY.ORTHOPHOTOS',
+    layer: 'ORTHOIMAGERY.ORTHOPHOTOS',
     imageFormat: 'image/jpeg',
 });
 
