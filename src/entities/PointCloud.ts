@@ -1101,6 +1101,15 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
 
         this._pointsRoot.add(mesh);
 
+        // Some sources do not provide points at the correct scale.
+        // Scaling the mesh is much cheaper than scaling each
+        // individual point, so we do it here.
+        if (data.scale != null) {
+            mesh.scale.copy(data.scale);
+        }
+
+        mesh.updateMatrixWorld(true);
+
         // If the source provided us with a tight fitting bounding box,
         // let's use it. Otherwise we have to use the logical volume from
         // the hierarchy which is expected to be less tight.
@@ -1111,15 +1120,6 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         }
 
         geometry.boundingSphere = geometry.boundingBox.getBoundingSphere(new Sphere());
-
-        // Some sources do not provide points at the correct scale.
-        // Scaling the mesh is much cheaper than scaling each
-        // individual point, so we do it here.
-        if (data.scale != null) {
-            mesh.scale.copy(data.scale);
-        }
-
-        mesh.updateMatrixWorld(true);
 
         this.notifyChange(this);
 
