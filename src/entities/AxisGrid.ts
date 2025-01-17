@@ -759,14 +759,20 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
         pushSegment(left, top, right, top);
 
         // Horizontal subdivisions
-        while (x <= right) {
-            pushSegment(x, bottom, x, top);
+        while (x < right) {
+            // Avoid duplicating the boundary line
+            if (x !== left) {
+                pushSegment(x, bottom, x, top);
+            }
             x += xStep;
         }
 
         // Vertical subdivisions
-        while (y <= top) {
-            pushSegment(left, y, right, y);
+        while (y < top) {
+            // Avoid duplicating the boundary line
+            if (y !== bottom) {
+                pushSegment(left, y, right, y);
+            }
             y += yStep;
         }
 
