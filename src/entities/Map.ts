@@ -542,7 +542,6 @@ class Map<UserData extends EntityUserData = EntityUserData>
     readonly maxSubdivisionLevel: number;
     readonly isPickableFeatures = true;
     private readonly _materialOptions: MaterialOptions;
-    readonly showOutline = false;
     /** @internal */
     readonly tileIndex: TileIndex<TileMesh>;
     /**
