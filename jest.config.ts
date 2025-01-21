@@ -5,7 +5,7 @@ const jestConfig: JestConfigWithTsJest = {
     preset: 'ts-jest',
     testEnvironment: 'jest-environment-jsdom',
     transformIgnorePatterns: [
-        'node_modules/(?!ol|three|quick-lru|color-space|color-rgba|color-parse|color-name|proj4)',
+        'node_modules/(?!ol|three|quick-lru|color-space|color-rgba|color-parse|color-name|proj4|3d-tiles-renderer)',
     ],
     transform: {
         // We must use Babel to transform files because of the inlined GLSL files

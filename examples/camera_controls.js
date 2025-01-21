@@ -1,27 +1,26 @@
 import {
+    Box3,
     Clock,
     CubeTextureLoader,
-    Vector3,
-    Vector2,
-    Vector4,
-    Quaternion,
     Matrix4,
-    Spherical,
-    Box3,
-    Sphere,
+    Quaternion,
     Raycaster,
+    Sphere,
+    Spherical,
+    Vector2,
+    Vector3,
+    Vector4,
 } from 'three';
 
 import CameraControls from 'camera-controls';
 
 import Instance from '@giro3d/giro3d/core/Instance.js';
-import Tiles3D from '@giro3d/giro3d/entities/Tiles3D.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
-import PointCloudMaterial, { MODE } from '@giro3d/giro3d/renderer/PointCloudMaterial.js';
-import Tiles3DSource from '@giro3d/giro3d/sources/Tiles3DSource.js';
+import Tiles3D from '@giro3d/giro3d/entities/Tiles3D.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import Panel from '@giro3d/giro3d/gui/Panel.js';
-import WmsSource from '@giro3d/giro3d/sources/WmsSource.js';
+import { MODE } from '@giro3d/giro3d/renderer/PointCloudMaterial.js';
+import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
@@ -50,23 +49,29 @@ const instance = new Instance({
     crs: 'EPSG:3946',
 });
 
-const material = new PointCloudMaterial({ size: 4, mode: MODE.TEXTURE });
-
-const pointcloud = new Tiles3D(
-    new Tiles3DSource('https://3d.oslandia.com/3dtiles/lyon.3dtiles/tileset.json'),
-    { material },
-);
-
-const source = new WmsSource({
-    url: 'https://data.geopf.fr/wms-r',
-    projection: 'EPSG:3946',
-    layer: 'ORTHOIMAGERY.ORTHOPHOTOS',
-    imageFormat: 'image/jpeg',
+const pointcloud = new Tiles3D({
+    url: 'https://3d.oslandia.com/3dtiles/lyon.3dtiles/tileset.json',
+    pointCloudMode: MODE.TEXTURE,
+    errorTarget: 15,
 });
 
-const colorLayer = new ColorLayer({ source });
+instance.add(pointcloud).then(pc => {
+    const url = 'https://data.geopf.fr/wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetCapabilities';
 
-instance.add(pointcloud).then(pc => pc.attach(colorLayer));
+    // Let's build the color layer from the WMTS capabilities
+    WmtsSource.fromCapabilities(url, {
+        layer: 'HR.ORTHOIMAGERY.ORTHOPHOTOS',
+    })
+        .then(orthophotoWmts => {
+            pc.setColorLayer(
+                new ColorLayer({
+                    name: 'color',
+                    source: orthophotoWmts,
+                }),
+            );
+        })
+        .catch(console.error);
+});
 
 // Configure our controls
 const controls = new CameraControls(instance.view.camera, instance.domElement);

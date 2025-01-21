@@ -1,0 +1,28 @@
+---
+title: Google Photorealistic 3D Tiles
+shortdesc: Display Google Maps 3D Tiles using Giro3D and <a href="https://github.com/NASA-AMMOS/3DTilesRendererJS" target="_blank"><code>3d-tiles-renderer</code></a>.
+longdesc: This example requires a Google Maps API key. You can register this key directly in the URL by appending <code>?key=THE_KEY</code> in the URL, or enter the key in the text box.
+tags: ['google', '3d tiles']
+---
+
+<div
+    class="position-absolute top-50 start-50 translate-middle text-center"
+    style="display: none"
+    id="warning"
+>
+    No Google Maps API key registered.<br />You can register this key directly in the URL by
+    appending <code>?key=THE_KEY</code> in the URL,<br />or enter the key in the text box and press
+    'Reload'.
+</div>
+
+<div class="side-pane-with-status-bar">
+    <div class="input-group">
+        <input
+            type="text"
+            class="form-control"
+            id="googleApiKey"
+            placeholder="Google Tiles API key"
+        />
+        <button class="btn btn-primary" id="start">Reload</button>
+    </div>
+</div>

@@ -44,15 +44,30 @@ function readTemplate(template) {
 }
 
 function copyWasmFiles(nodeModulesDir, outputDir) {
+    log('static-site', 'copying library files...');
+
     const copy = (...src) => {
         const sourceFile = path.join(nodeModulesDir, ...src);
         const filename = path.basename(sourceFile);
         const destFile = path.join(outputDir, filename);
 
         fse.copyFileSync(sourceFile, destFile);
+
+        const relative = path.relative(rootDir, destFile);
+        logOk('static-site', relative);
     };
 
     copy('laz-perf', 'lib', 'laz-perf.wasm');
+
+    // Draco library
+    copy('three', 'examples', 'jsm', 'libs', 'draco', 'draco_decoder.wasm');
+    copy('three', 'examples', 'jsm', 'libs', 'draco', 'draco_decoder.js');
+    copy('three', 'examples', 'jsm', 'libs', 'draco', 'draco_encoder.js');
+    copy('three', 'examples', 'jsm', 'libs', 'draco', 'draco_wasm_wrapper.js');
+
+    // Basis library
+    copy('three', 'examples', 'jsm', 'libs', 'basis', 'basis_transcoder.wasm');
+    copy('three', 'examples', 'jsm', 'libs', 'basis', 'basis_transcoder.js');
 }
 
 export async function copyAssets(parameters) {

@@ -3,23 +3,23 @@ import colormap from 'colormap';
 import { Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
-import Instance from '@giro3d/giro3d/core/Instance.js';
-import Tiles3D from '@giro3d/giro3d/entities/Tiles3D.js';
-import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
-import PointCloudMaterial, { MODE } from '@giro3d/giro3d/renderer/PointCloudMaterial.js';
-import Tiles3DSource from '@giro3d/giro3d/sources/Tiles3DSource.js';
-import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
+import Instance from '@giro3d/giro3d/core/Instance.js';
+import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
+import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
+import Tiles3D from '@giro3d/giro3d/entities/Tiles3D.js';
+import Inspector from '@giro3d/giro3d/gui/Inspector.js';
+import { MODE } from '@giro3d/giro3d/renderer/PointCloudMaterial.js';
 import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-import { bindToggle } from './widgets/bindToggle.js';
-import { bindSlider } from './widgets/bindSlider.js';
 import { bindColorMapBounds } from './widgets/bindColorMapBounds.js';
-import { makeColorRamp } from './widgets/makeColorRamp.js';
 import { bindDropDown } from './widgets/bindDropDown.js';
 import { bindNumericalDropDown } from './widgets/bindNumericalDropDown.js';
+import { bindSlider } from './widgets/bindSlider.js';
+import { bindToggle } from './widgets/bindToggle.js';
+import { makeColorRamp } from './widgets/makeColorRamp.js';
 
 const colorRamps = {};
 
@@ -51,23 +51,12 @@ const instance = new Instance({
     backgroundColor: 0xcccccc,
 });
 
-// Create a custom material for our point cloud.
-const material = new PointCloudMaterial({
-    size: 4,
-    mode: MODE.TEXTURE,
-});
-
-material.colorMap.min = 100;
-material.colorMap.max = 600;
-material.colorMap.colors = colorRamps['viridis'];
-
 // Create the 3D tiles entity
-const pointcloud = new Tiles3D(
-    new Tiles3DSource('https://3d.oslandia.com/3dtiles/lyon.3dtiles/tileset.json'),
-    {
-        material,
-    },
-);
+const pointcloud = new Tiles3D({
+    url: 'https://3d.oslandia.com/3dtiles/lyon.3dtiles/tileset.json',
+    colorMap: new ColorMap({ colors: colorRamps['viridis'], min: 100, max: 600 }),
+    errorTarget: 15,
+});
 
 let colorLayer;
 
@@ -87,9 +76,7 @@ function placeCamera(position, lookAt) {
 
 // add pointcloud to scene
 function initializeCamera() {
-    const bbox = pointcloud.root.boundingVolume.box
-        .clone()
-        .applyMatrix4(pointcloud.root.matrixWorld);
+    const bbox = pointcloud.getBoundingBox();
 
     instance.view.camera.far = 2.0 * bbox.getSize(tmpVec3).length();
 
@@ -116,7 +103,7 @@ function initializeCamera() {
                 extent,
                 source: orthophotoWmts,
             });
-            pointcloud.attach(colorLayer);
+            pointcloud.setColorLayer(colorLayer);
         })
         .catch(console.error);
 
@@ -178,15 +165,15 @@ bindSlider('opacity', v => {
 });
 
 bindColorMapBounds((min, max) => {
-    material.colorMap.min = min;
-    material.colorMap.max = max;
+    pointcloud.colorMap.min = min;
+    pointcloud.colorMap.max = max;
     instance.notifyChange(pointcloud);
 });
 
 const colorMapGroup = document.getElementById('colormapGroup');
 
 bindNumericalDropDown('pointcloud_mode', newMode => {
-    material.mode = newMode;
+    pointcloud.pointCloudMode = newMode;
 
     if (newMode === MODE.ELEVATION) {
         colorMapGroup.classList.remove('d-none');
@@ -202,6 +189,6 @@ bindNumericalDropDown('pointcloud_mode', newMode => {
 });
 
 bindDropDown('colormap', newRamp => {
-    material.colorMap.colors = colorRamps[newRamp];
+    pointcloud.colorMap.colors = colorRamps[newRamp];
     instance.notifyChange(pointcloud);
 });

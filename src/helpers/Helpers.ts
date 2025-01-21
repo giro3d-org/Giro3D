@@ -1,27 +1,18 @@
+import type { BufferGeometry, LineBasicMaterial, LineSegments, MeshBasicMaterial } from 'three';
 import {
     ArrowHelper,
     AxesHelper,
     Box3,
     Box3Helper,
-    BufferAttribute,
-    BufferGeometry,
     Color,
     GridHelper,
-    LineBasicMaterial,
-    LineSegments,
-    Matrix4,
     Mesh,
-    MeshBasicMaterial,
-    SphereGeometry,
     Vector3,
     type Material,
     type Object3D,
-    type Sphere,
 } from 'three';
 import type { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
 import type OBB from '../core/OBB.js';
-import type { ProcessedTile } from '../entities/3dtiles/3dTilesIndex';
-import type Tiles3D from '../entities/Tiles3D';
 import { isMaterial } from '../utils/predicates';
 import { nonNull } from '../utils/tsutils';
 import OBBHelper from './OBBHelper';
@@ -79,8 +70,6 @@ interface HasGeometry extends Object3D {
 }
 
 const _vector = new Vector3();
-const invMatrixChangeUpVectorZtoY = new Matrix4().makeRotationX(Math.PI / 2).invert();
-const invMatrixChangeUpVectorZtoX = new Matrix4().makeRotationZ(-Math.PI / 2).invert();
 let _axisSize = 500;
 
 /**
@@ -93,13 +82,6 @@ function getColor(colorDesc: Color | string) {
     }
 
     return colorDesc;
-}
-
-function create3dTileRegion(region: OBB, color: Color) {
-    const helper = new VolumeHelper(region, color);
-    helper.position.copy(region.position);
-    helper.rotation.copy(region.rotation);
-    return helper;
 }
 
 /**
@@ -141,54 +123,6 @@ function makeLocalBbox(object: Object3D, precise = false): Box3 {
     }
 
     return box;
-}
-
-const unitBoxMesh = (function _() {
-    const indices = new Uint16Array([
-        0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7,
-    ]);
-    const positions = new Float32Array(8 * 3);
-    new Vector3(+0.5, +0.5, +0.5).toArray(positions, 0);
-    new Vector3(-0.5, +0.5, +0.5).toArray(positions, 3);
-    new Vector3(-0.5, -0.5, +0.5).toArray(positions, 6);
-    new Vector3(+0.5, -0.5, +0.5).toArray(positions, 9);
-    new Vector3(+0.5, +0.5, -0.5).toArray(positions, 12);
-    new Vector3(-0.5, +0.5, -0.5).toArray(positions, 15);
-    new Vector3(-0.5, -0.5, -0.5).toArray(positions, 18);
-    new Vector3(+0.5, -0.5, -0.5).toArray(positions, 21);
-    const geometry = new BufferGeometry();
-    geometry.setIndex(new BufferAttribute(indices, 1));
-    geometry.setAttribute('position', new BufferAttribute(positions, 3));
-
-    return function _unitBoxMesh(color: Color) {
-        const material = new LineBasicMaterial({
-            color,
-            linewidth: 3,
-        });
-
-        const box = new LineSegments(geometry, material);
-        box.frustumCulled = false;
-        return box;
-    };
-})();
-
-/**
- * @param box - The box.
- * @param color - The color.
- */
-function createBoxVolume(box: Box3, color: Color) {
-    const helper = unitBoxMesh(color);
-    helper.scale.copy(box.getSize(_vector));
-    box.getCenter(helper.position);
-    return helper;
-}
-
-function createSphereVolume(sphere: Sphere, color: Color) {
-    const geometry = new SphereGeometry(sphere.radius, 32, 32);
-    const material = new MeshBasicMaterial({ wireframe: true, color });
-    const helper = new SphereHelper(geometry, material);
-    helper.position.copy(sphere.center);
-    return helper;
 }
 
 /**
@@ -288,72 +222,6 @@ class Helpers {
             // @ts-expect-error cannot remove "mandatory" property
             delete obj.volumeHelper;
         }
-    }
-
-    /**
-     * Creates a bounding volume helper to the 3D Tile object and returns it.
-     * The bounding volume can contain a sphere, a region, or a box.
-     *
-     * @param entity - The entity.
-     * @param obj - The object to decorate.
-     * @param metadata - The tile metadata
-     * @param color - The color.
-     * @returns The helper object, or null if it could not be created.
-     * @example
-     * // add a bounding box to 'obj'
-     * Helpers.create3DTileBoundingVolume(entity, obj, volume, 'green');
-     */
-    static create3DTileBoundingVolume(
-        entity: Tiles3D,
-        obj: Object3D,
-        metadata: ProcessedTile,
-        color: Color | string,
-    ) {
-        if (hasBoundingVolumeHelper(obj)) {
-            obj.boundingVolumeHelper.object3d.visible = obj.visible;
-            return obj.boundingVolumeHelper;
-        }
-
-        color = getColor(color);
-        let object3d;
-        let absolute = false;
-        const { boundingVolumeObject: boundingVolume } = metadata;
-
-        if (boundingVolume.region) {
-            object3d = create3dTileRegion(boundingVolume.region, color);
-            // regions have worldspace (absolute) positions,
-            // they should not be attached to the tile object.
-            absolute = true;
-        } else if (boundingVolume.box) {
-            object3d = createBoxVolume(boundingVolume.box, color);
-        } else if (boundingVolume.sphere) {
-            object3d = createSphereVolume(boundingVolume.sphere, color);
-        }
-
-        if (
-            object3d &&
-            (metadata.magic === 'b3dm' || metadata.magic === 'i3dm') &&
-            !boundingVolume.region
-        ) {
-            // compensate B3dm orientation correction
-            const { gltfUpAxis } = entity.asset;
-            object3d.updateMatrix();
-            if (gltfUpAxis === undefined || gltfUpAxis === 'Y') {
-                object3d.matrix.premultiply(invMatrixChangeUpVectorZtoY);
-            } else if (gltfUpAxis === 'X') {
-                object3d.matrix.premultiply(invMatrixChangeUpVectorZtoX);
-            }
-            object3d.applyMatrix4(new Matrix4());
-        }
-
-        if (object3d) {
-            object3d.name = `${obj.name} volume`;
-            const result = { object3d, absolute };
-            (obj as HasBoundingVolumeHelper).boundingVolumeHelper = result;
-            return result;
-        }
-
-        return null;
     }
 
     /**

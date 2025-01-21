@@ -4,14 +4,13 @@ import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import Tiles3D from '@giro3d/giro3d/entities/Tiles3D.js';
-import Tiles3DSource from '@giro3d/giro3d/sources/Tiles3DSource.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import PointCloudMaterial, { MODE } from '@giro3d/giro3d/renderer/PointCloudMaterial.js';
+import { ASPRS_CLASSIFICATIONS, MODE } from '@giro3d/giro3d/renderer/PointCloudMaterial.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { bindColorPicker } from './widgets/bindColorPicker.js';
 import { bindSlider } from './widgets/bindSlider.js';
 import { bindToggle } from './widgets/bindToggle.js';
-import { bindColorPicker } from './widgets/bindColorPicker.js';
 
 Instance.registerCRS(
     'EPSG:2154',
@@ -38,17 +37,14 @@ controls.target.set(227423, 6876442, 0);
 controls.saveState();
 instance.view.setControls(controls);
 
-// We create a PointCloudMaterial in CLASSIFICATION
-// mode to display the point classifications.
-const material = new PointCloudMaterial({ mode: MODE.CLASSIFICATION });
+const classifications = ASPRS_CLASSIFICATIONS.map(c => c.clone());
 
-// The material provides default colors for classifications 0-63,
+// The default classifications provide colors for classifications 0-63,
 // i.e the reserved range for ASPRS classifications.
 // Classifications in the 64-255 range are user-defined.
-
-material.classifications[64].color = new Color(0x94a770); // Classification "Sursol pérenne"
-material.classifications[65].color = new Color(0xd3ff00); // Classification "Artefacts"
-material.classifications[66].color = new Color(0x00ff8d); // Classification "Points virtuels"
+classifications[64].color = new Color(0x94a770); // Classification "Sursol pérenne"
+classifications[65].color = new Color(0xd3ff00); // Classification "Artefacts"
+classifications[66].color = new Color(0x00ff8d); // Classification "Points virtuels"
 
 // Original dataset extracted from the French IGN LIDAR HD
 // database (https://geoservices.ign.fr/lidarhd#telechargementclassifiees),
@@ -56,8 +52,11 @@ material.classifications[66].color = new Color(0x00ff8d); // Classification "Poi
 const url =
     'https://3d.oslandia.com/giro3d/3d-tiles/LHD_FXX_0227_6877_PTS_C_LAMB93_IGN69/tileset.json';
 
-const pointcloud = new Tiles3D(new Tiles3DSource(url), {
-    material,
+const pointcloud = new Tiles3D({
+    url,
+    pointCloudMode: MODE.CLASSIFICATION,
+    errorTarget: 14,
+    classifications,
 });
 
 instance.add(pointcloud);
@@ -67,7 +66,7 @@ const classificationNames = new Array(32);
 // GUI controls for classification handling
 
 function addClassification(number, name) {
-    const currentColor = material.classifications[number].color.getHexString();
+    const currentColor = pointcloud.pointCloudClassifications[number].color.getHexString();
 
     const template = `
     <div class="form-check form-switch">
@@ -106,7 +105,7 @@ function addClassification(number, name) {
         // Parse it into a THREE.js color
         const color = new Color(v);
 
-        material.classifications[number].color = color;
+        pointcloud.pointCloudClassifications[number].color = color;
 
         instance.notifyChange();
     });
@@ -116,7 +115,7 @@ function addClassification(number, name) {
     bindToggle(`class-${number}`, enabled => {
         // By toggling the .visible property of a classification,
         // all points that have this classification are hidden/shown.
-        material.classifications[number].visible = enabled;
+        pointcloud.pointCloudClassifications[number].visible = enabled;
         instance.notifyChange();
     });
 }
@@ -167,10 +166,9 @@ function updateLabel(mouseEvent) {
         for (const result of results) {
             const { object, point, index } = result;
 
-            // @ts-expect-error conversion
-            const classificationIndex = object.getClassification(index);
+            const classificationIndex = object.geometry.getAttribute('classification').getX(index);
 
-            const classification = material.classifications[classificationIndex];
+            const classification = pointcloud.pointCloudClassifications[classificationIndex];
 
             // Let's ignore hidden classifications
             if (classification && classification.visible) {
@@ -192,7 +190,7 @@ function updateLabel(mouseEvent) {
 }
 
 bindSlider('pointSize', v => {
-    material.size = v;
+    pointcloud.pointSize = v;
     instance.notifyChange(pointcloud);
 });
 

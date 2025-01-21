@@ -1,4 +1,10 @@
-import type { ColorRepresentation, IUniform, Texture } from 'three';
+import type {
+    BufferAttribute,
+    BufferGeometry,
+    ColorRepresentation,
+    IUniform,
+    Texture,
+} from 'three';
 import {
     Color,
     GLSL3,
@@ -245,6 +251,22 @@ class PointCloudMaterial extends ShaderMaterial {
 
     set mode(mode: Mode) {
         this.uniforms.mode.value = mode;
+    }
+
+    /**
+     * Update material uniforms related to intensity and classification attributes.
+     */
+    setupFromGeometry(geometry: BufferGeometry) {
+        this.enableClassification = geometry.hasAttribute('classification');
+
+        if (geometry.hasAttribute('intensity')) {
+            const intensityType = MaterialUtils.getVertexAttributeType(
+                geometry.getAttribute('intensity') as BufferAttribute,
+            );
+
+            MaterialUtils.setDefine(this, 'INTENSITY', true);
+            MaterialUtils.setDefineValue(this, 'INTENSITY_TYPE', intensityType);
+        }
     }
 
     /**

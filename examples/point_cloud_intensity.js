@@ -5,18 +5,18 @@ import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
 import Instance from '@giro3d/giro3d/core/Instance.js';
+import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
 import Tiles3D from '@giro3d/giro3d/entities/Tiles3D.js';
-import PointCloudMaterial, { MODE } from '@giro3d/giro3d/renderer/PointCloudMaterial.js';
-import Tiles3DSource from '@giro3d/giro3d/sources/Tiles3DSource.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
+import { MODE } from '@giro3d/giro3d/renderer/PointCloudMaterial.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-import { bindToggle } from './widgets/bindToggle.js';
-import { bindDropDown } from './widgets/bindDropDown.js';
 import { bindButton } from './widgets/bindButton.js';
-import { makeColorRamp } from './widgets/makeColorRamp.js';
 import { bindColorMapBounds } from './widgets/bindColorMapBounds.js';
+import { bindDropDown } from './widgets/bindDropDown.js';
+import { bindToggle } from './widgets/bindToggle.js';
+import { makeColorRamp } from './widgets/makeColorRamp.js';
 
 Instance.registerCRS(
     'EPSG:3946',
@@ -36,13 +36,6 @@ instance.renderingOptions.enableEDL = true;
 instance.renderingOptions.enableInpainting = false;
 instance.renderingOptions.enablePointCloudOcclusion = false;
 
-// Create a custom material for our point cloud.
-const material = new PointCloudMaterial({ mode: MODE.INTENSITY });
-
-material.colorMap.min = 0;
-material.colorMap.max = 30;
-material.colorMap.colors = makeColorRamp('greys');
-
 let parameters = {
     ramp: 'greys',
     discrete: false,
@@ -56,8 +49,15 @@ let parameters = {
 const url = 'https://3d.oslandia.com/giro3d/3d-tiles/lidarhd_intensity/tileset.json';
 
 // Create the 3D tiles entity
-const pointcloud = new Tiles3D(new Tiles3DSource(url), {
-    material,
+const pointcloud = new Tiles3D({
+    url,
+    pointCloudMode: MODE.INTENSITY,
+    colorMap: new ColorMap({
+        colors: parameters.colors,
+        min: parameters.min,
+        max: parameters.max,
+        opacities: parameters.opacity,
+    }),
 });
 
 function placeCamera(position, lookAt) {
@@ -78,14 +78,18 @@ const tmpVec3 = new Vector3();
 
 // add pointcloud to scene
 function initializeCamera() {
-    const bbox = pointcloud.root.boundingVolume.box
-        .clone()
-        .applyMatrix4(pointcloud.root.matrixWorld);
+    const bbox = pointcloud.getBoundingBox();
 
     instance.view.camera.far = 2.0 * bbox.getSize(tmpVec3).length();
 
     const lookAt = bbox.getCenter(tmpVec3);
     lookAt.z = bbox.min.z;
+
+    // const axes = new AxesHelper(1000);
+
+    // instance.add(axes);
+    // axes.position.set(lookAt.x, lookAt.y, lookAt.z + 50);
+    // axes.updateMatrixWorld(true);
 
     placeCamera(new Vector3(221965, 6873398, 1951), lookAt);
 
@@ -116,10 +120,11 @@ updatePreview(parameters.colors);
 
 function updateColorRamp() {
     parameters.colors = makeColorRamp(parameters.ramp, parameters.discrete, parameters.invert);
-    material.colorMap.colors = parameters.colors;
-    material.colorMap.min = parameters.min;
-    material.colorMap.max = parameters.max;
-    material.colorMap.mode = parameters.mode;
+
+    pointcloud.colorMap.colors = parameters.colors;
+    pointcloud.colorMap.min = parameters.min;
+    pointcloud.colorMap.max = parameters.max;
+    pointcloud.colorMap.mode = parameters.mode;
 
     updateTransparency();
 
@@ -142,8 +147,8 @@ const [setRamp] = bindDropDown('ramp', v => {
     instance.notifyChange(pointcloud);
 });
 const updateBounds = bindColorMapBounds((min, max) => {
-    material.colorMap.min = min;
-    material.colorMap.max = max;
+    pointcloud.colorMap.min = min;
+    pointcloud.colorMap.max = max;
     instance.notifyChange(pointcloud);
 });
 
@@ -160,7 +165,7 @@ function updateTransparency() {
         opacities[i] = f(t);
     }
     parameters.opacity = opacities;
-    material.colorMap.opacity = opacities;
+    pointcloud.colorMap.opacity = opacities;
 }
 
 function setupCurveEditor() {
@@ -208,7 +213,7 @@ function resetToDefaults() {
         max: 30,
     };
 
-    material.colorMap.active = true;
+    pointcloud.colorMap.active = true;
 
     updateColorRamp();
 
@@ -250,13 +255,13 @@ function updateLabel(mouseEvent) {
             const { object, point, index } = result;
 
             // @ts-expect-error typing
-            if (object.isPointCloud) {
+            if (object.geometry) {
                 // @ts-expect-error typing
-                const intensity = object.getIntensity(index);
+                const intensity = object.geometry.getAttribute('intensity')?.getX(index);
 
                 if (intensity) {
-                    const color = material.colorMap.sample(intensity);
-                    const opacity = material.colorMap.sampleOpacity(intensity);
+                    const color = pointcloud.colorMap.sample(intensity);
+                    const opacity = pointcloud.colorMap.sampleOpacity(intensity);
 
                     if (opacity > 0.5) {
                         const hex = color.getHexString();

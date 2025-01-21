@@ -3,7 +3,6 @@ import { Color, DepthTexture, FloatType, NearestFilter, WebGLRenderTarget } from
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { TexturePass } from 'three/examples/jsm/postprocessing/TexturePass.js';
-import type PointCloud from '../core/PointCloud';
 import PointCloudRenderer from './PointCloudRenderer';
 import type RenderingOptions from './RenderingOptions';
 
@@ -12,6 +11,24 @@ const BUCKETS = {
     POINT_CLOUD: 1,
     TRANSPARENT: 2,
 };
+
+type RenderPipelineUserData = {
+    giro3dRenderPipeline?: {
+        usePointCloudPostProcessing: boolean;
+    };
+};
+
+/**
+ * Patches the object so that it will be included in the point
+ * cloud post-processing effects (i.e Eye dome lighting, etc)
+ */
+export function enablePointCloudPostProcessing(obj: Object3D) {
+    (obj.userData as RenderPipelineUserData) = {
+        giro3dRenderPipeline: {
+            usePointCloudPostProcessing: true,
+        },
+    };
+}
 
 /**
  * Can be a Mesh or a PointCloud for instance
@@ -238,7 +255,12 @@ export default class RenderPipeline {
             if (mesh.visible && material != null && material.visible) {
                 material.visible = false;
 
-                if ((mesh as PointCloud).isPointCloud) {
+                const userData = mesh.userData as RenderPipelineUserData;
+
+                const isPointCloudBucket =
+                    userData.giro3dRenderPipeline?.usePointCloudPostProcessing === true;
+
+                if (isPointCloudBucket) {
                     // The point cloud bucket will receive special effects
                     renderBuckets[BUCKETS.POINT_CLOUD].push(mesh);
                 } else if (mesh.material.transparent) {

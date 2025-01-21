@@ -9,11 +9,11 @@ import MapInspector from './MapInspector';
 import Panel from './Panel';
 import PointCloudInspector from './PointCloudInspector';
 import ShapeInspector from './ShapeInspector';
-import Tiles3dInspector from './Tiles3dInspector';
+import Tiles3DInspector from './Tiles3DInspector';
 
 const customInspectors: Record<string, typeof EntityInspector<Entity3D>> = {
     Map: MapInspector,
-    Tiles3D: Tiles3dInspector,
+    Tiles3D: Tiles3DInspector,
     AxisGrid: AxisGridInspector,
     Shape: ShapeInspector,
     FeatureCollection: FeatureCollectionInspector,

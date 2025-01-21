@@ -1,26 +1,24 @@
 import {
-    Vector3,
+    AmbientLight,
+    BoxGeometry,
+    DirectionalLight,
     Group,
     Mesh,
-    BoxGeometry,
-    SphereGeometry,
     MeshLambertMaterial,
-    DirectionalLight,
-    AmbientLight,
+    SphereGeometry,
+    Vector3,
 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
-import Map from '@giro3d/giro3d/entities/Map.js';
-import Tiles3D from '@giro3d/giro3d/entities/Tiles3D.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
+import Map from '@giro3d/giro3d/entities/Map.js';
+import Tiles3D from '@giro3d/giro3d/entities/Tiles3D.js';
 import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
-import Tiles3DSource from '@giro3d/giro3d/sources/Tiles3DSource.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
-import PointCloudMaterial from '@giro3d/giro3d/renderer/PointCloudMaterial.js';
 
 import StatusBar from './widgets/StatusBar';
 
@@ -104,9 +102,7 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
     .catch(console.error);
 
 // Create the 3D tiles entity
-const pointcloud = new Tiles3D(new Tiles3DSource('https://3d.oslandia.com/lidar_hd/tileset.json'), {
-    material: new PointCloudMaterial(),
-});
+const pointcloud = new Tiles3D({ url: 'https://3d.oslandia.com/lidar_hd/tileset.json' });
 
 pointcloud.name = 'point cloud';
 

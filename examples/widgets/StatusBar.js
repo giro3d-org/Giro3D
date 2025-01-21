@@ -152,6 +152,14 @@ function pick(mouseEvent) {
 }
 
 /**
+ * Updates the attribution in the status bar.
+ * @param {string} html The HTML content of the attributions.
+ */
+function setAttributionHtml(html) {
+    document.getElementById('attributions').innerHTML = html;
+}
+
+/**
  * @param {Instance} instance The instance.
  * @param {object} [options] The options.
  * @param {number} [options.radius] The radius of the picking.
@@ -196,4 +204,4 @@ function bind(instance, options = {}) {
     }
 }
 
-export default { bind };
+export default { bind, setAttributionHtml };
