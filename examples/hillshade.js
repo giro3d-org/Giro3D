@@ -1,7 +1,5 @@
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
-import TileWMS from 'ol/source/TileWMS.js';
-
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
@@ -9,7 +7,7 @@ import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
+import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 import { bindToggle } from './widgets/bindToggle.js';
@@ -19,6 +17,11 @@ import { MapLightingMode } from '@giro3d/giro3d/entities/MapLightingOptions.js';
 Instance.registerCRS(
     'EPSG:3946',
     '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
+);
+
+Instance.registerCRS(
+    'IGNF:WGS84G',
+    'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]',
 );
 
 const extent = new Extent('EPSG:3946', 1837816.94334, 1847692.32501, 5170036.4587, 5178412.82698);
@@ -39,49 +42,44 @@ const map = new Map({
 });
 instance.add(map);
 
-const colorSource = new TiledImageSource({
-    source: new TileWMS({
-        url: 'https://data.geopf.fr/wms-r',
-        projection: 'EPSG:3946',
-        params: {
-            LAYERS: ['ORTHOIMAGERY.ORTHOPHOTOS'],
-            FORMAT: 'image/jpeg',
-        },
-    }),
-});
+const url = 'https://data.geopf.fr/wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetCapabilities';
 
-const colorLayer = new ColorLayer({
-    name: 'orthophoto',
-    extent: extent.split(2, 1)[0],
-    source: colorSource,
-});
-map.addLayer(colorLayer);
+const noDataValue = -1000;
 
-const elevationSource = new TiledImageSource({
-    source: new TileWMS({
-        url: 'https://data.geopf.fr/wms-r',
-        projection: 'EPSG:3946',
-        crossOrigin: 'anonymous',
-        params: {
-            LAYERS: ['ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES'],
-            FORMAT: 'image/x-bil;bits=32',
-        },
-    }),
+/** @type {ColorLayer} */
+let colorLayer;
+
+// Let's build the elevation layer from the WMTS capabilities
+WmtsSource.fromCapabilities(url, {
+    layer: 'ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES',
     format: new BilFormat(),
-    noDataValue: -1000,
-});
+    noDataValue,
+})
+    .then(elevationWmts => {
+        map.addLayer(
+            new ElevationLayer({
+                name: 'elevation',
+                extent: map.extent,
+                minmax: { min: 100, max: 300 },
+                source: elevationWmts,
+            }),
+        );
+    })
+    .catch(console.error);
 
-const min = 149;
-const max = 621;
-
-const elevationLayer = new ElevationLayer({
-    name: 'elevation',
-    extent,
-    minmax: { min, max },
-    source: elevationSource,
-});
-
-map.addLayer(elevationLayer);
+// Let's build the color layer from the WMTS capabilities
+WmtsSource.fromCapabilities(url, {
+    layer: 'HR.ORTHOIMAGERY.ORTHOPHOTOS',
+})
+    .then(orthophotoWmts => {
+        colorLayer = new ColorLayer({
+            name: 'color',
+            extent: map.extent.split(2, 1)[0],
+            source: orthophotoWmts,
+        });
+        map.addLayer(colorLayer);
+    })
+    .catch(console.error);
 
 const mapCenter = extent.centerAsVector3();
 
