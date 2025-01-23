@@ -1,0 +1,406 @@
+---
+title: Physical lights and shadow maps
+shortdesc: Illustrates the use of three.js physically accurate lights and shadows on <code>Map</code>s.
+longdesc: three.js lights and shadows can be used on Maps.
+attribution: © <a target="_blank" href="https://www.mapbox.com/">Mapbox</a>
+tags: [map, terrain, physical lighting, shadow]
+---
+
+<div class="side-pane-with-status-bar" style="width: 20rem">
+    <!--Parameters -->
+    <div class="card-body">
+        <!-- Accordion -->
+        <div class="accordion" id="accordion">
+            <!-- Section: map -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button
+                        class="accordion-button"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#section-map"
+                        aria-expanded="true"
+                        aria-controls="section-map"
+                    >
+                        Options
+                    </button>
+                </h2>
+                <div
+                    id="section-map"
+                    class="accordion-collapse collapse show p-3"
+                    data-bs-parent="#accordion"
+                >
+                    <button type="button" id="reset" class="btn btn-warning w-100">
+                        <i class="bi bi-trash"></i>
+                        Reset scene
+                    </button>
+
+                    <button type="button" id="create-cube" class="btn btn-primary w-100 mt-2">
+                        <i class="bi bi-box"></i>
+                        Create cube
+                    </button>
+
+                    <!--  Shade color layers toggle -->
+                    <div class="form-check form-switch mt-2">
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            checked="true"
+                            role="switch"
+                            id="colorLayers"
+                            autocomplete="off"
+                        />
+                        <label class="form-check-label" for="colorLayers">Shade color layers</label>
+                    </div>
+
+                    <!--  Show helpers -->
+                    <div class="form-check form-switch mt-2">
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id="show-helpers"
+                            autocomplete="off"
+                        />
+                        <label class="form-check-label" for="show-helpers">Show helpers</label>
+                    </div>
+
+                    <label for="opacity" class="form-label mt-2">Color layer opacity</label>
+                    <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value="100"
+                        class="form-range"
+                        id="opacity"
+                        autocomplete="off"
+                    />
+                </div>
+            </div>
+
+            <!-- Section: lights -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button
+                        class="accordion-button"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#section-lights"
+                        aria-expanded="true"
+                        aria-controls="section-lights"
+                    >
+                        Lights
+                    </button>
+                </h2>
+                <div
+                    id="section-lights"
+                    class="accordion-collapse collapse show p-3"
+                    data-bs-parent="#accordion"
+                >
+                    <!-- Shading mode -->
+                    <div class="input-group">
+                        <label class="input-group-text" for="mode">Shading model</label>
+                        <select class="form-select" id="mode" autocomplete="off">
+                            <option value="-1">Disabled</option>
+                            <option value="0">Hillshading</option>
+                            <option value="1" selected>Light-based</option>
+                        </select>
+                    </div>
+
+                    <div id="shadingParams">
+                        <!-- Azimuth slider -->
+                        <label id="azimuth-label" for="azimuth" class="form-label mt-2"
+                            >Azimuth: 315°</label
+                        >
+                        <input
+                            type="range"
+                            min="0"
+                            max="360"
+                            step="1"
+                            value="315"
+                            class="form-range"
+                            id="azimuth"
+                            autocomplete="off"
+                        />
+
+                        <!-- Zenith slider -->
+                        <label id="zenith-label" for="zenith" class="form-label mt-2"
+                            >Zenith: 45°</label
+                        >
+                        <input
+                            type="range"
+                            min="0.1"
+                            step="1"
+                            max="90"
+                            value="45"
+                            class="form-range"
+                            id="zenith"
+                            autocomplete="off"
+                        />
+
+                        <!-- Z-factor -->
+                        <label for="zFactor" class="form-label mt-2">Z-factor</label>
+                        <input
+                            type="range"
+                            min="0"
+                            max="10"
+                            value="1"
+                            step="0.1"
+                            class="form-range"
+                            id="zFactor"
+                            autocomplete="off"
+                        />
+
+                        <div id="simpleGroup">
+                            <!-- Simple shading intensity -->
+                            <label for="intensity" class="form-label">Shade opacity</label>
+                            <input
+                                type="range"
+                                min="0"
+                                max="1"
+                                value="1"
+                                step="0.1"
+                                class="form-range"
+                                id="intensity"
+                                autocomplete="off"
+                            />
+                        </div>
+
+                        <!-- Group for light-based settings -->
+                        <div id="realisticGroup">
+                            <!-- Light type (only if realistic mode) -->
+                            <div class="input-group mt-2">
+                                <label class="input-group-text" for="light-type">Light type</label>
+                                <select class="form-select" id="light-type" autocomplete="off">
+                                    <option value="directional" selected>Directional</option>
+                                    <option value="point">Point</option>
+                                </select>
+                            </div>
+
+                            <!-- Directional light intensity -->
+                            <div class="mt-2" id="directional-light-params">
+                                <label for="directional-light-intensity" class="form-label"
+                                    >Light intensity</label
+                                >
+                                <input
+                                    type="number"
+                                    min="0"
+                                    max="99"
+                                    step="0.01"
+                                    value="3"
+                                    class="form-control"
+                                    id="directional-light-intensity"
+                                    autocomplete="off"
+                                />
+                            </div>
+
+                            <!-- Point light intensity -->
+                            <div class="mt-2" id="point-light-params">
+                                <label for="point-light-intensity" class="form-label"
+                                    >Light intensity</label
+                                >
+                                <input
+                                    type="number"
+                                    min="0"
+                                    max="20000000"
+                                    step="1000"
+                                    value="20000000"
+                                    class="form-control"
+                                    id="point-light-intensity"
+                                    autocomplete="off"
+                                />
+                            </div>
+
+                            <!-- Light color -->
+                            <label for="color" class="form-label mt-2">Light color</label>
+                            <input
+                                type="color"
+                                class="form-control form-control-color w-100"
+                                id="color"
+                                value="#ffffff"
+                                title="color"
+                            />
+
+                            <!-- Ambient light intensity -->
+                            <label for="ambient-intensity" class="form-label mt-2"
+                                >Ambient intensity</label
+                            >
+                            <input
+                                type="number"
+                                min="0"
+                                max="2"
+                                step="0.5"
+                                value="0.5"
+                                class="form-control"
+                                id="ambient-intensity"
+                                autocomplete="off"
+                            />
+
+                            <!-- Ambient light color -->
+                            <label for="ambient-color" class="form-label mt-2">Ambient color</label>
+                            <input
+                                type="color"
+                                class="form-control form-control-color w-100"
+                                id="ambient-color"
+                                value="#ffffff"
+                                title="color"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: shadows -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button
+                        class="accordion-button"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#section-shadows"
+                        aria-expanded="false"
+                        aria-controls="section-shadows"
+                    >
+                        Shadows
+                    </button>
+                </h2>
+
+                <div
+                    id="section-shadows"
+                    class="accordion-collapse collapse p-3"
+                    data-bs-parent="#accordion"
+                >
+                    <div id="group-shadows">
+                        <!--  Toggle shadows -->
+                        <div class="form-check form-switch">
+                            <input
+                                class="form-check-input"
+                                type="checkbox"
+                                checked="true"
+                                role="switch"
+                                id="enable-shadows"
+                                autocomplete="off"
+                            />
+                            <label class="form-check-label" for="enable-shadows"
+                                >Enable shadows</label
+                            >
+                        </div>
+
+                        <!-- Shadow type -->
+                        <div class="input-group mt-2">
+                            <label class="input-group-text" for="shadow-map-type"
+                                >Shadow type</label
+                            >
+
+                            <select class="form-select" id="shadow-map-type" autocomplete="off">
+                                <option value="0">BasicShadowMap</option>
+                                <option value="1">PCFShadowMap</option>
+                                <option value="2">PCFSoftShadowMap</option>
+                                <option value="3" selected>VSMShadowMap</option>
+                            </select>
+                        </div>
+
+                        <!-- Shadow map texture size -->
+                        <label for="shadow-map-resolution" class="form-label mt-2"
+                            >Texture size</label
+                        >
+                        <input
+                            type="number"
+                            min="64"
+                            max="4096"
+                            value="4096"
+                            class="form-control"
+                            id="shadow-map-resolution"
+                            autocomplete="off"
+                        />
+
+                        <!-- Shadow map camera volume size (meters) -->
+                        <label for="shadow-volume-size" class="form-label mt-2">Volume size</label>
+                        <input
+                            type="number"
+                            min="100"
+                            max="100000"
+                            value="100000"
+                            class="form-control"
+                            id="shadow-volume-size"
+                            autocomplete="off"
+                        />
+
+                        <!-- Shadow volume near plane -->
+                        <label for="shadow-volume-near" class="form-label mt-2"
+                            >Camera near plane</label
+                        >
+                        <input
+                            type="number"
+                            min="100"
+                            max="100000"
+                            value="5000"
+                            class="form-control"
+                            id="shadow-volume-near"
+                            autocomplete="off"
+                        />
+
+                        <!-- Shadow volume near plane -->
+                        <label for="shadow-volume-far" class="form-label mt-2"
+                            >Camera far plane</label
+                        >
+                        <input
+                            type="number"
+                            min="100"
+                            max="100000"
+                            value="50000"
+                            class="form-control"
+                            id="shadow-volume-far"
+                            autocomplete="off"
+                        />
+
+                        <!-- Shadow intensity -->
+                        <label for="shadow-map-intensity" class="form-label mt-2">Intensity</label>
+                        <input
+                            type="range"
+                            min="0"
+                            max="1"
+                            value="1"
+                            step="0.01"
+                            class="form-range"
+                            id="shadow-map-intensity"
+                            autocomplete="off"
+                        />
+
+                        <!-- Shadow map bias -->
+                        <label for="shadow-map-bias" class="form-label mt-2">Bias</label>
+                        <input
+                            type="number"
+                            min="-0.01"
+                            max="0.01"
+                            step="0.0001"
+                            value="-0.0001"
+                            class="form-control"
+                            id="shadow-map-bias"
+                            autocomplete="off"
+                        />
+
+                        <!-- Shadow map normal bias -->
+                        <label for="shadow-map-normal-bias" class="form-label mt-2"
+                            >Normal bias</label
+                        >
+                        <input
+                            type="number"
+                            min="-10"
+                            max="10"
+                            step="0.1"
+                            value="0"
+                            class="form-control"
+                            id="shadow-map-normal-bias"
+                            autocomplete="off"
+                        />
+                    </div>
+
+                    <div id="group-noshadows" style="display: none">
+                        Shadows are only available in light-based shading mode
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
