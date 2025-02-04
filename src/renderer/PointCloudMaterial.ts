@@ -500,6 +500,8 @@ class PointCloudMaterial extends ShaderMaterial {
 
     onBeforeRender() {
         this.uniforms.opacity.value = this.opacity;
+
+        this.transparent = this.opacity < 1 || this.colorMap.opacity != null;
     }
 
     update(source?: PointCloudMaterial) {
