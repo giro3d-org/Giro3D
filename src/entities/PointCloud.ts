@@ -247,7 +247,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
     private _showNodeDataVolumes = false;
     private _disposed = false;
     private _pointBudget: number | null = null;
-    private _colorMap: ColorMap = DEFAULT_COLORMAP;
+    private _colorMap: ColorMap = DEFAULT_COLORMAP.clone();
 
     // Available after initialization
     private _rootNode: PointCloudNode | null = null;

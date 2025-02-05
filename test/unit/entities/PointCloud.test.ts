@@ -28,6 +28,14 @@ function mockSource(options?: {
 
 describe('PointCloud', () => {
     describe('constructor', () => {
+        it('should clone the default colormap', () => {
+            const source = mockSource();
+            const entity1 = new PointCloud({ source, cleanupDelay: 1234 });
+            const entity2 = new PointCloud({ source, cleanupDelay: 1234 });
+
+            expect(entity1.colorMap).not.toBe(entity2.colorMap);
+        });
+
         it('should set properties', () => {
             const source = mockSource();
             const entity = new PointCloud({ source, cleanupDelay: 1234 });

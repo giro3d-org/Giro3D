@@ -288,6 +288,19 @@ class ColorMap extends EventDispatcher<ColorMapEvents> {
     }
 
     /**
+     * Clones this colormap.
+     */
+    clone() {
+        return new ColorMap({
+            colors: [...this.colors],
+            min: this.min,
+            max: this.max,
+            mode: this._mode,
+            opacities: this._opacity != null ? [...this._opacity] : undefined,
+        });
+    }
+
+    /**
      * Disposes the texture owned by this color map.
      */
     dispose() {

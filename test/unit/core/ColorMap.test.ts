@@ -208,6 +208,34 @@ describe('ColorMap', () => {
         });
     });
 
+    describe('clone', () => {
+        it('should return a deep clone', () => {
+            const red = new Color('red');
+            const green = new Color('green');
+            const blue = new Color('blue');
+
+            const colors = [red, green, blue];
+
+            const min = 243;
+            const max = 1390313;
+            const mode = ColorMapMode.Aspect;
+            const opacities = [0, 1, 0.5];
+
+            const original = new ColorMap({ colors, min, max, mode, opacities });
+            const clone = original.clone();
+
+            expect(clone.colors).not.toBe(original.colors);
+            expect(clone.colors).toEqual(original.colors);
+
+            expect(clone.opacity).not.toBe(original.opacity);
+            expect(clone.opacity).toEqual(original.opacity);
+
+            expect(clone.min).toEqual(original.min);
+            expect(clone.max).toEqual(original.max);
+            expect(clone.mode).toEqual(original.mode);
+        });
+    });
+
     describe('getTexture', () => {
         it('should return the cached texture, if any', () => {
             const tex = { id: 1 };
