@@ -43,7 +43,8 @@ export interface StaticImageSourceEvents extends ImageSourceEvents {
 /**
  * An {@link ImageSource} that displays a single, static image.
  *
- * The image must be either a PNG, JPG or WebP file.
+ * The image must be either a PNG, JPG or WebP file, whose dimensions are not greater
+ * than the maximal texture size allowed by WebGL on this browser.
  */
 export default class StaticImageSource extends ImageSource<StaticImageSourceEvents> {
     readonly isStaticImageSource = true as const;
