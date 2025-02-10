@@ -27,7 +27,7 @@ instance.view.setControls(controls);
 const map = new Map({
     extent,
     backgroundColor: 'gray',
-    hillshading: true,
+    lighting: true,
 });
 
 instance.add(map);

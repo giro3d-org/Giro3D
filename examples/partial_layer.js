@@ -25,7 +25,7 @@ const instance = new Instance({
     crs: 'EPSG:3946',
 });
 
-const map = new Map({ extent, hillshading: true, backgroundColor: 'white' });
+const map = new Map({ extent, lighting: true, backgroundColor: 'white' });
 instance.add(map);
 
 // Adds a WMS imagery layer

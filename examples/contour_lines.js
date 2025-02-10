@@ -32,9 +32,9 @@ const instance = new Instance({
 
 const map = new Map({
     extent,
-    hillshading: {
+    lighting: {
         enabled: true,
-        intensity: 0.5,
+        hillshadeIntensity: 0.5,
     },
     side: DoubleSide,
     backgroundColor: 'white',

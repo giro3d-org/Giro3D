@@ -1,5 +1,6 @@
 import type {
     IUniform,
+    Light,
     Side,
     Texture,
     TextureDataType,
@@ -14,6 +15,7 @@ import {
     RGBAFormat,
     ShaderMaterial,
     Uniform,
+    UniformsLib,
     UnsignedByteType,
     Vector2,
     Vector3,
@@ -23,8 +25,8 @@ import type ColorimetryOptions from '../core/ColorimetryOptions';
 import type ColorMapMode from '../core/ColorMapMode';
 import type ContourLineOptions from '../core/ContourLineOptions';
 import type ElevationRange from '../core/ElevationRange';
+import type Extent from '../core/geographic/Extent';
 import type GraticuleOptions from '../core/GraticuleOptions';
-import type HillshadingOptions from '../core/HillshadingOptions';
 import type BlendingMode from '../core/layer/BlendingMode';
 import type ColorLayer from '../core/layer/ColorLayer';
 import type ElevationLayer from '../core/layer/ElevationLayer';
@@ -37,6 +39,8 @@ import { type GetMemoryUsageContext } from '../core/MemoryUsage';
 import OffsetScale from '../core/OffsetScale';
 import Rect from '../core/Rect';
 import type TerrainOptions from '../core/TerrainOptions';
+import type MapLightingOptions from '../entities/MapLightingOptions';
+import { MapLightingMode } from '../entities/MapLightingOptions';
 import { getColor } from '../utils/predicates';
 import TextureGenerator from '../utils/TextureGenerator';
 import { nonNull } from '../utils/tsutils';
@@ -51,6 +55,8 @@ import TileFS from './shader/TileFS.glsl';
 import TileVS from './shader/TileVS.glsl';
 
 const EMPTY_IMAGE_SIZE = 16;
+
+const tmpDims = new Vector2();
 
 interface ElevationTexture extends Texture {
     /**
@@ -173,9 +179,9 @@ export interface MaterialOptions {
      */
     contourLines: Required<ContourLineOptions>;
     /**
-     * Hillshading options.
+     * Lighting options.
      */
-    hillshading: Required<HillshadingOptions>;
+    lighting: Required<MapLightingOptions>;
     /**
      * Graticule options.
      */
@@ -220,7 +226,25 @@ export interface MaterialOptions {
     depthTest: boolean;
 }
 
+enum InternalShadingMode {
+    Disabled = 0,
+    Simple = 1,
+    Realistic = 2,
+}
+
+function mapLightingMode(input: MapLightingOptions): InternalShadingMode {
+    if (input.enabled !== true) {
+        return InternalShadingMode.Disabled;
+    }
+
+    if (input.mode === MapLightingMode.LightBased) {
+        return InternalShadingMode.Realistic;
+    }
+    return InternalShadingMode.Simple;
+}
+
 type HillshadingUniform = {
+    mode: InternalShadingMode;
     intensity: number;
     zFactor: number;
     zenith: number;
@@ -275,52 +299,80 @@ type Defines = {
     ELEVATION_LAYER?: 1;
     ENABLE_LAYER_MASKS?: 1;
     ENABLE_OUTLINES?: 1;
-    ENABLE_HILLSHADING?: 1;
     APPLY_SHADING_ON_COLORLAYERS?: 1;
     ENABLE_GRATICULE?: 1;
     USE_ATLAS_TEXTURE?: 1;
+
+    /** Normal color rendering */
+    COLOR_RENDER?: 1;
+    /** For depth-based effects, such as shadow maps for directional lights */
+    DEPTH_RENDER?: 1;
+    /** For distance-based effects, such as shadow maps for point lights */
+    DISTANCE_RENDER?: 1;
+
     /** The number of _visible_ color layers */
     VISIBLE_COLOR_LAYER_COUNT: number;
 };
 
-interface Uniforms {
-    opacity: IUniform<number>;
-    segments: IUniform<number>;
-    tileOutlineColor: IUniform<Color>;
-    contourLines: IUniform<ContourLineUniform>;
-    graticule: IUniform<GraticuleUniform>;
-    hillshading: IUniform<HillshadingUniform>;
-    elevationRange: IUniform<Vector2>;
-    tileDimensions: IUniform<Vector2>;
-    elevationTexture: IUniform<Texture | null>;
-    atlasTexture: IUniform<Texture | null>;
-    colorTextures: IUniform<Texture[]>;
+type ThreeUniforms = typeof UniformsLib.common & typeof UniformsLib.fog & typeof UniformsLib.lights;
+
+type Uniforms = ThreeUniforms & {
+    // The id of the tile encoded into a single float
     uuid: IUniform<number>;
-    backgroundColor: IUniform<Vector4>;
-    layers: IUniform<ColorLayerUniform[]>;
-    elevationLayer: IUniform<LayerUniform>;
-    brightnessContrastSaturation: IUniform<Vector3>;
+
+    // Lighting & shading
+    hillshading: IUniform<HillshadingUniform>;
+
     renderingState: IUniform<RenderingState>;
+
+    segments: IUniform<number>;
+    extent: IUniform<Vector4>;
+    tileDimensions: IUniform<Vector2>;
     neighbours: IUniform<NeighbourUniform[]>;
     neighbourTextures: IUniform<(Texture | null)[]>;
+
+    elevationRange: IUniform<Vector2>;
+
+    graticule: IUniform<GraticuleUniform>;
+
+    contourLines: IUniform<ContourLineUniform>;
+
+    backgroundColor: IUniform<Vector4>;
+    tileOutlineColor: IUniform<Color>;
+
+    brightnessContrastSaturation: IUniform<Vector3>;
+
     colorMapAtlas: IUniform<Texture | null>;
     layersColorMaps: IUniform<ColorMapUniform[]>;
     elevationColorMap: IUniform<ColorMapUniform>;
 
-    fogDensity: IUniform<number>;
-    fogNear: IUniform<number>;
-    fogFar: IUniform<number>;
-    fogColor: IUniform<Color>;
-}
+    elevationTexture: IUniform<Texture | null>;
+    atlasTexture: IUniform<Texture | null>;
+    colorTextures: IUniform<Texture[]>;
+
+    layers: IUniform<ColorLayerUniform[]>;
+    elevationLayer: IUniform<LayerUniform>;
+
+    // For distance-based rendering (point light shadow maps)
+    referencePosition: IUniform<Vector3>;
+    nearDistance: IUniform<number>;
+    farDistance: IUniform<number>;
+};
 
 class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
     readonly isMemoryUsage = true as const;
+
+    // Used for point-light shadow maps
+    isMeshDistanceMaterial = false;
+    light?: Light;
+
     private readonly _getIndexFn: (arg0: Layer) => number;
     private readonly _renderer: WebGLRenderer;
     private readonly _colorLayers: ColorLayer[] = [];
     private readonly _atlasInfo: AtlasInfo;
     private readonly _forceTextureAtlas: boolean;
     private readonly _maxTextureImageUnits: number;
+    private readonly _textureSize: Vector2;
     private readonly _texturesInfo: {
         color: {
             infos: TextureInfo[];
@@ -340,7 +392,6 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
     private _colorMapAtlas: ColorMapAtlas | null = null;
     private _composerDataType: TextureDataType = UnsignedByteType;
 
-    // @ts-expect-error property is not assignable.
     override readonly uniforms: Uniforms;
 
     override readonly defines: Defines = {
@@ -372,10 +423,14 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         /** The texture data type to be used for the atlas texture. */
         textureDataType: TextureDataType;
         hasElevationLayer: boolean;
+        tileDimensions: Vector2;
+        extent: Extent;
+        textureSize: Vector2;
     }) {
         super({ clipping: true, glslVersion: GLSL3 });
 
         this._atlasInfo = params.atlasInfo;
+        this._textureSize = params.textureSize;
         this.fog = true;
         this._maxTextureImageUnits = params.maxTextureImageUnits;
         this._getIndexFn = params.getIndexFn;
@@ -388,6 +443,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         MaterialUtils.setDefine(this, 'DISCARD_NODATA_ELEVATION', options.discardNoData);
         MaterialUtils.setDefine(this, 'ENABLE_ELEVATION_RANGE', options.elevationRange != null);
         MaterialUtils.setDefineValue(this, 'VISIBLE_COLOR_LAYER_COUNT', 0);
+        MaterialUtils.setDefine(this, 'COLOR_RENDER', true);
 
         this.fragmentShader = TileFS;
         this.vertexShader = TileVS;
@@ -404,6 +460,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         };
 
         this.side = options.side;
+        this.lights = true;
         this._renderer = params.renderer;
         this._forceTextureAtlas = options.forceTextureAtlases ?? false;
         this._hasElevationLayer = params.hasElevationLayer;
@@ -416,42 +473,36 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
 
         const elevInfo = this._texturesInfo.elevation;
 
+        const extent = params.extent;
+
+        const { width, height } = extent.dimensions(tmpDims);
+
         this.uniforms = {
+            // Automatically updated by THREE.js
+            ...UniformsLib.common,
+            ...UniformsLib.lights,
+            ...UniformsLib.fog,
+
+            // Uniforms for point light shadow maps
+            referencePosition: new Uniform(new Vector3()),
+            nearDistance: new Uniform(1),
+            farDistance: new Uniform(1000),
+
+            uuid: new Uniform(0),
+
             hillshading: new Uniform<HillshadingUniform>({
+                mode: mapLightingMode(options.lighting),
                 zenith: DEFAULT_ZENITH,
                 azimuth: DEFAULT_AZIMUTH,
                 intensity: DEFAULT_HILLSHADING_INTENSITY,
                 zFactor: DEFAULT_HILLSHADING_ZFACTOR,
             }),
 
-            tileOutlineColor: new Uniform(new Color(DEFAULT_OUTLINE_COLOR)),
-
-            fogDensity: new Uniform(0.00025),
-            fogNear: new Uniform(1),
-            fogFar: new Uniform(2000),
-            fogColor: new Uniform(new Color(0xffffff)),
-
-            segments: new Uniform(options.segments ?? 8),
-
-            contourLines: new Uniform({
-                thickness: 1,
-                primaryInterval: 100,
-                secondaryInterval: 20,
-                color: new Vector4(0, 0, 0, 1),
-            }),
-
-            graticule: new Uniform<GraticuleUniform>({
-                color: new Vector4(0, 0, 0, 1),
-                thickness: DEFAULT_GRATICULE_THICKNESS,
-                position: new Vector4(0, 0, DEFAULT_GRATICULE_STEP, DEFAULT_GRATICULE_STEP),
-            }),
-
-            elevationRange: new Uniform(elevationRange),
-
             renderingState: new Uniform(RenderingState.FINAL),
 
-            tileDimensions: new Uniform(new Vector2()),
-            brightnessContrastSaturation: new Uniform(new Vector3(0, 1, 1)),
+            segments: new Uniform(options.segments ?? 8),
+            extent: new Uniform(new Vector4(extent.west, extent.south, width, height)),
+            tileDimensions: new Uniform(params.tileDimensions),
             neighbours: new Uniform(
                 repeat<NeighbourUniform>(
                     {
@@ -463,26 +514,28 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
             ),
             neighbourTextures: new Uniform([null, null, null, null, null, null, null, null]),
 
-            // Elevation texture
-            elevationTexture: new Uniform(elevInfo.texture),
-            elevationLayer: new Uniform<LayerUniform>({
-                brightnessContrastSaturation: new Vector3(0, 1, 1),
-                color: new Vector4(0, 0, 0, 0),
-                elevationRange: new Vector2(0, 0),
-                offsetScale: new OffsetScale(0, 0, 0, 0),
-                textureSize: new Vector2(0, 0),
+            elevationRange: new Uniform(elevationRange),
+
+            graticule: new Uniform<GraticuleUniform>({
+                color: new Vector4(0, 0, 0, 1),
+                thickness: DEFAULT_GRATICULE_THICKNESS,
+                position: new Vector4(0, 0, DEFAULT_GRATICULE_STEP, DEFAULT_GRATICULE_STEP),
             }),
 
-            // Color textures's layer
-            atlasTexture: new Uniform(this._texturesInfo.color.atlasTexture),
+            contourLines: new Uniform({
+                thickness: 1,
+                primaryInterval: 100,
+                secondaryInterval: 20,
+                color: new Vector4(0, 0, 0, 1),
+            }),
 
-            colorTextures: new Uniform([]),
+            backgroundColor: new Uniform(new Vector4()),
+            tileOutlineColor: new Uniform(new Color(DEFAULT_OUTLINE_COLOR)),
 
-            // Describe the properties of each color layer (offsetScale, color...).
-            layers: new Uniform([]),
-            layersColorMaps: new Uniform([]),
+            brightnessContrastSaturation: new Uniform(new Vector3(0, 1, 1)),
+
             colorMapAtlas: new Uniform(null),
-
+            layersColorMaps: new Uniform([]),
             elevationColorMap: new Uniform<ColorMapUniform>({
                 mode: 0,
                 offset: 0,
@@ -490,10 +543,19 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
                 min: 0,
             }),
 
-            uuid: new Uniform(0),
+            elevationTexture: new Uniform(elevInfo.texture),
+            atlasTexture: new Uniform(this._texturesInfo.color.atlasTexture),
+            colorTextures: new Uniform([]),
 
-            backgroundColor: new Uniform(new Vector4()),
-            opacity: new Uniform(1.0),
+            // Describe the properties of each color layer (offsetScale, color...).
+            layers: new Uniform([]),
+            elevationLayer: new Uniform<LayerUniform>({
+                brightnessContrastSaturation: new Vector3(0, 1, 1),
+                color: new Vector4(0, 0, 0, 0),
+                elevationRange: new Vector2(0, 0),
+                offsetScale: new OffsetScale(0, 0, 0, 0),
+                textureSize: new Vector2(0, 0),
+            }),
         };
 
         this.uniformsNeedUpdate = true;
@@ -894,95 +956,104 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         }
     }
 
-    update(materialOptions?: MaterialOptions) {
-        if (materialOptions) {
-            this._options = materialOptions;
+    private updateGraticuleUniforms(opts: MaterialOptions) {
+        const graticule = opts.graticule;
+        const enabled = graticule.enabled ?? false;
+        MaterialUtils.setDefine(this, 'ENABLE_GRATICULE', enabled);
+        if (enabled) {
+            const uniform = this.uniforms.graticule.value;
+            uniform.thickness = graticule.thickness;
+            uniform.position.set(
+                graticule.xOffset,
+                graticule.yOffset,
+                graticule.xStep,
+                graticule.yStep,
+            );
+            const rgb = getColor(graticule.color);
+            uniform.color.set(rgb.r, rgb.g, rgb.b, graticule.opacity ?? 0);
+        }
+    }
 
-            this.depthTest = materialOptions.depthTest;
+    private updateContourLineUniforms(opts: MaterialOptions) {
+        const contourLines = opts.contourLines;
+
+        if (contourLines.enabled) {
+            const c = getColor(contourLines.color);
+            const a = contourLines.opacity;
+
+            this.uniforms.contourLines.value = {
+                thickness: contourLines.thickness ?? 1,
+                primaryInterval: contourLines.interval ?? 100,
+                secondaryInterval: contourLines.secondaryInterval ?? 0,
+                color: new Vector4(c.r, c.g, c.b, a),
+            };
+        }
+
+        MaterialUtils.setDefine(this, 'ENABLE_CONTOUR_LINES', contourLines.enabled);
+    }
+
+    private updateColorUniforms(opts: MaterialOptions) {
+        const a = opts.backgroundOpacity;
+        const c = opts.backgroundColor;
+        const vec4 = new Vector4(c.r, c.g, c.b, a);
+        this.uniforms.backgroundColor.value.copy(vec4);
+
+        const colorimetry = opts.colorimetry;
+        this.uniforms.brightnessContrastSaturation.value.set(
+            colorimetry.brightness,
+            colorimetry.contrast,
+            colorimetry.saturation,
+        );
+    }
+
+    private updateHillshadingUniforms(opts: MaterialOptions) {
+        const params = opts.lighting;
+
+        MaterialUtils.setDefine(this, 'APPLY_SHADING_ON_COLORLAYERS', !params.elevationLayersOnly);
+
+        const uniform = this.uniforms.hillshading.value;
+
+        if (params.mode === MapLightingMode.Hillshade) {
+            uniform.zenith = params.hillshadeZenith ?? DEFAULT_ZENITH;
+            uniform.azimuth = params.hillshadeAzimuth ?? DEFAULT_AZIMUTH;
+            uniform.intensity = params.hillshadeIntensity ?? 1;
+        }
+
+        uniform.mode = mapLightingMode(params);
+        uniform.zFactor = params.zFactor ?? 1;
+    }
+
+    update(opts?: MaterialOptions) {
+        if (opts) {
+            this._options = opts;
+
+            this.depthTest = opts.depthTest;
 
             if (this._colorMapAtlas) {
                 this.updateColorMaps();
             }
 
-            // Background
-            const a = materialOptions.backgroundOpacity;
-            const c = materialOptions.backgroundColor;
-            const vec4 = new Vector4(c.r, c.g, c.b, a);
-            this.uniforms.backgroundColor.value.copy(vec4);
+            this.updateColorUniforms(opts);
+            this.updateGraticuleUniforms(opts);
+            this.updateContourLineUniforms(opts);
+            this.updateHillshadingUniforms(opts);
 
-            // Graticule
-            const options = materialOptions.graticule;
-            const enabled = options.enabled ?? false;
-            MaterialUtils.setDefine(this, 'ENABLE_GRATICULE', enabled);
-            if (enabled) {
-                const uniform = this.uniforms.graticule.value;
-                uniform.thickness = options.thickness;
-                uniform.position.set(
-                    options.xOffset,
-                    options.yOffset,
-                    options.xStep,
-                    options.yStep,
-                );
-                const rgb = getColor(options.color);
-                uniform.color.set(rgb.r, rgb.g, rgb.b, options.opacity ?? 0);
-            }
-
-            // Colorimetry
-            const opts = materialOptions.colorimetry;
-            this.uniforms.brightnessContrastSaturation.value.set(
-                opts.brightness,
-                opts.contrast,
-                opts.saturation,
-            );
-
-            // Contour lines
-            const contourLines = materialOptions.contourLines;
-            if (contourLines.enabled) {
-                const c = getColor(contourLines.color);
-                const a = contourLines.opacity;
-
-                this.uniforms.contourLines.value = {
-                    thickness: contourLines.thickness ?? 1,
-                    primaryInterval: contourLines.interval ?? 100,
-                    secondaryInterval: contourLines.secondaryInterval ?? 0,
-                    color: new Vector4(c.r, c.g, c.b, a),
-                };
-            }
-            MaterialUtils.setDefine(this, 'ENABLE_CONTOUR_LINES', contourLines.enabled);
-
-            if (materialOptions.elevationRange) {
-                const { min, max } = materialOptions.elevationRange;
+            if (opts.elevationRange) {
+                const { min, max } = opts.elevationRange;
                 this.uniforms.elevationRange.value.set(min, max);
             }
 
             MaterialUtils.setDefine(this, 'ELEVATION_LAYER', this._elevationLayer?.visible);
-            MaterialUtils.setDefine(this, 'ENABLE_OUTLINES', materialOptions.showTileOutlines);
-            if (materialOptions.showTileOutlines) {
-                this.uniforms.tileOutlineColor.value = getColor(materialOptions.tileOutlineColor);
+            MaterialUtils.setDefine(this, 'ENABLE_OUTLINES', opts.showTileOutlines);
+            if (opts.showTileOutlines) {
+                this.uniforms.tileOutlineColor.value = getColor(opts.tileOutlineColor);
             }
-            MaterialUtils.setDefine(
-                this,
-                'DISCARD_NODATA_ELEVATION',
-                materialOptions.discardNoData,
-            );
+            MaterialUtils.setDefine(this, 'DISCARD_NODATA_ELEVATION', opts.discardNoData);
 
-            MaterialUtils.setDefine(this, 'TERRAIN_DEFORMATION', materialOptions.terrain.enabled);
-            MaterialUtils.setDefine(this, 'STITCHING', materialOptions.terrain.stitching);
+            MaterialUtils.setDefine(this, 'TERRAIN_DEFORMATION', opts.terrain.enabled);
+            MaterialUtils.setDefine(this, 'STITCHING', opts.terrain.stitching);
 
-            const hillshadingParams = materialOptions.hillshading;
-            const uniform = this.uniforms.hillshading.value;
-            uniform.zenith = hillshadingParams.zenith ?? DEFAULT_ZENITH;
-            uniform.azimuth = hillshadingParams.azimuth ?? DEFAULT_AZIMUTH;
-            uniform.intensity = hillshadingParams.intensity ?? 1;
-            uniform.zFactor = hillshadingParams.zFactor ?? 1;
-            MaterialUtils.setDefine(this, 'ENABLE_HILLSHADING', hillshadingParams.enabled);
-            MaterialUtils.setDefine(
-                this,
-                'APPLY_SHADING_ON_COLORLAYERS',
-                !hillshadingParams.elevationLayersOnly,
-            );
-
-            const newSide = materialOptions.side;
+            const newSide = opts.side;
             if (this.side !== newSide) {
                 this.side = newSide;
                 this.needsUpdate = true;

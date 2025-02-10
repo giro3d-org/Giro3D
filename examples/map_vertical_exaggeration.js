@@ -38,11 +38,11 @@ const extent = new Extent(
 const map = new Map({
     extent,
     backgroundColor: 'gray',
-    hillshading: {
+    lighting: {
         enabled: true,
-        intensity: 0.75,
+        hillshadeIntensity: 0.75,
         zFactor: 1,
-        azimuth: 254,
+        hillshadeAzimuth: 254,
     },
     discardNoData: true,
     side: DoubleSide,
@@ -241,10 +241,10 @@ const [setVerticalExaggeration] = bindSlider('vertical-exaggeration', v => {
     // update all the objects in the scene as well.
     instance.scene.updateWorldMatrix(true, true);
 
-    // By default, vertical exaggeration has no effect on shading,
+    // By default, vertical exaggeration has no effect on hillshade,
     // so let's apply it to hillshading to increase the shading intensity
     // when the vertical exaggeration increases.
-    map.hillshading.zFactor = v;
+    map.lighting.zFactor = v;
 
     instance.notifyChange(map);
 

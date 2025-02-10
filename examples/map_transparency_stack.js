@@ -36,7 +36,7 @@ const instance = new Instance({
     backgroundColor: null,
 });
 
-const terrainMap = new Map({ extent, side: DoubleSide, hillshading: true });
+const terrainMap = new Map({ extent, side: DoubleSide, lighting: true });
 instance.add(terrainMap);
 
 const min = 100;

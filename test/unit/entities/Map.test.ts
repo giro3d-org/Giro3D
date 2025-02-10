@@ -70,47 +70,47 @@ describe('Map', () => {
             expect(() => new Map({ extent: invalid })).toThrow(/Invalid extent/);
         });
 
-        it('should honor hillshading parameters when hillshading is a boolean', () => {
+        it('should honor lighting parameters when lighting is a boolean', () => {
             const m = new Map({
                 extent,
-                hillshading: true,
+                lighting: true,
             });
 
-            expect(m.hillshading.enabled).toEqual(true);
-            expect(m.hillshading.elevationLayersOnly).toEqual(false);
-            expect(m.hillshading.zenith).toEqual(DEFAULT_ZENITH);
-            expect(m.hillshading.azimuth).toEqual(DEFAULT_AZIMUTH);
+            expect(m.lighting.enabled).toEqual(true);
+            expect(m.lighting.elevationLayersOnly).toEqual(false);
+            expect(m.lighting.hillshadeZenith).toEqual(DEFAULT_ZENITH);
+            expect(m.lighting.hillshadeAzimuth).toEqual(DEFAULT_AZIMUTH);
         });
 
-        it('should honor hillshading parameters', () => {
+        it('should honor lighting parameters', () => {
             const m1 = new Map({
                 extent,
-                hillshading: {
+                lighting: {
                     enabled: true,
                     elevationLayersOnly: true,
-                    zenith: 32,
-                    azimuth: 98,
+                    hillshadeZenith: 32,
+                    hillshadeAzimuth: 98,
                 },
             });
 
-            expect(m1.hillshading.enabled).toEqual(true);
-            expect(m1.hillshading.elevationLayersOnly).toEqual(true);
-            expect(m1.hillshading.zenith).toEqual(32);
-            expect(m1.hillshading.azimuth).toEqual(98);
+            expect(m1.lighting.enabled).toEqual(true);
+            expect(m1.lighting.elevationLayersOnly).toEqual(true);
+            expect(m1.lighting.hillshadeZenith).toEqual(32);
+            expect(m1.lighting.hillshadeAzimuth).toEqual(98);
 
             // Check if the map assigns default values to parameters
             const m2 = new Map({
                 extent,
-                hillshading: {
+                lighting: {
                     enabled: true,
-                    azimuth: 98,
+                    hillshadeAzimuth: 98,
                 },
             });
 
-            expect(m2.hillshading.enabled).toEqual(true);
-            expect(m2.hillshading.elevationLayersOnly).toEqual(false);
-            expect(m2.hillshading.zenith).toEqual(DEFAULT_ZENITH);
-            expect(m2.hillshading.azimuth).toEqual(98);
+            expect(m2.lighting.enabled).toEqual(true);
+            expect(m2.lighting.elevationLayersOnly).toEqual(false);
+            expect(m2.lighting.hillshadeZenith).toEqual(DEFAULT_ZENITH);
+            expect(m2.lighting.hillshadeAzimuth).toEqual(98);
         });
 
         it('should honor contourLines parameter when contourLines is a boolean', () => {

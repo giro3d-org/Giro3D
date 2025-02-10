@@ -52,9 +52,9 @@ const extent = Extent.fromCenterAndSize('EPSG:2154', { x: 972_027, y: 6_299_491 
 const map = new Map({
     extent,
     backgroundColor: 'gray',
-    hillshading: {
+    lighting: {
         enabled: true,
-        intensity: 0.6,
+        hillshadeIntensity: 0.6,
         elevationLayersOnly: true,
     },
     side: DoubleSide,

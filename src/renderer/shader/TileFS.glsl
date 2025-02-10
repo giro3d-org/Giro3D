@@ -1,6 +1,15 @@
+#define LAMBERT
+
 #include <giro3d_precision_qualifiers>
 #include <giro3d_fragment_shader_header>
 #include <giro3d_common>
+
+#include <common>
+#include <packing>
+#include <dithering_pars_fragment>
+#include <lights_pars_begin>
+#include <lights_lambert_pars_fragment>
+#include <shadowmap_pars_fragment>
 
 #include <logdepthbuf_pars_fragment>
 #include <clipping_planes_pars_fragment>
@@ -19,8 +28,17 @@ const int STATE_FINAL = 0;
 const int STATE_PICKING = 1;
 
 varying vec2        vUv; // The input UV
-varying vec3        wPosition; // The input world position
-varying vec3        vViewPosition;
+varying vec3        vWorldPosition; // The input world position
+varying vec3        vWorldNormal;
+varying vec3        vNormal;
+
+// For depth-based rendering (directional light shadow maps)
+varying vec2        vHighPrecisionZW;
+
+// Distance-based rendering (point light shadow maps)
+uniform float       nearDistance;
+uniform float       farDistance;
+uniform vec3        referencePosition;
 
 uniform int         renderingState; // Current rendering state (default is STATE_FINAL)
 uniform int         uuid;           // The ID of the tile mesh (used for the STATE_PICKING rendering state)
@@ -29,21 +47,20 @@ uniform float       opacity;        // The entire map opacity
 uniform vec4        backgroundColor; // The background color
 uniform vec3        brightnessContrastSaturation; // Brightness/contrast/saturation for the entire map
 
+uniform vec4        extent; // The extent of the tile in local coordinates (e.g meters for cartesian, or degrees for geographic)
+
 #include <giro3d_colormap_pars_fragment>
 #include <giro3d_outline_pars_fragment>
 #include <giro3d_graticule_pars_fragment>
 #include <giro3d_compose_layers_pars_fragment>
 #include <giro3d_contour_line_pars_fragment>
+#include <giro3d_hillshading_pars_fragment>
 
 #if defined(ENABLE_ELEVATION_RANGE)
 uniform vec2        elevationRange; // Optional elevation range for the whole tile. Not to be confused with elevation range per layer.
 #endif
 
-#if defined(ENABLE_HILLSHADING)
-uniform Hillshading hillshading;
-#endif
-
-uniform vec2        tileDimensions; // The dimensions of the tile, in CRS units
+uniform vec2        tileDimensions; // The dimensions of the tile, in linear units (not degrees)
 
 #if defined(ELEVATION_LAYER)
 uniform sampler2D   elevationTexture;
@@ -51,22 +68,52 @@ uniform LayerInfo   elevationLayer;
 uniform ColorMap    elevationColorMap;  // The elevation layer's optional color map
 #endif
 
-void applyHillshading(float hillshade) {
-    // Hillshading expects an sRGB color space, so we have to convert the color
+void applyDiffuse(vec3 diffuse) {
+    // Shading expects an sRGB color space, so we have to convert the color
     // temporarily to sRGB, then back to sRGB-linear. Otherwise the result
     // looks washed out and lacks contrast.
     gl_FragColor = sRGBTransferOETF(gl_FragColor);
-    gl_FragColor.rgb *= hillshade;
+    gl_FragColor.rgb *= diffuse;
     gl_FragColor = sRGBToLinear(gl_FragColor);
 }
 
-void main() {
-    #include <clipping_planes_fragment>
+void renderDistance() {
+    // Distance-based rendering for point light shadows
+    float dist = length( vWorldPosition - referencePosition );
+    dist = ( dist - nearDistance ) / ( farDistance - nearDistance );
+    dist = saturate( dist ); // clamp to [ 0, 1 ]
+    gl_FragColor = packDepthToRGBA( dist );
+}
 
+void renderDepth() {
+    // Depth-based rendering for directional light shadows
+    // Higher precision equivalent of gl_FragCoord.z. This assumes depthRange has been left to its default values.
+    float fragCoordZ = 0.5 * vHighPrecisionZW[0] / vHighPrecisionZW[1] + 0.5;
+    gl_FragColor = packDepthToRGBA(fragCoordZ);
+}
+
+void renderBackface() {
+    if (!gl_FrontFacing) {
+        // Display the backside in a desaturated, darker tone, to give visual feedback that
+        // we are, in fact, looking at the map from the "wrong" side.
+        gl_FragColor.rgb = desaturate(gl_FragColor.rgb, 1.) * 0.5;
+    }
+
+}
+
+void main() {
     // Step 0 : discard fragment in trivial cases of transparency
     if (opacity == 0.) {
-        discard;
+        return;
     }
+
+    vec4 diffuseColor = vec4( 1, 1, 1, opacity );
+    #include <clipping_planes_fragment>
+
+    ReflectedLight reflectedLight = ReflectedLight( vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ) );
+	vec3 totalEmissiveRadiance = vec3(0, 0, 0);
+
+    #include <logdepthbuf_fragment>
 
     float height = 0.;
 
@@ -113,33 +160,53 @@ void main() {
     }
 #endif
 
-    float hillshade = 1.;
+    vec3 localNormal = vec3(0, 0, 1);
 
 #if defined(ELEVATION_LAYER)
-    // Step 5 : compute shading
-#if defined(ENABLE_HILLSHADING)
-    hillshade = calcHillshade(
+    vec2 df = computeElevationDerivatives(
         tileDimensions,
-        hillshading,
-        elevationLayer.offsetScale,
+        elevUv,
         elevationTexture,
-        elevUv
+        hillshading.zFactor,
+        elevationLayer.offsetScale
     );
+
+    localNormal = getNormalFromDerivatives(df.x, df.y);
 #endif
-#endif
+
+    vec3 outgoingLight = vec3(1, 1, 1);
+
+    if (hillshading.mode == HILLSHADE_SIMPLE) {
+        #if defined(ELEVATION_LAYER)
+        outgoingLight = hillshade(df, hillshading.zenith, hillshading.azimuth, hillshading.intensity);
+        #endif
+    } else if (hillshading.mode == HILLSHADE_PHYSICAL) {
+        vec3 worldNormal = localNormal;
+        vec3 normal = (vec4(worldNormal.xyz, 1.0) * inverse(viewMatrix)).xyz;
+
+        #include <specularmap_fragment>
+        #include <lights_lambert_fragment>
+        #include <lights_fragment_begin>
+        #include <lights_fragment_maps>
+        #include <lights_fragment_end>
+
+        outgoingLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + totalEmissiveRadiance;
+    }
 
 // Shading can be applied either:
 // - before the color layers (i.e only the background pixels will be shaded)
 // - or after the color layers (i.e all pixels will be shaded).
 #if defined(APPLY_SHADING_ON_COLORLAYERS)
+    // Do nothing
 #else
-    applyHillshading(hillshade);
+    applyDiffuse(outgoingLight);
 #endif
 
     // Step 4 : process all color layers (either directly sampling the atlas texture, or use a color map).
     // Note: this was originally an included chunk (giro3d_compose_layers_pars_fragment), but due to
     // the limitation described by https://github.com/mrdoob/three.js/issues/28020,
     // we have to inline the code so that it can be patched from the material.
+#if defined(COLOR_RENDER)
 #if VISIBLE_COLOR_LAYER_COUNT
     float maskOpacity = 1.;
 
@@ -194,7 +261,7 @@ void main() {
     #pragma unroll_loop_end
 
     gl_FragColor.a *= maskOpacity;
-#endif
+#endif // VISIBLE_COLOR_LAYER_COUNT
 
     if (gl_FragColor.a <= 0.0) {
         discard;
@@ -204,26 +271,30 @@ void main() {
     // Contour lines
     #include <giro3d_contour_line_fragment>
 #endif
+#endif // COLOR_RENDER
 
 #if defined(APPLY_SHADING_ON_COLORLAYERS)
-    applyHillshading(hillshade);
+    applyDiffuse(outgoingLight);
 #endif
 
     gl_FragColor.a *= opacity;
 
-    // Step 6 : apply backface processing.
-    if (!gl_FrontFacing) {
-        // Display the backside in a desaturated, darker tone, to give visual feedback that
-        // we are, in fact, looking at the map from the "wrong" side.
-        gl_FragColor.rgb = desaturate(gl_FragColor.rgb, 1.) * 0.5;
-    }
+#if defined(DEPTH_RENDER)
+
+    renderDepth();
+
+#elif defined(DISTANCE_RENDER)
+
+    renderDistance();
+
+#else
+
+    renderBackface();
 
     // Step 7 : draw tile outlines
     #include <giro3d_outline_fragment>
 
     #include <giro3d_graticule_fragment>
-
-    #include <logdepthbuf_fragment>
 
     // Final step : process rendering states.
     if (gl_FragColor.a <= 0.) {
@@ -233,6 +304,8 @@ void main() {
         gl_FragColor.rgb = adjustBrightnessContrastSaturation(gl_FragColor.rgb, brightnessContrastSaturation);
         #include <colorspace_fragment>
         #include <fog_fragment>
+        #include <premultiplied_alpha_fragment>
+        #include <dithering_fragment>
     } else if (renderingState == STATE_PICKING) {
         float id = float(uuid);
         float z = height;
@@ -241,4 +314,5 @@ void main() {
         // Requires a float32 render target
         gl_FragColor = vec4(id, z, u, v);
     }
+#endif
 }

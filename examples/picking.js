@@ -50,7 +50,7 @@ instance.renderingOptions.enablePointCloudOcclusion = true;
 const map = new Map({
     extent,
     backgroundColor: 'gray',
-    hillshading: {
+    lighting: {
         enabled: true,
         elevationLayersOnly: true,
     },

@@ -30,7 +30,6 @@ import type Extent from '../core/geographic/Extent';
 import type GetElevationOptions from '../core/GetElevationOptions';
 import type GetElevationResult from '../core/GetElevationResult';
 import type GraticuleOptions from '../core/GraticuleOptions';
-import type HillshadingOptions from '../core/HillshadingOptions';
 import ColorLayer, { isColorLayer } from '../core/layer/ColorLayer';
 import ElevationLayer, { isElevationLayer } from '../core/layer/ElevationLayer';
 import type HasLayers from '../core/layer/HasLayers';
@@ -72,6 +71,8 @@ import TextureGenerator from '../utils/TextureGenerator';
 import { nonNull } from '../utils/tsutils';
 import type { EntityUserData } from './Entity';
 import Entity3D, { type Entity3DEventMap } from './Entity3D';
+import type MapLightingOptions from './MapLightingOptions';
+import { MapLightingMode } from './MapLightingOptions';
 
 /**
  * The default background color of maps.
@@ -227,38 +228,35 @@ function getColorimetryOptions(input?: ColorimetryOptions): ColorimetryOptions {
     return input ?? defaultColorimetryOptions();
 }
 
-function getHillshadingOptions(input?: boolean | HillshadingOptions): Required<HillshadingOptions> {
+function getLightingOptions(
+    input: boolean | Partial<MapLightingOptions> | undefined,
+    defaultValue: Readonly<Required<MapLightingOptions>>,
+): Required<MapLightingOptions> {
     if (input == null) {
         // Default values
         return {
-            enabled: false,
-            elevationLayersOnly: false,
-            intensity: DEFAULT_HILLSHADING_INTENSITY,
-            zFactor: DEFAULT_HILLSHADING_ZFACTOR,
-            azimuth: DEFAULT_AZIMUTH,
-            zenith: DEFAULT_ZENITH,
+            ...defaultValue,
         };
     }
 
     if (typeof input === 'boolean') {
         // Default values
         return {
-            enabled: true,
-            elevationLayersOnly: false,
-            intensity: DEFAULT_HILLSHADING_INTENSITY,
-            zFactor: DEFAULT_HILLSHADING_ZFACTOR,
-            azimuth: DEFAULT_AZIMUTH,
-            zenith: DEFAULT_ZENITH,
+            ...defaultValue,
+            enabled: input,
         };
     }
 
     return {
-        enabled: input.enabled ?? false,
-        elevationLayersOnly: input.elevationLayersOnly ?? false,
-        azimuth: input.azimuth ?? DEFAULT_AZIMUTH,
-        zenith: input.zenith ?? DEFAULT_ZENITH,
-        intensity: input.intensity ?? DEFAULT_HILLSHADING_INTENSITY,
-        zFactor: input.zFactor ?? DEFAULT_HILLSHADING_ZFACTOR,
+        enabled: input.enabled ?? defaultValue.enabled,
+        mode: input.mode ?? defaultValue.mode,
+        elevationLayersOnly: input.elevationLayersOnly ?? defaultValue.elevationLayersOnly,
+        hillshadeAzimuth: input.hillshadeAzimuth ?? defaultValue.hillshadeAzimuth,
+        hillshadeZenith: input.hillshadeZenith ?? defaultValue.hillshadeZenith,
+        hillshadeIntensity: input.hillshadeIntensity ?? defaultValue.hillshadeIntensity,
+        zFactor: input.zFactor ?? defaultValue.zFactor,
+        castShadows: input.castShadows ?? defaultValue.castShadows,
+        receiveShadows: input.receiveShadows ?? defaultValue.receiveShadows,
     };
 }
 
@@ -350,13 +348,10 @@ export type MapConstructorOptions = {
      */
     maxSubdivisionLevel?: number;
     /**
-     * Enables [hillshading](https://earthquake.usgs.gov/education/geologicmaps/hillshades.php).
-     * If `undefined` or `false`, hillshading is disabled.
-     *
-     * Note: hillshading has no effect if the map does not contain an elevation layer.
-     * @defaultValue `undefined` (hillshading is disabled)
+     * Lighting and shading parameters.
+     * @defaultValue `undefined` (lighting is disabled)
      */
-    hillshading?: boolean | HillshadingOptions;
+    lighting?: boolean | MapLightingOptions;
     /**
      * Enables contour lines. If `undefined` or `false`, contour lines
      * are not displayed.
@@ -470,7 +465,7 @@ export type MapConstructorOptions = {
  * ### Elevation layers
  *
  * Up to one elevation layer can be added to a map, to provide features related to elevation, such
- * as terrain deformation, hillshading, contour lines, etc. Without an elevation layer, the map
+ * as terrain deformation, shading, contour lines, etc. Without an elevation layer, the map
  * will appear like a flat rectangle on the specified extent.
  *
  * Note: to benefit from the features given by elevation layers (shading for instance) while keeping
@@ -542,7 +537,6 @@ class Map<UserData extends EntityUserData = EntityUserData>
     readonly maxSubdivisionLevel: number;
     readonly isPickableFeatures = true;
     private readonly _materialOptions: MaterialOptions;
-    readonly showOutline = false;
     /** @internal */
     readonly tileIndex: TileIndex<TileMesh>;
     /**
@@ -593,7 +587,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         this._materialOptions = {
             showColliderMeshes: false,
             forceTextureAtlases: options.forceTextureAtlases ?? false,
-            hillshading: getHillshadingOptions(options.hillshading),
+            lighting: getLightingOptions(options.lighting, this.getDefaultLightingOptions()),
             contourLines: getContourLineOptions(options.contourLines),
             discardNoData: options.discardNoData ?? false,
             side: options.side ?? FrontSide,
@@ -663,7 +657,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     /**
      * Gets or sets the terrain options.
      */
-    get terrain(): TerrainOptions {
+    get terrain(): Required<TerrainOptions> {
         return this._materialOptions.terrain;
     }
 
@@ -713,7 +707,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     /**
      * Gets or sets graticule options.
      */
-    get graticule(): GraticuleOptions {
+    get graticule(): Required<GraticuleOptions> {
         return this._materialOptions.graticule;
     }
 
@@ -722,20 +716,20 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     /**
-     * Gets or sets hillshading options.
+     * Gets or sets lighting options.
      */
-    get hillshading(): HillshadingOptions {
-        return this._materialOptions.hillshading;
+    get lighting(): Required<MapLightingOptions> {
+        return this._materialOptions.lighting;
     }
 
-    set hillshading(opts: HillshadingOptions) {
-        this._materialOptions.hillshading = getHillshadingOptions(opts);
+    set lighting(opts: MapLightingOptions) {
+        this._materialOptions.lighting = getLightingOptions(opts, this.getDefaultLightingOptions());
     }
 
     /**
      * Gets or sets colorimetry options.
      */
-    get colorimetry(): ColorimetryOptions {
+    get colorimetry(): Required<ColorimetryOptions> {
         return this._materialOptions.colorimetry;
     }
 
@@ -779,7 +773,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     /**
      * Gets or sets contour line options.
      */
-    get contourLines(): ContourLineOptions {
+    get contourLines(): Required<ContourLineOptions> {
         return this._materialOptions.contourLines;
     }
 
@@ -938,6 +932,9 @@ class Map<UserData extends EntityUserData = EntityUserData>
             renderer: this.instance.renderer,
             atlasInfo: this._atlasInfo,
             options: this._materialOptions,
+            extent,
+            textureSize: nonNull(this._imageSize),
+            tileDimensions: extent.dimensions(),
             getIndexFn: this.getIndex.bind(this),
             textureDataType: this._colorAtlasDataType,
             hasElevationLayer: this._hasElevationLayer,
@@ -1057,6 +1054,20 @@ class Map<UserData extends EntityUserData = EntityUserData>
                 results.push(pickResult);
             }
         }
+    }
+
+    protected getDefaultLightingOptions(): Readonly<Required<MapLightingOptions>> {
+        return {
+            enabled: false,
+            mode: MapLightingMode.Hillshade,
+            elevationLayersOnly: false,
+            hillshadeIntensity: DEFAULT_HILLSHADING_INTENSITY,
+            zFactor: DEFAULT_HILLSHADING_ZFACTOR,
+            hillshadeAzimuth: DEFAULT_AZIMUTH,
+            hillshadeZenith: DEFAULT_ZENITH,
+            castShadows: true,
+            receiveShadows: true,
+        };
     }
 
     private pickUsingRaycast(coordinates: Vector2, options?: PickOptions): MapPickResult[] {

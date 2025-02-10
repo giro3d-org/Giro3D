@@ -35,7 +35,7 @@ const instance = new Instance({
 
 const map = new Map({
     extent,
-    hillshading: true,
+    lighting: true,
     discardNoData: true,
     side: DoubleSide,
     backgroundColor: 'white',
