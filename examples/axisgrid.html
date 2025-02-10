@@ -67,6 +67,41 @@ tags: [map, axisgrid, tiles, xyz]
                 <label class="form-check-label" for="ceiling">Show ceiling</label>
             </div>
 
+            <!-- Show/Hide ceiling -->
+            <div class="form-check form-switch">
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    role="switch"
+                    id="adaptive-labels"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="adaptive-labels"
+                    >Adaptive labels
+                    <span class="text-secondary" data-bs-toggle="popover" data-bs-content="help"
+                        ><i class="bi bi-question-circle"></i></span
+                ></label>
+
+                <p class="card-text d-none" id="help">
+                    <b>Adaptive labels</b> are displayed at the intersection of grid lines and the
+                    viewport's edges.
+                </p>
+            </div>
+
+            <!-- Show/Hide label backgrounds -->
+            <div class="form-check form-switch">
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    role="switch"
+                    id="label-background"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="label-background"
+                    >Show label backgrounds</label
+                >
+            </div>
+
             <!-- Show/Hide floor -->
             <div class="form-check form-switch">
                 <input

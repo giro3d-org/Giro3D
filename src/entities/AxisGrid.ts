@@ -1,16 +1,17 @@
 import type { ColorRepresentation, Object3D } from 'three';
 import {
+    Box3,
     BufferGeometry,
     Color,
     Float32BufferAttribute,
     Group,
+    Line3,
     LineBasicMaterial,
     LineSegments,
     MathUtils,
     Sphere,
     Vector2,
     Vector3,
-    type Box3,
     type Camera,
 } from 'three';
 
@@ -21,11 +22,16 @@ import { crsToUnit, UNIT } from '../core/geographic/Coordinates';
 import type Extent from '../core/geographic/Extent';
 import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../core/MemoryUsage';
 import Helpers from '../helpers/Helpers';
+import type View from '../renderer/View';
+import { getContrastColor } from '../utils/ColorUtils';
 import { isBufferGeometry } from '../utils/predicates';
 import { nonNull } from '../utils/tsutils';
 import type { EntityUserData } from './Entity';
 import type { Entity3DEventMap } from './Entity3D';
 import Entity3D from './Entity3D';
+
+type Axis = 'X' | 'Y' | 'Z';
+type Line3WithLabel = Line3 & { labelValue: number; axis: Axis };
 
 const mod = MathUtils.euclideanModulo;
 
@@ -46,12 +52,6 @@ const tmp = {
     sideCenter: new Vector3(),
     v2: new Vector2(),
     sphere: new Sphere(),
-};
-
-export const DEFAULT_STYLE = {
-    color: new Color('white'),
-    fontSize: 10,
-    numberFormat: new Intl.NumberFormat(),
 };
 
 /**
@@ -88,7 +88,15 @@ export interface Style {
     fontSize: number;
     /** The number format for the labels. */
     numberFormat: Intl.NumberFormat;
+    showLabelBackground: boolean;
 }
+
+export const DEFAULT_STYLE: Style = {
+    color: new Color('white'),
+    fontSize: 10,
+    numberFormat: new Intl.NumberFormat(),
+    showLabelBackground: false,
+};
 
 /**
  * Describes the starting point of the ticks.
@@ -104,8 +112,38 @@ export enum TickOrigin {
     Absolute = 1,
 }
 
+/**
+ * Returns the padding to apply to a label that is located at the edge of the viewport,
+ * according to its normalized device coordinates (NDC), to ensure that the label is fully
+ * visible and not partially outside of the viewport.
+ */
+function getPaddingForAdaptiveLabel(ndc: Vector3, fontSize: number, text: string): string {
+    const { x, y } = ndc;
+
+    const yMargin = fontSize * 2;
+    const xMargin = fontSize * 0.7; // per character
+
+    // top right bottom left
+    const top = y > 0.95 ? yMargin : 0;
+    const bottom = y < -0.95 ? yMargin : 0;
+    const charCount = text.length;
+
+    const right = x > 0.95 ? xMargin * charCount : 0;
+    const left = x < -0.95 ? xMargin * charCount : 0;
+
+    return `${top}pt ${right}pt ${bottom}pt ${left}pt`;
+}
+
 class Side extends LineSegments {
+    readonly lines: Line3WithLabel[];
+
     logicalVisibility = false;
+
+    constructor(geometry: BufferGeometry, material: LineBasicMaterial, lines: Line3WithLabel[]) {
+        super(geometry, material);
+
+        this.lines = lines;
+    }
 }
 
 class Edge extends Group {
@@ -124,16 +162,29 @@ function getCssColor(color: ColorRepresentation) {
     return `#${new Color(color).getHexString()}`;
 }
 
-function createLabelElement(text: string, color: string, opacity: number, fontSize: number) {
+function createLabelElement(
+    text: string,
+    color: string,
+    opacity: number,
+    fontSize: number,
+    showBackground: boolean,
+) {
     const div = document.createElement('div');
 
     // Static properties
     div.style.textAlign = 'center';
-    div.style.verticalAlign = 'middle';
-    div.style.textShadow = 'black 0 0 3px';
 
     // Dynamic properties
-    div.innerText = text;
+    const shadow = getContrastColor(color);
+    const span = document.createElement('span');
+    div.style.textShadow = `${shadow} 0 0 2px`;
+    span.innerText = text;
+    span.style.paddingLeft = '5pt';
+    span.style.paddingRight = '5pt';
+    if (showBackground) {
+        span.style.backgroundColor = `${shadow}44`; // the 44 suffix is for opacity
+    }
+    div.appendChild(span);
 
     // API exposed properties
     div.style.opacity = `${opacity}`;
@@ -179,9 +230,8 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
     readonly isAxisGrid = true as const;
 
     private readonly _root: Group;
-    private readonly _labelRoot: Group;
-    private readonly _labels: CSS2DObject[];
-    private readonly _labelElements: HTMLElement[];
+    private readonly _edgeLabelRoot: Group;
+    private readonly _adaptiveLabelRoot: Group;
     private _style: Style;
     private _boundingSphere: Sphere;
     private _boundingBoxCenter: Vector3;
@@ -193,6 +243,8 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
     private _showFloorGrid: boolean;
     private _showCeilingGrid: boolean;
     private _showSideGrids: boolean;
+    private _showLabels = true;
+    private _adaptiveLabels = false;
     private _disposed = false;
 
     private _volume: Volume;
@@ -241,17 +293,23 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
 
         this._root = this.object3d as Group;
 
-        this._labelRoot = new Group();
-        this._labelRoot.name = 'labels';
-        this._labels = [];
+        this._edgeLabelRoot = new Group();
+        this._edgeLabelRoot.name = 'edge labels';
+
+        this._adaptiveLabelRoot = new Group();
+        this._adaptiveLabelRoot.name = 'adaptive labels';
+
         this._style = {
             color: options.style?.color ?? DEFAULT_STYLE.color,
             fontSize: options.style?.fontSize ?? DEFAULT_STYLE.fontSize,
             numberFormat: options.style?.numberFormat ?? DEFAULT_STYLE.numberFormat,
+            showLabelBackground:
+                options.style?.showLabelBackground ?? DEFAULT_STYLE.showLabelBackground,
         };
-        this.onObjectCreated(this._labelRoot);
-        this._root.add(this._labelRoot);
-        this._labelElements = [];
+        this.onObjectCreated(this._edgeLabelRoot);
+        this.onObjectCreated(this._adaptiveLabelRoot);
+        this._root.add(this._edgeLabelRoot);
+        this._root.add(this._adaptiveLabelRoot);
         this._boundingSphere = new Sphere();
         this._boundingBoxCenter = new Vector3();
 
@@ -299,9 +357,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
 
     updateOpacity() {
         const v = this.opacity;
-        this._labelElements.forEach(l => {
-            l.style.opacity = `${v}`;
-        });
+        this.forEachLabel(label => (label.element.style.opacity = `${v}`));
 
         const mat = this._material;
         mat.opacity = v;
@@ -364,23 +420,45 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
     set color(color) {
         this._material.color = new Color(color);
         this.style.color = color;
-        const cssColor = getCssColor(color);
-        this._labelElements.forEach(l => {
-            l.style.color = cssColor;
-        });
+        this.refresh();
     }
 
     /**
      * Shows or hides labels.
      */
     get showLabels() {
-        return this._labelRoot.visible;
+        return this._showLabels;
     }
 
     set showLabels(v) {
-        if (v !== this._labelRoot.visible) {
-            this._labelRoot.visible = v;
+        if (v !== this._showLabels) {
+            this._showLabels = v;
+
+            this._edgeLabelRoot.visible = v;
+            this._adaptiveLabelRoot.visible = v;
+
             this.updateLabelsVisibility(this._lastCamera);
+        }
+    }
+
+    /**
+     * Toggles adaptive labels. Adaptive labels are labels that are displayed
+     * at the intersection of their line and the viewport's edges,  so that
+     * they remain visible even when the grid sides are out of view.
+     */
+    get adaptiveLabels(): boolean {
+        return this._adaptiveLabels;
+    }
+
+    set adaptiveLabels(v: boolean) {
+        if (v !== this._adaptiveLabels) {
+            this._adaptiveLabels = v;
+
+            if (!v) {
+                this.removeAdaptiveLabels();
+            }
+
+            this.notifyChange(this);
         }
     }
 
@@ -441,6 +519,19 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
         this._ticks = v;
     }
 
+    private forEachLabel(callback: (label: CSS2DObject) => void) {
+        this._edgeLabelRoot.traverse(obj => {
+            if (obj instanceof CSS2DObject) {
+                callback(obj);
+            }
+        });
+        this._adaptiveLabelRoot.traverse(obj => {
+            if (obj instanceof CSS2DObject) {
+                callback(obj);
+            }
+        });
+    }
+
     /**
      * Rebuilds the grid. This is necessary after changing the ticks, volume or origin.
      */
@@ -455,7 +546,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
         this._root.position.setY(tmpVec2.y);
 
         this.buildSides();
-        this.buildLabels();
+        this.buildEdgeLabels();
 
         this._root.updateMatrixWorld();
 
@@ -467,12 +558,24 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
         this.updateVisibility();
     }
 
-    private removeLabels() {
-        const children = [...this._labelRoot.children];
-        children.forEach(c => c.removeFromParent());
-        this._labelElements.forEach(elt => elt.remove());
-        this._labelElements.length = 0;
-        this._labels.length = 0;
+    private removeEdgeLabels() {
+        this._edgeLabelRoot.traverse(obj => {
+            if (obj instanceof CSS2DObject) {
+                obj.element.remove();
+            }
+        });
+
+        this._edgeLabelRoot.clear();
+    }
+
+    private removeAdaptiveLabels() {
+        this._adaptiveLabelRoot.traverse(obj => {
+            if (obj instanceof CSS2DObject) {
+                obj.element.remove();
+            }
+        });
+
+        this._adaptiveLabelRoot.clear();
     }
 
     updateVisibility() {
@@ -481,29 +584,37 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
         this.updateLabelsVisibility(this._lastCamera);
     }
 
-    private buildLabels() {
+    private createLabelObject(
+        x: number,
+        y: number,
+        z: number,
+        text: string,
+        cssColor: string,
+        opacity: number,
+        fontSize: number,
+        showBackground: boolean,
+    ) {
+        const label = new CSS2DObject(
+            createLabelElement(text, cssColor, opacity, fontSize, showBackground),
+        );
+        label.name = text;
+        label.position.set(x, y, z);
+        return label;
+    }
+
+    private buildEdgeLabels() {
         // Labels are displayed along each edge of the box volume.
         // There are 12 edges in a box, and those edges are linked to their two sides.
 
-        const labelRoot = this._labelRoot;
-        const labelElements = this._labelElements;
-        const labels = this._labels;
+        const labelRoot = this._edgeLabelRoot;
 
-        this.removeLabels();
+        this.removeEdgeLabels();
 
         const numberFormat = this.style.numberFormat;
         const cssColor = getCssColor(this.style.color);
+        const showBackground = this.style.showLabelBackground;
         const opacity = this.opacity;
         const fontSize = this.style.fontSize;
-
-        function createLabel(lx: number, ly: number, lz: number, text: string) {
-            const label = new CSS2DObject(createLabelElement(text, cssColor, opacity, fontSize));
-            labels.push(label);
-            label.name = text;
-            labelElements.push(label.element);
-            label.position.set(lx, ly, lz);
-            return label;
-        }
 
         const v = new Vector3();
         this.volume.extent.centerAsVector2(tmpVec2);
@@ -551,11 +662,15 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
                 const labelValue = numberFormat.format(Math.round(rawValue));
                 const text = `${prefix}${labelValue}${suffix}`;
 
-                const label = createLabel(
+                const label = this.createLabelObject(
                     v.x - edgeCenter.x - origin.x,
                     v.y - edgeCenter.y - origin.y,
                     v.z - edgeCenter.z - origin.z,
                     text,
+                    cssColor,
+                    opacity,
+                    fontSize,
+                    showBackground,
                 );
 
                 g.add(label);
@@ -624,6 +739,143 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
         createLabelsAlongEdge(back, right, trFloor, trCeil, zmin, zPrefix, vSuffix, this._ticks.z);
     }
 
+    /**
+     * Build adaptive labels: labels that are located at the intersections
+     * of lines and the viewport edges. They are adaptive because their
+     * position depends on the camera.
+     * Note: if no line intersects any viewport edge, then no adaptive label is created.
+     */
+    private buildAdaptiveLabels(view: View) {
+        this.removeAdaptiveLabels();
+
+        const numberFormat = this.style.numberFormat;
+        const cssColor = getCssColor(this.style.color);
+        const opacity = this.opacity;
+        const fontSize = this.style.fontSize;
+        const showBackground = this.style.showLabelBackground;
+
+        const relative = this.origin === TickOrigin.Relative;
+        const yPrefix = relative ? '' : 'y: ';
+        const xPrefix = relative ? '' : 'x: ';
+        const zPrefix = '';
+        const hSuffix = relative ? this._unitSuffix : '';
+        const vSuffix = this._unitSuffix;
+
+        const dimensions = this.volume.extent.dimensions(tmpVec2);
+
+        const xOrigin = this.object3d.position.x - dimensions.x / 2;
+        const yOrigin = this.object3d.position.y - dimensions.y / 2;
+        const zOrigin = this.object3d.position.z - (this.volume.ceiling - this.volume.floor) / 2;
+
+        const frustum = view.frustum;
+
+        const intersect = new Vector3();
+        const line = new Line3();
+
+        const marginBox = new Box3();
+        const marginBoxSize = new Vector3(1, 1, 1);
+
+        const createLabelsForSide = (side: Side) => {
+            if (!side.visible) {
+                return;
+            }
+
+            const matrix = side.matrixWorld;
+
+            for (let i = 0; i < side.lines.length; i++) {
+                const l = side.lines[i];
+                let prefix: string = '';
+                let suffix: string = '';
+
+                let offset = 0;
+
+                switch (l.axis) {
+                    case 'X':
+                        prefix = xPrefix;
+                        suffix = hSuffix;
+                        offset = xOrigin;
+                        break;
+                    case 'Y':
+                        prefix = yPrefix;
+                        suffix = hSuffix;
+                        offset = yOrigin;
+                        break;
+                    case 'Z':
+                        prefix = zPrefix;
+                        suffix = vSuffix;
+                        offset = zOrigin;
+                        break;
+                }
+
+                // The original line has local coordinates.
+                line.start.copy(l.start).applyMatrix4(matrix);
+                line.end.copy(l.end).applyMatrix4(matrix);
+
+                const rawValue = l.labelValue + (relative ? 0 : offset);
+                const labelValue = numberFormat.format(Math.round(rawValue));
+                const text = `${prefix}${labelValue}${suffix}`;
+
+                console.log(line.clone());
+
+                // Let's create labels that are located at the edge of the viewport.
+                // For each plane in the frustum, we will check if the line that this label
+                // belongs to intersects with the plane. If so, then we then make sure that the
+                // label is actually inside the frustum by using a small box rather than a point
+                // to reduce false negatives.
+                for (const plane of frustum.planes) {
+                    if (
+                        plane.intersectLine(line, intersect) != null &&
+                        frustum.intersectsBox(
+                            marginBox.setFromCenterAndSize(intersect, marginBoxSize),
+                        ) === true
+                    ) {
+                        const position = intersect;
+
+                        const label = this.createLabelObject(
+                            position.x,
+                            position.y,
+                            position.z,
+                            text,
+                            cssColor,
+                            opacity,
+                            fontSize,
+                            showBackground,
+                        );
+
+                        const ndc = position.project(view.camera);
+
+                        // Finally, to ensure that the label is correctly inside the viewport,
+                        // we adjust its padding depending on the viewport edge. e.g: if the
+                        // label is on the upper edge, we pad on the top so that it moves down.
+                        label.element.style.padding = getPaddingForAdaptiveLabel(
+                            ndc,
+                            fontSize,
+                            text,
+                        );
+
+                        this._adaptiveLabelRoot.attach(label);
+                    }
+                }
+            }
+        };
+
+        const floor = nonNull(this._floor);
+        const ceil = nonNull(this._ceiling);
+        const front = nonNull(this._front);
+        const back = nonNull(this._back);
+        const left = nonNull(this._left);
+        const right = nonNull(this._right);
+
+        createLabelsForSide(floor);
+        createLabelsForSide(ceil);
+        createLabelsForSide(front);
+        createLabelsForSide(back);
+        createLabelsForSide(left);
+        createLabelsForSide(right);
+
+        this._edgeLabelRoot.updateMatrixWorld(true);
+    }
+
     private deleteSides() {
         const root = this._root;
 
@@ -661,9 +913,21 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
 
         this.deleteSides();
 
-        this._floor = this.buildSide('floor', x, y, xStart, this._ticks.x, yStart, this._ticks.y);
+        this._floor = this.buildSide(
+            'floor',
+            'X',
+            'Y',
+            x,
+            y,
+            xStart,
+            this._ticks.x,
+            yStart,
+            this._ticks.y,
+        );
         this._ceiling = this.buildSide(
             'ceiling',
+            'X',
+            'Y',
             x,
             y,
             xStart,
@@ -672,11 +936,51 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
             this._ticks.y,
         );
 
-        this._front = this.buildSide('front', x, z, xStart, this._ticks.x, zStart, this._ticks.z);
-        this._back = this.buildSide('back', x, z, xStart, this._ticks.x, zStart, this._ticks.z);
+        this._front = this.buildSide(
+            'front',
+            'X',
+            'Z',
+            x,
+            z,
+            xStart,
+            this._ticks.x,
+            zStart,
+            this._ticks.z,
+        );
+        this._back = this.buildSide(
+            'back',
+            'X',
+            'Z',
+            x,
+            z,
+            xStart,
+            this._ticks.x,
+            zStart,
+            this._ticks.z,
+        );
 
-        this._left = this.buildSide('left', y, z, yStart, this._ticks.y, zStart, this._ticks.z);
-        this._right = this.buildSide('right', y, z, yStart, this._ticks.y, zStart, this._ticks.z);
+        this._left = this.buildSide(
+            'left',
+            'Y',
+            'Z',
+            y,
+            z,
+            yStart,
+            this._ticks.y,
+            zStart,
+            this._ticks.z,
+        );
+        this._right = this.buildSide(
+            'right',
+            'Y',
+            'Z',
+            y,
+            z,
+            yStart,
+            this._ticks.y,
+            zStart,
+            this._ticks.z,
+        );
 
         // Since the root group is located at the extent's center,
         // all subsequent transformations are local to this point.
@@ -727,6 +1031,8 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
      */
     private buildSide(
         name: string,
+        horizontalLineAxis: Axis,
+        verticalLineAxis: Axis,
         width: number,
         height: number,
         xOffset: number,
@@ -745,28 +1051,51 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
         const left = 0;
         const right = width;
 
-        function pushSegment(x0: number, y0: number, x1: number, y1: number) {
-            vertices.push(x0 - centerX, y0 - centerY, 0);
-            vertices.push(x1 - centerX, y1 - centerY, 0);
+        const lines: Line3WithLabel[] = [];
+
+        function pushSegment(
+            x0: number,
+            y0: number,
+            x1: number,
+            y1: number,
+            labelValue: number,
+            axis: Axis,
+        ) {
+            const start = new Vector3(x0 - centerX, y0 - centerY, 0);
+            const end = new Vector3(x1 - centerX, y1 - centerY, 0);
+
+            vertices.push(start.x, start.y, start.z);
+            vertices.push(end.x, end.y, end.z);
+
+            const line = new Line3(start, end) as Line3WithLabel;
+            line.labelValue = labelValue;
+            line.axis = axis;
+            lines.push(line);
         }
 
         // Vertical boundary lines
-        pushSegment(left, bottom, left, top);
-        pushSegment(right, bottom, right, top);
+        pushSegment(left, bottom, left, top, left, verticalLineAxis);
+        pushSegment(right, bottom, right, top, right, verticalLineAxis);
 
         // Horizontal boundary lines
-        pushSegment(left, bottom, right, bottom);
-        pushSegment(left, top, right, top);
+        pushSegment(left, bottom, right, bottom, bottom, horizontalLineAxis);
+        pushSegment(left, top, right, top, top, horizontalLineAxis);
 
         // Horizontal subdivisions
-        while (x <= right) {
-            pushSegment(x, bottom, x, top);
+        while (x < right) {
+            // Avoid duplicating the boundary line
+            if (x !== left) {
+                pushSegment(x, bottom, x, top, x, horizontalLineAxis);
+            }
             x += xStep;
         }
 
         // Vertical subdivisions
-        while (y <= top) {
-            pushSegment(left, y, right, y);
+        while (y < top) {
+            // Avoid duplicating the boundary line
+            if (y !== bottom) {
+                pushSegment(left, y, right, y, y, verticalLineAxis);
+            }
             y += yStep;
         }
 
@@ -774,7 +1103,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
 
         geometry.setAttribute('position', new Float32BufferAttribute(vertices, 3));
 
-        const mesh = new Side(geometry, this._material);
+        const mesh = new Side(geometry, this._material, lines);
         this.onObjectCreated(mesh);
 
         mesh.name = name;
@@ -814,7 +1143,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
         this.deleteArrowHelpers();
 
         if (camera) {
-            this._labelRoot.children.forEach(o =>
+            this._edgeLabelRoot.children.forEach(o =>
                 this.updateLabelEdgeVisibility(camera, o as Edge),
             );
         }
@@ -834,7 +1163,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
             return;
         }
 
-        const rootVisible = this.object3d.visible && this._labelRoot.visible;
+        const rootVisible = this.object3d.visible && this._edgeLabelRoot.visible;
         const fontSize = this.style.fontSize;
 
         // Labels on an edge should be displayed only if one of their side is visible,
@@ -926,7 +1255,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
                     const style = c.element.style;
                     style.paddingTop = `${paddingTop}pt`;
                     style.paddingBottom = `${paddingBottom}pt`;
-                    const charCount = c.element.innerText.length;
+                    const charCount = c.element.innerText?.length ?? 1;
                     style.paddingRight = `${paddingRight * charCount}pt`;
                     style.paddingLeft = `${paddingLeft * charCount}pt`;
                     if (showHelpers) {
@@ -975,6 +1304,10 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
 
         this.updateSidesVisibility(camera);
 
+        if (this._adaptiveLabels) {
+            this.buildAdaptiveLabels(context.view);
+        }
+
         this.updateMinMaxDistance(context);
 
         return [];
@@ -997,9 +1330,8 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
 
         this._disposed = true;
         this._material.dispose();
+        this.removeEdgeLabels();
         this.deleteSides();
-        this._labelElements.forEach(elt => elt.remove());
-        this._labelElements.length = 0;
 
         this.deleteArrowHelpers();
     }
