@@ -6,10 +6,12 @@ import {
     ImplicitTilingPlugin,
     UnloadTilesPlugin,
 } from '3d-tiles-renderer/plugins';
-import type { Material, Object3D } from 'three';
+import type { ColorRepresentation, Material, Object3D } from 'three';
 import { Box3, Color, Group, REVISION, Vector3 } from 'three';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
+import type ColorimetryOptions from '../core/ColorimetryOptions';
+import { defaultColorimetryOptions } from '../core/ColorimetryOptions';
 import ColorMap from '../core/ColorMap';
 import type Context from '../core/Context';
 import Extent from '../core/geographic/Extent';
@@ -162,6 +164,8 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
     private readonly _pointCloudParameters: PointCloudParameters = {
         pointSize: 0, // Automatic size
         pointCloudMode: MODE.COLOR,
+        colorimetry: defaultColorimetryOptions(),
+        overlayColor: null,
         pointCloudColorMap: new ColorMap({
             colors: [new Color('black'), new Color('white')],
             min: 0,
@@ -413,7 +417,8 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
                 this.updateCameraDistances(context, obj);
 
                 if ('material' in obj && PointCloudMaterial.isPointCloudMaterial(obj.material)) {
-                    obj.material.updateUniforms();
+                    this._pointCloudPlugin.updateMaterial(obj.material);
+
                     if (isLayerNode(obj)) {
                         this.prepareLayerNode(obj);
                         this.forEachLayer(layer => layer.update(context, obj));
@@ -481,6 +486,45 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         if (this._pointCloudParameters.pointCloudMode !== v) {
             this._pointCloudParameters.pointCloudMode = v;
             this.traversePointCloudMaterials(m => (m.mode = v));
+            this.notifyChange(this);
+        }
+    }
+
+    /**
+     * Gets or sets the default color of point clouds. Only applies to point cloud tiles.
+     */
+    get pointCloudColor() {
+        return this._pointCloudParameters.overlayColor;
+    }
+
+    set pointCloudColor(v: ColorRepresentation | null) {
+        const color = v != null ? new Color(v) : new Color();
+
+        if (
+            v == null ||
+            this._pointCloudParameters.overlayColor == null ||
+            !this._pointCloudParameters.overlayColor.equals(color)
+        ) {
+            this._pointCloudParameters.overlayColor = color;
+            this.notifyChange(this);
+        }
+    }
+
+    /**
+     * Gets or sets the point cloud brightness, contrast and saturation. Only applies to point cloud tiles.
+     */
+    get pointCloudColorimetryOptions(): ColorimetryOptions {
+        return this._pointCloudParameters.colorimetry;
+    }
+
+    set pointCloudColorimetryOptions(v: ColorimetryOptions) {
+        if (this._pointCloudParameters.colorimetry !== v) {
+            this._pointCloudParameters.colorimetry = v;
+            this.traversePointCloudMaterials(m => {
+                m.brightness = v.brightness;
+                m.contrast = v.contrast;
+                m.saturation = v.saturation;
+            });
             this.notifyChange(this);
         }
     }
@@ -621,7 +665,7 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
 
     private updateMaterial(scene: Object3D) {
         if (isPNTSScene(scene)) {
-            this._pointCloudPlugin.updateMaterial(scene);
+            this._pointCloudPlugin.updateMaterial(scene.material as PointCloudMaterial);
         }
     }
 

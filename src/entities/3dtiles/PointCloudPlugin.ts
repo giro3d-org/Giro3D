@@ -12,10 +12,11 @@ import {
     Uint32BufferAttribute,
     Uint8BufferAttribute,
     Vector2,
+    Vector4,
 } from 'three';
 import type Extent from '../../core/geographic/Extent';
 import type { LayerNode } from '../../core/layer/Layer';
-import PointCloudMaterial from '../../renderer/PointCloudMaterial';
+import PointCloudMaterial, { MODE } from '../../renderer/PointCloudMaterial';
 import { enablePointCloudPostProcessing } from '../../renderer/RenderPipeline';
 import type PointCloudParameters from './PointCloudParameters';
 
@@ -80,13 +81,27 @@ export default class PointCloudPlugin {
         geometry.setAttribute(attribute.toLowerCase(), bufferAttribute);
     }
 
-    updateMaterial(scene: PNTSScene) {
-        const material = scene.material as PointCloudMaterial;
-
+    updateMaterial(material: PointCloudMaterial) {
         material.size = this._parameters.pointSize;
         material.colorMap = this._parameters.pointCloudColorMap;
         material.classifications = this._parameters.classifications;
-        material.mode = this._parameters.pointCloudMode;
+        material.mode =
+            material.colorLayer != null ? MODE.TEXTURE : this._parameters.pointCloudMode;
+
+        material.brightness = this._parameters.colorimetry.brightness;
+        material.contrast = this._parameters.colorimetry.contrast;
+        material.saturation = this._parameters.colorimetry.saturation;
+
+        if (this._parameters.overlayColor != null) {
+            material.overlayColor = new Vector4(
+                this._parameters.overlayColor.r,
+                this._parameters.overlayColor.g,
+                this._parameters.overlayColor.b,
+                1,
+            );
+        } else {
+            material.overlayColor = new Vector4(0, 0, 0, 0);
+        }
 
         material.updateUniforms();
     }
@@ -103,7 +118,7 @@ export default class PointCloudPlugin {
 
             material.setupFromGeometry(scene.geometry);
 
-            this.updateMaterial(scene);
+            this.updateMaterial(material);
 
             // For compatibility with point-cloud post processing
             enablePointCloudPostProcessing(scene);
