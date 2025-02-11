@@ -42,6 +42,10 @@ describe('PointCloud', () => {
 
             expect(entity.source).toBe(source);
             expect(entity.cleanupDelay).toBe(1234);
+
+            expect(entity.brightness).toBe(0);
+            expect(entity.contrast).toBe(1);
+            expect(entity.saturation).toBe(1);
         });
     });
 

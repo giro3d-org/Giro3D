@@ -41,6 +41,9 @@ export default class PointCloudInspector extends EntityInspector<PointCloud> {
         this.addController(entity, 'showVolume');
         this.addController(entity, 'cleanupDelay');
         this.addController(entity, 'depthTest');
+        this.addController(entity, 'brightness').min(0).max(1);
+        this.addController(entity, 'contrast').min(0).max(1);
+        this.addController(entity, 'saturation').min(0).max(1);
         this.addController(entity, 'showNodeVolumes');
         this.addController(entity, 'decimation').min(1).max(100).step(1);
         this.addController(this, 'pointBudget');
