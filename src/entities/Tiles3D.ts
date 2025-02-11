@@ -6,7 +6,7 @@ import {
     ImplicitTilingPlugin,
     UnloadTilesPlugin,
 } from '3d-tiles-renderer/plugins';
-import type { Material, Object3D } from 'three';
+import type { ColorRepresentation, Material, Object3D } from 'three';
 import { Box3, Color, Group, REVISION, Vector3 } from 'three';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
@@ -165,6 +165,7 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         pointSize: 0, // Automatic size
         pointCloudMode: MODE.COLOR,
         colorimetry: defaultColorimetryOptions(),
+        overlayColor: null,
         pointCloudColorMap: new ColorMap({
             colors: [new Color('black'), new Color('white')],
             min: 0,
@@ -485,6 +486,26 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         if (this._pointCloudParameters.pointCloudMode !== v) {
             this._pointCloudParameters.pointCloudMode = v;
             this.traversePointCloudMaterials(m => (m.mode = v));
+            this.notifyChange(this);
+        }
+    }
+
+    /**
+     * Gets or sets the default color of point clouds. Only applies to point cloud tiles.
+     */
+    get pointCloudColor() {
+        return this._pointCloudParameters.overlayColor;
+    }
+
+    set pointCloudColor(v: ColorRepresentation | null) {
+        const color = v != null ? new Color(v) : new Color();
+
+        if (
+            v == null ||
+            this._pointCloudParameters.overlayColor == null ||
+            !this._pointCloudParameters.overlayColor.equals(color)
+        ) {
+            this._pointCloudParameters.overlayColor = color;
             this.notifyChange(this);
         }
     }
