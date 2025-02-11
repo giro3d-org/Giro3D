@@ -43,6 +43,7 @@ Maps now support light-based shadows and lighting provided by [three.js lights](
 - **GeoTIFFSource**: add support for the .requestPriority constructor option (#305)
 - **ImageSource**: support HTTP priorities (#305)
 - **Fetcher**: support request priority (#305)
+- **PointCloud**: add the `.brightness`, `.constrast` and `.saturation` properties
 
 ### Fix
 
