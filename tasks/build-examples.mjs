@@ -70,6 +70,7 @@ function getExampleCard(pathToHtmlFile) {
         description: attributes.shortdesc,
         tags: attributes.tags,
         id: exampleId,
+        searchtext: `${attributes.title} ${attributes.shortdesc} ${attributes.tags?.join(' ')}`,
         name,
     };
 }
