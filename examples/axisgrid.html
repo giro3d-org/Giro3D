@@ -14,7 +14,7 @@ tags: [map, axisgrid, tiles, xyz]
             <!-- Color -->
             <label class="form-check-label w-100 mb-2" for="color">
                 <div class="row">
-                    <div class="col">Color</div>
+                    <div class="col-auto">Color</div>
                     <div class="col">
                         <input
                             type="color"
@@ -41,33 +41,7 @@ tags: [map, axisgrid, tiles, xyz]
                 <label class="form-check-label" for="entity">Show axis grid</label>
             </div>
 
-            <!-- Absolute/Relative -->
-            <div class="form-check form-switch">
-                <input
-                    class="form-check-input"
-                    type="checkbox"
-                    checked="true"
-                    role="switch"
-                    id="origin"
-                    autocomplete="off"
-                />
-                <label class="form-check-label" for="origin">Relative origin</label>
-            </div>
-
-            <!-- Show/Hide ceiling -->
-            <div class="form-check form-switch">
-                <input
-                    class="form-check-input"
-                    type="checkbox"
-                    checked="true"
-                    role="switch"
-                    id="ceiling"
-                    autocomplete="off"
-                />
-                <label class="form-check-label" for="ceiling">Show ceiling</label>
-            </div>
-
-            <!-- Show/Hide ceiling -->
+            <!-- Toggle adaptive labels -->
             <div class="form-check form-switch">
                 <input
                     class="form-check-input"
@@ -88,18 +62,65 @@ tags: [map, axisgrid, tiles, xyz]
                 </p>
             </div>
 
-            <!-- Show/Hide label backgrounds -->
+            <!-- Toggle custom CSS labels -->
             <div class="form-check form-switch">
                 <input
                     class="form-check-input"
                     type="checkbox"
                     role="switch"
-                    id="label-background"
+                    id="custom-css"
                     autocomplete="off"
                 />
-                <label class="form-check-label" for="label-background"
-                    >Show label backgrounds</label
-                >
+                <label class="form-check-label" for="custom-css"
+                    >Use custom CSS
+                    <span
+                        class="text-secondary"
+                        data-bs-toggle="popover"
+                        data-bs-content="help-custom-css"
+                        ><i class="bi bi-question-circle"></i></span
+                ></label>
+
+                <p class="card-text d-none" id="help-custom-css">
+                    Use the <code>label-created</code> event to customize the DOM element of labels.
+                </p>
+            </div>
+
+            <!-- Absolute/Relative -->
+            <div class="form-check form-switch">
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    checked="true"
+                    role="switch"
+                    id="origin"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="origin"
+                    >Relative origin
+                    <span
+                        class="text-secondary"
+                        data-bs-toggle="popover"
+                        data-bs-content="help-origin"
+                        ><i class="bi bi-question-circle"></i></span
+                ></label>
+
+                <p class="card-text d-none" id="help-origin">
+                    If enabled, the ticks start at the lower-left (south-west) corner of the grid.
+                    If disabled, the ticks start at the origin point of the coordinate system.
+                </p>
+            </div>
+
+            <!-- Show/Hide ceiling -->
+            <div class="form-check form-switch">
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    checked="true"
+                    role="switch"
+                    id="ceiling"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="ceiling">Show ceiling</label>
             </div>
 
             <!-- Show/Hide floor -->
@@ -131,15 +152,15 @@ tags: [map, axisgrid, tiles, xyz]
             <div class="my-2"></div>
 
             <!-- X step -->
-            <label for="x-axis-step" class="form-label">x-axis step</label>
+            <label for="x-axis-step" class="form-label">X axis step</label>
             <div class="input-group">
                 <input
-                    type="range"
+                    type="number"
                     min="100"
                     max="3000"
+                    class="form-control"
                     value="1000"
                     step="100"
-                    class="form-range"
                     id="x-axis-step"
                     autocomplete="off"
                 />
@@ -148,15 +169,15 @@ tags: [map, axisgrid, tiles, xyz]
             <div class="my-2"></div>
 
             <!-- Y step -->
-            <label for="y-axis-step" class="form-label">y-axis step</label>
+            <label for="y-axis-step" class="form-label">Y axis step</label>
             <div class="input-group">
                 <input
-                    type="range"
+                    type="number"
                     min="100"
                     max="3000"
                     value="1000"
                     step="100"
-                    class="form-range"
+                    class="form-control"
                     id="y-axis-step"
                     autocomplete="off"
                 />
@@ -165,15 +186,15 @@ tags: [map, axisgrid, tiles, xyz]
             <div class="my-2"></div>
 
             <!-- Z step -->
-            <label for="z-axis-step" class="form-label">z-axis step</label>
+            <label for="z-axis-step" class="form-label">Z axis step</label>
             <div class="input-group">
                 <input
-                    type="range"
+                    type="number"
                     min="100"
                     max="3000"
                     value="200"
                     step="100"
-                    class="form-range"
+                    class="form-control"
                     id="z-axis-step"
                     autocomplete="off"
                 />
@@ -182,7 +203,8 @@ tags: [map, axisgrid, tiles, xyz]
             <div class="my-4"></div>
 
             <!-- Randomize grid position -->
-            <button type="button" class="btn btn-primary" id="randomize-position">
+            <button type="button" class="btn btn-primary w-100" id="randomize-position">
+                <i class="bi bi-shuffle"></i>
                 Randomize position
             </button>
         </div>

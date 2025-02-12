@@ -23,7 +23,6 @@ import type Extent from '../core/geographic/Extent';
 import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../core/MemoryUsage';
 import Helpers from '../helpers/Helpers';
 import type View from '../renderer/View';
-import { getContrastColor } from '../utils/ColorUtils';
 import { isBufferGeometry } from '../utils/predicates';
 import { nonNull } from '../utils/tsutils';
 import type { EntityUserData } from './Entity';
@@ -88,14 +87,12 @@ export interface Style {
     fontSize: number;
     /** The number format for the labels. */
     numberFormat: Intl.NumberFormat;
-    showLabelBackground: boolean;
 }
 
 export const DEFAULT_STYLE: Style = {
     color: new Color('white'),
     fontSize: 10,
     numberFormat: new Intl.NumberFormat(),
-    showLabelBackground: false,
 };
 
 /**
@@ -162,36 +159,37 @@ function getCssColor(color: ColorRepresentation) {
     return `#${new Color(color).getHexString()}`;
 }
 
-function createLabelElement(
-    text: string,
-    color: string,
-    opacity: number,
-    fontSize: number,
-    showBackground: boolean,
-) {
-    const div = document.createElement('div');
+function createLabelElement(text: string, color: string, opacity: number, fontSize: number) {
+    const container = document.createElement('div');
 
     // Static properties
-    div.style.textAlign = 'center';
+    container.style.textAlign = 'center';
 
     // Dynamic properties
-    const shadow = getContrastColor(color);
-    const span = document.createElement('span');
-    div.style.textShadow = `${shadow} 0 0 2px`;
-    span.innerText = text;
-    span.style.paddingLeft = '5pt';
-    span.style.paddingRight = '5pt';
-    if (showBackground) {
-        span.style.backgroundColor = `${shadow}44`; // the 44 suffix is for opacity
-    }
-    div.appendChild(span);
+    const label = document.createElement('span');
+    label.innerText = text;
+    label.style.paddingLeft = '5pt';
+    label.style.paddingRight = '5pt';
+    container.appendChild(label);
 
     // API exposed properties
-    div.style.opacity = `${opacity}`;
-    div.style.color = color;
-    div.style.fontSize = `${fontSize}pt`;
+    container.style.opacity = `${opacity}`;
+    container.style.color = color;
+    container.style.fontSize = `${fontSize}pt`;
 
-    return div;
+    return { container, label };
+}
+
+export interface AxisGridEventMap extends Entity3DEventMap {
+    /**
+     * Raised when a new label is created.
+     */
+    'label-created': {
+        /**
+         * The label DOM element.
+         */
+        label: HTMLSpanElement;
+    };
 }
 
 /**
@@ -221,8 +219,16 @@ function createLabelElement(
  *   },
  * });
  * ```
+ *
+ * ## Label customization
+ *
+ * By registering the `'label-created'` event, you can modify the DOM element for the newly created label:
+ *
+ * ```js
+ * grid.addEventListener('label-created', ({ label }) => label.classList.add('my-custom-css-class'));
+ * ```
  */
-class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, UserData> {
+class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, UserData> {
     readonly type = 'AxisGrid' as const;
     /**
      * Read-only flag to check if a given object is of type AxisGrid.
@@ -288,6 +294,12 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
          * The style to apply to lines and labels.
          */
         style?: Partial<Style>;
+
+        /**
+         * Toggles adaptive labels: labels outside the screen will be rendered at the screen edge.
+         * @defaultValue false
+         */
+        adaptiveLabels?: boolean;
     }) {
         super(new Group());
 
@@ -303,9 +315,8 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
             color: options.style?.color ?? DEFAULT_STYLE.color,
             fontSize: options.style?.fontSize ?? DEFAULT_STYLE.fontSize,
             numberFormat: options.style?.numberFormat ?? DEFAULT_STYLE.numberFormat,
-            showLabelBackground:
-                options.style?.showLabelBackground ?? DEFAULT_STYLE.showLabelBackground,
         };
+        this._adaptiveLabels = options.adaptiveLabels ?? this._adaptiveLabels;
         this.onObjectCreated(this._edgeLabelRoot);
         this.onObjectCreated(this._adaptiveLabelRoot);
         this._root.add(this._edgeLabelRoot);
@@ -592,14 +603,16 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
         cssColor: string,
         opacity: number,
         fontSize: number,
-        showBackground: boolean,
     ) {
-        const label = new CSS2DObject(
-            createLabelElement(text, cssColor, opacity, fontSize, showBackground),
-        );
-        label.name = text;
-        label.position.set(x, y, z);
-        return label;
+        const { container, label } = createLabelElement(text, cssColor, opacity, fontSize);
+
+        this.dispatchEvent({ type: 'label-created', label });
+
+        const labelObject = new CSS2DObject(container);
+        labelObject.name = text;
+        labelObject.position.set(x, y, z);
+
+        return labelObject;
     }
 
     private buildEdgeLabels() {
@@ -612,7 +625,6 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
 
         const numberFormat = this.style.numberFormat;
         const cssColor = getCssColor(this.style.color);
-        const showBackground = this.style.showLabelBackground;
         const opacity = this.opacity;
         const fontSize = this.style.fontSize;
 
@@ -670,7 +682,6 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
                     cssColor,
                     opacity,
                     fontSize,
-                    showBackground,
                 );
 
                 g.add(label);
@@ -752,7 +763,6 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
         const cssColor = getCssColor(this.style.color);
         const opacity = this.opacity;
         const fontSize = this.style.fontSize;
-        const showBackground = this.style.showLabelBackground;
 
         const relative = this.origin === TickOrigin.Relative;
         const yPrefix = relative ? '' : 'y: ';
@@ -839,7 +849,6 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
                             cssColor,
                             opacity,
                             fontSize,
-                            showBackground,
                         );
 
                         const ndc = position.project(view.camera);

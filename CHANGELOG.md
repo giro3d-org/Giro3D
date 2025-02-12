@@ -31,6 +31,7 @@ Maps now support light-based shadows and lighting provided by [three.js lights](
 - **Map**: support light-based lighting and shadows (#502, #443)
 - **Sun**: add functions to compute the position of sun
 - **AxisGrid**: support adaptive labels (#555)
+- **AxisGrid**: add `"label-created"` event to customize the DOM label after creation
 - **ColorMap**: add `.clone()` method
 - **Tiles3D**: replace underlying implementation with 3d-tiles-renderer (#191)
 - **StatusBar**: add function to dynamically update attributions
