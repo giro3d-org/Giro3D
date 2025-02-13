@@ -56,19 +56,6 @@ type MapLightingOptions = {
      * @defaultValue 1
      */
     hillshadeIntensity?: number;
-
-    /**
-     * If `true`, the map will cast shadows.
-     * Note: only available if {@link mode} is {@link MapLightingMode.LightBased}
-     * @defaultValue true
-     */
-    castShadows?: boolean;
-    /**
-     * If `true`, the map will receive shadows.
-     * Note: only available if {@link mode} is {@link MapLightingMode.LightBased}
-     * @defaultValue true
-     */
-    receiveShadows?: boolean;
 };
 
 export default MapLightingOptions;
