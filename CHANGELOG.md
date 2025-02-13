@@ -48,6 +48,7 @@ Maps now support light-based shadows and lighting provided by [three.js lights](
 
 ### Fix
 
+- **GeoTIFFSource**: fix incorrect count of images (#568)
 - **PointCloud**: clone the default ColorMap
 - **PointCloudMaterial**: enable transparent flag if colormap has an opacity array (#559)
 - **PointCloud**: compute the world matrix of the node before the bounding box (#556)
