@@ -24,6 +24,11 @@ const instance = new Instance({
     backgroundColor: null,
 });
 
+// We are going to change the transform of the scene itself,
+// so  we need to enable this, which by default is disabled
+// for performance reasons.
+instance.scene.matrixWorldAutoUpdate = true;
+
 const minAltitude = -1531;
 const maxAltitude = 2388;
 
