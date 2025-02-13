@@ -773,9 +773,19 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
 
         const dimensions = this.volume.extent.dimensions(tmpVec2);
 
-        const xOrigin = this.object3d.position.x - dimensions.x / 2;
-        const yOrigin = this.object3d.position.y - dimensions.y / 2;
-        const zOrigin = this.object3d.position.z - (this.volume.ceiling - this.volume.floor) / 2;
+        let xOrigin = 0;
+        let yOrigin = 0;
+        let zOrigin = 0;
+
+        if (relative) {
+            xOrigin = 0;
+            yOrigin = 0;
+            zOrigin = this.volume.floor;
+        } else {
+            xOrigin = this.object3d.position.x - dimensions.x / 2;
+            yOrigin = this.object3d.position.y - dimensions.y / 2;
+            zOrigin = this.object3d.position.z - (this.volume.ceiling - this.volume.floor) / 2;
+        }
 
         const frustum = view.frustum;
 
@@ -821,11 +831,9 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
                 line.start.copy(l.start).applyMatrix4(matrix);
                 line.end.copy(l.end).applyMatrix4(matrix);
 
-                const rawValue = l.labelValue + (relative ? 0 : offset);
+                const rawValue = l.labelValue + offset;
                 const labelValue = numberFormat.format(Math.round(rawValue));
                 const text = `${prefix}${labelValue}${suffix}`;
-
-                console.log(line.clone());
 
                 // Let's create labels that are located at the edge of the viewport.
                 // For each plane in the frustum, we will check if the line that this label
@@ -908,9 +916,9 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
         this._height = Math.abs(this.volume.ceiling - this.volume.floor);
         this._midHeight = this.volume.floor + this._height / 2;
 
-        const x = this._dimensions.x;
-        const y = this._dimensions.y;
-        const z = this._height;
+        const xSize = this._dimensions.x;
+        const ySize = this._dimensions.y;
+        const zSize = this._height;
 
         const extent = this.volume.extent;
 
@@ -920,76 +928,107 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
         const yStart = relative ? 0 : this._ticks.y - mod(extent.south, this._ticks.y);
         const zStart = this._ticks.z - mod(this.volume.floor, this._ticks.z);
 
+        const xMin = xStart;
+        const xMax = xMin + xSize;
+
+        const yMin = yStart;
+        const yMax = yMin + ySize;
+
+        const zMin = this.volume.floor;
+        const zMax = zMin + zSize;
+
         this.deleteSides();
 
-        this._floor = this.buildSide(
-            'floor',
-            'X',
-            'Y',
-            x,
-            y,
-            xStart,
-            this._ticks.x,
-            yStart,
-            this._ticks.y,
-        );
-        this._ceiling = this.buildSide(
-            'ceiling',
-            'X',
-            'Y',
-            x,
-            y,
-            xStart,
-            this._ticks.x,
-            yStart,
-            this._ticks.y,
-        );
-
-        this._front = this.buildSide(
-            'front',
-            'X',
-            'Z',
-            x,
-            z,
-            xStart,
-            this._ticks.x,
-            zStart,
-            this._ticks.z,
-        );
-        this._back = this.buildSide(
-            'back',
-            'X',
-            'Z',
-            x,
-            z,
-            xStart,
-            this._ticks.x,
-            zStart,
-            this._ticks.z,
-        );
-
-        this._left = this.buildSide(
-            'left',
-            'Y',
-            'Z',
-            y,
-            z,
-            yStart,
-            this._ticks.y,
-            zStart,
-            this._ticks.z,
-        );
-        this._right = this.buildSide(
-            'right',
-            'Y',
-            'Z',
-            y,
-            z,
-            yStart,
-            this._ticks.y,
-            zStart,
-            this._ticks.z,
-        );
+        this._floor = this.buildSide({
+            name: 'floor',
+            horizontalLineAxis: 'X',
+            verticalLineAxis: 'Y',
+            width: xSize,
+            height: ySize,
+            xMin,
+            xMax,
+            yMin,
+            yMax,
+            xOffset: xStart,
+            xStep: this._ticks.x,
+            yOffset: yStart,
+            yStep: this._ticks.y,
+        });
+        this._ceiling = this.buildSide({
+            name: 'ceiling',
+            horizontalLineAxis: 'X',
+            verticalLineAxis: 'Y',
+            width: xSize,
+            height: ySize,
+            xMin,
+            xMax,
+            yMin,
+            yMax,
+            xOffset: xStart,
+            xStep: this._ticks.x,
+            yOffset: yStart,
+            yStep: this._ticks.y,
+        });
+        this._front = this.buildSide({
+            name: 'front',
+            horizontalLineAxis: 'X',
+            verticalLineAxis: 'Z',
+            width: xSize,
+            height: zSize,
+            xMin,
+            xMax,
+            yMin: zMin,
+            yMax: zMax,
+            xOffset: xStart,
+            xStep: this._ticks.x,
+            yOffset: zStart,
+            yStep: this._ticks.z,
+        });
+        this._back = this.buildSide({
+            name: 'back',
+            horizontalLineAxis: 'X',
+            verticalLineAxis: 'Z',
+            width: xSize,
+            height: zSize,
+            xMin,
+            xMax,
+            yMin: zMin,
+            yMax: zMax,
+            xOffset: xStart,
+            xStep: this._ticks.x,
+            yOffset: zStart,
+            yStep: this._ticks.z,
+        });
+        this._left = this.buildSide({
+            name: 'left',
+            horizontalLineAxis: 'Y',
+            verticalLineAxis: 'Z',
+            width: ySize,
+            height: zSize,
+            xMin: yMin,
+            xMax: yMax,
+            yMin: zMin,
+            yMax: zMax,
+            xOffset: yStart,
+            xStep: this._ticks.y,
+            yOffset: zStart,
+            yStep: this._ticks.z,
+        });
+        this._right = this.buildSide({
+            name: 'right',
+            horizontalLineAxis: 'Y',
+            verticalLineAxis: 'Z',
+            width: ySize,
+            height: zSize,
+            xMin: yMin,
+            xMax: yMax,
+            yMin: zMin,
+            yMax: zMax,
+            xOffset: yStart,
+            xStep: this._ticks.y,
+            yOffset: zStart,
+            yStep: this._ticks.z,
+        });
 
         // Since the root group is located at the extent's center,
         // all subsequent transformations are local to this point.
@@ -1038,17 +1077,37 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
      * @param yStep - The distance between lines on the Y axis.
      * @returns the mesh object.
      */
-    private buildSide(
-        name: string,
-        horizontalLineAxis: Axis,
-        verticalLineAxis: Axis,
-        width: number,
-        height: number,
-        xOffset: number,
-        xStep: number,
-        yOffset: number,
-        yStep: number,
-    ): Side {
+    private buildSide(params: {
+        name: string;
+        horizontalLineAxis: Axis;
+        verticalLineAxis: Axis;
+        width: number;
+        height: number;
+        xMin: number;
+        xMax: number;
+        yMin: number;
+        yMax: number;
+        xOffset: number;
+        xStep: number;
+        yOffset: number;
+        yStep: number;
+    }): Side {
+        const {
+            name,
+            horizontalLineAxis,
+            verticalLineAxis,
+            width,
+            height,
+            xMin,
+            xMax,
+            yMin,
+            yMax,
+            xOffset,
+            xStep,
+            yOffset,
+            yStep,
+        } = params;
+
         const vertices: number[] = [];
         const centerX = width / 2;
         const centerY = height / 2;
@@ -1083,12 +1142,12 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
         }
 
         // Vertical boundary lines
-        pushSegment(left, bottom, left, top, left, verticalLineAxis);
-        pushSegment(right, bottom, right, top, right, verticalLineAxis);
+        pushSegment(left, bottom, left, top, xMin, verticalLineAxis);
+        pushSegment(right, bottom, right, top, xMax, verticalLineAxis);
 
         // Horizontal boundary lines
-        pushSegment(left, bottom, right, bottom, bottom, horizontalLineAxis);
-        pushSegment(left, top, right, top, top, horizontalLineAxis);
+        pushSegment(left, bottom, right, bottom, yMin, horizontalLineAxis);
+        pushSegment(left, top, right, top, yMax, horizontalLineAxis);
 
         // Horizontal subdivisions
         while (x < right) {
