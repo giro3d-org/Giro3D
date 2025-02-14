@@ -16,7 +16,7 @@ import {
 } from 'three';
 import type Extent from '../../core/geographic/Extent';
 import type { LayerNode } from '../../core/layer/Layer';
-import PointCloudMaterial, { MODE } from '../../renderer/PointCloudMaterial';
+import PointCloudMaterial from '../../renderer/PointCloudMaterial';
 import { enablePointCloudPostProcessing } from '../../renderer/RenderPipeline';
 import type PointCloudParameters from './PointCloudParameters';
 
@@ -85,8 +85,7 @@ export default class PointCloudPlugin {
         material.size = this._parameters.pointSize;
         material.colorMap = this._parameters.pointCloudColorMap;
         material.classifications = this._parameters.classifications;
-        material.mode =
-            material.colorLayer != null ? MODE.TEXTURE : this._parameters.pointCloudMode;
+        material.mode = this._parameters.pointCloudMode;
 
         material.brightness = this._parameters.colorimetry.brightness;
         material.contrast = this._parameters.colorimetry.contrast;
