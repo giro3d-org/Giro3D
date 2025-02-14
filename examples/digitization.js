@@ -203,3 +203,6 @@ bindButton('polygon', () => {
     disableButtons(true);
     tool.createPolygon().then(createFeature);
 });
+
+// Disable context menu on canvas to avoid disturbing the right click to end drawing.
+instance.domElement.addEventListener('contextmenu', event => event.preventDefault());
