@@ -118,7 +118,7 @@ const capabilitiesUrl =
     'https://data.geopf.fr/wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetCapabilities';
 
 WmtsSource.fromCapabilities(capabilitiesUrl, {
-    layer: 'ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES',
+    layer: 'ELEVATION.ELEVATIONGRIDCOVERAGE',
     format: new BilFormat(),
     noDataValue,
 })
