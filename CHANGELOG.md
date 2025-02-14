@@ -1,5 +1,59 @@
 # Changelog
 
+## v0.42.0 (2025-02-10)
+
+### Improved 3D Tiles support
+
+This release integrates the `3d-tiles-renderer` package into Giro3D. This enables a much better support for the 3D Tiles format, including the 3D Tiles 1.1 specification. This makes it very easy to load [Google Photorealistic 3D Tiles](https://developers.google.com/maps/documentation/tile/3d-tiles) into Giro3D !
+
+### Cast shadows and dynamic lighting in Maps
+
+Maps now support light-based shadows and lighting provided by [three.js lights](https://threejs.org/docs/index.html?q=light#api/en/lights/Light), in addition to the hillshade mode (which is still the default mode). When using this mode, the terrain is shaded by all directional and point lights in the scene. This allows for light-based simulations such as sun shadows for a given time of day for example.
+
+### BREAKING CHANGE
+
+- Map lighting and shading options have changed:
+
+    - Map lighting options are now under `entities/` rather than `core/`
+    - Map lighing options are renamed `MapLightingOptions`
+    - Hillshade specific lighting options are prefixed `hillshade` (e.g
+      `hillshadeAzimuth`, `hillshadeIntensity`...)
+
+- The `Tiles3D` entity's API has changed and the
+  `Tiles3DSource` class is removed. Please refer to the API documentation
+  for more information.
+- The `ColorMap` constructor now uses named parameters
+  rather than positional parameters, i.e `new ColorMap({ colors, min, max })`
+- `ColorMap` and `ColorMapMode` are moved from `/core/layer/` into `/core` since they don't apply only to layers.
+
+### Feat
+
+- **Map**: support light-based lighting and shadows (#502, #443)
+- **Sun**: add functions to compute the position of sun
+- **AxisGrid**: support adaptive labels (#555)
+- **AxisGrid**: add `"label-created"` event to customize the DOM label after creation
+- **ColorMap**: add `.clone()` method
+- **Tiles3D**: replace underlying implementation with 3d-tiles-renderer (#191)
+- **StatusBar**: add function to dynamically update attributions
+- **FeatureCollection**: support shading through the style API
+- **WmsSource**: add support for the .requestPriority constructor option (#305)
+- **VectorTileSource**: add support for the .requestPriority constructor option (#305)
+- **VectorSource**: add support for the .requestPriority constructor option (#305)
+- **TiledImageSource**: add support for the .requestPriority constructor option (#305)
+- **StaticImageSource**: add support for the .requestPriority constructor option (#305)
+- **GeoTIFFSource**: add support for the .requestPriority constructor option (#305)
+- **ImageSource**: support HTTP priorities (#305)
+- **Fetcher**: support request priority (#305)
+- **PointCloud**: add the `.brightness`, `.constrast` and `.saturation` properties
+
+### Fix
+
+- **GeoTIFFSource**: fix incorrect count of images (#568)
+- **PointCloud**: clone the default ColorMap
+- **PointCloudMaterial**: enable transparent flag if colormap has an opacity array (#559)
+- **PointCloud**: compute the world matrix of the node before the bounding box (#556)
+- **GeometryConverter**: support triangulation of vertical polygons (#544)
+
 ## v0.41.0 (2024-12-19)
 
 This release brings support for LAS-based point clouds, such as LAS/LAZ files, COPC files and Potree 1 tilesets with LAZ tiles (not Potree 2.x tilesets however). Those data sources are now consumed by the new `PointCloud` entity. The new `AggregatePointCloudSource` allows users to display many point cloud datasets under a single entity.

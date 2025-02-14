@@ -111,6 +111,8 @@ function initializeCamera() {
     instance.renderingOptions.enableInpainting = true;
     instance.renderingOptions.enablePointCloudOcclusion = true;
 
+    pointcloud.pointCloudMode = MODE.TEXTURE;
+
     StatusBar.bind(instance);
 }
 

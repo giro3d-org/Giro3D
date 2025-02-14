@@ -10,8 +10,9 @@ import {
     Vector3,
     type Material,
 } from 'three';
+import type ColorimetryOptions from '../core/ColorimetryOptions';
+import { defaultColorimetryOptions } from '../core/ColorimetryOptions';
 import ColorMap from '../core/ColorMap';
-// TODO rename pointcloud object to PointCloudMesh
 import type Context from '../core/Context';
 import Extent from '../core/geographic/Extent';
 import type ColorLayer from '../core/layer/ColorLayer';
@@ -248,6 +249,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
     private _disposed = false;
     private _pointBudget: number | null = null;
     private _colorMap: ColorMap = DEFAULT_COLORMAP.clone();
+    private _colorimetry: ColorimetryOptions = defaultColorimetryOptions();
 
     // Available after initialization
     private _rootNode: PointCloudNode | null = null;
@@ -397,6 +399,59 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
 
     get layerCount(): number {
         return this._colorLayer != null ? 1 : 0;
+    }
+
+    private updateMaterials() {
+        this.forEachNodeInfo(info => {
+            if (info.mesh != null) {
+                this.updateMaterial(info.mesh);
+            }
+        });
+    }
+
+    /**
+     * Gets or sets the brightness of this point cloud.
+     */
+    get brightness() {
+        return this._colorimetry.brightness;
+    }
+
+    set brightness(v: number) {
+        if (this._colorimetry.brightness !== v) {
+            this._colorimetry.brightness = v;
+            this.updateMaterials();
+            this.notifyChange(this);
+        }
+    }
+
+    /**
+     * Gets or sets the contrast of this point cloud.
+     */
+    get contrast() {
+        return this._colorimetry.contrast;
+    }
+
+    set contrast(v: number) {
+        if (this._colorimetry.contrast !== v) {
+            this._colorimetry.contrast = v;
+            this.updateMaterials();
+            this.notifyChange(this);
+        }
+    }
+
+    /**
+     * Gets or sets the saturation of this point cloud.
+     */
+    get saturation() {
+        return this._colorimetry.saturation;
+    }
+
+    set saturation(v: number) {
+        if (this._colorimetry.saturation !== v) {
+            this._colorimetry.saturation = v;
+            this.updateMaterials();
+            this.notifyChange(this);
+        }
     }
 
     /**
@@ -1138,6 +1193,10 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         material.size = this._pointSize;
         material.mode = this._shaderMode;
         material.enableClassification = this._shaderMode === MODE.CLASSIFICATION;
+
+        material.brightness = this._colorimetry.brightness;
+        material.saturation = this._colorimetry.saturation;
+        material.contrast = this._colorimetry.contrast;
 
         if (this.colorMap) {
             material.colorMap = this.colorMap;

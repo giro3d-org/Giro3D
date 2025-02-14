@@ -9,6 +9,7 @@ import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import Tiles3D from '@giro3d/giro3d/entities/Tiles3D.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
+import { MODE } from '@giro3d/giro3d/renderer/PointCloudMaterial.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
@@ -32,6 +33,7 @@ instance.view.setControls(controls);
 const pointcloud = new Tiles3D({
     url: 'https://3d.oslandia.com/lidar_hd/tileset.json',
     errorTarget: 15,
+    pointCloudMode: MODE.TEXTURE,
 });
 
 // add pointcloud to scene

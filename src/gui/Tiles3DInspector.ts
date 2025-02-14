@@ -28,8 +28,22 @@ class Tiles3DInspector extends EntityInspector<Tiles3D> {
             opacity: true,
         });
 
+        this.addController(this.entity, 'castShadow');
+        this.addController(this.entity, 'receiveShadow');
         this.addController(this.entity, 'errorTarget').min(0.1).max(1000);
         this.addController(this.entity, 'pointSize').min(0).max(20).step(1);
+        this.addController(this.entity.pointCloudColorimetryOptions, 'brightness')
+            .min(0)
+            .max(1)
+            .onChange(() => this.notify(entity));
+        this.addController(this.entity.pointCloudColorimetryOptions, 'contrast')
+            .min(0)
+            .max(1)
+            .onChange(() => this.notify(entity));
+        this.addController(this.entity.pointCloudColorimetryOptions, 'saturation')
+            .min(0)
+            .max(1)
+            .onChange(() => this.notify(entity));
 
         this.colorMapInspector = new ColorMapInspector(
             this.gui,

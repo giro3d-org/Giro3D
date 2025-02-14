@@ -529,9 +529,6 @@ class TileMesh
             }
         }
 
-        this.castShadow = materialOptions.lighting.castShadows;
-        this.receiveShadow = materialOptions.lighting.receiveShadows;
-
         this.showHelpers = materialOptions.showColliderMeshes ?? false;
     }
 

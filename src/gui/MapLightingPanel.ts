@@ -34,8 +34,6 @@ class MapLightingPanel extends Panel {
         this.addController(options, 'hillshadeZenith', 0, 90).onChange(() => this.notify());
         this.addController(options, 'hillshadeAzimuth', 0, 360).onChange(() => this.notify());
         this.addController(options, 'elevationLayersOnly').onChange(() => this.notify());
-        this.addController(options, 'castShadows').onChange(() => this.notify());
-        this.addController(options, 'receiveShadows').onChange(() => this.notify());
     }
 }
 

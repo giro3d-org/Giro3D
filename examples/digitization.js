@@ -51,7 +51,7 @@ const capabilitiesUrl =
     'https://data.geopf.fr/wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetCapabilities';
 
 WmtsSource.fromCapabilities(capabilitiesUrl, {
-    layer: 'ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES',
+    layer: 'ELEVATION.ELEVATIONGRIDCOVERAGE',
     format: new BilFormat(),
     noDataValue,
 })
@@ -203,3 +203,6 @@ bindButton('polygon', () => {
     disableButtons(true);
     tool.createPolygon().then(createFeature);
 });
+
+// Disable context menu on canvas to avoid disturbing the right click to end drawing.
+instance.domElement.addEventListener('contextmenu', event => event.preventDefault());

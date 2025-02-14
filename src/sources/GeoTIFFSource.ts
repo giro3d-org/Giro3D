@@ -452,7 +452,7 @@ class GeoTIFFSource extends ImageSource {
         this._images.push(makeLevel(firstImage, firstImage.getResolution()));
 
         const rawImageCount = await this._tiffImage.getImageCount();
-        let nonMaskImageCount = 0;
+        let nonMaskImageCount = 1; // Includes the main image previously pushed
 
         // We want to preserve the order of the overviews so we await them inside
         // the loop not to have the smallest overviews coming before the biggest

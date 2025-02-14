@@ -15,7 +15,8 @@ function executeSearchQuery(elem) {
     examples.forEach(o => {
         /** @type {HTMLElement} */
         const element = o.element;
-        const visible = re.test(element.innerHTML);
+        const searchTextAttr = element.getAttribute('data-giro3d-searchtext');
+        const visible = re.test(searchTextAttr);
 
         o.element.style.display = visible ? o.display : 'none';
     });

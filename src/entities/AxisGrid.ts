@@ -23,7 +23,6 @@ import type Extent from '../core/geographic/Extent';
 import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../core/MemoryUsage';
 import Helpers from '../helpers/Helpers';
 import type View from '../renderer/View';
-import { getContrastColor } from '../utils/ColorUtils';
 import { isBufferGeometry } from '../utils/predicates';
 import { nonNull } from '../utils/tsutils';
 import type { EntityUserData } from './Entity';
@@ -88,14 +87,12 @@ export interface Style {
     fontSize: number;
     /** The number format for the labels. */
     numberFormat: Intl.NumberFormat;
-    showLabelBackground: boolean;
 }
 
 export const DEFAULT_STYLE: Style = {
     color: new Color('white'),
     fontSize: 10,
     numberFormat: new Intl.NumberFormat(),
-    showLabelBackground: false,
 };
 
 /**
@@ -162,36 +159,37 @@ function getCssColor(color: ColorRepresentation) {
     return `#${new Color(color).getHexString()}`;
 }
 
-function createLabelElement(
-    text: string,
-    color: string,
-    opacity: number,
-    fontSize: number,
-    showBackground: boolean,
-) {
-    const div = document.createElement('div');
+function createLabelElement(text: string, color: string, opacity: number, fontSize: number) {
+    const container = document.createElement('div');
 
     // Static properties
-    div.style.textAlign = 'center';
+    container.style.textAlign = 'center';
 
     // Dynamic properties
-    const shadow = getContrastColor(color);
-    const span = document.createElement('span');
-    div.style.textShadow = `${shadow} 0 0 2px`;
-    span.innerText = text;
-    span.style.paddingLeft = '5pt';
-    span.style.paddingRight = '5pt';
-    if (showBackground) {
-        span.style.backgroundColor = `${shadow}44`; // the 44 suffix is for opacity
-    }
-    div.appendChild(span);
+    const label = document.createElement('span');
+    label.innerText = text;
+    label.style.paddingLeft = '5pt';
+    label.style.paddingRight = '5pt';
+    container.appendChild(label);
 
     // API exposed properties
-    div.style.opacity = `${opacity}`;
-    div.style.color = color;
-    div.style.fontSize = `${fontSize}pt`;
+    container.style.opacity = `${opacity}`;
+    container.style.color = color;
+    container.style.fontSize = `${fontSize}pt`;
 
-    return div;
+    return { container, label };
+}
+
+export interface AxisGridEventMap extends Entity3DEventMap {
+    /**
+     * Raised when a new label is created.
+     */
+    'label-created': {
+        /**
+         * The label DOM element.
+         */
+        label: HTMLSpanElement;
+    };
 }
 
 /**
@@ -221,8 +219,16 @@ function createLabelElement(
  *   },
  * });
  * ```
+ *
+ * ## Label customization
+ *
+ * By registering the `'label-created'` event, you can modify the DOM element for the newly created label:
+ *
+ * ```js
+ * grid.addEventListener('label-created', ({ label }) => label.classList.add('my-custom-css-class'));
+ * ```
  */
-class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, UserData> {
+class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, UserData> {
     readonly type = 'AxisGrid' as const;
     /**
      * Read-only flag to check if a given object is of type AxisGrid.
@@ -288,6 +294,12 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
          * The style to apply to lines and labels.
          */
         style?: Partial<Style>;
+
+        /**
+         * Toggles adaptive labels: labels outside the screen will be rendered at the screen edge.
+         * @defaultValue false
+         */
+        adaptiveLabels?: boolean;
     }) {
         super(new Group());
 
@@ -303,9 +315,8 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
             color: options.style?.color ?? DEFAULT_STYLE.color,
             fontSize: options.style?.fontSize ?? DEFAULT_STYLE.fontSize,
             numberFormat: options.style?.numberFormat ?? DEFAULT_STYLE.numberFormat,
-            showLabelBackground:
-                options.style?.showLabelBackground ?? DEFAULT_STYLE.showLabelBackground,
         };
+        this._adaptiveLabels = options.adaptiveLabels ?? this._adaptiveLabels;
         this.onObjectCreated(this._edgeLabelRoot);
         this.onObjectCreated(this._adaptiveLabelRoot);
         this._root.add(this._edgeLabelRoot);
@@ -592,14 +603,16 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
         cssColor: string,
         opacity: number,
         fontSize: number,
-        showBackground: boolean,
     ) {
-        const label = new CSS2DObject(
-            createLabelElement(text, cssColor, opacity, fontSize, showBackground),
-        );
-        label.name = text;
-        label.position.set(x, y, z);
-        return label;
+        const { container, label } = createLabelElement(text, cssColor, opacity, fontSize);
+
+        this.dispatchEvent({ type: 'label-created', label });
+
+        const labelObject = new CSS2DObject(container);
+        labelObject.name = text;
+        labelObject.position.set(x, y, z);
+
+        return labelObject;
     }
 
     private buildEdgeLabels() {
@@ -612,7 +625,6 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
 
         const numberFormat = this.style.numberFormat;
         const cssColor = getCssColor(this.style.color);
-        const showBackground = this.style.showLabelBackground;
         const opacity = this.opacity;
         const fontSize = this.style.fontSize;
 
@@ -670,7 +682,6 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
                     cssColor,
                     opacity,
                     fontSize,
-                    showBackground,
                 );
 
                 g.add(label);
@@ -752,7 +763,6 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
         const cssColor = getCssColor(this.style.color);
         const opacity = this.opacity;
         const fontSize = this.style.fontSize;
-        const showBackground = this.style.showLabelBackground;
 
         const relative = this.origin === TickOrigin.Relative;
         const yPrefix = relative ? '' : 'y: ';
@@ -763,9 +773,19 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
 
         const dimensions = this.volume.extent.dimensions(tmpVec2);
 
-        const xOrigin = this.object3d.position.x - dimensions.x / 2;
-        const yOrigin = this.object3d.position.y - dimensions.y / 2;
-        const zOrigin = this.object3d.position.z - (this.volume.ceiling - this.volume.floor) / 2;
+        let xOrigin = 0;
+        let yOrigin = 0;
+        let zOrigin = 0;
+
+        if (relative) {
+            xOrigin = 0;
+            yOrigin = 0;
+            zOrigin = this.volume.floor;
+        } else {
+            xOrigin = this.object3d.position.x - dimensions.x / 2;
+            yOrigin = this.object3d.position.y - dimensions.y / 2;
+            zOrigin = this.object3d.position.z - (this.volume.ceiling - this.volume.floor) / 2;
+        }
 
         const frustum = view.frustum;
 
@@ -811,11 +831,9 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
                 line.start.copy(l.start).applyMatrix4(matrix);
                 line.end.copy(l.end).applyMatrix4(matrix);
 
-                const rawValue = l.labelValue + (relative ? 0 : offset);
+                const rawValue = l.labelValue + offset;
                 const labelValue = numberFormat.format(Math.round(rawValue));
                 const text = `${prefix}${labelValue}${suffix}`;
-
-                console.log(line.clone());
 
                 // Let's create labels that are located at the edge of the viewport.
                 // For each plane in the frustum, we will check if the line that this label
@@ -839,7 +857,6 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
                             cssColor,
                             opacity,
                             fontSize,
-                            showBackground,
                         );
 
                         const ndc = position.project(view.camera);
@@ -899,9 +916,9 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
         this._height = Math.abs(this.volume.ceiling - this.volume.floor);
         this._midHeight = this.volume.floor + this._height / 2;
 
-        const x = this._dimensions.x;
-        const y = this._dimensions.y;
-        const z = this._height;
+        const xSize = this._dimensions.x;
+        const ySize = this._dimensions.y;
+        const zSize = this._height;
 
         const extent = this.volume.extent;
 
@@ -911,76 +928,107 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
         const yStart = relative ? 0 : this._ticks.y - mod(extent.south, this._ticks.y);
         const zStart = this._ticks.z - mod(this.volume.floor, this._ticks.z);
 
+        const xMin = xStart;
+        const xMax = xMin + xSize;
+
+        const yMin = yStart;
+        const yMax = yMin + ySize;
+
+        const zMin = this.volume.floor;
+        const zMax = zMin + zSize;
+
         this.deleteSides();
 
-        this._floor = this.buildSide(
-            'floor',
-            'X',
-            'Y',
-            x,
-            y,
-            xStart,
-            this._ticks.x,
-            yStart,
-            this._ticks.y,
-        );
-        this._ceiling = this.buildSide(
-            'ceiling',
-            'X',
-            'Y',
-            x,
-            y,
-            xStart,
-            this._ticks.x,
-            yStart,
-            this._ticks.y,
-        );
-
-        this._front = this.buildSide(
-            'front',
-            'X',
-            'Z',
-            x,
-            z,
-            xStart,
-            this._ticks.x,
-            zStart,
-            this._ticks.z,
-        );
-        this._back = this.buildSide(
-            'back',
-            'X',
-            'Z',
-            x,
-            z,
-            xStart,
-            this._ticks.x,
-            zStart,
-            this._ticks.z,
-        );
-
-        this._left = this.buildSide(
-            'left',
-            'Y',
-            'Z',
-            y,
-            z,
-            yStart,
-            this._ticks.y,
-            zStart,
-            this._ticks.z,
-        );
-        this._right = this.buildSide(
-            'right',
-            'Y',
-            'Z',
-            y,
-            z,
-            yStart,
-            this._ticks.y,
-            zStart,
-            this._ticks.z,
-        );
+        this._floor = this.buildSide({
+            name: 'floor',
+            horizontalLineAxis: 'X',
+            verticalLineAxis: 'Y',
+            width: xSize,
+            height: ySize,
+            xMin,
+            xMax,
+            yMin,
+            yMax,
+            xOffset: xStart,
+            xStep: this._ticks.x,
+            yOffset: yStart,
+            yStep: this._ticks.y,
+        });
+        this._ceiling = this.buildSide({
+            name: 'ceiling',
+            horizontalLineAxis: 'X',
+            verticalLineAxis: 'Y',
+            width: xSize,
+            height: ySize,
+            xMin,
+            xMax,
+            yMin,
+            yMax,
+            xOffset: xStart,
+            xStep: this._ticks.x,
+            yOffset: yStart,
+            yStep: this._ticks.y,
+        });
+        this._front = this.buildSide({
+            name: 'front',
+            horizontalLineAxis: 'X',
+            verticalLineAxis: 'Z',
+            width: xSize,
+            height: zSize,
+            xMin,
+            xMax,
+            yMin: zMin,
+            yMax: zMax,
+            xOffset: xStart,
+            xStep: this._ticks.x,
+            yOffset: zStart,
+            yStep: this._ticks.z,
+        });
+        this._back = this.buildSide({
+            name: 'back',
+            horizontalLineAxis: 'X',
+            verticalLineAxis: 'Z',
+            width: xSize,
+            height: zSize,
+            xMin,
+            xMax,
+            yMin: zMin,
+            yMax: zMax,
+            xOffset: xStart,
+            xStep: this._ticks.x,
+            yOffset: zStart,
+            yStep: this._ticks.z,
+        });
+        this._left = this.buildSide({
+            name: 'left',
+            horizontalLineAxis: 'Y',
+            verticalLineAxis: 'Z',
+            width: ySize,
+            height: zSize,
+            xMin: yMin,
+            xMax: yMax,
+            yMin: zMin,
+            yMax: zMax,
+            xOffset: yStart,
+            xStep: this._ticks.y,
+            yOffset: zStart,
+            yStep: this._ticks.z,
+        });
+        this._right = this.buildSide({
+            name: 'right',
+            horizontalLineAxis: 'Y',
+            verticalLineAxis: 'Z',
+            width: ySize,
+            height: zSize,
+            xMin: yMin,
+            xMax: yMax,
+            yMin: zMin,
+            yMax: zMax,
+            xOffset: yStart,
+            xStep: this._ticks.y,
+            yOffset: zStart,
+            yStep: this._ticks.z,
+        });
 
         // Since the root group is located at the extent's center,
         // all subsequent transformations are local to this point.
@@ -1029,17 +1077,37 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
      * @param yStep - The distance between lines on the Y axis.
      * @returns the mesh object.
      */
-    private buildSide(
-        name: string,
-        horizontalLineAxis: Axis,
-        verticalLineAxis: Axis,
-        width: number,
-        height: number,
-        xOffset: number,
-        xStep: number,
-        yOffset: number,
-        yStep: number,
-    ): Side {
+    private buildSide(params: {
+        name: string;
+        horizontalLineAxis: Axis;
+        verticalLineAxis: Axis;
+        width: number;
+        height: number;
+        xMin: number;
+        xMax: number;
+        yMin: number;
+        yMax: number;
+        xOffset: number;
+        xStep: number;
+        yOffset: number;
+        yStep: number;
+    }): Side {
+        const {
+            name,
+            horizontalLineAxis,
+            verticalLineAxis,
+            width,
+            height,
+            xMin,
+            xMax,
+            yMin,
+            yMax,
+            xOffset,
+            xStep,
+            yOffset,
+            yStep,
+        } = params;
+
         const vertices: number[] = [];
         const centerX = width / 2;
         const centerY = height / 2;
@@ -1074,12 +1142,12 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<Entity3DEventMap, Use
         }
 
         // Vertical boundary lines
-        pushSegment(left, bottom, left, top, left, verticalLineAxis);
-        pushSegment(right, bottom, right, top, right, verticalLineAxis);
+        pushSegment(left, bottom, left, top, xMin, verticalLineAxis);
+        pushSegment(right, bottom, right, top, xMax, verticalLineAxis);
 
         // Horizontal boundary lines
-        pushSegment(left, bottom, right, bottom, bottom, horizontalLineAxis);
-        pushSegment(left, top, right, top, top, horizontalLineAxis);
+        pushSegment(left, bottom, right, bottom, yMin, horizontalLineAxis);
+        pushSegment(left, top, right, top, yMax, horizontalLineAxis);
 
         // Horizontal subdivisions
         while (x < right) {

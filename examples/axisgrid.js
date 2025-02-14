@@ -41,6 +41,10 @@ const map = new Map({
     backgroundColor: 'white',
 });
 
+const params = {
+    useCustomCss: false,
+};
+
 instance.add(map);
 
 const source = new TiledImageSource({
@@ -81,6 +85,22 @@ const axisGrid = new AxisGrid({
         z: 200,
     },
 });
+
+/**
+ * @param {object} param0
+ * @param {HTMLSpanElement} param0.label - The label element.
+ */
+const onLabelCreated = ({ label }) => {
+    if (params.useCustomCss) {
+        label.classList.add('badge');
+        label.classList.add('rounded-pill');
+        label.classList.add('text-bg-light');
+    }
+};
+
+// Let's customize the labels with bootstrap classes
+// In you own application, you can use your own CSS classes of courses
+axisGrid.addEventListener('label-created', onLabelCreated);
 
 instance.add(axisGrid);
 
@@ -132,8 +152,8 @@ bindToggle('adaptive-labels', v => {
     axisGrid.adaptiveLabels = v;
     instance.notifyChange(axisGrid);
 });
-bindToggle('label-background', v => {
-    axisGrid.style.showLabelBackground = v;
+bindToggle('custom-css', v => {
+    params.useCustomCss = v;
     axisGrid.refresh();
     instance.notifyChange(axisGrid);
 });

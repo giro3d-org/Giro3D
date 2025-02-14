@@ -25,9 +25,6 @@ class AxisGridInspector extends EntityInspector<AxisGrid> {
 
         this.addColorController(this.entity, 'color').onChange(v => this.updateGridColor(v));
         this.addController(this.entity.style, 'fontSize', 1, 20, 1).onChange(() => this._rebuild());
-        this.addController(this.entity.style, 'showLabelBackground').onChange(() =>
-            this._rebuild(),
-        );
         this.addController(this.entity, 'showHelpers').onChange(() => this.notify(this.entity));
         this.addController(this.entity, 'showLabels').onChange(() => this.notify(this.entity));
         this.addController(this.entity, 'adaptiveLabels');
