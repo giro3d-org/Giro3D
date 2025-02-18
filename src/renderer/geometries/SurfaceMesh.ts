@@ -18,6 +18,9 @@ export default class SurfaceMesh<UserData extends DefaultUserData = DefaultUserD
 
     override parent: PolygonMesh<UserData> | null = null;
 
+    extrusionOffset: number | number[] | undefined = undefined;
+    elevation: number | number[] | undefined = undefined;
+
     constructor(params: { geometry: BufferGeometry; material: Material; opacity: number }) {
         super(params.geometry, params.material);
         this._styleOpacity = params.opacity;

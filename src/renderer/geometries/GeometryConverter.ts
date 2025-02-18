@@ -579,18 +579,27 @@ export default class GeometryConverter<
             const surface = this.getSurfaceMesh(mesh.source, options);
             mesh.surface = surface;
         } else if (options.fill && mesh.surface) {
-            const fill = getFullFillStyle(options.fill);
+            // Rebuild mesh if extrusion offset / elevation change
+            if (
+                mesh.surface.extrusionOffset !== options.extrusionOffset ||
+                mesh.surface.elevation !== options.elevation
+            ) {
+                const surface = this.getSurfaceMesh(mesh.source, options);
+                mesh.surface = surface;
+            } else {
+                const fill = getFullFillStyle(options.fill);
 
-            const surfacematerial =
-                fill.shading === true
-                    ? this._shadedSurfaceMaterialGenerator(fill)
-                    : this._unshadedSurfaceMaterialGenerator(fill);
+                const surfacematerial =
+                    fill.shading === true
+                        ? this._shadedSurfaceMaterialGenerator(fill)
+                        : this._unshadedSurfaceMaterialGenerator(fill);
 
-            mesh.surface.update({
-                material: surfacematerial,
-                opacity: fill.opacity,
-                renderOrder: fill.renderOrder,
-            });
+                mesh.surface.update({
+                    material: surfacematerial,
+                    opacity: fill.opacity,
+                    renderOrder: fill.renderOrder,
+                });
+            }
         }
     }
 
@@ -713,6 +722,10 @@ export default class GeometryConverter<
         }
 
         surface.renderOrder = fill.renderOrder;
+
+        // Store extrusionOffset / elevation to be able to regenerate surfaces if values change
+        surface.extrusionOffset = options.extrusionOffset;
+        surface.elevation = options.elevation;
 
         return surface;
     }
