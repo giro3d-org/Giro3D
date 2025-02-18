@@ -78,15 +78,13 @@ function addVectorLayer() {
     map.addLayer(boundaries).catch(e => console.error(e));
 }
 
-function createScene(crs, crsDef, extent) {
+function createScene(crs, extent) {
     if (instance) {
         map.getLayers().forEach(l => l.dispose());
         controls.dispose();
         inspector.detach();
         instance.dispose();
     }
-
-    Instance.registerCRS(crs, crsDef);
 
     instance = new Instance({
         target: 'view',
@@ -125,61 +123,51 @@ function createScene(crs, crsDef, extent) {
     StatusBar.bind(instance, { disableUrlUpdate: true });
 }
 
-async function fetchCrsBbox(crs) {
+async function fetchCrs(crs) {
     const code = crs.split(':')[1];
-    const link = `https://epsg.io/${code}`;
-    const url = `https://epsg.io/${code}.json?download=1`;
-    const res = await fetch(url, { mode: 'cors' });
-    const json = await res.json();
+    const res = await fetch(`https://epsg.io/${code}.wkt2`, { mode: 'cors' });
+    const wkt2 = await res.text();
 
-    const bbox = json.bbox;
-    const south = Number.parseFloat(bbox.south_latitude);
-    const north = Number.parseFloat(bbox.north_latitude);
-    const west = Number.parseFloat(bbox.west_longitude);
-    const east = Number.parseFloat(bbox.east_longitude);
+    const name = /PROJCRS\["(.*?)"/gm.exec(wkt2)[1];
+    const area = /AREA\["(.*?)"/gm.exec(wkt2)[1];
+    const bbox = /BBOX\[(.*?)\]/gm.exec(wkt2)[1];
 
-    const wgs84Extent = new Extent('EPSG:4326', {
-        west,
-        east,
-        north,
-        south,
+    const [minLat, minLon, maxLat, maxLon] = bbox.split(',').map(s => s.trim());
+
+    const proj = await (await fetch(`https://epsg.io/${code}.proj4`, { mode: 'cors' })).text();
+
+    Instance.registerCRS(crs, proj);
+
+    const extent = new Extent('EPSG:4326', {
+        west: Number.parseFloat(minLon),
+        east: Number.parseFloat(maxLon),
+        north: Number.parseFloat(maxLat),
+        south: Number.parseFloat(minLat),
     });
 
-    document.getElementById('srid').innerText = json.name;
+    document.getElementById('srid').innerText = name;
     document.getElementById('name').innerText = crs;
-    document.getElementById('description').innerText = json.area;
+    document.getElementById('description').innerText = area;
     // @ts-expect-error typing
-    document.getElementById('link').href = link;
+    document.getElementById('link').href = `https://epsg.io/${code}`;
 
     if (crsToUnit(crs) === undefined) {
         // Unsupported projection
         throw new Error('unsupported projection (invalid units)');
-    } else {
-        return wgs84Extent.as(crs);
     }
-}
 
-async function fetchCrsDefinition(crs) {
-    const code = crs.split(':')[1];
-    const url = `https://epsg.io/${code}.proj4?download=1`;
-    const res = await fetch(url, { mode: 'cors' });
-    const def = await res.text();
-
-    Instance.registerCRS(crs, def);
-
-    return def;
+    return { def: wkt2, extent: extent.as(crs) };
 }
 
 async function initialize(crs) {
     const error = document.getElementById('message');
 
     try {
-        const def = await fetchCrsDefinition(crs);
-        const extent = await fetchCrsBbox(crs);
+        const { extent } = await fetchCrs(crs);
         const proj = crs;
         error.style.display = 'none';
 
-        createScene(proj, def, extent);
+        createScene(proj, extent);
     } catch (e) {
         error.style.display = 'block';
 
