@@ -37,9 +37,9 @@ import type Progress from './Progress';
 import type Rect from './Rect';
 import type TerrainOptions from './TerrainOptions';
 import {
-    DEFAULT_ENABLE_CPU_TERRAIN,
     DEFAULT_ENABLE_STITCHING,
     DEFAULT_ENABLE_TERRAIN,
+    DEFAULT_MAP_SEGMENTS,
 } from './TerrainOptions';
 import type { Vector2Array, Vector3Array, Vector4Array, VectorArray } from './VectorArray';
 
@@ -51,9 +51,9 @@ export {
     ColorMapMode,
     Context,
     ContourLineOptions,
-    DEFAULT_ENABLE_CPU_TERRAIN,
     DEFAULT_ENABLE_STITCHING,
     DEFAULT_ENABLE_TERRAIN,
+    DEFAULT_MAP_SEGMENTS,
     Disposable,
     ElevationProvider,
     ElevationRange,

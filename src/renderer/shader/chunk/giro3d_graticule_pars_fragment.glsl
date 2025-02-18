@@ -8,6 +8,7 @@ struct Graticule {
 
 uniform Graticule graticule;
 
+
 float getGraticuleOpacity(float coordinate, float offset, float step, float thickness) {
     float dist = mod(coordinate + offset, step);
 

@@ -1,0 +1,284 @@
+import { Vector2 } from 'three';
+import type Context from '../core/Context';
+import Coordinates from '../core/geographic/Coordinates';
+import Ellipsoid from '../core/geographic/Ellipsoid';
+import Extent from '../core/geographic/Extent';
+import type TerrainOptions from '../core/TerrainOptions';
+import Map, { type MapConstructorOptions } from './Map';
+import type MapLightingOptions from './MapLightingOptions';
+import { MapLightingMode } from './MapLightingOptions';
+import EllipsoidTileGeometry from './tiles/EllipsoidTileGeometry';
+import EllipsoidTileVolume from './tiles/EllipsoidTileVolume';
+import type { TileGeometryBuilder } from './tiles/TileGeometry';
+import type TileMesh from './tiles/TileMesh';
+import type TileVolume from './tiles/TileVolume';
+
+const tempDims = new Vector2();
+const tmpWGS84Coordinates = new Coordinates('EPSG:4326', 0, 0);
+
+/**
+ * Options for Globe terrains.
+ */
+export interface GlobeTerrainOptions {
+    /**
+     * Enables terrain deformation. If `true`, the surface of the globe will be deformed to
+     * match the elevation data. If `false` or unset, the surface of the globe will be the surface
+     * of the ellipsoid.
+     * @defaultValue true
+     */
+    enabled: boolean;
+    /**
+     * The resolution of the grid for each tile.
+     * The higher the better. It *must* be power of two between `1` included and `256` included.
+     * Note: the number of vertices per tile side is `segments` + 1.
+     * @defaultValue 8
+     */
+    segments: number;
+    /**
+     * Enables "skirts" on the side of globe tiles to fill small gaps at the boundaries
+     * of neighbouring tiles.
+     * @defaultValue true
+     */
+    enableSkirts: boolean;
+}
+
+function computeEllipsoidalImageSize(extent: Extent, ellipsoid: Ellipsoid): Vector2 {
+    const dims = extent.dimensions(tempDims);
+
+    const meridianLength = ellipsoid.getMeridianArcLength(extent.north, extent.south);
+
+    const centerLatitude = extent.center(tmpWGS84Coordinates).latitude;
+
+    // Since the northern edge of the extent has a different size
+    // than the southern edge (due to polar distortion), let's select the biggest edge.
+    // For south hemisphere extent, the biggest edge is the northern one, and vice-versa.
+    const biggestEdgeLatitude = centerLatitude < 0 ? extent.north : extent.south;
+
+    // Let's compute the radius of the parallel at this latitude
+    const parallelLength = ellipsoid.getParallelArcLength(biggestEdgeLatitude, dims.width);
+
+    // Contrary to the version in computeImageSize(), we don't need to swap width and height
+    // because the meridian length will always be greater or equal to the parallel length.
+    const ratio = parallelLength / meridianLength;
+
+    const baseSize = 512;
+
+    return new Vector2(Math.round(baseSize * ratio), baseSize);
+}
+
+// Note: we disable the extent because it would not make a lot of sense to have
+// sections of globes. However, this would be relatively simple to enable in the future
+// if someone asks for this feature.
+export interface GlobeConstructorOptions extends Omit<MapConstructorOptions, 'extent' | 'terrain'> {
+    /**
+     * Which ellipsoid to use.
+     * @defaultValue {@link Ellipsoid.WGS84}
+     */
+    ellipsoid?: Ellipsoid;
+    /**
+     * The terrain options.
+     */
+    terrain?: boolean | Partial<GlobeTerrainOptions>;
+}
+
+function createBuilder(ellipsoid: Ellipsoid, includeSkirt: boolean): TileGeometryBuilder {
+    return (extent, segments) => {
+        return new EllipsoidTileGeometry({
+            extent,
+            segments,
+            ellipsoid,
+            includeSkirt,
+        });
+    };
+}
+
+/**
+ * Displays a Globe.
+ *
+ * The API is mostly identical to the {@link Map} entity.
+ *
+ * The globe uses the [ECEF reference frame](https://en.wikipedia.org/wiki/Earth-centered,_Earth-fixed_coordinate_system),
+ * and the WGS84 spheroid ({@link Ellipsoid.WGS84}) by default.
+ *
+ * The 3 axes of the 3D scene are the following:
+ * - X-axis: the axis that crosses the earth at the (0, 0) geographic position (the intersection
+ * between the greenwich meridian and the equator)
+ * - Y-axis: the axis that crosses the earth at the (90, 0) geographic position (the intersection
+ * between the 90° meridian and the equator).
+ * - Z-axis: The rotation axis of the earth (south/north axis).
+ */
+export default class Globe extends Map {
+    readonly isGlobe = true as const;
+    readonly type: string = 'Globe' as const;
+
+    private readonly _ellipsoid: Ellipsoid;
+    private readonly _geometryBuilder: TileGeometryBuilder;
+
+    private _enableHorizonCulling = true;
+
+    /**
+     * The ellipsoid used to draw this globe.
+     */
+    get ellipsoid(): Ellipsoid {
+        return this._ellipsoid;
+    }
+
+    /**
+     * Enables or disable horizon culling.
+     * @defaultValue true
+     */
+    get horizonCulling() {
+        return this._enableHorizonCulling;
+    }
+
+    set horizonCulling(v: boolean) {
+        this._enableHorizonCulling = v;
+    }
+
+    constructor(options: GlobeConstructorOptions) {
+        super({
+            ...options,
+            extent: Extent.WGS84,
+        });
+
+        this._ellipsoid = options.ellipsoid ?? Ellipsoid.WGS84;
+
+        let skirts = true;
+        const terrainOptions = options.terrain;
+        if (terrainOptions != null && typeof terrainOptions === 'object') {
+            skirts = terrainOptions.enableSkirts ?? true;
+        }
+
+        this._geometryBuilder = createBuilder(this._ellipsoid, skirts);
+    }
+
+    protected override testVisibility(node: TileMesh, context: Context): boolean {
+        const frustumVisible = super.testVisibility(node, context);
+
+        let horizonVisible = true;
+
+        // Frustum culling is not sufficient for globe, we also have to cull
+        // tiles that are in the frustum but at the other side of the world.
+        if (frustumVisible && this.horizonCulling) {
+            horizonVisible = this.testHorizonVisibility(node, context);
+        }
+
+        return frustumVisible && horizonVisible;
+    }
+
+    private testHorizonVisibility(node: TileMesh, context: Context): boolean {
+        const cameraPosition = context.view.camera.position;
+        const corners = node.getBoundingBoxCorners();
+
+        // Since the actual earth is not an ellipsoid (because of terrain),
+        // let's use a smaller ellipsoid for horizon testing purposes so that
+        // points located below the actual ellipsoid (for example on the sea bed
+        // in very deep areas) do not produce false negatives.
+        const FACTOR = 0.99;
+
+        for (const corner of corners) {
+            if (this._ellipsoid.isHorizonVisible(cameraPosition, corner, FACTOR)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected override shouldSubdivide(context: Context, node: TileMesh): boolean {
+        if (node.lod >= this.maxSubdivisionLevel) {
+            return false;
+        }
+
+        // // Safety mechanism to avoid subdividing extremely elongated tiles at the poles
+        // // that would lead to hundred or thousands of tiles displayed simultaneously.
+        if (node.lod > 3 && (node.extent.north === 90 || node.extent.south === -90)) {
+            return false;
+        }
+
+        const { width, height } = node.getScreenPixelSize(context.view);
+
+        const screenSize = Math.max(width, height);
+        const textureSize = Math.max(node.textureSize.width, node.textureSize.height);
+
+        if (screenSize / textureSize > this.subdivisionThreshold) {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected override getRootTileMatrix(): Vector2 {
+        // Equirectangular projection with 2 tiles on the Y axis
+        // and 4 on the X axis, so that tiles are perfect squares.
+        return new Vector2(4, 2);
+    }
+
+    protected override getTextureSize(extent: Extent): Vector2 {
+        // Since globe tiles are curved, their extent dimensions is not the same depending
+        // on the location of the tile. We must compute a reasonable approximation of
+        // the width and height of the extent in meters.
+        return computeEllipsoidalImageSize(extent, this._ellipsoid);
+    }
+
+    protected override getGeometryBuilder(): TileGeometryBuilder {
+        return this._geometryBuilder;
+    }
+
+    protected override createTileVolume(extent: Extent): TileVolume {
+        return new EllipsoidTileVolume({
+            extent,
+            range: {
+                min: -1,
+                max: +1,
+            },
+            ellipsoid: this._ellipsoid,
+        });
+    }
+
+    protected override getTileDimensions(extent: Extent): Vector2 {
+        // Here again, we have to compute dimensions in meters because degrees
+        // are not acceptable for shading purposes: computing derivatives for normal
+        // mapping require that all axes have the same units.
+        return this._ellipsoid.getExtentDimensions(extent);
+    }
+
+    protected override get isEllipsoidal(): boolean {
+        return true;
+    }
+
+    protected override getComposerProjection(): string {
+        return 'EPSG:4326';
+    }
+
+    protected override canSubdivideTile(tile: TileMesh): boolean {
+        // Terrain is negligible at low LODs.
+        if (this.extent.equals(Extent.WGS84) && tile.lod < 10) {
+            return true;
+        }
+
+        // After LOD 10, we have to be much stricter than the Map implementation.
+        // We have zero tolerance here because of extreme recursion levels when
+        // zooming in close to mountainous areas, due to the fact that we need to
+        // have the strictest bounding volumes.
+        return tile.material.isElevationLayerTextureLoaded();
+    }
+
+    protected override getDefaultTerrainOptions(): Readonly<TerrainOptions> {
+        const base = super.getDefaultTerrainOptions();
+        return {
+            ...base,
+            stitching: false,
+            segments: 16, // Because 32 has too much performance cost
+        };
+    }
+
+    protected override getDefaultLightingOptions(): Readonly<Required<MapLightingOptions>> {
+        const base = super.getDefaultLightingOptions();
+        return {
+            ...base,
+            // Hillshade does not work in a non-planar setup
+            mode: MapLightingMode.LightBased,
+        };
+    }
+}

@@ -1,55 +1,18 @@
-import Extent from '@giro3d/giro3d/core/geographic/Extent';
-import TileMesh from '@giro3d/giro3d/core/TileMesh';
-import type LayeredMaterial from '@giro3d/giro3d/renderer/LayeredMaterial';
+import TileMesh from '@giro3d/giro3d/entities/tiles/TileMesh';
 import { MathUtils } from 'three';
 
-const extent = new Extent('EPSG:3857', 0, 1, 0, 1);
-
 describe('TileMesh', () => {
-    describe('dispose', () => {
-        it('should dispose the material but NOT the geometry', () => {
-            // @ts-expect-error incomplete definition
-            const material = {
-                dispose: jest.fn(),
-                setUuid: jest.fn(),
-                uniforms: {
-                    tileDimensions: { value: { set: jest.fn() } },
-                },
-            } as LayeredMaterial;
-
-            // @ts-expect-error incomplete definition
-            const mesh = new TileMesh({
-                geometryPool: new Map(),
-                material,
-                extent,
-                segments: 8,
-                coord: { level: 0, x: 0, y: 0 },
-            });
-            const geometry = mesh.geometry;
-            geometry.dispose = jest.fn();
-            let eventDispatched = false;
-            mesh.addEventListener('dispose', () => {
-                eventDispatched = true;
-            });
-
-            mesh.dispose();
-            expect(geometry.dispose).not.toHaveBeenCalled();
-            expect(material.dispose).toHaveBeenCalledTimes(1);
-            expect(eventDispatched).toBeTruthy();
-        });
-    });
-
     // It is relatively long to create TileMesh on the go (in term of code), so we
     // emulate a fake one with the necessary informations in it.
     class FakeTileMesh {
         readonly id: string;
-        readonly level: number;
+        readonly lod: number;
         readonly parent: unknown;
         readonly findCommonAncestor: (tile: TileMesh) => TileMesh | null;
 
-        constructor(level: number, parent: unknown = undefined) {
+        constructor(lod: number, parent: unknown = undefined) {
             this.id = MathUtils.generateUUID();
-            this.level = level;
+            this.lod = lod;
             this.parent = parent;
 
             this.findCommonAncestor = TileMesh.prototype.findCommonAncestor;

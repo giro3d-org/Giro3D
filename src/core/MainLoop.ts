@@ -128,11 +128,6 @@ class MainLoop {
 
         const frame = this._frame;
 
-        // We can't just use camera.updateProjectionMatrix() because part of
-        // the update process use camera._viewMatrix, and this matrix depends
-        // on near/far values.
-        instance.view.update();
-
         const context = new ContextImpl(instance.view);
 
         for (const entity of instance.getEntities()) {
@@ -184,8 +179,6 @@ class MainLoop {
             instance.view.near = context.distance.min;
             instance.view.far = context.distance.max;
         }
-
-        instance.view.update();
     }
 
     private updateCameraPlanesFromObjects(context: Context, instance: Instance) {
@@ -240,7 +233,8 @@ class MainLoop {
         });
 
         const dim = instance.engine.getWindowSize();
-        instance.view.update(dim.x, dim.y);
+        instance.view.setSize(dim.x, dim.y);
+        instance.view.update();
 
         instance.dispatchEvent({
             type: 'after-camera-update',

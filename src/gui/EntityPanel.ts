@@ -2,22 +2,29 @@ import type GUI from 'lil-gui';
 import type Instance from '../core/Instance';
 import type Entity3D from '../entities/Entity3D';
 import { isEntity3D } from '../entities/Entity3D';
+import AtmosphereInspector from './AtmosphereInspector';
 import AxisGridInspector from './AxisGridInspector';
 import type EntityInspector from './EntityInspector';
 import FeatureCollectionInspector from './FeatureCollectionInspector';
+import GlowInspector from './GlowInspector';
 import MapInspector from './MapInspector';
 import Panel from './Panel';
 import PointCloudInspector from './PointCloudInspector';
 import ShapeInspector from './ShapeInspector';
+import SkyDomeInspector from './SkyDomeInspector';
 import Tiles3DInspector from './Tiles3DInspector';
 
 const customInspectors: Record<string, typeof EntityInspector<Entity3D>> = {
     Map: MapInspector,
+    Globe: MapInspector,
     Tiles3D: Tiles3DInspector,
     AxisGrid: AxisGridInspector,
     Shape: ShapeInspector,
     FeatureCollection: FeatureCollectionInspector,
     PointCloud: PointCloudInspector,
+    Atmosphere: AtmosphereInspector,
+    SkyDome: SkyDomeInspector,
+    Glow: GlowInspector,
 };
 
 /**

@@ -10,6 +10,7 @@ import type {
     OrthographicCamera,
     PerspectiveCamera,
     RenderTarget,
+    ShaderMaterial,
     Texture,
     Vector2,
     Vector3,
@@ -78,4 +79,7 @@ export function getColor(input: ColorRepresentation): Color {
     }
 
     return new Color(input);
+}
+export function isShaderMaterial(obj: unknown): obj is ShaderMaterial {
+    return (obj as ShaderMaterial)?.isShaderMaterial;
 }

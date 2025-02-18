@@ -1,0 +1,209 @@
+---
+title: Atmosphere
+shortdesc: Create a realistic atmosphere and sky dome.
+longdesc: Use the <a href="../apidoc/classes/entities.Atmosphere.html" target="_blank"><code>Atmosphere</code></a> entity to display a realistic atmosphere for a specific <a href="../apidoc/classes/core.geographic.Ellipsoid.html" target="_blank"><code>ellipsoid</code></a>. The external side of the sphere displays the atmospheric halo, and the internal side displays a sky dome with realistic atmospheric scattering.
+tags: [atmosphere, sky, sun]
+---
+
+<div class="side-pane-with-status-bar" style="width: 15rem">
+    <!--Parameters -->
+    <div class="card">
+        <div class="card-header">
+            Parameters
+            <button type="button" id="reset" class="btn btn-sm btn-primary rounded float-end">
+                reset
+            </button>
+        </div>
+
+        <div class="card-body">
+            <button
+                type="button"
+                class="btn btn-primary w-100"
+                id="set-ground-position"
+                title="Sets the camera position on the ground"
+            >
+                <i class="bi bi-crosshair"></i>
+                Set ground position
+            </button>
+
+            <hr />
+
+            <!-- Toggle outer atmosphere -->
+            <div class="form-check form-switch">
+                <input
+                    class="form-check-input"
+                    checked
+                    type="checkbox"
+                    role="switch"
+                    id="outer"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="outer">Outer atmosphere</label>
+            </div>
+
+            <!-- Toggle inner atmosphere -->
+            <div class="form-check form-switch">
+                <input
+                    class="form-check-input"
+                    checked
+                    type="checkbox"
+                    role="switch"
+                    id="inner"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="inner">Inner atmosphere</label>
+            </div>
+
+            <!-- Toggle sun position marker  -->
+            <div
+                class="form-check form-switch"
+                title="The sun position marker must match the apparent sun position in the sky dome. Any discrepancy indicates an error in the sky dome shader."
+            >
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    role="switch"
+                    id="sun-marker"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="sun-marker">Sun position marker</label>
+            </div>
+
+            <!-- Toggle automatic sun rotation -->
+            <div class="form-check form-switch">
+                <input
+                    class="form-check-input"
+                    checked
+                    type="checkbox"
+                    role="switch"
+                    id="automatic-sun-rotation"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="automatic-sun-rotation"
+                    >Automatic sun rotation</label
+                >
+            </div>
+
+            <!-- Toggle ellipsoid helper -->
+            <div class="form-check form-switch">
+                <input
+                    class="form-check-input"
+                    checked
+                    type="checkbox"
+                    role="switch"
+                    id="show-ellipsoid"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="show-ellipsoid">Show ellipsoid</label>
+            </div>
+
+            <!-- Toggle look at sun -->
+            <div class="form-check form-switch">
+                <input
+                    class="form-check-input"
+                    checked
+                    type="checkbox"
+                    role="switch"
+                    id="look-at-sun"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="look-at-sun">Look at sun</label>
+            </div>
+
+            <!-- Globe color -->
+            <label class="form-check-label w-100 mt-3" for="globe-color">
+                <div class="row">
+                    <div class="col">Globe color</div>
+                    <div class="col">
+                        <input
+                            type="color"
+                            class="form-control form-control-color float-end h-100 w-100"
+                            id="globe-color"
+                            value="#2978b4"
+                            title="Globe color"
+                            autocomplete="off"
+                        />
+                    </div>
+                </div>
+            </label>
+
+            <!-- Thickness -->
+            <div class="row mt-2">
+                <div class="col-5">
+                    <label for="thickness" class="form-label">Thickness</label>
+                </div>
+                <div class="col">
+                    <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.0001"
+                        value="0"
+                        class="form-range"
+                        id="thickness"
+                        autocomplete="off"
+                    />
+                </div>
+            </div>
+
+            <h6 class="mt-3">Wavelengths ([0, 1])</h6>
+
+            <!-- Red -->
+            <div class="row">
+                <div class="col-3">
+                    <label for="red" class="form-label">Red</label>
+                </div>
+                <div class="col">
+                    <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.0001"
+                        value="0"
+                        class="form-range"
+                        id="red"
+                        autocomplete="off"
+                    />
+                </div>
+            </div>
+
+            <!-- Green -->
+            <div class="row">
+                <div class="col-3">
+                    <label for="green" class="form-label">Green</label>
+                </div>
+                <div class="col">
+                    <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.0001"
+                        value="0"
+                        class="form-range"
+                        id="green"
+                        autocomplete="off"
+                    />
+                </div>
+            </div>
+
+            <!-- Blue -->
+            <div class="row">
+                <div class="col-3">
+                    <label for="blue" class="form-label">Blue</label>
+                </div>
+                <div class="col">
+                    <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.0001"
+                        value="0"
+                        class="form-range"
+                        id="blue"
+                        autocomplete="off"
+                    />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

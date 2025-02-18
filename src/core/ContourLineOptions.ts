@@ -7,25 +7,25 @@ export default interface ContourLineOptions {
     /**
      * Enables or disables contour lines.
      */
-    enabled?: boolean;
+    enabled: boolean;
     /**
      * The interval between each main line (in meters).
      */
-    interval?: number;
+    interval: number;
     /**
      * The interval between each secondary line (in meters).
      */
-    secondaryInterval?: number;
+    secondaryInterval: number;
     /**
      * The opacity of the lines.
      */
-    opacity?: number;
+    opacity: number;
     /**
      * The thickness of the lines.
      */
-    thickness?: number;
+    thickness: number;
     /**
      * The color of the lines.
      */
-    color?: ColorRepresentation;
+    color: ColorRepresentation;
 }

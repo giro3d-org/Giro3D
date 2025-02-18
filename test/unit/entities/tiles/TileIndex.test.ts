@@ -9,7 +9,7 @@ import TileIndex, {
     TOP_RIGHT,
     type NeighbourList,
     type Tile,
-} from '@giro3d/giro3d/core/TileIndex';
+} from '@giro3d/giro3d/entities/tiles/TileIndex';
 
 class MockWeakRef<T extends WeakKey> implements WeakRef<T> {
     obj: T;
@@ -39,9 +39,11 @@ global.WeakRef = MockWeakRef;
 function makeTile(x: number, y: number, z: number, id = 0): Tile {
     return {
         id,
-        x,
-        y,
-        z,
+        coordinate: {
+            x,
+            y,
+            z,
+        },
     };
 }
 
@@ -106,12 +108,7 @@ describe('TileIndex', () => {
 
         it('should return the requested tile if it is present', () => {
             const tileIndex = new TileIndex();
-            const tile = {
-                x: 1,
-                y: 1,
-                z: 1,
-                id: 1,
-            };
+            const tile = makeTile(1, 1, 1, 1);
             tileIndex.addTile(tile);
 
             expect(tileIndex.searchTileOrAncestor(1, 1, 1)).toBe(tile);
@@ -119,12 +116,7 @@ describe('TileIndex', () => {
 
         it('should return null if predicate returns false', () => {
             const tileIndex = new TileIndex();
-            const tile = {
-                x: 1,
-                y: 1,
-                z: 1,
-                id: 1,
-            };
+            const tile = makeTile(1, 1, 1, 1);
             tileIndex.addTile(tile);
 
             const predicate = () => false;
@@ -134,12 +126,7 @@ describe('TileIndex', () => {
 
         it('should return a parent tile (if its visible) if no same level tile found', () => {
             const tileIndex = new TileIndex();
-            const tile = {
-                x: 0,
-                y: 0,
-                z: 0,
-                id: 1,
-            };
+            const tile = makeTile(0, 0, 0, 1);
             tileIndex.addTile(tile);
 
             expect(tileIndex.searchTileOrAncestor(1, 1, 1)).toBe(tile);

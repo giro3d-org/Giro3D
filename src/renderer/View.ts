@@ -228,9 +228,7 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
     /**
      * @internal
      */
-    update(width?: number, height?: number) {
-        this.resize(width, height);
-
+    update() {
         this._controls?.update();
 
         // update matrix
@@ -245,7 +243,7 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
         this._frustum.setFromProjectionMatrix(this._viewMatrix);
     }
 
-    private resize(width?: number, height?: number) {
+    setSize(width?: number, height?: number) {
         if (width != null && height != null) {
             this._width = width;
             this._height = height;

@@ -37,13 +37,9 @@ class MapTerrainPanel extends Panel {
             .name('Show collider meshes')
             .onChange(() => this.notify());
 
-        this.addController(this.map.terrain, 'enableCPUTerrain').name('CPU terrain');
-
         this.addController(this.map.terrain, 'stitching')
             .name('Stitching')
             .onChange(() => this.notify(map));
-
-        this.addController(this.map.geometryPool, 'size').name('Geometry pool');
     }
 
     updateSegments(v: number) {

@@ -254,9 +254,10 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
         };
 
         if (vectorOptions.radius > 0) {
-            const tileExtent = pickedResult.object.extent.as(pickedResult.coord.crs).dimensions();
-            vectorOptions.xTileRes = tileExtent.x / pickedResult.entity.imageSize.x;
-            vectorOptions.yTileRes = tileExtent.y / pickedResult.entity.imageSize.y;
+            const tile = pickedResult.object;
+            const tileExtent = tile.extent.as(pickedResult.coord.crs).dimensions();
+            vectorOptions.xTileRes = tileExtent.x / tile.textureSize.width;
+            vectorOptions.yTileRes = tileExtent.y / tile.textureSize.height;
         }
 
         return this.getVectorFeaturesAtCoordinate(pickedResult.coord, vectorOptions).map(

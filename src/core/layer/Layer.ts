@@ -26,7 +26,7 @@ import type ColorMap from '../ColorMap';
 import type Context from '../Context';
 import type Disposable from '../Disposable';
 import type ElevationRange from '../ElevationRange';
-import type Extent from '../geographic/Extent';
+import Extent from '../geographic/Extent';
 import type Instance from '../Instance';
 import type MemoryUsage from '../MemoryUsage';
 import { type GetMemoryUsageContext } from '../MemoryUsage';
@@ -103,7 +103,7 @@ export interface LayerNode extends Object3D<LayerNodeEventMap> {
     /**
      * The LOD or depth level of this node in the hierarchy (the root node is level zero).
      */
-    level: number;
+    lod: number;
 }
 
 enum TargetState {
@@ -392,6 +392,7 @@ abstract class Layer<
     private readonly _opCounter: OperationCounter;
     private _sortedTargets: Target[] | null = null;
     private _instance: Instance | null = null;
+    private _composerProjection: string | null = null;
     private readonly _createReadableTextures: boolean;
     private readonly _preloadImages: boolean;
     private _fallbackImagesPromise: Promise<void> | null;
@@ -568,6 +569,7 @@ abstract class Layer<
          * Once set, the layer cannot be used with any other instance.
          */
         instance: Instance;
+        composerProjection: string;
     }): Promise<this> {
         const { instance } = options;
         if (this._instance != null && instance !== this._instance) {
@@ -575,10 +577,11 @@ abstract class Layer<
         }
 
         this._instance = instance;
+        this._composerProjection = options.composerProjection;
 
-        if (this.extent && this.extent.crs !== instance.referenceCrs) {
+        if (this.extent && this.extent.crs !== this._composerProjection) {
             throw new Error(
-                `the extent of the layer was defined in a different CRS (${this.extent.crs}) than the instance's (${instance.referenceCrs}). Please convert the extent to the instance CRS before creating the layer.`,
+                `the extent of the layer was defined in a different CRS (${this.extent.crs}) than the composer projection (${this._composerProjection}). Please convert the extent to the proper CRS before creating the layer.`,
             );
         }
 
@@ -601,7 +604,7 @@ abstract class Layer<
      */
     private async initializeOnce() {
         this._opCounter.increment();
-        const targetProjection = this.instance.referenceCrs;
+        const targetProjection = nonNull(this._composerProjection);
 
         await this.source.initialize({
             targetProjection,
@@ -642,9 +645,12 @@ abstract class Layer<
      * @returns The layer final extent.
      */
     public getExtent(): Extent | undefined {
+        // We are interested in the projected CRS, not the cartesian one, if any.
+        const crs = nonNull(this._composerProjection);
+
         // The layer extent takes precedence over the source extent,
         // since it maye be used for some cropping effect.
-        return this.extent ?? this.source.getExtent()?.clone()?.as(this.instance.referenceCrs);
+        return this.extent ?? this.source.getExtent()?.clone()?.as(crs);
     }
 
     async loadFallbackImagesInternal() {
@@ -772,6 +778,15 @@ abstract class Layer<
         }
     }
 
+    private getExtentAsSourceCRS(extent: Extent): Extent {
+        const clone = extent.clone();
+        if (clone.crs === 'EPSG:4326') {
+            // Keep extent in correct domain
+            clone.intersect(Extent.WGS84);
+        }
+        return clone.as(this.source.getCrs());
+    }
+
     /**
      * @param options - Options.
      * @returns A promise that is settled when all images have been fetched.
@@ -783,7 +798,7 @@ abstract class Layer<
 
         const results = this.source.getImages({
             id: `${target.node.id}`,
-            extent: extent.clone().as(this.source.getCrs()),
+            extent: this.getExtentAsSourceCRS(extent),
             width,
             height,
             signal: target.controller.signal,
@@ -885,9 +900,9 @@ abstract class Layer<
         originalWidth: number,
         originalHeight: number,
     ): { extent: Extent; width: number; height: number } {
-        // This feature only makes sense if both the source and instance have the same CRS,
-        // meaning that pixels can be aligned
-        if (this.source.getCrs() === this.instance.referenceCrs) {
+        // This feature only makes sense if both the source and composer
+        //  have the same CRS, meaning that pixels can be aligned.
+        if (this.source.getCrs() === this._composerProjection) {
             // Let's ask the source if it can help us have a pixel-perfect extent
             const sourceAdjusted = this.source.adjustExtentAndPixelSize(
                 originalExtent,
@@ -1138,7 +1153,7 @@ abstract class Layer<
         }
 
         // Node is hidden, no need to update it
-        if (!node.material.visible) {
+        if (!material.visible) {
             return;
         }
 
@@ -1155,6 +1170,13 @@ abstract class Layer<
                 Math.round(textureSize.x * this.resolutionFactor),
                 Math.round(textureSize.y * this.resolutionFactor),
             );
+
+            if (this.composer?.targetCrs === 'EPSG:4326') {
+                // Ensure that no extent overflow the WGS84 domain,
+                // to avoid artifacts at the 180° meridian.
+                extent?.intersect(Extent.WGS84);
+            }
+
             const pitch = originalExtent.offsetToParent(extent);
 
             target = new Target({
@@ -1267,7 +1289,7 @@ abstract class Layer<
             // Is this target invisible ? We can only unload invisible targets.
             // Note that we never delete root nodes so that we can always have some fallback data
             if (!target.node.material.visible) {
-                const level = target.node.level;
+                const level = target.node.lod;
 
                 // Can we unload it ?
                 // - We don't unload root nodes (level = 0)

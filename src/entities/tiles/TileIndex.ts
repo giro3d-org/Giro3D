@@ -1,3 +1,5 @@
+import type TileCoordinate from './TileCoordinate';
+
 const TOP = 0;
 const TOP_RIGHT = 1;
 const RIGHT = 2;
@@ -13,17 +15,9 @@ export interface Tile {
      */
     id: number;
     /**
-     * The tile's X coordinate in the grid.
+     * The tile's coordinate in the tile matrix.
      */
-    x: number;
-    /**
-     * The tile's Y coordinate in the grid.
-     */
-    y: number;
-    /**
-     * The tile's Z coordinate (LOD) in the grid.
-     */
-    z: number;
+    coordinate: TileCoordinate;
 }
 
 export type NeighbourList<T extends Tile> = [
@@ -52,7 +46,8 @@ class TileIndex<T extends Tile> {
      * @param tile - the tile to add.
      */
     addTile(tile: T) {
-        const key = TileIndex.getKey(tile.x, tile.y, tile.z);
+        const { x, y, z } = tile.coordinate;
+        const key = TileIndex.getKey(x, y, z);
         const wr = new WeakRef(tile);
         this.tiles.set(key, wr);
         this.tilesById.set(tile.id, wr);
@@ -97,7 +92,7 @@ class TileIndex<T extends Tile> {
      * @returns neighbors : Array of found neighbors
      */
     getNeighbours(tile: T, result: NeighbourList<T>, predicate?: Predicate<T>): NeighbourList<T> {
-        const { x, y, z } = tile;
+        const { x, y, z } = tile.coordinate;
 
         result[TOP] = this.searchTileOrAncestor(x, y + 1, z, predicate);
         result[TOP_RIGHT] = this.searchTileOrAncestor(x + 1, y + 1, z, predicate);
