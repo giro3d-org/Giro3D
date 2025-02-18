@@ -1,4 +1,5 @@
 import type Feature from 'ol/Feature';
+import { VOID } from 'ol/functions';
 import type {
     Geometry,
     LineString,
@@ -813,7 +814,12 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         const resolution: number | undefined = undefined;
 
         // @ts-expect-error loader_ is private
-        this._source.loader_(olExtent, resolution, this._targetProjection, resolve, reject);
+        if (this._source.loader_ === VOID) {
+            resolve(this._source.getFeatures());
+        } else {
+            // @ts-expect-error loader_ is private
+            this._source.loader_(olExtent, resolution, this._targetProjection, resolve, reject);
+        }
     }
 
     private async getMeshesWithCache(
