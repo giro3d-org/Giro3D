@@ -85,7 +85,7 @@
     "dependencies": {
         "3d-tiles-renderer": "^0.4.3",
         "chart.js": "^3.9.1",
-        "copc": "^0.0.7",
+        "copc": "^0.0.8",
         "earcut": "^2.2.4",
         "geotiff": "^2.1.0",
         "lil-gui": "^0.17.0",
