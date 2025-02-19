@@ -51,7 +51,7 @@ let colorLayer;
 
 // Let's build the elevation layer from the WMTS capabilities
 WmtsSource.fromCapabilities(url, {
-    layer: 'ELEVATION.ELEVATIONGRIDCOVERAGE',
+    layer: 'ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES',
     format: new BilFormat(),
     noDataValue,
 })

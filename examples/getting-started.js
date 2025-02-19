@@ -145,7 +145,7 @@ const demSource = new TiledImageSource({
         projection: 'EPSG:3946',
         crossOrigin: 'anonymous',
         params: {
-            LAYERS: ['ELEVATION.ELEVATIONGRIDCOVERAGE'],
+            LAYERS: ['ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES'],
             FORMAT: 'image/x-bil;bits=32',
         },
     }),
