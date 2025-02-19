@@ -67,7 +67,7 @@ const url = 'https://data.geopf.fr/wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetCa
 
 // Let's build the elevation layer from the WMTS capabilities
 WmtsSource.fromCapabilities(url, {
-    layer: 'ELEVATION.ELEVATIONGRIDCOVERAGE',
+    layer: 'ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES',
     format: new BilFormat(),
     noDataValue,
 })
