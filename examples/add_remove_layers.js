@@ -86,7 +86,7 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
     .catch(console.error);
 
 WmtsSource.fromCapabilities(capabilitiesUrl, {
-    layer: 'ELEVATION.ELEVATIONGRIDCOVERAGE',
+    layer: 'ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES',
     format: new BilFormat(),
     noDataValue: -1000,
 })
