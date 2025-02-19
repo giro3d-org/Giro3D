@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.42.1 (2025-02-19)
+
+This hotfix release updates [`copc`](https://www.npmjs.com/package/copc) to 0.0.8 to avoid the Content Security Policy violation described in #561.
+
 ## v0.42.0 (2025-02-10)
 
 ### Improved 3D Tiles support
