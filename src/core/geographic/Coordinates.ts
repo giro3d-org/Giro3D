@@ -5,6 +5,11 @@ import { getConverter } from './ProjectionCache';
 
 proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs +type=crs');
 proj4.defs('EPSG:4979', '+proj=longlat +datum=WGS84 +no_defs +type=crs');
+// Note this is exactly the same definition as EPSG:4326. However, for clarity
+// in the context of panoramic images, we use a name that is not associated with
+// georeferencing since the image itself is not georeferenced in the world in the
+// same way as an orthoimage, but simply positioned in the environment of the panorama.
+proj4.defs('equirectangular', '+proj=longlat +datum=WGS84 +no_defs +type=crs');
 register(proj4);
 
 export const UNIT = {
@@ -48,6 +53,7 @@ export function crsToUnit(crs: string) {
     switch (crs) {
         case 'EPSG:4326':
         case 'EPSG:4979':
+        case 'equirectangular':
             return UNIT.DEGREE;
         case 'EPSG:4978':
             return UNIT.METER;
