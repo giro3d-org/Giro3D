@@ -1,3 +1,4 @@
+import type { Raycaster } from 'three';
 import type PickResult from './PickResult';
 
 /**
@@ -48,6 +49,17 @@ interface PickOptions {
      * @defaultValue false
      */
     gpuPicking?: boolean;
+    /**
+     * The optional raycaster to use for raycast-based picking.
+     * This is mostly useful in the case of point clouds to fine tune the
+     * [raycaster parameters](https://threejs.org/docs/index.html?q=raycast#api/en/core/Raycaster.params),
+     * depending on the caracteristics of the dataset (i.e size, shape, point density).
+     * @defaultValue
+     * ```js
+     * new Raycaster()
+     * ```
+     */
+    raycaster?: Raycaster;
 }
 
 export default PickOptions;

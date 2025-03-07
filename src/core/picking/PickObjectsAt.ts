@@ -6,7 +6,7 @@ import type PickOptions from './PickOptions';
 import type PickResult from './PickResult';
 
 const BLACK = new Color(0, 0, 0);
-const raycaster = new Raycaster();
+const defaultRaycaster = new Raycaster();
 
 function findEntityInParent(obj: Object3D): Entity3D | null {
     if (obj.userData?.parentEntity != null) {
@@ -94,6 +94,9 @@ function pickObjectsAt(
         tmp.setX(normalized.x + x / instance.view.width).setY(
             normalized.y + y / instance.view.height,
         );
+
+        const raycaster = options.raycaster ?? defaultRaycaster;
+
         raycaster.setFromCamera(tmp, instance.view.camera);
 
         const intersects = raycaster.intersectObject(object, true) as PickResult[];

@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.42.2 (2025-03-07)
+
+### Fix
+
+- **PickObjectsAt**: add option to provide custom raycaster (#572)
+
 ## v0.42.1 (2025-02-19)
 
 This hotfix release updates [`copc`](https://www.npmjs.com/package/copc) to 0.0.8 to avoid the Content Security Policy violation described in #561.
