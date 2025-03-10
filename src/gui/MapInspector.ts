@@ -235,18 +235,19 @@ class MapInspector extends EntityInspector<Map> {
                 this.boundingSpheres.add(mesh);
 
                 mesh.userData.owner = tile;
+                // So that the poles of the sphere match the vertical axis
                 mesh.rotateX(MathUtils.degToRad(90));
-            } else {
-                const mesh: Mesh = tile.userData.boundingSphere;
-                const sphere = tile.getWorldSpaceBoundingSphere(tmpSphere);
-
-                const r = sphere.radius;
-
-                mesh.scale.set(r, r, r);
-                mesh.position.copy(sphere.center);
-
-                mesh.updateMatrixWorld(true);
             }
+
+            const mesh: Mesh = tile.userData.boundingSphere;
+            const sphere = tile.getWorldSpaceBoundingSphere(tmpSphere);
+
+            const r = sphere.radius;
+
+            mesh.scale.set(r, r, r);
+            mesh.position.copy(sphere.center);
+
+            mesh.updateMatrixWorld(true);
         });
     }
 
