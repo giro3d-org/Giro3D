@@ -143,7 +143,9 @@ for (let i = 0; i < wmsLayers.length; i++) {
 
     const map = new Map({
         extent,
-        segments: 16,
+        terrain: {
+            segments: 16,
+        },
         discardNoData: true,
         side: DoubleSide,
         object3d: cubeSide,
