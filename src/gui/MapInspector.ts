@@ -2,6 +2,7 @@ import type GUI from 'lil-gui';
 import type { AxesHelper, GridHelper, Side } from 'three';
 import { Color, MathUtils, Mesh, MeshBasicMaterial, Sphere, SphereGeometry } from 'three';
 import type Instance from '../core/Instance';
+import Globe from '../entities/Globe';
 import type Map from '../entities/Map';
 import TileMesh from '../entities/tiles/TileMesh';
 import type { BoundingBoxHelper } from '../helpers/Helpers';
@@ -106,6 +107,9 @@ class MapInspector extends EntityInspector<Map> {
             this.addController(this.entity.elevationRange, 'max')
                 .name('Elevation range maximum')
                 .onChange(() => this.notify(map));
+        }
+        if (this.entity instanceof Globe) {
+            this.addController(this.entity, 'horizonCulling');
         }
         this.addController(this.entity, 'castShadow');
         this.addController(this.entity, 'receiveShadow');
