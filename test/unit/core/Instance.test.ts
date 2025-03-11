@@ -11,9 +11,11 @@ const renderer = new WebGLRenderer();
 jest.mock('@giro3d/giro3d/renderer/c3DEngine', () => {
     return jest.fn().mockImplementation(() => {
         return {
+            dispose: jest.fn(),
             renderer: {
                 domElement: {
                     addEventListener: jest.fn(),
+                    removeEventListener: jest.fn(),
                     getBoundingClientRect() {
                         return { x: 10, y: 10 };
                     },
@@ -435,6 +437,19 @@ describe('Instance', () => {
 
             expect(Object.keys(proj4.defs).includes('EPSG:3946')).toBeTruthy();
             expect(Object.keys(proj4.defs).includes('EPSG:5011')).toBeTruthy();
+        });
+    });
+
+    describe('dispose', () => {
+        it('should fire the dispose event', () => {
+            const listener = jest.fn();
+            instance.addEventListener('dispose', listener);
+
+            expect(listener).toHaveBeenCalledTimes(0);
+
+            instance.dispose();
+
+            expect(listener).toHaveBeenCalledTimes(1);
         });
     });
 });
