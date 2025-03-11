@@ -10,6 +10,7 @@ import type { Feature as OlFeature } from 'ol';
 import proj from 'proj4';
 import {
     BufferGeometry,
+    CatmullRomCurve3,
     Color,
     CurvePath,
     DoubleSide,
@@ -57,7 +58,7 @@ const tmpIntersection = new Vector3();
 
 const DEFAULT_PICKING_RADIUS = 6;
 
-function toNumberArray(vectors: Vector3[], origin: Vector3): ArrayLike<number> {
+function toNumberArray(vectors: Readonly<Vector3[]>, origin: Vector3): ArrayLike<number> {
     const result = new Float32Array(vectors.length * 3);
     for (let i = 0; i < vectors.length; i++) {
         const v = vectors[i];
@@ -491,7 +492,7 @@ function defaultVertexFormatter(opts: {
     return `${opts.index}`;
 }
 
-function getClosedPolygon(points: Vector3[]): Vector3[] {
+function getClosedPolygon(points: Readonly<Vector3[]>): Readonly<Vector3[]> {
     if (!points[points.length - 1].equals(points[0])) {
         return [...points, points[0]];
     }
@@ -500,7 +501,7 @@ function getClosedPolygon(points: Vector3[]): Vector3[] {
 }
 
 function computeArea(
-    points: Vector3[],
+    points: Readonly<Vector3[]>,
     computeGeometry: boolean,
 ): { area?: number; geometry?: BufferGeometry; origin?: Vector3 } {
     if (points.length < 2) {
@@ -681,7 +682,7 @@ class LineWithBorder extends Group {
     public constructor(
         lineMaterial: LineMaterial,
         borderMaterial: LineMaterial,
-        points: Vector3[],
+        points: Readonly<Vector3[]>,
     ) {
         super();
 
@@ -1116,6 +1117,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     public override readonly type = 'Shape' as const;
 
     private readonly _points: Vector3[] = [];
+    private readonly _interpolatedPoints: Vector3[] = [];
     private readonly _segments: Line3[] = [];
 
     // Formatters
@@ -1589,6 +1591,10 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         return this._points;
     }
 
+    private getInterpolatedPoints(): Readonly<Vector3[]> {
+        return this._interpolatedPoints;
+    }
+
     /**
      * Inserts a point at the specified index.
      * @param index - The point index.
@@ -1750,7 +1756,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
      */
     public getArea(): number | null {
         if (this.isClosed) {
-            const result = computeArea(this._points, false);
+            const result = computeArea(this.getInterpolatedPoints(), false);
             return result.area ?? null;
         } else {
             return null;
@@ -1766,14 +1772,16 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
      * @returns The length, in CRS units.
      */
     public getLength(): number | null {
-        if (this._points.length < 2) {
+        const points = this.getInterpolatedPoints();
+
+        if (points.length < 2) {
             return null;
         }
 
         let length = 0;
-        for (let i = 0; i < this._points.length - 1; i++) {
-            const p0 = this._points[i + 0];
-            const p1 = this._points[i + 1];
+        for (let i = 0; i < points.length - 1; i++) {
+            const p0 = points[i + 0];
+            const p1 = points[i + 1];
 
             length += p0.distanceTo(p1);
         }
@@ -2152,6 +2160,21 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         return symbol;
     }
 
+    private rebuildInterpolatedPoints(): void {
+        this._interpolatedPoints.length = 0;
+
+        if (this._points.length > 2) {
+            const curve = new CatmullRomCurve3(
+                this.isClosed ? this._points.slice(0, this._points.length - 2) : this._points,
+                this.isClosed,
+            );
+
+            this._interpolatedPoints.push(...curve.getSpacedPoints(100));
+        } else {
+            this._interpolatedPoints.push(...this._points);
+        }
+    }
+
     private rebuildVertices(): void {
         this._vertices.forEach(vertex => {
             vertex.removeFromParent();
@@ -2209,11 +2232,13 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
 
         this._mainLine = undefined;
 
-        if (this._showLine && this._points.length > 1) {
+        const points = this.getInterpolatedPoints();
+
+        if (this._showLine && points.length > 1) {
             this._mainLine = new LineWithBorder(
                 this._innerLineMaterial,
                 this._outerLineMaterial,
-                this._points,
+                points,
             );
             this._mainLine.name = 'line';
 
@@ -2280,7 +2305,8 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         }
 
         if (this._showSurface) {
-            const { geometry, origin } = computeArea(this._points, true);
+            const points = this.getInterpolatedPoints();
+            const { geometry, origin } = computeArea(points, true);
             if (geometry && origin) {
                 this._surface = new Mesh(geometry, this._surfaceMaterial);
                 this._surface.name = 'surface';
@@ -2530,6 +2556,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     }
 
     private rebuildGeometries(): void {
+        this.rebuildInterpolatedPoints();
         this.rebuildVertices();
         this.rebuildLine();
         this.rebuildFloorLine();
