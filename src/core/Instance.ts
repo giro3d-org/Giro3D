@@ -118,6 +118,10 @@ export interface InstanceEvents {
          */
         results?: PickResult<unknown>[];
     };
+    /**
+     * Fires when the instance is disposed.
+     */
+    dispose: unknown;
 }
 
 /**
@@ -487,6 +491,8 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         this._engine.dispose();
         this._view.dispose();
         this.viewport.remove();
+
+        this.dispatchEvent({ type: 'dispose' });
     }
 
     /**
