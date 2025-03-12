@@ -853,6 +853,11 @@ export interface ShapeOptions extends Entity3DOptions {
      * @defaultValue `'bold'`
      */
     fontWeight?: ShapeFontWeight;
+    /**
+     * Enables depth testing.
+     * @defaultValue false
+     */
+    depthTest?: boolean;
 
     /**
      * A custom formatter for the surface label.
@@ -1214,6 +1219,8 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
 
         this._color = options?.color != null ? new Color(options.color) : this._color;
         this._contrastColor = new Color(getContrastColor(this._color));
+
+        this._depthTest = options?.depthTest ?? this._depthTest;
 
         this._vertexRadius = options?.vertexRadius ?? this._vertexRadius;
         this._lineWidth = options?.lineWidth ?? this._lineWidth;
