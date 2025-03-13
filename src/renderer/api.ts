@@ -2,6 +2,7 @@ import ConstantSizeSphere from './ConstantSizeSphere';
 import type * as SimpleGeometry from './geometries/api';
 import MemoryTracker from './MemoryTracker';
 import type PointCloudMaterial from './PointCloudMaterial';
+import type { Mode as PointCloudMode, MODE as PointCloudModes } from './PointCloudMaterial';
 import {
     ASPRS_CLASSIFICATIONS,
     type Classification,
@@ -21,6 +22,8 @@ export {
     MemoryTracker,
     PointCloudMaterial,
     PointCloudMaterialOptions,
+    PointCloudMode,
+    PointCloudModes,
     RenderingContextHandler,
     RenderingOptions,
     SimpleGeometry,
