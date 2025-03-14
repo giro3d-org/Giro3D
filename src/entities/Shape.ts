@@ -2,8 +2,6 @@ import proj from 'proj4';
 
 import type { Feature, Geometry, LineString, MultiPoint, Point, Polygon, Position } from 'geojson';
 
-import earcut from 'earcut';
-
 import {
     BufferGeometry,
     Color,
@@ -40,6 +38,7 @@ import type PickResult from '../core/picking/PickResult';
 import ConstantSizeSphere, { getWorldSpaceRadius } from '../renderer/ConstantSizeSphere';
 import { getContrastColor } from '../utils/ColorUtils';
 import GeoJSONUtils from '../utils/GeoJSONUtils';
+import { triangulate } from '../utils/tessellator';
 import { type EntityUserData } from './Entity';
 import Entity3D, { type Entity3DEventMap } from './Entity3D';
 
@@ -515,7 +514,7 @@ function computeArea(
     const origin = points[0];
 
     const closedPolygon = getClosedPolygon(points);
-    const indices = earcut(toNumberArray(points, origin), undefined, 3);
+    const indices = triangulate(toNumberArray(points, origin), undefined);
 
     let geometry: BufferGeometry | undefined = undefined;
     if (computeGeometry) {
