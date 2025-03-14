@@ -15,6 +15,7 @@ import { defaultColorimetryOptions } from '../core/ColorimetryOptions';
 import ColorMap from '../core/ColorMap';
 import type Context from '../core/Context';
 import Extent from '../core/geographic/Extent';
+import type Instance from '../core/Instance';
 import type ColorLayer from '../core/layer/ColorLayer';
 import type HasLayers from '../core/layer/HasLayers';
 import type Layer from '../core/layer/Layer';
@@ -125,15 +126,27 @@ export interface Tiles3DEventMap extends Entity3DEventMap {
     'layer-removed': { layer: Layer };
 }
 
-const shared: {
-    downloadQueue: PriorityQueue | null;
-    parseQueue: PriorityQueue | null;
-    lruCache: LRUCache | null;
-} = {
-    downloadQueue: null,
-    parseQueue: null,
-    lruCache: null,
+type SharedResources = {
+    downloadQueue: PriorityQueue;
+    parseQueue: PriorityQueue;
+    lruCache: LRUCache;
 };
+
+const perInstanceSharedResources: Map<Instance, SharedResources> = new Map();
+
+function getSharedResources(instance: Instance): SharedResources | null {
+    return perInstanceSharedResources.get(instance) ?? null;
+}
+
+function setSharedResources(instance: Instance, resources: SharedResources): void {
+    if (perInstanceSharedResources.has(instance)) {
+        return;
+    }
+
+    perInstanceSharedResources.set(instance, resources);
+
+    instance.addEventListener('dispose', e => perInstanceSharedResources.delete(e.target));
+}
 
 type ObjectOptions = {
     castShadow: boolean;
@@ -201,17 +214,6 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         super(new Group());
 
         this._tiles = new TilesRenderer(options?.url);
-
-        // Share resources between instances
-        if (shared.lruCache && shared.downloadQueue && shared.parseQueue) {
-            this._tiles.lruCache = shared.lruCache;
-            this._tiles.downloadQueue = shared.downloadQueue;
-            this._tiles.parseQueue = shared.parseQueue;
-        } else {
-            shared.lruCache = this._tiles.lruCache;
-            shared.downloadQueue = this._tiles.downloadQueue;
-            shared.parseQueue = this._tiles.parseQueue;
-        }
 
         this._tiles.errorTarget = options?.errorTarget ?? 8;
         this.object3d.add(this._tiles.group);
@@ -423,6 +425,23 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
     protected preprocess(opts: EntityPreprocessOptions): Promise<void> {
         return new Promise(resolve => {
             const instance = opts.instance;
+
+            // Share resources between instances
+            const shared = getSharedResources(instance);
+
+            if (shared) {
+                this._tiles.lruCache = shared.lruCache;
+                this._tiles.downloadQueue = shared.downloadQueue;
+                this._tiles.parseQueue = shared.parseQueue;
+            } else {
+                const toShare: SharedResources = {
+                    lruCache: this._tiles.lruCache,
+                    downloadQueue: this._tiles.downloadQueue,
+                    parseQueue: this._tiles.parseQueue,
+                };
+
+                setSharedResources(instance, toShare);
+            }
 
             // Preprocessing is done when the root tileset is loaded
             const listener = () => {
