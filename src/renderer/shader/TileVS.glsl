@@ -15,6 +15,10 @@ varying vec3        vWorldPosition; // World space position
 varying vec3        vWorldNormal; // World space normal
 varying vec3        vViewPosition;
 
+#if defined(ENABLE_SKIRTS)
+varying float       vIsSkirtVertex;
+#endif
+
 // This is used for computing an equivalent of gl_FragCoord.z that is as high precision as possible.
 // Some platforms compute gl_FragCoord at a lower precision which makes the manually computed value better for
 // depth-based postprocessing effects. Reproduced on iPad with A10 processor / iPadOS 13.3.1.
@@ -46,4 +50,8 @@ void main() {
 
     vWorldPosition = (modelMatrix * vec4(transformed, 1.0)).xyz;
     vHighPrecisionZW = gl_Position.zw;
+
+#if defined(ENABLE_SKIRTS)
+    vIsSkirtVertex = gl_VertexID >= int(skirtVertexRange[0]) && gl_VertexID <= int(skirtVertexRange[1]) ? 1.0 : 0.0;
+#endif
 }

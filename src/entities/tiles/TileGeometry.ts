@@ -4,6 +4,8 @@ import type HeightMap from '../../core/HeightMap';
 import type MemoryUsage from '../../core/MemoryUsage';
 
 export default interface TileGeometry extends BufferGeometry, MemoryUsage {
+    get vertexCount(): number;
+
     get segments(): number;
     set segments(v: number);
 
@@ -30,4 +32,5 @@ export default interface TileGeometry extends BufferGeometry, MemoryUsage {
 export type TileGeometryBuilder<T extends TileGeometry = TileGeometry> = (
     extent: Extent,
     segments: number,
+    skirtDepth: number | null,
 ) => T;

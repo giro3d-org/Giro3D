@@ -318,6 +318,8 @@ type Defines = {
      * The number of _visible_ color layers
      */
     VISIBLE_COLOR_LAYER_COUNT: number;
+
+    ENABLE_SKIRTS?: 1;
 };
 
 type ThreeUniforms = typeof UniformsLib.common & typeof UniformsLib.fog & typeof UniformsLib.lights;
@@ -363,6 +365,10 @@ type Uniforms = ThreeUniforms & {
     referencePosition: IUniform<Vector3>;
     nearDistance: IUniform<number>;
     farDistance: IUniform<number>;
+
+    // Skirts related uniforms
+    // The start and end index of vertices located at the bottom of the skirt
+    skirtVertexRange: IUniform<Vector2>;
 };
 
 class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
@@ -562,6 +568,8 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
                 offsetScale: new OffsetScale(0, 0, 0, 0),
                 textureSize: new Vector2(0, 0),
             }),
+
+            skirtVertexRange: new Uniform(new Vector2(0, 0)),
         };
 
         this.uniformsNeedUpdate = true;

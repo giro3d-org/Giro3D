@@ -1,170 +1,50 @@
-import type { Vector2 } from 'three';
-import { BufferAttribute, BufferGeometry, Vector3 } from 'three';
+import {
+    Box3,
+    BufferAttribute,
+    BufferGeometry,
+    Float32BufferAttribute,
+    Vector2,
+    Vector3,
+} from 'three';
 import type Extent from '../../core/geographic/Extent';
 import type HeightMap from '../../core/HeightMap';
 import type MemoryUsage from '../../core/MemoryUsage';
 import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../../core/MemoryUsage';
+import type { SkirtSide } from './GridBuilder';
+import { getGridBuffers, iterateBottomVertices, iterateSkirtVertices } from './GridBuilder';
 import type TileGeometry from './TileGeometry';
 
-const normalBufferPool = new Map<number, Float32Array>();
-
-function getNormalBuffer(length: number) {
-    let buffer = normalBufferPool.get(length);
-    if (!buffer) {
-        buffer = new Float32Array(length);
-        for (let i = 0; i < buffer.length; i += 3) {
-            // Z-up vector
-            buffer[i + 0] = 0;
-            buffer[i + 1] = 0;
-            buffer[i + 2] = 1;
-        }
-
-        normalBufferPool.set(length, buffer);
-    }
-
-    return buffer;
-}
+const tmpVec3 = new Vector3();
+const tmpVec2 = new Vector2();
 
 export interface TileGeometryOptions {
     extent: Extent;
     segments: number;
-}
-
-export interface TileGeometryProperties {
-    width: number;
-    height: number;
-    uvStepX: number;
-    uvStepY: number;
-    rowStep: number;
-    columnStep: number;
-    translateX: number;
-    translateY: number;
-    triangles: number;
-    numVertices: number;
-}
-
-export function createGrid(props: TileGeometryProperties) {
-    const width = props.width;
-    const height = props.height;
-    const rowStep = props.rowStep;
-    const columnStep = props.columnStep;
-    const translateX = props.translateX;
-    const translateY = props.translateY;
-    const uvStepX = props.uvStepX;
-    const uvStepY = props.uvStepY;
-    const numVertices = props.numVertices;
-
-    const uvs = new Float32Array(numVertices * 2);
-    const positions = new Float32Array(numVertices * 3);
-    const indexCount = props.triangles * 3;
-    const indices =
-        positions.length <= 65536 ? new Uint16Array(indexCount) : new Uint32Array(indexCount);
-
-    let posX;
-    let h = 0;
-    let iPos = 0;
-    let uvY = 0.0;
-    let indicesNdx = 0;
-    let posY = translateY;
-    let posNdx;
-    let uvNdx;
-
-    // Top border
-    //
-    for (posX = 0; posX < width; posX++) {
-        // Store xy position and and corresponding uv of a pixel data.
-        posNdx = iPos * 3;
-        positions[posNdx + 0] = posX * rowStep + translateX;
-        positions[posNdx + 1] = -posY;
-        positions[posNdx + 2] = 0.0;
-        uvNdx = iPos * 2;
-        uvs[uvNdx + 0] = posX * uvStepX;
-        uvs[uvNdx + 1] = uvY;
-        iPos += 1;
-    }
-    // Next rows
-    //
-    for (h = 1; h < height; h++) {
-        posY = h * columnStep + translateY;
-        uvY = h * uvStepY;
-        // First cell, left border
-        posX = 0;
-        // Store xy position and and corresponding uv of a pixel data.
-        posNdx = iPos * 3;
-        positions[posNdx + 0] = posX * rowStep + translateX;
-        positions[posNdx + 1] = -posY;
-        positions[posNdx + 2] = 0.0;
-        uvNdx = iPos * 2;
-        uvs[uvNdx + 0] = posX * uvStepX;
-        uvs[uvNdx + 1] = uvY;
-        iPos += 1;
-        // Next cells
-        for (posX = 1; posX < width; posX++) {
-            // Construct indices as two different triangles from a
-            // particular vertex. Use previous and aboves while rolling
-            // so discard first row (top border) and first data of each
-            // row (left border).
-            // x---x       x   .
-            //  \  |       | \
-            //   \ |       |  \
-            // .   x       x---x
-            const above = iPos - width;
-            const previousPos = iPos - 1;
-            const previousAbove = above - 1;
-            indices[indicesNdx + 0] = iPos;
-            indices[indicesNdx + 1] = previousAbove;
-            indices[indicesNdx + 2] = above;
-            indices[indicesNdx + 3] = iPos;
-            indices[indicesNdx + 4] = previousPos;
-            indices[indicesNdx + 5] = previousAbove;
-            indicesNdx += 6;
-            // Store xy position and and corresponding uv of a pixel data.
-            posNdx = iPos * 3;
-            positions[posNdx + 0] = posX * rowStep + translateX;
-            positions[posNdx + 1] = -posY;
-            positions[posNdx + 2] = 0.0;
-            uvNdx = iPos * 2;
-            uvs[uvNdx + 0] = posX * uvStepX;
-            uvs[uvNdx + 1] = uvY;
-            iPos += 1;
-        }
-    }
-
-    return { positions, indices, uvs };
+    skirtDepth?: number;
 }
 
 /**
- * The PlanarTileGeometry provides a new buffer geometry for each
- * {@link TileMesh} of a
- * {@link Map} object.
- *
- * It is implemented for performance using a rolling approach.
- * The rolling approach is a special case of the sliding window algorithm with
- * a single value window where we iterate (roll, slide) over the data array to
- * compute everything in a single pass (complexity O(n)).
- * By default it produces square geometries but providing different width and height
- * allows for rectangular tiles creation.
- *
- * ```js
- * // Inspired from Map.requestNewTile
- * const extent = new Extent('EPSG:3857', -1000, -1000, 1000, 1000);
- * const paramsGeometry = { extent, segment: 8 };
- * const geometry = new TileGeometry(paramsGeometry);
- * ```
+ * Geometry for map tiles in a planar coordinate system (where the up axis is the same everywhere).
  */
 class PlanarTileGeometry extends BufferGeometry implements MemoryUsage, TileGeometry {
     readonly isMemoryUsage = true as const;
     private readonly _dimensions: Vector2;
     private _segments: number;
-    private _props: TileGeometryProperties;
     private _extent: Extent;
+    private _heightMap: HeightMap | null = null;
+    private _origin: Vector3;
+    private _skirtDepth: number | null = null;
 
     getMemoryUsage(context: GetMemoryUsageContext) {
         getGeometryMemoryUsage(context, this);
     }
 
+    get vertexCount() {
+        return this.getAttribute('position').count;
+    }
+
     get origin() {
-        return this._extent.centerAsVector3(new Vector3());
+        return this._origin;
     }
 
     get raycastGeometry() {
@@ -179,37 +59,11 @@ class PlanarTileGeometry extends BufferGeometry implements MemoryUsage, TileGeom
     constructor(params: TileGeometryOptions) {
         super();
         this._extent = params.extent;
-        // Still mandatory to have on the geometry ?
+        this._origin = this._extent.center().toVector3();
         this._dimensions = params.extent.dimensions();
-        // Compute properties of the grid, square or rectangular.
+        this._skirtDepth = params.skirtDepth ?? null;
         this._segments = params.segments;
-        this._props = this.updateProps();
-        this.computeBuffers(this._props);
-        // Compute the Oriented Bounding Box for spatial operations
-        this.computeBoundingBox();
-    }
-
-    private updateProps() {
-        const width = this._segments + 1;
-        const height = this._segments + 1;
-        const dimension = this._dimensions;
-        const uvStep = 1 / this._segments;
-        const uvStepY = 1 / this._segments;
-        const rowStep = uvStep * dimension.x;
-        const columnStep = uvStepY * -dimension.y;
-        this._props = {
-            width,
-            height,
-            uvStepX: uvStep,
-            uvStepY,
-            rowStep,
-            columnStep,
-            translateX: -this._segments * 0.5 * rowStep,
-            translateY: -this._segments * 0.5 * columnStep,
-            triangles: this._segments * this._segments * 2,
-            numVertices: width * height,
-        };
-        return this._props;
+        this.buildBuffers(this);
     }
 
     get segments() {
@@ -219,21 +73,52 @@ class PlanarTileGeometry extends BufferGeometry implements MemoryUsage, TileGeom
     set segments(v) {
         if (this._segments !== v) {
             this._segments = v;
-            this.updateProps();
-            this.computeBuffers(this._props);
+            this.buildBuffers(this);
         }
     }
 
     resetHeights() {
         const positions = this.getAttribute('position');
-        for (let i = 0; i < positions.count; i++) {
+
+        let end = positions.count;
+        if (this._skirtDepth != null) {
+            end -= 4;
+        }
+
+        for (let i = 0; i < end; i++) {
             positions.setZ(i, 0);
+        }
+
+        if (this._skirtDepth != null) {
+            for (let i = end; i < end + 4; i++) {
+                positions.setZ(i, this._skirtDepth);
+            }
         }
         positions.needsUpdate = true;
         this.computeBoundingBox();
     }
 
     applyHeightMap(heightMap: HeightMap): { min: number; max: number } {
+        this._heightMap = heightMap;
+        return this.buildBuffers(this);
+    }
+
+    private buildBuffers(geometry: BufferGeometry) {
+        this.dispose();
+
+        const rowVertices = this._segments + 1;
+
+        const dims = this._dimensions;
+        const width = dims.width;
+        const height = dims.height;
+
+        // Positions are relative to the origin of the tile
+        const origin = this._origin;
+
+        const buffers = getGridBuffers(this._segments, this._skirtDepth != null);
+
+        const heightMap = this._heightMap;
+
         /**
          * Returns the elevation by sampling the heightmap at the (u, v) coordinate.
          * Note: the sampling does not perform any interpolation.
@@ -246,51 +131,155 @@ class PlanarTileGeometry extends BufferGeometry implements MemoryUsage, TileGeom
             return heightMap.getValue(u, v, true) ?? 0;
         }
 
-        const segments = this._segments;
-
-        const step = 1 / segments;
-
-        const positions = this.getAttribute('position');
-
         let min = +Infinity;
         let max = -Infinity;
 
-        const verticesPerRow = segments + 1;
+        const boundingBox = new Box3().makeEmpty();
 
-        for (let i = 0; i < verticesPerRow; i++) {
-            for (let j = 0; j < verticesPerRow; j++) {
-                const u = i * step;
-                const v = j * step;
+        // Those buffers need to be cloned because they are unique per-tile
+        const positionBuffer = buffers.positionBuffer.clone();
+        const normalBuffer = buffers.normalBuffer.clone();
 
-                const z = getElevation(u, v);
+        // But these one can be reused as they are never modified
+        const uvBuffer = buffers.uvBuffer;
+        const indexBuffer = buffers.indexBuffer;
 
-                min = Math.min(z, min);
-                max = Math.max(z, max);
+        const position = new Vector3();
 
-                const idx = i + j * verticesPerRow;
-                positions.setZ(idx, z);
+        const up = new Vector3(0, 0, 1);
+        const north = new Vector3(0, 1, 0);
+        const east = new Vector3(1, 0, 0);
+        const south = new Vector3(0, -1, 0);
+        const west = new Vector3(-1, 0, 0);
+        const down = new Vector3(0, 0, -1);
+
+        for (let j = 0; j < rowVertices; j++) {
+            for (let i = 0; i < rowVertices; i++) {
+                const idx = j * rowVertices + i;
+
+                const u = i / this.segments;
+                const v = j / this.segments;
+
+                const altitude = getElevation(u, 1 - v);
+
+                min = Math.min(min, altitude);
+                max = Math.max(max, altitude);
+
+                const x = origin.x - width / 2 + u * width;
+                const y = origin.y + height / 2 - v * height;
+                const z = 0;
+
+                position.set(x, y, z);
+                const pos = position.sub(origin);
+
+                boundingBox.expandByPoint(pos);
+
+                positionBuffer.set(idx, pos.x, pos.y, altitude);
+                normalBuffer.set(idx, up.x, up.y, up.z);
             }
         }
 
-        positions.needsUpdate = true;
-        this.computeBoundingBox();
-        this.computeBoundingSphere();
+        if (this._skirtDepth != null) {
+            const skirtDepth = this._skirtDepth;
+            const skirtStart = rowVertices * rowVertices;
+
+            // Let's set the skirt vertices position to match the XY position of their top
+            // edge counterpart, but with the Z coordinate set to the desired depth.
+            const setPositionCallback = (
+                side: SkirtSide,
+                top: number,
+                skirtTop: number,
+                skirtBottom: number,
+            ) => {
+                const x = positionBuffer.getX(top);
+                const y = positionBuffer.getY(top);
+
+                positionBuffer.set(skirtTop, x, y, 0);
+                positionBuffer.set(skirtBottom, x, y, skirtDepth);
+            };
+
+            iterateSkirtVertices(this.segments, positionBuffer, setPositionCallback);
+
+            const normals = [north, east, south, west];
+
+            // Let's set the normal of each skirt side to point to its cardinal direction (in local space)
+            const setNormalCallback = (
+                side: SkirtSide,
+                top: number,
+                skirtTop: number,
+                skirtBottom: number,
+            ) => {
+                const normal = normals[side];
+
+                normalBuffer.setVector(skirtTop, normal);
+                normalBuffer.setVector(skirtBottom, normal);
+            };
+            iterateSkirtVertices(this.segments, normalBuffer, setNormalCallback);
+
+            // Finally, set the UV coordinates of the side to match the UV coordinates
+            // of the original mesh's corresponding side.
+
+            // We don't want the shader to deform the vertices on the bottom of the skirts,
+            // so we use a special UV value to flag them.
+
+            const bottomUv = new Vector2(-999, -999);
+            const setUvCallback = (
+                side: SkirtSide,
+                top: number,
+                skirtTop: number,
+                skirtBottom: number,
+            ) => {
+                const uv = uvBuffer.get(top, tmpVec2);
+
+                uvBuffer.setVector(skirtTop, uv);
+                uvBuffer.setVector(skirtBottom, bottomUv);
+            };
+            iterateSkirtVertices(this.segments, normalBuffer, setUvCallback);
+
+            // Let's set the vertex positions for the bottom side
+            const last = positionBuffer.length;
+            const min = boundingBox.min;
+            const max = boundingBox.max;
+
+            positionBuffer.set(last - 4, min.x, max.y, skirtDepth);
+            positionBuffer.set(last - 3, max.x, max.y, skirtDepth);
+            positionBuffer.set(last - 2, max.x, min.y, skirtDepth);
+            positionBuffer.set(last - 1, min.x, min.y, skirtDepth);
+
+            iterateBottomVertices(uvBuffer, idx => {
+                uvBuffer.setVector(idx, bottomUv);
+            });
+            iterateBottomVertices(normalBuffer, idx => {
+                normalBuffer.setVector(idx, down);
+            });
+
+            // Let's include the skirt vertices into the bounding box
+            boundingBox.expandByPoint(positionBuffer.get(skirtStart + 0, tmpVec3));
+            boundingBox.expandByPoint(positionBuffer.get(skirtStart + 1, tmpVec3));
+            boundingBox.expandByPoint(positionBuffer.get(skirtStart + 2, tmpVec3));
+            boundingBox.expandByPoint(positionBuffer.get(skirtStart + 3, tmpVec3));
+        }
+
+        // Per-tile buffers
+        geometry.setAttribute('position', new Float32BufferAttribute(positionBuffer.array, 3));
+        geometry.setAttribute('normal', new Float32BufferAttribute(normalBuffer.array, 3));
+
+        // Shared buffers
+        geometry.setAttribute('uv', new Float32BufferAttribute(uvBuffer.array, 2));
+        geometry.setIndex(new BufferAttribute(indexBuffer, 1));
+
+        this.boundingBox = boundingBox;
+
+        if (this._skirtDepth != null) {
+            const topVertexCount = rowVertices * rowVertices;
+
+            // Let's use distinct material groups for the top side
+            // and the skirts, so that we can use different materials
+            this.addGroup(0, topVertexCount, 0);
+            this.addGroup(topVertexCount, 4, 1);
+        }
 
         return { min, max };
-    }
-
-    /**
-     * Construct a simple grid buffer geometry using a fast rolling approach.
-     *
-     * @param props - Properties of the TileGeometry grid, as prepared by this.prepare.
-     */
-    protected computeBuffers(props: TileGeometryProperties) {
-        const { positions, indices, uvs } = createGrid(props);
-
-        this.setAttribute('uv', new BufferAttribute(uvs, 2));
-        this.setAttribute('position', new BufferAttribute(positions, 3));
-        this.setAttribute('normal', new BufferAttribute(getNormalBuffer(positions.length), 3));
-        this.setIndex(new BufferAttribute(indices, 1));
     }
 }
 
