@@ -1,12 +1,15 @@
 import Entity3D from '@giro3d/giro3d/entities/Entity3D';
 import {
+    Box3,
     BoxGeometry,
     BufferGeometry,
     Group,
     Mesh,
     MeshStandardMaterial,
     Object3D,
+    PerspectiveCamera,
     Plane,
+    Vector3,
     type Material,
 } from 'three';
 
@@ -336,6 +339,36 @@ describe('Entity3D', () => {
 
             // @ts-expect-error protected method
             entity.onObjectCreated(o);
+        });
+    });
+
+    describe('getDefaultPointOfView', () => {
+        class StubEntity extends Entity3D {
+            constructor() {
+                super(new Group());
+            }
+        }
+
+        it('should compute a POV from the bounding box of the entity', () => {
+            Object3D.DEFAULT_UP.set(0, 0, 1);
+
+            const entity = new StubEntity();
+            const box = new Box3().setFromCenterAndSize(new Vector3(1, 2, 3), new Vector3(5, 5, 5));
+            entity.getBoundingBox = jest.fn(() => box);
+
+            const getDefaultPointOfView = jest.fn();
+
+            // @ts-expect-error instance is readonly
+            entity._instance = {
+                // @ts-expect-error incomplete
+                view: { getDefaultPointOfView },
+            };
+
+            const camera = new PerspectiveCamera(45);
+
+            entity.getDefaultPointOfView({ camera });
+
+            expect(getDefaultPointOfView).toHaveBeenCalledWith(box, { camera });
         });
     });
 });

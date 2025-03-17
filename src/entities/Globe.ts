@@ -1,9 +1,13 @@
-import { Vector2 } from 'three';
+import { Vector2, Vector3 } from 'three';
 import type Context from '../core/Context';
 import Coordinates from '../core/geographic/Coordinates';
 import Ellipsoid from '../core/geographic/Ellipsoid';
 import Extent from '../core/geographic/Extent';
+import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
+import type PointOfView from '../core/PointOfView';
 import type TerrainOptions from '../core/TerrainOptions';
+import { computeDistanceToFitSphere, computeZoomToFitSphere } from '../renderer/View';
+import { isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
 import Map, { type MapConstructorOptions } from './Map';
 import type MapLightingOptions from './MapLightingOptions';
 import { MapLightingMode } from './MapLightingOptions';
@@ -253,5 +257,41 @@ export default class Globe extends Map {
             // Hillshade does not work in a non-planar setup
             mode: MapLightingMode.LightBased,
         };
+    }
+
+    /**
+     * Looks at the center of the globe from the [0°, 0°] geographic coordinate.
+     */
+    override getDefaultPointOfView(
+        params: Parameters<HasDefaultPointOfView['getDefaultPointOfView']>[0],
+    ): ReturnType<HasDefaultPointOfView['getDefaultPointOfView']> {
+        const target = new Vector3(0, 0, 0);
+
+        const radius = Math.max(this._ellipsoid.semiMajorAxis, this._ellipsoid.semiMinorAxis) * 1.4;
+
+        const origin = new Vector3();
+        let orthographicZoom = 1;
+
+        if (isPerspectiveCamera(params.camera)) {
+            // Let's fit the globe into the camera field of view.
+            const distance = computeDistanceToFitSphere(params.camera, radius);
+
+            const up = this.ellipsoid.getNormal(0, 0);
+
+            origin.addScaledVector(up, distance);
+        } else if (isOrthographicCamera(params.camera)) {
+            origin.set(radius * 2, 0, 0);
+            orthographicZoom = computeZoomToFitSphere(params.camera, radius);
+        }
+
+        this.object3d.updateMatrixWorld(true);
+
+        // Since the entity could be translated, we have to apply the matrix.
+        target.applyMatrix4(this.object3d.matrixWorld);
+        origin.applyMatrix4(this.object3d.matrixWorld);
+
+        const result: PointOfView = { origin, target, orthographicZoom };
+
+        return Object.freeze(result);
     }
 }

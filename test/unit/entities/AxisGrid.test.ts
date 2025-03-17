@@ -3,6 +3,7 @@ import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import AxisGrid, { DEFAULT_STYLE, type Volume } from '@giro3d/giro3d/entities/AxisGrid';
 import View from '@giro3d/giro3d/renderer/View';
 import * as THREE from 'three';
+import { Vector3 } from 'three';
 
 const DEFAULT_EXTENT = new Extent('EPSG:3857', -10, 10, -10, 10);
 const defaultVolume: Volume = {
@@ -18,7 +19,13 @@ describe('AxisGrid', () => {
 
     beforeEach(() => {
         camera = new THREE.PerspectiveCamera(45);
-        view = new View('foo', 1, 1, { camera: camera });
+        view = new View({
+            crs: 'foo',
+            width: 1,
+            height: 1,
+            camera,
+            getUpVector: () => new Vector3(0, 0, 1),
+        });
         context = {
             view,
             distance: {

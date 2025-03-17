@@ -1,5 +1,6 @@
 import { register } from 'ol/proj/proj4.js';
 import proj4 from 'proj4';
+import type { OrthographicCamera, PerspectiveCamera } from 'three';
 import {
     Clock,
     EventDispatcher,
@@ -16,11 +17,10 @@ import type { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.j
 import type Entity from '../entities/Entity';
 import { isEntity } from '../entities/Entity';
 import Entity3D, { isEntity3D } from '../entities/Entity3D';
-import Map from '../entities/Map';
 import C3DEngine from '../renderer/c3DEngine';
 import type RenderingOptions from '../renderer/RenderingOptions';
 import { GlobalRenderTargetPool } from '../renderer/RenderTargetPool';
-import View, { type CameraOptions } from '../renderer/View';
+import View from '../renderer/View';
 import { GlobalCache } from './Cache';
 import { isDisposable } from './Disposable';
 import MainLoop from './MainLoop';
@@ -138,7 +138,7 @@ export const INSTANCE_EVENTS: Record<string, keyof InstanceEvents> = {
 } as const;
 
 /** Options for creating Instance */
-export interface InstanceOptions extends CameraOptions {
+export interface InstanceOptions {
     /**
      * The container for the instance. May be either the `id` of an existing `<div>` element,
      * or the element itself.
@@ -166,6 +166,10 @@ export interface InstanceOptions extends CameraOptions {
      * or options to create one. If `undefined`, a new one will be created with default parameters.
      */
     renderer?: WebGLRenderer | WebGLRendererParameters;
+    /**
+     * The THREE camera to use
+     */
+    camera?: PerspectiveCamera | OrthographicCamera;
 }
 
 /**
@@ -316,12 +320,14 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
             this._scene.matrixWorldAutoUpdate = false;
         }
 
-        this._view = new View(
-            this._referenceCrs,
-            this._engine.getWindowSize().x,
-            this._engine.getWindowSize().y,
-            options,
-        );
+        const windowSize = this._engine.getWindowSize();
+
+        this._view = new View({
+            crs: this._referenceCrs,
+            camera: options.camera,
+            width: windowSize.width,
+            height: windowSize.height,
+        });
 
         this._view.addEventListener('change', () => this.notifyChange(this._view.camera));
 
@@ -908,39 +914,6 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         this.dispatchEvent({ type: 'picking-end', elapsed, results });
 
         return results;
-    }
-
-    /**
-     * Moves the camera to look at an object.
-     *
-     * @param obj - Object to look at
-     */
-    focusObject(obj: Object3D | Entity3D) {
-        const cam = this._view.camera;
-        if (obj instanceof Map) {
-            // Configure camera
-            // TODO support different CRS
-            const dim = obj.extent.dimensions();
-            const positionCamera = obj.extent.centerAsVector3();
-            positionCamera.z = Math.max(dim.x, dim.y);
-            const lookat = positionCamera;
-            lookat.z = 0; // TODO this supposes there is no terrain, nor z-displacement
-
-            cam.position.copy(positionCamera);
-            cam.lookAt(lookat);
-            cam.updateMatrixWorld(true);
-        } else if ('getBoundingBox' in obj && typeof obj.getBoundingBox === 'function') {
-            const box = obj.getBoundingBox();
-            if (box != null && !box.isEmpty()) {
-                const center = box.getCenter(vectors.pos);
-                const size = box.getSize(vectors.size);
-                const positionCamera = center.clone();
-                positionCamera.x = Math.max(size.x, size.y);
-                cam.position.copy(positionCamera);
-                cam.lookAt(center);
-                cam.updateMatrixWorld(true);
-            }
-        }
     }
 
     getMemoryUsage(): MemoryUsageReport {
