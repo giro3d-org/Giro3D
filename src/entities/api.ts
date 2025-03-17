@@ -22,7 +22,13 @@ import {
 import MapLightingOptions, { MapLightingMode } from './MapLightingOptions';
 import PointCloud, { PointCloudOptions, UnsupportedAttributeError } from './PointCloud';
 import Shape, * as shape from './Shape';
-import Tiles3D, { type Tiles3DOptions, type Tiles3DPickResult } from './Tiles3D';
+import Tiles3D, {
+    DEFAULT_TILES3D_POINTCLOUD_ATTRIBUTE_MAPPING,
+    WellKnown3DTilesPointCloudAttributes,
+    type PointCloudBatchTableAttributeMapping,
+    type Tiles3DOptions,
+    type Tiles3DPickResult,
+} from './Tiles3D';
 
 export {
     Atmosphere,
@@ -33,6 +39,7 @@ export {
     AxisGridVolume,
     DEFAULT_MAP_BACKGROUND_COLOR,
     DEFAULT_SUBDIVISION_THRESHOLD,
+    DEFAULT_TILES3D_POINTCLOUD_ATTRIBUTE_MAPPING,
     Entity,
     Entity3D,
     Entity3DEventMap,
@@ -51,6 +58,7 @@ export {
     MapLightingOptions,
     MeshUserData,
     PointCloud,
+    PointCloudBatchTableAttributeMapping,
     PointCloudOptions,
     Shape,
     shape,
@@ -58,4 +66,5 @@ export {
     Tiles3DOptions,
     Tiles3DPickResult,
     UnsupportedAttributeError,
+    WellKnown3DTilesPointCloudAttributes,
 };

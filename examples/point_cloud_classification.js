@@ -54,6 +54,12 @@ const url =
 
 const pointcloud = new Tiles3D({
     url,
+    // Attributes in the original tileset do not have the same casing
+    // as the names expected by the entity, so we have to map them.
+    pointCloudAttributeMapping: {
+        classification: 'Classification',
+        intensity: 'Intensity',
+    },
     pointCloudMode: MODE.CLASSIFICATION,
     errorTarget: 14,
     classifications,

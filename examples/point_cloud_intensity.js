@@ -51,6 +51,12 @@ const url = 'https://3d.oslandia.com/giro3d/3d-tiles/lidarhd_intensity/tileset.j
 // Create the 3D tiles entity
 const pointcloud = new Tiles3D({
     url,
+    // Attributes in the original tileset do not have the same casing
+    // as the names expected by the entity, so we have to map them.
+    pointCloudAttributeMapping: {
+        classification: 'Classification',
+        intensity: 'Intensity',
+    },
     pointCloudMode: MODE.INTENSITY,
     colorMap: new ColorMap({
         colors: parameters.colors,

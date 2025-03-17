@@ -34,10 +34,21 @@ import { isBufferGeometry, isObject3D } from '../utils/predicates';
 import { nonNull } from '../utils/tsutils';
 import FetchPlugin from './3dtiles/FetchPlugin';
 import type PointCloudParameters from './3dtiles/PointCloudParameters';
+import {
+    DEFAULT_TILES3D_POINTCLOUD_ATTRIBUTE_MAPPING,
+    type PointCloudBatchTableAttributeMapping,
+    type WellKnown3DTilesPointCloudAttributes,
+} from './3dtiles/PointCloudParameters';
 import PointCloudPlugin, { isPNTSScene } from './3dtiles/PointCloudPlugin';
 import type { EntityPreprocessOptions, EntityUserData } from './Entity';
 import type { Entity3DEventMap } from './Entity3D';
 import Entity3D from './Entity3D';
+
+export {
+    DEFAULT_TILES3D_POINTCLOUD_ATTRIBUTE_MAPPING,
+    type PointCloudBatchTableAttributeMapping,
+    type WellKnown3DTilesPointCloudAttributes,
+};
 
 type Listener<T> = (args: T & object) => void;
 
@@ -67,6 +78,12 @@ export type Tiles3DOptions = {
      * @defaultValue color
      */
     pointCloudMode?: Mode;
+
+    /**
+     * The mapping between well-known attributes of point cloud geometries and attributes in the batch table.
+     * @defaultValue {@link DEFAULT_TILES3D_POINTCLOUD_ATTRIBUTE_MAPPING}
+     */
+    pointCloudAttributeMapping?: PointCloudBatchTableAttributeMapping;
 
     /**
      * The point size for point clouds.
@@ -188,6 +205,7 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         pointCloudMode: MODE.COLOR,
         colorimetry: defaultColorimetryOptions(),
         overlayColor: null,
+        attributeMapping: DEFAULT_TILES3D_POINTCLOUD_ATTRIBUTE_MAPPING,
         pointCloudColorMap: new ColorMap({
             colors: [new Color('black'), new Color('white')],
             min: 0,
@@ -277,6 +295,8 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
             options?.colorMap ?? this._pointCloudParameters.pointCloudColorMap;
         this._pointCloudParameters.classifications =
             options?.classifications ?? this._pointCloudParameters.classifications;
+        this._pointCloudParameters.attributeMapping =
+            options?.pointCloudAttributeMapping ?? this._pointCloudParameters.attributeMapping;
 
         this._pointCloudParameters.pointCloudColorMap.addEventListener(
             'updated',
