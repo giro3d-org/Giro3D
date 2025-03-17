@@ -4,6 +4,7 @@
     "exclude": ["node_modules/**/*"],
     "compilerOptions": {
         "strict": true,
+        "noImplicitOverride": true,
         "target": "ES2021",
         "lib": ["ES2021"],
         "module": "ES2020",

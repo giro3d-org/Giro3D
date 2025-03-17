@@ -178,7 +178,7 @@ export interface VectorSourceOptions extends ImageSourceOptions {
  */
 class VectorSource extends ImageSource {
     readonly isVectorSource = true as const;
-    readonly type = 'VectorSource' as const;
+    override readonly type = 'VectorSource' as const;
 
     readonly data: DataSource;
     readonly dataProjection: string | undefined;
@@ -255,7 +255,7 @@ class VectorSource extends ImageSource {
         feature.getGeometry()?.transform(this.dataProjection, this._targetProjection);
     }
 
-    async initialize(opts: { targetProjection: string }) {
+    override async initialize(opts: { targetProjection: string }) {
         await this.loadFeatures();
 
         this._targetProjection = opts.targetProjection;
@@ -466,7 +466,7 @@ class VectorSource extends ImageSource {
         return new ImageResult({ id, texture, extent });
     }
 
-    intersects(extent: Extent) {
+    override intersects(extent: Extent) {
         // It's a bit an issue with vector sources, as they are dynamic : when the user adds
         // a feature, the extent changes. Thus we cannot cache the extent.
         const sourceExtent = this.getCurrentExtent();

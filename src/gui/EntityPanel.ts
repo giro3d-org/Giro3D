@@ -57,7 +57,7 @@ class EntityPanel extends Panel {
         this.createInspectors();
     }
 
-    dispose() {
+    override dispose() {
         this.instance.removeEventListener('update-start', () => this.update());
         this.instance.removeEventListener('entity-added', this._createInspectorsCb);
         this.instance.removeEventListener('entity-removed', this._createInspectorsCb);
@@ -84,7 +84,7 @@ class EntityPanel extends Panel {
         customInspectors[type] = inspector;
     }
 
-    update() {
+    override update() {
         this.inspectors.forEach(i => i.update());
     }
 

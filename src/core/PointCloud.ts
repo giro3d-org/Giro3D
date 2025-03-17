@@ -37,7 +37,7 @@ class PointCloud<M extends PointCloudMaterial = PointCloudMaterial>
     implements EventDispatcher<PointCloudEventMap>, Disposable
 {
     readonly isPointCloud: boolean = true;
-    readonly type = 'PointCloud';
+    override readonly type = 'PointCloud';
 
     extent?: Extent;
     textureSize: Vector2;

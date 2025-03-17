@@ -12,7 +12,7 @@ export default class PointMesh<UserData extends DefaultUserData = DefaultUserDat
 {
     readonly isSimpleGeometryMesh = true as const;
     readonly isPointMesh = true as const;
-    readonly type = 'PointMesh' as const;
+    override readonly type = 'PointMesh' as const;
 
     private _featureOpacity = 1;
     private _styleOpacity = 1;
@@ -45,7 +45,7 @@ export default class PointMesh<UserData extends DefaultUserData = DefaultUserDat
         this.matrixAutoUpdate = false;
     }
 
-    onBeforeRender(renderer: WebGLRenderer, _scene: Scene, camera: Camera): void {
+    override onBeforeRender(renderer: WebGLRenderer, _scene: Scene, camera: Camera): void {
         // sprite size stand for sprite height in view
         const perspective = camera as PerspectiveCamera;
         const resolutionHeight = renderer.getRenderTarget()?.height ?? renderer.domElement?.height;

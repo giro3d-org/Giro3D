@@ -46,7 +46,7 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
 {
     readonly isMemoryUsage = true as const;
 
-    readonly type: string = 'Entity3D' as const;
+    override readonly type: string = 'Entity3D' as const;
 
     readonly isPickable = true;
     /**
@@ -225,15 +225,15 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
         });
     }
 
-    shouldCheckForUpdate(): boolean {
+    override shouldCheckForUpdate(): boolean {
         return super.shouldCheckForUpdate() && this._visible;
     }
 
-    shouldFullUpdate(updateSource: unknown): boolean {
+    override shouldFullUpdate(updateSource: unknown): boolean {
         return super.shouldFullUpdate(updateSource) || this.contains(updateSource);
     }
 
-    shouldUpdate(updateSource: unknown): boolean {
+    override shouldUpdate(updateSource: unknown): boolean {
         return super.shouldUpdate(updateSource) || this.isOwned(updateSource);
     }
 
@@ -253,7 +253,7 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
         return false;
     }
 
-    preUpdate(context: Context, changeSources: Set<unknown>): unknown[] | null {
+    override preUpdate(context: Context, changeSources: Set<unknown>): unknown[] | null {
         if (changeSources.size > 0) {
             // if we don't have any element in srcs, it means we don't need to update
             // our layer to display it correctly.  but in this case we still need to

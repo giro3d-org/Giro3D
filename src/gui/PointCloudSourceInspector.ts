@@ -37,7 +37,7 @@ export default class PointCloudSourceInspector extends Panel {
         }
     }
 
-    updateValues(): void {
+    override updateValues(): void {
         if (!this.source.ready) {
             return;
         }

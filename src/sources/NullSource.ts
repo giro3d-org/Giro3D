@@ -7,7 +7,7 @@ import ImageSource from './ImageSource';
  */
 class NullSource extends ImageSource {
     readonly isNullSource = true as const;
-    readonly type = 'NullSource' as const;
+    override readonly type = 'NullSource' as const;
     private readonly _extent: Extent;
 
     constructor(options: { extent?: Extent } = {}) {

@@ -11,7 +11,7 @@ export default class LineStringMesh<UserData extends DefaultUserData = DefaultUs
 {
     readonly isSimpleGeometryMesh = true as const;
     readonly isLineStringMesh = true as const;
-    readonly type = 'LineStringMesh' as const;
+    override readonly type = 'LineStringMesh' as const;
 
     private _featureOpacity = 1;
     private _styleOpacity = 1;
@@ -50,7 +50,7 @@ export default class LineStringMesh<UserData extends DefaultUserData = DefaultUs
         this.material.transparent = this.material.opacity < 1;
     }
 
-    onBeforeRender(renderer: WebGLRenderer): void {
+    override onBeforeRender(renderer: WebGLRenderer): void {
         // We have to specify the screen size to be able to properly render
         // lines that have a width in pixels. Note that this should be automatically done
         // by three.js in the future, but for now we have to do it manually.

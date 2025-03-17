@@ -26,7 +26,7 @@ const tmpVec2 = new Vector2();
 const sphere = new SphereGeometry(1, 64, 64);
 
 class GlowMaterial extends ShaderMaterial {
-    uniforms: {
+    override uniforms: {
         opacity: IUniform<number>;
         atmoIN: IUniform<boolean>;
         screenSize: IUniform<Vector2>;
@@ -77,7 +77,7 @@ class GlowMaterial extends ShaderMaterial {
  */
 export default class Glow extends Entity3D {
     readonly isGlow = true as const;
-    readonly type = 'Glow' as const;
+    override readonly type = 'Glow' as const;
 
     private readonly _ellipsoid: Ellipsoid;
     private readonly _sphere: Sphere;
@@ -153,7 +153,7 @@ export default class Glow extends Entity3D {
         return result;
     }
 
-    updateOpacity(): void {
+    override updateOpacity(): void {
         this._outerGlow.material.uniforms.opacity.value = this.opacity;
         this._innerGlow.material.uniforms.opacity.value = this.opacity;
     }
@@ -165,7 +165,7 @@ export default class Glow extends Entity3D {
         this._distance.max = Math.max(this._distance.max, distance + radius);
     }
 
-    postUpdate(context: Context, _changeSources: Set<unknown>): void {
+    override postUpdate(context: Context, _changeSources: Set<unknown>): void {
         this.instance.engine.getWindowSize(tmpVec2);
 
         this._outerGlow.material.screenSize = tmpVec2;
@@ -174,7 +174,7 @@ export default class Glow extends Entity3D {
         this.updateMinMaxDistance(context);
     }
 
-    pick(): PickResult[] {
+    override pick(): PickResult[] {
         return [];
     }
 }

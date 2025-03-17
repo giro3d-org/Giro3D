@@ -181,7 +181,7 @@ class TileInfoPanel extends Panel {
         }
     }
 
-    updateValues(): void {
+    override updateValues(): void {
         this._map.traverseTiles(tile => {
             this.updateLabel(tile);
         });

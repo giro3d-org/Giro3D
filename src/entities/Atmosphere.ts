@@ -60,7 +60,7 @@ type SkyUniforms = {
  */
 export default class Atmosphere extends Entity3D {
     readonly isAtmosphere = true as const;
-    readonly type = 'Atmosphere' as const;
+    override readonly type = 'Atmosphere' as const;
 
     private readonly _ellipsoid: Ellipsoid;
     private readonly _sphere: Sphere;
@@ -243,11 +243,11 @@ export default class Atmosphere extends Entity3D {
         this._distance.max = Math.max(this._distance.max, distance + radius);
     }
 
-    postUpdate(context: Context, _changeSources: Set<unknown>): void {
+    override postUpdate(context: Context, _changeSources: Set<unknown>): void {
         this.updateMinMaxDistance(context);
     }
 
-    pick(): PickResult[] {
+    override pick(): PickResult[] {
         // Atmosphere is not pickable.
         return [];
     }
@@ -266,7 +266,7 @@ export default class Atmosphere extends Entity3D {
         this.notifyChange(this);
     }
 
-    dispose(): void {
+    override dispose(): void {
         if (this._disposed) {
             return;
         }

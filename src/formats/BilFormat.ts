@@ -40,7 +40,7 @@ function createWorker() {
  */
 class BilFormat extends ImageFormat {
     readonly isBilFormat: boolean = true as const;
-    readonly type = 'BilFormat' as const;
+    override readonly type = 'BilFormat' as const;
 
     private _enableWorkers: boolean = true;
 

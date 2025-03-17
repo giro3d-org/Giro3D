@@ -563,7 +563,7 @@ export const DEFAULT_SHOW_FLOOR_LINE = false;
 
 class Vertex extends Group {
     readonly isVertex = true as const;
-    readonly type = 'Vertex' as const;
+    override readonly type = 'Vertex' as const;
 
     private readonly _inner: ConstantSizeSphere;
     private readonly _outer: ConstantSizeSphere;
@@ -619,7 +619,7 @@ class Vertex extends Group {
         this.updateMatrixWorld(true);
     }
 
-    raycast(raycaster: Raycaster, intersects: Intersection[]): void {
+    override raycast(raycaster: Raycaster, intersects: Intersection[]): void {
         this._inner.raycast(raycaster, intersects);
     }
 
@@ -644,7 +644,7 @@ function setOnBeforeRender(material: LineMaterial) {
 }
 
 class Label extends CSS2DObject {
-    readonly type = 'Label' as const;
+    override readonly type = 'Label' as const;
     readonly isLabel = true as const;
 
     readonly span: HTMLSpanElement;
@@ -671,12 +671,12 @@ class Label extends CSS2DObject {
  */
 class LineWithBorder extends Group {
     readonly isLineWithBorder = true as const;
-    readonly type = 'LineWithBorder' as const;
+    override readonly type = 'LineWithBorder' as const;
 
     private readonly _innerLine: Line2;
     private readonly _outerLine: Line2;
 
-    readonly userData: {
+    override readonly userData: {
         midPoint: Vector3;
         length: number;
     } = {
@@ -722,7 +722,7 @@ class LineWithBorder extends Group {
         this._outerLine.renderOrder = border;
     }
 
-    removeFromParent(): this {
+    override removeFromParent(): this {
         this._innerLine.geometry.dispose();
         return super.removeFromParent();
     }
@@ -735,7 +735,7 @@ class LineWithBorder extends Group {
         updateResolution(this._outerLine.material, renderer);
     }
 
-    raycast(raycaster: Raycaster, intersects: Intersection[]): void {
+    override raycast(raycaster: Raycaster, intersects: Intersection[]): void {
         this._innerLine.raycast(raycaster, intersects);
     }
 }
@@ -1107,7 +1107,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     UserData
 > {
     readonly isShape = true as const;
-    readonly type = 'Shape' as const;
+    override readonly type = 'Shape' as const;
 
     private readonly _points: Vector3[] = [];
     private readonly _segments: Line3[] = [];
@@ -1898,7 +1898,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         return false;
     }
 
-    updateRenderOrder(): void {
+    override updateRenderOrder(): void {
         const main = this.renderOrder + 2;
         const border = this.renderOrder + 1;
         const surface = this.renderOrder;
@@ -1911,7 +1911,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         }
     }
 
-    updateVisibility(): void {
+    override updateVisibility(): void {
         // Setting the root object's visibility is not enough
         // to set the visibility of CSS2DObjects (labels).
         this.object3d.traverse(o => {
@@ -1924,7 +1924,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         this.visitLabels(label => (label.element.style.opacity = cssOpacity));
     }
 
-    updateOpacity(): void {
+    override updateOpacity(): void {
         setOpacity(this._innerLineMaterial, this.opacity);
         setOpacity(this._outerLineMaterial, this.opacity);
         setOpacity(this._innerSecondaryLineMaterial, this.opacity);
@@ -1977,7 +1977,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         return { point: result, previousPointIndex };
     }
 
-    pick(canvasCoordinates: Vector2, _options?: PickOptions): ShapePickResult[] {
+    override pick(canvasCoordinates: Vector2, _options?: PickOptions): ShapePickResult[] {
         const normalized = this.instance.canvasToNormalizedCoords(canvasCoordinates, tmpNDC);
         const raycaster = new Raycaster();
         raycaster.params.Line2 = {
@@ -2113,7 +2113,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         this._verticalLines.forEach(callback);
     }
 
-    preUpdate(): unknown[] | null {
+    override preUpdate(): unknown[] | null {
         this.visitLines(line => line.updateMaterialResolution(this.instance.renderer));
         return null;
     }
@@ -2182,7 +2182,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         this.notifyChange();
     }
 
-    onObjectCreated(obj: Object3D) {
+    override onObjectCreated(obj: Object3D) {
         // note: we use traverse() because the object might have its own sub-hierarchy as well.
 
         this.traverse(o => {
@@ -2632,7 +2632,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         return null;
     }
 
-    getMemoryUsage(context: GetMemoryUsageContext) {
+    override getMemoryUsage(context: GetMemoryUsageContext) {
         if (this._surface) {
             getGeometryMemoryUsage(context, this._surface.geometry);
         }
@@ -2641,7 +2641,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     /**
      * Disposes the shape.
      */
-    dispose(): void {
+    override dispose(): void {
         this._innerLineMaterial.dispose();
         this._outerLineMaterial.dispose();
         this._innerSecondaryLineMaterial.dispose();

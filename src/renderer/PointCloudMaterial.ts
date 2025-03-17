@@ -460,7 +460,7 @@ class PointCloudMaterial extends ShaderMaterial {
         }
     }
 
-    dispose() {
+    override dispose() {
         if (this.disposed) {
             return;
         }
@@ -470,7 +470,7 @@ class PointCloudMaterial extends ShaderMaterial {
         this.disposed = true;
     }
 
-    clone() {
+    override clone() {
         const cl = super.clone();
         cl.update(this);
         return cl;
@@ -498,7 +498,7 @@ class PointCloudMaterial extends ShaderMaterial {
         colorMapUniform.lut = this.colorMap.getTexture();
     }
 
-    onBeforeRender() {
+    override onBeforeRender() {
         this.uniforms.opacity.value = this.opacity;
 
         this.transparent = this.opacity < 1 || this.colorMap.opacity != null;

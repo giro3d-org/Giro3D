@@ -7,7 +7,7 @@ import Entity3D from './Entity3D';
  */
 export default class SkyDome extends Entity3D {
     readonly isSkyDome = true as const;
-    readonly type = 'SkyDome' as const;
+    override readonly type = 'SkyDome' as const;
 
     private readonly _skyDome: SkyDomeObject;
     private _solarDiscDiameter = 2;
@@ -89,13 +89,13 @@ export default class SkyDome extends Entity3D {
         this.notifyChange(this);
     }
 
-    dispose(): void {
+    override dispose(): void {
         this._skyDome.geometry.dispose();
         this._skyDome.material.dispose();
         this.object3d.clear();
     }
 
-    pick() {
+    override pick() {
         return [];
     }
 }

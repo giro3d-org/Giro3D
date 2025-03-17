@@ -74,7 +74,7 @@ class ElevationLayer<UserData extends LayerUserData = LayerUserData> extends Lay
         return RGFormat;
     }
 
-    protected adjustExtent(extent: Extent) {
+    protected override adjustExtent(extent: Extent) {
         // If we know the extent of the source/layer, we can additionally
         // crop the margin extent to ensure it does not overflow the layer extent.
         // This is necessary for elevation layers as they do not use an atlas.
@@ -86,7 +86,7 @@ class ElevationLayer<UserData extends LayerUserData = LayerUserData> extends Lay
         return extent;
     }
 
-    protected async onInitialized() {
+    protected override async onInitialized() {
         // Compute a min/max approximation using the background images that
         // are already present on the composer.
         if (this.minmax == null || this.minmax.isDefault === true) {
@@ -103,7 +103,7 @@ class ElevationLayer<UserData extends LayerUserData = LayerUserData> extends Lay
         return true;
     }
 
-    unregisterNode(node: TileMesh) {
+    override unregisterNode(node: TileMesh) {
         super.unregisterNode(node);
 
         node.removeElevationTexture();
@@ -154,7 +154,7 @@ class ElevationLayer<UserData extends LayerUserData = LayerUserData> extends Lay
         (target.node as TileMesh).removeElevationTexture();
     }
 
-    protected onTextureCreated(texture: Texture): void {
+    protected override onTextureCreated(texture: Texture): void {
         // Elevation textures not being color textures, they must not be
         // subjected to colorspace transformations that would alter their values.
         // See https://threejs.org/docs/#manual/en/introduction/Color-management

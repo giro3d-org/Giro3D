@@ -54,7 +54,7 @@ function toZUp(v: Vector3): Vector3 {
 const helperMaterial = new MeshBasicMaterial({ color: 'red' });
 
 class Helper extends Object3D {
-    readonly type = 'Helper' as const;
+    override readonly type = 'Helper' as const;
     readonly isHelper = true as const;
 
     private readonly _sphere: ConstantSizeSphere;
@@ -69,7 +69,7 @@ class Helper extends Object3D {
         this.add(this._axes);
     }
 
-    onBeforeRender(): void {
+    override onBeforeRender(): void {
         this._axes.scale.copy(this._sphere.scale);
         this._axes.updateMatrixWorld(true);
     }

@@ -75,7 +75,7 @@ class FeatureCollectionInspector extends EntityInspector<FeatureCollection> {
      * @param color - The bounding box color.
      */
 
-    addOrRemoveBoundingBox(tile: Object3D, add: boolean, color: Color) {
+    override addOrRemoveBoundingBox(tile: Object3D, add: boolean, color: Color) {
         if (add && 'boundingBox' in tile && tile.visible) {
             Helpers.addBoundingBox(tile, color);
         } else {

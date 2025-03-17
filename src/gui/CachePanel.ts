@@ -65,7 +65,7 @@ class CachePanel extends Panel {
         this.update();
     }
 
-    updateValues() {
+    override updateValues() {
         this.count = `${GlobalCache.count} / ${GlobalCache.capacity}`;
 
         const used = (GlobalCache.size / 1024 / 1024).toFixed(1);

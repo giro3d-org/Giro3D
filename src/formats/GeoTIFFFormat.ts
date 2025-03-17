@@ -13,7 +13,7 @@ let geotiffWorkerPool: Pool;
  */
 class GeoTIFFFormat extends ImageFormat {
     readonly isGeoTIFFFormat: boolean = true as const;
-    readonly type = 'GeoTIFFFormat';
+    override readonly type = 'GeoTIFFFormat';
 
     private readonly _enableWorkers: boolean;
 

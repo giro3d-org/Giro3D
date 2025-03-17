@@ -14,7 +14,7 @@ class FetcherPanel extends Panel {
         this.addController(this, 'pendingRequests').name('Pending requests');
     }
 
-    updateValues() {
+    override updateValues() {
         const { pending } = Fetcher.getInfo();
         this.pendingRequests = pending;
     }

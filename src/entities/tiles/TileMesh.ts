@@ -75,7 +75,7 @@ class TileMesh
     implements Disposable, MemoryUsage
 {
     readonly isTileMesh = true as const;
-    readonly type = 'TileMesh' as const;
+    override readonly type = 'TileMesh' as const;
     readonly isMemoryUsage = true as const;
     readonly extent: Extent;
     readonly textureSize: Vector2;
@@ -418,7 +418,7 @@ class TileMesh
         return this.material;
     }
 
-    onAfterShadow(): void {
+    override onAfterShadow(): void {
         this.restoreMaterialProperties();
     }
 

@@ -229,7 +229,7 @@ export interface AxisGridEventMap extends Entity3DEventMap {
  * ```
  */
 class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, UserData> {
-    readonly type = 'AxisGrid' as const;
+    override readonly type = 'AxisGrid' as const;
     /**
      * Read-only flag to check if a given object is of type AxisGrid.
      */
@@ -358,7 +358,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
         this.refresh();
     }
 
-    getMemoryUsage(context: GetMemoryUsageContext) {
+    override getMemoryUsage(context: GetMemoryUsageContext) {
         this.traverse(obj => {
             if ('geometry' in obj && isBufferGeometry(obj.geometry)) {
                 getGeometryMemoryUsage(context, obj.geometry);
@@ -366,7 +366,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
         });
     }
 
-    updateOpacity() {
+    override updateOpacity() {
         const v = this.opacity;
         this.forEachLabel(label => (label.element.style.opacity = `${v}`));
 
@@ -589,7 +589,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
         this._adaptiveLabelRoot.clear();
     }
 
-    updateVisibility() {
+    override updateVisibility() {
         super.updateVisibility();
 
         this.updateLabelsVisibility(this._lastCamera);
@@ -1356,7 +1356,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
         this.updateLabelsVisibility(camera);
     }
 
-    preUpdate(context: Context): object[] {
+    override preUpdate(context: Context): object[] {
         if (!this.visible) {
             return [];
         }
@@ -1391,7 +1391,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
         this._distance.max = centerDistance + radius;
     }
 
-    dispose() {
+    override dispose() {
         if (this._disposed) {
             return;
         }

@@ -2,7 +2,7 @@ import { Box3, Object3D, Vector3 } from 'three';
 
 class OBB extends Object3D {
     readonly isHelper = true as const;
-    readonly type = 'OBB' as const;
+    override readonly type = 'OBB' as const;
     readonly box3D: Box3;
     readonly natBox: Box3;
     z: { min: number; max: number };
@@ -17,7 +17,7 @@ class OBB extends Object3D {
         this.update();
     }
 
-    clone(): this {
+    override clone(): this {
         const cOBB = new OBB(this.natBox.min, this.natBox.max);
         cOBB.position.copy(this.position);
         cOBB.quaternion.copy(this.quaternion);

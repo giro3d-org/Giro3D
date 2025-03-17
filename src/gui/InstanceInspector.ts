@@ -62,7 +62,7 @@ class InstanceInspector extends Panel {
         this.instance.notifyChange();
     }
 
-    updateValues() {
+    override updateValues() {
         const memUsage = this.instance.getMemoryUsage();
         this.cpuMemoryUsage = MemoryUsage.format(memUsage.cpuMemory);
         this.gpuMemoryUsage = MemoryUsage.format(memUsage.gpuMemory);
@@ -72,7 +72,7 @@ class InstanceInspector extends Panel {
             : 'idle';
     }
 
-    update() {
+    override update() {
         if (!this.isClosed()) {
             this.updateControllers();
             this.webGlRendererPanel.update();
