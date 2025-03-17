@@ -9,14 +9,14 @@ export default class SurfaceMesh<UserData extends DefaultUserData = DefaultUserD
     SimpleGeometryMeshEventMap
 > {
     readonly isSurfaceMesh = true as const;
-    readonly type = 'SurfaceMesh' as const;
+    override readonly type = 'SurfaceMesh' as const;
 
     private _featureOpacity = 1;
     private _styleOpacity = 1;
 
     override userData: Partial<UserData> = {};
 
-    parent: PolygonMesh<UserData> | null = null;
+    override parent: PolygonMesh<UserData> | null = null;
 
     constructor(params: { geometry: BufferGeometry; material: Material; opacity: number }) {
         super(params.geometry, params.material);

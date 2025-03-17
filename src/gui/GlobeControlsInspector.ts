@@ -67,7 +67,7 @@ class GlobeControlsInspector extends Panel {
         this.updateControllerVisibility();
     }
 
-    updateValues(): void {
+    override updateValues(): void {
         this.altitudeIncrement = altitudeFormatter.format(this.controls.getAltitudeDelta());
     }
 

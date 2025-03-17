@@ -60,7 +60,7 @@ class ColorMapInspector extends Panel {
             .onChange(notify);
     }
 
-    updateControllers(): void {
+    override updateControllers(): void {
         const disabled = this._colorMapFn() == null;
         this._controllers.forEach(c => c.disable(disabled));
         super.updateControllers();

@@ -246,7 +246,7 @@ class MapInspector extends EntityInspector<Map> {
         });
     }
 
-    toggleBoundingBoxes() {
+    override toggleBoundingBoxes() {
         const color = new Color(this.boundingBoxColor);
         const noDataColor = new Color('gray');
         // by default, adds axis-oriented bounding boxes to each object in the hierarchy.
@@ -268,7 +268,7 @@ class MapInspector extends EntityInspector<Map> {
         this.notify(this.entity);
     }
 
-    updateControllers(): void {
+    override updateControllers(): void {
         super.updateControllers();
         this.layers.forEach(insp => insp.updateControllers());
     }
@@ -339,7 +339,7 @@ class MapInspector extends EntityInspector<Map> {
         this.entity.removeEventListener('layer-order-changed', this._fillLayersCb);
     }
 
-    dispose() {
+    override dispose() {
         super.dispose();
         this.removeEventListeners();
     }
@@ -351,7 +351,7 @@ class MapInspector extends EntityInspector<Map> {
         console.log(tiles);
     }
 
-    updateValues() {
+    override updateValues() {
         super.updateValues();
         this.tileInfoPanel.updateValues();
         this.toggleBoundingBoxes();

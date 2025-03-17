@@ -14,7 +14,7 @@ export default class PolygonMesh<UserData extends DefaultUserData = DefaultUserD
 {
     readonly isSimpleGeometryMesh = true as const;
     readonly isPolygonMesh = true as const;
-    readonly type = 'PolygonMesh' as const;
+    override readonly type = 'PolygonMesh' as const;
 
     readonly isExtruded: boolean = false;
 

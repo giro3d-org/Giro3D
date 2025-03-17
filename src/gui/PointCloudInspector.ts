@@ -70,7 +70,7 @@ export default class PointCloudInspector extends EntityInspector<PointCloud> {
         );
     }
 
-    updateControllers(): void {
+    override updateControllers(): void {
         if (!this.entity.ready) {
             return;
         }

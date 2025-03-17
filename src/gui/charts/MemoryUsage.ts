@@ -128,11 +128,11 @@ class MemoryUsage extends ChartPanel {
         });
     }
 
-    dispose(): void {
+    override dispose(): void {
         GlobalRenderTargetPool.removeEventListener('cleanup', this._onRenderTargetPoolCleanup);
     }
 
-    updateValues() {
+    override updateValues() {
         if (this.isClosed()) {
             return;
         }

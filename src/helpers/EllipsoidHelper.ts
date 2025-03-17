@@ -103,7 +103,7 @@ function createLabel(text: string, color: ColorRepresentation): CSS2DObject {
  */
 export default class EllipsoidHelper extends Object3D implements Disposable {
     readonly isEllipsoidHelper = true as const;
-    readonly type = 'EllipsoidHelper' as const;
+    override readonly type = 'EllipsoidHelper' as const;
 
     readonly ellipsoid: Ellipsoid;
 

@@ -10,7 +10,7 @@ export default class MultiPolygonMesh<UserData extends DefaultUserData = Default
 {
     readonly isSimpleGeometryMesh = true as const;
     readonly isMultiPolygonMesh = true as const;
-    readonly type = 'MultiPolygonMesh' as const;
+    override readonly type = 'MultiPolygonMesh' as const;
 
     override userData: Partial<UserData> = {};
 

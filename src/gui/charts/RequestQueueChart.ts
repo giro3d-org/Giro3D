@@ -99,7 +99,7 @@ class RequestQueueChart extends ChartPanel {
         });
     }
 
-    updateValues() {
+    override updateValues() {
         if (this.isClosed()) {
             return;
         }

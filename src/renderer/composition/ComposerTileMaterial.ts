@@ -107,7 +107,7 @@ class ComposerTileMaterial extends ShaderMaterial {
     dataType?: TextureDataType;
     pixelFormat?: AnyPixelFormat;
 
-    get type() {
+    override get type() {
         return 'ComposerTileMaterial';
     }
 

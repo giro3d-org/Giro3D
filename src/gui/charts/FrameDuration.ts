@@ -111,7 +111,7 @@ class FrameDuration extends ChartPanel {
         });
     }
 
-    updateValues() {
+    override updateValues() {
         if (this.isClosed()) {
             return;
         }

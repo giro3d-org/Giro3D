@@ -99,7 +99,7 @@ export interface TiledImageSourceOptions extends ImageSourceOptions {
  */
 export default class TiledImageSource extends ImageSource {
     readonly isTiledImageSource = true as const;
-    readonly type = 'TiledImageSource' as const;
+    override readonly type = 'TiledImageSource' as const;
 
     readonly source: UrlTile;
     readonly format: ImageFormat | undefined;
@@ -160,7 +160,7 @@ export default class TiledImageSource extends ImageSource {
         return this.olprojection.getCode();
     }
 
-    adjustExtentAndPixelSize(
+    override adjustExtentAndPixelSize(
         requestExtent: Extent,
         requestWidth: number,
         requestHeight: number,

@@ -6,7 +6,7 @@ import ImageSource, { ImageResult } from './ImageSource';
 
 class DebugSource extends ImageSource {
     readonly isDebugSource: boolean = true as const;
-    readonly type = 'DebugSource' as const;
+    override readonly type = 'DebugSource' as const;
 
     private readonly _delay: () => number;
     private readonly _extent: Extent;

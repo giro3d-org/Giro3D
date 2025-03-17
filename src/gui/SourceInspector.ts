@@ -72,7 +72,7 @@ class SourceInspector extends Panel {
         }
     }
 
-    updateValues(): void {
+    override updateValues(): void {
         const ctx: MemoryUsage.GetMemoryUsageContext = {
             renderer: this.instance.renderer,
             objects: new Map(),

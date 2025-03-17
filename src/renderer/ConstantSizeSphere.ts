@@ -46,7 +46,7 @@ export default class ConstantSizeSphere extends Mesh {
     enableRaycast = true;
 
     readonly isConstantSizeSphere = true as const;
-    readonly type = 'ConstantSizeSphere' as const;
+    override readonly type = 'ConstantSizeSphere' as const;
 
     constructor(options?: {
         /**
@@ -65,13 +65,13 @@ export default class ConstantSizeSphere extends Mesh {
         this.radius = options?.radius ?? DEFAULT_RADIUS;
     }
 
-    raycast(raycaster: Raycaster, intersects: Intersection[]): void {
+    override raycast(raycaster: Raycaster, intersects: Intersection[]): void {
         if (this.enableRaycast) {
             super.raycast(raycaster, intersects);
         }
     }
 
-    onBeforeRender(renderer: WebGLRenderer, _scene: Scene, camera: Camera): void {
+    override onBeforeRender(renderer: WebGLRenderer, _scene: Scene, camera: Camera): void {
         this.updateWorldMatrix(true, false);
 
         const scale = getWorldSpaceRadius(

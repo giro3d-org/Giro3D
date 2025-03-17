@@ -54,7 +54,7 @@ const DEFAULT_ATMOSPHERE_THICKNESS = 40_000;
 
 class SkyDome extends Mesh<SphereGeometry, ShaderMaterial> {
     readonly isSkyDome = true as const;
-    readonly type = 'SkyDome' as const;
+    override readonly type = 'SkyDome' as const;
     readonly uniforms: Uniforms;
 
     private set<K extends keyof Uniforms>(key: K, value: Uniforms[K]['value']) {
@@ -132,7 +132,7 @@ class SkyDome extends Mesh<SphereGeometry, ShaderMaterial> {
         this.uniforms = this.material.uniforms as Uniforms;
     }
 
-    onBeforeRender(renderer: WebGLRenderer, scene: Scene, camera: Camera): void {
+    override onBeforeRender(renderer: WebGLRenderer, scene: Scene, camera: Camera): void {
         this.uniforms.up.value.copy(camera.up);
     }
 }

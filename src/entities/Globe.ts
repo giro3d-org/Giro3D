@@ -88,7 +88,7 @@ function createBuilder(ellipsoid: Ellipsoid): TileGeometryBuilder {
  */
 export default class Globe extends Map {
     readonly isGlobe = true as const;
-    readonly type: string = 'Globe' as const;
+    override readonly type: string = 'Globe' as const;
 
     private readonly _ellipsoid: Ellipsoid;
     private readonly _geometryBuilder: TileGeometryBuilder;

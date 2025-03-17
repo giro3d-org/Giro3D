@@ -115,11 +115,11 @@ type FeatureTileUserData = {
 
 class FeatureTile extends Group {
     readonly isFeatureTile = true as const;
-    readonly type = 'FeatureTile' as const;
+    override readonly type = 'FeatureTile' as const;
     readonly origin: Vector3;
     readonly boundingBox: Box3;
 
-    readonly userData: FeatureTileUserData;
+    override readonly userData: FeatureTileUserData;
 
     constructor(options: {
         name: string;
@@ -246,7 +246,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
      * Read-only flag to check if a given object is of type FeatureCollection.
      */
     readonly isFeatureCollection = true as const;
-    readonly type = 'FeatureCollection' as const;
+    override readonly type = 'FeatureCollection' as const;
 
     /**
      * The projection code of the data source.
@@ -414,7 +414,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         this._tileIdSet = new Set();
     }
 
-    getMemoryUsage(context: GetMemoryUsageContext) {
+    override getMemoryUsage(context: GetMemoryUsageContext) {
         this.traverse(obj => {
             if ('geometry' in obj) {
                 getGeometryMemoryUsage(context, obj.geometry as BufferGeometry);
@@ -422,7 +422,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         });
     }
 
-    preprocess() {
+    override preprocess() {
         this._targetProjection = new Projection({ code: this.instance.referenceCrs });
 
         // If the map is not square, we want to have more than a single
@@ -451,14 +451,14 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
     /**
      * Gets whether this entity is currently loading data.
      */
-    get loading() {
+    override get loading() {
         return this._opCounter.loading;
     }
 
     /**
      * Gets the progress value of the data loading.
      */
-    get progress() {
+    override get progress() {
         return this._opCounter.progress;
     }
 
@@ -501,7 +501,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         return tile;
     }
 
-    preUpdate(_: Context, changeSources: Set<unknown>) {
+    override preUpdate(_: Context, changeSources: Set<unknown>) {
         if (changeSources.has(undefined) || changeSources.size === 0) {
             return this._level0Nodes;
         }
@@ -851,7 +851,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         this._rootMeshes.length = 0;
     }
 
-    update(ctx: Context, tile: FeatureTile) {
+    override update(ctx: Context, tile: FeatureTile) {
         if (!tile.parent) {
             this.disposeTile(tile);
 
@@ -1035,7 +1035,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         return values.filter(v => v >= 384 * tile.userData.parentEntity.sseScale).length >= 2;
     }
 
-    dispose(): void {
+    override dispose(): void {
         this._geometryConverter.dispose({ disposeMaterials: true, disposeTextures: true });
         this.traverseMeshes(mesh => {
             mesh.geometry.dispose();

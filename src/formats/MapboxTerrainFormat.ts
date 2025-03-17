@@ -19,7 +19,7 @@ function createWorker() {
  */
 class MapboxTerrainFormat extends ImageFormat {
     readonly isMapboxTerrainFormat: boolean = true as const;
-    readonly type = 'MapboxTerrainFormat' as const;
+    override readonly type = 'MapboxTerrainFormat' as const;
 
     private readonly _enableWorkers: boolean = true;
 

@@ -10,7 +10,7 @@ export default class MultiLineStringMesh<UserData extends DefaultUserData = Defa
 {
     readonly isSimpleGeometryMesh = true as const;
     readonly isMultiLineStringMesh = true as const;
-    readonly type = 'MultiLineStringMesh' as const;
+    override readonly type = 'MultiLineStringMesh' as const;
 
     override userData: Partial<UserData> = {};
 

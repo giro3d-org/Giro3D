@@ -180,7 +180,7 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
         }
     }
 
-    protected updateMaterial(material: LayerNodeMaterial) {
+    protected override updateMaterial(material: LayerNodeMaterial) {
         if (material.hasColorLayer(this)) {
             // Update material parameters
             material.setLayerVisibility(this, this.visible);
@@ -218,7 +218,7 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
         return target.node.canProcessColorLayer();
     }
 
-    unregisterNode(node: LayerNode) {
+    override unregisterNode(node: LayerNode) {
         super.unregisterNode(node);
         const material = node.material;
         if (material != null) {

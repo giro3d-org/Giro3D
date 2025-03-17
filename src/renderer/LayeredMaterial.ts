@@ -597,7 +597,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         this.uniforms.neighbourTextures.value[neighbour] = texture;
     }
 
-    onBeforeCompile(parameters: WebGLProgramParametersWithUniforms): void {
+    override onBeforeCompile(parameters: WebGLProgramParametersWithUniforms): void {
         // This is a workaround due to a limitation in three.js, documented
         // here: https://github.com/mrdoob/three.js/issues/28020
         // Normally, we would not have to do this and let the loop unrolling do its job.
@@ -663,7 +663,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         }
     }
 
-    dispose() {
+    override dispose() {
         this.dispatchEvent({
             type: 'dispose',
         });
@@ -711,7 +711,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         return { totalTextureUnits, visibleColorLayers };
     }
 
-    onBeforeRender() {
+    override onBeforeRender() {
         this.updateOpacityParameters(this.opacity);
 
         if (this.defines.USE_ATLAS_TEXTURE && this._needsAtlasRepaint) {
@@ -1130,7 +1130,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         }
     }
 
-    customProgramCacheKey(): string {
+    override customProgramCacheKey(): string {
         return (this.defines.VISIBLE_COLOR_LAYER_COUNT ?? 0).toString();
     }
 

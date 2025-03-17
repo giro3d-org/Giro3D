@@ -543,7 +543,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         MemoryUsage
 {
     readonly isMap = true as const;
-    readonly type: string = 'Map' as const;
+    override readonly type: string = 'Map' as const;
     readonly hasLayers = true as const;
     readonly isPickableFeatures = true as const;
 
@@ -570,7 +570,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     private _wireframe = false;
     private _subdivisionThreshold;
 
-    getMemoryUsage(context: GetMemoryUsageContext) {
+    override getMemoryUsage(context: GetMemoryUsageContext) {
         this._layers.forEach(layer => layer.getMemoryUsage(context));
         this._allTiles.forEach(tile => tile.getMemoryUsage(context));
     }
@@ -638,7 +638,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     /**
      * Returns `true` if this map is currently processing data.
      */
-    get loading() {
+    override get loading() {
         return this._layers.some(l => l.loading);
     }
 
@@ -648,7 +648,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
      * Note: if no layer is present, this will always be 1.
      * Note: This value is only meaningful is {@link loading} is `true`.
      */
-    get progress() {
+    override get progress() {
         if (this._layers.length === 0) {
             return 1;
         }
@@ -954,7 +954,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         return selectBestSubdivisions(this.extent);
     }
 
-    preprocess() {
+    override preprocess() {
         if (this.extent.crs !== this.getComposerProjection()) {
             throw new Error(
                 `The extent of this map is not in the correct CRS. Expected: ${this.getComposerProjection()}, got: ${this.extent.crs}`,
@@ -1111,7 +1111,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         };
     }
 
-    pick(coordinates: Vector2, options?: PickOptions): MapPickResult[] {
+    override pick(coordinates: Vector2, options?: PickOptions): MapPickResult[] {
         if (options?.gpuPicking === true) {
             return pickTilesAt(this.instance, coordinates, this, options);
         } else {
@@ -1228,7 +1228,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         return result;
     }
 
-    preUpdate(context: Context, changeSources: Set<unknown>) {
+    override preUpdate(context: Context, changeSources: Set<unknown>) {
         this._materialOptions.colorMapAtlas?.update();
 
         this._tileIndex.update();
@@ -1327,7 +1327,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         }
     }
 
-    onRenderingContextRestored(): void {
+    override onRenderingContextRestored(): void {
         this._materialOptions.colorMapAtlas?.forceUpdate();
         this.forEachLayer(layer => layer.onRenderingContextRestored());
         this.notifyChange(this);
@@ -1430,7 +1430,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         this.notifyChange(this);
     }
 
-    contains(obj: unknown) {
+    override contains(obj: unknown) {
         if ((obj as Layer).isLayer) {
             return this._layers.includes(obj as Layer);
         }
@@ -1438,7 +1438,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         return false;
     }
 
-    update(context: Context, node: TileMesh): unknown[] | undefined {
+    override update(context: Context, node: TileMesh): unknown[] | undefined {
         if (!node.parent) {
             this.disposeTile(node);
             return undefined;
@@ -1490,7 +1490,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         return context.view.isBox3Visible(node.getWorldSpaceBoundingBox(tmpBox3));
     }
 
-    postUpdate(context: Context) {
+    override postUpdate(context: Context) {
         this.traverseTiles(tile => {
             if (tile.visible && tile.material.visible) {
                 this._layers.forEach(layer => layer.update(context, tile));
@@ -1691,7 +1691,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
      * @param options - Options.
      * @param options -.disposeLayers If true, layers are also disposed.
      */
-    dispose(
+    override dispose(
         options: {
             disposeLayers?: boolean;
         } = {

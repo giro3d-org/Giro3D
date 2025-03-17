@@ -94,7 +94,7 @@ class ClippingPlanePanel extends Panel {
         this.notify(this.entity);
     }
 
-    dispose() {
+    override dispose() {
         this.planeHelper?.removeFromParent();
         this.planeHelper?.dispose();
     }
@@ -203,12 +203,12 @@ class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
         this.instance.remove(this.entity);
     }
 
-    dispose() {
+    override dispose() {
         this.toggleBoundingBoxes(false);
         this.clippingPlanePanel.dispose();
     }
 
-    updateValues() {
+    override updateValues() {
         const ctx: MemoryUsage.GetMemoryUsageContext = {
             renderer: this.instance.renderer,
             objects: new Map(),

@@ -126,7 +126,7 @@ export class FetcherResponse extends BaseResponse {
         return this.response.status;
     }
 
-    getHeader(name: string) {
+    override getHeader(name: string) {
         return this.response.headers.get(name) as string;
     }
 
@@ -251,7 +251,7 @@ export interface GeoTIFFSourceOptions extends ImageSourceOptions {
  */
 class GeoTIFFSource extends ImageSource {
     readonly isGeoTIFFSource: boolean = true as const;
-    readonly type = 'GeoTIFFSource' as const;
+    override readonly type = 'GeoTIFFSource' as const;
 
     readonly url: string;
     readonly crs: string;
@@ -305,7 +305,7 @@ class GeoTIFFSource extends ImageSource {
         return source.blockCache;
     }
 
-    getMemoryUsage(context: GetMemoryUsageContext) {
+    override getMemoryUsage(context: GetMemoryUsageContext) {
         if (!this._tiffImage) {
             return;
         }
@@ -353,7 +353,7 @@ class GeoTIFFSource extends ImageSource {
      * @param margin - The margin, in pixels.
      * @returns The adjusted parameters.
      */
-    adjustExtentAndPixelSize(
+    override adjustExtentAndPixelSize(
         requestExtent: Extent,
         requestWidth: number,
         requestHeight: number,
@@ -393,7 +393,7 @@ class GeoTIFFSource extends ImageSource {
         };
     }
 
-    initialize() {
+    override initialize() {
         if (!this._initializePromise) {
             this._initializePromise = this.initializeOnce();
         }
@@ -807,7 +807,7 @@ class GeoTIFFSource extends ImageSource {
         return [{ id, request }];
     }
 
-    dispose(): void {
+    override dispose(): void {
         this.getInternalCache()?.clear();
     }
 }

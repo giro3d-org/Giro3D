@@ -182,10 +182,10 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
     extends Entity3D<Tiles3DEventMap, UserData>
     implements Pickable<Tiles3DPickResult>, HasLayers
 {
-    readonly isPickable = true as const;
+    override readonly isPickable = true as const;
     readonly hasLayers = true as const;
     readonly isTiles3D = true as const;
-    readonly type = 'Tiles3D';
+    override readonly type = 'Tiles3D';
 
     private readonly _debugPlugin: DebugTilesPlugin;
     private readonly _fetchPlugin: FetchPlugin;
@@ -311,19 +311,19 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         return this._tiles;
     }
 
-    onRenderingContextRestored(): void {
+    override onRenderingContextRestored(): void {
         this.forEachLayer(layer => layer.onRenderingContextRestored());
         this.instance.notifyChange(this);
     }
 
-    getBoundingBox(): Box3 | null {
+    override getBoundingBox(): Box3 | null {
         const box = new Box3();
         this._tiles.getBoundingBox(box);
 
         return box;
     }
 
-    getMemoryUsage(context: GetMemoryUsageContext) {
+    override getMemoryUsage(context: GetMemoryUsageContext) {
         this.traverse(obj => {
             if ('geometry' in obj && isBufferGeometry(obj.geometry)) {
                 getGeometryMemoryUsage(context, obj.geometry);
@@ -337,11 +337,11 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         }
     }
 
-    get loading() {
+    override get loading() {
         return this.tiles.loadProgress !== 1 || (this._colorLayer?.loading ?? false);
     }
 
-    get progress() {
+    override get progress() {
         let sum = this.tiles.loadProgress;
         let count = 1;
         if (this._colorLayer) {
@@ -436,13 +436,13 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         return 0;
     }
 
-    updateOpacity() {
+    override updateOpacity() {
         this.traverseMaterials(material => {
             this.setMaterialOpacity(material);
         });
     }
 
-    protected preprocess(opts: EntityPreprocessOptions): Promise<void> {
+    protected override preprocess(opts: EntityPreprocessOptions): Promise<void> {
         return new Promise(resolve => {
             const instance = opts.instance;
 
@@ -484,7 +484,7 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         });
     }
 
-    preUpdate(context: Context): unknown[] | null {
+    override preUpdate(context: Context): unknown[] | null {
         if (this.frozen || !this.visible) {
             return null;
         }
@@ -497,7 +497,7 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         return null;
     }
 
-    postUpdate(context: Context): void {
+    override postUpdate(context: Context): void {
         if (this.frozen || !this.visible) {
             return;
         }
@@ -780,7 +780,7 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         }
     }
 
-    protected setupMaterial(material: Material) {
+    protected override setupMaterial(material: Material) {
         material.clippingPlanes = this.clippingPlanes;
         // this object can already be transparent with opacity < 1.0
         // we need to honor it, even when we change the whole entity's opacity
@@ -813,7 +813,7 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         }
     }
 
-    dispose(): void {
+    override dispose(): void {
         this._tiles.removeEventListener('load-model', this._listeners.onModelLoaded);
         this._tiles.removeEventListener(
             'tile-visibility-change',

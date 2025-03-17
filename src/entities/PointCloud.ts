@@ -221,7 +221,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
 {
     /** Readonly flag to indicate that this object is a PointCloud instance. */
     readonly isPointCloud = true as const;
-    readonly type = 'PointCloud' as const;
+    override readonly type = 'PointCloud' as const;
     readonly hasLayers = true as const;
 
     private readonly _stateMachine: StateMachine<NodeState, NodeInfo>;
@@ -389,11 +389,11 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         }
     }
 
-    get progress() {
+    override get progress() {
         return this.source.progress;
     }
 
-    get loading() {
+    override get loading() {
         return this.source.loading;
     }
 
@@ -817,7 +817,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         }
     }
 
-    getMemoryUsage(context: GetMemoryUsageContext): void {
+    override getMemoryUsage(context: GetMemoryUsageContext): void {
         this.traversePointCloudMeshes(m => getGeometryMemoryUsage(context, m.geometry));
 
         this.forEachLayer(layer => {
@@ -827,7 +827,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         this.source.getMemoryUsage(context);
     }
 
-    updateOpacity(): void {
+    override updateOpacity(): void {
         // We don't want to change the opacity of volume helpers
         this.traversePointCloudMaterials(m => {
             m.opacity = this.opacity;
@@ -853,11 +853,11 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         this.notifyChange(this);
     }
 
-    getBoundingBox(): Box3 | null {
+    override getBoundingBox(): Box3 | null {
         return this._metadata?.volume ?? this._rootNode?.volume ?? null;
     }
 
-    protected async preprocess(_opts: EntityPreprocessOptions): Promise<void> {
+    protected override async preprocess(_opts: EntityPreprocessOptions): Promise<void> {
         await this.source.initialize();
 
         this._rootNode = await this.source.getHierarchy();
@@ -891,7 +891,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         });
     }
 
-    preUpdate(context: Context): unknown[] | null {
+    override preUpdate(context: Context): unknown[] | null {
         if (!this.visible || this.frozen || !this._rootNode) {
             return null;
         }
@@ -951,7 +951,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         }
     }
 
-    postUpdate(context: Context): void {
+    override postUpdate(context: Context): void {
         if (!this.visible || this.frozen) {
             return;
         }
@@ -984,7 +984,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
     /**
      * Disposes this entity and deletes unmanaged graphical resources.
      */
-    dispose(): void {
+    override dispose(): void {
         if (this._disposed) {
             return;
         }
@@ -1010,7 +1010,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         this.source.dispose();
     }
 
-    pick(canvasCoords: Vector2, options?: PickOptions): PickResult[] {
+    override pick(canvasCoords: Vector2, options?: PickOptions): PickResult[] {
         return pickPointsAt(this.instance, canvasCoords, this, options);
     }
 

@@ -10,7 +10,7 @@ export default class MultiPointMesh<UserData extends DefaultUserData = DefaultUs
 {
     readonly isSimpleGeometryMesh = true as const;
     readonly isMultiPointMesh = true as const;
-    readonly type = 'MultiPointMesh' as const;
+    override readonly type = 'MultiPointMesh' as const;
 
     override userData: Partial<UserData> = {};
 

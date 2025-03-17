@@ -225,12 +225,12 @@ class LayerInspector extends Panel {
         this.notify(this.layer);
     }
 
-    updateControllers(): void {
+    override updateControllers(): void {
         super.updateControllers();
         this.colorMapInspector?.updateControllers();
     }
 
-    updateValues() {
+    override updateValues() {
         this.state = this.layer.loading
             ? `loading (${Math.round(this.layer.progress * 100)}%)`
             : 'idle';

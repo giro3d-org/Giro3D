@@ -70,7 +70,7 @@ class MaskLayer<UserData extends LayerUserData = LayerUserData> extends ColorLay
         return UnsignedByteType;
     }
 
-    applyEmptyTextureToNode(target: Target) {
+    override applyEmptyTextureToNode(target: Target) {
         const material = target.node.material;
 
         if (!material.hasColorLayer(this)) {

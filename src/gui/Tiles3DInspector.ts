@@ -76,12 +76,12 @@ class Tiles3DInspector extends EntityInspector<Tiles3D> {
             });
     }
 
-    updateValues() {
+    override updateValues() {
         super.updateValues();
         this.layers.forEach(l => l.updateValues());
     }
 
-    toggleBoundingBoxes(visible: boolean): void {
+    override toggleBoundingBoxes(visible: boolean): void {
         this.entity.displayBoxBounds = visible;
         this.entity.displayRegionBounds = visible;
         this.entity.displaySphereBounds = visible;

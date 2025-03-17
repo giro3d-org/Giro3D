@@ -356,7 +356,7 @@ class Outliner extends Panel {
         this.propView = new OutlinerPropertyView(this.gui, this.instance);
     }
 
-    updateValues() {
+    override updateValues() {
         this.updateTreeView();
     }
 

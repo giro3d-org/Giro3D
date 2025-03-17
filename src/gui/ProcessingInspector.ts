@@ -46,7 +46,7 @@ class ProcessingInspector extends Panel {
         );
     }
 
-    updateValues() {
+    override updateValues() {
         this.charts.forEach(c => c.update());
     }
 }

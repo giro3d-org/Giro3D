@@ -48,7 +48,7 @@ export interface StaticImageSourceEvents extends ImageSourceEvents {
  */
 export default class StaticImageSource extends ImageSource<StaticImageSourceEvents> {
     readonly isStaticImageSource = true as const;
-    readonly type = 'StaticImageSource' as const;
+    override readonly type = 'StaticImageSource' as const;
 
     private readonly _extent: Extent;
     private readonly _source: string | HTMLImageElement | HTMLCanvasElement | Texture;

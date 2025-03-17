@@ -171,7 +171,7 @@ export interface VectorTileSourceOptions extends ImageSourceOptions {
  */
 class VectorTileSource extends ImageSource {
     readonly isVectorTileSource: boolean = true as const;
-    readonly type = 'VectorTileSource' as const;
+    override readonly type = 'VectorTileSource' as const;
 
     readonly source: OLVectorTileSourcce;
     readonly style: Style | StyleFunction;
