@@ -19,6 +19,7 @@ import type { LayerNode } from '../../core/layer/Layer';
 import PointCloudMaterial from '../../renderer/PointCloudMaterial';
 import { enablePointCloudPostProcessing } from '../../renderer/RenderPipeline';
 import type PointCloudParameters from './PointCloudParameters';
+import type { WellKnown3DTilesPointCloudAttributes } from './PointCloudParameters';
 
 export function isPNTSScene(obj: object): obj is PNTSScene {
     return (obj as PNTSScene).isPoints && 'batchTable' in obj;
@@ -37,10 +38,11 @@ export default class PointCloudPlugin {
     private processBufferAttribute(
         geometry: BufferGeometry,
         batchTable: BatchTable,
-        attribute: string,
+        sourceAttribute: string,
+        targetAttribute: WellKnown3DTilesPointCloudAttributes,
     ) {
         const count = batchTable.count;
-        const array = batchTable.getPropertyArray(attribute) as TypedArray;
+        const array = batchTable.getPropertyArray(sourceAttribute) as TypedArray;
 
         if (array == null) {
             // Attribute not present in the batch table.
@@ -78,7 +80,7 @@ export default class PointCloudPlugin {
             throw new Error('invalid array type');
         }
 
-        geometry.setAttribute(attribute.toLowerCase(), bufferAttribute);
+        geometry.setAttribute(targetAttribute, bufferAttribute);
     }
 
     updateMaterial(material: PointCloudMaterial) {
@@ -109,8 +111,20 @@ export default class PointCloudPlugin {
         if (isPNTSScene(scene)) {
             const batchTable = scene.batchTable;
 
-            this.processBufferAttribute(scene.geometry, batchTable, 'Intensity');
-            this.processBufferAttribute(scene.geometry, batchTable, 'Classification');
+            const mapping = this._parameters.attributeMapping;
+
+            this.processBufferAttribute(
+                scene.geometry,
+                batchTable,
+                mapping['intensity'],
+                'intensity',
+            );
+            this.processBufferAttribute(
+                scene.geometry,
+                batchTable,
+                mapping['classification'],
+                'classification',
+            );
 
             const material = new PointCloudMaterial({ mode: this._parameters.pointCloudMode });
             scene.material = material;
