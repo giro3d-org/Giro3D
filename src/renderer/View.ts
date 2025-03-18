@@ -42,7 +42,7 @@ export interface ExternalControls extends EventDispatcher<{ change: unknown }> {
 }
 
 export const DEFAULT_MIN_NEAR_PLANE = 2;
-export const DEFAULT_MAX_NEAR_PLANE = 2000000000;
+export const DEFAULT_MAX_FAR_PLANE = 2_000_000_000;
 
 type ViewEvents = {
     change: unknown;
@@ -58,7 +58,7 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
     private _width: number;
     private _height: number;
     private _preSSE: number;
-    private _maxFar: number = DEFAULT_MAX_NEAR_PLANE;
+    private _maxFar: number = DEFAULT_MAX_FAR_PLANE;
     private _minNear: number = DEFAULT_MIN_NEAR_PLANE;
     private _controls: ExternalControls | null = null;
     private _onControlsUpdated = () => this.dispatchEvent({ type: 'change' });
@@ -106,7 +106,7 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
 
         this._camera = options.camera ? options.camera : new PerspectiveCamera(30, width / height);
         this._camera.near = DEFAULT_MIN_NEAR_PLANE;
-        this._camera.far = DEFAULT_MAX_NEAR_PLANE;
+        this._camera.far = DEFAULT_MAX_FAR_PLANE;
         this._camera.updateProjectionMatrix();
         this._viewMatrix = new Matrix4();
         this._width = width;
