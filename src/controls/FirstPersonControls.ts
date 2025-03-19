@@ -205,10 +205,11 @@ class FirstPersonControls {
         const dt = event.updateLoopRestarted ? 16 : event.dt;
 
         for (const move of this._moves) {
+            const distance = (move.sign * this.options.moveSpeed * dt) / 1000;
             if (move.method === 'translateY') {
-                this._camera.position.z += (move.sign * this.options.moveSpeed * dt) / 1000;
+                this._camera.position.addScaledVector(this._camera.up, distance);
             } else {
-                this._camera[move.method]((move.sign * this.options.moveSpeed * dt) / 1000);
+                this._camera[move.method](distance);
             }
         }
 
