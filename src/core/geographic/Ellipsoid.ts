@@ -1,11 +1,20 @@
-import { MathUtils, Vector2, Vector3 } from 'three';
+import { MathUtils, Matrix4, Ray, Sphere, Vector2, Vector3 } from 'three';
 import Coordinates from './Coordinates';
 import type Extent from './Extent';
 
 const tmpCoord = new Coordinates('EPSG:4326', 0, 0);
 const tmpDims = new Vector2();
+const tmpVec3 = new Vector3();
+const tmpNormal = new Vector3();
+const tmpSphere = new Sphere();
+const tmpMatrix4 = new Matrix4();
+const tmpRay = new Ray();
+const tmpEast = new Vector3();
+const tmpNorth = new Vector3();
 
 let wgs84: unknown;
+
+const Z = new Vector3(0, 0, 1);
 
 /**
  * A configurable spheroid that allows conversion from and to geodetic coordinates
@@ -18,6 +27,7 @@ export default class Ellipsoid {
     private readonly _eccentricity: number;
     private readonly _equatorialCircumference;
     private readonly _invRadiiSquared: Vector3;
+    private readonly _radii: Vector3;
     private readonly _flattening: number;
 
     get semiMajorAxis() {
@@ -70,6 +80,7 @@ export default class Ellipsoid {
 
         const b = this._semiMinor;
         const bb = (1 / b) ** 2;
+        this._radii = new Vector3(a, a, b);
         this._invRadiiSquared = new Vector3(aa, aa, bb);
 
         this._equatorialCircumference = Math.PI * 2 * this._semiMajor;
@@ -145,6 +156,69 @@ export default class Ellipsoid {
         target.set(x, y, z);
 
         return target;
+    }
+
+    /**
+     * Gets the ENU (east/north/up) matrix for the given location in geodetic coordinates.
+     * @param point - The geodetic coordinate in the geocentric system of this ellipsoid.
+     * @param target - The optional matrix to set with the ENU matrix.
+     * @returns The ENU matrix.
+     */
+    getEastNorthUpMatrix(lat: number, lon: number, target?: Matrix4): Matrix4 {
+        const position = this.toCartesian(lat, lon, 0, tmpVec3);
+
+        return this.getEastNorthUpMatrixFromCartesian(position, target);
+    }
+
+    /**
+     * Gets the ENU (east/north/up) matrix for the given location.
+     * @param point - The cartesian coordinate in the geocentric system of this ellipsoid.
+     * @param target - The optional matrix to set with the ENU matrix.
+     * @returns The ENU matrix.
+     */
+    getEastNorthUpMatrixFromCartesian(point: Readonly<Vector3>, target?: Matrix4): Matrix4 {
+        const normal = this.getNormalFromCartesian(point, tmpNormal);
+
+        // Compute the ENU matrix from the normal and the Z axis.
+        const u = normal;
+        const e = tmpEast.crossVectors(Z, u).normalize();
+        const n = tmpNorth.crossVectors(u, e).normalize();
+
+        const result = target ?? new Matrix4();
+
+        // prettier-ignore
+        result.set(
+            e.x, e.y, e.z, 0.0,
+            n.x, n.y, n.z, 0.0,
+            u.x, u.y, u.z, 0.0,
+            0.0, 0.0, 0.0, 1.0
+        ).transpose();
+
+        return result;
+    }
+
+    /**
+     * Returns the first intersection of the ray with the ellipsoid, or `null` if the ray does not intersect the ellipsoid.
+     * @param ray - The ray to intersect.
+     * @param target - The optional vector to store the result.
+     * @returns The intersection or null if not intersection was found.
+     */
+    intersectRay(ray: Ray, target?: Vector3): Vector3 | null {
+        tmpMatrix4.makeScale(this._radii.x, this._radii.y, this._radii.z).invert();
+        tmpSphere.center.set(0, 0, 0);
+        tmpSphere.radius = 1;
+
+        target = target ?? new Vector3();
+
+        tmpRay.copy(ray).applyMatrix4(tmpMatrix4);
+
+        if (tmpRay.intersectSphere(tmpSphere, target)) {
+            tmpMatrix4.makeScale(this._radii.x, this._radii.y, this._radii.z);
+            target.applyMatrix4(tmpMatrix4);
+            return target;
+        } else {
+            return null;
+        }
     }
 
     /**

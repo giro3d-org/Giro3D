@@ -1,4 +1,6 @@
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { AxesHelper, Matrix4, Raycaster, Vector2, Vector3 } from 'three';
+
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';
 import Ellipsoid from '@giro3d/giro3d/core/geographic/Ellipsoid';
@@ -10,7 +12,6 @@ import { bindButton } from './widgets/bindButton';
 import { bindNumberInput } from './widgets/bindNumberInput';
 import StatusBar from './widgets/StatusBar';
 import { bindToggle } from './widgets/bindToggle';
-import { ArrowHelper, Vector3 } from 'three';
 
 const instance = new Instance({
     target: 'view',
@@ -23,6 +24,7 @@ const DEFAULT_PARAMS = {
     semiMajorAxis: Ellipsoid.WGS84.semiMajorAxis,
     semiMinorAxis: Ellipsoid.WGS84.semiMinorAxis,
     ellipsoid: Ellipsoid.WGS84,
+    showEnuFrame: true,
     showLines: true,
     showLabels: true,
     showAxes: true,
@@ -89,6 +91,10 @@ const [showNormals] = bindToggle('show-normals', show => {
     helper.showNormals = show;
     instance.notifyChange();
 });
+const [showEnuFrame] = bindToggle('show-enu-frame', show => {
+    params.showEnuFrame = show;
+    instance.notifyChange();
+});
 
 createHelper();
 
@@ -123,6 +129,7 @@ function reset() {
     showLines(params.showLines);
     showAxes(params.showAxes);
     showNormals(params.showNormals);
+    showEnuFrame(params.showEnuFrame);
 
     updateCamera();
     createHelper();
@@ -135,6 +142,48 @@ reset();
 const controls = new OrbitControls(instance.view.camera, instance.domElement);
 controls.target.set(0, 0, 0);
 instance.view.setControls(controls);
+
+const enuMatrix = new Matrix4();
+const raycaster = new Raycaster();
+const intersection = new Vector3();
+const axes = new AxesHelper(params.ellipsoid.semiMajorAxis * 0.25);
+instance.scene.add(axes);
+axes.visible = false;
+
+/**
+ * @param {MouseEvent} event
+ */
+const onMouseMove = event => {
+    if (!params.showEnuFrame) {
+        if (axes.visible) {
+            axes.visible = false;
+            instance.notifyChange();
+        }
+        return;
+    }
+
+    const ndc = instance.eventToNormalizedCoords(event, new Vector2());
+    raycaster.setFromCamera(ndc, instance.view.camera);
+    const ray = raycaster.ray;
+
+    const point = params.ellipsoid.intersectRay(ray, intersection);
+
+    axes.visible = point != null;
+
+    if (point) {
+        axes.position.copy(point);
+
+        const enu = params.ellipsoid.getEastNorthUpMatrixFromCartesian(point, enuMatrix);
+
+        axes.setRotationFromMatrix(enu);
+
+        axes.updateMatrixWorld(true);
+    }
+
+    instance.notifyChange();
+};
+
+instance.domElement.addEventListener('mousemove', onMouseMove);
 
 Inspector.attach('inspector', instance);
 StatusBar.bind(instance, { disableUrlUpdate: true });
