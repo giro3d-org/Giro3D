@@ -948,7 +948,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
             domElement.addEventListener('dblclick', handleEvent, { signal });
             domElement.addEventListener('click', handleEvent, { signal });
 
-            signal?.addEventListener('abort', onAbort, { signal });
+            signal?.addEventListener('abort', onAbort);
 
             // Show the temporary point at the last mouse coordinate.
             // Useful if the user started the creation by something else than a
