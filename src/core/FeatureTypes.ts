@@ -262,6 +262,16 @@ export type FeatureElevationCallback = (feature: Feature) => Array<number> | num
  */
 export type FeatureExtrusionOffsetCallback = (feature: Feature) => number | number[];
 
+/*
+ * Feature elevation
+ */
+export type FeatureElevation = number | number[];
+
+/*
+ * Feature extrusion offset
+ */
+export type FeatureExtrusionOffset = number | number[];
+
 /**
  * Generator function for surfaces.
  */
