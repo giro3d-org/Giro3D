@@ -1,5 +1,6 @@
 import type { BufferGeometry, Material } from 'three';
 import { Mesh } from 'three';
+import { type FeatureElevation, type FeatureExtrusionOffset } from '../../core/FeatureTypes';
 import type PolygonMesh from './PolygonMesh';
 import { type DefaultUserData, type SimpleGeometryMeshEventMap } from './SimpleGeometryMesh';
 
@@ -18,8 +19,8 @@ export default class SurfaceMesh<UserData extends DefaultUserData = DefaultUserD
 
     override parent: PolygonMesh<UserData> | null = null;
 
-    extrusionOffset: number | number[] | undefined = undefined;
-    elevation: number | number[] | undefined = undefined;
+    extrusionOffset: FeatureExtrusionOffset | undefined = undefined;
+    elevation: FeatureElevation | undefined = undefined;
 
     constructor(params: { geometry: BufferGeometry; material: Material; opacity: number }) {
         super(params.geometry, params.material);

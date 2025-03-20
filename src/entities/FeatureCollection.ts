@@ -17,7 +17,9 @@ import { Projection } from 'ol/proj';
 import { GlobalCache } from '../core/Cache';
 import type Context from '../core/Context';
 import {
+    type FeatureElevation,
     type FeatureElevationCallback,
+    type FeatureExtrusionOffset,
     type FeatureExtrusionOffsetCallback,
     type FeatureStyle,
     type FeatureStyleCallback,
@@ -281,8 +283,11 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
     private readonly _tileIdSet: Set<string | number>;
     private readonly _source: VectorSource;
     private readonly _style: FeatureStyle | FeatureStyleCallback | null = null;
-    private readonly _extrusionOffset?: FeatureExtrusionOffsetCallback | number | Array<number>;
-    private readonly _elevation: FeatureElevationCallback | number | Array<number> | undefined;
+    private readonly _extrusionOffset:
+        | FeatureExtrusionOffsetCallback
+        | FeatureExtrusionOffset
+        | undefined;
+    private readonly _elevation: FeatureElevationCallback | FeatureElevation | undefined;
     private readonly _ignoreZ: boolean;
 
     private _targetProjection?: Projection;
@@ -340,7 +345,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
          * from the properties of the feature.
          * Requires `ignoreZ` to be `false`.
          */
-        elevation?: number | number[] | FeatureElevationCallback;
+        elevation?: FeatureElevation | FeatureElevationCallback;
         /**
          * If true, the Z-coordinates of geometries will be ignored and set to zero.
          * @defaultValue false
@@ -352,7 +357,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
          * If an array is given, each extruded vertex will use the corresponding value.
          * If a callback is given, it allows to extrude each feature individually.
          */
-        extrusionOffset?: number | number[] | FeatureExtrusionOffsetCallback;
+        extrusionOffset?: FeatureExtrusionOffset | FeatureExtrusionOffsetCallback;
         /**
          * An style or a callback returning a style to style the individual features.
          * If an object is used, the informations it contains will be used to style every

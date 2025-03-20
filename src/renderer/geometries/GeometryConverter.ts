@@ -32,6 +32,8 @@ import {
     getFullStrokeStyle,
     hashStyle,
     type BaseStyle,
+    type FeatureElevation,
+    type FeatureExtrusionOffset,
     type FillStyle,
     type LineMaterialGenerator,
     type PointMaterialGenerator,
@@ -90,8 +92,8 @@ export type PointOptions = BaseOptions & Partial<PointStyle>;
 export type PolygonOptions = BaseOptions & {
     fill?: FillStyle;
     stroke?: StrokeStyle;
-    extrusionOffset?: number[] | number;
-    elevation?: number[] | number;
+    extrusionOffset?: FeatureExtrusionOffset;
+    elevation?: FeatureElevation;
 };
 export type LineOptions = BaseOptions & StrokeStyle;
 
@@ -128,7 +130,7 @@ function createFloorVertices(params: {
     coordinates: Array<Array<Array<number>>>;
     stride: number;
     offset: Vector3;
-    elevation?: Array<number> | number;
+    elevation?: FeatureElevation;
     ignoreZ: boolean;
 }) {
     // iterate on polygon and holes
@@ -179,7 +181,7 @@ function createRoof(
     positions: Array<number>,
     pointCount: number,
     indices: Array<number>,
-    extrusionOffset: Array<number> | number,
+    extrusionOffset: FeatureExtrusionOffset,
 ) {
     for (let i = 0; i < pointCount; i++) {
         positions.push(positions[i * VERT_STRIDE + X]);
@@ -207,7 +209,7 @@ function createWallForRings(
     start: number,
     end: number,
     indices: Array<number>,
-    extrusionOffset: Array<number> | number,
+    extrusionOffset: FeatureExtrusionOffset,
 ) {
     // Each side is formed by the A, B, C, D vertices, where A is the current coordinate,
     // and B is the next coordinate (thus the segment AB is one side of the polygon).
