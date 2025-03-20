@@ -1,5 +1,4 @@
 import Entity3D from '@giro3d/giro3d/entities/Entity3D';
-import assert from 'assert';
 import {
     BoxGeometry,
     BufferGeometry,
@@ -27,9 +26,9 @@ describe('Entity3D', () => {
     describe('constructor', () => {
         it('should throw on undefined object3d', () => {
             // @ts-expect-error argument is not an Object3D
-            assert.throws(() => new Entity3D(undefined));
+            expect(() => new Entity3D(undefined)).toThrow();
             // @ts-expect-error argument is not an Object3D
-            assert.throws(() => new Entity3D({ isObject3D: false }));
+            expect(() => new Entity3D({ isObject3D: false })).toThrow();
         });
 
         it('should assign the provided properties', () => {
@@ -37,8 +36,8 @@ describe('Entity3D', () => {
 
             const entity = new Entity3D(obj3d);
 
-            assert.strictEqual(entity.type, 'Entity3D');
-            assert.strictEqual(entity.object3d, obj3d);
+            expect(entity.type).toStrictEqual('Entity3D');
+            expect(entity.object3d).toBe(obj3d);
         });
 
         it('should assign the object3d.name with id if it is a group', () => {
@@ -46,13 +45,13 @@ describe('Entity3D', () => {
 
             const entity = new Entity3D(obj3d);
 
-            assert.strictEqual(entity.object3d.name, entity.id);
+            expect(entity.object3d.name).toEqual(entity.id);
         });
 
         it('should define the "opacity" property with default value 1.0', () => {
             const entity = sut();
 
-            assert.strictEqual(entity.opacity, 1.0);
+            expect(entity.opacity).toEqual(1.0);
         });
     });
 
