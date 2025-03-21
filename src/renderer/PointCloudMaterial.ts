@@ -470,12 +470,6 @@ class PointCloudMaterial extends ShaderMaterial {
         this.disposed = true;
     }
 
-    override clone() {
-        const cl = super.clone();
-        cl.update(this);
-        return cl;
-    }
-
     /**
      * Internally used for picking.
      * @internal
@@ -504,26 +498,22 @@ class PointCloudMaterial extends ShaderMaterial {
         this.transparent = this.opacity < 1 || this.colorMap.opacity != null;
     }
 
-    update(source?: PointCloudMaterial) {
-        if (source) {
-            this.visible = source.visible;
-            this.opacity = source.opacity;
-            this.transparent = source.transparent;
-            this.needsUpdate = true;
-            this.size = source.size;
-            this.mode = source.mode;
-            this.overlayColor.copy(source.overlayColor);
-            this.classifications = source.classifications;
-            this.brightness = source.brightness;
-            this.contrast = source.contrast;
-            this.saturation = source.saturation;
-            this.colorMap = source.colorMap;
-            this.decimation = source.decimation;
-        }
+    override copy(source: PointCloudMaterial) {
+        super.copy(source);
+
+        this.needsUpdate = true;
+
+        this.size = source.size;
+        this.mode = source.mode;
+        this.overlayColor.copy(source.overlayColor);
+        this.classifications = source.classifications;
+        this.brightness = source.brightness;
+        this.contrast = source.contrast;
+        this.saturation = source.saturation;
+        this.colorMap = source.colorMap;
+        this.decimation = source.decimation;
+
         this.updateUniforms();
-        if (source) {
-            Object.assign(this.defines, source.defines);
-        }
 
         return this;
     }
