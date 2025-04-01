@@ -27,11 +27,13 @@ void main() {
     gl_FragColor = vec4(0, 0, 0, 0);
 
     if (!isEmptyTexture) {
+        int alphaChannelLocation = channelCount - 1;
+
         if (noDataOptions.enabled) {
-            int alphaChannelLocation = channelCount - 1;
             gl_FragColor = texture2DFillNodata(tex, uv, noDataOptions, alphaChannelLocation);
         } else {
-            gl_FragColor = texture2D(tex, uv);
+            vec4 color = texture2D(tex, uv);
+            gl_FragColor = color;
 
             if (convertRGFloatToRGBAUnsignedByte) {
                 gl_FragColor = convert_RG_Float_RGBA_UnsignedByte(gl_FragColor, heightPrecision, heightOffset);
@@ -42,6 +44,9 @@ void main() {
             if(expandRGB) {
                 gl_FragColor = grayscaleToRGB(gl_FragColor, interpretation);
             }
+
+            // Transfer alpha channel to its new location
+            gl_FragColor.a = color[alphaChannelLocation];
         }
     } else if (showEmptyTexture) {
         gl_FragColor = vec4(1, 0, 0, 0.5);
