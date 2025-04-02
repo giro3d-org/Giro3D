@@ -9,13 +9,7 @@ import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-const extent = new Extent(
-    'EPSG:3857',
-    -20037508.342789244,
-    20037508.342789244,
-    -20037508.342789244,
-    20037508.342789244,
-);
+const extent = new Extent('EPSG:3857', -551152, 876637, 5178404, 6631315);
 
 const instance = new Instance({
     target: 'view',
@@ -41,9 +35,12 @@ WmtsSource.fromCapabilities(
     })
     .catch(e => console.error(e));
 
-instance.view.camera.position.set(0, 0, 80000000);
+const center = extent.centerAsVector2();
+instance.view.camera.position.set(center.x, center.y - 1, 3_000_000);
 
 const controls = new MapControls(instance.view.camera, instance.domElement);
+
+controls.target.set(center.x, center.y, 0);
 
 instance.view.setControls(controls);
 
