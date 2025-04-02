@@ -1057,12 +1057,12 @@ abstract class Layer<
         if (isContained) {
             if (!target.renderTarget) {
                 target.renderTarget = this.acquireRenderTarget(width, height);
+            }
 
-                // If the source is not synchronous, we need a default texture
-                // to avoid seeing a blank texture on the tile.
-                if (!this.source.synchronous) {
-                    this.applyDefaultTexture(target);
-                }
+            // If the source is not synchronous, we need a default texture
+            // to avoid seeing a blank texture on the tile.
+            if (!this.source.synchronous) {
+                this.applyDefaultTexture(target);
             }
 
             if (!this.canFetchImages(target)) {
