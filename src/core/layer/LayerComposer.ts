@@ -1,5 +1,4 @@
 import {
-    MathUtils,
     Mesh,
     PlaneGeometry,
     Vector2,
@@ -285,14 +284,14 @@ class LayerComposer implements MemoryUsage {
      */
     private computeRenderOrder(extent: Extent): number {
         if (this.dimensions) {
-            const width = extent.dimensions(tmpVec2).x;
-            // Since we don't know the smallest size of image that the source will output,
-            // let's make a generous assumptions: the smallest image is 1/2^25 of the extent.
-            const MAX_NUMBER_OF_SUBDIVISIONS = 33554432; // 2^25
-            const SMALLEST_WIDTH = this.dimensions.x / MAX_NUMBER_OF_SUBDIVISIONS;
-            return Math.round(
-                MathUtils.mapLinear(width, this.dimensions.x, SMALLEST_WIDTH, 0, 5000),
-            );
+            const width = extent.dimensions(tmpVec2).width;
+
+            // The smaller the image, the bigger its render order will be.
+            const ratio = this.dimensions.width / width;
+
+            const result = ratio * 1_000;
+
+            return Math.round(result);
         }
 
         return 0;
