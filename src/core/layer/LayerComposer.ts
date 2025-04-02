@@ -172,6 +172,7 @@ class LayerComposer implements MemoryUsage {
     readonly fillNoDataRadius?: number;
     readonly pixelFormat: PixelFormat;
     readonly textureDataType: TextureDataType;
+    readonly showEmptyTextures: boolean;
 
     private _needsCleanup: boolean;
 
@@ -230,6 +231,7 @@ class LayerComposer implements MemoryUsage {
         this.fillNoDataRadius = options.fillNoDataRadius;
         this.pixelFormat = options.pixelFormat;
         this.textureDataType = options.textureDataType;
+        this.showEmptyTextures = options.showEmptyTextures;
 
         this.composer = new WebGLComposer({
             webGLRenderer: options.renderer,
@@ -690,7 +692,10 @@ class LayerComposer implements MemoryUsage {
 
             const isInView = extent.intersectsExtent(image.extent) || image.alwaysVisible;
 
-            image.visible = (isFallbackMode && isInView) || isRequired;
+            const isEmpty = isEmptyTexture(image.texture);
+            image.visible =
+                (!isEmpty || this.showEmptyTextures) &&
+                ((isFallbackMode && isInView) || isRequired);
 
             // An image should be visible:
             // - if it is part of the required images,
@@ -699,7 +704,7 @@ class LayerComposer implements MemoryUsage {
                 image.opacity = 1;
             }
 
-            if (this.computeMinMax && isRequired && !isEmptyTexture(image.texture)) {
+            if (this.computeMinMax && isRequired && !isEmpty) {
                 min = Math.min(nonNull(image.min), min);
                 max = Math.max(nonNull(image.max), max);
             }
