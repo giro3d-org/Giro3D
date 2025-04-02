@@ -614,7 +614,7 @@ abstract class Layer<
             renderer: this.instance.renderer,
             showImageOutlines: this.showTileBorders,
             showEmptyTextures: this.showEmptyTextures,
-            extent: this.extent ?? undefined,
+            extent: this.extent ?? this.source.getExtent() ?? undefined,
             computeMinMax: this.computeMinMax,
             sourceCrs: this.source.getCrs(),
             targetCrs: targetProjection,
