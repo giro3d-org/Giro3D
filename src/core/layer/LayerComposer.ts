@@ -434,7 +434,7 @@ class LayerComposer implements MemoryUsage {
 
         if (texture == null) {
             throw new Error(
-                'texture cannot be null. Use an empty texture instead. (i.e new Texture())',
+                'texture cannot be null. Use an empty texture instead. (i.e new EmptyTexture())',
             );
         }
 
@@ -694,7 +694,7 @@ class LayerComposer implements MemoryUsage {
             image.visible = (isFallbackMode && isInView) || isRequired;
 
             // An image should be visible:
-            // - if its is part of the required images,
+            // - if it is part of the required images,
             // - if no required images are available (fallback mode)
             if (image.visible) {
                 image.opacity = 1;
