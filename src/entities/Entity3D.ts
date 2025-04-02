@@ -15,6 +15,7 @@ import {
 } from 'three';
 
 import type Context from '../core/Context';
+import type HasClippingPlanes from '../core/HasClippingPlanes';
 import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
 import type MemoryUsage from '../core/MemoryUsage';
 import type Pickable from '../core/picking/Pickable';
@@ -72,7 +73,12 @@ export interface Entity3DOptions {
  */
 class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData = EntityUserData>
     extends Entity<TEventMap & Entity3DEventMap, TUserData>
-    implements Pickable, MemoryUsage, RenderingContextHandler, HasDefaultPointOfView
+    implements
+        Pickable,
+        MemoryUsage,
+        RenderingContextHandler,
+        HasClippingPlanes,
+        HasDefaultPointOfView
 {
     public readonly isMemoryUsage = true as const;
     public readonly hasDefaultPointOfView = true as const;
