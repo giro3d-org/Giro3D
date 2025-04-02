@@ -20,8 +20,8 @@ class DebugSource extends ImageSource {
     constructor(options: {
         /** The extent. */
         extent: Extent;
-        /** The delay before loading the images. */
-        delay?: number;
+        /** The delay before loading the images, in milliseconds. */
+        delay?: number | (() => number);
         /** The opacity of the images. */
         opacity?: number;
         /** The color of the images. */
