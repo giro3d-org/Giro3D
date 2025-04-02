@@ -145,8 +145,8 @@ async function fetchCrs(crs) {
         south: Number.parseFloat(minLat),
     });
 
-    document.getElementById('srid').innerText = name;
-    document.getElementById('name').innerText = crs;
+    document.getElementById('srid').innerText = crs;
+    document.getElementById('name').innerText = name;
     document.getElementById('description').innerText = area;
     // @ts-expect-error typing
     document.getElementById('link').href = `https://epsg.io/${code}`;
