@@ -19,7 +19,6 @@ import type { MessageMap, MessageType, ReadViewResult } from './las/worker';
 import { readView, type Metadata } from './las/worker';
 import type {
     GetNodeDataOptions,
-    PointCloudCrs,
     PointCloudMetadata,
     PointCloudNode,
     PointCloudNodeData,
@@ -66,20 +65,6 @@ function decodeLazChunkUsingWorker(chunk: Uint8Array, metadata: Metadata): Promi
     return pool
         .queue('DecodeLazChunk', { buffer: chunk.buffer, metadata }, [chunk.buffer])
         .then(res => new Uint8Array(res));
-}
-
-function readCrs(wkt?: string): PointCloudCrs | undefined {
-    if (wkt == null) {
-        return undefined;
-    }
-
-    const name = ProjUtils.getWKTCrsCode(wkt);
-
-    if (name == null) {
-        return undefined;
-    }
-
-    return { name, definition: wkt };
 }
 
 export type COPCSourceOptions = {
@@ -358,7 +343,7 @@ export default class COPCSource extends PointCloudSourceBase {
                 remoteData.copc.info.gpsTimeRange,
             ),
             volume: remoteData.volume,
-            crs: readCrs(remoteData.copc.wkt),
+            crs: ProjUtils.readCrsFromWkt(remoteData.copc.wkt),
         };
 
         return Promise.resolve(result);
