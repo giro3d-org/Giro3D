@@ -11,11 +11,10 @@ import {
 import type RenderingContextHandler from './RenderingContextHandler';
 import type RenderingOptions from './RenderingOptions';
 import type View from './View';
-import type { CameraOptions, ExternalControls } from './View';
+import type { ExternalControls } from './View';
 
 export {
     ASPRS_CLASSIFICATIONS,
-    CameraOptions,
     Classification,
     ConstantSizeSphere,
     ExternalControls,

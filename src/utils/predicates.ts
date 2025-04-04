@@ -1,4 +1,5 @@
 import type {
+    Box3,
     BufferGeometry,
     CanvasTexture,
     ColorRepresentation,
@@ -65,6 +66,9 @@ export function isVector2(obj: unknown): obj is Vector2 {
 }
 export function isVector3(obj: unknown): obj is Vector3 {
     return (obj as Vector3)?.isVector3;
+}
+export function isBox3(obj: unknown): obj is Box3 {
+    return (obj as Box3)?.isBox3;
 }
 export function isFiniteNumber(obj: unknown): obj is number {
     if (typeof obj === 'number' && Number.isFinite(obj)) {

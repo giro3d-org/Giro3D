@@ -1,13 +1,15 @@
 import Entity3D from '@giro3d/giro3d/entities/Entity3D';
-import assert from 'assert';
 import {
+    Box3,
     BoxGeometry,
     BufferGeometry,
     Group,
     Mesh,
     MeshStandardMaterial,
     Object3D,
+    PerspectiveCamera,
     Plane,
+    Vector3,
     type Material,
 } from 'three';
 
@@ -27,9 +29,9 @@ describe('Entity3D', () => {
     describe('constructor', () => {
         it('should throw on undefined object3d', () => {
             // @ts-expect-error argument is not an Object3D
-            assert.throws(() => new Entity3D(undefined));
+            expect(() => new Entity3D(undefined)).toThrow();
             // @ts-expect-error argument is not an Object3D
-            assert.throws(() => new Entity3D({ isObject3D: false }));
+            expect(() => new Entity3D({ isObject3D: false })).toThrow();
         });
 
         it('should assign the provided properties', () => {
@@ -37,8 +39,8 @@ describe('Entity3D', () => {
 
             const entity = new Entity3D(obj3d);
 
-            assert.strictEqual(entity.type, 'Entity3D');
-            assert.strictEqual(entity.object3d, obj3d);
+            expect(entity.type).toStrictEqual('Entity3D');
+            expect(entity.object3d).toBe(obj3d);
         });
 
         it('should assign the object3d.name with id if it is a group', () => {
@@ -46,13 +48,13 @@ describe('Entity3D', () => {
 
             const entity = new Entity3D(obj3d);
 
-            assert.strictEqual(entity.object3d.name, entity.id);
+            expect(entity.object3d.name).toEqual(entity.id);
         });
 
         it('should define the "opacity" property with default value 1.0', () => {
             const entity = sut();
 
-            assert.strictEqual(entity.opacity, 1.0);
+            expect(entity.opacity).toEqual(1.0);
         });
     });
 
@@ -337,6 +339,36 @@ describe('Entity3D', () => {
 
             // @ts-expect-error protected method
             entity.onObjectCreated(o);
+        });
+    });
+
+    describe('getDefaultPointOfView', () => {
+        class StubEntity extends Entity3D {
+            constructor() {
+                super(new Group());
+            }
+        }
+
+        it('should compute a POV from the bounding box of the entity', () => {
+            Object3D.DEFAULT_UP.set(0, 0, 1);
+
+            const entity = new StubEntity();
+            const box = new Box3().setFromCenterAndSize(new Vector3(1, 2, 3), new Vector3(5, 5, 5));
+            entity.getBoundingBox = jest.fn(() => box);
+
+            const getDefaultPointOfView = jest.fn();
+
+            // @ts-expect-error instance is readonly
+            entity._instance = {
+                // @ts-expect-error incomplete
+                view: { getDefaultPointOfView },
+            };
+
+            const camera = new PerspectiveCamera(45);
+
+            entity.getDefaultPointOfView({ camera });
+
+            expect(getDefaultPointOfView).toHaveBeenCalledWith(box, { camera });
         });
     });
 });

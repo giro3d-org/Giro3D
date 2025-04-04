@@ -1,9 +1,8 @@
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import OBB from '@giro3d/giro3d/core/OBB';
-import assert from 'assert';
 import proj4 from 'proj4';
 import { Matrix4, Vector3 } from 'three';
-import { randFloat } from 'three/src/math/MathUtils';
+import { randFloat } from 'three/src/math/MathUtils.js';
 
 describe('OBB', () => {
     it('should correctly instance obb', () => {
@@ -18,8 +17,8 @@ describe('OBB', () => {
         obb.translateZ(translate.z);
         obb.update();
 
-        assert.equal(obb.natBox.min.x, min.x);
-        assert.equal(obb.natBox.max.x, max.x);
+        expect(obb.natBox.min.x).toEqual(min.x);
+        expect(obb.natBox.max.x).toEqual(max.x);
     });
 });
 

@@ -1,10 +1,13 @@
 import type GUI from 'lil-gui';
 import { Color, Object3D, Plane, PlaneHelper, Vector3, type ColorRepresentation } from 'three';
+import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
+import { hasDefaultPointOfView } from '../core/HasDefaultPointOfView';
 import type Instance from '../core/Instance';
 import * as MemoryUsage from '../core/MemoryUsage';
+import type PointOfView from '../core/PointOfView';
 import type Entity3D from '../entities/Entity3D';
 import Helpers, { hasVolumeHelper } from '../helpers/Helpers';
-import { isMaterial } from '../utils/predicates';
+import { isMaterial, isVector3 } from '../utils/predicates';
 import Panel from './Panel';
 
 const _tempArray: Object3D[] = [];
@@ -175,6 +178,10 @@ class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
                 .name('Visible')
                 .onChange(v => this.toggleVisibility(v));
         }
+        if (hasDefaultPointOfView(entity)) {
+            this.addController(this, 'goToEntity');
+            this.addController(this, 'lookAt');
+        }
         this.addController(this.entity, 'frozen')
             .name('Freeze updates')
             .onChange(() => this.notify(this.entity));
@@ -197,6 +204,33 @@ class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
         }
 
         this.addController(this, 'deleteEntity').name('Delete entity');
+    }
+
+    private updateControlsWithDefaultView(defaultView: PointOfView | null) {
+        const controls = this.instance.view.controls;
+        if (defaultView && controls && 'target' in controls && isVector3(controls.target)) {
+            controls.target.copy(defaultView.target);
+        }
+    }
+
+    goToEntity() {
+        const cast = this.entity as unknown as HasDefaultPointOfView;
+
+        const defaultView = this.instance.view.goTo(cast);
+
+        this.updateControlsWithDefaultView(defaultView);
+
+        this.notify();
+    }
+
+    lookAt() {
+        const cast = this.entity as unknown as HasDefaultPointOfView;
+
+        const defaultView = this.instance.view.goTo(cast, { allowTranslation: false });
+
+        this.updateControlsWithDefaultView(defaultView);
+
+        this.notify();
     }
 
     deleteEntity() {

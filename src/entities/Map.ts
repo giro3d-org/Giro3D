@@ -9,12 +9,12 @@ import {
     UnsignedByteType,
     Vector2,
     Vector3,
+    type Camera,
     type ColorRepresentation,
     type Intersection,
     type Object3D,
     type Side,
     type TextureDataType,
-    type Camera as ThreeCamera,
 } from 'three';
 
 import type ColorimetryOptions from '../core/ColorimetryOptions';
@@ -29,6 +29,7 @@ import type Extent from '../core/geographic/Extent';
 import type GetElevationOptions from '../core/GetElevationOptions';
 import type GetElevationResult from '../core/GetElevationResult';
 import type GraticuleOptions from '../core/GraticuleOptions';
+import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
 import ColorLayer, { isColorLayer } from '../core/layer/ColorLayer';
 import ElevationLayer, { isElevationLayer } from '../core/layer/ElevationLayer';
 import type HasLayers from '../core/layer/HasLayers';
@@ -41,6 +42,7 @@ import { isPickableFeatures } from '../core/picking/PickableFeatures';
 import traversePickingCircle from '../core/picking/PickingCircle';
 import type PickOptions from '../core/picking/PickOptions';
 import pickTilesAt, { type MapPickResult } from '../core/picking/PickTilesAt';
+import type PointOfView from '../core/PointOfView';
 import type { SSE } from '../core/ScreenSpaceError';
 import ScreenSpaceError from '../core/ScreenSpaceError';
 import Capabilities from '../core/system/Capabilities';
@@ -62,6 +64,8 @@ import LayeredMaterial, {
     type MaterialOptions,
 } from '../renderer/LayeredMaterial';
 import type RenderingState from '../renderer/RenderingState';
+import { computeDistanceToFitSphere, computeZoomToFitSphere } from '../renderer/View';
+import { isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
 import TextureGenerator from '../utils/TextureGenerator';
 import type { EntityUserData } from './Entity';
 import Entity3D, { type Entity3DEventMap } from './Entity3D';
@@ -1239,7 +1243,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
         let commonAncestor: TileMesh | null = null;
         for (const source of changeSources.values()) {
-            if ((source as ThreeCamera).isCamera) {
+            if ((source as Camera).isCamera) {
                 // if the change is caused by a camera move, no need to bother
                 // to find common ancestor: we need to update the whole tree:
                 // some invisible tiles may now be visible
@@ -1947,6 +1951,50 @@ class Map<UserData extends EntityUserData = EntityUserData>
         const radius = bbox.getSize(tmpVector).length() * 0.5;
         this._distance.min = Math.min(this._distance.min, distance - radius);
         this._distance.max = Math.max(this._distance.max, distance + radius);
+    }
+
+    /**
+     * Returns a {@link PointOfView} that looks at the map from the top.
+     */
+    override getDefaultPointOfView(
+        params: Parameters<HasDefaultPointOfView['getDefaultPointOfView']>[0],
+    ): ReturnType<HasDefaultPointOfView['getDefaultPointOfView']> {
+        const target = this.extent.centerAsVector3();
+        const minmax = this.getElevationMinMax();
+
+        // Let's put the target at the mid-height of the volume.
+        target.setZ(MathUtils.lerp(minmax.min, minmax.max, 0.5));
+
+        const extentDims = this.extent.dimensions(tempDims);
+        const maxSize = Math.max(extentDims.width, extentDims.height);
+        const MARGIN_FACTOR = 1.2;
+        const radius = MARGIN_FACTOR * (maxSize / 2);
+
+        let orthographicZoom = 1;
+        const camera = params.camera;
+        let distance: number;
+
+        if (isOrthographicCamera(camera)) {
+            orthographicZoom = computeZoomToFitSphere(camera, radius);
+            // In orthographic camera, the actual distance has no effect on the size
+            // of objects, but it does have an effect on clipping planes.
+            // Let's compute a reasonable distance to put the camera.
+            distance = minmax.max + radius;
+        } else if (isPerspectiveCamera(camera)) {
+            distance = computeDistanceToFitSphere(camera, radius) + minmax.max;
+        } else {
+            return null;
+        }
+
+        const origin = new Vector3(target.x, target.y, distance);
+
+        this.object3d.updateMatrixWorld(true);
+        origin.applyMatrix4(this.object3d.matrixWorld);
+        target.applyMatrix4(this.object3d.matrixWorld);
+
+        const result: PointOfView = { origin, target, orthographicZoom };
+
+        return Object.freeze(result);
     }
 }
 

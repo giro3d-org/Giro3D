@@ -1,6 +1,7 @@
 import { Box3, type Material, type Mesh, type Object3D, type Plane, type Vector2 } from 'three';
 
 import type Context from '../core/Context';
+import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
 import type MemoryUsage from '../core/MemoryUsage';
 import { type GetMemoryUsageContext } from '../core/MemoryUsage';
 import type Pickable from '../core/picking/Pickable';
@@ -42,9 +43,10 @@ export interface Entity3DEventMap extends EntityEventMap {
  */
 class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData = EntityUserData>
     extends Entity<TEventMap & Entity3DEventMap, TUserData>
-    implements Pickable, MemoryUsage, RenderingContextHandler
+    implements Pickable, MemoryUsage, RenderingContextHandler, HasDefaultPointOfView
 {
     readonly isMemoryUsage = true as const;
+    readonly hasDefaultPointOfView = true as const;
 
     override readonly type: string = 'Entity3D' as const;
 
@@ -398,6 +400,20 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
 
     pick(canvasCoords: Vector2, options?: PickOptions): PickResult[] {
         return pickObjectsAt(this.instance, canvasCoords, this.object3d, options);
+    }
+
+    /**
+     * Default implementation that computes a point of view from the bounding box of the entity, if any.
+     */
+    getDefaultPointOfView(
+        params: Parameters<HasDefaultPointOfView['getDefaultPointOfView']>[0],
+    ): ReturnType<HasDefaultPointOfView['getDefaultPointOfView']> {
+        const box = this.getBoundingBox();
+        if (box == null) {
+            return null;
+        }
+
+        return this.instance.view.getDefaultPointOfView(box, params);
     }
 }
 

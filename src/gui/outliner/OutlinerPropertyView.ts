@@ -2,11 +2,13 @@ import type GUI from 'lil-gui';
 import type { Vector3 } from 'three';
 import { Object3D } from 'three';
 import type Instance from '../../core/Instance';
-import { isBufferGeometry } from '../../utils/predicates';
+import type PointOfView from '../../core/PointOfView';
+import { isBufferGeometry, isVector3 } from '../../utils/predicates';
 import Panel from '../Panel';
 
 class OutlinerPropertyView extends Panel {
     protected _folders: GUI[];
+    private _object: Object3D | null = null;
 
     constructor(parentGui: GUI, instance: Instance) {
         super(parentGui, instance, 'Properties');
@@ -54,6 +56,20 @@ class OutlinerPropertyView extends Panel {
         this.notify();
     }
 
+    goToObject() {
+        if (this._object != null) {
+            const pov = this.instance.view.goTo(this._object);
+            this.updateControlsWithDefaultView(pov);
+        }
+    }
+
+    private updateControlsWithDefaultView(defaultView: PointOfView | null) {
+        const controls = this.instance.view.controls;
+        if (defaultView && controls && 'target' in controls && isVector3(controls.target)) {
+            controls.target.copy(defaultView.target);
+        }
+    }
+
     populateProperties(obj: Object3D) {
         while (this._controllers.length > 0) {
             this._controllers.pop()?.destroy();
@@ -61,6 +77,11 @@ class OutlinerPropertyView extends Panel {
         while (this._folders.length > 0) {
             this._folders.pop()?.destroy();
         }
+
+        this._object = obj;
+
+        this.addController(this, 'goToObject');
+
         this.createControllers(obj, this.gui);
 
         const position = this.gui.addFolder('Position');
