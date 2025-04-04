@@ -19,6 +19,23 @@ export const UNIT = {
 };
 
 /**
+ * A geographic coordinate expressed in degrees, minutes, seconds.
+ */
+export type DMS = {
+    degrees: number;
+    minutes?: number;
+    seconds?: number;
+};
+
+export function parseDMS(dms: DMS): number {
+    const { degrees, minutes, seconds } = dms;
+
+    const result = degrees + (minutes ?? 0) / 60 + (seconds ?? 0) / 3600;
+
+    return result;
+}
+
+/**
  * Returns the enum value of the specified unit of measure
  *
  * @param projunit - - the proj4 UoM string
@@ -304,6 +321,43 @@ class Coordinates {
         this._values[2] = altitude;
     }
 
+    withLongitude(longitude: number | DMS): this {
+        assertIsGeographic(this.crs);
+
+        if (typeof longitude === 'number') {
+            this._values[0] = longitude;
+        } else {
+            this._values[0] = parseDMS(longitude);
+        }
+
+        return this;
+    }
+
+    withLatitude(latitude: number | DMS): this {
+        assertIsGeographic(this.crs);
+
+        if (typeof latitude === 'number') {
+            this._values[1] = latitude;
+        } else {
+            this._values[1] = parseDMS(latitude);
+        }
+
+        return this;
+    }
+
+    withCRS(crs: string): this {
+        this.crs = crs;
+        return this;
+    }
+
+    withAltitude(altitude: number): this {
+        assertIsGeographic(this.crs);
+
+        this._values[2] = altitude;
+
+        return this;
+    }
+
     /**
      * Returns the `x` component of this coordinate in geocentric coordinates.
      * Coordinates must be in geocentric system (can be
@@ -500,6 +554,16 @@ class Coordinates {
      */
     isGeographic() {
         return crsIsGeographic(this.crs);
+    }
+
+    /**
+     * Creates a geographic coordinate in EPSG:4326
+     */
+    static WGS84(latitude: number | DMS, longitude: number | DMS, altitude?: number): Coordinates {
+        return new Coordinates('EPSG:4326', 0, 0)
+            .withLatitude(latitude)
+            .withLongitude(longitude)
+            .withAltitude(altitude ?? 0);
     }
 }
 
