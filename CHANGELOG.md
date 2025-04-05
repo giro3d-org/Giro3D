@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.42.4 (2025-04-05)
+
+### Fix
+
+- **VectorTileSource**: avoid getting stuck while loading tiles (#584)
+
 ## v0.42.3 (2025-03-18)
 
 ### Feat
