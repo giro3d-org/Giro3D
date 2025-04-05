@@ -85,6 +85,31 @@ tags: [ellipsoid, helper]
                 <label class="form-check-label" for="show-axes">Show axes</label>
             </div>
 
+            <!-- Toggle ENU frame -->
+            <div class="form-check form-switch">
+                <input
+                    class="form-check-input"
+                    checked
+                    type="checkbox"
+                    role="switch"
+                    id="show-enu-frame"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="show-enu-frame"
+                    >Show ENU frame
+                    <span
+                        class="text-secondary"
+                        data-bs-toggle="popover"
+                        data-bs-content="help-enu-frame"
+                        ><i class="bi bi-question-circle"></i>
+                    </span>
+                </label>
+
+                <p class="card-text d-none" id="help-enu-frame">
+                    Shows the local tangent plane coordinates (LTP) frame at the mouse location.
+                </p>
+            </div>
+
             <!-- Toggle lines -->
             <div class="form-check form-switch">
                 <input

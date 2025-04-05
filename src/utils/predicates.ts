@@ -4,12 +4,16 @@ import type {
     CanvasTexture,
     ColorRepresentation,
     DataTexture,
+    Euler,
     Light,
     Material,
+    Matrix3,
+    Matrix4,
     Mesh,
     Object3D,
     OrthographicCamera,
     PerspectiveCamera,
+    Quaternion,
     RenderTarget,
     ShaderMaterial,
     Texture,
@@ -39,6 +43,18 @@ export function isBufferGeometry(obj: unknown): obj is BufferGeometry {
 }
 export function isTexture(obj: unknown): obj is Texture {
     return (obj as Texture)?.isTexture;
+}
+export function isQuaternion(obj: unknown): obj is Quaternion {
+    return (obj as Quaternion)?.isQuaternion;
+}
+export function isEuler(obj: unknown): obj is Euler {
+    return (obj as Euler)?.isEuler;
+}
+export function isMatrix3(obj: unknown): obj is Matrix3 {
+    return (obj as Matrix3)?.isMatrix3;
+}
+export function isMatrix4(obj: unknown): obj is Matrix4 {
+    return (obj as Matrix4)?.isMatrix4;
 }
 export function isRenderTarget(obj: unknown): obj is RenderTarget {
     return (obj as RenderTarget)?.isRenderTarget;

@@ -120,6 +120,14 @@ export default class StaticImageSource extends ImageSource<StaticImageSourceEven
         });
     }
 
+    override adjustExtentAndPixelSize(
+        requestExtent: Extent,
+        requestWidth: number,
+        requestHeight: number,
+    ): { extent: Extent; width: number; height: number } | null {
+        return { extent: requestExtent, width: requestWidth, height: requestHeight };
+    }
+
     private async loadImage(): Promise<ImageResult> {
         if (this._promise == null) {
             this._promise = this.loadImageOnce();

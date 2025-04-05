@@ -707,6 +707,55 @@ describe('Extent', () => {
         });
     });
 
+    describe('equirectangular', () => {
+        it('should return the full spherical projection', () => {
+            const extent = Extent.fullEquirectangularProjection;
+
+            expect(extent.crs).toEqual('equirectangular');
+            expect(extent.west).toEqual(-180);
+            expect(extent.east).toEqual(+180);
+            expect(extent.south).toEqual(-90);
+            expect(extent.north).toEqual(+90);
+        });
+    });
+
+    describe('fromPhotosphere', () => {
+        it('should return the full equirectangular projection if no parameters are defined', () => {
+            const extent = Extent.fromPhotosphere();
+
+            expect(extent.crs).toEqual('equirectangular');
+            expect(extent.west).toEqual(-180);
+            expect(extent.east).toEqual(+180);
+            expect(extent.south).toEqual(-90);
+            expect(extent.north).toEqual(+90);
+        });
+
+        it('should return the correct angular values for a given image parameters', () => {
+            const fullPanoImageWidthPixels = 8192;
+            const fullPanoImageHeightPixels = 4096;
+            const croppedAreaTopPixels = 1024;
+            const croppedAreaLeftPixels = 2048;
+            const croppedAreaImageWidthPixels = 4096;
+            const croppedAreaImageHeightPixels = 2048;
+
+            const extent = Extent.fromPhotosphere({
+                fullPanoImageHeightPixels,
+                fullPanoImageWidthPixels,
+                croppedAreaTopPixels,
+                croppedAreaLeftPixels,
+                croppedAreaImageWidthPixels,
+                croppedAreaImageHeightPixels,
+            });
+
+            expect(extent.crs).toEqual('equirectangular');
+            expect(extent.west).toEqual(-90);
+            expect(extent.north).toEqual(+45);
+            expect(extent.east).toEqual(+90);
+            expect(extent.south).toEqual(-45);
+            expect(extent.dimensions()).toEqual(new Vector2(180, 90));
+        });
+    });
+
     describe('sampleUV', () => {
         it('should return the passed target, if any', () => {
             const extent = new Extent('EPSG:3857', 10, 20, 40, 50);

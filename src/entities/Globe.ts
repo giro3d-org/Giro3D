@@ -25,7 +25,7 @@ const tmpWGS84Coordinates = new Coordinates('EPSG:4326', 0, 0);
  */
 export type GlobeTerrainOptions = Omit<TerrainOptions, 'stitching'>;
 
-function computeEllipsoidalImageSize(extent: Extent, ellipsoid: Ellipsoid): Vector2 {
+export function computeEllipsoidalImageSize(extent: Extent, ellipsoid: Ellipsoid): Vector2 {
     const dims = extent.dimensions(tempDims);
 
     const meridianLength = ellipsoid.getMeridianArcLength(extent.north, extent.south);
@@ -143,7 +143,7 @@ export default class Globe extends Map {
         return frustumVisible && horizonVisible;
     }
 
-    private testHorizonVisibility(node: TileMesh, context: Context): boolean {
+    protected testHorizonVisibility(node: TileMesh, context: Context): boolean {
         const cameraPosition = context.view.camera.position;
         const corners = node.getBoundingBoxCorners();
 

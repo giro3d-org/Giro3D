@@ -936,6 +936,45 @@ class Extent {
     static get WGS84(): Extent {
         return new Extent('EPSG:4326', -180, 180, -90, 90);
     }
+
+    /**
+     * The bounds of the whole sphere in the `'equirectangular'` projection.
+     */
+    static get fullEquirectangularProjection(): Extent {
+        // Note that those are the same values as WGS84.
+        // However, since panoramic images are not georeferenced,
+        // speaking about WGS84 makes no sense.
+        return new Extent('equirectangular', -180, 180, -90, 90);
+    }
+
+    /**
+     * Comptes the extent of a photosphere in the `'equirectangular'` projection for the given image parameters.
+     * See [the Google Street View documentation](https://developers.google.com/streetview/spherical-metadata) for additional information.
+     * @param params - The parameters of the image. If undefined, then it returns the extent
+     * for the full sphere equivalent to {@link fullEquirectangularProjection}
+     * @returns The extent of the image in the `'equirectangular'` projection.
+     */
+    static fromPhotosphere(params?: {
+        fullPanoImageWidthPixels: number;
+        fullPanoImageHeightPixels: number;
+        croppedAreaLeftPixels: number;
+        croppedAreaTopPixels: number;
+        croppedAreaImageWidthPixels: number;
+        croppedAreaImageHeightPixels: number;
+    }): Extent {
+        if (params == null) {
+            return Extent.fullEquirectangularProjection;
+        }
+
+        const west = 360 * (params.croppedAreaLeftPixels / params.fullPanoImageWidthPixels) - 180;
+        const north = 90 - 180 * (params.croppedAreaTopPixels / params.fullPanoImageHeightPixels);
+        const south =
+            north - 180 * (params.croppedAreaImageHeightPixels / params.fullPanoImageHeightPixels);
+        const east =
+            west + 360 * (params.croppedAreaImageWidthPixels / params.fullPanoImageWidthPixels);
+
+        return new Extent('equirectangular', { west, east, south, north });
+    }
 }
 
 export default Extent;

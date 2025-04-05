@@ -1063,7 +1063,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
         const position = tile.absolutePosition;
 
-        tile.position.copy(position).add(this.object3d.position);
+        tile.position.copy(position);
 
         tile.opacity = this.opacity;
         tile.setVisibility(false);

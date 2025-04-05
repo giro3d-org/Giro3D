@@ -24,6 +24,7 @@ import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';
 import StaticImageSource from '@giro3d/giro3d/sources/StaticImageSource.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
+import SphericalPanorama from '@giro3d/giro3d/entities/SphericalPanorama.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
@@ -178,6 +179,26 @@ const sunLayer = new ColorLayer({
 sun.addLayer(sunLayer);
 
 const allGlobes = [earth, moon, mars, sun];
+
+/////////////////////////////// Star background /////////////////////////////////////////////////
+
+const background = new SphericalPanorama({
+    radius: 10_000_000,
+    subdivisionThreshold: 0.4,
+    depthTest: false,
+});
+background.name = 'background';
+background.renderOrder = -9999;
+instance.add(background);
+
+const starLayer = new ColorLayer({
+    source: new StaticImageSource({
+        source: 'https://3d.oslandia.com/giro3d/images/4k_stars_milky_way.jpg',
+        extent: Extent.equirectangular,
+    }),
+});
+
+background.addLayer(starLayer);
 
 /////////////////////////////// Earth layers ////////////////////////////////////////////////////
 
@@ -371,6 +392,9 @@ function update() {
     // Let's increase the shading on the terrain when we zoom out
     const zFactor = MathUtils.mapLinear(altitude, 12_000_000, 30_000_000, 1, 10);
     earth.lighting.zFactor = MathUtils.clamp(zFactor, 1, 10);
+
+    background.object3d.position.set(x, y, z);
+    background.object3d.updateMatrixWorld(true);
 }
 
 update();

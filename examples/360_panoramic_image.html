@@ -1,0 +1,135 @@
+---
+title: 360° panoramic image
+shortdesc: Displays a panoramic bubble.
+longdesc: The <a target="_blank" href="../apidoc/classes/entities.SphericalPanorama.html"><code>SphericalPanorama</code></a> entity can display images in the <code>'equirectangular'</code> projection.
+attribution: © Daniel Vorndran for <a href="https://commons.wikimedia.org/wiki/File:Rheingauer_Dom,_Geisenheim,_360_Panorama_%28Equirectangular_projection%29.jpg">Wikimedia Commons</a> (the image has been resized to 4096x2048).
+tags: [panoramic, bubble, 360, map]
+---
+
+<div class="side-pane-with-status-bar">
+    <div class="card">
+        <div class="card-header">Parameters</div>
+        <div class="card-body">
+            <!-- Show/Hide graticule -->
+            <div class="form-check form-switch">
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    role="switch"
+                    id="graticule"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="graticule">Show graticule</label>
+            </div>
+
+            <!-- Show/Hide debug layer -->
+            <div class="form-check form-switch">
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    role="switch"
+                    id="show-debug-layer"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="show-debug-layer">Show debug layer</label>
+            </div>
+
+            <!-- Show/Hide rotation helpers -->
+            <div class="form-check form-switch">
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    role="switch"
+                    id="show-rotation-helpers"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="show-rotation-helpers"
+                    >Show rotation helpers</label
+                >
+            </div>
+
+            <hr />
+
+            <!-- Latitude -->
+            <label for="latitude" class="form-label">Latitude</label>
+            <div class="input-group">
+                <input
+                    type="number"
+                    min="-180"
+                    max="180"
+                    value="0"
+                    step="1"
+                    class="form-control"
+                    id="latitude"
+                    autocomplete="off"
+                />
+            </div>
+
+            <!-- Longitude -->
+            <label for="longitude" class="form-label">Longitude</label>
+            <div class="input-group">
+                <input
+                    type="number"
+                    min="-90"
+                    max="90"
+                    value="0"
+                    step="1"
+                    class="form-control"
+                    id="longitude"
+                    autocomplete="off"
+                />
+            </div>
+
+            <!-- Azimuth -->
+            <label for="azimuth" class="form-label">Azimuth</label>
+            <div class="input-group">
+                <input
+                    type="number"
+                    min="0"
+                    max="360"
+                    value="0"
+                    step="1"
+                    class="form-control"
+                    id="azimuth"
+                    autocomplete="off"
+                />
+            </div>
+
+            <!-- Pitch -->
+            <label for="pitch" class="form-label">Pitch</label>
+            <div class="input-group">
+                <input
+                    type="number"
+                    min="-90"
+                    max="90"
+                    value="0"
+                    step="1"
+                    class="form-control"
+                    id="pitch"
+                    autocomplete="off"
+                />
+            </div>
+
+            <!-- Roll -->
+            <label for="roll" class="form-label">Roll</label>
+            <div class="input-group">
+                <input
+                    type="number"
+                    min="-90"
+                    max="90"
+                    value="0"
+                    step="1"
+                    class="form-control"
+                    id="roll"
+                    autocomplete="off"
+                />
+            </div>
+
+            <!-- Go to panorama -->
+            <button type="button" class="btn btn-primary w-100 mt-3" id="go-to-panorama">
+                <i class="bi bi-cursor-fill"></i>
+                Go to panorama
+            </button>
+        </div>
+    </div>
+</div>
