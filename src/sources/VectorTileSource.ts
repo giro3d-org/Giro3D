@@ -42,13 +42,11 @@ import {
 
 import { MVT } from 'ol/format.js';
 import type FeatureFormat from 'ol/format/Feature.js';
-import type { Geometry } from 'ol/geom';
 import type { Projection } from 'ol/proj';
 import type RenderFeature from 'ol/render/Feature';
 import type { StyleFunction } from 'ol/style/Style';
 import type Extent from '../core/geographic/Extent';
-import EmptyTexture from '../renderer/EmptyTexture';
-import Fetcher from '../utils/Fetcher';
+import Fetcher, { HttpError } from '../utils/Fetcher';
 import OpenLayersUtils from '../utils/OpenLayersUtils';
 import { nonNull } from '../utils/tsutils';
 import type { GetImageOptions, ImageResponse, ImageSourceOptions } from './ImageSource';
@@ -198,16 +196,30 @@ class VectorTileSource extends ImageSource {
 
         const priority = this.priority;
 
-        async function tileLoadFunction(image: Tile, url: string) {
-            if (image instanceof VectorTile) {
-                const response = await Fetcher.fetch(url, { priority });
-                if (response.status === 200) {
-                    const imageData = await response.arrayBuffer();
-                    const features = image.getFormat().readFeatures(imageData, {
-                        extent: image.extent,
-                        featureProjection: image.projection,
-                    });
-                    image.setFeatures(features as Array<Feature<Geometry>>);
+        async function tileLoadFunction(tile: Tile, url: string) {
+            if (tile instanceof VectorTile) {
+                try {
+                    const response = await Fetcher.fetch(url, { priority });
+                    if (response.status === 200) {
+                        const imageData = await response.arrayBuffer();
+                        const features = tile.getFormat().readFeatures(imageData, {
+                            extent: tile.extent,
+                            featureProjection: tile.projection,
+                        });
+
+                        tile.setFeatures(features);
+                        tile.setState(TileState.LOADED);
+                    } else {
+                        tile.setState(TileState.ERROR);
+                    }
+                } catch (e) {
+                    if (e instanceof HttpError && e.response.status === 404) {
+                        tile.setState(TileState.ERROR);
+                    } else {
+                        console.warn(e);
+
+                        tile.setState(TileState.ERROR);
+                    }
                 }
             }
         }
@@ -289,11 +301,7 @@ class VectorTileSource extends ImageSource {
     }
 
     private rasterizeTile(tile: VectorRenderTile) {
-        const empty = this.createBuilderGroup(tile);
-
-        if (empty) {
-            return new EmptyTexture();
-        }
+        this.createBuilderGroup(tile);
 
         const canvas = this.rasterize(tile);
         const texture = new CanvasTexture(canvas);
@@ -376,31 +384,42 @@ class VectorTileSource extends ImageSource {
         return empty;
     }
 
+    private loadTileOnce(tile: VectorRenderTile): Promise<Texture> {
+        return new Promise(resolve => {
+            const eventKey = listen(tile, 'change', evt => {
+                const tile2 = evt.target;
+                const tileState = tile2.getState();
+
+                if (tileState === TileState.ERROR) {
+                    unlistenByKey(eventKey);
+                    resolve(this.rasterizeTile(tile2));
+                } else if (tileState === TileState.LOADED) {
+                    unlistenByKey(eventKey);
+                    resolve(this.rasterizeTile(tile2));
+                }
+            });
+
+            if (tile.getState() === TileState.IDLE) {
+                tile.load();
+            }
+        });
+    }
+
     /**
      * @param tile - The tile to load.
      * @returns The promise containing the rasterized tile.
      */
     private loadTile(tile: VectorRenderTile): Promise<Texture> {
         let promise: Promise<Texture>;
-        if (tile.getState() === TileState.EMPTY) {
-            promise = Promise.resolve(new EmptyTexture());
-        } else if (tile.getState() === TileState.LOADED) {
+
+        if (
+            tile.getState() === TileState.EMPTY ||
+            tile.getState() === TileState.ERROR ||
+            tile.getState() === TileState.LOADED
+        ) {
             promise = Promise.resolve(this.rasterizeTile(tile));
         } else {
-            promise = new Promise((resolve, reject) => {
-                const eventKey = listen(tile, 'change', evt => {
-                    const tile2 = evt.target;
-                    const tileState = tile2.getState();
-                    if (tileState === TileState.ERROR) {
-                        unlistenByKey(eventKey);
-                        reject();
-                    } else if (tileState === TileState.LOADED) {
-                        unlistenByKey(eventKey);
-                        resolve(this.rasterizeTile(tile2));
-                    }
-                });
-                tile.load();
-            });
+            promise = this.loadTileOnce(tile);
         }
 
         return promise;
