@@ -1007,6 +1007,10 @@ abstract class Layer<
 
         const texture = renderTarget.texture;
         this.applyTextureToNode({ texture, pitch: target.pitch }, target, false);
+
+        // Ensure that the material is up to date with the default texture
+        this.updateMaterial(target.node.material);
+
         this.instance.notifyChange(this);
         target.paintCount++;
     }

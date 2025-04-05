@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.42.3 (2025-03-18)
+
+### Feat
+
+- **Instance**: raise an event when it is disposed
+
+### Fix
+
+- **Layer**: immediately update the material after the default texture is applied (#578)
+- **Shape**: handle tessellation of vertical polygons (#574)
+- **Tiles3D**: limit sharing resources in the same Instance (#575)
+
 ## v0.42.2 (2025-03-07)
 
 ### Fix

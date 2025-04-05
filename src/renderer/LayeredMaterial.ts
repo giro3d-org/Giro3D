@@ -1292,6 +1292,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
             contrast,
             saturation,
         );
+        this._mustUpdateUniforms = true;
     }
 
     canProcessColorLayer(): boolean {
