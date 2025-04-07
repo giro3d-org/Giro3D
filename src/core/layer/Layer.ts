@@ -614,7 +614,7 @@ abstract class Layer<
             renderer: this.instance.renderer,
             showImageOutlines: this.showTileBorders,
             showEmptyTextures: this.showEmptyTextures,
-            extent: this.extent ?? undefined,
+            extent: this.extent ?? this.source.getExtent() ?? undefined,
             computeMinMax: this.computeMinMax,
             sourceCrs: this.source.getCrs(),
             targetCrs: targetProjection,
@@ -1057,12 +1057,12 @@ abstract class Layer<
         if (isContained) {
             if (!target.renderTarget) {
                 target.renderTarget = this.acquireRenderTarget(width, height);
+            }
 
-                // If the source is not synchronous, we need a default texture
-                // to avoid seeing a blank texture on the tile.
-                if (!this.source.synchronous) {
-                    this.applyDefaultTexture(target);
-                }
+            // If the source is not synchronous, we need a default texture
+            // to avoid seeing a blank texture on the tile.
+            if (!this.source.synchronous) {
+                this.applyDefaultTexture(target);
             }
 
             if (!this.canFetchImages(target)) {

@@ -46,11 +46,20 @@ function createGridTexture() {
         throw new Error('could not acquire 2D rendering context');
     }
 
-    ctx.strokeStyle = 'yellow';
-    ctx.lineWidth = 4;
+    const back = 'black';
+    const fore = 'yellow';
+    const borderWidth = 4;
+    const lineWidth = 3;
+
+    ctx.strokeStyle = back;
+    ctx.lineWidth = lineWidth + 2 * borderWidth;
     ctx.strokeRect(0, 0, w, h);
 
-    ctx.strokeStyle = 'yellow';
+    ctx.strokeStyle = fore;
+    ctx.lineWidth = lineWidth;
+    ctx.strokeRect(0, 0, w, h);
+
+    ctx.strokeStyle = fore;
     ctx.setLineDash([8, 8]);
     ctx.lineWidth = 2;
     const subdivs = 2;
@@ -72,9 +81,19 @@ function createGridTexture() {
     }
 
     // Center of the image
+
+    const radius = 4;
+    const centerX = w / 2;
+    const centerY = h / 2;
+
+    ctx.fillStyle = back;
     ctx.beginPath();
-    ctx.fillStyle = 'yellow';
-    ctx.arc(w / 2, h / 2, 4, 0, 2 * Math.PI);
+    ctx.ellipse(centerX, centerY, radius + borderWidth, radius + borderWidth, 0, 0, 2 * Math.PI);
+    ctx.fill();
+
+    ctx.fillStyle = fore;
+    ctx.beginPath();
+    ctx.ellipse(centerX, centerY, radius, radius, 0, 0, 2 * Math.PI);
     ctx.fill();
 
     return new CanvasTexture(canvas);

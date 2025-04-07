@@ -1,5 +1,4 @@
 import {
-    MathUtils,
     Mesh,
     PlaneGeometry,
     Vector2,
@@ -173,6 +172,7 @@ class LayerComposer implements MemoryUsage {
     readonly fillNoDataRadius?: number;
     readonly pixelFormat: PixelFormat;
     readonly textureDataType: TextureDataType;
+    readonly showEmptyTextures: boolean;
 
     private _needsCleanup: boolean;
 
@@ -231,6 +231,7 @@ class LayerComposer implements MemoryUsage {
         this.fillNoDataRadius = options.fillNoDataRadius;
         this.pixelFormat = options.pixelFormat;
         this.textureDataType = options.textureDataType;
+        this.showEmptyTextures = options.showEmptyTextures;
 
         this.composer = new WebGLComposer({
             webGLRenderer: options.renderer,
@@ -285,14 +286,14 @@ class LayerComposer implements MemoryUsage {
      */
     private computeRenderOrder(extent: Extent): number {
         if (this.dimensions) {
-            const width = extent.dimensions(tmpVec2).x;
-            // Since we don't know the smallest size of image that the source will output,
-            // let's make a generous assumptions: the smallest image is 1/2^25 of the extent.
-            const MAX_NUMBER_OF_SUBDIVISIONS = 33554432; // 2^25
-            const SMALLEST_WIDTH = this.dimensions.x / MAX_NUMBER_OF_SUBDIVISIONS;
-            return Math.round(
-                MathUtils.mapLinear(width, this.dimensions.x, SMALLEST_WIDTH, 0, 5000),
-            );
+            const width = extent.dimensions(tmpVec2).width;
+
+            // The smaller the image, the bigger its render order will be.
+            const ratio = this.dimensions.width / width;
+
+            const result = ratio * 1_000;
+
+            return Math.round(result);
         }
 
         return 0;
@@ -434,7 +435,7 @@ class LayerComposer implements MemoryUsage {
 
         if (texture == null) {
             throw new Error(
-                'texture cannot be null. Use an empty texture instead. (i.e new Texture())',
+                'texture cannot be null. Use an empty texture instead. (i.e new EmptyTexture())',
             );
         }
 
@@ -691,16 +692,19 @@ class LayerComposer implements MemoryUsage {
 
             const isInView = extent.intersectsExtent(image.extent) || image.alwaysVisible;
 
-            image.visible = (isFallbackMode && isInView) || isRequired;
+            const isEmpty = isEmptyTexture(image.texture);
+            image.visible =
+                (!isEmpty || this.showEmptyTextures) &&
+                ((isFallbackMode && isInView) || isRequired);
 
             // An image should be visible:
-            // - if its is part of the required images,
+            // - if it is part of the required images,
             // - if no required images are available (fallback mode)
             if (image.visible) {
                 image.opacity = 1;
             }
 
-            if (this.computeMinMax && isRequired && !isEmptyTexture(image.texture)) {
+            if (this.computeMinMax && isRequired && !isEmpty) {
                 min = Math.min(nonNull(image.min), min);
                 max = Math.max(nonNull(image.max), max);
             }

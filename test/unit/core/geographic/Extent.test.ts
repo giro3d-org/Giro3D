@@ -756,6 +756,40 @@ describe('Extent', () => {
         });
     });
 
+    describe('contains/isInside', () => {
+        it('should return true if the extent is entirely inside the other', () => {
+            const small = new Extent('EPSG:3857', 10, 20, 30, 40);
+            const big = small.withMargin(1, 1);
+
+            expect(big.contains(small)).toEqual(true);
+            expect(small.isInside(big)).toEqual(true);
+        });
+
+        it('should return true if both extents are equal', () => {
+            const a = new Extent('EPSG:3857', 10, 20, 30, 40);
+            const b = a.clone();
+
+            expect(b.contains(a)).toEqual(true);
+            expect(a.isInside(b)).toEqual(true);
+        });
+
+        it('should return false if the extents only partially overlap', () => {
+            const a = new Extent('EPSG:3857', 10, 20, 30, 40);
+            const b = new Extent('EPSG:3857', a.west + 1, a.east + 1, a.south, a.north);
+
+            expect(a.contains(b)).toEqual(false);
+            expect(b.isInside(a)).toEqual(false);
+        });
+
+        it('should return false if the extents do not overlap at all', () => {
+            const a = Extent.fromCenterAndSize('EPSG:3857', { x: -100, y: -100 }, 10, 10);
+            const b = Extent.fromCenterAndSize('EPSG:3857', { x: +100, y: +100 }, 10, 10);
+
+            expect(a.contains(b)).toEqual(false);
+            expect(b.isInside(a)).toEqual(false);
+        });
+    });
+
     describe('sampleUV', () => {
         it('should return the passed target, if any', () => {
             const extent = new Extent('EPSG:3857', 10, 20, 40, 50);

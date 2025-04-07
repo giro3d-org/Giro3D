@@ -514,6 +514,18 @@ class Extent {
     }
 
     /**
+     * Tests whether this extent contains entirely another extent.
+     *
+     * @param other - the other extent to test
+     * @param epsilon - the precision delta (+/- epsilon).
+     * If this value is not provided, a reasonable epsilon will be computed.
+     * @returns `true` if this extent contains the other extent.
+     */
+    contains(other: Extent, epsilon: number | null = null) {
+        return other.isInside(this, epsilon);
+    }
+
+    /**
      * Returns `true` if this bounding box intersect with the bouding box parameter
      *
      * @param bbox - the bounding box to test
