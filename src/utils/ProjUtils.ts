@@ -79,46 +79,72 @@ function transformVectors<T extends Vector2 | Vector3>(
     }
 }
 
-export type ID = Record<string, number>;
-export type Authority = Record<string, number>;
+type ID = Record<string, number>;
+type Authority = Record<string, number>;
 
-export type ProjCS = {
-    AUTHORITY: Authority;
+type ProjCS = {
+    name: string;
+    AUTHORITY?: Authority;
 };
 
-export type ProjCRS = {
+type ProjCRS = {
     ID: ID;
 };
 
-export type CompoundCS = {
+type CompoundCS = {
     PROJCS: ProjCS;
 };
 
-function getCode(authority: Authority): string {
+function getAuthorityName(authority: Authority): string {
     const [auth, code] = Object.entries(authority)[0];
 
     return `${auth}:${code}`;
 }
 
-function getWKTCrsCode(wkt: string): string | undefined {
+type CrsName = { name: string; srid?: string };
+
+function getWKTCrsName(wkt: string): CrsName | undefined {
     const parsed = parseCode(wkt) as ProjCRS | ProjCS | CompoundCS;
 
     if ('ID' in parsed) {
         // WKT 2 / PROJCRS
-        return getCode(parsed.ID);
+        const authority = getAuthorityName(parsed.ID);
+        return { name: authority, srid: authority };
     } else if ('PROJCS' in parsed) {
         // WKT 1 / COMPD_CS
-        return getCode(parsed['PROJCS'].AUTHORITY);
+        return getProjCSName(parsed['PROJCS']);
     } else if ('AUTHORITY' in parsed) {
         // WKT 1 / PROJCS
-        return getCode(parsed.AUTHORITY);
+        return getProjCSName(parsed);
     }
 
     return undefined;
 }
 
+function getProjCSName(projCs: ProjCS): CrsName | undefined {
+    if (projCs.AUTHORITY) {
+        const authority = getAuthorityName(projCs.AUTHORITY);
+        return { name: authority, srid: authority };
+    }
+    return { name: projCs.name };
+}
+
+type ParsedWkt = CrsName & { definition: string };
+function readCrsFromWkt(wkt?: string): ParsedWkt | undefined {
+    if (typeof wkt === 'undefined' || !wkt) {
+        return undefined;
+    }
+
+    const crsName = getWKTCrsName(wkt);
+    if (!crsName) {
+        return undefined;
+    }
+
+    return { ...crsName, definition: wkt };
+}
+
 export default {
     transformBufferInPlace,
     transformVectors,
-    getWKTCrsCode,
+    readCrsFromWkt,
 };

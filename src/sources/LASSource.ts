@@ -1,12 +1,14 @@
 import type { Binary, View } from 'copc';
 import { Las } from 'copc';
 import { Header } from 'copc/lib/las';
+import { Binary as BinaryUtils } from 'copc/lib/utils/binary';
 import type { BufferAttribute } from 'three';
 import { Box3, Float32BufferAttribute, Vector3 } from 'three';
 import type { GetMemoryUsageContext } from '../core/MemoryUsage';
 import OperationCounter from '../core/OperationCounter';
 import { defer } from '../core/RequestQueue';
 import Fetcher from '../utils/Fetcher';
+import ProjUtils from '../utils/ProjUtils';
 import { nonNull } from '../utils/tsutils';
 import WorkerPool from '../utils/WorkerPool';
 import { getLazPerf } from './las/config';
@@ -240,12 +242,12 @@ export default class LASSource extends PointCloudSourceBase {
     }
 
     async getMetadata(): Promise<PointCloudMetadata> {
-        const { pointCount } = nonNull(this._header, 'not initialized');
+        const header = nonNull(this._header, 'not initialized');
 
         const view = await this.getView();
 
         const result: PointCloudMetadata = {
-            pointCount,
+            pointCount: header.pointCount,
             volume: nonNull(this._volume),
             attributes: extractAttributes(
                 view.dimensions,
@@ -254,6 +256,37 @@ export default class LASSource extends PointCloudSourceBase {
                 null,
             ),
         };
+
+        const buffer = nonNull(this._buffer, 'not initialized');
+
+        const getBufferChunk = (begin: number, end: number) => {
+            if (end >= buffer.byteLength) {
+                throw new Error();
+            }
+            return new Uint8Array(buffer.slice(begin, end));
+        };
+        const getBufferChunkAsync = (begin: number, end: number) => {
+            return Promise.resolve(getBufferChunk(begin, end));
+        };
+
+        const vlrs = await Las.Vlr.walk(getBufferChunkAsync, header);
+        const wktVlr = Las.Vlr.find(vlrs, 'LASF_Projection', 2112);
+        // There are a few corner-case possibilities here.  Although the LAS 1.4 spec
+        // says that this must be a null-terminated string, some files in the wild
+        // exist with a zero content-length.  We also want to consider the case of an
+        // empty string which *does* include null-termination as a missing SRS.
+        if (wktVlr && wktVlr.contentLength) {
+            const wktVlrBegin = wktVlr.contentOffset;
+            const wktVlrEnd = wktVlrBegin + wktVlr.contentLength;
+
+            const wkt = BinaryUtils.toCString(getBufferChunk(wktVlrBegin, wktVlrEnd));
+            if (wkt !== null && wkt) {
+                const crs = ProjUtils.readCrsFromWkt(wkt);
+                if (crs) {
+                    result.crs = crs;
+                }
+            }
+        }
 
         return Promise.resolve(result);
     }

@@ -45,7 +45,7 @@ export type PointCloudAttribute = {
  * A dataset CRS definition. Useful when loading datasets from unknown sources, where we don't
  * have this information beforehand.
  */
-export type PointCloudCrs = { name: string; definition?: string };
+export type PointCloudCrs = { name: string; srid?: string; definition?: string };
 
 /**
  * Contains lightweight metadata about the source, such as point count.

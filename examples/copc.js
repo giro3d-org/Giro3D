@@ -229,11 +229,7 @@ async function fetchCrsDefinition(crs) {
         return def;
     }
 
-    const def = await fetchText(`https://epsg.io/${code}.proj4?download=1`);
-
-    Instance.registerCRS(crs, def);
-
-    return def;
+    return await fetchText(`https://epsg.io/${code}.proj4?download=1`);
 }
 
 const numberFormat = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 });
@@ -419,7 +415,12 @@ async function load(url) {
     // point cloud is properly positioned.
     if (metadata.crs) {
         try {
-            await fetchCrsDefinition(metadata.crs.name);
+            let { name, definition, srid } = metadata.crs;
+            if (srid) {
+                name = srid;
+                definition = await fetchCrsDefinition(srid);
+            }
+            Instance.registerCRS(name, definition);
 
             // We create the extent from the volume of the point cloud.
             const extent = Extent.fromBox3(instance.referenceCrs, volume);
@@ -460,7 +461,11 @@ async function load(url) {
 
     Inspector.attach('inspector', instance);
 
-    StatusBar.bind(instance, { disableUrlUpdate: true });
+    try {
+        StatusBar.bind(instance, { disableUrlUpdate: true });
+    } catch (error) {
+        console.warn(`Failed to bind status bar: `, error);
+    }
 
     placeCameraOnTop(volume, instance);
 

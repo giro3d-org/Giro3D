@@ -73,8 +73,8 @@ describe('transformBufferInPlace', () => {
     });
 });
 
-describe('getWKTCrsCode', () => {
-    it('should return correct CRS code for WKT', () => {
+describe('readCrsFromWkt', () => {
+    it('should return correct CRS name for WKT', () => {
         const wkt = `
         PROJCS["RGF93 v1 / Lambert-93",
             GEOGCS["RGF93 v1",
@@ -100,10 +100,49 @@ describe('getWKTCrsCode', () => {
             AUTHORITY["EPSG","2154"]]
         `;
 
-        expect(ProjUtils.getWKTCrsCode(wkt)).toEqual('EPSG:2154');
+        const parsedCrs = ProjUtils.readCrsFromWkt(wkt);
+        expect(parsedCrs).toBeDefined();
+        expect(parsedCrs!.name).toEqual('EPSG:2154');
+        expect(parsedCrs!.srid).toEqual('EPSG:2154');
     });
 
-    it('should return correct CRS code for WKT 2', () => {
+    it('should return correct CRS name for WKT without authority', () => {
+        const wkt = `
+        COMPD_CS["Compound CRS NAD83(2011) / UTM zone 14N + NAVD88 height",
+            PROJCS["NAD83(2011) / UTM zone 14N",
+                GEOGCS["NAD83(2011)",
+                    DATUM["NAD83_National_Spatial_Reference_System_2011",
+                        SPHEROID["GRS 1980",6378137,298.257222101]],
+                    PRIMEM["Greenwich",0,
+                        AUTHORITY["EPSG","8901"]],
+                    UNIT["degree",0.0174532925199433,
+                        AUTHORITY["EPSG","9122"]],
+                    AUTHORITY["EPSG","6318"]],
+                PROJECTION["Transverse_Mercator"],
+                PARAMETER["latitude_of_origin",0],
+                PARAMETER["central_meridian",-99],
+                PARAMETER["scale_factor",0.9996],
+                PARAMETER["false_easting",500000],
+                PARAMETER["false_northing",0],
+                UNIT["metre",1,
+                    AUTHORITY["EPSG","9001"]],
+                AXIS["Easting",EAST],
+                AXIS["Northing",NORTH]],
+            VERT_CS["NAVD88 height",
+                VERT_DATUM["North American Vertical Datum 1988",2005],
+                UNIT["metre",1,
+                    AUTHORITY["EPSG","9001"]],
+                AXIS["Gravity-related height",UP],
+                AUTHORITY["EPSG","5703"]]]
+        `;
+
+        const parsedCrs = ProjUtils.readCrsFromWkt(wkt);
+        expect(parsedCrs).toBeDefined();
+        expect(parsedCrs!.name).toEqual('NAD83(2011) / UTM zone 14N');
+        expect(parsedCrs!.srid).toBeUndefined();
+    });
+
+    it('should return correct CRS name for WKT 2', () => {
         const wkt = `
         PROJCRS["RGF93 v1 / Lambert-93",
             BASEGEOGCRS["RGF93 v1",
@@ -148,6 +187,9 @@ describe('getWKTCrsCode', () => {
             ID["EPSG",2154]]
         `;
 
-        expect(ProjUtils.getWKTCrsCode(wkt)).toEqual('EPSG:2154');
+        const parsedCrs = ProjUtils.readCrsFromWkt(wkt);
+        expect(parsedCrs).toBeDefined();
+        expect(parsedCrs!.name).toEqual('EPSG:2154');
+        expect(parsedCrs!.srid).toEqual('EPSG:2154');
     });
 });

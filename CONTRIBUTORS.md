@@ -51,7 +51,11 @@ The following people have contributed to Giro3D.
     - [Vincent Picavet](https://github.com/vpicavet)
 
 - [OSM Data](https://demo.openstreetmap.fr/map)
+
     - [Karl TAYOU](https://gitlab.com/nelsontayou1)
+
+- [Phoenix LiDAR Systems](https://phoenixlidar.com)
+    - [Jérémie Piellard](https://github.com/piellardj)
 
 ---
 
