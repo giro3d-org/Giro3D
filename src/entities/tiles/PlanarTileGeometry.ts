@@ -3,6 +3,7 @@ import {
     BufferAttribute,
     BufferGeometry,
     Float32BufferAttribute,
+    Sphere,
     Vector2,
     Vector3,
 } from 'three';
@@ -167,9 +168,8 @@ class PlanarTileGeometry extends BufferGeometry implements MemoryUsage, TileGeom
 
                 const x = origin.x - width / 2 + u * width;
                 const y = origin.y + height / 2 - v * height;
-                const z = 0;
 
-                position.set(x, y, z);
+                position.set(x, y, altitude);
                 const pos = position.sub(origin);
 
                 boundingBox.expandByPoint(pos);
@@ -269,6 +269,7 @@ class PlanarTileGeometry extends BufferGeometry implements MemoryUsage, TileGeom
         geometry.setIndex(new BufferAttribute(indexBuffer, 1));
 
         this.boundingBox = boundingBox;
+        this.boundingSphere = boundingBox.getBoundingSphere(new Sphere());
 
         if (this._skirtDepth != null) {
             const topVertexCount = rowVertices * rowVertices;
