@@ -85,15 +85,16 @@ instance.add(panorama);
 - add `Globe` entity (#424)
 - add `SphericalPanorama` entity (#504)
 - add `Atmosphere`, `SkyDome` and `Glow` entities
+- **Ellipsoid**: add `Ellipsoid` class
 - **Extent**: add `contains()` method
 - **Extent**: add `sampleUV()` method
 - **Extent**: add equirectangular projection and photo-sphere utility methods
+- **Coordinates**: add builder functions for geographic coordinates (#583)
 - **View**: add support for point of views (#125)
 - **FeatureCollection**: add `.castShadow` and `.receiveShadow` properties
 - **Tiles3D**: allow providing a custom mapping for attribute names (#576)
 - **Map**: add support for side skirts (#551)
 - **controls**: add `GlobeControls`
-- **Ellipsoid**: add `Ellipsoid` class
 
 ### Fix
 
