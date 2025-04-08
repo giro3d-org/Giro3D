@@ -1,4 +1,4 @@
-import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';
+import Coordinates, { type DMS } from '@giro3d/giro3d/core/geographic/Coordinates';
 import * as proj4 from 'proj4';
 import { Vector2, Vector3 } from 'three';
 
@@ -187,6 +187,91 @@ describe('Coordinates', () => {
         it('should return the 3rd coordinate', () => {
             const coord = new Coordinates('EPSG:4326', 0, 0, 999);
             expect(coord.altitude).toEqual(999);
+        });
+    });
+
+    describe('withLongitude', () => {
+        it('should return the object and set the longitude', () => {
+            const coord = new Coordinates('EPSG:4326', 0, 0);
+            const result = coord.withLongitude(15);
+
+            expect(coord).toBe(result);
+            expect(coord.longitude).toEqual(15);
+        });
+
+        it('should support DMS', () => {
+            const coord = new Coordinates('EPSG:4326', 0, 0);
+            const result = coord.withLongitude({ degrees: 1, minutes: 2, seconds: 3 });
+
+            expect(coord).toBe(result);
+            expect(coord.longitude).toBeCloseTo(1.0341666);
+        });
+
+        it('should support partial DMS', () => {
+            const coord = new Coordinates('EPSG:4326', 0, 0);
+            const result = coord.withLongitude({ degrees: 1 });
+
+            expect(coord).toBe(result);
+            expect(coord.longitude).toBeCloseTo(1);
+        });
+    });
+
+    describe('withLatitude', () => {
+        it('should return the object and set the latitude', () => {
+            const coord = new Coordinates('EPSG:4326', 0, 0);
+            const result = coord.withLatitude(15);
+
+            expect(coord).toBe(result);
+            expect(coord.latitude).toEqual(15);
+        });
+
+        it('should support DMS', () => {
+            const coord = new Coordinates('EPSG:4326', 0, 0);
+            const result = coord.withLatitude({ degrees: 1, minutes: 2, seconds: 3 });
+
+            expect(coord).toBe(result);
+            expect(coord.latitude).toBeCloseTo(1.0341666);
+        });
+
+        it('should support partial DMS', () => {
+            const coord = new Coordinates('EPSG:4326', 0, 0);
+            const result = coord.withLatitude({ degrees: 1 });
+
+            expect(coord).toBe(result);
+            expect(coord.latitude).toBeCloseTo(1);
+        });
+    });
+
+    describe('withAltitude', () => {
+        it('should return the object and set the altitude', () => {
+            const coord = new Coordinates('EPSG:4326', 0, 0);
+
+            const result = coord.withAltitude(12345);
+            expect(result).toBe(coord);
+            expect(coord.altitude).toEqual(12345);
+        });
+    });
+
+    describe('WGS84', () => {
+        it('should return an EPSG:4326 coordinates with correct values', () => {
+            const coord = Coordinates.WGS84(1, 2, 3);
+
+            expect(coord.crs).toBe('EPSG:4326');
+            expect(coord.latitude).toBe(1);
+            expect(coord.longitude).toBe(2);
+            expect(coord.altitude).toBe(3);
+        });
+
+        it('should support DMS values', () => {
+            const longitude: DMS = { degrees: 1, minutes: 2, seconds: 3 };
+            const latitude: DMS = { degrees: 2, minutes: 2, seconds: 3 };
+
+            const coord = Coordinates.WGS84(latitude, longitude);
+
+            expect(coord.crs).toBe('EPSG:4326');
+            expect(coord.latitude).toBeCloseTo(2.0341666);
+            expect(coord.longitude).toBeCloseTo(1.034166);
+            expect(coord.altitude).toEqual(0);
         });
     });
 
