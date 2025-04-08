@@ -194,7 +194,7 @@ instance.add(background);
 const starLayer = new ColorLayer({
     source: new StaticImageSource({
         source: 'https://3d.oslandia.com/giro3d/images/4k_stars_milky_way.jpg',
-        extent: Extent.equirectangular,
+        extent: Extent.fullEquirectangularProjection,
     }),
 });
 
