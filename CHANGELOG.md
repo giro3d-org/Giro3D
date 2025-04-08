@@ -1,5 +1,117 @@
 # Changelog
 
+## v0.43.0 (2025-04-08)
+
+This release brings two major new feature: globes and panoramic images.
+
+### Globes
+
+It is now possible to create globe maps with the `Globe` entity. Each globe can be initialized with a custom `Ellipsoid` (or use the default WGS 84 ellipsoid). It is possible to have multiple globes in the same scene, and move/rotate them freely (for example to create a simulation of the solar system). The APIs of Globes is exactly the same as the one for `Map`, with the exception that it is not possible to set the extent of the globe (it will use the entire globe surface).
+
+The coordinate system to use for a globe scene is `EPSG:4978`:
+
+```js
+const instance = new Instance({
+    target: 'view',
+    crs: 'EPSG:4978',
+});
+```
+
+### Atmosphere, sky dome, glow
+
+To enhance rendering of globes, you can use the `Atmosphere` entity to add an atmosphere effect. Note that this entity does not require a `Globe` to work, and it can be used for example on the Google Photorealistic 3D Tiles tileset.
+
+The `Glow` entity creates a glow effect around the ellipsoid. Useful for light-emitting globes, such as the sun.
+
+The `SkyDome` entity represents the atmospheric dome as seen from the surface of the earth (or any other planet).
+
+## Spherical panoramas
+
+Another major feature is the support for spherical panoramic images with the `SphericalPanorama` entity. This entity shares the same API as `Map` (with the exception of elevation layers), meaning we can add as many color layers (for example, stacking panoramic images for comparison).
+
+Here is an example on how to load a simple panoramic image:
+
+```js
+const panorama = new SphericalPanorama();
+
+const layer = new ColorLayer({
+    source: new StaticImageSource({
+        source: 'https://3d.oslandia.com/giro3d/images/panorama.jpg',
+        // Since the image is covering the entire sphere, we must express the extent as such
+        extent: Extent.fullEquirectangularProjection,
+    }),
+});
+
+panorama.addLayer(layer);
+
+instance.add(panorama);
+```
+
+### BREAKING CHANGE
+
+- The crs name for `COPCSource` and `LASSource` can now be something else than an authority code,
+  if there is not authority in the WKT string
+  (i.e it can now be be "RGF93 v1 / Lambert-93 -- France" rather than "EPSG:2154").
+- `Instance.focusObject()` is removed. Use `View.goTo()` instead.
+    ```js
+    instance.view.goTo(myEntity);
+    ```
+- the `View` constant `DEFAULT_MAX_NEAR_PLANE` is renamed `DEFAULT_MAX_FAR_PLANE`
+- The default attribute mapping for point cloud `Tiles3D` has changed. Before, the attribute name for the point classification was "Classification" (upper case "C"), and point intensity was "Intensity" (upper case "I"). They are now "classification" and "intensity" (all lowercase). Use the `pointCloudAttributeMapping` constructor option to specify how to map batch table attributes with well-known attributes expected by Giro3D.
+    ```js
+    const pointcloud = new Tiles3D({
+        url,
+        pointCloudAttributeMapping: {
+            classification: 'Classification',
+            intensity: 'MyCustomAttribute',
+        },
+    });
+    ```
+- `Map.terrain.enableCPUTerrain` is removed as CPU
+  terrain mesh computation is now mandatory.
+- The `segments` parameter of the map constructor is moved to the `terrain`
+  parameter:
+    ```js
+    const map = new Map({
+        extent,
+        terrain: {
+            segments: 16,
+        },
+    });
+    ```
+
+### Feat
+
+- add `Globe` entity (#424)
+- add `SphericalPanorama` entity (#504)
+- add `Atmosphere`, `SkyDome` and `Glow` entities
+- **Extent**: add `contains()` method
+- **Extent**: add `sampleUV()` method
+- **Extent**: add equirectangular projection and photo-sphere utility methods
+- **View**: add support for point of views (#125)
+- **FeatureCollection**: add `.castShadow` and `.receiveShadow` properties
+- **Tiles3D**: allow providing a custom mapping for attribute names (#576)
+- **Map**: add support for side skirts (#551)
+- **controls**: add `GlobeControls`
+- **Ellipsoid**: add `Ellipsoid` class
+
+### Fix
+
+- **COPCSource|LASSource**: retrieve CRS name instead of authority code (#582)
+- **Layer**: apply default texture to node every time it is processed
+- **LayerComposer**: don't render empty textures
+- **LayerComposer**: improve computeRenderOrder()
+- **Layer**: use the source extent as fallback when constructing the LayerComposer
+- **ComposerTileMaterial**: improve readability of tile outlines
+- **VectorTileSource**: avoid getting stuck while loading tiles (#584)
+- **StaticImageSource**: implement adjustExtentAndPixelSize() that does nothing
+- **Map**: fix incorrect root tile positioning when transform is not identity
+- **FirstPersonControls**: move along the camera up vector rather than the scene's Z axis
+- **View**: rename `DEFAULT_MAX_NEAR_PLANE` -> `DEFAULT_MAX_FAR_PLANE`
+- **FeatureCollection**: rebuild mesh if extrusion offset / elevation changes (#348)
+- **FeatureCollection**: handle sources without loaders
+- **DrawTool**: fix `onAbort` never called when abort controller is aborted
+
 ## v0.42.3 (2025-03-18)
 
 ### Feat
