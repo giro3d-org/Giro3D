@@ -118,13 +118,13 @@ export default class Globe extends Map {
         this._enableHorizonCulling = v;
     }
 
-    constructor(options: GlobeConstructorOptions) {
+    constructor(options?: GlobeConstructorOptions) {
         super({
             ...options,
             extent: Extent.WGS84,
         });
 
-        this._ellipsoid = options.ellipsoid ?? Ellipsoid.WGS84;
+        this._ellipsoid = options?.ellipsoid ?? Ellipsoid.WGS84;
 
         this._geometryBuilder = createBuilder(this._ellipsoid);
     }
