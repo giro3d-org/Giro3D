@@ -214,10 +214,12 @@ class LayerComposer implements MemoryUsage {
         textureDataType: TextureDataType;
         /** Shows empty textures as colored rectangles */
         showEmptyTextures: boolean;
+        /** The dimensions of the extent to use for z-index computation */
+        dimensions?: Vector2;
     }) {
         this.computeMinMax = options.computeMinMax;
         this.extent = options.extent;
-        this.dimensions = this.extent ? this.extent.dimensions() : null;
+        this.dimensions = options.dimensions ?? null;
         this.images = new Map();
         this.webGLRenderer = options.renderer;
         this.transparent = options.transparent ?? false;
