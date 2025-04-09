@@ -1,0 +1,6 @@
+{
+    "extends": "./tsconfig.json",
+    // We don't want the API barrel files in our package, as they are only used
+    // to generate the API documentation.
+    "exclude": ["node_modules/**/*", "src/**/api.ts"]
+}
