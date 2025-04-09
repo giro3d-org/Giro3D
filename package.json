@@ -30,7 +30,7 @@
         "check-circular-dependencies": "madge -c --extensions ts ./src",
         "typecheck": "tsc --noEmit",
         "_check-folders": "node tasks/check-folders.mjs src test examples",
-        "_generate-type-definitions": "tsc --declaration --declarationMap --emitDeclarationOnly",
+        "_generate-type-definitions": "tsc --declaration --declarationMap --emitDeclarationOnly --project tsconfig.package.json",
         "_inline-workers": "node tasks/inline-workers.mjs build/giro3d",
         "_transpile": "shx rm -rf build/giro3d && shx mkdir -p build/giro3d && shx cp -rf src build/giro3d/src && cross-env BABEL_DISABLE_CACHE=1 babel --extensions .ts,.js src --out-dir build/giro3d",
         "build-apidoc": "node tasks/build-apidoc.mjs",
