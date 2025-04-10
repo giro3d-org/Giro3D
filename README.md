@@ -150,6 +150,27 @@ npm test
 
 Browse the [API Documentation](http://giro3d.org/apidoc/index.html) documentation or check the [examples](http://giro3d.org/examples/index.html).
 
+### Running examples locally
+
+The examples are the main way to test and develop Giro3D.
+
+To run the examples locally:
+
+```bash
+npm run start
+```
+
+Then open <localhost:8080> (or the port that was mentioned in the build log) to see the example page.
+
+To run a single example, for example the `osm` example, set the EXAMPLE environment variable to the name of the example:
+
+```bash
+EXAMPLE=osm npm run start
+```
+
+> [!note]
+> Any change in the source code (typescript or GLSL files) will automatically reload the example. Other changes, such as HTML or CSS require a manual refresh of the page.
+
 ## Contributors and sponsors
 
 Giro3D has received contributions and sponsoring from people and organizations listed in [CONTRIBUTORS.md](CONTRIBUTORS.md).
