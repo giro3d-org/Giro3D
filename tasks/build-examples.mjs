@@ -30,6 +30,7 @@ export const defaultParameters = {
     releaseName: 'next',
     mode: 'production',
     clean: true,
+    example: undefined,
 };
 
 const relativeImportRegex = /\.\.\/src/;
@@ -95,10 +96,18 @@ function readTemplate(templateFilename) {
     });
 }
 
-export function getExamplesFiles() {
+export function getExamplesFiles(parameters) {
+    const filter = name => {
+        if (parameters.example === undefined) {
+            return true;
+        }
+
+        return parameters.example === name.replace('.html', '');
+    };
+
     const htmlFiles = fse
         .readdirSync(examplesDir)
-        .filter(f => f.endsWith('.html'))
+        .filter(f => f.endsWith('.html') && filter(f))
         .map(f => path.resolve(examplesDir, f));
 
     htmlFiles.forEach(f => validateExample(f));
@@ -116,12 +125,19 @@ export function findExamples() {
         });
 }
 
-export function findExamplesEntries() {
+export function findExamplesEntries(parameters) {
     const entry = {};
+
+    if (parameters.example) {
+        log('examples', `Will build only example "${parameters.example}"`);
+    }
+
     const examples = findExamples(examplesDir);
     examples.forEach(example => {
-        const jsFile = `${example}.js`;
-        entry[example] = [path.join(examplesDir, jsFile)];
+        if (parameters.example === undefined || parameters.example === example) {
+            const jsFile = `${example}.js`;
+            entry[example] = [path.join(examplesDir, jsFile)];
+        }
     });
     return entry;
 }
@@ -305,7 +321,7 @@ function generatePackageJsonContent(parameters) {
 
 export async function getWebpackConfig(parameters) {
     log('examples', 'Generating webpack configuration...');
-    const entry = findExamplesEntries();
+    const entry = findExamplesEntries(parameters);
 
     if (!parameters.version) {
         parameters.version = await getPackageVersion();
@@ -415,7 +431,7 @@ export async function getWebpackConfig(parameters) {
                         from: 'index.js',
                         to: 'index.html',
                         transform: (content, from) => {
-                            const htmlFiles = getExamplesFiles();
+                            const htmlFiles = getExamplesFiles(parameters);
                             return generateIndex(htmlFiles, parameters);
                         },
                     },
@@ -433,7 +449,7 @@ export async function getWebpackConfig(parameters) {
         ],
     };
 
-    logOk('examples', `Found ${Object.keys(entry).length - 1} examples`);
+    logOk('examples', `Found ${Object.keys(entry).length} example(s)`);
     return webpackConfig;
 }
 
@@ -494,6 +510,7 @@ export async function serveExamples(parameters) {
  */
 if (esMain(import.meta)) {
     program
+        .argument('[example]', 'Build a specific example', defaultParameters.example)
         .option('-o, --output <directory>', 'Output directory', defaultParameters.output)
         .option('-c, --clean', 'Clean output directory', defaultParameters.clean)
         .option('--no-clean', "Don't clean")
@@ -506,9 +523,14 @@ if (esMain(import.meta)) {
         )
         .option('-w, --watch', 'Serve and watch for modifications', false);
 
-    program.parse();
+    const cmd = program.parse();
 
     const { watch, clean, ...options } = program.opts();
+
+    if (cmd.processedArgs.length > 0) {
+        options.example = cmd.processedArgs[0];
+    }
+
     const pwd = process.cwd();
     options.output = path.resolve(pwd, options.output);
 
