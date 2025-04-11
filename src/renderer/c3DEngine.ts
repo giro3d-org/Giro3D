@@ -55,7 +55,12 @@ function createRenderTarget(
  * @returns True if the options requires a custom pipeline.
  */
 function requiresCustomPipeline(options: RenderingOptions) {
-    return options.enableEDL || options.enableInpainting || options.enablePointCloudOcclusion;
+    return (
+        options.enableEDL ||
+        options.enableInpainting ||
+        options.enablePointCloudOcclusion ||
+        (options.customPasses !== undefined && options.customPasses.length > 0)
+    );
 }
 
 function createErrorMessage() {

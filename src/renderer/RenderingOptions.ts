@@ -1,3 +1,5 @@
+import type { Pass } from 'three/examples/jsm/postprocessing/Pass.js';
+
 /**
  * Exposes rendering options for the current Giro3D instance.
  *
@@ -53,6 +55,11 @@ class RenderingOptions {
      */
     enableMSAA: boolean;
 
+    /**
+     * Custom render passes to use in the render pipeline.
+     */
+    customPasses?: Pass[];
+
     constructor() {
         this.enableEDL = false;
         this.EDLStrength = 0.7;
@@ -62,6 +69,7 @@ class RenderingOptions {
         this.inpaintingDepthContribution = 0.5;
         this.enablePointCloudOcclusion = false;
         this.enableMSAA = true;
+        this.customPasses = undefined;
     }
 }
 

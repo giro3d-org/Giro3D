@@ -85,7 +85,7 @@ export default class RenderPipeline {
         this.sceneRenderTarget = null;
     }
 
-    prepareRenderTargets(width: number, height: number, samples: number) {
+    prepareRenderTargets(width: number, height: number, samples: number, customPasses?: Pass[]) {
         if (
             !this.sceneRenderTarget ||
             this.sceneRenderTarget.width !== width ||
@@ -113,6 +113,12 @@ export default class RenderPipeline {
             // After the buckets have been rendered into the render target,
             // the effect composer will render this render target to the canvas.
             this.effectComposer.addPass(new TexturePass(this.sceneRenderTarget.texture));
+
+            if (customPasses) {
+                for (const pass of customPasses) {
+                    this.effectComposer.addPass(pass);
+                }
+            }
 
             // Final pass to output to the canvas (including colorspace transformation).
             this.effectComposer.addPass(new OutputPass());
@@ -144,7 +150,12 @@ export default class RenderPipeline {
         const requiredSamples = 4; // No need for more
         const samples = options.enableMSAA ? Math.min(maxSamples, requiredSamples) : 0;
 
-        const { composer, target } = this.prepareRenderTargets(width, height, samples);
+        const { composer, target } = this.prepareRenderTargets(
+            width,
+            height,
+            samples,
+            options.customPasses,
+        );
 
         renderer.setRenderTarget(this.sceneRenderTarget);
 
