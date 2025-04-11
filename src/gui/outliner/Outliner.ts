@@ -110,7 +110,7 @@ function getType(obj: Object3D): string {
 function getName(obj: Object3D): string {
     const entity = isEntityRoot(obj);
     if (entity != null) {
-        return entity.id;
+        return entity.name ?? entity.id;
     }
     return obj.name;
 }
