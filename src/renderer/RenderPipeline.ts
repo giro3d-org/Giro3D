@@ -3,6 +3,7 @@ import { Color, DepthTexture, FloatType, NearestFilter, WebGLRenderTarget } from
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { TexturePass } from 'three/examples/jsm/postprocessing/TexturePass.js';
+import type { Pass } from 'three/examples/jsm/postprocessing/Pass.js';
 import PointCloudRenderer from './PointCloudRenderer';
 import type RenderingOptions from './RenderingOptions';
 
