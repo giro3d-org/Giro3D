@@ -1,4 +1,5 @@
 import {
+    Vector2,
     Vector3,
     CubeTextureLoader,
     DirectionalLight,
@@ -8,6 +9,8 @@ import {
     MathUtils,
     DoubleSide,
 } from 'three';
+import { Pass } from 'three/examples/jsm/postprocessing/Pass.js';
+import { DotScreenPass } from 'three/examples/jsm/postprocessing/DotScreenPass.js';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import GeoJSON from 'ol/format/GeoJSON.js';
@@ -25,6 +28,7 @@ import Giro3dMap from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
 import FeatureCollection from '@giro3d/giro3d/entities/FeatureCollection.js';
+import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
@@ -44,6 +48,18 @@ const instance = new Instance({
     crs: 'EPSG:2154',
     backgroundColor: SKY_COLOR,
 });
+
+function initPass() {
+    // const pass = new DotScreenPass(new Vector2(0, 0), 0.1, 80);
+    instance.engine._renderPipeline.effectComposer.addPass(pass);
+    instance.removeEventListener('after-render', initPass);
+}
+const pass = new BokehPass(instance.scene, instance.view.camera, {
+    focus: 50,
+    aperture: 0.05 * 0.00001,
+    maxblur: 0.05,
+});
+instance.engine.renderingOptions.customPasses = [pass];
 
 const extent = new Extent('EPSG:2154', -111629.52, 1275028.84, 5976033.79, 7230161.64);
 
