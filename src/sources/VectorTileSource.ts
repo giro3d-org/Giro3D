@@ -465,6 +465,11 @@ class VectorTileSource extends ImageSource {
         return requests;
     }
 
+    override update(): void {
+        this.source.refresh();
+        super.update();
+    }
+
     getImages(options: GetImageOptions): Array<ImageResponse> {
         const { extent, width } = options;
 

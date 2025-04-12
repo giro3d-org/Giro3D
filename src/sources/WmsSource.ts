@@ -71,4 +71,13 @@ export default class WmsSource extends TiledImageSource {
             }),
         });
     }
+
+    /**
+     * Sets the `TIME` parameter of the tile requests, and refreshes the source.
+     * If `date` is undefined, temporal requests are disabled.
+     */
+    setTime(date?: Date) {
+        (this.source as TileWMS).updateParams({ TIME: date?.toISOString() });
+        this.update();
+    }
 }

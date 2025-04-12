@@ -1986,7 +1986,9 @@ class Map<UserData extends EntityUserData = EntityUserData>
             return null;
         }
 
-        const origin = new Vector3(target.x, target.y, distance);
+        // To avoid a perfectly vertical camera axis that would cause a gimbal lock.
+        const VERTICAL_OFFSET = 0.01;
+        const origin = new Vector3(target.x, target.y - VERTICAL_OFFSET, distance);
 
         this.object3d.updateMatrixWorld(true);
         origin.applyMatrix4(this.object3d.matrixWorld);
