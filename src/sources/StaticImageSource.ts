@@ -128,6 +128,11 @@ export default class StaticImageSource extends ImageSource<StaticImageSourceEven
         return { extent: requestExtent, width: requestWidth, height: requestHeight };
     }
 
+    override update(): void {
+        this._promise = undefined;
+        super.update();
+    }
+
     private async loadImage(): Promise<ImageResult> {
         if (this._promise == null) {
             this._promise = this.loadImageOnce();
