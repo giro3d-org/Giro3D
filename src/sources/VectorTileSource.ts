@@ -284,15 +284,17 @@ class VectorTileSource extends ImageSource {
             ctx.fillRect(0, 0, width, height);
         }
 
-        const tileExtent = tileGrid.getTileCoordExtent(tileCoord);
-        const pixelScale = pixelRatio / resolution;
-        const transform = resetTransform(tmpTransform);
-        scaleTransform(transform, pixelScale, -pixelScale);
-        translateTransform(transform, -tileExtent[0], -tileExtent[3]);
-        const executorGroups = tile.executorGroups[this._olUID];
-        for (let i = 0, ii = executorGroups.length; i < ii; ++i) {
-            const executorGroup = executorGroups[i];
-            executorGroup.execute(ctx, [width, height], transform, 0, true);
+        if (tile.getState() === TileState.LOADED) {
+            const tileExtent = tileGrid.getTileCoordExtent(tileCoord);
+            const pixelScale = pixelRatio / resolution;
+            const transform = resetTransform(tmpTransform);
+            scaleTransform(transform, pixelScale, -pixelScale);
+            translateTransform(transform, -tileExtent[0], -tileExtent[3]);
+            const executorGroups = tile.executorGroups[this._olUID];
+            for (let i = 0, ii = executorGroups.length; i < ii; ++i) {
+                const executorGroup = executorGroups[i];
+                executorGroup.execute(ctx, [width, height], transform, 0, true);
+            }
         }
 
         ctx.restore();
@@ -301,7 +303,9 @@ class VectorTileSource extends ImageSource {
     }
 
     private rasterizeTile(tile: VectorRenderTile) {
-        this.createBuilderGroup(tile);
+        if (tile.getState() === TileState.LOADED) {
+            this.createBuilderGroup(tile);
+        }
 
         const canvas = this.rasterize(tile);
         const texture = new CanvasTexture(canvas);
@@ -327,10 +331,11 @@ class VectorTileSource extends ImageSource {
         const sourceTiles = source.getSourceTiles(pixelRatio, sourceProjection, tile);
         for (let t = 0, tt = sourceTiles.length; t < tt; ++t) {
             const sourceTile = sourceTiles[t];
+
             if (sourceTile.getState() !== TileState.LOADED) {
-                console.warn('not loaded !!!', sourceTile);
                 continue;
             }
+
             const sourceTileCoord = sourceTile.getTileCoord();
             const sourceTileExtent = sourceTileGrid.getTileCoordExtent(sourceTileCoord);
             const sharedExtent = getIntersection(tileExtent, sourceTileExtent);
