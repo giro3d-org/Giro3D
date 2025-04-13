@@ -260,19 +260,19 @@ class VectorTileSource extends ImageSource {
     private rasterize(tile: VectorRenderTile) {
         const tileCoord = tile.getTileCoord();
 
-        const width = 512;
-        const height = 512;
-        const canvas = createCanvas(width, height);
         const pixelRatio = 1;
+        const z = tileCoord[0];
+        const source = this.source;
+        const [width, height] = source.getTilePixelSize(z, pixelRatio, this._sourceProjection);
+        const tileGrid = source.getTileGridForProjection(this._sourceProjection);
+        const resolution = tileGrid.getResolution(z);
+
+        const canvas = createCanvas(width, height);
         // @ts-expect-error this is not assignable to getReplayState()
         const replayState = tile.getReplayState(this);
         const revision = 1;
         replayState.renderedTileRevision = revision;
 
-        const z = tileCoord[0];
-        const source = this.source;
-        const tileGrid = source.getTileGridForProjection(this._sourceProjection);
-        const resolution = tileGrid.getResolution(z);
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
         if (!ctx) {
