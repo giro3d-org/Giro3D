@@ -85,6 +85,7 @@ instance.add(panorama);
 - add `Globe` entity (#424)
 - add `SphericalPanorama` entity (#504)
 - add `Atmosphere`, `SkyDome` and `Glow` entities
+- add support for temporal WMS layers (WMS-T)
 - **Ellipsoid**: add `Ellipsoid` class
 - **Extent**: add `contains()` method
 - **Extent**: add `sampleUV()` method
@@ -99,6 +100,7 @@ instance.add(panorama);
 ### Fix
 
 - **COPCSource|LASSource**: retrieve CRS name instead of authority code (#582)
+- **Layer**: avoid flickering when source is refreshed
 - **Layer**: apply default texture to node every time it is processed
 - **LayerComposer**: don't render empty textures
 - **LayerComposer**: improve computeRenderOrder()

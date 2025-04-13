@@ -260,19 +260,19 @@ class VectorTileSource extends ImageSource {
     private rasterize(tile: VectorRenderTile) {
         const tileCoord = tile.getTileCoord();
 
-        const width = 512;
-        const height = 512;
-        const canvas = createCanvas(width, height);
         const pixelRatio = 1;
+        const z = tileCoord[0];
+        const source = this.source;
+        const [width, height] = source.getTilePixelSize(z, pixelRatio, this._sourceProjection);
+        const tileGrid = source.getTileGridForProjection(this._sourceProjection);
+        const resolution = tileGrid.getResolution(z);
+
+        const canvas = createCanvas(width, height);
         // @ts-expect-error this is not assignable to getReplayState()
         const replayState = tile.getReplayState(this);
         const revision = 1;
         replayState.renderedTileRevision = revision;
 
-        const z = tileCoord[0];
-        const source = this.source;
-        const tileGrid = source.getTileGridForProjection(this._sourceProjection);
-        const resolution = tileGrid.getResolution(z);
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
         if (!ctx) {
@@ -284,15 +284,17 @@ class VectorTileSource extends ImageSource {
             ctx.fillRect(0, 0, width, height);
         }
 
-        const tileExtent = tileGrid.getTileCoordExtent(tileCoord);
-        const pixelScale = pixelRatio / resolution;
-        const transform = resetTransform(tmpTransform);
-        scaleTransform(transform, pixelScale, -pixelScale);
-        translateTransform(transform, -tileExtent[0], -tileExtent[3]);
-        const executorGroups = tile.executorGroups[this._olUID];
-        for (let i = 0, ii = executorGroups.length; i < ii; ++i) {
-            const executorGroup = executorGroups[i];
-            executorGroup.execute(ctx, [width, height], transform, 0, true);
+        if (tile.getState() === TileState.LOADED) {
+            const tileExtent = tileGrid.getTileCoordExtent(tileCoord);
+            const pixelScale = pixelRatio / resolution;
+            const transform = resetTransform(tmpTransform);
+            scaleTransform(transform, pixelScale, -pixelScale);
+            translateTransform(transform, -tileExtent[0], -tileExtent[3]);
+            const executorGroups = tile.executorGroups[this._olUID];
+            for (let i = 0, ii = executorGroups.length; i < ii; ++i) {
+                const executorGroup = executorGroups[i];
+                executorGroup.execute(ctx, [width, height], transform, 0, true);
+            }
         }
 
         ctx.restore();
@@ -301,7 +303,9 @@ class VectorTileSource extends ImageSource {
     }
 
     private rasterizeTile(tile: VectorRenderTile) {
-        this.createBuilderGroup(tile);
+        if (tile.getState() === TileState.LOADED) {
+            this.createBuilderGroup(tile);
+        }
 
         const canvas = this.rasterize(tile);
         const texture = new CanvasTexture(canvas);
@@ -327,10 +331,11 @@ class VectorTileSource extends ImageSource {
         const sourceTiles = source.getSourceTiles(pixelRatio, sourceProjection, tile);
         for (let t = 0, tt = sourceTiles.length; t < tt; ++t) {
             const sourceTile = sourceTiles[t];
+
             if (sourceTile.getState() !== TileState.LOADED) {
-                console.warn('not loaded !!!', sourceTile);
                 continue;
             }
+
             const sourceTileCoord = sourceTile.getTileCoord();
             const sourceTileExtent = sourceTileGrid.getTileCoordExtent(sourceTileCoord);
             const sharedExtent = getIntersection(tileExtent, sourceTileExtent);
@@ -463,6 +468,11 @@ class VectorTileSource extends ImageSource {
         });
 
         return requests;
+    }
+
+    override update(): void {
+        this.source.refresh();
+        super.update();
     }
 
     getImages(options: GetImageOptions): Array<ImageResponse> {

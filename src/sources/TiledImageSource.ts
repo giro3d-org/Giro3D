@@ -395,6 +395,11 @@ export default class TiledImageSource extends ImageSource {
         return convertedExtent.intersectsExtent(this._sourceExtent);
     }
 
+    override update(): void {
+        this.source.refresh();
+        super.update();
+    }
+
     /**
      * Loads all tiles in the specified tile range.
      *

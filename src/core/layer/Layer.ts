@@ -135,6 +135,7 @@ export class Target implements MemoryUsage {
     imageIds: Set<string>;
     controller: AbortController;
     state: TargetState;
+    textureIsFinal: boolean;
     geometryExtent: Extent;
     paintCount = 0;
     private _disposed = false;
@@ -167,6 +168,7 @@ export class Target implements MemoryUsage {
         this.imageIds = new Set();
         this.controller = new AbortController();
         this.state = TargetState.Pending;
+        this.textureIsFinal = false;
 
         this._onVisibilityChanged = this.onVisibilityChanged.bind(this);
 
@@ -1063,7 +1065,14 @@ abstract class Layer<
             // If the source is not synchronous, we need a default texture
             // to avoid seeing a blank texture on the tile.
             if (!this.source.synchronous) {
-                this.applyDefaultTexture(target);
+                // The only exception is when the texture on the target is final (e.g not a temporary texture).
+                // We want to keep it as is and simply replace with another final texture.
+                // This happens when the source is updated (e.g a temporal source has new data).
+                // In that case we want to avoid applying a blank texture and create a very
+                // nasty flickering effect.
+                if (!target.textureIsFinal) {
+                    this.applyDefaultTexture(target);
+                }
             }
 
             if (!this.canFetchImages(target)) {
@@ -1126,6 +1135,8 @@ abstract class Layer<
             target: nonNull(target.renderTarget),
             imageIds: target.imageIds,
         });
+
+        target.textureIsFinal = isLastRender;
 
         if (isLastRender) {
             target.state = TargetState.Complete;
