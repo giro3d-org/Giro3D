@@ -106,7 +106,7 @@ describe('readCrsFromWkt', () => {
         expect(parsedCrs!.srid).toEqual('EPSG:2154');
     });
 
-    it('should return correct CRS name for WKT without authority', () => {
+    it('should return correct CRS name for COMPD_CS WKT without authority', () => {
         const wkt = `
         COMPD_CS["Compound CRS NAD83(2011) / UTM zone 14N + NAVD88 height",
             PROJCS["NAD83(2011) / UTM zone 14N",
@@ -139,6 +139,35 @@ describe('readCrsFromWkt', () => {
         const parsedCrs = ProjUtils.readCrsFromWkt(wkt);
         expect(parsedCrs).toBeDefined();
         expect(parsedCrs!.name).toEqual('NAD83(2011) / UTM zone 14N');
+        expect(parsedCrs!.srid).toBeUndefined();
+    });
+
+    it('should return correct CRS name for PROJCS WKT without authority', () => {
+        const wkt = `PROJCS["Projected CRS NAD83(2011) / Tennessee (ftUS) with ellipsoidal NAD83(2011) height demoted to 2D",
+    GEOGCS["NAD83(2011)",
+        DATUM["NAD83_National_Spatial_Reference_System_2011",
+            SPHEROID["GRS 1980",6378137,298.257222101],
+            AUTHORITY["EPSG","1116"]],
+        PRIMEM["Greenwich",0,
+            AUTHORITY["EPSG","8901"]],
+        UNIT["degree",0.0174532925199433,
+            AUTHORITY["EPSG","9122"]]],
+    PROJECTION["Lambert_Conformal_Conic_2SP"],
+    PARAMETER["latitude_of_origin",34.3333333333333],
+    PARAMETER["central_meridian",-86],
+    PARAMETER["standard_parallel_1",36.4166666666667],
+    PARAMETER["standard_parallel_2",35.25],
+    PARAMETER["false_easting",1968500],
+    PARAMETER["false_northing",0],
+    UNIT["US survey foot",0.304800609601219],
+    AXIS["Easting",EAST],
+    AXIS["Northing",NORTH]]`;
+
+        const parsedCrs = ProjUtils.readCrsFromWkt(wkt);
+        expect(parsedCrs).toBeDefined();
+        expect(parsedCrs!.name).toEqual(
+            'Projected CRS NAD83(2011) / Tennessee (ftUS) with ellipsoidal NAD83(2011) height demoted to 2D',
+        );
         expect(parsedCrs!.srid).toBeUndefined();
     });
 
