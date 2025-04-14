@@ -87,6 +87,7 @@ instance.add(panorama);
 - add `Atmosphere`, `SkyDome` and `Glow` entities
 - add support for temporal WMS layers (WMS-T)
 - **Ellipsoid**: add `Ellipsoid` class
+- **Layer**: add `dispose` event
 - **Extent**: add `contains()` method
 - **Extent**: add `sampleUV()` method
 - **Extent**: add equirectangular projection and photo-sphere utility methods
