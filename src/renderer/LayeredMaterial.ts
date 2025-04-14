@@ -367,6 +367,8 @@ type Uniforms = ThreeUniforms & {
     farDistance: IUniform<number>;
 
     // Skirts related uniforms
+    // The skirt elevation, in CRS units (might be negative)
+    skirtElevation: IUniform<number>;
     // The start and end index of vertices located at the bottom of the skirt
     skirtVertexRange: IUniform<Vector2>;
 } & Record<string, IUniform>;
@@ -569,6 +571,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
             }),
 
             skirtVertexRange: new Uniform(new Vector2(0, 0)),
+            skirtElevation: new Uniform(0),
         };
 
         this.uniformsNeedUpdate = true;

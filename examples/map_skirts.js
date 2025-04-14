@@ -1,9 +1,8 @@
-import { AmbientLight, DirectionalLight } from 'three';
+import { AmbientLight, Color, DirectionalLight } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import XYZ from 'ol/source/XYZ.js';
 
-import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
@@ -16,6 +15,8 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { bindNumberInput } from './widgets/bindNumberInput.js';
+import { bindColorPicker } from './widgets/bindColorPicker.js';
 
 // Chamonix Mont-Blanc coordinates
 const poi = new Coordinates('EPSG:4326', 6.8697, 45.9231).as('EPSG:3857').toVector3();
@@ -34,6 +35,9 @@ const instance = new Instance({
     backgroundColor: null,
 });
 
+let skirtDepth = 0;
+let skirtColor = new Color('#faf0e6');
+
 const center = extent.centerAsVector3();
 
 const directionalLight = new DirectionalLight('white', 3);
@@ -49,26 +53,7 @@ instance.add(ambientLight);
 directionalLight.updateMatrixWorld(true);
 directionalLight.target.updateMatrixWorld(true);
 
-const map = new Map({
-    extent,
-    lighting: {
-        enabled: true,
-        mode: MapLightingMode.LightBased,
-        elevationLayersOnly: true,
-    },
-    subdivisionThreshold: 1,
-    terrain: {
-        segments: 64,
-        enabled: true,
-        skirts: {
-            enabled: true,
-            depth: 0,
-        },
-    },
-    backgroundColor: 'beige',
-});
-
-instance.add(map);
+let map;
 
 const key =
     'pk.eyJ1IjoidG11Z3VldCIsImEiOiJjbGJ4dTNkOW0wYWx4M25ybWZ5YnpicHV6In0.KhDJ7W5N3d1z3ArrsDjX_A';
@@ -88,7 +73,6 @@ const elevationLayer = new ElevationLayer({
         }),
     }),
 });
-map.addLayer(elevationLayer);
 
 // Adds a XYZ color layer with MapBox satellite tileset
 const satelliteLayer = new ColorLayer({
@@ -103,7 +87,34 @@ const satelliteLayer = new ColorLayer({
         }),
     }),
 });
-map.addLayer(satelliteLayer);
+
+function load() {
+    map = new Map({
+        extent,
+        lighting: {
+            enabled: true,
+            mode: MapLightingMode.LightBased,
+            elevationLayersOnly: true,
+        },
+        subdivisionThreshold: 1,
+        terrain: {
+            segments: 64,
+            enabled: true,
+            skirts: {
+                enabled: true,
+                depth: skirtDepth,
+            },
+        },
+        backgroundColor: skirtColor,
+    });
+
+    instance.add(map);
+
+    map.addLayer(elevationLayer);
+    map.addLayer(satelliteLayer);
+}
+
+load();
 
 const controls = new MapControls(instance.view.camera, instance.domElement);
 
@@ -115,3 +126,19 @@ instance.view.setControls(controls);
 Inspector.attach('inspector', instance);
 
 StatusBar.bind(instance);
+
+bindNumberInput('skirt-depth', v => {
+    skirtDepth = v;
+    if (map) {
+        instance.remove(map);
+    }
+    load();
+});
+
+bindColorPicker('color', newColor => {
+    skirtColor = new Color(newColor);
+    if (map) {
+        instance.remove(map);
+    }
+    load();
+});

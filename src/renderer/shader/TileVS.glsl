@@ -16,6 +16,7 @@ varying vec3        vWorldNormal; // World space normal
 varying vec3        vViewPosition;
 
 #if defined(ENABLE_SKIRTS)
+uniform float       skirtElevation;
 varying float       vIsSkirtVertex;
 #endif
 
