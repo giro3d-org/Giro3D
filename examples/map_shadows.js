@@ -75,7 +75,9 @@ const map = new Map({
         mode: MapLightingMode.LightBased,
     },
     discardNoData: true,
-    segments: 64,
+    terrain: {
+        segments: 64,
+    },
     subdivisionThreshold: 1,
     backgroundColor: '#c0bfbc',
 });
