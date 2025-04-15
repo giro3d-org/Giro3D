@@ -364,7 +364,7 @@ export class Vector2Array<Buffer extends TypedArray = TypedArray> extends Vector
         return target.set(this.getX(index), this.getY(index));
     }
 
-    clone() {
+    clone(): Vector2Array {
         return new Vector2Array(this._array.slice(0));
     }
 
@@ -404,8 +404,12 @@ export class Vector3Array<Buffer extends TypedArray = TypedArray> extends Vector
         return target.set(this.getX(index), this.getY(index), nonNull(this.getZ(index)));
     }
 
-    clone() {
+    clone(): Vector3Array {
         return new Vector3Array(this._array.slice(0));
+    }
+
+    override getZ(index: number): number {
+        return super.getZ(index) as number;
     }
 
     protected getTempVector(): Vector3 {
@@ -450,7 +454,15 @@ export class Vector4Array<Buffer extends TypedArray = TypedArray> extends Vector
         );
     }
 
-    clone() {
+    override getZ(index: number): number {
+        return super.getZ(index) as number;
+    }
+
+    override getW(index: number): number {
+        return super.getW(index) as number;
+    }
+
+    clone(): Vector4Array {
         return new Vector4Array(this._array.slice(0));
     }
 
