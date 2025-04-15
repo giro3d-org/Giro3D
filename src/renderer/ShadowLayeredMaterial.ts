@@ -1,0 +1,56 @@
+import LayeredMaterial from './LayeredMaterial';
+import MaterialUtils from './MaterialUtils';
+
+export type ShadowMode = 'distance' | 'depth';
+
+type ConstructorParams = ConstructorParameters<typeof LayeredMaterial>[0] & {
+    source: LayeredMaterial;
+    shadowMode: ShadowMode;
+};
+
+export default class ShadowLayeredMaterial extends LayeredMaterial {
+    private readonly _shadowMode: ShadowMode;
+    private readonly _source: LayeredMaterial;
+    readonly isMeshDistanceMaterial: boolean;
+    readonly isMeshDepthMaterial: boolean;
+
+    constructor(opts: ConstructorParams) {
+        super(opts);
+
+        this._source = opts.source;
+        this._shadowMode = opts.shadowMode;
+        this.isMeshDistanceMaterial = opts.shadowMode === 'distance';
+        this.isMeshDepthMaterial = !this.isMeshDistanceMaterial;
+        this.transparent = false;
+        this.opacity = 1;
+
+        MaterialUtils.setDefine(this, 'COLOR_RENDER', false);
+        MaterialUtils.setDefine(this, 'STITCHING', false);
+
+        switch (this._shadowMode) {
+            case 'distance':
+                MaterialUtils.setDefine(this, 'DISTANCE_RENDER', true);
+                break;
+            case 'depth':
+                MaterialUtils.setDefine(this, 'DEPTH_RENDER', true);
+                break;
+        }
+    }
+
+    private copyElevationParameters() {
+        const layer = this._source.getElevationLayer();
+        if (layer) {
+            const texture = this._source.getElevationTexture();
+            if (texture) {
+                const offsetScale = this._source.getElevationOffsetScale();
+                this.setElevationTexture(layer, { texture, pitch: offsetScale }, true);
+            }
+        } else {
+            this.removeElevationLayer();
+        }
+    }
+
+    override onBeforeRender(): void {
+        this.copyElevationParameters();
+    }
+}

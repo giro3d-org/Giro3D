@@ -152,7 +152,7 @@ type ColorMapUniform = {
     lut: Texture;
 };
 
-interface Uniforms {
+type Uniforms = {
     opacity: IUniform<number>;
     brightnessContrastSaturation: IUniform<Vector3>;
     size: IUniform<number>;
@@ -177,7 +177,7 @@ interface Uniforms {
     fogNear: IUniform<number>;
     fogFar: IUniform<number>;
     fogColor: IUniform<Color>;
-}
+} & Record<string, IUniform>;
 
 export type Defines = {
     NORMAL?: 1;
@@ -211,7 +211,6 @@ class PointCloudMaterial extends ShaderMaterial {
     /**
      * @internal
      */
-    // @ts-expect-error property is not assignable.
     override readonly uniforms: Uniforms;
 
     /**
