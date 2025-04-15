@@ -6,12 +6,9 @@ import {
     BasicShadowMap,
     BoxGeometry,
     CameraHelper,
-    Clock,
     Color,
     DirectionalLight,
     DirectionalLightHelper,
-    Group,
-    MathUtils,
     Mesh,
     MeshStandardMaterial,
     PointLight,
@@ -544,7 +541,7 @@ const reset = () => {
     setEnableShadows(true);
     setShadowMapType(VSMShadowMap);
     setShadowVolumeSize(EXTENT_SIZE);
-    setShadowMapResolution(4096);
+    setShadowMapResolution(2048);
     setShadowMapBias(-0.0001);
     setShadowMapNormalBias(0);
     setShadowVolumeNear(50000);
