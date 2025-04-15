@@ -64,6 +64,7 @@ import LayeredMaterial, {
     type MaterialOptions,
 } from '../renderer/LayeredMaterial';
 import type RenderingState from '../renderer/RenderingState';
+import ShadowLayeredMaterial from '../renderer/ShadowLayeredMaterial';
 import { computeDistanceToFitSphere, computeZoomToFitSphere } from '../renderer/View';
 import { isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
 import TextureGenerator from '../utils/TextureGenerator';
@@ -1028,7 +1029,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     ): TileMesh {
         const textureSize = this.getTextureSize(extent);
 
-        const material = new LayeredMaterial({
+        const materialOptions = {
             renderer: this.instance.renderer,
             options: this._materialOptions,
             textureSize,
@@ -1039,11 +1040,25 @@ class Map<UserData extends EntityUserData = EntityUserData>
             hasElevationLayer: this._hasElevationLayer,
             maxTextureImageUnits: Capabilities.getMaxTextureUnitsCount(),
             isGlobe: this.isEllipsoidal,
+        };
+
+        const material = new LayeredMaterial(materialOptions);
+        const depthMaterial = new ShadowLayeredMaterial({
+            ...materialOptions,
+            source: material,
+            shadowMode: 'depth',
+        });
+        const distanceMaterial = new ShadowLayeredMaterial({
+            ...materialOptions,
+            source: material,
+            shadowMode: 'distance',
         });
 
         const tile = new TileMesh({
             renderer: this.instance.renderer,
             material,
+            depthMaterial,
+            distanceMaterial,
             extent,
             textureSize,
             segments: this.segments,
