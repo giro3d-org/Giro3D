@@ -1,5 +1,4 @@
 import {
-    FrontSide,
     Group,
     MathUtils,
     Matrix4,
@@ -17,7 +16,6 @@ import {
     type Object3D,
     type Object3DEventMap,
     type Raycaster,
-    type Side,
     type Texture,
     type WebGLRenderer,
     type WebGLRenderTarget,
@@ -42,6 +40,7 @@ import type { MaterialOptions } from '../../renderer/LayeredMaterial';
 import MaterialUtils from '../../renderer/MaterialUtils';
 import MemoryTracker from '../../renderer/MemoryTracker';
 import type RenderingState from '../../renderer/RenderingState';
+import type ShadowLayeredMaterial from '../../renderer/ShadowLayeredMaterial';
 import type View from '../../renderer/View';
 import { isPerspectiveCamera } from '../../utils/predicates';
 import type TileCoordinate from './TileCoordinate';
@@ -84,6 +83,9 @@ class TileMesh
     readonly extent: Extent;
     readonly textureSize: Vector2;
 
+    override customDepthMaterial: ShadowLayeredMaterial;
+    override customDistanceMaterial: ShadowLayeredMaterial;
+
     readonly coordinate: TileCoordinate;
 
     private readonly _extentDimensions: Vector2;
@@ -92,7 +94,6 @@ class TileMesh
     private readonly _renderer: WebGLRenderer;
     private readonly _onElevationChanged: (tile: this) => void;
 
-    private _materialSide: Side = FrontSide;
     private _heightMap: UniqueOwner<HeightMap, this> | null = null;
     private _enableTerrainDeformation: boolean;
 
@@ -175,6 +176,8 @@ class TileMesh
         volume: TileVolume;
         /** The tile material. */
         material: LayeredMaterial;
+        depthMaterial: ShadowLayeredMaterial;
+        distanceMaterial: ShadowLayeredMaterial;
         /** The tile extent. */
         extent: Extent;
         /** The subdivisions. */
@@ -208,6 +211,9 @@ class TileMesh
         this.textureSize = params.textureSize;
         this._enableTerrainDeformation = params.enableTerrainDeformation;
 
+        this.customDepthMaterial = params.depthMaterial;
+        this.customDistanceMaterial = params.distanceMaterial;
+
         if (!this.geometry.boundingBox) {
             this.geometry.computeBoundingBox();
         }
@@ -234,19 +240,31 @@ class TileMesh
         this.updateSkirtParameters();
     }
 
+    override onBeforeShadow(): void {
+        this.customDepthMaterial.onBeforeRender();
+        this.customDistanceMaterial.onBeforeRender();
+    }
+
     private updateSkirtParameters() {
-        if (this._skirtDepth != null) {
-            MaterialUtils.setDefine(this.material, 'ENABLE_SKIRTS', true);
-            const vertexCount = this.geometry.vertexCount;
-            const rowSize = this.segments + 1;
-            const firstSkirtVertex = rowSize * rowSize;
-            const lastSkirtVertex = vertexCount - 1;
-            this.material.uniforms.skirtVertexRange.value = new Vector2(
-                firstSkirtVertex,
-                lastSkirtVertex,
-            );
+        const skirtDepth = this._skirtDepth;
+
+        if (skirtDepth != null) {
+            this.forEachMaterial(material => {
+                MaterialUtils.setDefine(material, 'ENABLE_SKIRTS', true);
+                const vertexCount = this.geometry.vertexCount;
+                const rowSize = this.segments + 1;
+                const firstSkirtVertex = rowSize * rowSize;
+                const lastSkirtVertex = vertexCount - 1;
+                material.uniforms.skirtVertexRange.value = new Vector2(
+                    firstSkirtVertex,
+                    lastSkirtVertex,
+                );
+                material.uniforms.skirtElevation.value = skirtDepth;
+            });
         } else {
-            MaterialUtils.setDefine(this.material, 'ENABLE_SKIRTS', false);
+            this.forEachMaterial(material => {
+                MaterialUtils.setDefine(material, 'ENABLE_SKIRTS', false);
+            });
         }
     }
 
@@ -289,7 +307,7 @@ class TileMesh
     set segments(v) {
         if (this._segments !== v) {
             this._segments = v;
-            this.material.segments = v;
+            this.forEachMaterial(material => (material.segments = v));
             this.createGeometry();
             this._shouldUpdateHeightMap = true;
         }
@@ -382,57 +400,6 @@ class TileMesh
         }
     }
 
-    private saveMaterialProperties() {
-        // Some shadow map rendering forces backside on the material. Since we are not using
-        // a distinct material for shadows, we need to reset the side to the correct value after
-        // shadows are rendered.
-        this._materialSide = this.material.side;
-    }
-
-    private restoreMaterialProperties() {
-        // Reset shadow map specific defines
-        this.material.isMeshDistanceMaterial = false;
-
-        MaterialUtils.setDefine(this.material, 'DEPTH_RENDER', false);
-        MaterialUtils.setDefine(this.material, 'DISTANCE_RENDER', false);
-
-        MaterialUtils.setDefine(this.material, 'COLOR_RENDER', true);
-
-        this.material.side = this._materialSide;
-    }
-
-    // @ts-expect-error customDepthMaterial is supposed to be a property
-    get customDepthMaterial() {
-        this.saveMaterialProperties();
-
-        // Instead of using a different material, which would have to be synchronized with
-        // the main material, we simply use the main material and set it to depth render.
-        MaterialUtils.setDefine(this.material, 'COLOR_RENDER', false);
-        MaterialUtils.setDefine(this.material, 'DEPTH_RENDER', true);
-        this.material.onBeforeRender();
-
-        return this.material;
-    }
-
-    // @ts-expect-error customDistanceMaterial is supposed to be a property
-    get customDistanceMaterial() {
-        this.saveMaterialProperties();
-
-        this.material.isMeshDistanceMaterial = true;
-
-        // Instead of using a different material, which would have to be synchronized with
-        // the main material, we simply use the main material and set it to distance render.
-        MaterialUtils.setDefine(this.material, 'COLOR_RENDER', false);
-        MaterialUtils.setDefine(this.material, 'DISTANCE_RENDER', true);
-        this.material.onBeforeRender();
-
-        return this.material;
-    }
-
-    override onAfterShadow(): void {
-        this.restoreMaterialProperties();
-    }
-
     private updateHeightMapIfNecessary(): void {
         if (this._shouldUpdateHeightMap) {
             this._shouldUpdateHeightMap = false;
@@ -468,7 +435,9 @@ class TileMesh
         const offsetScale = this.extent.offsetToParent(neighbour.extent);
         const nOffsetScale = neighbourOffsetScale.combine(offsetScale);
 
-        this.material.updateNeighbour(location, diff, nOffsetScale, neighbourTexture);
+        this.forEachMaterial(material => {
+            material.updateNeighbour(location, diff, nOffsetScale, neighbourTexture);
+        });
     }
 
     /**
@@ -480,7 +449,9 @@ class TileMesh
             if (neighbour != null && neighbour.material != null && neighbour.material.visible) {
                 this.processNeighbour(neighbour, i);
             } else {
-                this.material.updateNeighbour(i, NO_NEIGHBOUR, NO_OFFSET_SCALE, null);
+                this.forEachMaterial(material =>
+                    material.updateNeighbour(i, NO_NEIGHBOUR, NO_OFFSET_SCALE, null),
+                );
             }
         }
     }
@@ -830,13 +801,20 @@ class TileMesh
         return tile.findCommonAncestor(this) === this;
     }
 
+    private forEachMaterial(callbackFn: (material: LayeredMaterial) => void) {
+        callbackFn(this.material);
+        callbackFn(this.customDepthMaterial);
+        callbackFn(this.customDistanceMaterial);
+    }
+
     dispose() {
         if (this.disposed) {
             return;
         }
         this.disposed = true;
         this.dispatchEvent({ type: 'dispose' });
-        this.material.dispose();
+
+        this.forEachMaterial(m => m.dispose());
         this.geometry.dispose();
     }
 }

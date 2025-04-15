@@ -6,25 +6,25 @@ import XYZ from 'ol/source/XYZ.js';
 import { Fill, Style } from 'ol/style.js';
 
 import GlobeControls from '@giro3d/giro3d/controls/GlobeControls.js';
+import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
 import Ellipsoid from '@giro3d/giro3d/core/geographic/Ellipsoid.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Sun from '@giro3d/giro3d/core/geographic/Sun.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import BlendingMode from '@giro3d/giro3d/core/layer/BlendingMode.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
-import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Atmosphere from '@giro3d/giro3d/entities/Atmosphere.js';
-import Glow from '@giro3d/giro3d/entities/Glow.js';
 import Globe from '@giro3d/giro3d/entities/Globe.js';
+import Glow from '@giro3d/giro3d/entities/Glow.js';
+import SphericalPanorama from '@giro3d/giro3d/entities/SphericalPanorama.js';
 import MapboxTerrainFormat from '@giro3d/giro3d/formats/MapboxTerrainFormat.js';
-import GlobeControlsInspector from '@giro3d/giro3d/gui/GlobeControlsInspector.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';
 import StaticImageSource from '@giro3d/giro3d/sources/StaticImageSource.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
-import SphericalPanorama from '@giro3d/giro3d/entities/SphericalPanorama.js';
+import GlobeControlsInspector from '@giro3d/giro3d/gui/GlobeControlsInspector.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
@@ -319,9 +319,19 @@ const defaultCameraPosition = new Vector3(35_785_000 + Ellipsoid.WGS84.semiMajor
 instance.view.camera.position.copy(defaultCameraPosition);
 instance.view.camera.lookAt(new Vector3(0, 0, 0));
 
-const controls = new GlobeControls({ instance });
+/** @type {GlobeControls} */
+let controls;
 
-instance.view.setControls(controls);
+const updateControls = () => {
+    if (controls) {
+        controls.update();
+        instance.notifyChange();
+    }
+
+    requestAnimationFrame(updateControls);
+};
+
+updateControls();
 
 /////////////////////////////// Example GUI bindings ///////////////////////////////////////////
 
@@ -354,12 +364,6 @@ function update() {
     const { x, y, z } = instance.view.camera.position;
     let altitude = globe.ellipsoid.toGeodetic(x, y, z).altitude;
     altitude = MathUtils.clamp(altitude, 2, +Infinity);
-
-    controls.minDistance = globe.ellipsoid.semiMajorAxis;
-    controls.maxDistance = globe.ellipsoid.semiMajorAxis * 6;
-
-    instance.view.minNearPlane = altitude < 100_000 ? 10 : altitude / 5;
-    instance.view.maxFarPlane = 1_000_000_000;
 
     // Let's adjust the graticule step and thickness so that
     // it more or less always look the same when altitude changes.
@@ -538,20 +542,30 @@ const [setSunIntensity] = bindSlider('sunIntensity', intensity => {
 const [setGlobe] = bindDropDown('globe-selector', globe => {
     allGlobes.forEach(g => (g.visible = false));
 
+    let entity;
+
     switch (globe) {
         case 'moon':
             moon.visible = true;
+            entity = moon;
             break;
         case 'sun':
             sun.visible = true;
+            entity = sun;
             break;
         case 'earth':
             earth.visible = true;
+            entity = earth;
             break;
         case 'mars':
             mars.visible = true;
+            entity = mars;
             break;
     }
+
+    controls?.dispose();
+
+    instance.view.goTo(entity);
 
     document.getElementById('earth-params').style.display = earth.visible ? 'block' : 'none';
     document.getElementById('lightingGroup').style.display = sun.visible ? 'none' : 'block';
@@ -561,7 +575,14 @@ const [setGlobe] = bindDropDown('globe-selector', globe => {
     marsAtmosphere.visible = mars.visible;
     sunGlow.visible = sun.visible;
 
-    instance.notifyChange(allGlobes);
+    instance.notifyChange(entity);
+
+    controls = new GlobeControls({
+        scene: entity.object3d,
+        ellipsoid: entity.ellipsoid,
+        camera: instance.view.camera,
+        domElement: instance.domElement,
+    });
 });
 
 const reset = () => {
@@ -623,6 +644,7 @@ function populateLayerList() {
 reset();
 
 const inspector = Inspector.attach('inspector', instance);
+
 inspector.addPanel(new GlobeControlsInspector(inspector.gui, instance, controls));
 
 StatusBar.bind(instance);

@@ -94,7 +94,9 @@ function createScene(crs, extent) {
 
     map = new Map({
         extent,
-        segments: 2,
+        terrain: {
+            segments: 2,
+        },
         backgroundColor: 'black',
         backgroundOpacity: 0.3,
     });

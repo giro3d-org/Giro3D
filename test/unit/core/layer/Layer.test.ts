@@ -78,6 +78,21 @@ describe('Layer', () => {
 
             expect(source.dispose).toHaveBeenCalled();
         });
+
+        it('should dispatch the dispose event', () => {
+            const source = new NullSource();
+            const layer = new TestLayer({ source });
+
+            const listener = jest.fn();
+
+            layer.addEventListener('dispose', listener);
+
+            expect(listener).not.toHaveBeenCalled();
+
+            layer.dispose();
+
+            expect(listener).toHaveBeenCalled();
+        });
     });
 
     describe('constructor', () => {

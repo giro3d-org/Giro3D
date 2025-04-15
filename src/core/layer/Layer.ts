@@ -225,6 +225,10 @@ export interface LayerEvents {
      * Fires when layer visibility changes.
      */
     'visible-property-changed': { visible: boolean };
+    /**
+     * Fires when the layer is disposed.
+     */
+    dispose: unknown;
 }
 
 export interface LayerOptions {
@@ -1359,6 +1363,8 @@ abstract class Layer<
             target.abort();
             this.unregisterNode(target.node);
         }
+
+        this.dispatchEvent({ type: 'dispose' });
     }
 }
 

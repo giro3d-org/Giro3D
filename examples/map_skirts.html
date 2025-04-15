@@ -5,3 +5,38 @@ longdesc: Skirts are vertical side on the edges of map tiles that give volume to
 attribution: © <a target="_blank" href="https://www.mapbox.com/">Mapbox</a>
 tags: [map, skirt]
 ---
+
+<div class="side-pane-with-status-bar">
+    <div class="card">
+        <div class="card-header">Parameters</div>
+        <div class="card-body">
+            <!-- Color -->
+            <label class="form-check-label w-100 mb-2" for="color">Skirt color</label>
+            <div class="input-group">
+                <input
+                    type="color"
+                    class="form-control form-control-color float-end"
+                    id="color"
+                    value="#faf0e6"
+                    title="color"
+                    autocomplete="off"
+                />
+            </div>
+
+            <!-- Skirt depth -->
+            <label for="skirt-depth" class="form-label mt-2">Skirt depth (meters)</label>
+            <div class="input-group">
+                <input
+                    type="number"
+                    min="-10000"
+                    max="10000"
+                    value="0"
+                    step="500"
+                    class="form-control"
+                    id="skirt-depth"
+                    autocomplete="off"
+                />
+            </div>
+        </div>
+    </div>
+</div>

@@ -83,6 +83,7 @@ type ID = Record<string, number>;
 type Authority = Record<string, number>;
 
 type ProjCS = {
+    type: 'PROJCS';
     name: string;
     AUTHORITY?: Authority;
 };
@@ -92,6 +93,7 @@ type ProjCRS = {
 };
 
 type CompoundCS = {
+    type: 'COMPD_CS';
     PROJCS: ProjCS;
 };
 
@@ -113,7 +115,7 @@ function getWKTCrsName(wkt: string): CrsName | undefined {
     } else if ('PROJCS' in parsed) {
         // WKT 1 / COMPD_CS
         return getProjCSName(parsed['PROJCS']);
-    } else if ('AUTHORITY' in parsed) {
+    } else if ('type' in parsed && parsed.type === 'PROJCS') {
         // WKT 1 / PROJCS
         return getProjCSName(parsed);
     }

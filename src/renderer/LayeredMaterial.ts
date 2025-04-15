@@ -367,15 +367,16 @@ type Uniforms = ThreeUniforms & {
     farDistance: IUniform<number>;
 
     // Skirts related uniforms
+    // The skirt elevation, in CRS units (might be negative)
+    skirtElevation: IUniform<number>;
     // The start and end index of vertices located at the bottom of the skirt
     skirtVertexRange: IUniform<Vector2>;
-};
+} & Record<string, IUniform>;
 
 class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
     readonly isMemoryUsage = true as const;
 
     // Used for point-light shadow maps
-    isMeshDistanceMaterial = false;
     light?: Light;
 
     private readonly _getIndexFn: (arg0: Layer) => number;
@@ -570,6 +571,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
             }),
 
             skirtVertexRange: new Uniform(new Vector2(0, 0)),
+            skirtElevation: new Uniform(0),
         };
 
         this.uniformsNeedUpdate = true;
@@ -843,8 +845,6 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         uniform.elevationRange = new Vector2();
 
         this.updateColorMaps();
-
-        return Promise.resolve(true);
     }
 
     private rebuildAtlasInfo() {
@@ -1313,12 +1313,17 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         return texture != null && texture.isFinal === true;
     }
 
-    getElevationTexture(): Texture | null {
+    getElevationTexture(): ElevationTexture | null {
         return this._texturesInfo.elevation.texture;
     }
 
     getElevationOffsetScale(): OffsetScale {
         return this._texturesInfo.elevation.offsetScale;
+    }
+
+    /** @internal */
+    getElevationLayer() {
+        return this._elevationLayer;
     }
 
     isColorLayerTextureLoaded(layer: ColorLayer) {

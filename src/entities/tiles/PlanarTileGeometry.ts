@@ -193,8 +193,9 @@ class PlanarTileGeometry extends BufferGeometry implements MemoryUsage, TileGeom
             ) => {
                 const x = positionBuffer.getX(top);
                 const y = positionBuffer.getY(top);
+                const z = positionBuffer.getZ(top);
 
-                positionBuffer.set(skirtTop, x, y, 0);
+                positionBuffer.set(skirtTop, x, y, z);
                 positionBuffer.set(skirtBottom, x, y, skirtDepth);
             };
 
