@@ -99,7 +99,7 @@ if(elevationLayer.offsetScale.z > 0.) {
     // Skirt bottom vertices must not be affected by terrain
     // deformation since they have a pre-defined height.
     if (isBottomVertex) {
-        elevation = 0.0;
+        elevation = skirtElevation;
     }
 #endif
 

@@ -246,7 +246,9 @@ class TileMesh
     }
 
     private updateSkirtParameters() {
-        if (this._skirtDepth != null) {
+        const skirtDepth = this._skirtDepth;
+
+        if (skirtDepth != null) {
             this.forEachMaterial(material => {
                 MaterialUtils.setDefine(material, 'ENABLE_SKIRTS', true);
                 const vertexCount = this.geometry.vertexCount;
@@ -257,6 +259,7 @@ class TileMesh
                     firstSkirtVertex,
                     lastSkirtVertex,
                 );
+                material.uniforms.skirtElevation.value = skirtDepth;
             });
         } else {
             this.forEachMaterial(material => {
