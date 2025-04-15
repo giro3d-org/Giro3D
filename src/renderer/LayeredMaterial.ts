@@ -369,7 +369,7 @@ type Uniforms = ThreeUniforms & {
     // Skirts related uniforms
     // The start and end index of vertices located at the bottom of the skirt
     skirtVertexRange: IUniform<Vector2>;
-};
+} & Record<string, IUniform>;
 
 class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
     readonly isMemoryUsage = true as const;
