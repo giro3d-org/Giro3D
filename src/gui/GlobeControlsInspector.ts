@@ -4,19 +4,10 @@ import type GlobeControls from '../controls/GlobeControls';
 import type Instance from '../core/Instance';
 import Panel from './Panel';
 
-const altitudeFormatter = new Intl.NumberFormat(undefined, {
-    style: 'unit',
-    unit: 'meter',
-    unitDisplay: 'short',
-    maximumFractionDigits: 1,
-});
-
 class GlobeControlsInspector extends Panel {
     private readonly _dampingControllers: Controller[] = [];
 
     readonly controls: GlobeControls;
-
-    altitudeIncrement = '';
 
     /**
      * @param parentGui - The parent GUI.
@@ -30,8 +21,6 @@ class GlobeControlsInspector extends Panel {
         const notify = this.notify.bind(this);
 
         this.addController(this.controls, 'enabled').name('Enabled');
-
-        this.addController(this.controls, 'showHelpers').name('Helpers');
 
         this.addController(this.controls, 'zoomSpeed')
             .name('Zoom speed')
@@ -53,26 +42,22 @@ class GlobeControlsInspector extends Panel {
                 .onChange(notify),
         );
 
-        this._dampingControllers.push(
-            // @ts-expect-error private property
-            this.addController(this.controls._orbit.sphericalDelta, 'theta').name('𝚫 theta'),
-        );
-        this._dampingControllers.push(
-            // @ts-expect-error private property
-            this.addController(this.controls._orbit.sphericalDelta, 'phi').name('𝚫 phi'),
-        );
-
-        this.addController(this, 'altitudeIncrement').name('Altitude increment');
+        this.addController(this, 'attach');
+        this.addController(this, 'detach');
 
         this.updateControllerVisibility();
     }
 
-    override updateValues(): void {
-        this.altitudeIncrement = altitudeFormatter.format(this.controls.getAltitudeDelta());
-    }
-
     private updateControllerVisibility() {
         this._dampingControllers.forEach(c => c.show(this.controls.enableDamping));
+    }
+
+    attach() {
+        this.controls.attach();
+    }
+
+    detach() {
+        this.controls.detach();
     }
 }
 
