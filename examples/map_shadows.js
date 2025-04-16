@@ -43,11 +43,6 @@ import { bindToggle } from './widgets/bindToggle.js';
 import { makeColorRamp } from './widgets/makeColorRamp.js';
 import { updateLabel } from './widgets/updateLabel.js';
 
-Instance.registerCRS(
-    'EPSG:3482',
-    '+proj=tmerc +lat_0=31 +lon_0=-113.75 +k=0.999933333 +x_0=213360 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
-);
-
 const EXTENT_SIZE = 20_000;
 
 const min = 1500;
