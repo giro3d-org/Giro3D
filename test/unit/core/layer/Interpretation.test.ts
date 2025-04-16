@@ -1,3 +1,4 @@
+import type { InterpretationUniform } from '@giro3d/giro3d/core/layer/Interpretation';
 import Interpretation, { Mode } from '@giro3d/giro3d/core/layer/Interpretation';
 
 describe('Interpretation', () => {
@@ -45,21 +46,25 @@ describe('Interpretation', () => {
 
     describe('setUniform', () => {
         it('should set the correct values', () => {
-            const raw = Interpretation.Raw.setUniform({});
+            const raw = Interpretation.Raw.setUniform({} as InterpretationUniform);
             expect(raw.mode).toEqual(0);
-            expect(raw.negateValues).toBeUndefined();
-            expect(raw.min).toBeUndefined();
-            expect(raw.max).toBeUndefined();
+            expect(raw.negateValues).toEqual(false);
+            expect(raw.min).toEqual(0);
+            expect(raw.max).toEqual(1);
 
-            const compress = Interpretation.CompressTo8Bit(23, 111).setUniform({});
+            const compress = Interpretation.CompressTo8Bit(23, 111).setUniform(
+                {} as InterpretationUniform,
+            );
             expect(compress.mode).toEqual(3);
-            expect(compress.negateValues).toBeUndefined();
+            expect(compress.negateValues).toEqual(false);
             expect(compress.min).toEqual(23);
             expect(compress.max).toEqual(111);
 
-            const scale = Interpretation.ScaleToMinMax(23, 111).setUniform({});
+            const scale = Interpretation.ScaleToMinMax(23, 111).setUniform(
+                {} as InterpretationUniform,
+            );
             expect(scale.mode).toEqual(2);
-            expect(scale.negateValues).toBeUndefined();
+            expect(scale.negateValues).toEqual(false);
             expect(scale.min).toEqual(23);
             expect(scale.max).toEqual(111);
 
@@ -67,7 +72,7 @@ describe('Interpretation', () => {
                 min: -45,
                 max: 111,
                 negateValues: true,
-            }).setUniform({});
+            }).setUniform({} as InterpretationUniform);
 
             expect(custom.mode).toEqual(Mode.ScaleToMinMax);
             expect(custom.negateValues).toEqual(true);
