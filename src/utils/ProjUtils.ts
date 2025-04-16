@@ -80,12 +80,11 @@ function transformVectors<T extends Vector2 | Vector3>(
 }
 
 type ID = Record<string, number>;
-type Authority = Record<string, number>;
 
 type ProjCS = {
     type: 'PROJCS';
     name: string;
-    AUTHORITY?: Authority;
+    AUTHORITY?: object;
 };
 
 type ProjCRS = {
@@ -97,7 +96,7 @@ type CompoundCS = {
     PROJCS: ProjCS;
 };
 
-function getAuthorityName(authority: Authority): string {
+function getAuthorityName(authority: object): string {
     const [auth, code] = Object.entries(authority)[0];
 
     return `${auth}:${code}`;
@@ -105,30 +104,46 @@ function getAuthorityName(authority: Authority): string {
 
 type CrsName = { name: string; srid?: string };
 
+function getNicename(obj: object): string {
+    if ('name' in obj && typeof obj.name === 'string') {
+        return obj.name;
+    }
+    return '<unknown>';
+}
+
 function getWKTCrsName(wkt: string): CrsName | undefined {
-    const parsed = parseCode(wkt) as ProjCRS | ProjCS | CompoundCS;
+    const parsed = parseCode(wkt) as ProjCRS | ProjCS | CompoundCS | object;
 
     if ('ID' in parsed) {
         // WKT 2 / PROJCRS
+        const name = getNicename(parsed);
         const authority = getAuthorityName(parsed.ID);
-        return { name: authority, srid: authority };
+        return { name, srid: authority };
     } else if ('PROJCS' in parsed) {
         // WKT 1 / COMPD_CS
         return getProjCSName(parsed['PROJCS']);
     } else if ('type' in parsed && parsed.type === 'PROJCS') {
         // WKT 1 / PROJCS
         return getProjCSName(parsed);
+    } else {
+        const name = getNicename(parsed);
+        if ('AUTHORITY' in parsed && typeof parsed.AUTHORITY === 'object' && parsed.AUTHORITY) {
+            const authority = getAuthorityName(parsed.AUTHORITY);
+            return { name, srid: authority };
+        }
+        return { name };
     }
 
     return undefined;
 }
 
 function getProjCSName(projCs: ProjCS): CrsName | undefined {
+    const name = getNicename(projCs);
     if (projCs.AUTHORITY) {
         const authority = getAuthorityName(projCs.AUTHORITY);
-        return { name: authority, srid: authority };
+        return { name, srid: authority };
     }
-    return { name: projCs.name };
+    return { name };
 }
 
 type ParsedWkt = CrsName & { definition: string };
