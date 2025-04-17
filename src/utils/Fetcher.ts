@@ -129,6 +129,7 @@ function getInfo() {
  * An error raised whenever the received response does not have a 2XX status.
  */
 export class HttpError extends Error {
+    readonly isHttpError = true as const;
     readonly response: Response;
 
     constructor(response: Response) {
@@ -136,6 +137,10 @@ export class HttpError extends Error {
 
         this.response = response;
     }
+}
+
+export function isHttpError(obj: unknown): obj is HttpError {
+    return (obj as HttpError).isHttpError === true;
 }
 
 export type FetchOptions = RequestInit & {

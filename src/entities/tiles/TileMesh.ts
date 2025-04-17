@@ -26,7 +26,8 @@ import type Ellipsoid from '../../core/geographic/Ellipsoid';
 import type Extent from '../../core/geographic/Extent';
 import type GetElevationOptions from '../../core/GetElevationOptions';
 import HeightMap from '../../core/HeightMap';
-import ElevationLayer from '../../core/layer/ElevationLayer';
+import type ElevationLayer from '../../core/layer/ElevationLayer';
+import { isElevationLayer } from '../../core/layer/ElevationLayer';
 import type Layer from '../../core/layer/Layer';
 import type MemoryUsage from '../../core/MemoryUsage';
 import type { GetMemoryUsageContext } from '../../core/MemoryUsage';
@@ -335,7 +336,7 @@ class TileMesh
     }
 
     onLayerVisibilityChanged(layer: Layer) {
-        if (layer instanceof ElevationLayer) {
+        if (isElevationLayer(layer)) {
             this._shouldUpdateHeightMap = true;
         }
     }

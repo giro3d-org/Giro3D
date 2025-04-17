@@ -1,8 +1,8 @@
 import type GUI from 'lil-gui';
 import type Instance from '../core/Instance';
 import { aggregateMemoryUsage, format, type GetMemoryUsageContext } from '../core/MemoryUsage';
-import AggregatePointCloudSource from '../sources/AggregatePointCloudSource';
-import COPCSource from '../sources/COPCSource';
+import { isAggregatePointCloudSource } from '../sources/AggregatePointCloudSource';
+import { isCOPCSource } from '../sources/COPCSource';
 import type { PointCloudSource } from '../sources/PointCloudSource';
 import Panel from './Panel';
 
@@ -25,9 +25,9 @@ export default class PointCloudSourceInspector extends Panel {
         this.addController(this.memoryUsage, 'cpuMemory');
         this.addController(this.memoryUsage, 'gpuMemory');
 
-        if (source instanceof AggregatePointCloudSource) {
+        if (isAggregatePointCloudSource(source)) {
             this.addController(source.sources, 'length');
-        } else if (source instanceof COPCSource) {
+        } else if (isCOPCSource(source)) {
             source.getMetadata().then(metadata => {
                 if (metadata.crs) {
                     this.addController(metadata.crs, 'name').name('CRS');

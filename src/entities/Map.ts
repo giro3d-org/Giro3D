@@ -30,10 +30,13 @@ import type GetElevationOptions from '../core/GetElevationOptions';
 import type GetElevationResult from '../core/GetElevationResult';
 import type GraticuleOptions from '../core/GraticuleOptions';
 import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
-import ColorLayer, { isColorLayer } from '../core/layer/ColorLayer';
-import ElevationLayer, { isElevationLayer } from '../core/layer/ElevationLayer';
+import type ColorLayer from '../core/layer/ColorLayer';
+import { isColorLayer } from '../core/layer/ColorLayer';
+import type ElevationLayer from '../core/layer/ElevationLayer';
+import { isElevationLayer } from '../core/layer/ElevationLayer';
 import type HasLayers from '../core/layer/HasLayers';
-import Layer from '../core/layer/Layer';
+import type Layer from '../core/layer/Layer';
+import { isLayer } from '../core/layer/Layer';
 import type MemoryUsage from '../core/MemoryUsage';
 import { type GetMemoryUsageContext } from '../core/MemoryUsage';
 import type Pickable from '../core/picking/Pickable';
@@ -1565,7 +1568,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
      * @returns a promise resolving when the layer is ready
      */
     async addLayer<TLayer extends Layer>(layer: TLayer): Promise<TLayer> {
-        if (!(layer instanceof Layer)) {
+        if (!isLayer(layer)) {
             throw new Error('layer is not an instance of Layer');
         }
 
@@ -1584,9 +1587,9 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
         layer.addEventListener('visible-property-changed', this._onLayerVisibilityChanged);
 
-        if (layer instanceof ColorLayer) {
+        if (isColorLayer(layer)) {
             this.registerColorLayer();
-        } else if (layer instanceof ElevationLayer) {
+        } else if (isElevationLayer(layer)) {
             this._hasElevationLayer = true;
             this.updateGlobalMinMax();
         }
@@ -1605,7 +1608,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     private onLayerVisibilityChanged(event: { target: Layer }) {
-        if (event.target instanceof ElevationLayer) {
+        if (isElevationLayer(event.target)) {
             this.dispatchEvent({ type: 'elevation-changed', extent: this.extent });
             this.updateGlobalMinMax();
         }
@@ -1639,7 +1642,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
             if (layer.colorMap) {
                 this._materialOptions.colorMapAtlas?.remove(layer.colorMap);
             }
-            if (layer instanceof ElevationLayer) {
+            if (isElevationLayer(layer)) {
                 this._hasElevationLayer = false;
             }
             this.traverseTiles(tile => {

@@ -8,7 +8,7 @@ import type Extent from '../core/geographic/Extent';
 import type ImageFormat from '../formats/ImageFormat';
 import EmptyTexture from '../renderer/EmptyTexture';
 import MemoryTracker from '../renderer/MemoryTracker';
-import { HttpError } from '../utils/Fetcher';
+import { isHttpError } from '../utils/Fetcher';
 import OpenLayersUtils from '../utils/OpenLayersUtils';
 import PromiseUtils from '../utils/PromiseUtils';
 import TextureGenerator from '../utils/TextureGenerator';
@@ -294,7 +294,7 @@ export default class TiledImageSource extends ImageSource {
         } catch (e) {
             if (e instanceof Error && e.name === 'AbortError') {
                 throw e;
-            } else if (e instanceof HttpError) {
+            } else if (isHttpError(e)) {
                 // Do nothing as Fetcher already dispatches events when HTTP errors occur.
             } else {
                 console.error(e);
@@ -454,4 +454,8 @@ export default class TiledImageSource extends ImageSource {
 
         return promises;
     }
+}
+
+export function isTiledImageSource(obj: unknown): obj is TiledImageSource {
+    return (obj as TiledImageSource).isTiledImageSource === true;
 }

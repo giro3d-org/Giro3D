@@ -46,7 +46,7 @@ import type { Projection } from 'ol/proj';
 import type RenderFeature from 'ol/render/Feature';
 import type { StyleFunction } from 'ol/style/Style';
 import type Extent from '../core/geographic/Extent';
-import Fetcher, { HttpError } from '../utils/Fetcher';
+import Fetcher, { isHttpError } from '../utils/Fetcher';
 import OpenLayersUtils from '../utils/OpenLayersUtils';
 import { nonNull } from '../utils/tsutils';
 import type { GetImageOptions, ImageResponse, ImageSourceOptions } from './ImageSource';
@@ -213,7 +213,7 @@ class VectorTileSource extends ImageSource {
                         tile.setState(TileState.ERROR);
                     }
                 } catch (e) {
-                    if (e instanceof HttpError && e.response.status === 404) {
+                    if (isHttpError(e) && e.response.status === 404) {
                         tile.setState(TileState.ERROR);
                     } else {
                         console.warn(e);

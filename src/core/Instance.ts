@@ -16,7 +16,8 @@ import {
 import type { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 import type Entity from '../entities/Entity';
 import { isEntity } from '../entities/Entity';
-import Entity3D, { isEntity3D } from '../entities/Entity3D';
+import type Entity3D from '../entities/Entity3D';
+import { isEntity3D } from '../entities/Entity3D';
 import C3DEngine from '../renderer/c3DEngine';
 import type RenderingOptions from '../renderer/RenderingOptions';
 import { GlobalRenderTargetPool } from '../renderer/RenderTargetPool';
@@ -556,7 +557,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         });
 
         if (
-            entity instanceof Entity3D &&
+            isEntity3D(entity) &&
             entity.object3d != null &&
             entity.object3d.parent == null &&
             entity.object3d !== this._scene

@@ -3,7 +3,7 @@ import { FrontSide, MathUtils, Quaternion, Vector3 } from 'three';
 import Ellipsoid from '../core/geographic/Ellipsoid';
 import Extent from '../core/geographic/Extent';
 import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
-import ColorLayer from '../core/layer/ColorLayer';
+import { isColorLayer } from '../core/layer/ColorLayer';
 import type Layer from '../core/layer/Layer';
 import type PointOfView from '../core/PointOfView';
 import { isEuler, isMatrix4, isPerspectiveCamera, isQuaternion } from '../utils/predicates';
@@ -165,7 +165,7 @@ export default class SphericalPanorama extends Map {
     }
 
     override addLayer<TLayer extends Layer>(layer: TLayer): Promise<TLayer> {
-        if (layer instanceof ColorLayer) {
+        if (isColorLayer(layer)) {
             return super.addLayer(layer);
         }
 
