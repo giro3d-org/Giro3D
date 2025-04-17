@@ -16,8 +16,8 @@ import FragmentShader from './ComposerTileFS.glsl';
 import VertexShader from './ComposerTileVS.glsl';
 // Matches the NoDataOptions struct in the shader
 interface NoDataOptions {
-    replacementAlpha?: number;
-    radius?: number;
+    replacementAlpha: number;
+    radius: number;
     enabled: boolean;
 }
 
@@ -103,7 +103,7 @@ const POOL: unknown[] = [];
 const POOL_SIZE = 2048;
 let GRID_TEXTURE: Texture;
 
-interface Uniforms {
+type Uniforms = {
     tex: IUniform<Texture | null>;
     gridTexture: IUniform<Texture | null>;
     flipY: IUniform<boolean>;
@@ -118,7 +118,7 @@ interface Uniforms {
     convertRGFloatToRGBAUnsignedByte: IUniform<boolean>;
     heightPrecision: IUniform<number>;
     heightOffset: IUniform<number>;
-}
+} & Record<string, IUniform>;
 
 class ComposerTileMaterial extends ShaderMaterial {
     readonly isComposerTileMaterial = true as const;
@@ -130,7 +130,6 @@ class ComposerTileMaterial extends ShaderMaterial {
         return 'ComposerTileMaterial';
     }
 
-    // @ts-expect-error property is not assignable.
     override readonly uniforms: Uniforms;
 
     /**
@@ -149,9 +148,9 @@ class ComposerTileMaterial extends ShaderMaterial {
         this.uniforms = {
             tex: new Uniform(null),
             gridTexture: new Uniform(null),
-            interpretation: new Uniform({}),
+            interpretation: new Uniform({ max: 1, min: 0, mode: 0, negateValues: false }),
             flipY: new Uniform(false),
-            noDataOptions: new Uniform({ enabled: false }),
+            noDataOptions: new Uniform({ enabled: false, radius: 0, replacementAlpha: 0 }),
             showImageOutlines: new Uniform(false),
             opacity: new Uniform(this.opacity),
             channelCount: new Uniform(3),
@@ -178,7 +177,7 @@ class ComposerTileMaterial extends ShaderMaterial {
         this.dataType = interp.mode !== Mode.Raw ? FloatType : options.texture.type;
         this.pixelFormat = options.texture.format;
 
-        const interpValue = {};
+        const interpValue = {} as InterpretationUniform;
         interp.setUniform(interpValue);
 
         // The no-data filling algorithm does not like transparent images
@@ -189,7 +188,11 @@ class ComposerTileMaterial extends ShaderMaterial {
         this.uniforms.interpretation.value = interpValue;
         this.uniforms.tex.value = options.texture;
         this.uniforms.flipY.value = options.flipY ?? false;
-        this.uniforms.noDataOptions.value = options.noDataOptions ?? { enabled: false };
+        this.uniforms.noDataOptions.value = options.noDataOptions ?? {
+            enabled: false,
+            radius: 0,
+            replacementAlpha: 0,
+        };
         this.uniforms.showImageOutlines.value = options.showImageOutlines ?? false;
         this.uniforms.expandRGB.value = options.expandRGB ?? false;
         this.uniforms.showEmptyTexture.value = options.showEmptyTexture ?? false;
