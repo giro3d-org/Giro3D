@@ -27,7 +27,7 @@ import type ContourLineOptions from '../core/ContourLineOptions';
 import type ElevationRange from '../core/ElevationRange';
 import type Extent from '../core/geographic/Extent';
 import type GraticuleOptions from '../core/GraticuleOptions';
-import type BlendingMode from '../core/layer/BlendingMode';
+import BlendingMode from '../core/layer/BlendingMode';
 import type ColorLayer from '../core/layer/ColorLayer';
 import type ElevationLayer from '../core/layer/ElevationLayer';
 import type Layer from '../core/layer/Layer';
@@ -270,9 +270,6 @@ type LayerUniform = {
     textureSize: Vector2;
     elevationRange: Vector2;
     brightnessContrastSaturation: Vector3;
-};
-
-type ColorLayerUniform = LayerUniform & {
     mode: 0 | MaskMode;
     blendingMode: BlendingMode;
 };
@@ -358,7 +355,7 @@ type Uniforms = ThreeUniforms & {
     atlasTexture: IUniform<Texture | null>;
     colorTextures: IUniform<Texture[]>;
 
-    layers: IUniform<ColorLayerUniform[]>;
+    layers: IUniform<LayerUniform[]>;
     elevationLayer: IUniform<LayerUniform>;
 
     // For distance-based rendering (point light shadow maps)
@@ -568,6 +565,8 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
                 elevationRange: new Vector2(0, 0),
                 offsetScale: new OffsetScale(0, 0, 0, 0),
                 textureSize: new Vector2(0, 0),
+                blendingMode: BlendingMode.None,
+                mode: 0,
             }),
 
             skirtVertexRange: new Uniform(new Vector2(0, 0)),
@@ -618,7 +617,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         this.sortLayersIfNecessary();
 
         if (this._mustUpdateUniforms) {
-            const layersUniform: ColorLayerUniform[] = [];
+            const layersUniform: LayerUniform[] = [];
             const infos = this._texturesInfo.color.infos;
             const textureUniforms = this.uniforms.colorTextures.value;
             textureUniforms.length = 0;
@@ -644,7 +643,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
                 const color = new Vector4(rgb.r, rgb.g, rgb.b, a);
                 const elevationRange = info.elevationRange || DISABLED_ELEVATION_RANGE;
 
-                const uniform: ColorLayerUniform = {
+                const uniform: LayerUniform = {
                     offsetScale,
                     color,
                     textureSize,

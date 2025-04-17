@@ -49,7 +49,7 @@ type SkyUniforms = {
     tDisplacement: IUniform<Texture>;
     tSkyboxDiffuse: IUniform<Texture>;
     fNightScale: IUniform<number>;
-};
+} & Record<string, IUniform>;
 
 /**
  * Displays an atmosphere around an ellipsoid.

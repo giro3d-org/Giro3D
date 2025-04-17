@@ -272,8 +272,8 @@ class WebGLComposer {
             texture,
             noDataOptions: {
                 enabled: options.fillNoData ?? false,
-                radius: options.fillNoDataRadius,
-                replacementAlpha: options.fillNoDataAlphaReplacement,
+                radius: options.fillNoDataRadius ?? 1,
+                replacementAlpha: options.fillNoDataAlphaReplacement ?? 0,
             },
             interpretation,
             flipY: options.flipY ?? false,

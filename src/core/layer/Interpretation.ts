@@ -22,10 +22,10 @@ interface InterpretationOptions {
 }
 
 export type InterpretationUniform = {
-    mode?: number;
-    negateValues?: boolean;
-    min?: number;
-    max?: number;
+    mode: number;
+    negateValues: boolean;
+    min: number;
+    max: number;
 };
 
 /**
@@ -218,13 +218,15 @@ class Interpretation {
         const mode = this.mode;
 
         uniform.mode = mode;
-        uniform.negateValues = this.negateValues;
+        uniform.negateValues = this.negateValues ?? false;
+        uniform.min = 0;
+        uniform.max = 1;
 
         switch (mode) {
             case Mode.ScaleToMinMax:
             case Mode.CompressTo8Bit:
-                uniform.min = this._opts.min;
-                uniform.max = this._opts.max;
+                uniform.min = this._opts.min ?? 0;
+                uniform.max = this._opts.max ?? 1;
                 break;
             case Mode.Raw:
                 break;

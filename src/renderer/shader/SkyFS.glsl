@@ -1,4 +1,4 @@
-uniform vec3 v3LightPos;
+uniform vec3 v3LightPosition;
 uniform float g;
 uniform float g2;
 uniform float opacity;
@@ -18,7 +18,7 @@ float getRayleighPhase(float fCos2) {
 }
 
 void main (void) {
-    float fCos = dot(v3LightPos, v3Direction) / length(v3Direction);
+    float fCos = dot(v3LightPosition, v3Direction) / length(v3Direction);
     float fCos2 = fCos * fCos;
 
     vec3 color = getRayleighPhase(fCos2) * c0 + getMiePhase(fCos, fCos2, g, g2) * c1;

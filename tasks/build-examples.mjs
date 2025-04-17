@@ -340,6 +340,19 @@ export async function getWebpackConfig(parameters) {
             ignored: /node_modules/,
             poll: false,
         },
+        module: {
+            rules: [
+                {
+                    test: {
+                        and: [
+                            () => parameters.mode === 'development',
+                            new RegExp(`${examplesDir}/\\w+\\.js`),
+                        ],
+                    },
+                    use: path.resolve(baseDir, 'prepend-import-loader.js'),
+                },
+            ],
+        },
         context: examplesDir,
         resolve: {
             alias: { '@giro3d/giro3d': giro3dPackageDir },
