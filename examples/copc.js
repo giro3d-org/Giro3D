@@ -283,11 +283,11 @@ function bindFilter(index, attributes, onChange) {
 }
 
 /**
- * @param {string} crs
+ * @param {string | undefined} srid
  * @param {PointCloud} entity
  * @param {COPCSource} source
  */
-function populateGUI(crs, entity, source) {
+function populateGUI(srid, entity, source) {
     document.getElementById('accordion').style.display = 'block';
 
     const tableElement = document.getElementById('table');
@@ -296,7 +296,7 @@ function populateGUI(crs, entity, source) {
     /** @type {HTMLLinkElement} */
     // @ts-expect-error casting
     const projectionElement = document.getElementById('projection');
-    if (crs != null) {
+    if (typeof srid === 'string' && srid.startsWith('EPSG:')) {
         projectionElement.href = `https://epsg.io/${instance.referenceCrs.split(':')[1]}`;
         projectionElement.innerHTML = instance.referenceCrs;
     } else {
@@ -343,10 +343,13 @@ async function load(url) {
     }
 
     const metadata = await source.getMetadata();
-
+    let crs = 'unknown';
+    if (metadata.crs) {
+        crs = metadata.crs.srid ?? metadata.crs.name;
+    }
     instance = new Instance({
         target: 'view',
-        crs: metadata.crs?.name ?? 'unknown',
+        crs,
         backgroundColor: null,
     });
 
@@ -415,12 +418,13 @@ async function load(url) {
     // point cloud is properly positioned.
     if (metadata.crs) {
         try {
-            let { name, definition, srid } = metadata.crs;
+            const { name, definition, srid } = metadata.crs;
             if (srid) {
-                name = srid;
-                definition = await fetchCrsDefinition(srid);
+                const definitionFromAuthority = await fetchCrsDefinition(srid);
+                Instance.registerCRS(srid, definitionFromAuthority);
+            } else {
+                Instance.registerCRS(name, definition);
             }
-            Instance.registerCRS(name, definition);
 
             // We create the extent from the volume of the point cloud.
             const extent = Extent.fromBox3(instance.referenceCrs, volume);
@@ -457,7 +461,7 @@ async function load(url) {
     addClassification(17, 'Bridge deck', entity.classifications);
     addClassification(18, 'High noise', entity.classifications);
 
-    populateGUI(metadata.crs?.name, entity, source);
+    populateGUI(metadata.crs?.srid, entity, source);
 
     Inspector.attach('inspector', instance);
 
