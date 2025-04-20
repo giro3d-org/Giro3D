@@ -46,6 +46,7 @@
         "format-prettier": "prettier --write .",
         "format-markdownlint": "markdownlint . --fix --ignore-path .gitignore",
         "format": "npm run format-eslint && npm run format-prettier && npm run format-markdownlint",
+        "docker": "docker build . -t giro3d:local && docker run --rm -p 8080:8080 giro3d:local",
         "lint-prettier": "prettier --check .",
         "lint-commit": "commitlint -x @commitlint/config-conventional --from=origin/HEAD --to=HEAD",
         "lint-doc": "node tasks/build-apidoc.mjs --lint-only",

@@ -97,6 +97,31 @@ Below is a non-exhaustive list of supported data sources.
 
 💡 To test Giro3D without installing anything, check the [interactive examples](https://giro3d.org/latest/examples/index.html).
 
+## 🐋 Quick start with Docker
+
+To run the examples locally without installing Node or NPM and without cloning the repository, you can use Docker to build and run an arbitrary branch of Giro3D:
+
+```zsh
+docker run --rm -p 8080:8080 $(docker build https://gitlab.com/giro3d/giro3d.git#<branch> -q)
+```
+
+Alternatively, a two-step method to see the Docker output:
+
+```zsh
+docker build -t giro3d:local https://gitlab.com/giro3d/giro3d.git#<branch>
+```
+
+```zsh
+docker run --rm -p 8080:8080 giro3d:local
+```
+
+Replace `<branch>` with the branch name, (e.g `main`).
+
+Then open your browser on the following URL: <http://localhost:8080>.
+
+> [!note]
+> This procedure will not work on branches that do not contain a `Dockerfile`.
+
 ## Install from the NPM package
 
 To install with [npm](https://www.npmjs.com/) (recommended method):

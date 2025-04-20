@@ -102,7 +102,7 @@ describe('readCrsFromWkt', () => {
 
         const parsedCrs = ProjUtils.readCrsFromWkt(wkt);
         expect(parsedCrs).toBeDefined();
-        expect(parsedCrs!.name).toEqual('EPSG:2154');
+        expect(parsedCrs!.name).toEqual('RGF93 v1 / Lambert-93');
         expect(parsedCrs!.srid).toEqual('EPSG:2154');
     });
 
@@ -171,6 +171,29 @@ describe('readCrsFromWkt', () => {
         expect(parsedCrs!.srid).toBeUndefined();
     });
 
+    it('should return correct CRS name for GEOGCS WKT', () => {
+        const wkt = `
+        GEOCCS["WGS 84",
+            DATUM["WGS_1984",
+                SPHEROID["WGS 84",6378137,298.257223563,
+                    AUTHORITY["EPSG","7030"]],
+                AUTHORITY["EPSG","6326"]],
+            PRIMEM["Greenwich",0,
+                AUTHORITY["EPSG","8901"]],
+            UNIT["metre",1,
+                AUTHORITY["EPSG","9001"]],
+            AXIS["Geocentric X",OTHER],
+            AXIS["Geocentric Y",OTHER],
+            AXIS["Geocentric Z",NORTH],
+            AUTHORITY["EPSG","4978"]]
+        `;
+
+        const parsedCrs = ProjUtils.readCrsFromWkt(wkt);
+        expect(parsedCrs).toBeDefined();
+        expect(parsedCrs!.name).toEqual('WGS 84');
+        expect(parsedCrs!.srid).toEqual('EPSG:4978');
+    });
+
     it('should return correct CRS name for WKT 2', () => {
         const wkt = `
         PROJCRS["RGF93 v1 / Lambert-93",
@@ -218,7 +241,7 @@ describe('readCrsFromWkt', () => {
 
         const parsedCrs = ProjUtils.readCrsFromWkt(wkt);
         expect(parsedCrs).toBeDefined();
-        expect(parsedCrs!.name).toEqual('EPSG:2154');
+        expect(parsedCrs!.name).toEqual('RGF93 v1 / Lambert-93');
         expect(parsedCrs!.srid).toEqual('EPSG:2154');
     });
 });

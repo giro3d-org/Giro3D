@@ -29,8 +29,8 @@ export default class PointCloudSourceInspector extends Panel {
             this.addController(source.sources, 'length');
         } else if (source instanceof COPCSource) {
             source.getMetadata().then(metadata => {
-                if (metadata.crs) {
-                    this.addController(metadata.crs, 'name').name('CRS');
+                if (metadata.crs && typeof metadata.crs.srid !== 'undefined') {
+                    this.addController(metadata.crs, 'srid').name('CRS');
                 }
                 this.addController(metadata.attributes, 'length').name('Attributes');
             });
