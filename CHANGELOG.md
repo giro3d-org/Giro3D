@@ -88,6 +88,7 @@ instance.add(panorama);
 - add support for temporal WMS layers (WMS-T)
 - **Ellipsoid**: add `Ellipsoid` class
 - **Layer**: add `dispose` event
+- **Layer**: add support for custom texture filters (#597)
 - **Extent**: add `contains()` method
 - **Extent**: add `sampleUV()` method
 - **Extent**: add equirectangular projection and photo-sphere utility methods

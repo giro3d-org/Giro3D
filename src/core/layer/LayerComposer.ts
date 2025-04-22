@@ -1,13 +1,15 @@
 import {
-    Mesh,
-    PlaneGeometry,
-    Vector2,
     type CanvasTexture,
     type DataTexture,
+    type MagnificationTextureFilter,
     type Material,
+    Mesh,
+    type MinificationTextureFilter,
     type PixelFormat,
+    PlaneGeometry,
     type Texture,
     type TextureDataType,
+    Vector2,
     type WebGLRenderer,
     type WebGLRenderTarget,
 } from 'three';
@@ -174,6 +176,9 @@ class LayerComposer implements MemoryUsage {
     readonly textureDataType: TextureDataType;
     readonly showEmptyTextures: boolean;
 
+    private readonly _minFilter?: MinificationTextureFilter;
+    private readonly _magFilter?: MagnificationTextureFilter;
+
     private _needsCleanup: boolean;
 
     getMemoryUsage(context: GetMemoryUsageContext) {
@@ -216,6 +221,8 @@ class LayerComposer implements MemoryUsage {
         showEmptyTextures: boolean;
         /** The dimensions of the extent to use for z-index computation */
         dimensions?: Vector2;
+        minFilter?: MinificationTextureFilter;
+        magFilter?: MagnificationTextureFilter;
     }) {
         this.computeMinMax = options.computeMinMax;
         this.extent = options.extent;
@@ -234,11 +241,15 @@ class LayerComposer implements MemoryUsage {
         this.pixelFormat = options.pixelFormat;
         this.textureDataType = options.textureDataType;
         this.showEmptyTextures = options.showEmptyTextures;
+        this._minFilter = options.minFilter;
+        this._magFilter = options.magFilter;
 
         this.composer = new WebGLComposer({
             webGLRenderer: options.renderer,
             extent: this.extent ? Rect.fromExtent(this.extent) : undefined,
             showImageOutlines: options.showImageOutlines,
+            minFilter: this._minFilter,
+            magFilter: this._magFilter,
             pixelFormat: options.pixelFormat,
             textureDataType: options.textureDataType,
             showEmptyTextures: options.showEmptyTextures,
@@ -441,6 +452,13 @@ class LayerComposer implements MemoryUsage {
             );
         }
 
+        if (this._minFilter) {
+            texture.minFilter = this._minFilter;
+        }
+        if (this._magFilter) {
+            texture.magFilter = this._magFilter;
+        }
+
         let actualTexture = texture;
 
         const expandRGB = TextureGenerator.shouldExpandRGB(
@@ -505,6 +523,13 @@ class LayerComposer implements MemoryUsage {
         // Register a handler to be notified when the original texture has
         // been uploaded to the GPU so that we can reclaim the texture data and free memory.
         texture.onUpdate = () => onTextureUploaded(texture);
+
+        if (this._minFilter) {
+            actualTexture.minFilter = this._minFilter;
+        }
+        if (this._magFilter) {
+            actualTexture.magFilter = this._magFilter;
+        }
 
         const image = new Image({
             id,
