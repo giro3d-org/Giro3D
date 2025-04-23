@@ -7,13 +7,14 @@ import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import Interpretation from '@giro3d/giro3d/core/layer/Interpretation.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 
 import StatusBar from './widgets/StatusBar.js';
 import { bindNumericalDropDown } from './widgets/bindNumericalDropDown.js';
 
 Instance.registerCRS('EPSG:32611', '+proj=utm +zone=11 +datum=WGS84 +units=m +no_defs +type=crs');
 
-const extent = new Extent('EPSG:32611', 666285, 668533.5, 3997174, 3998444);
+const extent = new Extent(CoordinateSystem.fromEpsg(32611), 666285, 668533.5, 3997174, 3998444);
 const center = extent.centerAsVector3();
 
 const instance = new Instance({

@@ -1,3 +1,4 @@
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Coordinates, { type DMS } from '@giro3d/giro3d/core/geographic/Coordinates';
 import * as proj4 from 'proj4';
 import { Vector2, Vector3 } from 'three';
@@ -11,17 +12,17 @@ proj4.defs(
 describe('Coordinates', () => {
     describe('constructor', () => {
         it('should throw on unrecognized CRS', () => {
-            expect(() => new Coordinates('foo', 0, 1, 2)).toThrow();
+            expect(() => new Coordinates(CoordinateSystem.fromSrid('foo'), 0, 1, 2)).toThrow();
         });
 
         it('should assign property crs', () => {
-            const c = new Coordinates('EPSG:3857', 0, 1, 2);
+            const c = new Coordinates(CoordinateSystem.epsg3857, 0, 1, 2);
 
-            expect(c.crs).toEqual('EPSG:3857');
+            expect(c.crs.isEpsg(3857)).toEqual(true);
         });
 
         it('should support coordinates from a 2-number array', () => {
-            const c = new Coordinates('EPSG:3857', 8, 9);
+            const c = new Coordinates(CoordinateSystem.epsg3857, 8, 9);
 
             expect(c.x).toEqual(8);
             expect(c.y).toEqual(9);
@@ -29,7 +30,7 @@ describe('Coordinates', () => {
         });
 
         it('should support coordinates from a 3-number array', () => {
-            const c = new Coordinates('EPSG:3857', 0, 1, 2);
+            const c = new Coordinates(CoordinateSystem.epsg3857, 0, 1, 2);
 
             expect(c.x).toEqual(0);
             expect(c.y).toEqual(1);
@@ -37,7 +38,7 @@ describe('Coordinates', () => {
         });
 
         it('should support coordinates from Vector3', () => {
-            const c = new Coordinates('EPSG:3857', new Vector3(0, 1, 2));
+            const c = new Coordinates(CoordinateSystem.epsg3857, new Vector3(0, 1, 2));
 
             expect(c.x).toEqual(0);
             expect(c.y).toEqual(1);
@@ -47,8 +48,8 @@ describe('Coordinates', () => {
 
     describe('copy()', () => {
         it('should copy the values', () => {
-            const original = new Coordinates('EPSG:3857', 2, 3, 4);
-            const copy = new Coordinates('EPSG:4326', 0, 0, 0);
+            const original = new Coordinates(CoordinateSystem.epsg3857, 2, 3, 4);
+            const copy = new Coordinates(CoordinateSystem.epsg4326, 0, 0, 0);
             const returned = copy.copy(original);
 
             expect(copy.values).toStrictEqual(original.values);
@@ -59,23 +60,23 @@ describe('Coordinates', () => {
 
     describe('set()', () => {
         it('should throw on unrecognized CRS', () => {
-            const c = new Coordinates('EPSG:4326', 0, 1, 2);
+            const c = new Coordinates(CoordinateSystem.epsg4326, 0, 1, 2);
 
-            expect(() => c.set('foo', 0, 1, 2)).toThrow();
+            expect(() => c.set(CoordinateSystem.fromSrid('foo'), 0, 1, 2)).toThrow();
         });
 
         it('should assign property crs', () => {
-            const c = new Coordinates('EPSG:4326', 0, 1, 2);
+            const c = new Coordinates(CoordinateSystem.epsg4326, 0, 1, 2);
 
-            c.set('EPSG:3857', 0, 0, 0);
+            c.set(CoordinateSystem.epsg3857, 0, 0, 0);
 
-            expect(c.crs).toEqual('EPSG:3857');
+            expect(c.crs.isEpsg(3857)).toEqual(true);
         });
 
         it('should support coordinates from a 2-number array', () => {
-            const c = new Coordinates('EPSG:3857', 1, 1, 1);
+            const c = new Coordinates(CoordinateSystem.epsg3857, 1, 1, 1);
 
-            c.set('EPSG:3857', 9, 5);
+            c.set(CoordinateSystem.epsg3857, 9, 5);
 
             expect(c.x).toEqual(9);
             expect(c.y).toEqual(5);
@@ -83,9 +84,9 @@ describe('Coordinates', () => {
         });
 
         it('should support coordinates from a 3-number array', () => {
-            const c = new Coordinates('EPSG:3857', 0, 0, 0);
+            const c = new Coordinates(CoordinateSystem.epsg3857, 0, 0, 0);
 
-            c.set('EPSG:3857', 1, 2, 3);
+            c.set(CoordinateSystem.epsg3857, 1, 2, 3);
 
             expect(c.x).toEqual(1);
             expect(c.y).toEqual(2);
@@ -93,9 +94,9 @@ describe('Coordinates', () => {
         });
 
         it('should support coordinates from Vector3', () => {
-            const c = new Coordinates('EPSG:3857', 0, 0, 0);
+            const c = new Coordinates(CoordinateSystem.epsg3857, 0, 0, 0);
 
-            c.set('EPSG:3857', new Vector3(1, 2, 3));
+            c.set(CoordinateSystem.epsg3857, new Vector3(1, 2, 3));
             expect(c.x).toEqual(1);
             expect(c.y).toEqual(2);
             expect(c.z).toEqual(3);
@@ -104,7 +105,7 @@ describe('Coordinates', () => {
 
     describe('clone', () => {
         it('should return the correct value', () => {
-            const c0 = new Coordinates('EPSG:3857', 1, 2, 3);
+            const c0 = new Coordinates(CoordinateSystem.epsg3857, 1, 2, 3);
             const c1 = c0.clone();
 
             expect(c0.x).toEqual(c0.x);
@@ -115,7 +116,7 @@ describe('Coordinates', () => {
 
     describe('x, y, z', () => {
         it('should return the correct values', () => {
-            const c = new Coordinates('EPSG:3857', 1, 2, 3);
+            const c = new Coordinates(CoordinateSystem.epsg3857, 1, 2, 3);
 
             expect(c.x).toEqual(1);
             expect(c.y).toEqual(2);
@@ -123,7 +124,7 @@ describe('Coordinates', () => {
         });
 
         it('should throw if the CRS is geographic', () => {
-            const c = new Coordinates('EPSG:4326', 1, 2, 3);
+            const c = new Coordinates(CoordinateSystem.epsg4326, 1, 2, 3);
 
             expect(() => c.x).toThrow();
             expect(() => c.y).toThrow();
@@ -133,17 +134,17 @@ describe('Coordinates', () => {
 
     describe('toVector3()', () => {
         it('should return the x, y, z values', () => {
-            const c = new Coordinates('EPSG:3857', 1, 2, 3);
+            const c = new Coordinates(CoordinateSystem.epsg3857, 1, 2, 3);
             expect(c.toVector3()).toEqual({ x: 1, y: 2, z: 3 });
         });
 
         it('should return the lat, lon, z values', () => {
-            const c = new Coordinates('EPSG:4326', 1, 2, 3);
+            const c = new Coordinates(CoordinateSystem.epsg4326, 1, 2, 3);
             expect(c.toVector3()).toEqual({ x: 1, y: 2, z: 3 });
         });
 
         it('should honor the passed target the x, y, z values', () => {
-            const c = new Coordinates('EPSG:3857', 1, 2, 3);
+            const c = new Coordinates(CoordinateSystem.epsg3857, 1, 2, 3);
             const target = new Vector3(-1, -1, -1);
             expect(c.toVector3(target)).toEqual({ x: 1, y: 2, z: 3 });
             expect(c.toVector3(target)).toBe(target);
@@ -152,17 +153,17 @@ describe('Coordinates', () => {
 
     describe('toVector2()', () => {
         it('should return the x, y values', () => {
-            const c = new Coordinates('EPSG:3857', 1, 2, 3);
+            const c = new Coordinates(CoordinateSystem.epsg3857, 1, 2, 3);
             expect(c.toVector2()).toEqual({ x: 1, y: 2 });
         });
 
         it('should return the lat, lon', () => {
-            const c = new Coordinates('EPSG:4326', 1, 2, 3);
+            const c = new Coordinates(CoordinateSystem.epsg4326, 1, 2, 3);
             expect(c.toVector2()).toEqual({ x: 1, y: 2 });
         });
 
         it('should honor the passed target the x, y values', () => {
-            const c = new Coordinates('EPSG:3857', 1, 2, 3);
+            const c = new Coordinates(CoordinateSystem.epsg3857, 1, 2, 3);
             const target = new Vector2(-1, -1);
             expect(c.toVector2(target)).toEqual({ x: 1, y: 2 });
             expect(c.toVector2(target)).toBe(target);
@@ -171,28 +172,28 @@ describe('Coordinates', () => {
 
     describe('isGeographic()', () => {
         it('should return true for EPSG:4326', () => {
-            expect(new Coordinates('EPSG:4326', 0, 0, 0).isGeographic()).toBeTruthy();
+            expect(new Coordinates(CoordinateSystem.epsg4326, 0, 0, 0).isGeographic()).toBeTruthy();
         });
 
         it('should return true for EPSG:4979', () => {
-            expect(new Coordinates('EPSG:4326', 0, 0, 0).isGeographic()).toBeTruthy();
+            expect(new Coordinates(CoordinateSystem.epsg4326, 0, 0, 0).isGeographic()).toBeTruthy();
         });
 
         it('should return false for EPSG:3857', () => {
-            expect(new Coordinates('EPSG:3857', 0, 0, 0).isGeographic()).toBeFalsy();
+            expect(new Coordinates(CoordinateSystem.epsg3857, 0, 0, 0).isGeographic()).toBeFalsy();
         });
     });
 
     describe('altitude', () => {
         it('should return the 3rd coordinate', () => {
-            const coord = new Coordinates('EPSG:4326', 0, 0, 999);
+            const coord = new Coordinates(CoordinateSystem.epsg4326, 0, 0, 999);
             expect(coord.altitude).toEqual(999);
         });
     });
 
     describe('withLongitude', () => {
         it('should return the object and set the longitude', () => {
-            const coord = new Coordinates('EPSG:4326', 0, 0);
+            const coord = new Coordinates(CoordinateSystem.epsg4326, 0, 0);
             const result = coord.withLongitude(15);
 
             expect(coord).toBe(result);
@@ -200,7 +201,7 @@ describe('Coordinates', () => {
         });
 
         it('should support DMS', () => {
-            const coord = new Coordinates('EPSG:4326', 0, 0);
+            const coord = new Coordinates(CoordinateSystem.epsg4326, 0, 0);
             const result = coord.withLongitude({ degrees: 1, minutes: 2, seconds: 3 });
 
             expect(coord).toBe(result);
@@ -208,7 +209,7 @@ describe('Coordinates', () => {
         });
 
         it('should support partial DMS', () => {
-            const coord = new Coordinates('EPSG:4326', 0, 0);
+            const coord = new Coordinates(CoordinateSystem.epsg4326, 0, 0);
             const result = coord.withLongitude({ degrees: 1 });
 
             expect(coord).toBe(result);
@@ -218,7 +219,7 @@ describe('Coordinates', () => {
 
     describe('withLatitude', () => {
         it('should return the object and set the latitude', () => {
-            const coord = new Coordinates('EPSG:4326', 0, 0);
+            const coord = new Coordinates(CoordinateSystem.epsg4326, 0, 0);
             const result = coord.withLatitude(15);
 
             expect(coord).toBe(result);
@@ -226,7 +227,7 @@ describe('Coordinates', () => {
         });
 
         it('should support DMS', () => {
-            const coord = new Coordinates('EPSG:4326', 0, 0);
+            const coord = new Coordinates(CoordinateSystem.epsg4326, 0, 0);
             const result = coord.withLatitude({ degrees: 1, minutes: 2, seconds: 3 });
 
             expect(coord).toBe(result);
@@ -234,7 +235,7 @@ describe('Coordinates', () => {
         });
 
         it('should support partial DMS', () => {
-            const coord = new Coordinates('EPSG:4326', 0, 0);
+            const coord = new Coordinates(CoordinateSystem.epsg4326, 0, 0);
             const result = coord.withLatitude({ degrees: 1 });
 
             expect(coord).toBe(result);
@@ -244,7 +245,7 @@ describe('Coordinates', () => {
 
     describe('withAltitude', () => {
         it('should return the object and set the altitude', () => {
-            const coord = new Coordinates('EPSG:4326', 0, 0);
+            const coord = new Coordinates(CoordinateSystem.epsg4326, 0, 0);
 
             const result = coord.withAltitude(12345);
             expect(result).toBe(coord);
@@ -256,7 +257,7 @@ describe('Coordinates', () => {
         it('should return an EPSG:4326 coordinates with correct values', () => {
             const coord = Coordinates.WGS84(1, 2, 3);
 
-            expect(coord.crs).toBe('EPSG:4326');
+            expect(coord.crs.isEpsg(4326)).toBe(true);
             expect(coord.latitude).toBe(1);
             expect(coord.longitude).toBe(2);
             expect(coord.altitude).toBe(3);
@@ -268,7 +269,7 @@ describe('Coordinates', () => {
 
             const coord = Coordinates.WGS84(latitude, longitude);
 
-            expect(coord.crs).toBe('EPSG:4326');
+            expect(coord.crs.isEpsg(4326)).toBe(true);
             expect(coord.latitude).toBeCloseTo(2.0341666);
             expect(coord.longitude).toBeCloseTo(1.034166);
             expect(coord.altitude).toEqual(0);
@@ -283,14 +284,14 @@ describe('Coordinates', () => {
             const longIn = 4.82212;
             const latIn = 45.723722;
             // let's define an input coordinate EPSG:4326.
-            const coord1 = new Coordinates('EPSG:4326', longIn, latIn);
+            const coord1 = new Coordinates(CoordinateSystem.epsg4326, longIn, latIn);
             // convert coordinate in EPSG:3946
-            const coord2 = coord1.as('EPSG:3946');
+            const coord2 = coord1.as(CoordinateSystem.fromEpsg(3946));
             // verify intermediate values
             expect(coord2.x).toBeCloseTo(1841825.45, 2);
             expect(coord2.y).toBeCloseTo(5170916.93, 2);
             // and convert back to EPSG:4626 standard in degree.
-            const coord3 = coord2.as('EPSG:4326');
+            const coord3 = coord2.as(CoordinateSystem.epsg4326);
             // verify coordinates
             expect(coord3.longitude).toBeCloseTo(longIn, 5);
             expect(coord3.latitude).toBeCloseTo(latIn, 5);
@@ -299,7 +300,7 @@ describe('Coordinates', () => {
 
     describe('geodesicNormal', () => {
         it('should correctly return the default up vector for planar mode ', () => {
-            const coord0 = new Coordinates('EPSG:3946', 15.0, 12.0);
+            const coord0 = new Coordinates(CoordinateSystem.fromEpsg(3946), 15.0, 12.0);
 
             const normal0 = coord0.geodesicNormal;
 

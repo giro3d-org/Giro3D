@@ -3,6 +3,7 @@ import proj4 from 'proj4';
 import { MathUtils, Vector2, Vector3 } from 'three';
 import { isVector3 } from '../../utils/predicates';
 import { getConverter } from './ProjectionCache';
+import CoordinateSystem from './coordinate-system/CoordinateSystem';
 
 proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs +type=crs');
 proj4.defs('EPSG:4979', '+proj=longlat +datum=WGS84 +no_defs +type=crs');
@@ -67,35 +68,33 @@ function unitFromProj4Unit(projunit: string | undefined) {
  * @param crs - the CRS to test
  * @returns the unit of measure (see `UNIT`)
  */
-export function crsToUnit(crs: string) {
-    switch (crs) {
-        case 'EPSG:4326':
-        case 'EPSG:4979':
-        case 'equirectangular':
-            return UNIT.DEGREE;
-        case 'EPSG:4978':
-            return UNIT.METER;
-        default: {
-            const p = proj4.defs(crs);
-            if (p == null) {
-                return undefined;
-            }
-            return unitFromProj4Unit(p.units);
-        }
+export function crsToUnit(crs: CoordinateSystem) {
+    if (crs.isEpsg(4326) || crs.isEpsg(4979) || crs.isEquirectangular()) {
+        return UNIT.DEGREE;
     }
+
+    if (crs.isEpsg(4978)) {
+        return UNIT.METER;
+    }
+
+    const p = proj4.defs(crs.id);
+    if (p == null) {
+        return undefined;
+    }
+    return unitFromProj4Unit(p.units);
 }
 
-function crsToUnitWithError(crs: string) {
+function crsToUnitWithError(crs: CoordinateSystem) {
     const u = crsToUnit(crs);
     if (crs === undefined || u === undefined) {
-        throw new Error(`Invalid crs parameter value '${crs}'`);
+        throw new Error(`Invalid crs parameter value '${crs.id}'`);
     }
     return u;
 }
 
-export function assertCrsIsValid(crs: string) {
-    if (proj4.defs(crs) == null) {
-        throw new Error(`Invalid crs parameter value '${crs}'. Did you define it with proj4?`);
+export function assertCrsIsValid(crs: CoordinateSystem) {
+    if (proj4.defs(crs.id) == null) {
+        throw new Error(`Invalid crs parameter value '${crs.id}'. Did you define it with proj4?`);
     }
 }
 
@@ -105,7 +104,7 @@ export function assertCrsIsValid(crs: string) {
  * @param crs - the CRS to test
  * @returns `true` if the CRS is in geographic coordinates.
  */
-export function crsIsGeographic(crs: string) {
+export function crsIsGeographic(crs: CoordinateSystem) {
     return crsToUnitWithError(crs) !== UNIT.METER;
 }
 
@@ -115,24 +114,20 @@ export function crsIsGeographic(crs: string) {
  * @param crs - the CRS to test
  * @returns `true` if the CRS is in geocentric coordinates.
  */
-export function crsIsGeocentric(crs: string) {
+export function crsIsGeocentric(crs: CoordinateSystem) {
     return crsToUnitWithError(crs) === UNIT.METER;
 }
 
-function assertIsGeographic(crs: string) {
+function assertIsGeographic(crs: CoordinateSystem) {
     if (!crsIsGeographic(crs)) {
-        throw new Error(`Can't query crs ${crs} long/lat`);
+        throw new Error(`Can't query crs ${crs.id} long/lat`);
     }
 }
 
-function assertIsGeocentric(crs: string) {
+function assertIsGeocentric(crs: CoordinateSystem) {
     if (!crsIsGeocentric(crs)) {
-        throw new Error(`Can't query crs ${crs} x/y/z`);
+        throw new Error(`Can't query crs ${crs.id} x/y/z`);
     }
-}
-
-export function is4326(crs: string) {
-    return crs.indexOf('EPSG:4326') === 0;
 }
 
 const planarNormal = new Vector3(0, 0, 1);
@@ -146,11 +141,11 @@ const planarNormal = new Vector3(0, 0, 1);
  * - A THREE `Vector3`
  *
  * @example
- * new Coordinates('EPSG:4978', 20885167, 849862, 23385912); //Geocentric coordinates
+ * new Coordinates(CoordinateSystem.epsg4978, 20885167, 849862, 23385912); //Geocentric coordinates
  * // or
- * new Coordinates('EPSG:4978', new Vector3(20885167, 849862, 23385912)) // Same with a vector.
+ * new Coordinates(CoordinateSystem.epsg4978, new Vector3(20885167, 849862, 23385912)) // Same with a vector.
  * // or
- * new Coordinates('EPSG:4326', 2.33, 48.24, 24999549); //Geographic coordinates
+ * new Coordinates(CoordinateSystem.epsg4326, 2.33, 48.24, 24999549); //Geographic coordinates
  */
 export type CoordinateParameters = [number, number] | [number, number, number] | [Vector3];
 
@@ -160,7 +155,7 @@ export type CoordinateParameters = [number, number] | [number, number, number] |
 class Coordinates {
     readonly isCoordinates = true as const;
     private readonly _values: Float64Array;
-    crs: string;
+    crs: CoordinateSystem;
 
     /**
      * Build a {@link Coordinates} object, given a [CRS](http://inspire.ec.europa.eu/theme/rs) and a number of coordinates value.
@@ -171,7 +166,7 @@ class Coordinates {
      * @param crs - Geographic or Geocentric coordinates system.
      * @param coordinates - The coordinates.
      */
-    constructor(crs: string, ...coordinates: CoordinateParameters) {
+    constructor(crs: CoordinateSystem, ...coordinates: CoordinateParameters) {
         this._values = new Float64Array(3);
         this.crs = crs;
         this.set(crs, ...coordinates);
@@ -191,7 +186,7 @@ class Coordinates {
         return planarNormal;
     }
 
-    set(crs: string, ...coordinates: CoordinateParameters) {
+    set(crs: CoordinateSystem, ...coordinates: CoordinateParameters) {
         crsToUnitWithError(crs);
         this.crs = crs;
 
@@ -243,8 +238,8 @@ class Coordinates {
      *
      * const position = { x: 20885167, y: 849862, z: 23385912 };
      * // Geocentric system
-     * const coords = new Coordinates('EPSG:4978', position.x, position.y, position.z);
-     * const coordinates = coords.as('EPSG:4326');  // Geographic system
+     * const coords = new Coordinates(CoordinateSystem.epsg4978, position.x, position.y, position.z);
+     * const coordinates = coords.as(CoordinateSystem.epsg4326);  // Geographic system
      * coordinates.longitude; // Longitude in geographic system
      * // returns 2.330201911389028
      * ```
@@ -270,8 +265,8 @@ class Coordinates {
      *
      * const position = { x: 20885167, y: 849862, z: 23385912 };
      * // Geocentric system
-     * const coords = new Coordinates('EPSG:4978', position.x, position.y, position.z);
-     * const coordinates = coords.as('EPSG:4326');  // Geographic system
+     * const coords = new Coordinates(CoordinateSystem.epsg4978, position.x, position.y, position.z);
+     * const coordinates = coords.as(CoordinateSystem.epsg4326);  // Geographic system
      * coordinates.latitude; // Latitude in geographic system
      * // returns : 48.24830764643365
      * ```
@@ -290,7 +285,7 @@ class Coordinates {
      * const position = { longitude: 2.33, latitude: 48.24, altitude: 24999549 };
      * // Geographic system
      * const coordinates =
-     *      new Coordinates('EPSG:4326', position.longitude, position.latitude, position.altitude);
+     *      new Coordinates(CoordinateSystem.epsg4326, position.longitude, position.latitude, position.altitude);
      * coordinates.altitude; // Altitude in geographic system
      * // returns : 24999549
      *
@@ -298,8 +293,8 @@ class Coordinates {
      *
      * const position = { x: 20885167, y: 849862, z: 23385912 };
      * // Geocentric system
-     * const coords = new Coordinates('EPSG:4978', position.x, position.y, position.z);
-     * const coordinates = coords.as('EPSG:4326');  // Geographic system
+     * const coords = new Coordinates(CoordinateSystem.epsg4978, position.x, position.y, position.z);
+     * const coordinates = coords.as(CoordinateSystem.epsg4326);  // Geographic system
      * coordinates.altitude; // Altitude in geographic system
      * // returns : 24999548.046711832
      * ```
@@ -347,7 +342,7 @@ class Coordinates {
         return this;
     }
 
-    withCRS(crs: string): this {
+    withCRS(crs: CoordinateSystem): this {
         this.crs = crs;
         return this;
     }
@@ -367,7 +362,7 @@ class Coordinates {
      *
      * ```js
      * const position = { x: 20885167, y: 849862, z: 23385912 };
-     * const coordinates = new Coordinates('EPSG:4978', position.x, position.y, position.z);
+     * const coordinates = new Coordinates(CoordinateSystem.epsg4978, position.x, position.y, position.z);
      * coordinates.x;  // Geocentric system
      * // returns : 20885167
      *
@@ -376,8 +371,8 @@ class Coordinates {
      * const position = { longitude: 2.33, latitude: 48.24, altitude: 24999549 };
      * // Geographic system
      * const coords =
-     *     new Coordinates('EPSG:4326', position.longitude, position.latitude, position.altitude);
-     * const coordinates = coords.as('EPSG:4978'); // Geocentric system
+     *     new Coordinates(CoordinateSystem.epsg4326, position.longitude, position.latitude, position.altitude);
+     * const coordinates = coords.as(CoordinateSystem.epsg4978); // Geocentric system
      * coordinates.x; // Geocentric system
      * // returns : 20888561.0301258
      * ```
@@ -395,7 +390,7 @@ class Coordinates {
      *
      * ```js
      * const position = { x: 20885167, y: 849862, z: 23385912 };
-     * const coordinates = new Coordinates('EPSG:4978', position.x, position.y, position.z);
+     * const coordinates = new Coordinates(CoordinateSystem.epsg4978, position.x, position.y, position.z);
      * coordinates.y;  // Geocentric system
      * // returns :  849862
      * ```
@@ -413,7 +408,7 @@ class Coordinates {
      *
      * ```js
      * const position = { x: 20885167, y: 849862, z: 23385912 };
-     * const coordinates = new Coordinates('EPSG:4978', position.x, position.y, position.z);
+     * const coordinates = new Coordinates(CoordinateSystem.epsg4978, position.x, position.y, position.z);
      * coordinates.z;  // Geocentric system
      * // returns :  23385912
      * ```
@@ -430,7 +425,7 @@ class Coordinates {
      * ```js
      * const position = { x: 20885167, y: 849862, z: 23385912 };
      * // Geocentric system
-     * const coordinates = new Coordinates('EPSG:4978', position.x, position.y, position.z);
+     * const coordinates = new Coordinates(CoordinateSystem.epsg4978, position.x, position.y, position.z);
      * coordinates.toVector3();
      * // returns : Vector3
      * // x: 20885167
@@ -442,7 +437,7 @@ class Coordinates {
      * const position = { longitude: 2.33, latitude: 48.24, altitude: 24999549 };
      * // Geographic system
      * const coordinates =
-     *      new Coordinates('EPSG:4326', position.longitude, position.latitude, position.altitude);
+     *      new Coordinates(CoordinateSystem.epsg4326, position.longitude, position.latitude, position.altitude);
      * coordinates.toVector3();
      * // returns : Vector3
      * // x: 2.33
@@ -465,7 +460,7 @@ class Coordinates {
      * ```js     *
      * const position = { x: 20885167, y: 849862, z: 23385912 };
      * // Metric system
-     * const coordinates = new Coordinates('EPSG:3857', position.x, position.y, position.z);
+     * const coordinates = new Coordinates(CoordinateSystem.epsg3857, position.x, position.y, position.z);
      * coordinates.toVector2();
      * // returns : Vector2
      * // x: 20885167
@@ -476,7 +471,7 @@ class Coordinates {
      * const position = { longitude: 2.33, latitude: 48.24, altitude: 24999549 };
      * // Geographic system
      * const coordinates =
-     *      new Coordinates('EPSG:4326', position.longitude, position.latitude, position.altitude);
+     *      new Coordinates(CoordinateSystem.epsg4326, position.longitude, position.latitude, position.altitude);
      * coordinates.toVector2();
      * // returns : Vector2
      * // x: 2.33
@@ -501,27 +496,27 @@ class Coordinates {
      * const position = { longitude: 2.33, latitude: 48.24, altitude: 24999549 };
      * // Geographic system
      * const coords =
-     *     new Coordinates('EPSG:4326', position.longitude, position.latitude, position.altitude);
-     * const coordinates = coords.as('EPSG:4978'); // Geocentric system
+     *     new Coordinates(CoordinateSystem.epsg4326, position.longitude, position.latitude, position.altitude);
+     * const coordinates = coords.as(CoordinateSystem.epsg4978); // Geocentric system
      * ```
      * @param crs - the [CRS](http://inspire.ec.europa.eu/theme/rs) EPSG string
      * @param target - the object that is returned
      * @returns the converted coordinate
      */
-    as(crs: string, target?: Coordinates) {
-        if (crs === undefined || crsToUnit(crs) === undefined) {
-            throw new Error(`Invalid crs paramater value '${crs}'`);
+    as(crs: CoordinateSystem, target?: Coordinates) {
+        if (crsToUnit(crs) === undefined) {
+            throw new Error(`Invalid crs paramater value '${crs.id}'`);
         }
         return this.convert(crs, target);
     }
 
     // Only support explicit conversions
-    private convert(newCrs: string, target?: Coordinates) {
+    private convert(newCrs: CoordinateSystem, target?: Coordinates) {
         target = target || new Coordinates(newCrs, 0, 0, 0);
-        if (newCrs === this.crs) {
+        if (newCrs.id === this.crs.id) {
             return target.copy(this);
         }
-        if (this.crs in proj4.defs && newCrs in proj4.defs) {
+        if (this.crs.id in proj4.defs && newCrs.id in proj4.defs) {
             const val0 = this._values[0];
             let val1 = this._values[1];
             const crsIn = this.crs;
@@ -529,7 +524,7 @@ class Coordinates {
             // there is a bug for converting anything from and to 4978 with proj4
             // https://github.com/proj4js/proj4js/issues/195
             // the workaround is to use an intermediate projection, like EPSG:4326
-            if (is4326(crsIn) && newCrs === 'EPSG:3857') {
+            if (crsIn.isEpsg(4326) && newCrs.isEpsg(3857)) {
                 val1 = MathUtils.clamp(val1, -89.999999, 89.999999);
                 const p = getConverter(crsIn, newCrs).forward([val0, val1]);
                 return target.set(newCrs, p[0], p[1], this._values[2]);
@@ -539,7 +534,7 @@ class Coordinates {
             return target.set(newCrs, p[0], p[1], this._values[2]);
         }
 
-        throw new Error(`Cannot convert from crs ${this.crs} to ${newCrs}`);
+        throw new Error(`Cannot convert from crs ${this.crs.id} to ${newCrs.id}`);
     }
 
     /**
@@ -548,7 +543,7 @@ class Coordinates {
      *
      * ```js
      * const position = { x: 20885167, y: 849862, z: 23385912 };
-     * const coordinates = new Coordinates('EPSG:4978', position.x, position.y, position.z);
+     * const coordinates = new Coordinates(CoordinateSystem.epsg4978, position.x, position.y, position.z);
      * coordinates.isGeographic();  // Geocentric system
      * // returns :  false
      * ```
@@ -562,7 +557,7 @@ class Coordinates {
      * Creates a geographic coordinate in EPSG:4326
      */
     static WGS84(latitude: number | DMS, longitude: number | DMS, altitude?: number): Coordinates {
-        return new Coordinates('EPSG:4326', 0, 0)
+        return new Coordinates(CoordinateSystem.epsg4326, 0, 0)
             .withLatitude(latitude)
             .withLongitude(longitude)
             .withAltitude(altitude ?? 0);

@@ -3,12 +3,8 @@ import { Box3, Vector2, Vector3 } from 'three';
 import ProjUtils from '../../utils/ProjUtils';
 import { nonNull } from '../../utils/tsutils';
 import OffsetScale from '../OffsetScale';
-import Coordinates, {
-    assertCrsIsValid,
-    crsIsGeocentric,
-    crsIsGeographic,
-    is4326,
-} from './Coordinates';
+import Coordinates, { assertCrsIsValid, crsIsGeocentric, crsIsGeographic } from './Coordinates';
+import CoordinateSystem from './coordinate-system/CoordinateSystem';
 
 const tmpXY = new Vector2();
 
@@ -19,8 +15,8 @@ const CARDINAL = {
     NORTH: 3,
 };
 
-export function reasonnableEpsilonForCRS(crs: string, width: number, height: number) {
-    if (is4326(crs)) {
+export function reasonnableEpsilonForCRS(crs: CoordinateSystem, width: number, height: number) {
+    if (crs.isEpsg(4326)) {
         return 0.01;
     }
     return 0.01 * Math.min(width, height);
@@ -59,7 +55,7 @@ export type ExtentParameters =
  *
  *     // an extent defined by bottom-left longitude 0 and latitude 0 and top-right longitude 1 and
  *     // latitude 1
- *     const extent = new Extent('EPSG:4326', 0, 0, 1, 1);
+ *     const extent = new Extent(CoordinateSystem.epsg4326, 0, 0, 1, 1);
  *
  * For other EPSG codes, you must register them with `Instance.registerCRS()` :
  *
@@ -76,7 +72,7 @@ export type ExtentParameters =
  */
 class Extent {
     private readonly _values: Float64Array;
-    private _crs: string;
+    private _crs: CoordinateSystem;
 
     /**
      * Constructs an Extent object.
@@ -87,7 +83,7 @@ class Extent {
      * Please refer to [proj4js](https://github.com/proj4js/proj4js) doc for more information.
      * @param values - The extent values.
      */
-    constructor(crs: string, ...values: ExtentParameters) {
+    constructor(crs: CoordinateSystem, ...values: ExtentParameters) {
         this._values = new Float64Array(4);
         this._crs = crs;
         this.set(crs, ...values);
@@ -103,7 +99,7 @@ class Extent {
      * @returns The produced extent.
      */
     static fromCenterAndSize(
-        crs: string,
+        crs: CoordinateSystem,
         center: { x: number; y: number },
         width: number,
         height: number,
@@ -153,7 +149,7 @@ class Extent {
      */
     equals(other: Extent, epsilon = 0.00001) {
         return (
-            other._crs === this._crs &&
+            other._crs.equals(this._crs) &&
             Math.abs(other._values[0] - this._values[0]) <= epsilon &&
             Math.abs(other._values[1] - this._values[1]) <= epsilon &&
             Math.abs(other._values[2] - this._values[2]) <= epsilon &&
@@ -213,9 +209,9 @@ class Extent {
      * @param marginRatio - The margin, in normalized value ([0, 1]).
      * A margin of 1 means 100% of the width or height of the extent.
      * @example
-     * const extent = new Extent('EPSG:3857', 0, 100, 0, 100);
+     * const extent = new Extent(CoordinateSystem.epsg3857, 0, 100, 0, 100);
      * const margin = extent.withRelativeMargin(0.1);
-     * //  new Extent('EPSG:3857', -10, 110, -10, 110);
+     * //  new Extent(CoordinateSystem.epsg3857, -10, 110, -10, 110);
      * @returns a new extent with a specified margin applied.
      */
     withRelativeMargin(marginRatio: number) {
@@ -231,9 +227,9 @@ class Extent {
      * @param x - The horizontal margin, in CRS units.
      * @param y - The vertical margin, in CRS units.
      * @example
-     * const extent = new Extent('EPSG:3857', 0, 100, 0, 100);
+     * const extent = new Extent(CoordinateSystem.epsg3857, 0, 100, 0, 100);
      * const margin = extent.withMargin(10, 15);
-     * //  new Extent('EPSG:3857', -10, 110, -15, 115);
+     * //  new Extent(CoordinateSystem.epsg3857, -10, 110, -15, 115);
      * @returns a new extent with a specified margin applied.
      */
     withMargin(x: number, y: number) {
@@ -252,10 +248,10 @@ class Extent {
      * @param crs - the new CRS
      * @returns the converted extent.
      */
-    as(crs: string): this | Extent {
+    as(crs: CoordinateSystem): this | Extent {
         assertCrsIsValid(crs);
 
-        if (this._crs !== crs && !(is4326(this._crs) && is4326(crs))) {
+        if (!this._crs.equals(crs) && !(this._crs.isEpsg(4326) && crs.isEpsg(4326))) {
             // Compute min/max in x/y by projecting 8 cardinal points,
             // and then taking the min/max of each coordinates.
             const c = this.centerAsVector2(tmpXY);
@@ -302,7 +298,7 @@ class Extent {
     }
 
     offsetToParent(other: Extent, target = new OffsetScale()) {
-        if (this.crs !== other.crs) {
+        if (!this.crs.equals(other.crs)) {
             throw new Error('unsupported mix');
         }
 
@@ -377,7 +373,7 @@ class Extent {
     /**
      * Gets the coordinate reference system of this extent.
      */
-    get crs(): string {
+    get crs(): CoordinateSystem {
         return this._crs;
     }
 
@@ -474,7 +470,7 @@ class Extent {
      * @returns `true` if the coordinate is inside the bounding box
      */
     isPointInside(coord: Coordinates, epsilon = 0) {
-        const c = this.crs === coord.crs ? coord : coord.as(this.crs);
+        const c = this.crs.equals(coord.crs) ? coord : coord.as(this.crs);
         // TODO this ignores altitude
         if (crsIsGeographic(this.crs)) {
             return (
@@ -553,7 +549,7 @@ class Extent {
             return this;
         }
         // TODO use an intermediate tmp instance for .as
-        if (other.crs !== this.crs) {
+        if (!other.crs.equals(this.crs)) {
             other = other.as(this.crs);
         }
         this.set(
@@ -636,7 +632,7 @@ class Extent {
      * @param values - the new values
      * @returns this object modified
      */
-    set(crs: string, ...values: ExtentParameters): this {
+    set(crs: CoordinateSystem, ...values: ExtentParameters): this {
         this._crs = crs;
 
         if (values.length === 2 && isCoordinates(values[0]) && isCoordinates(values[1])) {
@@ -682,16 +678,16 @@ class Extent {
         let east = -Infinity;
         let west = +Infinity;
         let valid = false;
-        let crs: string | null = null;
+        let crs: CoordinateSystem | null = null;
 
         for (let i = 0; i < extents.length; i++) {
             const e = nonNull(extents[i]);
 
             valid = true;
             if (crs != null) {
-                if (crs !== e.crs) {
+                if (!crs.equals(e.crs)) {
                     throw new Error(
-                        `Unsupported union between different CRSes (${e.crs} and ${crs} differ)`,
+                        `Unsupported union between different CRSes (${e.crs.id} and ${crs.id} differ)`,
                     );
                 }
             } else {
@@ -716,9 +712,9 @@ class Extent {
             return;
         }
 
-        if (extent.crs !== this.crs) {
+        if (!extent.crs.equals(this.crs)) {
             throw new Error(
-                `unsupported union between different CRSes (${extent.crs} and ${this.crs} differ)`,
+                `unsupported union between different CRSes (${extent.crs.id} and ${this.crs.id} differ)`,
             );
         }
         const west = extent.west;
@@ -787,7 +783,7 @@ class Extent {
      * @param box - the box to read values from
      * @returns the constructed extent.
      */
-    static fromBox3(crs: string, box: Box3): Extent {
+    static fromBox3(crs: CoordinateSystem, box: Box3): Extent {
         return new this(crs, {
             west: box.min.x,
             east: box.max.x,
@@ -822,7 +818,7 @@ class Extent {
      * // returns `(0.5, 0.5)`.
      */
     offsetInExtent(coordinate: Coordinates, target = new Vector2()) {
-        if (coordinate.crs !== this.crs) {
+        if (!coordinate.crs.equals(this.crs)) {
             throw new Error('unsupported mix');
         }
 
@@ -895,7 +891,7 @@ class Extent {
      * @param ySubdivs - The number of subdivisions on the Y/latitude axis.
      * @returns the resulting extents.
      * @example
-     * const extent = new Extent('EPSG:3857', 0, 100, 0, 100);
+     * const extent = new Extent(CoordinateSystem.epsg3857, 0, 100, 0, 100);
      * extent.split(2, 1);
      * // [0, 50, 0, 50], [50, 100, 50, 100]
      */
@@ -935,14 +931,20 @@ class Extent {
      * The bounds of the Web Mercator (EPSG:3857) projection.
      */
     static get webMercator(): Extent {
-        return new Extent('EPSG:3857', -20037508.34, 20037508.34, -20048966.1, 20048966.1);
+        return new Extent(
+            CoordinateSystem.epsg3857,
+            -20037508.34,
+            20037508.34,
+            -20048966.1,
+            20048966.1,
+        );
     }
 
     /**
      * The bounds of the whole world in the EPSG:4326 projection.
      */
     static get WGS84(): Extent {
-        return new Extent('EPSG:4326', -180, 180, -90, 90);
+        return new Extent(CoordinateSystem.epsg4326, -180, 180, -90, 90);
     }
 
     /**
@@ -952,7 +954,7 @@ class Extent {
         // Note that those are the same values as WGS84.
         // However, since panoramic images are not georeferenced,
         // speaking about WGS84 makes no sense.
-        return new Extent('equirectangular', -180, 180, -90, 90);
+        return new Extent(CoordinateSystem.equirectangular, -180, 180, -90, 90);
     }
 
     /**
@@ -981,7 +983,12 @@ class Extent {
         const east =
             west + 360 * (params.croppedAreaImageWidthPixels / params.fullPanoImageWidthPixels);
 
-        return new Extent('equirectangular', { west, east, south, north });
+        return new Extent(CoordinateSystem.equirectangular, {
+            west,
+            east,
+            south,
+            north,
+        });
     }
 }
 

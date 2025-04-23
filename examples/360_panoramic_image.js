@@ -5,6 +5,7 @@ import { LineString, Point } from 'ol/geom.js';
 import { Circle, Fill, Stroke, Style } from 'ol/style.js';
 
 import FirstPersonControls from '@giro3d/giro3d/controls/FirstPersonControls.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Ellipsoid from '@giro3d/giro3d/core/geographic/Ellipsoid.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
@@ -22,7 +23,7 @@ import StatusBar from './widgets/StatusBar.js';
 
 const instance = new Instance({
     target: 'view',
-    crs: 'EPSG:4978',
+    crs: CoordinateSystem.epsg4978,
 });
 
 const ellipsoid = Ellipsoid.WGS84.scale(0.0001);

@@ -1,6 +1,7 @@
 import type GUI from 'lil-gui';
 import type TileSource from 'ol/source/Tile.js';
 import UrlTile from 'ol/source/UrlTile.js';
+import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import type Instance from '../core/Instance';
 import * as MemoryUsage from '../core/MemoryUsage';
 import { isGeoTIFFSource } from '../sources/GeoTIFFSource';
@@ -38,14 +39,14 @@ class SourceInspector extends Panel {
     }
 
     private addControllers(source: ImageSource) {
-        const obj = { crs: source.getCrs() ?? 'unknown' };
+        const obj = { crs: source.getCrs() ?? CoordinateSystem.unknown };
 
         this.addController(source, 'type').name('Type');
         this.addController(source, 'colorSpace').name('Color space');
         this.addController(source, 'datatype').name('Data type');
         this.addController(source, 'flipY').name('Flip Y');
         this.addController(source, 'synchronous').name('Synchronous');
-        this.addController(obj, 'crs').name('CRS');
+        this.addController(obj.crs, 'id').name('CRS');
         this.addController(source, 'update').name('Update');
 
         this.addController(this, 'cpuMemoryUsage').name('Memory usage (CPU)');

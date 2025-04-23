@@ -4,9 +4,10 @@ import type { ColorLike } from 'ol/colorlike';
 import type { Extent as OLExtent } from 'ol/extent';
 import { Color } from 'three';
 import Extent from '../core/geographic/Extent';
+import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 
-function fromOLExtent(extent: OLExtent, projectionCode: string) {
-    return new Extent(projectionCode, extent[0], extent[2], extent[1], extent[3]);
+function fromOLExtent(extent: OLExtent, coordinateSystem: CoordinateSystem) {
+    return new Extent(coordinateSystem, extent[0], extent[2], extent[1], extent[3]);
 }
 
 function toOLExtent(extent: Extent, margin = 0): OLExtent {
@@ -56,7 +57,7 @@ function fromOLColor(input: OLColor | ColorLike): { color: Color; opacity: numbe
     }
 }
 
-function getFeatureExtent(feature: Feature, crs: string): Extent | undefined {
+function getFeatureExtent(feature: Feature, crs: CoordinateSystem): Extent | undefined {
     const geometry = feature.getGeometry();
     if (!geometry) {
         return undefined;

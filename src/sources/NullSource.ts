@@ -1,3 +1,4 @@
+import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import Extent from '../core/geographic/Extent';
 import type { ImageResponse } from './ImageSource';
 import ImageSource from './ImageSource';
@@ -13,7 +14,7 @@ class NullSource extends ImageSource {
     constructor(options: { extent?: Extent } = {}) {
         super();
 
-        this._extent = options?.extent ?? new Extent('EPSG:3857', 0, 10, 0, 10);
+        this._extent = options?.extent ?? new Extent(CoordinateSystem.epsg3857, 0, 10, 0, 10);
     }
 
     getCrs() {

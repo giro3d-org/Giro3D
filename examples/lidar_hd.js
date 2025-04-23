@@ -1,15 +1,14 @@
-import TileWMS from 'ol/source/TileWMS.js';
-
 import { CubeTextureLoader, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import Tiles3D from '@giro3d/giro3d/entities/Tiles3D.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 import { MODE } from '@giro3d/giro3d/renderer/PointCloudMaterial.js';
+import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
@@ -22,7 +21,7 @@ const tmpVec3 = new Vector3();
 
 const instance = new Instance({
     target: 'view',
-    crs: 'EPSG:2154',
+    crs: CoordinateSystem.fromEpsg(2154),
 });
 
 const controls = new MapControls(instance.view.camera, instance.domElement);
@@ -66,7 +65,7 @@ function initializeCameraPosition(entity) {
             pointcloud.setColorLayer(
                 new ColorLayer({
                     name: 'color',
-                    extent: Extent.fromBox3('EPSG:2154', bbox),
+                    extent: Extent.fromBox3(CoordinateSystem.fromEpsg(2154), bbox),
                     source: orthophotoWmts,
                 }),
             );

@@ -1,3 +1,4 @@
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import Instance from '@giro3d/giro3d/core/Instance';
 import ColorLayer, { isColorLayer } from '@giro3d/giro3d/core/layer/ColorLayer';
@@ -10,7 +11,9 @@ import RenderingState from '@giro3d/giro3d/renderer/RenderingState';
 import NullSource from '@giro3d/giro3d/sources/NullSource';
 import { Color, DoubleSide, Group } from 'three';
 
-const nullSource = new NullSource({ extent: new Extent('EPSG:3857', -10, 10, -10, 10) });
+const nullSource = new NullSource({
+    extent: new Extent(CoordinateSystem.epsg3857, -10, 10, -10, 10),
+});
 
 function makeTile(patch?: (tile: TileMesh) => void): TileMesh {
     // @ts-expect-error invalid
@@ -31,7 +34,7 @@ type TestUserData = LayerUserData & {
 
 describe('Map', () => {
     let map: Map;
-    const crs = 'EPSG:4326';
+    const crs = CoordinateSystem.epsg4326;
 
     const extent = new Extent(crs, {
         west: 0,
@@ -49,7 +52,7 @@ describe('Map', () => {
         // @ts-expect-error incomplete
         const instance: Instance = {
             notifyChange: jest.fn(),
-            referenceCrs: crs,
+            coordinateSystem: crs,
         };
 
         map.initialize({ instance });
@@ -65,7 +68,7 @@ describe('Map', () => {
     describe('constructor', () => {
         it('should throw if the extent is invalid', () => {
             // reversed extent (min values are greater than max values)
-            const invalid = new Extent('EPSG:3857', +10, -10, +5, -5);
+            const invalid = new Extent(CoordinateSystem.epsg3857, +10, -10, +5, -5);
 
             expect(() => new Map({ extent: invalid })).toThrow(/Invalid extent/);
         });
@@ -225,7 +228,7 @@ describe('Map', () => {
         });
 
         it('should honor the provided extent', () => {
-            const ex = new Extent('EPSG:3857', -10000, 242444, 34000, 100000);
+            const ex = new Extent(CoordinateSystem.epsg3857, -10000, 242444, 34000, 100000);
             const sut = new Map({ extent: ex });
             expect(sut.extent).toEqual(ex);
         });
@@ -241,7 +244,7 @@ describe('Map', () => {
 
     describe('preprocess', () => {
         it('should convert the extent to the instance CRS', async () => {
-            const verticalExtent = new Extent('EPSG:3857', -100, 100, -250, 250);
+            const verticalExtent = new Extent(CoordinateSystem.epsg3857, -100, 100, -250, 250);
             const verticalMap = new Map({ extent: verticalExtent });
 
             Instance.registerCRS(

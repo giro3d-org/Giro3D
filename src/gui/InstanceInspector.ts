@@ -24,7 +24,7 @@ class InstanceInspector extends Panel {
     constructor(gui: GUI, instance: Instance) {
         super(gui, instance, 'Instance');
 
-        this.instanceCrs = this.instance.referenceCrs;
+        this.instanceCrs = this.instance.coordinateSystem.id;
         this.clearAlpha = this.instance.renderer.getClearAlpha();
         this.addController(this, 'instanceCrs').name('CRS');
 

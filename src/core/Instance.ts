@@ -24,6 +24,7 @@ import { GlobalRenderTargetPool } from '../renderer/RenderTargetPool';
 import View from '../renderer/View';
 import { GlobalCache } from './Cache';
 import { isDisposable } from './Disposable';
+import type CoordinateSystem from './geographic/coordinate-system/CoordinateSystem';
 import MainLoop from './MainLoop';
 import {
     aggregateMemoryUsage,
@@ -150,7 +151,7 @@ export interface InstanceOptions {
      * Must be a cartesian system.
      * Must first be registered via {@link Instance.registerCRS}
      */
-    crs: string;
+    crs: CoordinateSystem;
     /**
      * The [Three.js Scene](https://threejs.org/docs/#api/en/scenes/Scene) instance to use,
      * otherwise a default one will be constructed
@@ -213,7 +214,7 @@ function isObject3D(o: unknown): o is Object3D {
  * // Create a Giro3D instance in the EPSG:3857 coordinate system:
  * const instance = new Instance({
  *     target: 'view',
- *     crs: 'EPSG:3857',
+ *     crs: CoordinateSystem.epsg3857,
  * });
  *
  * const map = new Map(...);
@@ -233,7 +234,7 @@ function isObject3D(o: unknown): o is Object3D {
  * ```
  */
 class Instance extends EventDispatcher<InstanceEvents> implements Progress {
-    private readonly _referenceCrs: string;
+    private readonly _referenceCrs: CoordinateSystem;
     private readonly _viewport: HTMLDivElement;
     private readonly _mainLoop: MainLoop;
     private readonly _engine: C3DEngine;
@@ -256,7 +257,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * ```js
      * const instance = new Instance({
      *   target: 'parentElement', // The id of the <div> to attach the instance
-     *   crs: 'EPSG:3857',
+     *   crs: CoordinateSystem.epsg3857,
      * });
      * ```
      */
@@ -282,9 +283,6 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
             );
         }
 
-        if (!options.crs) {
-            throw new Error('missing "crs" parameter');
-        }
         this._referenceCrs = options.crs;
         this._viewport = viewerDiv;
 
@@ -377,7 +375,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
     }
 
     /** Gets the CRS used in this instance. */
-    get referenceCrs(): string {
+    get coordinateSystem(): CoordinateSystem {
         return this._referenceCrs;
     }
 

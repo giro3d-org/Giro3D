@@ -1,20 +1,21 @@
 import { getUid } from 'ol';
-import { Stroke, Style } from 'ol/style.js';
 import { GeoJSON } from 'ol/format.js';
 import TileWMS from 'ol/source/TileWMS.js';
+import { Stroke, Style } from 'ol/style.js';
 
 import { MathUtils, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
-import Map from '@giro3d/giro3d/entities/Map.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
+import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
-import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';
 
 import StatusBar from './widgets/StatusBar.js';
 
@@ -23,7 +24,13 @@ Instance.registerCRS(
     '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
 );
 
-const extent = new Extent('EPSG:3946', 1837816.94334, 1847692.32501, 5170036.4587, 5178412.82698);
+const extent = new Extent(
+    CoordinateSystem.fromEpsg(3946),
+    1837816.94334,
+    1847692.32501,
+    5170036.4587,
+    5178412.82698,
+);
 
 const instance = new Instance({
     target: 'view',
@@ -91,7 +98,7 @@ const style = feature => {
 
 // Adds a WFS imagery layer
 const wfsSource = new VectorSource({
-    dataProjection: 'EPSG:3946',
+    dataProjection: CoordinateSystem.fromEpsg(3946),
     data: {
         url:
             'https://download.data.grandlyon.com/wfs/rdata' +
@@ -166,7 +173,7 @@ function pickFeatures(mouseEvent) {
 
     if (picked) {
         const { x, y } = picked.point;
-        const coordinates = new Coordinates(instance.referenceCrs, x, y);
+        const coordinates = new Coordinates(instance.coordinateSystem, x, y);
         const features = wfsLayer.getVectorFeaturesAtCoordinate(coordinates, {
             radius: 3,
             xTileRes: 2,

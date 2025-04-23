@@ -9,17 +9,17 @@ import {
     Vector3,
 } from 'three';
 
-import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';
 import Ellipsoid from '@giro3d/giro3d/core/geographic/Ellipsoid';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import Atmosphere from '@giro3d/giro3d/entities/Atmosphere';
-import Inspector from '@giro3d/giro3d/gui/Inspector';
-import DrawTool from '@giro3d/giro3d/interactions/DrawTool';
 import SkyDome from '@giro3d/giro3d/entities/SkyDome';
+import Inspector from '@giro3d/giro3d/gui/Inspector';
 import EllipsoidHelper from '@giro3d/giro3d/helpers/EllipsoidHelper';
+import DrawTool from '@giro3d/giro3d/interactions/DrawTool';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
 import { bindButton } from './widgets/bindButton';
 import { bindColorPicker } from './widgets/bindColorPicker';
@@ -31,7 +31,7 @@ const Z_UP = new Vector3(0, 0, 1);
 
 const instance = new Instance({
     target: 'view',
-    crs: 'EPSG:4978',
+    crs: CoordinateSystem.epsg4978,
     backgroundColor: 'black',
 });
 
@@ -52,8 +52,8 @@ const DEFAULT_PARAMS = {
     outer: true,
     showSunMarker: false,
     showEllipsoidHelper: false,
-    observer: new Coordinates('EPSG:4326', 40, 25, 36_000_000),
-    target: new Coordinates('EPSG:4326', 0, 0, 0),
+    observer: new Coordinates(CoordinateSystem.epsg4326, 40, 25, 36_000_000),
+    target: new Coordinates(CoordinateSystem.epsg4326, 0, 0, 0),
 };
 
 let params = { ...DEFAULT_PARAMS };
@@ -300,7 +300,7 @@ function goToGround(latitude, longitude) {
 
     const altitude = 100;
 
-    params.observer = new Coordinates('EPSG:4326', longitude, latitude, altitude);
+    params.observer = new Coordinates(CoordinateSystem.epsg4326, longitude, latitude, altitude);
 
     params.showSunObject = false;
     params.lookAtSun = false;

@@ -1,31 +1,32 @@
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
-import { Stroke, Style } from 'ol/style.js';
-import XYZ from 'ol/source/XYZ.js';
 import GeoJSON from 'ol/format/GeoJSON.js';
+import XYZ from 'ol/source/XYZ.js';
+import { Stroke, Style } from 'ol/style.js';
 
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
-import Map from '@giro3d/giro3d/entities/Map.js';
-import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import BlendingMode from '@giro3d/giro3d/core/layer/BlendingMode.js';
-import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
+import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
+import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import StaticImageSource from '@giro3d/giro3d/sources/StaticImageSource.js';
+import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
 
-import StatusBar from './widgets/StatusBar.js';
-import { bindNumericalDropDown } from './widgets/bindNumericalDropDown.js';
 import { bindButton } from './widgets/bindButton.js';
 import { bindColorPicker } from './widgets/bindColorPicker.js';
+import { bindNumericalDropDown } from './widgets/bindNumericalDropDown.js';
 import { bindToggle } from './widgets/bindToggle.js';
+import StatusBar from './widgets/StatusBar.js';
 
 const instance = new Instance({
     target: 'view',
-    crs: 'EPSG:4326',
+    crs: CoordinateSystem.epsg4326,
 });
 
-const extent = new Extent('EPSG:4326', -180, 180, -90, 90);
+const extent = new Extent(CoordinateSystem.epsg4326, -180, 180, -90, 90);
 
 const map = new Map({ extent, backgroundColor: 'blue' });
 
@@ -59,7 +60,7 @@ const vector = new ColorLayer({
         style: new Style({
             stroke: new Stroke({ color: 'red', width: 2 }),
         }),
-        dataProjection: 'EPSG:4326',
+        dataProjection: CoordinateSystem.epsg4326,
     }),
 });
 map.addLayer(vector).catch(e => console.error(e));

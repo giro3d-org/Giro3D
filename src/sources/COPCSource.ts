@@ -2,11 +2,11 @@ import type { Dimension, Getter, Hierarchy, View } from 'copc';
 import { Copc, Las } from 'copc';
 import { Box3, BufferAttribute, Vector3 } from 'three';
 import { GlobalCache } from '../core/Cache';
+import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import * as octree from '../core/Octree';
 import OperationCounter from '../core/OperationCounter';
 import RequestQueue from '../core/RequestQueue';
 import Fetcher from '../utils/Fetcher';
-import ProjUtils from '../utils/ProjUtils';
 import { nonNull } from '../utils/tsutils';
 import WorkerPool from '../utils/WorkerPool';
 import type { CommonOptions } from './las/CommonOptions';
@@ -321,6 +321,15 @@ export default class COPCSource extends PointCloudSourceBase {
     getMetadata(): Promise<PointCloudMetadata> {
         const remoteData = this.ensureInitialized();
 
+        let crs = CoordinateSystem.unknown;
+        if (typeof remoteData.copc.wkt !== 'undefined') {
+            try {
+                crs = CoordinateSystem.fromWkt(remoteData.copc.wkt);
+            } catch (error: unknown) {
+                console.error(`Failed to parse WKT for COPC "${this.id}": `, error);
+            }
+        }
+
         const result: PointCloudMetadata = {
             pointCount: remoteData.copc.header.pointCount,
             attributes: extractAttributes(
@@ -330,7 +339,7 @@ export default class COPCSource extends PointCloudSourceBase {
                 remoteData.copc.info.gpsTimeRange,
             ),
             volume: remoteData.volume,
-            crs: ProjUtils.readCrsFromWkt(remoteData.copc.wkt),
+            crs,
         };
 
         return Promise.resolve(result);

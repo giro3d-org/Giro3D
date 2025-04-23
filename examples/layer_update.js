@@ -5,20 +5,26 @@ import { Feature } from 'ol';
 import { LineString, Point, Polygon } from 'ol/geom.js';
 import { Circle, Fill, Stroke, Style } from 'ol/style.js';
 
-import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
+import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
-import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
+import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
 import { bindButton } from './widgets/bindButton.js';
-import { bindToggle } from './widgets/bindToggle.js';
 import { bindSlider } from './widgets/bindSlider.js';
+import { bindToggle } from './widgets/bindToggle.js';
 
-const extent = Extent.fromCenterAndSize('EPSG:3857', { x: 11393552, y: 44035 }, 1000000, 500000);
+const extent = Extent.fromCenterAndSize(
+    CoordinateSystem.epsg3857,
+    { x: 11393552, y: 44035 },
+    1000000,
+    500000,
+);
 
 const instance = new Instance({
     target: 'view',
@@ -93,7 +99,7 @@ const point = new Feature(new Point([102.0, 0.5]).transform('EPSG:4326', 'EPSG:3
 
 const source = new VectorSource({
     data: [],
-    dataProjection: 'EPSG:3857',
+    dataProjection: CoordinateSystem.epsg3857,
     style,
 });
 

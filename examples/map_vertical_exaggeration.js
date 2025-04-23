@@ -1,26 +1,27 @@
 import { DoubleSide, MathUtils, Mesh, MeshBasicMaterial, SphereGeometry, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
+import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
+import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
+import AxisGrid from '@giro3d/giro3d/entities/AxisGrid.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
-import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
-import AxisGrid from '@giro3d/giro3d/entities/AxisGrid.js';
 import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-import { makeColorRamp } from './widgets/makeColorRamp.js';
+import { bindButton } from './widgets/bindButton.js';
 import { bindSlider } from './widgets/bindSlider.js';
 import { bindToggle } from './widgets/bindToggle.js';
-import { bindButton } from './widgets/bindButton.js';
+import { makeColorRamp } from './widgets/makeColorRamp.js';
 
 const instance = new Instance({
     target: 'view',
-    crs: 'EPSG:3857',
+    crs: CoordinateSystem.epsg3857,
     backgroundColor: null,
 });
 
@@ -33,7 +34,7 @@ const minAltitude = -1531;
 const maxAltitude = 2388;
 
 const extent = new Extent(
-    instance.referenceCrs,
+    instance.coordinateSystem,
     -13576103.933,
     -13532051.346,
     5894667.439,
@@ -152,7 +153,7 @@ function getRawPickedPoint(mouseEvent) {
 
 function sampleElevationOnMap(point) {
     const getElevation = map.getElevation({
-        coordinates: new Coordinates(instance.referenceCrs, point.x, point.y),
+        coordinates: new Coordinates(instance.coordinateSystem, point.x, point.y),
     });
     if (getElevation.samples.length > 0) {
         getElevation.samples.sort((a, b) => a.resolution - b.resolution);

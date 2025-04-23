@@ -1,3 +1,4 @@
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import type HasDefaultPointOfView from '@giro3d/giro3d/core/HasDefaultPointOfView';
 import type PointOfView from '@giro3d/giro3d/core/PointOfView';
 import type { ExternalControls } from '@giro3d/giro3d/renderer/View';
@@ -13,7 +14,7 @@ import {
     Vector3,
 } from 'three';
 
-const DEFAULT_CRS = 'EPSG:1234';
+const DEFAULT_CRS = CoordinateSystem.fromEpsg(1234);
 const UP = new Vector3(0, 0, 1);
 
 describe('Camera', () => {
@@ -21,10 +22,10 @@ describe('Camera', () => {
         it('should assign properties', () => {
             const width = 123;
             const height = 456;
-            const crs = 'EPSG:1234';
-            const view = new View({ crs, width, height, getUpVector: () => UP });
+            const crs = CoordinateSystem.fromEpsg(1234);
+            const view = new View({ crs: DEFAULT_CRS, width, height, getUpVector: () => UP });
 
-            expect(view.crs).toEqual(crs);
+            expect(view.crs.equals(crs)).toEqual(true);
             expect(view.width).toEqual(width);
             expect(view.height).toEqual(height);
             expect(view.camera).toBeInstanceOf(PerspectiveCamera);

@@ -14,9 +14,10 @@ import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import { TileWMS } from 'ol/source.js';
 import { get as getProjection } from 'ol/proj.js';
 import { bindColorPicker } from './widgets/bindColorPicker.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 
 const extent = new Extent(
-    'EPSG:3857',
+    CoordinateSystem.epsg3857,
     -20037508.342789244,
     20037508.342789244,
     -20048966.1,
@@ -89,7 +90,7 @@ instance.domElement.addEventListener('pointermove', event => {
 
     if (results && results.length > 0) {
         const point = results[0].point;
-        const coordinates = new Coordinates(instance.referenceCrs, point.x, point.y);
+        const coordinates = new Coordinates(instance.coordinateSystem, point.x, point.y);
 
         const hit = wmsLayer.getPixel({ coordinates, size: 10 });
 

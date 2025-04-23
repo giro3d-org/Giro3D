@@ -9,6 +9,7 @@ import { createXYZ } from 'ol/tilegrid.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import FeatureCollection from '@giro3d/giro3d/entities/FeatureCollection.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 
@@ -27,12 +28,19 @@ Instance.registerCRS(
 
 const instance = new Instance({
     target: 'view',
-    crs: 'EPSG:2154',
+    crs: CoordinateSystem.fromEpsg(2154),
     backgroundColor: null,
 });
 
-const center = new Coordinates('EPSG:4326', 6.63125, 45.93506).as(instance.referenceCrs);
-const extent = Extent.fromCenterAndSize('EPSG:2154', { x: center.x, y: center.y }, 1_000, 1_000);
+const center = new Coordinates(CoordinateSystem.epsg4326, 6.63125, 45.93506).as(
+    instance.coordinateSystem,
+);
+const extent = Extent.fromCenterAndSize(
+    CoordinateSystem.fromEpsg(2154),
+    { x: center.x, y: center.y },
+    1_000,
+    1_000,
+);
 
 const buildingSource = new VectorSource({
     format: new GeoJSON(),
@@ -59,7 +67,7 @@ const params = {
 
 const featureCollection = new FeatureCollection({
     source: buildingSource,
-    dataProjection: 'EPSG:4326',
+    dataProjection: CoordinateSystem.epsg4326,
     extent,
     minLevel: 0,
     maxLevel: 0,

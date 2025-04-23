@@ -17,13 +17,14 @@ import StatusBar from './widgets/StatusBar.js';
 import { bindNumericalDropDown } from './widgets/bindNumericalDropDown.js';
 import { bindToggle } from './widgets/bindToggle.js';
 import { bindSlider } from './widgets/bindSlider.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 
 Instance.registerCRS(
     'EPSG:26910',
     '+proj=utm +zone=10 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
 );
 
-const extent = new Extent('EPSG:26910', 532622, 569790, 5114416, 5137240);
+const extent = new Extent(CoordinateSystem.fromEpsg(26910), 532622, 569790, 5114416, 5137240);
 
 const center = extent.centerAsVector3();
 

@@ -1,28 +1,27 @@
-import colormap from 'colormap';
-
 import XYZ from 'ol/source/XYZ.js';
 
-import { Color, Vector3 } from 'three';
+import { Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
+import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
-import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
-import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
 import MapboxTerrainFormat from '@giro3d/giro3d/formats/MapboxTerrainFormat.js';
+import Inspector from '@giro3d/giro3d/gui/Inspector.js';
+import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
-import StatusBar from './widgets/StatusBar.js';
 import { bindSlider } from './widgets/bindSlider.js';
 import { bindToggle } from './widgets/bindToggle.js';
 import { makeColorRamp } from './widgets/makeColorRamp.js';
+import StatusBar from './widgets/StatusBar.js';
 
 const center = { x: -13601505, y: 5812315 };
 
-const extent = Extent.fromCenterAndSize('EPSG:3857', center, 20000, 20000);
+const extent = Extent.fromCenterAndSize(CoordinateSystem.epsg3857, center, 20000, 20000);
 
 const instance = new Instance({
     target: 'view',
@@ -49,7 +48,7 @@ const elevationLayer = new ElevationLayer({
         format: new MapboxTerrainFormat(),
         source: new XYZ({
             url: `https://api.mapbox.com/v4/mapbox.terrain-rgb/{z}/{x}/{y}.pngraw?access_token=${key}`,
-            projection: extent.crs,
+            projection: extent.crs.id,
             crossOrigin: 'anonymous',
         }),
     }),
@@ -64,7 +63,7 @@ const colorLayer = new ColorLayer({
     source: new TiledImageSource({
         source: new XYZ({
             url: `https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.webp?access_token=${key}`,
-            projection: extent.crs,
+            projection: extent.crs.id,
             crossOrigin: 'anonymous',
         }),
     }),

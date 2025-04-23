@@ -1,4 +1,5 @@
 import { CanvasTexture, Color } from 'three';
+import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import type Extent from '../core/geographic/Extent';
 import PromiseUtils from '../utils/PromiseUtils';
 import type { CustomContainsFn, GetImageOptions } from './ImageSource';
@@ -95,7 +96,7 @@ export default class DebugSource extends ImageSource {
         return texture;
     }
 
-    getCrs(): string {
+    getCrs(): CoordinateSystem {
         return this._extent.crs;
     }
 

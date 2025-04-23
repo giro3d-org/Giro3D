@@ -1,22 +1,23 @@
-import { Color } from 'three';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import { Fill, Stroke, Style } from 'ol/style.js';
+import { Color } from 'three';
 
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
-import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
+import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
-import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
+import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
 const extent = new Extent(
-    'EPSG:3857',
+    CoordinateSystem.epsg3857,
     -20037508.342789244,
     20037508.342789244,
     -20037508.342789244,
@@ -70,7 +71,7 @@ const ecoRegionSource = new VectorSource({
         url: 'https://3d.oslandia.com/giro3d/vectors/ecoregions.json',
         format: new GeoJSON(),
     },
-    dataProjection: 'EPSG:4326',
+    dataProjection: CoordinateSystem.epsg4326,
     style: ecoRegionLayerStyle,
 });
 
@@ -98,7 +99,7 @@ const countryLayer = new ColorLayer({
             url: 'https://3d.oslandia.com/giro3d/vectors/countries.geojson',
             format: new GeoJSON(),
         },
-        dataProjection: 'EPSG:4326',
+        dataProjection: CoordinateSystem.epsg4326,
         style: countryLayerStyle,
     }),
 });
@@ -175,7 +176,7 @@ const customVectorLayer = new ColorLayer({
             content: geojson,
             format: new GeoJSON(),
         },
-        dataProjection: 'EPSG:4326',
+        dataProjection: CoordinateSystem.epsg4326,
         style: customVectorLayerStyle,
     }),
 });
@@ -211,7 +212,7 @@ function pickFeatures(mouseEvent) {
     if (picked) {
         const { x, y } = picked.point;
         const features = ecoRegionLayer.getVectorFeaturesAtCoordinate(
-            new Coordinates(instance.referenceCrs, x, y),
+            new Coordinates(instance.coordinateSystem, x, y),
         );
 
         if (features.length > 0) {

@@ -1,5 +1,6 @@
 import type { Euler, Matrix4, Vector2 } from 'three';
 import { FrontSide, MathUtils, Quaternion, Vector3 } from 'three';
+import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import Ellipsoid from '../core/geographic/Ellipsoid';
 import Extent from '../core/geographic/Extent';
 import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
@@ -143,8 +144,8 @@ export default class SphericalPanorama extends Map {
         return true;
     }
 
-    protected override getComposerProjection(): string {
-        return 'equirectangular';
+    protected override getComposerProjection(): CoordinateSystem {
+        return CoordinateSystem.equirectangular;
     }
 
     protected override getTextureSize(extent: Extent): Vector2 {
@@ -215,7 +216,7 @@ export default class SphericalPanorama extends Map {
     }) {
         let baseOrientation: Quaternion | Matrix4 = IDENTITY_QUATERNION;
 
-        if (this.instance.referenceCrs === 'EPSG:4978') {
+        if (this.instance.coordinateSystem.isEpsg(4978)) {
             this.object3d.updateMatrixWorld(true);
 
             // Since we are in the WGS84 geocentric coordinate system,

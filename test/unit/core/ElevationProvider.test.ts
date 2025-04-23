@@ -1,5 +1,6 @@
 import type ElevationProvider from '@giro3d/giro3d/core/ElevationProvider';
 import { aggregateElevationProviders } from '@giro3d/giro3d/core/ElevationProvider';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';
 
 describe('ElevationProvider', () => {
@@ -28,7 +29,7 @@ describe('ElevationProvider', () => {
 
             const aggregate = aggregateElevationProviders(provider1, provider2, provider3);
 
-            const coordinates = new Coordinates('EPSG:3857', 0, 0);
+            const coordinates = new Coordinates(CoordinateSystem.epsg3857, 0, 0);
             aggregate.getElevation({ coordinates });
 
             expect(provider1.getElevation).toHaveBeenCalled();

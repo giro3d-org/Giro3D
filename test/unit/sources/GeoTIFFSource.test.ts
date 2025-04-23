@@ -1,3 +1,4 @@
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource';
 import type { GeoTIFFImage } from 'geotiff';
@@ -8,18 +9,21 @@ describe('GeoTIFFSource', () => {
             const containsFn = jest.fn();
             const source = new GeoTIFFSource({
                 url: 'http://example.com',
-                crs: 'EPSG:1234',
+                crs: CoordinateSystem.fromEpsg(1234),
                 containsFn,
             });
             expect(source.url).toEqual('http://example.com');
-            expect(source.crs).toEqual('EPSG:1234');
+            expect(source.crs.isEpsg(1234)).toEqual(true);
             expect(source.containsFn).toBe(containsFn);
         });
     });
 
     describe('initialize', () => {
         it('should always return the same promise to avoid concurrent initializations', () => {
-            const source = new GeoTIFFSource({ url: 'http://example.com', crs: 'EPSG:1234' });
+            const source = new GeoTIFFSource({
+                url: 'http://example.com',
+                crs: CoordinateSystem.fromEpsg(1234),
+            });
             const promise1 = source.initialize();
             const promise2 = source.initialize();
 
@@ -31,10 +35,10 @@ describe('GeoTIFFSource', () => {
         it('should not return huge texture sizes', () => {
             const source = new GeoTIFFSource({
                 url: 'foo',
-                crs: 'EPSG:3857',
+                crs: CoordinateSystem.epsg3857,
             });
 
-            const sourceExtent = new Extent('EPSG:3857', 0, 1, 0, 1);
+            const sourceExtent = new Extent(CoordinateSystem.epsg3857, 0, 1, 0, 1);
 
             // @ts-expect-error property is private
             source._extent = sourceExtent;
@@ -63,9 +67,9 @@ describe('GeoTIFFSource', () => {
             const image = {
                 getBoundingBox,
             };
-            expect(() => GeoTIFFSource.computeExtent('EPSG:3857', image as GeoTIFFImage)).toThrow(
-                /unknown/,
-            );
+            expect(() =>
+                GeoTIFFSource.computeExtent(CoordinateSystem.epsg3857, image as GeoTIFFImage),
+            ).toThrow(/unknown/);
         });
 
         it('should return the computed extent from the image bounding box if found', () => {
@@ -78,9 +82,12 @@ describe('GeoTIFFSource', () => {
                 getBoundingBox: () => [minx, miny, maxx, maxy],
             };
 
-            const extent = GeoTIFFSource.computeExtent('EPSG:3857', image as GeoTIFFImage);
+            const extent = GeoTIFFSource.computeExtent(
+                CoordinateSystem.epsg3857,
+                image as GeoTIFFImage,
+            );
 
-            expect(extent).toEqual(new Extent('EPSG:3857', minx, maxx, miny, maxy));
+            expect(extent).toEqual(new Extent(CoordinateSystem.epsg3857, minx, maxx, miny, maxy));
         });
     });
 });

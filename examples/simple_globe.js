@@ -9,10 +9,11 @@ import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
 import { bindToggle } from './widgets/bindToggle.js';
 import StatusBar from './widgets/StatusBar.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 
 const instance = new Instance({
     target: 'view',
-    crs: 'EPSG:4978',
+    crs: CoordinateSystem.epsg4978,
     backgroundColor: 'grey',
 });
 

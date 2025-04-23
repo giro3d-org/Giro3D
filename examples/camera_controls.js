@@ -14,6 +14,7 @@ import {
 
 import CameraControls from 'camera-controls';
 
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import Tiles3D from '@giro3d/giro3d/entities/Tiles3D.js';
@@ -46,7 +47,7 @@ Instance.registerCRS(
 
 const instance = new Instance({
     target: 'view',
-    crs: 'EPSG:3946',
+    crs: CoordinateSystem.fromEpsg(3946),
 });
 
 const pointcloud = new Tiles3D({

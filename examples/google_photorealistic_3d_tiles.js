@@ -5,11 +5,12 @@ import { GlobeControls } from '3d-tiles-renderer';
 import {
     GoogleCloudAuthPlugin,
     TileCompressionPlugin,
-    UpdateOnChangePlugin,
-    UnloadTilesPlugin,
     TilesFadePlugin,
+    UnloadTilesPlugin,
+    UpdateOnChangePlugin,
 } from '3d-tiles-renderer/plugins';
 
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import Tiles3D from '@giro3d/giro3d/entities/Tiles3D.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
@@ -19,7 +20,7 @@ import StatusBar from './widgets/StatusBar.js';
 function run(apiKey) {
     const instance = new Instance({
         target: 'view',
-        crs: 'EPSG:4978',
+        crs: CoordinateSystem.epsg4978,
         backgroundColor: 'black',
     });
 

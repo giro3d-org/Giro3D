@@ -2,6 +2,7 @@ import { Color, FloatType, Vector2, Vector3 } from 'three';
 import type Map from '../../entities/Map';
 import type TileMesh from '../../entities/tiles/TileMesh';
 import RenderingState from '../../renderer/RenderingState';
+import CoordinateSystem from '../geographic/coordinate-system/CoordinateSystem';
 import Coordinates from '../geographic/Coordinates';
 import type Instance from '../Instance';
 import traversePickingCircle from './PickingCircle';
@@ -28,7 +29,7 @@ export const isMapPickResult = (obj: unknown): obj is MapPickResult =>
     (obj as MapPickResult).isMapPickResult;
 
 const BLACK = new Color(0, 0, 0);
-const tmpCoords = new Coordinates('EPSG:3857', 0, 0, 0);
+const tmpCoords = new Coordinates(CoordinateSystem.epsg3857, 0, 0, 0);
 
 function renderTileBuffer(
     instance: Instance,
@@ -124,7 +125,7 @@ function pickTilesAt(
                 tmpCoords.values[2] = elevation;
                 // convert to instance crs
                 // here (and only here) should be the Coordinates instance creation
-                const coord = tmpCoords.as(instance.referenceCrs);
+                const coord = tmpCoords.as(instance.coordinateSystem);
                 const point = tmpCoords.toVector3(new Vector3());
 
                 const p: MapPickResult = {

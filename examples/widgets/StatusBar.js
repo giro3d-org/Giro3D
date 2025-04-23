@@ -112,7 +112,7 @@ function updateProgressFrameRequester() {
 function updateCoordinates() {
     const coords = pickedPoint;
 
-    const crs = currentInstance.referenceCrs;
+    const crs = currentInstance.coordinateSystem.id;
     crsButton.innerText = coordsAsLatLon ? 'lat/lon' : crs;
 
     if (coords) {
@@ -176,7 +176,7 @@ function bind(instance, options = {}) {
         instance.domElement.addEventListener('mousemove', pick);
     }
 
-    ecefToLatlonConverter = proj4(instance.referenceCrs, 'EPSG:4979');
+    ecefToLatlonConverter = proj4(instance.coordinateSystem.id, 'EPSG:4979');
 
     progressBar = document.getElementById('progress-bar');
     percent = document.getElementById('loading-percent');

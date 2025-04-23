@@ -93,8 +93,8 @@ export default class EllipsoidTileGeometry
 
         this._origin = this._ellipsoid.toCartesian(this._extent.north, this._extent.west, 0);
 
-        if (this._extent.crs !== 'EPSG:4326') {
-            throw new Error(`invalid CRS. Expected EPSG:4326, got: ${this._extent.crs}`);
+        if (!this._extent.crs.isEpsg(4326)) {
+            throw new Error(`invalid CRS. Expected EPSG:4326, got: ${this._extent.crs.id}`);
         }
 
         this._raycastGeometry = new BufferGeometry();

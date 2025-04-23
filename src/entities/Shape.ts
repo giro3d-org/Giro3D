@@ -2658,7 +2658,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     }
 
     private getGeoJSONGeometry(options: ShapeExportOptions): Geometry {
-        const src = proj.Proj(this.instance.referenceCrs);
+        const src = proj.Proj(this.instance.coordinateSystem.id);
         const dst = proj.Proj('EPSG:4326');
 
         const tmp = { x: 0, y: 0, z: 0 };

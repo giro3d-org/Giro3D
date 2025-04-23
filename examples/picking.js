@@ -10,6 +10,7 @@ import {
 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
@@ -20,11 +21,10 @@ import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 
-import StatusBar from './widgets/StatusBar';
-
 import { bindDropDown } from './widgets/bindDropDown';
 import { bindSlider } from './widgets/bindSlider';
 import { bindToggle } from './widgets/bindToggle';
+import StatusBar from './widgets/StatusBar';
 
 Instance.registerCRS(
     'EPSG:2154',
@@ -35,7 +35,13 @@ Instance.registerCRS(
     'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]',
 );
 
-const extent = new Extent('EPSG:2154', -111629.52, 1275028.84, 5976033.79, 7230161.64);
+const extent = new Extent(
+    CoordinateSystem.fromEpsg(2154),
+    -111629.52,
+    1275028.84,
+    5976033.79,
+    7230161.64,
+);
 
 const instance = new Instance({
     target: 'view',

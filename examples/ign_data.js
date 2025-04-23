@@ -1,30 +1,31 @@
 import {
-    Vector3,
+    AmbientLight,
+    Color,
     CubeTextureLoader,
     DirectionalLight,
-    AmbientLight,
-    Fog,
-    Color,
-    MathUtils,
     DoubleSide,
+    Fog,
+    MathUtils,
+    Vector3,
 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import GeoJSON from 'ol/format/GeoJSON.js';
+import { tile } from 'ol/loadingstrategy.js';
 import VectorSource from 'ol/source/Vector.js';
 import { createXYZ } from 'ol/tilegrid.js';
-import { tile } from 'ol/loadingstrategy.js';
 
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
-import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
+import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 // NOTE: changing the imported name because we use the native `Map` object in this example.
-import Giro3dMap from '@giro3d/giro3d/entities/Map.js';
-import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import FeatureCollection from '@giro3d/giro3d/entities/FeatureCollection.js';
+import Giro3dMap from '@giro3d/giro3d/entities/Map.js';
+import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
+import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
@@ -41,11 +42,17 @@ const SKY_COLOR = new Color(0xf1e9c6);
 
 const instance = new Instance({
     target: 'view',
-    crs: 'EPSG:2154',
+    crs: CoordinateSystem.fromEpsg(2154),
     backgroundColor: SKY_COLOR,
 });
 
-const extent = new Extent('EPSG:2154', -111629.52, 1275028.84, 5976033.79, 7230161.64);
+const extent = new Extent(
+    CoordinateSystem.fromEpsg(2154),
+    -111629.52,
+    1275028.84,
+    5976033.79,
+    7230161.64,
+);
 
 // create a map
 const map = new Giro3dMap({

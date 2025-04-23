@@ -1,9 +1,10 @@
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import OffsetScale from '@giro3d/giro3d/core/OffsetScale';
 import { Box3, Vector2, Vector3 } from 'three';
 
-const BOUNDS_EPSG4326 = new Extent('EPSG:4326', {
+const BOUNDS_EPSG4326 = new Extent(CoordinateSystem.epsg4326, {
     south: -90,
     north: +90,
     east: +180,
@@ -11,9 +12,9 @@ const BOUNDS_EPSG4326 = new Extent('EPSG:4326', {
 });
 
 const BOUNDS_EPSG3857 = new Extent(
-    'EPSG:3857',
-    new Coordinates('EPSG:3857', -20026376.39, -20048966.1),
-    new Coordinates('EPSG:3857', +20026376.39, +20048966.1),
+    CoordinateSystem.epsg3857,
+    new Coordinates(CoordinateSystem.epsg3857, -20026376.39, -20048966.1),
+    new Coordinates(CoordinateSystem.epsg3857, +20026376.39, +20048966.1),
 );
 
 describe('Extent', () => {
@@ -25,9 +26,9 @@ describe('Extent', () => {
 
         it('should build the expected extent using Coordinates', () => {
             const withCoords = new Extent(
-                'EPSG:4326',
-                new Coordinates('EPSG:4326', minX, minY),
-                new Coordinates('EPSG:4326', maxX, maxY),
+                CoordinateSystem.epsg4326,
+                new Coordinates(CoordinateSystem.epsg4326, minX, minY),
+                new Coordinates(CoordinateSystem.epsg4326, maxX, maxY),
             );
 
             expect(minX).toEqual(withCoords.west);
@@ -37,7 +38,7 @@ describe('Extent', () => {
         });
 
         it('should build the expected extent using keywords', () => {
-            const withKeywords = new Extent('EPSG:4326', {
+            const withKeywords = new Extent(CoordinateSystem.epsg4326, {
                 south: minY,
                 east: maxX,
                 north: maxY,
@@ -50,7 +51,7 @@ describe('Extent', () => {
         });
 
         it('should build the expected extent using values', () => {
-            const withValues = new Extent('EPSG:4326', minX, maxX, minY, maxY);
+            const withValues = new Extent(CoordinateSystem.epsg4326, minX, maxX, minY, maxY);
             expect(minX).toEqual(withValues.west);
             expect(maxX).toEqual(withValues.east);
             expect(minY).toEqual(withValues.south);
@@ -62,7 +63,7 @@ describe('Extent', () => {
                 new Vector3(Math.random(), Math.random()),
                 new Vector3(Math.random(), Math.random()),
             );
-            const fromBox = Extent.fromBox3('EPSG:4978', box);
+            const fromBox = Extent.fromBox3(CoordinateSystem.epsg4978, box);
 
             expect(fromBox.west).toEqual(box.min.x);
             expect(fromBox.east).toEqual(box.max.x);
@@ -73,11 +74,11 @@ describe('Extent', () => {
 
     describe('set()', () => {
         it('should assign the values', () => {
-            const extent = new Extent('EPSG:4326', 0, 0, 0, 0);
-            extent.set('EPSG:3857', -1, 2, -3, 5);
+            const extent = new Extent(CoordinateSystem.epsg4326, 0, 0, 0, 0);
+            extent.set(CoordinateSystem.epsg3857, -1, 2, -3, 5);
 
             expect([...extent.values]).toStrictEqual([-1, 2, -3, 5]);
-            expect(extent.crs).toEqual('EPSG:3857');
+            expect(extent.crs).toEqual(CoordinateSystem.epsg3857);
         });
     });
 
@@ -86,34 +87,42 @@ describe('Extent', () => {
             const west = 3024.22;
             const east = 32320932.3;
 
-            const extent = new Extent('EPSG:3857', west, east, 0, 0);
+            const extent = new Extent(CoordinateSystem.epsg3857, west, east, 0, 0);
 
-            expect(extent.offsetInExtent(new Coordinates('EPSG:3857', west, 0, 0)).x).toEqual(0);
-            expect(extent.offsetInExtent(new Coordinates('EPSG:3857', east, 0, 0)).x).toEqual(1);
+            expect(
+                extent.offsetInExtent(new Coordinates(CoordinateSystem.epsg3857, west, 0, 0)).x,
+            ).toEqual(0);
+            expect(
+                extent.offsetInExtent(new Coordinates(CoordinateSystem.epsg3857, east, 0, 0)).x,
+            ).toEqual(1);
         });
 
         it('should return correct V value', () => {
             const south = 3024.22;
             const north = 32320932.3;
 
-            const extent = new Extent('EPSG:3857', 0, 0, south, north);
+            const extent = new Extent(CoordinateSystem.epsg3857, 0, 0, south, north);
 
-            expect(extent.offsetInExtent(new Coordinates('EPSG:3857', 0, south, 0)).y).toEqual(0);
-            expect(extent.offsetInExtent(new Coordinates('EPSG:3857', 0, north, 0)).y).toEqual(1);
+            expect(
+                extent.offsetInExtent(new Coordinates(CoordinateSystem.epsg3857, 0, south, 0)).y,
+            ).toEqual(0);
+            expect(
+                extent.offsetInExtent(new Coordinates(CoordinateSystem.epsg3857, 0, north, 0)).y,
+            ).toEqual(1);
         });
 
         it('should return (0.5, 0.5) if coordinates is in the center of extent', () => {
             const center = new Vector3(44.55, 0.42, 0);
 
             const extent = new Extent(
-                'EPSG:3857',
+                CoordinateSystem.epsg3857,
                 center.x - 1000,
                 center.x + 1000,
                 center.y - 2330.2,
                 center.y + 2330.2,
             );
 
-            const coord = new Coordinates('EPSG:3857', center);
+            const coord = new Coordinates(CoordinateSystem.epsg3857, center);
 
             expect(extent.offsetInExtent(coord)).toEqual({ x: 0.5, y: 0.5 });
         });
@@ -124,14 +133,14 @@ describe('Extent', () => {
             const center = new Vector3(44.55, 0.42, 0);
 
             const extent = new Extent(
-                'EPSG:3857',
+                CoordinateSystem.epsg3857,
                 center.x - 1000,
                 center.x + 1000,
                 center.y - 2330.2,
                 center.y + 2330.2,
             );
 
-            const coord = new Coordinates('EPSG:3857', center);
+            const coord = new Coordinates(CoordinateSystem.epsg3857, center);
 
             expect(extent.offsetInExtent(coord, target)).toEqual({ x: 0.5, y: 0.5 });
             expect(extent.offsetInExtent(coord, target)).toBe(target);
@@ -145,7 +154,7 @@ describe('Extent', () => {
             const east = 22.34;
             const west = -179.99;
 
-            const original = new Extent('EPSG:4326', {
+            const original = new Extent(CoordinateSystem.epsg4326, {
                 south,
                 north,
                 east,
@@ -165,57 +174,61 @@ describe('Extent', () => {
 
     describe('check', () => {
         it('should return false if extent has infinite values', () => {
-            expect(new Extent('EPSG:3857', NaN, 1, 0, 1).isValid()).toEqual(false);
-            expect(new Extent('EPSG:3857', Infinity, 1, 0, 1).isValid()).toEqual(false);
-            expect(new Extent('EPSG:3857', 0, 1, Infinity, 1).isValid()).toEqual(false);
+            expect(new Extent(CoordinateSystem.epsg3857, NaN, 1, 0, 1).isValid()).toEqual(false);
+            expect(new Extent(CoordinateSystem.epsg3857, Infinity, 1, 0, 1).isValid()).toEqual(
+                false,
+            );
+            expect(new Extent(CoordinateSystem.epsg3857, 0, 1, Infinity, 1).isValid()).toEqual(
+                false,
+            );
         });
 
         it('should return false if extent is invalid', () => {
-            const invalidX = new Extent('EPSG:3857', +10, -10, 0, 10);
-            const invalidY = new Extent('EPSG:3857', 0, 10, +10, -10);
+            const invalidX = new Extent(CoordinateSystem.epsg3857, +10, -10, 0, 10);
+            const invalidY = new Extent(CoordinateSystem.epsg3857, 0, 10, +10, -10);
             expect(invalidX.isValid()).toEqual(false);
             expect(invalidY.isValid()).toEqual(false);
         });
 
         it('should return true if the extent is valid', () => {
-            expect(new Extent('EPSG:3857', 0, 10, -12, 223).isValid()).toEqual(true);
+            expect(new Extent(CoordinateSystem.epsg3857, 0, 10, -12, 223).isValid()).toEqual(true);
         });
     });
 
     describe('as', () => {
         it('should throw if target CRS is invalid', () => {
-            const original = new Extent('EPSG:4326', {
+            const original = new Extent(CoordinateSystem.epsg4326, {
                 south: -5,
                 east: 5,
                 north: 5,
                 west: -5,
             });
 
-            expect(() => original.as('foo')).toThrow();
+            expect(() => original.as(CoordinateSystem.fromSrid('foo'))).toThrow();
         });
 
         it('should return the original object if target CRS is same as source CRS', () => {
-            const original = new Extent('EPSG:4326', {
+            const original = new Extent(CoordinateSystem.epsg4326, {
                 south: -5,
                 east: 5,
                 north: 5,
                 west: -5,
             });
 
-            const projected = original.as('EPSG:4326');
+            const projected = original.as(CoordinateSystem.epsg4326);
 
             expect(projected).toEqual(original);
         });
 
         it('should return a different object if source and target CRSes are different', () => {
-            const original = new Extent('EPSG:4326', {
+            const original = new Extent(CoordinateSystem.epsg4326, {
                 south: -5,
                 east: 5,
                 north: 5,
                 west: -5,
             });
 
-            const projected = original.as('EPSG:3857'); // Spherical Mercator
+            const projected = original.as(CoordinateSystem.epsg3857); // Spherical Mercator
             expect(original).not.toEqual(projected);
         });
     });
@@ -227,7 +240,7 @@ describe('Extent', () => {
         });
 
         it('should return the argument object if provided', () => {
-            const target = new Coordinates('EPSG:4326', -1, -1);
+            const target = new Coordinates(CoordinateSystem.epsg4326, -1, -1);
             const result = BOUNDS_EPSG4326.center(target);
             expect(target).toBe(result);
             expect(target.longitude).toBe(0);
@@ -347,25 +360,29 @@ describe('Extent', () => {
 
     describe('isPointInside', () => {
         it('should return true if point is inside', () => {
-            const extent = new Extent('EPSG:4326', {
+            const extent = new Extent(CoordinateSystem.epsg4326, {
                 south: 25,
                 north: 30,
                 east: 54,
                 west: 52,
             });
-            expect(extent.isPointInside(new Coordinates('EPSG:4326', 53, 28, 0))).toBe(true);
+            expect(
+                extent.isPointInside(new Coordinates(CoordinateSystem.epsg4326, 53, 28, 0)),
+            ).toBe(true);
         });
 
         it.each([-1, 0, 1, 5555555, Infinity, -Infinity, NaN])(
             'should ignore altitude/Z (z = %d)',
             z => {
-                const extent = new Extent('EPSG:4326', {
+                const extent = new Extent(CoordinateSystem.epsg4326, {
                     south: 25,
                     north: 30,
                     east: 54,
                     west: 52,
                 });
-                expect(extent.isPointInside(new Coordinates('EPSG:4326', 53, 28, z))).toBe(true);
+                expect(
+                    extent.isPointInside(new Coordinates(CoordinateSystem.epsg4326, 53, 28, z)),
+                ).toBe(true);
             },
         );
     });
@@ -373,7 +390,7 @@ describe('Extent', () => {
     describe('intersectExtent', () => {
         it('should return true if extents intersect', () => {
             const small = new Extent(
-                'EPSG:3857',
+                CoordinateSystem.epsg3857,
                 -10018754.171394622,
                 0,
                 20037508.342789244,
@@ -381,7 +398,7 @@ describe('Extent', () => {
             );
 
             const big = new Extent(
-                'EPSG:3857',
+                CoordinateSystem.epsg3857,
                 -20037508.342789244,
                 20037508.342789244,
                 -20037508.342789244,
@@ -395,7 +412,7 @@ describe('Extent', () => {
 
     describe('toBox3', () => {
         it('should return the correct value', () => {
-            const extent = new Extent('foo', 0, 100, 54, 233);
+            const extent = new Extent(CoordinateSystem.fromSrid('foo'), 0, 100, 54, 233);
             const minHeight = 23.3;
             const maxHeight = 400.3;
             const box = extent.toBox3(minHeight, maxHeight);
@@ -411,7 +428,7 @@ describe('Extent', () => {
 
     describe('withMargin', () => {
         it('should returns different objects', () => {
-            const extent = new Extent('EPSG:3857', 5, 1132, 4204.2, 10000.4);
+            const extent = new Extent(CoordinateSystem.epsg3857, 5, 1132, 4204.2, 10000.4);
             const margin = extent.withMargin(10, 10);
 
             expect(extent).not.toBe(margin);
@@ -420,7 +437,7 @@ describe('Extent', () => {
         it('should returns correct values', () => {
             const xmargin = 10.2;
             const ymargin = 7.4;
-            const extent = new Extent('EPSG:3857', 5, 1132, 4204.2, 10000.4);
+            const extent = new Extent(CoordinateSystem.epsg3857, 5, 1132, 4204.2, 10000.4);
             const result = extent.withMargin(xmargin, ymargin);
 
             expect(result.west).toEqual(extent.west - xmargin);
@@ -432,7 +449,7 @@ describe('Extent', () => {
 
     describe('withRelativeMargin', () => {
         it('should returns different objects', () => {
-            const extent = new Extent('EPSG:3857', 5, 1132, 4204.2, 10000.4);
+            const extent = new Extent(CoordinateSystem.epsg3857, 5, 1132, 4204.2, 10000.4);
             const margin = extent.withRelativeMargin(0.1);
 
             expect(extent).not.toBe(margin);
@@ -441,7 +458,7 @@ describe('Extent', () => {
         it('should returns correct values', () => {
             const xmargin = 10;
             const ymargin = 20;
-            const extent = new Extent('EPSG:3857', 0, 100, 0, 200);
+            const extent = new Extent(CoordinateSystem.epsg3857, 0, 100, 0, 200);
             const result = extent.withRelativeMargin(0.1);
 
             expect(result.west).toEqual(extent.west - xmargin);
@@ -455,9 +472,9 @@ describe('Extent', () => {
         it('should return the correct values and CRS', () => {
             const box = new Box3(new Vector3(1, 2), new Vector3(8, 9));
 
-            const extent = Extent.fromBox3('EPSG:4326', box);
+            const extent = Extent.fromBox3(CoordinateSystem.epsg4326, box);
 
-            expect(extent.crs).toBe('EPSG:4326');
+            expect(extent.crs.isEpsg(4326)).toBe(true);
             expect(extent.west).toBe(box.min.x);
             expect(extent.east).toBe(box.max.x);
             expect(extent.north).toBe(box.max.y);
@@ -472,8 +489,8 @@ describe('Extent', () => {
             const minY = -3.54;
             const maxY = 150.4;
 
-            const a = new Extent('foo', minX, maxX, minY, maxY);
-            const b = new Extent('foo', minX, maxX, minY, maxY);
+            const a = new Extent(CoordinateSystem.fromSrid('foo'), minX, maxX, minY, maxY);
+            const b = new Extent(CoordinateSystem.fromSrid('foo'), minX, maxX, minY, maxY);
 
             const expected = OffsetScale.identity();
 
@@ -487,8 +504,14 @@ describe('Extent', () => {
             const minY = -3.54;
             const maxY = 150.4;
 
-            const top = new Extent('foo', minX, maxX, maxY, maxY + (maxY - minY));
-            const bottom = new Extent('foo', minX, maxX, minY, maxY);
+            const top = new Extent(
+                CoordinateSystem.fromSrid('foo'),
+                minX,
+                maxX,
+                maxY,
+                maxY + (maxY - minY),
+            );
+            const bottom = new Extent(CoordinateSystem.fromSrid('foo'), minX, maxX, minY, maxY);
 
             const bt = bottom.offsetToParent(top);
             const tb = top.offsetToParent(bottom);
@@ -522,8 +545,8 @@ describe('Extent', () => {
             // |            |  R   |
             // +------------+------+ y0
 
-            const L = new Extent('foo', x0, x1, y0, y2);
-            const R = new Extent('foo', x1, x2, y0, y1);
+            const L = new Extent(CoordinateSystem.fromSrid('foo'), x0, x1, y0, y2);
+            const R = new Extent(CoordinateSystem.fromSrid('foo'), x1, x2, y0, y1);
 
             const LR = R.offsetToParent(L);
 
@@ -541,7 +564,7 @@ describe('Extent', () => {
             const ymin = -3424;
             const ymax = 901;
 
-            const extent = new Extent('EPSG:3857', xmin, xmax, ymin, ymax);
+            const extent = new Extent(CoordinateSystem.epsg3857, xmin, xmax, ymin, ymax);
 
             const tl = extent.topLeft();
             expect(tl.x).toEqual(xmin);
@@ -563,28 +586,28 @@ describe('Extent', () => {
 
     describe('equals', () => {
         it('should return true if both extent are the same object', () => {
-            const extent = new Extent('EPSG:3857', 1, 9, 1, 22);
+            const extent = new Extent(CoordinateSystem.epsg3857, 1, 9, 1, 22);
             expect(extent.equals(extent)).toBeTruthy();
         });
 
         it('should return true if both extent are equal', () => {
-            const extent = new Extent('EPSG:3857', 1, 9, 1, 22);
+            const extent = new Extent(CoordinateSystem.epsg3857, 1, 9, 1, 22);
             const clone = extent.clone();
             expect(extent.equals(clone)).toBeTruthy();
         });
 
         it('should return false if both extent have different CRSes', () => {
-            const a = new Extent('EPSG:foo', 1, 9, 1, 22);
-            const b = new Extent('EPSG:bar', 1, 9, 1, 22);
+            const a = new Extent(CoordinateSystem.fromSrid('EPSG:foo'), 1, 9, 1, 22);
+            const b = new Extent(CoordinateSystem.fromSrid('EPSG:bar'), 1, 9, 1, 22);
             expect(a.equals(b)).toBeFalsy();
         });
 
         it('should return false if both extent have different numerical values', () => {
-            const a = new Extent('EPSG:3857', 1, 1, 1, 1);
-            const b = new Extent('EPSG:3857', 2, 1, 1, 1);
-            const c = new Extent('EPSG:3857', 1, 2, 1, 1);
-            const d = new Extent('EPSG:3857', 1, 1, 2, 1);
-            const e = new Extent('EPSG:3857', 1, 1, 1, 2);
+            const a = new Extent(CoordinateSystem.epsg3857, 1, 1, 1, 1);
+            const b = new Extent(CoordinateSystem.epsg3857, 2, 1, 1, 1);
+            const c = new Extent(CoordinateSystem.epsg3857, 1, 2, 1, 1);
+            const d = new Extent(CoordinateSystem.epsg3857, 1, 1, 2, 1);
+            const e = new Extent(CoordinateSystem.epsg3857, 1, 1, 1, 2);
 
             expect(a.equals(b)).toBeFalsy();
             expect(a.equals(c)).toBeFalsy();
@@ -597,12 +620,12 @@ describe('Extent', () => {
             const xMax = 2;
             const yMin = 10000;
             const yMax = 20000;
-            const original = new Extent('EPSG:3857', xMin, xMax, yMin, yMax);
+            const original = new Extent(CoordinateSystem.epsg3857, xMin, xMax, yMin, yMax);
 
             const epsilons = [0.1, 0.001, 0.0001, 0.00001, 0.000001];
             for (const epsilon of epsilons) {
                 const compared = new Extent(
-                    'EPSG:3857',
+                    CoordinateSystem.epsg3857,
                     xMin + epsilon * 0.9,
                     xMax + epsilon * 0.9,
                     yMin + epsilon * 0.9,
@@ -616,8 +639,8 @@ describe('Extent', () => {
 
     describe('fitToGrid', () => {
         it('should return the whole grid extent if the grid is 1x1 pixel', () => {
-            const gridExtent = new Extent('EPSG:3857', 0, 10, 0, 23);
-            const inputExtent = new Extent('EPSG:3857', 1, 9, 1, 22);
+            const gridExtent = new Extent(CoordinateSystem.epsg3857, 0, 10, 0, 23);
+            const inputExtent = new Extent(CoordinateSystem.epsg3857, 1, 9, 1, 22);
             const { extent } = inputExtent.fitToGrid(gridExtent, 1, 1);
             expect(extent).toEqual(gridExtent);
         });
@@ -625,17 +648,17 @@ describe('Extent', () => {
 
     describe('union', () => {
         it('should update the extent in place', () => {
-            const extent1 = new Extent('EPSG:3857', 0, 100, 0, 100);
-            const extent2 = new Extent('EPSG:3857', 100, 200, 100, 200);
+            const extent1 = new Extent(CoordinateSystem.epsg3857, 0, 100, 0, 100);
+            const extent2 = new Extent(CoordinateSystem.epsg3857, 100, 200, 100, 200);
 
             expect(extent1.union(extent2)).toBeUndefined();
-            expect(extent1).toEqual(new Extent('EPSG:3857', 0, 200, 0, 200));
+            expect(extent1).toEqual(new Extent(CoordinateSystem.epsg3857, 0, 200, 0, 200));
         });
     });
 
     describe('unionMany', () => {
         it('should return the union of all extents', () => {
-            const crs = 'EPSG:3857';
+            const crs = CoordinateSystem.epsg3857;
 
             const e0 = new Extent(crs, -123, 2, -5, 6660);
             const e1 = new Extent(crs, 10, 24, -5, 525);
@@ -654,7 +677,7 @@ describe('Extent', () => {
     describe('fromCenterAndSize', () => {
         it('should return an extent center on the correct coordinate', () => {
             const center = { x: 2324, y: -23254 };
-            const extent = Extent.fromCenterAndSize('EPSG:3857', center, 100, 100);
+            const extent = Extent.fromCenterAndSize(CoordinateSystem.epsg3857, center, 100, 100);
 
             const newCenter = extent.center();
             expect(newCenter.x).toEqual(center.x);
@@ -665,7 +688,12 @@ describe('Extent', () => {
             const center = { x: 2324, y: -23254 };
             const width = 23921;
             const height = 209023.12;
-            const extent = Extent.fromCenterAndSize('EPSG:3857', center, width, height);
+            const extent = Extent.fromCenterAndSize(
+                CoordinateSystem.epsg3857,
+                center,
+                width,
+                height,
+            );
 
             const dims = extent.dimensions();
             expect(dims.x).toEqual(width);
@@ -687,7 +715,7 @@ describe('Extent', () => {
         });
 
         it('should return the correct value', () => {
-            const extent = new Extent('foo', 0, 100, 0, 100);
+            const extent = new Extent(CoordinateSystem.fromSrid('foo'), 0, 100, 0, 100);
 
             const splitHorizontally = extent.split(4, 1);
             const splitVertically = extent.split(1, 4);
@@ -695,15 +723,31 @@ describe('Extent', () => {
             expect(splitHorizontally).toHaveLength(4);
             expect(splitVertically).toHaveLength(4);
 
-            expect(splitHorizontally[0]).toEqual(new Extent('foo', 0, 25, 0, 100));
-            expect(splitHorizontally[1]).toEqual(new Extent('foo', 25, 50, 0, 100));
-            expect(splitHorizontally[2]).toEqual(new Extent('foo', 50, 75, 0, 100));
-            expect(splitHorizontally[3]).toEqual(new Extent('foo', 75, 100, 0, 100));
+            expect(splitHorizontally[0]).toEqual(
+                new Extent(CoordinateSystem.fromSrid('foo'), 0, 25, 0, 100),
+            );
+            expect(splitHorizontally[1]).toEqual(
+                new Extent(CoordinateSystem.fromSrid('foo'), 25, 50, 0, 100),
+            );
+            expect(splitHorizontally[2]).toEqual(
+                new Extent(CoordinateSystem.fromSrid('foo'), 50, 75, 0, 100),
+            );
+            expect(splitHorizontally[3]).toEqual(
+                new Extent(CoordinateSystem.fromSrid('foo'), 75, 100, 0, 100),
+            );
 
-            expect(splitVertically[0]).toEqual(new Extent('foo', 0, 100, 0, 25));
-            expect(splitVertically[1]).toEqual(new Extent('foo', 0, 100, 25, 50));
-            expect(splitVertically[2]).toEqual(new Extent('foo', 0, 100, 50, 75));
-            expect(splitVertically[3]).toEqual(new Extent('foo', 0, 100, 75, 100));
+            expect(splitVertically[0]).toEqual(
+                new Extent(CoordinateSystem.fromSrid('foo'), 0, 100, 0, 25),
+            );
+            expect(splitVertically[1]).toEqual(
+                new Extent(CoordinateSystem.fromSrid('foo'), 0, 100, 25, 50),
+            );
+            expect(splitVertically[2]).toEqual(
+                new Extent(CoordinateSystem.fromSrid('foo'), 0, 100, 50, 75),
+            );
+            expect(splitVertically[3]).toEqual(
+                new Extent(CoordinateSystem.fromSrid('foo'), 0, 100, 75, 100),
+            );
         });
     });
 
@@ -711,7 +755,7 @@ describe('Extent', () => {
         it('should return the full spherical projection', () => {
             const extent = Extent.fullEquirectangularProjection;
 
-            expect(extent.crs).toEqual('equirectangular');
+            expect(extent.crs.isEquirectangular()).toEqual(true);
             expect(extent.west).toEqual(-180);
             expect(extent.east).toEqual(+180);
             expect(extent.south).toEqual(-90);
@@ -723,7 +767,7 @@ describe('Extent', () => {
         it('should return the full equirectangular projection if no parameters are defined', () => {
             const extent = Extent.fromPhotosphere();
 
-            expect(extent.crs).toEqual('equirectangular');
+            expect(extent.crs.isEquirectangular()).toEqual(true);
             expect(extent.west).toEqual(-180);
             expect(extent.east).toEqual(+180);
             expect(extent.south).toEqual(-90);
@@ -747,7 +791,7 @@ describe('Extent', () => {
                 croppedAreaImageHeightPixels,
             });
 
-            expect(extent.crs).toEqual('equirectangular');
+            expect(extent.crs.isEquirectangular()).toEqual(true);
             expect(extent.west).toEqual(-90);
             expect(extent.north).toEqual(+45);
             expect(extent.east).toEqual(+90);
@@ -758,7 +802,7 @@ describe('Extent', () => {
 
     describe('contains/isInside', () => {
         it('should return true if the extent is entirely inside the other', () => {
-            const small = new Extent('EPSG:3857', 10, 20, 30, 40);
+            const small = new Extent(CoordinateSystem.epsg3857, 10, 20, 30, 40);
             const big = small.withMargin(1, 1);
 
             expect(big.contains(small)).toEqual(true);
@@ -766,7 +810,7 @@ describe('Extent', () => {
         });
 
         it('should return true if both extents are equal', () => {
-            const a = new Extent('EPSG:3857', 10, 20, 30, 40);
+            const a = new Extent(CoordinateSystem.epsg3857, 10, 20, 30, 40);
             const b = a.clone();
 
             expect(b.contains(a)).toEqual(true);
@@ -774,16 +818,32 @@ describe('Extent', () => {
         });
 
         it('should return false if the extents only partially overlap', () => {
-            const a = new Extent('EPSG:3857', 10, 20, 30, 40);
-            const b = new Extent('EPSG:3857', a.west + 1, a.east + 1, a.south, a.north);
+            const a = new Extent(CoordinateSystem.epsg3857, 10, 20, 30, 40);
+            const b = new Extent(
+                CoordinateSystem.epsg3857,
+                a.west + 1,
+                a.east + 1,
+                a.south,
+                a.north,
+            );
 
             expect(a.contains(b)).toEqual(false);
             expect(b.isInside(a)).toEqual(false);
         });
 
         it('should return false if the extents do not overlap at all', () => {
-            const a = Extent.fromCenterAndSize('EPSG:3857', { x: -100, y: -100 }, 10, 10);
-            const b = Extent.fromCenterAndSize('EPSG:3857', { x: +100, y: +100 }, 10, 10);
+            const a = Extent.fromCenterAndSize(
+                CoordinateSystem.epsg3857,
+                { x: -100, y: -100 },
+                10,
+                10,
+            );
+            const b = Extent.fromCenterAndSize(
+                CoordinateSystem.epsg3857,
+                { x: +100, y: +100 },
+                10,
+                10,
+            );
 
             expect(a.contains(b)).toEqual(false);
             expect(b.isInside(a)).toEqual(false);
@@ -792,7 +852,7 @@ describe('Extent', () => {
 
     describe('sampleUV', () => {
         it('should return the passed target, if any', () => {
-            const extent = new Extent('EPSG:3857', 10, 20, 40, 50);
+            const extent = new Extent(CoordinateSystem.epsg3857, 10, 20, 40, 50);
 
             const target = new Coordinates(extent.crs, 0, 0);
 
@@ -804,7 +864,7 @@ describe('Extent', () => {
         });
 
         it('should return the bottom left corner when u = 0 and v = 0', () => {
-            const extent = new Extent('EPSG:3857', 10, 20, 40, 50);
+            const extent = new Extent(CoordinateSystem.epsg3857, 10, 20, 40, 50);
 
             const sample = extent.sampleUV(0, 0);
 
@@ -813,7 +873,7 @@ describe('Extent', () => {
         });
 
         it('should return the top right corner when u = 1 and v = 1', () => {
-            const extent = new Extent('EPSG:3857', 10, 20, 40, 50);
+            const extent = new Extent(CoordinateSystem.epsg3857, 10, 20, 40, 50);
 
             const sample = extent.sampleUV(1, 1);
 
@@ -822,7 +882,7 @@ describe('Extent', () => {
         });
 
         it('should return the center when u = 0.5 and v = 0.5', () => {
-            const extent = new Extent('EPSG:3857', 10, 20, 40, 50);
+            const extent = new Extent(CoordinateSystem.epsg3857, 10, 20, 40, 50);
 
             const sample = extent.sampleUV(0.5, 0.5);
 

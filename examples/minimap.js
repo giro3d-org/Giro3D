@@ -1,18 +1,19 @@
-import { Vector3, CubeTextureLoader, Color, OrthographicCamera, MathUtils } from 'three';
+import { Color, CubeTextureLoader, MathUtils, OrthographicCamera, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import OSM from 'ol/source/OSM.js';
 
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
-import Instance from '@giro3d/giro3d/core/Instance.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
-import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
+import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
-import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
+import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
+import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
@@ -29,12 +30,18 @@ const SKY_COLOR = new Color(0xf1e9c6);
 
 const mainInstance = new Instance({
     target: 'view',
-    crs: 'EPSG:2154',
+    crs: CoordinateSystem.fromEpsg(2154),
     backgroundColor: SKY_COLOR,
 });
 
 // create a map
-const extent = new Extent('EPSG:2154', -111629.52, 1275028.84, 5976033.79, 7230161.64);
+const extent = new Extent(
+    CoordinateSystem.fromEpsg(2154),
+    -111629.52,
+    1275028.84,
+    5976033.79,
+    7230161.64,
+);
 const map = new Map({
     extent,
     backgroundColor: 'gray',
@@ -121,7 +128,7 @@ mainInstance.scene.background = cubeTexture;
 // Create our minimap instance and attach it to the 'minimap' <div> element.
 const minimapInstance = new Instance({
     target: 'minimap',
-    crs: 'EPSG:3857', // Contrary to the main view, this minimap uses the Web mercator projection
+    crs: CoordinateSystem.epsg3857, // Contrary to the main view, this minimap uses the Web mercator projection
 });
 
 // Set the minimap camera view width, in meters. This can be changed later when
@@ -140,7 +147,7 @@ minimapInstance.view.camera = minimapCamera;
 
 // Let's create our minimap map with the same extent than the main map.
 const minimap = new Map({
-    extent: map.extent.as(minimapInstance.referenceCrs),
+    extent: map.extent.as(minimapInstance.coordinateSystem),
     terrain: {
         // We can disable terrain deformation because our map will be flat.
         enabled: false,
@@ -166,8 +173,8 @@ function synchronizeCameras() {
 
     // Since our minimap does not use the same projection as the main view (EPSG:2154),
     // we must convert the camera position into this projection (EPSG:3857).
-    const srcProj = mainInstance.referenceCrs;
-    const dstProj = minimapInstance.referenceCrs;
+    const srcProj = mainInstance.coordinateSystem;
+    const dstProj = minimapInstance.coordinateSystem;
     const srcPosition = new Coordinates(srcProj, target.x, target.y);
     const position = srcPosition.as(dstProj);
 

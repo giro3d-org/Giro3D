@@ -1,8 +1,9 @@
 import { MathUtils, Matrix4, Ray, Sphere, Vector2, Vector3 } from 'three';
 import Coordinates from './Coordinates';
 import type Extent from './Extent';
+import CoordinateSystem from './coordinate-system/CoordinateSystem';
 
-const tmpCoord = new Coordinates('EPSG:4326', 0, 0);
+const tmpCoord = new Coordinates(CoordinateSystem.epsg4326, 0, 0);
 const tmpDims = new Vector2();
 const tmpVec3 = new Vector3();
 const tmpNormal = new Vector3();
@@ -255,7 +256,7 @@ export default class Ellipsoid {
      * @returns The geodetic coordinates.
      */
     toGeodetic(x: number, y: number, z: number, target?: Coordinates): Coordinates {
-        target = target ?? new Coordinates('EPSG:4979', 0, 0, 0);
+        target = target ?? new Coordinates(CoordinateSystem.epsg4979, 0, 0, 0);
         const lon = Math.atan2(y, x);
         const p = Math.sqrt(x ** 2 + y ** 2);
         const theta = Math.atan2(z * this._semiMajor, p * this._semiMinor);
@@ -278,7 +279,7 @@ export default class Ellipsoid {
             height = Math.abs(z) - radius;
         }
 
-        target.set('EPSG:4979', longitude, latitude, height);
+        target.set(CoordinateSystem.epsg4979, longitude, latitude, height);
 
         return target;
     }
@@ -321,7 +322,7 @@ export default class Ellipsoid {
      * @throws if the extent is not in the EPSG:4326 CRS.
      */
     getExtentDimensions(extent: Extent, target?: Vector2): Vector2 {
-        if (extent.crs !== 'EPSG:4326') {
+        if (!extent.crs.isEpsg(4326)) {
             throw new Error('not a WGS 84 extent (EPSG:4326)');
         }
 

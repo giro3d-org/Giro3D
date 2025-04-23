@@ -30,6 +30,7 @@ import type ColorMap from '../ColorMap';
 import type Context from '../Context';
 import type Disposable from '../Disposable';
 import type ElevationRange from '../ElevationRange';
+import type CoordinateSystem from '../geographic/coordinate-system/CoordinateSystem';
 import type Coordinates from '../geographic/Coordinates';
 import Extent from '../geographic/Extent';
 import type Instance from '../Instance';
@@ -417,7 +418,7 @@ abstract class Layer<
     private readonly _opCounter: OperationCounter;
     private _sortedTargets: Target[] | null = null;
     private _instance: Instance | null = null;
-    private _composerProjection: string | null = null;
+    private _composerProjection: CoordinateSystem | null = null;
     private readonly _createReadableTextures: boolean;
     private readonly _preloadImages: boolean;
     private readonly _minFilter?: MinificationTextureFilter;
@@ -598,7 +599,7 @@ abstract class Layer<
          * Once set, the layer cannot be used with any other instance.
          */
         instance: Instance;
-        composerProjection: string;
+        composerProjection: CoordinateSystem;
     }): Promise<this> {
         const { instance } = options;
         if (this._instance != null && instance !== this._instance) {
@@ -608,9 +609,9 @@ abstract class Layer<
         this._instance = instance;
         this._composerProjection = options.composerProjection;
 
-        if (this.extent && this.extent.crs !== this._composerProjection) {
+        if (this.extent && !this.extent.crs.equals(this._composerProjection)) {
             throw new Error(
-                `the extent of the layer was defined in a different CRS (${this.extent.crs}) than the composer projection (${this._composerProjection}). Please convert the extent to the proper CRS before creating the layer.`,
+                `the extent of the layer was defined in a different CRS (${this.extent.crs.id}) than the composer projection (${this._composerProjection.id}). Please convert the extent to the proper CRS before creating the layer.`,
             );
         }
 
@@ -812,7 +813,7 @@ abstract class Layer<
 
     private getExtentAsSourceCRS(extent: Extent): Extent {
         const clone = extent.clone();
-        if (clone.crs === 'EPSG:4326') {
+        if (clone.crs.isEpsg(4326)) {
             // Keep extent in correct domain
             clone.intersect(Extent.WGS84);
         }
@@ -1006,7 +1007,7 @@ abstract class Layer<
          */
         size?: number;
     }): Color[] | undefined {
-        const coordinates = params.coordinates.as(this.instance.referenceCrs);
+        const coordinates = params.coordinates.as(this.instance.coordinateSystem);
 
         if (this.source.datatype !== UnsignedByteType) {
             return undefined;
@@ -1435,7 +1436,7 @@ abstract class Layer<
                 Math.round(textureSize.y * this.resolutionFactor),
             );
 
-            if (this.composer?.targetCrs === 'EPSG:4326') {
+            if (this.composer?.targetCrs.isEpsg(4326) === true) {
                 // Ensure that no extent overflow the WGS84 domain,
                 // to avoid artifacts at the 180° meridian.
                 extent?.intersect(Extent.WGS84);

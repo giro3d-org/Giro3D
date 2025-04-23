@@ -1,13 +1,15 @@
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import LayerComposer from '@giro3d/giro3d/core/layer/LayerComposer';
 
 describe('LayerComposer', () => {
     describe('getMinMax', () => {
         it('should ignore images that do not have a valid min/max', () => {
+            const crs = CoordinateSystem.unknown;
             // @ts-expect-error incomplete definition
-            const composer = new LayerComposer({ renderer: null });
+            const composer = new LayerComposer({ renderer: null, sourceCrs: crs, targetCrs: crs });
 
-            const extent = new Extent('EPSG:3857', 0, 10, 0, 10);
+            const extent = new Extent(CoordinateSystem.epsg3857, 0, 10, 0, 10);
 
             // @ts-expect-error incomplete definition
             composer.images.set('img0', { extent, min: undefined, max: NaN });

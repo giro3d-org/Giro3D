@@ -20,6 +20,7 @@ import { isFiniteNumber } from '../../utils/predicates';
 import ProjUtils from '../../utils/ProjUtils';
 import TextureGenerator from '../../utils/TextureGenerator';
 import { nonNull } from '../../utils/tsutils';
+import CoordinateSystem from '../geographic/coordinate-system/CoordinateSystem';
 import Coordinates from '../geographic/Coordinates';
 import type Extent from '../geographic/Extent';
 import type MemoryUsage from '../MemoryUsage';
@@ -31,7 +32,7 @@ const tmpVec1 = new Vector2();
 const tmpVec2 = new Vector2();
 const DEFAULT_WARP_SUBDIVISIONS = 8;
 const tmpFloat64 = new Float64Array(DEFAULT_WARP_SUBDIVISIONS * DEFAULT_WARP_SUBDIVISIONS * 3);
-const tmpCoords = new Coordinates('EPSG:4326', 0, 0);
+const tmpCoords = new Coordinates(CoordinateSystem.epsg4326, 0, 0);
 
 /**
  * Removes the texture data from CPU memory.
@@ -164,8 +165,8 @@ class LayerComposer implements MemoryUsage {
     readonly webGLRenderer: WebGLRenderer;
     readonly transparent: boolean;
     readonly noDataValue: number;
-    readonly sourceCrs: string;
-    readonly targetCrs: string;
+    readonly sourceCrs: CoordinateSystem;
+    readonly targetCrs: CoordinateSystem;
     readonly needsReprojection: boolean;
     readonly interpretation: Interpretation;
     readonly composer: WebGLComposer;
@@ -198,13 +199,13 @@ class LayerComposer implements MemoryUsage {
         /** The no-data value. */
         noDataValue?: number;
         /** The CRS of the source. */
-        sourceCrs: string;
+        sourceCrs: CoordinateSystem;
         /** The extent. */
         extent?: Extent;
         /** Show image outlines. */
         showImageOutlines: boolean;
         /** The target CRS of this composer. */
-        targetCrs: string;
+        targetCrs: CoordinateSystem;
         /** The interpretation of the layer. */
         interpretation: Interpretation;
         /** Fill no-data values of the image. */
@@ -233,7 +234,7 @@ class LayerComposer implements MemoryUsage {
         this.noDataValue = options.noDataValue ?? 0;
         this.sourceCrs = options.sourceCrs;
         this.targetCrs = options.targetCrs;
-        this.needsReprojection = this.sourceCrs !== this.targetCrs;
+        this.needsReprojection = !this.sourceCrs.equals(this.targetCrs);
         this.interpretation = options.interpretation;
         this.fillNoData = options.fillNoData;
         this.fillNoDataAlphaReplacement = options.fillNoDataAlphaReplacement;

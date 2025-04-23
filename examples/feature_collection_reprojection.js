@@ -1,17 +1,18 @@
-import { MathUtils } from 'three/src/math/MathUtils.js';
 import GeoJSON from 'ol/format/GeoJSON.js';
+import { tile } from 'ol/loadingstrategy.js';
 import VectorSource from 'ol/source/Vector.js';
 import { createXYZ } from 'ol/tilegrid.js';
-import { tile } from 'ol/loadingstrategy.js';
 
 import { Color, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
+import { MathUtils } from 'three/src/math/MathUtils.js';
 
 import Instance from '@giro3d/giro3d/core/Instance.js';
-import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
-import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import FeatureCollection from '@giro3d/giro3d/entities/FeatureCollection.js';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';
+import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import FeatureCollection from '@giro3d/giro3d/entities/FeatureCollection.js';
+import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
@@ -20,7 +21,13 @@ Instance.registerCRS(
     '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
 );
 
-const extent = new Extent('EPSG:2154', -111629.52, 1275028.84, 5976033.79, 7230161.64);
+const extent = new Extent(
+    CoordinateSystem.fromEpsg(2154),
+    -111629.52,
+    1275028.84,
+    5976033.79,
+    7230161.64,
+);
 
 const instance = new Instance({
     target: 'view',
@@ -131,7 +138,7 @@ const bdTopoSource = new VectorSource({
 const buildings = new FeatureCollection({
     source: bdTopoSource,
     // we specify that FeatureCollection should reproject the features before displaying them
-    dataProjection: 'EPSG:3857',
+    dataProjection: CoordinateSystem.epsg3857,
     // We are working on a flat, 2D scene, so we must ignore the Z coordinate of features, if any.
     ignoreZ: true,
     extent,
@@ -168,8 +175,8 @@ const buildings = new FeatureCollection({
 buildings.name = 'buildings';
 instance.add(buildings);
 
-const position = new Coordinates('EPSG:2154', 652212.5, 6860754.1, 27717.3);
-const lookAtCoords = new Coordinates('EPSG:2154', 652338.3, 6862087.1, 200);
+const position = new Coordinates(CoordinateSystem.fromEpsg(2154), 652212.5, 6860754.1, 27717.3);
+const lookAtCoords = new Coordinates(CoordinateSystem.fromEpsg(2154), 652338.3, 6862087.1, 200);
 const lookAt = new Vector3(lookAtCoords.x, lookAtCoords.y, lookAtCoords.z);
 instance.view.camera.position.set(position.x, position.y, position.z);
 instance.view.camera.lookAt(lookAt);

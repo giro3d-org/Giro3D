@@ -15,6 +15,7 @@ import {
     Vector3,
 } from 'three';
 import { GlobalCache } from '../core/Cache';
+import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import type * as octree from '../core/Octree';
 import OperationCounter from '../core/OperationCounter';
 import { DefaultQueue } from '../core/RequestQueue';
@@ -647,11 +648,11 @@ export default class PotreeSource extends PointCloudSourceBase {
             pointCount: metadata.points,
             crs:
                 proj != null && proj.length > 0
-                    ? {
+                    ? new CoordinateSystem({
                           definition: proj,
                           name: `potree:${this.id}`,
-                      }
-                    : undefined,
+                      })
+                    : CoordinateSystem.unknown,
         });
     }
 }

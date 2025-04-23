@@ -1,3 +1,4 @@
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import type ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer';
 import OffsetScale from '@giro3d/giro3d/core/OffsetScale';
@@ -9,7 +10,7 @@ import { Color, DoubleSide, FrontSide, Texture, UnsignedByteType, Vector2 } from
 
 const defaultTextureSize: Vector2 = new Vector2(128, 128);
 const defaultTileDimensions: Vector2 = new Vector2(100, 100);
-const defaultExtent = new Extent('EPSG:3857', 0, 10, 0, 10);
+const defaultExtent = new Extent(CoordinateSystem.epsg3857, 0, 10, 0, 10);
 // @ts-expect-error incomplete type
 const defaultRenderer: WebGLRenderer = {};
 const getIndexFn = () => 0;

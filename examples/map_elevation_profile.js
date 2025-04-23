@@ -1,29 +1,28 @@
-import colormap from 'colormap';
-
 import { CurvePath, DoubleSide, LineCurve, Vector2, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
 import * as ChartJS from 'chart.js';
 
-import DrawTool from '@giro3d/giro3d/interactions/DrawTool.js';
+import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
+import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
-import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
 import Shape from '@giro3d/giro3d/entities/Shape.js';
-import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
-import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
-import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
+import Inspector from '@giro3d/giro3d/gui/Inspector.js';
+import DrawTool from '@giro3d/giro3d/interactions/DrawTool.js';
+import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
+import { bindButton } from './widgets/bindButton.js';
 import { bindToggle } from './widgets/bindToggle.js';
 import { makeColorRamp } from './widgets/makeColorRamp.js';
-import { bindButton } from './widgets/bindButton.js';
 
 Instance.registerCRS(
     'EPSG:2154',
@@ -34,7 +33,12 @@ Instance.registerCRS(
     'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]',
 );
 
-const extent = Extent.fromCenterAndSize('EPSG:2154', { x: 674_675, y: 6_442_569 }, 30_000, 30_000);
+const extent = Extent.fromCenterAndSize(
+    CoordinateSystem.fromEpsg(2154),
+    { x: 674_675, y: 6_442_569 },
+    30_000,
+    30_000,
+);
 
 const instance = new Instance({
     target: 'view',

@@ -17,9 +17,10 @@ import TileWMS from 'ol/source/TileWMS.js';
 
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
-import Map from '@giro3d/giro3d/entities/Map.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
+import Map from '@giro3d/giro3d/entities/Map.js';
 import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
@@ -49,7 +50,7 @@ Instance.registerCRS(
 // We will use the `view` element from our HTML page to initialize the instance.
 const instance = new Instance({
     target: 'view',
-    crs: 'EPSG:3946',
+    crs: CoordinateSystem.fromEpsg(3946),
 });
 
 // ### Create the Map
@@ -70,7 +71,7 @@ const xmax = 1847692.32501;
 const ymin = 5170036.4587;
 const ymax = 5178412.82698;
 
-const extent = new Extent('EPSG:3946', xmin, xmax, ymin, ymax);
+const extent = new Extent(CoordinateSystem.fromEpsg(3946), xmin, xmax, ymin, ymax);
 
 // #### Create the Map object
 

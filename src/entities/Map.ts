@@ -1089,9 +1089,9 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     override preprocess() {
-        if (this.extent.crs !== this.getComposerProjection()) {
+        if (!this.extent.crs.equals(this.getComposerProjection())) {
             throw new Error(
-                `The extent of this map is not in the correct CRS. Expected: ${this.getComposerProjection()}, got: ${this.extent.crs}`,
+                `The extent of this map is not in the correct CRS. Expected: ${this.getComposerProjection().id}, got: ${this.extent.crs.id}`,
             );
         }
 
@@ -1144,7 +1144,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     protected getComposerProjection() {
-        return this.instance.referenceCrs;
+        return this.instance.coordinateSystem;
     }
 
     protected getGeometryBuilder(): TileGeometryBuilder {
@@ -1301,7 +1301,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
             const pickResult: MapPickResult = {
                 isMapPickResult: true,
-                coord: new Coordinates(this.instance.referenceCrs, x, y, z),
+                coord: new Coordinates(this.instance.coordinateSystem, x, y, z),
                 entity: this,
                 ...intersect,
             };

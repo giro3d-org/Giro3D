@@ -1,4 +1,5 @@
 import { CanvasTexture, MathUtils, Texture } from 'three';
+import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import type Extent from '../core/geographic/Extent';
 import EmptyTexture from '../renderer/EmptyTexture';
 import Fetcher from '../utils/Fetcher';
@@ -82,7 +83,7 @@ export default class StaticImageSource extends ImageSource<StaticImageSourceEven
         return this._extent;
     }
 
-    getCrs(): string {
+    getCrs(): CoordinateSystem {
         return this._extent.crs;
     }
 

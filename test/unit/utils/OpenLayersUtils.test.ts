@@ -1,10 +1,11 @@
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import OpenLayersUtils from '@giro3d/giro3d/utils/OpenLayersUtils';
 
 describe('OpenLayersUtils', () => {
     describe('toOLExtent/fromOLExtent', () => {
         it('should round trip', () => {
-            const extent = new Extent('EPSG:3857', 1203, 405405, -20323, 202020);
+            const extent = new Extent(CoordinateSystem.epsg3857, 1203, 405405, -20323, 202020);
             const ol = OpenLayersUtils.toOLExtent(extent);
             const extent2 = OpenLayersUtils.fromOLExtent(ol, extent.crs);
 

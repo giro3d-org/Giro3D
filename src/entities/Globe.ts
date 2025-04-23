@@ -1,5 +1,6 @@
 import { Box3, Sphere, Vector2, Vector3, type Camera } from 'three';
 import type Context from '../core/Context';
+import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import Coordinates from '../core/geographic/Coordinates';
 import Ellipsoid from '../core/geographic/Ellipsoid';
 import Extent from '../core/geographic/Extent';
@@ -24,7 +25,7 @@ import type TileVolume from './tiles/TileVolume';
 const tempDims = new Vector2();
 const tempWorldPosition = new Vector3();
 const tempCameraPosition = new Vector3();
-const tmpWGS84Coordinates = new Coordinates('EPSG:4326', 0, 0);
+const tmpWGS84Coordinates = new Coordinates(CoordinateSystem.epsg4326, 0, 0);
 const horizonSphere = new Sphere();
 const boundingSphere = new Sphere();
 const tempBox = new Box3();
@@ -256,8 +257,8 @@ export default class Globe extends Map {
         return true;
     }
 
-    protected override getComposerProjection(): string {
-        return 'EPSG:4326';
+    protected override getComposerProjection(): CoordinateSystem {
+        return CoordinateSystem.epsg4326;
     }
 
     protected override getDefaultTerrainOptions(): Readonly<TerrainOptions> {

@@ -1,4 +1,5 @@
 import Instance from '@giro3d/giro3d/core/Instance.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import PointCloud from '@giro3d/giro3d/entities/PointCloud.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import LASSource from '@giro3d/giro3d/sources/LASSource.js';
@@ -19,7 +20,7 @@ Instance.registerCRS(
 );
 
 const instance = new Instance({
-    crs: 'EPSG:2992',
+    crs: CoordinateSystem.fromEpsg(2992),
     target: 'view',
     backgroundColor: null,
 });

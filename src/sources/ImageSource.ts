@@ -8,6 +8,7 @@ import {
     type Texture,
     type TextureDataType,
 } from 'three';
+import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import type Extent from '../core/geographic/Extent';
 import type MemoryUsage from '../core/MemoryUsage';
 import { type GetMemoryUsageContext } from '../core/MemoryUsage';
@@ -215,7 +216,7 @@ abstract class ImageSource<Events extends ImageSourceEvents = ImageSourceEvents>
      *
      * @returns The CRS.
      */
-    abstract getCrs(): string;
+    abstract getCrs(): CoordinateSystem;
 
     /**
      * Returns the extent of this source expressed in the CRS of the source.
@@ -278,7 +279,7 @@ abstract class ImageSource<Events extends ImageSourceEvents = ImageSourceEvents>
     initialize(options: {
         /** The target projection. Only useful for sources that are able
          * to reproject their data on the fly (typically vector sources). */
-        targetProjection: string;
+        targetProjection: CoordinateSystem;
     }): Promise<void> {
         return Promise.resolve();
     }

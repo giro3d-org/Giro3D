@@ -1,3 +1,4 @@
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import SphericalPanorama from '@giro3d/giro3d/entities/SphericalPanorama';
 import { Euler, MathUtils, Quaternion, Vector3 } from 'three';
 
@@ -7,7 +8,7 @@ describe('SphericalPanorama', () => {
             const panorama = new SphericalPanorama();
 
             // @ts-expect-error private property
-            panorama._instance = { referenceCrs: 'EPSG:3857' };
+            panorama._instance = { coordinateSystem: CoordinateSystem.epsg3857 };
 
             panorama.object3d.quaternion.set(1, 2, 3, 4);
 
@@ -20,7 +21,7 @@ describe('SphericalPanorama', () => {
             const panorama = new SphericalPanorama();
 
             // @ts-expect-error private property
-            panorama._instance = { referenceCrs: 'EPSG:3857' };
+            panorama._instance = { coordinateSystem: CoordinateSystem.epsg3857 };
 
             panorama.setOrientation({ heading: 15 });
 
@@ -40,7 +41,7 @@ describe('SphericalPanorama', () => {
             const roll = 45;
 
             // @ts-expect-error private property
-            panorama._instance = { referenceCrs: 'EPSG:3857' };
+            panorama._instance = { coordinateSystem: CoordinateSystem.epsg3857 };
 
             panorama.setOrientation({ heading, pitch, roll });
 

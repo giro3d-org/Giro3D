@@ -1,18 +1,19 @@
 import { GeoJSON } from 'ol/format.js';
-import { Fill, Stroke, Style } from 'ol/style.js';
 import TileWMS from 'ol/source/TileWMS.js';
+import { Fill, Stroke, Style } from 'ol/style.js';
 
 import { MathUtils, Vector2, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
+import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
@@ -25,7 +26,13 @@ Instance.registerCRS(
     '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
 );
 
-const extent = new Extent('EPSG:3946', 1837816.94334, 1847692.32501, 5170036.4587, 5178412.82698);
+const extent = new Extent(
+    CoordinateSystem.fromEpsg(3946),
+    1837816.94334,
+    1847692.32501,
+    5170036.4587,
+    5178412.82698,
+);
 
 const instance = new Instance({
     target: 'view',
@@ -144,7 +151,7 @@ map.addLayer(geoJsonLayer).then(() => {
         // We'll position the label at the center of the geometry extent
         const olExtent = feature.getGeometry().getExtent();
         const giro3dExtent = new Extent(
-            'EPSG:3946',
+            CoordinateSystem.fromEpsg(3946),
             olExtent[0],
             olExtent[2],
             olExtent[1],

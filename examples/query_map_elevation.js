@@ -4,15 +4,16 @@ import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
 import XYZ from 'ol/source/XYZ.js';
 
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
-import Map from '@giro3d/giro3d/entities/Map.js';
-import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
-import MapboxTerrainFormat from '@giro3d/giro3d/formats/MapboxTerrainFormat.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
+import Map from '@giro3d/giro3d/entities/Map.js';
+import MapboxTerrainFormat from '@giro3d/giro3d/formats/MapboxTerrainFormat.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
+import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
@@ -23,7 +24,12 @@ Instance.registerCRS(
 
 const SKY_COLOR = '#87CEEB';
 const size = 200_000;
-const extent = Extent.fromCenterAndSize('EPSG:2154', { x: 1_051_908, y: 6_542_409 }, size, size);
+const extent = Extent.fromCenterAndSize(
+    CoordinateSystem.fromEpsg(2154),
+    { x: 1_051_908, y: 6_542_409 },
+    size,
+    size,
+);
 
 const instance = new Instance({
     target: 'view',
@@ -99,7 +105,7 @@ const summitMarkers = [];
 
 function updateMarker(marker) {
     const { x, y } = marker.position;
-    const coordinates = new Coordinates(instance.referenceCrs, x, y);
+    const coordinates = new Coordinates(instance.coordinateSystem, x, y);
     const result = map.getElevation({ coordinates });
     if (result.samples.length > 0) {
         result.samples.sort((a, b) => a.resolution - b.resolution);
@@ -113,7 +119,7 @@ function updateMarker(marker) {
 function updateMarkers(extent) {
     for (const marker of summitMarkers) {
         const { x, y } = marker.position;
-        const coordinates = new Coordinates(instance.referenceCrs, x, y);
+        const coordinates = new Coordinates(instance.coordinateSystem, x, y);
 
         // Only update markers that are inside the updated area
         if (extent.isPointInside(coordinates)) {
@@ -136,7 +142,9 @@ async function loadMarker(summit) {
     marker.name = name;
 
     // Let's convert our summit coordinates from EPSG:4326 to EPSG:2154
-    const coordinates = new Coordinates('EPSG:4326', longitude, latitude).as(instance.referenceCrs);
+    const coordinates = new Coordinates(CoordinateSystem.epsg4326, longitude, latitude).as(
+        instance.coordinateSystem,
+    );
     marker.position.set(coordinates.x, coordinates.y, 0);
 
     instance.add(marker);

@@ -1,20 +1,21 @@
 import { Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
-import { Fill, Style } from 'ol/style.js';
 import GeoJSON from 'ol/format/GeoJSON.js';
+import { Fill, Style } from 'ol/style.js';
 
-import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
-import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
+import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
+import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
 
 import { bindSlider } from './widgets/bindSlider';
 
 const extent = new Extent(
-    'EPSG:3857',
+    CoordinateSystem.epsg3857,
     -4553934 - 1000000,
     -4553934 + 1000000,
     -3910697 - 1000000,
@@ -82,7 +83,7 @@ function makeGeoJSONLayer(name, geojson, color) {
             format: new GeoJSON(),
         },
         style,
-        dataProjection: 'EPSG:4326',
+        dataProjection: CoordinateSystem.epsg4326,
     });
     const layer = new ColorLayer({
         name,

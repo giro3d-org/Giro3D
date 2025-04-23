@@ -1,10 +1,11 @@
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import HeightMap from '@giro3d/giro3d/core/HeightMap';
 import OffsetScale from '@giro3d/giro3d/core/OffsetScale';
 import PlanarTileGeometry from '@giro3d/giro3d/entities/tiles/PlanarTileGeometry';
 import { FloatType, RGFormat } from 'three';
 
-const extent = new Extent('EPSG:3857', -100, 100, -100, 100);
+const extent = new Extent(CoordinateSystem.epsg3857, -100, 100, -100, 100);
 const DEFAULT_OFFSET_SCALE = new OffsetScale(0, 0, 1, 1);
 
 // Actual buffer arrays to prevent regression

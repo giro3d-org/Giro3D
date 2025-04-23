@@ -424,7 +424,7 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         this._colorLayer = layer;
         await layer.initialize({
             instance: this.instance,
-            composerProjection: this.instance.referenceCrs,
+            composerProjection: this.instance.coordinateSystem,
         });
         this.dispatchEvent({ type: 'layer-removed', layer });
     }
@@ -713,7 +713,7 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         if (node.visible && node.userData.extent == null) {
             const localBox = node.userData.boundingBox as Box3;
             const worldBox = localBox.clone().applyMatrix4(node.matrixWorld);
-            const extent = Extent.fromBox3(this.instance.referenceCrs, worldBox);
+            const extent = Extent.fromBox3(this.instance.coordinateSystem, worldBox);
             node.userData.extent = extent;
         }
     }
