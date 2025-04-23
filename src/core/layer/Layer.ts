@@ -21,7 +21,7 @@ import MemoryTracker from '../../renderer/MemoryTracker';
 import type RenderingContextHandler from '../../renderer/RenderingContextHandler';
 import { GlobalRenderTargetPool } from '../../renderer/RenderTargetPool';
 import type ImageSource from '../../sources/ImageSource';
-import { isImageSource, type ImageResult } from '../../sources/ImageSource';
+import { type ImageResult, isImageSource } from '../../sources/ImageSource';
 import PromiseUtils, { PromiseStatus } from '../../utils/PromiseUtils';
 import TextureGenerator from '../../utils/TextureGenerator';
 import { nonNull } from '../../utils/tsutils';
