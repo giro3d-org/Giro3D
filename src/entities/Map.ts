@@ -615,6 +615,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     private _geometryBuilder: TileGeometryBuilder | null = null;
 
     private _hasElevationLayer = false;
+    private _elevationScaling = 1;
     private _colorAtlasDataType: TextureDataType = UnsignedByteType;
     private _wireframe = false;
     private _subdivisionThreshold;
@@ -1205,6 +1206,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
             geometryBuilder: nonNull(this._geometryBuilder),
             volume: this.createTileVolume(extent),
         });
+        tile.setVerticalScaling(this._elevationScaling);
 
         this._allTiles.add(tile);
 
@@ -1735,6 +1737,12 @@ class Map<UserData extends EntityUserData = EntityUserData>
             this.registerColorLayer();
         } else if (isElevationLayer(layer)) {
             this._hasElevationLayer = true;
+            this._elevationScaling =
+                layer.source.getCrs().metersPerVerticalUnit /
+                this.instance.coordinateSystem.metersPerVerticalUnit;
+            for (const tileMesh of this._allTiles) {
+                tileMesh.setVerticalScaling(this._elevationScaling);
+            }
             this.updateGlobalMinMax();
         }
 

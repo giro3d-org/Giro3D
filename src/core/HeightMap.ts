@@ -65,6 +65,11 @@ export default class HeightMap {
      */
     readonly offset: number;
 
+    /**
+     * The vertical scaling to apply in order to get values in meter.
+     */
+    readonly verticalScaling: number;
+
     constructor(
         buffer: TypedArray,
         width: number,
@@ -74,6 +79,7 @@ export default class HeightMap {
         type: HeightMapTextureDataType,
         precision?: number,
         offset?: number,
+        verticalScaling?: number,
     ) {
         const stride = TextureGenerator.getChannelCount(format);
         if (buffer.length < width * height * stride) {
@@ -89,6 +95,7 @@ export default class HeightMap {
         this.type = type;
         this.precision = precision ?? 0.1;
         this.offset = offset ?? RGBA_OFFSET;
+        this.verticalScaling = verticalScaling ?? 1;
     }
 
     private readRGBA(index: number, ignoreNoData: boolean): number | null {
@@ -128,6 +135,7 @@ export default class HeightMap {
             this.type,
             this.precision,
             this.offset,
+            this.verticalScaling,
         );
     }
 
@@ -198,10 +206,16 @@ export default class HeightMap {
     private getValueRaw(i: number, j: number, ignoreTransparentPixels = false): number | null {
         const index = i + j * this.width;
 
+        let rawValue: number | null = null;
         if (this.format === RGBAFormat && this.type === UnsignedByteType) {
-            return this.readRGBA(index, ignoreTransparentPixels);
+            rawValue = this.readRGBA(index, ignoreTransparentPixels);
         } else {
-            return this.readRG(index, ignoreTransparentPixels);
+            rawValue = this.readRG(index, ignoreTransparentPixels);
         }
+
+        if (rawValue !== null) {
+            rawValue *= this.verticalScaling;
+        }
+        return rawValue;
     }
 }

@@ -108,5 +108,5 @@ if(elevationLayer.offsetScale.z > 0.) {
 #else
     vec3 upVector = vec3(0, 0, 1);
 #endif
-    transformed.xyz += upVector * elevation;
+    transformed.xyz += upVector * elevation * elevationScaling;
 #endif // TERRAIN_DEFORMATION
