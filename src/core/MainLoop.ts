@@ -119,13 +119,6 @@ class MainLoop {
     }
 
     private update(instance: Instance, updateSources: Set<unknown>, dt: number) {
-        if (this.automaticCameraPlaneComputation) {
-            // Reset near/far to default value to allow update function to test
-            // visibility using camera's frustum; without depending on the near/far
-            // values which are only used for rendering.
-            instance.view.resetPlanes();
-        }
-
         const frame = this._frame;
 
         const context = new ContextImpl(instance.view);
@@ -178,6 +171,8 @@ class MainLoop {
         if (this.automaticCameraPlaneComputation) {
             instance.view.near = context.distance.min;
             instance.view.far = context.distance.max;
+
+            instance.view.camera.updateProjectionMatrix();
         }
     }
 
@@ -231,6 +226,13 @@ class MainLoop {
             dt,
             updateLoopRestarted: this._updateLoopRestarted,
         });
+
+        if (this.automaticCameraPlaneComputation) {
+            // Reset near/far to default value to allow update function to test
+            // visibility using camera's frustum; without depending on the near/far
+            // values which are only used for rendering.
+            instance.view.resetPlanes();
+        }
 
         const dim = instance.engine.getWindowSize();
         instance.view.setSize(dim.x, dim.y);
