@@ -276,6 +276,7 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
 
         // update matrix
         this.camera.updateMatrixWorld();
+        this.camera.updateProjectionMatrix();
 
         // keep our visibility testing matrix ready
         this._viewMatrix.multiplyMatrices(
