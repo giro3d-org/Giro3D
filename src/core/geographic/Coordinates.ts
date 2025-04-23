@@ -1,6 +1,7 @@
 import { register } from 'ol/proj/proj4';
 import proj4 from 'proj4';
 import { MathUtils, Vector2, Vector3 } from 'three';
+import { isVector3 } from '../../utils/predicates';
 import { getConverter } from './ProjectionCache';
 
 proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs +type=crs');
@@ -157,6 +158,7 @@ export type CoordinateParameters = [number, number] | [number, number, number] |
  * Represents coordinates associated with a coordinate reference system (CRS).
  */
 class Coordinates {
+    readonly isCoordinates = true as const;
     private readonly _values: Float64Array;
     crs: string;
 
@@ -193,7 +195,7 @@ class Coordinates {
         crsToUnitWithError(crs);
         this.crs = crs;
 
-        if (coordinates.length === 1 && coordinates[0] instanceof Vector3) {
+        if (coordinates.length === 1 && isVector3(coordinates[0])) {
             this._values[0] = coordinates[0].x;
             this._values[1] = coordinates[0].y;
             this._values[2] = coordinates[0].z;
@@ -565,6 +567,10 @@ class Coordinates {
             .withLongitude(longitude)
             .withAltitude(altitude ?? 0);
     }
+}
+
+export function isCoordinates(obj: unknown): obj is Coordinates {
+    return (obj as Coordinates).isCoordinates === true;
 }
 
 export default Coordinates;

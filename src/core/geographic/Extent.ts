@@ -639,11 +639,7 @@ class Extent {
     set(crs: string, ...values: ExtentParameters): this {
         this._crs = crs;
 
-        if (
-            values.length === 2 &&
-            values[0] instanceof Coordinates &&
-            values[1] instanceof Coordinates
-        ) {
+        if (values.length === 2 && isCoordinates(values[0]) && isCoordinates(values[1])) {
             [this._values[CARDINAL.WEST], this._values[CARDINAL.SOUTH]] = values[0].values;
             [this._values[CARDINAL.EAST], this._values[CARDINAL.NORTH]] = values[1].values;
         } else if (values.length === 1 && values[0].west !== undefined) {
@@ -990,3 +986,7 @@ class Extent {
 }
 
 export default Extent;
+
+export function isCoordinates(obj: unknown): obj is Coordinates {
+    return (obj as Coordinates).isCoordinates === true;
+}

@@ -23,7 +23,7 @@ import type Extent from '../core/geographic/Extent';
 import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../core/MemoryUsage';
 import Helpers from '../helpers/Helpers';
 import type View from '../renderer/View';
-import { isBufferGeometry } from '../utils/predicates';
+import { isBufferGeometry, isCSS2DObject } from '../utils/predicates';
 import { nonNull } from '../utils/tsutils';
 import type { EntityUserData } from './Entity';
 import type { Entity3DEventMap } from './Entity3D';
@@ -532,12 +532,12 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
 
     private forEachLabel(callback: (label: CSS2DObject) => void) {
         this._edgeLabelRoot.traverse(obj => {
-            if (obj instanceof CSS2DObject) {
+            if (isCSS2DObject(obj)) {
                 callback(obj);
             }
         });
         this._adaptiveLabelRoot.traverse(obj => {
-            if (obj instanceof CSS2DObject) {
+            if (isCSS2DObject(obj)) {
                 callback(obj);
             }
         });
@@ -571,7 +571,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
 
     private removeEdgeLabels() {
         this._edgeLabelRoot.traverse(obj => {
-            if (obj instanceof CSS2DObject) {
+            if (isCSS2DObject(obj)) {
                 obj.element.remove();
             }
         });
@@ -581,7 +581,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
 
     private removeAdaptiveLabels() {
         this._adaptiveLabelRoot.traverse(obj => {
-            if (obj instanceof CSS2DObject) {
+            if (isCSS2DObject(obj)) {
                 obj.element.remove();
             }
         });
@@ -1317,7 +1317,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
         const showHelpers = this.showHelpers;
 
         edge.traverse((c: Object3D) => {
-            if (c instanceof CSS2DObject && c.element != null) {
+            if (isCSS2DObject(c) && c.element != null) {
                 c.visible = visible;
                 if (visible) {
                     const style = c.element.style;

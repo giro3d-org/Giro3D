@@ -295,3 +295,7 @@ export default class Globe extends Map {
         return Object.freeze(result);
     }
 }
+
+export function isGlobe(obj: unknown): obj is Globe {
+    return (obj as Globe).isGlobe === true;
+}

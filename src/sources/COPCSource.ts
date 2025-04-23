@@ -683,3 +683,7 @@ export default class COPCSource extends PointCloudSourceBase {
         // Nothing to dispose.
     }
 }
+
+export function isCOPCSource(obj: unknown): obj is COPCSource {
+    return (obj as COPCSource).isCOPCSource === true;
+}

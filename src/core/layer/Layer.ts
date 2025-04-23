@@ -20,7 +20,8 @@ import {
 import MemoryTracker from '../../renderer/MemoryTracker';
 import type RenderingContextHandler from '../../renderer/RenderingContextHandler';
 import { GlobalRenderTargetPool } from '../../renderer/RenderTargetPool';
-import ImageSource, { type ImageResult } from '../../sources/ImageSource';
+import type ImageSource from '../../sources/ImageSource';
+import { isImageSource, type ImageResult } from '../../sources/ImageSource';
 import PromiseUtils, { PromiseStatus } from '../../utils/PromiseUtils';
 import TextureGenerator from '../../utils/TextureGenerator';
 import { nonNull } from '../../utils/tsutils';
@@ -488,7 +489,7 @@ abstract class Layer<
         this.extent = options.extent ?? null;
         this.resolutionFactor = options.resolutionFactor ?? 1;
 
-        if (options.source == null || !(options.source instanceof ImageSource)) {
+        if (options.source == null || !isImageSource(options.source)) {
             throw new Error('missing or invalid source');
         }
         this.source = options.source;

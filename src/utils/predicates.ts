@@ -21,6 +21,7 @@ import type {
     Vector3,
 } from 'three';
 import { Color } from 'three';
+import type { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
 export function has<T>(obj: unknown, prop: keyof T): obj is T {
     if (obj == null) {
@@ -100,6 +101,12 @@ export function getColor(input: ColorRepresentation): Color {
 
     return new Color(input);
 }
+
 export function isShaderMaterial(obj: unknown): obj is ShaderMaterial {
     return (obj as ShaderMaterial)?.isShaderMaterial;
+}
+
+export function isCSS2DObject(obj: unknown): obj is CSS2DObject {
+    // @ts-expect-error property not present in types
+    return (obj as CSS2DObject)?.isCSS2DObject === true;
 }

@@ -1,6 +1,5 @@
-import type { BufferGeometry, IUniform, Object3D, WebGLRenderer } from 'three';
-import { Material, ShaderMaterial, Texture } from 'three';
-import { isBufferGeometry } from '../utils/predicates';
+import type { BufferGeometry, IUniform, Material, Object3D, WebGLRenderer } from 'three';
+import { isBufferGeometry, isMaterial, isShaderMaterial, isTexture } from '../utils/predicates';
 import TextureGenerator from '../utils/TextureGenerator';
 
 export type MemoryUsageReport = {
@@ -84,11 +83,11 @@ function iterateMaterials(obj: unknown, callback: (material: Material) => void) 
         return;
     }
 
-    if (withMaterials.material instanceof Material) {
+    if (isMaterial(withMaterials.material)) {
         callback(withMaterials.material);
     } else if (Array.isArray(withMaterials.material)) {
         for (const m of withMaterials.material) {
-            if (m instanceof Material) {
+            if (isMaterial(m)) {
                 callback(m);
             }
         }
@@ -108,13 +107,13 @@ export function getObject3DMemoryUsage(context: GetMemoryUsageContext, object3d:
 export function getUniformMemoryUsage(context: GetMemoryUsageContext, uniform: IUniform) {
     const value = uniform.value;
 
-    if (value instanceof Texture) {
+    if (isTexture(value)) {
         TextureGenerator.getMemoryUsage(context, value);
     }
 }
 
 export function getMaterialMemoryUsage(context: GetMemoryUsageContext, material: Material) {
-    if (material instanceof ShaderMaterial) {
+    if (isShaderMaterial(material)) {
         for (const uniform of Object.values(material.uniforms)) {
             getUniformMemoryUsage(context, uniform);
         }

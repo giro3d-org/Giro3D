@@ -3,10 +3,10 @@ import type TileSource from 'ol/source/Tile.js';
 import UrlTile from 'ol/source/UrlTile.js';
 import type Instance from '../core/Instance';
 import * as MemoryUsage from '../core/MemoryUsage';
-import GeoTIFFSource from '../sources/GeoTIFFSource';
+import { isGeoTIFFSource } from '../sources/GeoTIFFSource';
 import type ImageSource from '../sources/ImageSource';
-import TiledImageSource from '../sources/TiledImageSource';
-import VectorSource from '../sources/VectorSource';
+import { isTiledImageSource } from '../sources/TiledImageSource';
+import { isVectorSource } from '../sources/VectorSource';
 import Panel from './Panel';
 
 /**
@@ -51,7 +51,7 @@ class SourceInspector extends Panel {
         this.addController(this, 'cpuMemoryUsage').name('Memory usage (CPU)');
         this.addController(this, 'gpuMemoryUsage').name('Memory usage (GPU)');
 
-        if (source instanceof GeoTIFFSource) {
+        if (isGeoTIFFSource(source)) {
             this.url = source.url.toString();
             this.addController(this, 'url').name('URL');
             if (source.channels != null) {
@@ -64,10 +64,10 @@ class SourceInspector extends Panel {
                         this.instance.notifyChange();
                     });
             }
-        } else if (source instanceof TiledImageSource) {
+        } else if (isTiledImageSource(source)) {
             this.addController(this, 'loadedPercent').name('Loaded/Requested');
             this.processOpenLayersSource(source.source);
-        } else if (source instanceof VectorSource) {
+        } else if (isVectorSource(source)) {
             this.addController(source, 'featureCount').name('Feature count');
         }
     }
@@ -82,7 +82,7 @@ class SourceInspector extends Panel {
         this.cpuMemoryUsage = MemoryUsage.format(memUsage.cpuMemory);
         this.gpuMemoryUsage = MemoryUsage.format(memUsage.gpuMemory);
 
-        if (this.source instanceof TiledImageSource) {
+        if (isTiledImageSource(this.source)) {
             const loaded = this.source.info.loadedTiles;
             const requested = this.source.info.requestedTiles;
             const ratio = Math.ceil(100 * (loaded / requested));
