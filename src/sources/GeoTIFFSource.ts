@@ -812,4 +812,8 @@ class GeoTIFFSource extends ImageSource {
     }
 }
 
+export function isGeoTIFFSource(obj: unknown): obj is GeoTIFFSource {
+    return (obj as GeoTIFFSource).isGeoTIFFSource === true;
+}
+
 export default GeoTIFFSource;

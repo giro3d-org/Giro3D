@@ -1,4 +1,5 @@
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
+import type Instance from '@giro3d/giro3d/core/Instance';
 import type {
     LayerEvents,
     LayerNode,
@@ -8,6 +9,7 @@ import type {
 import Layer from '@giro3d/giro3d/core/layer/Layer';
 import type RequestQueue from '@giro3d/giro3d/core/RequestQueue';
 import NullSource from '@giro3d/giro3d/sources/NullSource';
+import { RGBAFormat, UnsignedByteType } from 'three';
 import { setupGlobalMocks } from '../../mocks';
 
 // @ts-expect-error missing implementations of abstract superclass
@@ -112,6 +114,24 @@ describe('Layer', () => {
         it('should not accept all sources', () => {
             // @ts-expect-error null argument
             expect(() => new TestLayer({ source: null })).toThrowError(/missing or invalid source/);
+        });
+    });
+
+    describe('initialize', () => {
+        it('should initialize the source', async () => {
+            const source = new NullSource();
+            source.initialize = jest.fn();
+            const layer = new TestLayer({ source });
+            layer.getRenderTargetDataType = () => UnsignedByteType;
+            layer.getRenderTargetPixelFormat = () => RGBAFormat;
+
+            const instance: Instance = {
+                notifyChange: jest.fn(),
+            } as unknown as Instance;
+
+            await layer.initialize({ composerProjection: 'EPSG:3857', instance });
+
+            expect(source.initialize).toHaveBeenCalledTimes(1);
         });
     });
 

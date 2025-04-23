@@ -492,4 +492,8 @@ class VectorSource extends ImageSource {
     }
 }
 
+export function isVectorSource(obj: unknown): obj is VectorSource {
+    return (obj as VectorSource).isVectorSource === true;
+}
+
 export default VectorSource;

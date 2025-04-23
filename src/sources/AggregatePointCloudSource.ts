@@ -226,3 +226,7 @@ export default class AggregatePointCloudSource extends PointCloudSourceBase {
         this._sources.forEach(s => s.getMemoryUsage(context));
     }
 }
+
+export function isAggregatePointCloudSource(obj: unknown): obj is AggregatePointCloudSource {
+    return (obj as AggregatePointCloudSource).isAggregatePointCloudSource === true;
+}

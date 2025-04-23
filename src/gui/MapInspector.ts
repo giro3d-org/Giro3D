@@ -2,9 +2,10 @@ import type GUI from 'lil-gui';
 import type { AxesHelper, GridHelper, Side } from 'three';
 import { Color, MathUtils, Mesh, MeshBasicMaterial, Sphere, SphereGeometry } from 'three';
 import type Instance from '../core/Instance';
-import Globe from '../entities/Globe';
+import { isGlobe } from '../entities/Globe';
 import type Map from '../entities/Map';
-import TileMesh from '../entities/tiles/TileMesh';
+import type TileMesh from '../entities/tiles/TileMesh';
+import { isTileMesh } from '../entities/tiles/TileMesh';
 import type { BoundingBoxHelper } from '../helpers/Helpers';
 import Helpers from '../helpers/Helpers';
 import RenderingState from '../renderer/RenderingState';
@@ -108,7 +109,7 @@ class MapInspector extends EntityInspector<Map> {
                 .name('Elevation range maximum')
                 .onChange(() => this.notify(map));
         }
-        if (this.entity instanceof Globe) {
+        if (isGlobe(this.entity)) {
             this.addController(this.entity, 'horizonCulling');
         }
         this.addController(this.entity, 'castShadow');
@@ -257,11 +258,10 @@ class MapInspector extends EntityInspector<Map> {
         // by default, adds axis-oriented bounding boxes to each object in the hierarchy.
         // custom implementations may override this to have a different behaviour.
         // @ts-expect-error monkey patched method
-        this.rootObject.traverseOnce(obj => {
-            if (obj instanceof TileMesh) {
-                const tile = obj as TileMesh;
+        this.rootObject.traverseOnce(tile => {
+            if (isTileMesh(tile)) {
                 let finalColor = new Color();
-                const layerCount = obj.material?.getLayerCount();
+                const layerCount = tile.material?.getLayerCount();
                 if (layerCount === 0) {
                     finalColor = noDataColor;
                 } else {

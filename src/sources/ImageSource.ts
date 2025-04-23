@@ -128,7 +128,7 @@ abstract class ImageSource<Events extends ImageSourceEvents = ImageSourceEvents>
     implements MemoryUsage
 {
     readonly isMemoryUsage = true as const;
-    readonly isImageSource: boolean = true;
+    readonly isImageSource: boolean = true as const;
     readonly type: string;
 
     readonly priority: RequestPriority = 'auto';
@@ -302,6 +302,10 @@ abstract class ImageSource<Events extends ImageSourceEvents = ImageSourceEvents>
     }
 }
 
+function isImageSource(obj: unknown): obj is ImageSource {
+    return (obj as ImageSource).isImageSource === true;
+}
+
 export default ImageSource;
 
-export { ImageResult };
+export { ImageResult, isImageSource };
