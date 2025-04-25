@@ -2,9 +2,12 @@
  * This file fills the global object with Node-based alternatives when
  * they are missing in a non-browser environement.
  */
-import { TextDecoder as NodeTextDecoder } from 'node:util';
+import { TextDecoder as NodeTextDecoder, TextEncoder as NodeTextEncoder } from 'node:util';
+
+import 'jest-canvas-mock';
 
 global.TextDecoder = NodeTextDecoder;
+global.TextEncoder = NodeTextEncoder;
 
 jest.mock('three', () => {
     const three = jest.requireActual('three');
