@@ -5,6 +5,43 @@ describe('HttpConfiguration', () => {
         HttpConfiguration.clear();
     });
 
+    describe('setOptions', () => {
+        it('should set the correct option', () => {
+            HttpConfiguration.setOptions('https://example.com', { credentials: 'include' });
+            HttpConfiguration.setOptions('https://example.com/OMIT', { credentials: 'omit' });
+
+            const not = 'https://example.org';
+
+            const root = 'https://example.com';
+            const omit = 'https://example.com/OMIT';
+            const include = 'https://example.com/INCLUDE';
+
+            const notOpts = HttpConfiguration.applyConfiguration(not);
+            const rootOpts = HttpConfiguration.applyConfiguration(root)!;
+            const includeOpts = HttpConfiguration.applyConfiguration(include)!;
+            const omitOpts = HttpConfiguration.applyConfiguration(omit, {})!;
+
+            expect(notOpts).toBeUndefined();
+            expect(rootOpts.credentials).toEqual('include');
+            expect(includeOpts.credentials).toEqual('include');
+            expect(omitOpts.credentials).toEqual('omit');
+        });
+
+        it('should have lower precedence than setHeader()', () => {
+            HttpConfiguration.setHeader('https://example.com', 'CUSTOMHEADER', 'bar');
+
+            HttpConfiguration.setOptions('https://example.com', {
+                headers: { CUSTOMHEADER: 'foo' },
+            });
+
+            const root = 'https://example.com';
+
+            const options = HttpConfiguration.applyConfiguration(root)!;
+
+            expect((options.headers as Record<string, string>)['CUSTOMHEADER']).toEqual('bar');
+        });
+    });
+
     describe('setHeader', () => {
         it('should set the correct entry', () => {
             HttpConfiguration.setHeader('https://example.com', 'Authorization', 'Bearer foo');

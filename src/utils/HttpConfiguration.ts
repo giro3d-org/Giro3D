@@ -1,6 +1,7 @@
 class PrefixEntry {
     urlPrefix: string;
     headers: Map<string, string>;
+    options: Partial<RequestInit> | null = null;
 
     /**
      * @param urlPrefix - The URL prefix for this host entry.
@@ -111,9 +112,13 @@ function applyConfiguration(
     const headers = (options.headers ?? {}) as Record<string, string>;
 
     const urlString = urlObj.toString();
+    let customOptions: Partial<RequestInit> = {};
 
     for (const entry of properties) {
         if (urlString.startsWith(entry.urlPrefix)) {
+            // Apply custom options with priority to the earlier entries.
+            customOptions = { ...entry.options, ...customOptions };
+
             for (const [k, v] of entry.headers.entries()) {
                 if (headers[k]) {
                     // The request already has a header with the same name.
@@ -127,9 +132,21 @@ function applyConfiguration(
         }
     }
 
+    const keys = Object.keys(customOptions) as (keyof RequestInit)[];
+    for (const key of keys) {
+        // @ts-expect-error the responsibility of checking the type falls on the caller
+        options[key] = customOptions[key];
+    }
+
     options.headers = headers;
 
     return options;
+}
+
+function setOptions(urlPrefix: string, options: Partial<RequestInit>) {
+    const entry = getEntry(urlPrefix);
+
+    entry.options = options;
 }
 
 /**
@@ -218,6 +235,7 @@ function clear() {
 export default {
     setAuth,
     setHeader,
+    setOptions,
     applyConfiguration,
     clear,
 };
