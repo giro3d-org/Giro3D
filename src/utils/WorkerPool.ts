@@ -113,10 +113,16 @@ export default class WorkerPool<
 
         if (options.concurrency != null) {
             this._concurrency = options.concurrency;
-        } else if (typeof window !== 'undefined' && window.navigator != null) {
-            this._concurrency = window.navigator.hardwareConcurrency;
         } else {
-            this._concurrency = 1;
+            this._concurrency = WorkerPool.defaultConcurrency;
+        }
+    }
+
+    static get defaultConcurrency() {
+        if (typeof window !== 'undefined' && window.navigator != null) {
+            return window.navigator.hardwareConcurrency;
+        } else {
+            return 1;
         }
     }
 

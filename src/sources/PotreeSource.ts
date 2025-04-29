@@ -66,6 +66,12 @@ export type PotreeSourceOptions = {
      * @defaultValue true
      */
     enableWorkers?: boolean;
+    /**
+     * The maximum number of workers created by the worker pool.
+     * If `undefined`, the maximum number of workers will be allowed.
+     * @defaultValue undefined
+     */
+    workerConcurrency?: number;
 };
 
 // Create an A(xis)A(ligned)B(ounding)B(ox) for the child `childIndex` of one aabb.
@@ -329,6 +335,7 @@ export default class PotreeSource extends PointCloudSourceBase {
         const opts = nonNull(options, 'options is undefined');
         this._options = {
             enableWorkers: opts.enableWorkers ?? true,
+            workerConcurrency: options.workerConcurrency ?? WorkerPool.defaultConcurrency,
             url: defined(opts, 'url'),
         };
     }
@@ -391,7 +398,10 @@ export default class PotreeSource extends PointCloudSourceBase {
             decompressed = await Las.PointData.decompressFile(compressed, lp);
         } else {
             if (lazPool == null) {
-                lazPool = new WorkerPool({ createWorker });
+                lazPool = new WorkerPool({
+                    createWorker,
+                    concurrency: this._options.workerConcurrency,
+                });
             }
 
             const response = await lazPool.queue('DecodeLazFile', { buffer: compressed.buffer }, [
@@ -457,7 +467,10 @@ export default class PotreeSource extends PointCloudSourceBase {
             );
         } else {
             if (potreePool == null) {
-                potreePool = new WorkerPool({ createWorker: createPotreeWorker });
+                potreePool = new WorkerPool({
+                    createWorker: createPotreeWorker,
+                    concurrency: this._options.workerConcurrency,
+                });
             }
 
             return potreePool
