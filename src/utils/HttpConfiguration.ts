@@ -24,6 +24,29 @@ class PrefixEntry {
 
 const perHostProperties: Map<string, Array<PrefixEntry>> = new Map();
 
+function getEntry(urlPrefix: string): PrefixEntry {
+    const url = new URL(urlPrefix);
+    const hostname = url.hostname;
+
+    let hostEntry = perHostProperties.get(hostname);
+
+    if (!hostEntry) {
+        hostEntry = [];
+        perHostProperties.set(hostname, hostEntry);
+    }
+
+    let prefixEntry = hostEntry.find(entry => entry.urlPrefix === urlPrefix);
+
+    if (!prefixEntry) {
+        prefixEntry = new PrefixEntry(urlPrefix);
+        hostEntry.push(prefixEntry);
+        // We want prefixes to be ordered from longer (more specific) to shorter (more global)
+        hostEntry.sort((a, b) => b.urlPrefix.length - a.urlPrefix.length);
+    }
+
+    return prefixEntry;
+}
+
 /**
  * Update the request options with stored configuration applicable to this URL.
  *
@@ -119,24 +142,7 @@ function applyConfiguration(
  * @param value - The header value.
  */
 function setHeader(urlPrefix: string, name: string, value: string) {
-    const url = new URL(urlPrefix);
-    const hostname = url.hostname;
-
-    let hostEntry = perHostProperties.get(hostname);
-
-    if (!hostEntry) {
-        hostEntry = [];
-        perHostProperties.set(hostname, hostEntry);
-    }
-
-    let prefixEntry = hostEntry.find(entry => entry.urlPrefix === urlPrefix);
-
-    if (!prefixEntry) {
-        prefixEntry = new PrefixEntry(urlPrefix);
-        hostEntry.push(prefixEntry);
-        // We want prefixes to be ordered from longer (more specific) to shorter (more global)
-        hostEntry.sort((a, b) => b.urlPrefix.length - a.urlPrefix.length);
-    }
+    const prefixEntry = getEntry(urlPrefix);
 
     prefixEntry.setHeader(name, value);
 }
