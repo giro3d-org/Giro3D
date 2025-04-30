@@ -522,7 +522,6 @@ export default class PotreeSource extends PointCloudSourceBase {
             id: url,
             request: () => this.fetchDataFile(url),
             priority: node.depth,
-            shouldExecute: () => (signal ? !signal.aborted : true),
         }).finally(() => this._opCounter.decrement());
 
         if (this._options.enableWorkers) {

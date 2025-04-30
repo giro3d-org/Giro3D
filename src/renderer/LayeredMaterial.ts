@@ -470,7 +470,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         };
 
         this.side = options.side;
-        this.lights = false;
+        this.lights = true;
         this._renderer = params.renderer;
         this._forceTextureAtlas = options.forceTextureAtlases ?? false;
         this._hasElevationLayer = params.hasElevationLayer;
@@ -1058,8 +1058,6 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
             uniform.azimuth = params.hillshadeAzimuth ?? DEFAULT_AZIMUTH;
             uniform.intensity = params.hillshadeIntensity ?? 1;
         }
-
-        this.lights = params.enabled && params.mode === MapLightingMode.LightBased;
 
         uniform.mode = mapLightingMode(params);
         uniform.zFactor = params.zFactor ?? 1;
