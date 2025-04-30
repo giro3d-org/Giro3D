@@ -102,6 +102,7 @@ instance.add(panorama);
 ### Fix
 
 - **COPCSource|LASSource**: retrieve CRS name instead of authority code (#582)
+- **COPCSOurce|PotreeSource**: fix missing updates when changing active attribute (#601)
 - **Layer**: avoid flickering when source is refreshed
 - **Layer**: apply default texture to node every time it is processed
 - **LayerComposer**: don't render empty textures

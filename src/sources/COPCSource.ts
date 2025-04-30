@@ -449,7 +449,7 @@ export default class COPCSource extends PointCloudSourceBase {
 
         // Note 2: since the view buffer is stored in the cache, requesting another attribute for
         // the same node should be very fast, as no HTTP request should be emitted (provided of
-        // course that the cache has not been cleared in the mean ).
+        // course that the cache has not been cleared in the mean time).
 
         if (this._options.enableWorkers) {
             result = await this.loadNodeDataWithWorker(
@@ -561,7 +561,7 @@ export default class COPCSource extends PointCloudSourceBase {
         stride: number,
     ) {
         const buffer = await this._opCounter.wrap(
-            this.loadPointDataViewBuffer(this._getter, node, priority, signal),
+            this.loadPointDataViewBuffer(this._getter, node, priority),
         );
 
         signal?.throwIfAborted();
@@ -613,7 +613,6 @@ export default class COPCSource extends PointCloudSourceBase {
         getter: Getter,
         node: Hierarchy.Node,
         priority?: number,
-        signal?: AbortSignal,
     ): Promise<ArrayBuffer> {
         const { pointDataOffset, pointDataLength } = node;
 
@@ -635,7 +634,6 @@ export default class COPCSource extends PointCloudSourceBase {
                 GlobalCache.set(cacheKey, chunk, { size: chunk.byteLength });
                 return chunk.buffer;
             },
-            shouldExecute: () => !(signal?.aborted ?? false),
         });
     }
 
@@ -650,7 +648,9 @@ export default class COPCSource extends PointCloudSourceBase {
         priority?: number,
         signal?: AbortSignal,
     ): Promise<View> {
-        const buffer = await this.loadPointDataViewBuffer(getter, node, priority, signal);
+        const buffer = await this.loadPointDataViewBuffer(getter, node, priority);
+
+        signal?.throwIfAborted();
 
         let decoded: Uint8Array;
 
@@ -671,6 +671,8 @@ export default class COPCSource extends PointCloudSourceBase {
                 pointDataRecordLength: copc.header.pointDataRecordLength,
             });
         }
+
+        signal?.throwIfAborted();
 
         return Las.View.create(decoded, copc.header, copc.eb, include);
     }
