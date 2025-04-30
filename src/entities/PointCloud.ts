@@ -84,6 +84,8 @@ type NodeInfo = {
     positionDirty: boolean;
 };
 
+const nothing = () => {};
+
 function createBoxHelper(box: Box3, color: ColorRepresentation) {
     const helper = new Box3Helper(box, color);
 
@@ -91,9 +93,7 @@ function createBoxHelper(box: Box3, color: ColorRepresentation) {
     helper.renderOrder = 999;
 
     // We don't want to raycast the helpers
-    helper.raycast = () => {
-        /** empty */
-    };
+    helper.raycast = nothing;
 
     return helper;
 }
