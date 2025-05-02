@@ -11,7 +11,7 @@ import { isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
 import Map, { type MapConstructorOptions } from './Map';
 import type MapLightingOptions from './MapLightingOptions';
 import { MapLightingMode } from './MapLightingOptions';
-import EllipsoidTileGeometry from './tiles/EllipsoidTileGeometry';
+import EllipsoidTileGeometryBuilder from './tiles/EllipsoidTileGeometryBuilder';
 import EllipsoidTileVolume from './tiles/EllipsoidTileVolume';
 import type { TileGeometryBuilder } from './tiles/TileGeometry';
 import type TileMesh from './tiles/TileMesh';
@@ -64,17 +64,6 @@ export interface GlobeConstructorOptions extends Omit<MapConstructorOptions, 'ex
     terrain?: boolean | Partial<GlobeTerrainOptions>;
 }
 
-function createBuilder(ellipsoid: Ellipsoid): TileGeometryBuilder {
-    return (extent, segments, skirtDepth) => {
-        return new EllipsoidTileGeometry({
-            extent,
-            segments,
-            ellipsoid,
-            skirtDepth,
-        });
-    };
-}
-
 /**
  * Displays a Globe.
  *
@@ -95,7 +84,6 @@ export default class Globe extends Map {
     override readonly type: string = 'Globe' as const;
 
     private readonly _ellipsoid: Ellipsoid;
-    private readonly _geometryBuilder: TileGeometryBuilder;
 
     private _enableHorizonCulling = true;
 
@@ -125,8 +113,6 @@ export default class Globe extends Map {
         });
 
         this._ellipsoid = options?.ellipsoid ?? Ellipsoid.WGS84;
-
-        this._geometryBuilder = createBuilder(this._ellipsoid);
     }
 
     protected override testVisibility(node: TileMesh, context: Context): boolean {
@@ -185,12 +171,6 @@ export default class Globe extends Map {
         return false;
     }
 
-    protected override getRootTileMatrix(): Vector2 {
-        // Equirectangular projection with 2 tiles on the Y axis
-        // and 4 on the X axis, so that tiles are perfect squares.
-        return new Vector2(4, 2);
-    }
-
     protected override getTextureSize(extent: Extent): Vector2 {
         // Since globe tiles are curved, their extent dimensions is not the same depending
         // on the location of the tile. We must compute a reasonable approximation of
@@ -199,7 +179,11 @@ export default class Globe extends Map {
     }
 
     protected override getGeometryBuilder(): TileGeometryBuilder {
-        return this._geometryBuilder;
+        return new EllipsoidTileGeometryBuilder(
+            this.ellipsoid,
+            this.segments,
+            this.terrain.skirts.enabled ? this.terrain.skirts.depth : null,
+        );
     }
 
     protected override createTileVolume(extent: Extent): TileVolume {
