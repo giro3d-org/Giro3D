@@ -23,6 +23,7 @@ const tempWorldPosition = new Vector3();
 const tempCameraPosition = new Vector3();
 const tmpWGS84Coordinates = new Coordinates('EPSG:4326', 0, 0);
 const horizonSphere = new Sphere();
+const boundingSphere = new Sphere();
 const tempBox = new Box3();
 
 /**
@@ -174,11 +175,13 @@ export default class Globe extends Map {
 
         // Safety mechanism to avoid subdividing extremely elongated tiles at the poles
         // that would lead to hundred or thousands of tiles displayed simultaneously.
+        // Since pixels are extremely stretched in those places, the quality would not be
+        // much improved anyway.
         if (node.lod > 3 && (node.extent.north === 90 || node.extent.south === -90)) {
             return false;
         }
 
-        const worldSphere = node.getWorldSpaceBoundingSphere(new Sphere()); // TODO
+        const worldSphere = node.getWorldSpaceBoundingSphere(boundingSphere);
         const geometricError = worldSphere.radius;
 
         const sse = ScreenSpaceError.computeFromSphere(context.view, worldSphere, geometricError);

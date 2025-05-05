@@ -1547,7 +1547,8 @@ class Map<UserData extends EntityUserData = EntityUserData>
         node.update(this._materialOptions);
 
         // Frustum culling
-        return context.view.isBox3Visible(node.getWorldSpaceBoundingBox(tmpBox3));
+        const obb = node.getOBB();
+        return context.view.isOBBVisible(obb);
     }
 
     override postUpdate(context: Context) {

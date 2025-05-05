@@ -1,5 +1,4 @@
 import {
-    Box3Helper,
     Group,
     MathUtils,
     Matrix4,
@@ -24,6 +23,8 @@ import {
     type WebGLRenderTarget,
 } from 'three';
 
+import { type OBB } from 'three/examples/jsm/Addons.js';
+
 import type Disposable from '../../core/Disposable';
 import type Ellipsoid from '../../core/geographic/Ellipsoid';
 import type Extent from '../../core/geographic/Extent';
@@ -38,6 +39,7 @@ import OffsetScale from '../../core/OffsetScale';
 import Rect from '../../core/Rect';
 import type UniqueOwner from '../../core/UniqueOwner';
 import { intoUniqueOwner } from '../../core/UniqueOwner';
+import OBBHelper from '../../helpers/OBBHelper';
 import { readRGRenderTargetIntoRGBAU8Buffer } from '../../renderer/composition/WebGLComposer';
 import type LayeredMaterial from '../../renderer/LayeredMaterial';
 import type { MaterialOptions } from '../../renderer/LayeredMaterial';
@@ -117,7 +119,7 @@ class TileMesh
         boundingSphere?: Mesh<SphereGeometry, MeshBasicMaterial>;
         volumeColor: ColorRepresentation;
         colliderMesh?: Mesh<BufferGeometry, MeshBasicMaterial, Object3DEventMap>;
-        boundingBox?: Box3Helper;
+        boundingBox?: OBBHelper;
     } = {
         volumeColor: 'cyan',
     };
@@ -158,6 +160,10 @@ class TileMesh
      */
     get lod() {
         return this.coordinate.z;
+    }
+
+    getOBB(): OBB {
+        return this._volume.getOBB(this.matrixWorld);
     }
 
     getWorldSpaceBoundingBox(target: Box3): Box3 {
@@ -332,17 +338,18 @@ class TileMesh
     private recreateBoundingBoxHelper() {
         this.deleteBoundingBoxHelper();
 
-        this._helpers.boundingBox = new Box3Helper(
-            this._volume.getLocalBoundingBox(),
-            this.volumeColor,
-        );
+        const obb = this._volume.getOBB(this.matrixWorld);
 
-        this._helpers.boundingBox.raycast = noRaycast;
+        const helper = new OBBHelper(obb, this.volumeColor);
+
+        helper.raycast = noRaycast;
 
         this.createHelperRootIfNecessary();
 
-        nonNull(this._helperRoot).add(this._helpers.boundingBox);
-        this._helpers.boundingBox.updateMatrixWorld(true);
+        nonNull(this._helperRoot).attach(helper);
+        helper.updateMatrixWorld(true);
+
+        this._helpers.boundingBox = helper;
     }
 
     private recreateBoundingSphereHelper() {
@@ -356,13 +363,13 @@ class TileMesh
         this._helpers.boundingSphere.rotateX(MathUtils.degToRad(90));
         this._helpers.boundingSphere.raycast = noRaycast;
 
-        const sphere = this._volume.getLocalBoundingBox().getBoundingSphere(tmpSphere);
+        const sphere = this._volume.getWorldSpaceBoundingSphere(tmpSphere, this.matrixWorld);
         this._helpers.boundingSphere.scale.set(sphere.radius, sphere.radius, sphere.radius);
         this._helpers.boundingSphere.position.copy(sphere.center);
 
         this.createHelperRootIfNecessary();
 
-        nonNull(this._helperRoot).add(this._helpers.boundingSphere);
+        nonNull(this._helperRoot).attach(this._helpers.boundingSphere);
 
         this._helpers.boundingSphere.updateMatrixWorld(true);
     }
