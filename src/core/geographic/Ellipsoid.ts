@@ -11,6 +11,8 @@ const tmpMatrix4 = new Matrix4();
 const tmpRay = new Ray();
 const tmpEast = new Vector3();
 const tmpNorth = new Vector3();
+const ZERO = new Vector3(0, 0, 0);
+const tmpIntersection = new Vector3();
 
 let wgs84: unknown;
 
@@ -334,6 +336,27 @@ export default class Ellipsoid {
         target.set(width, height);
 
         return target;
+    }
+
+    /**
+     * Gets the distance to the horizon given a camera position.
+     * @param cameraPosition - The camera position.
+     * @param center - The center of the ellipsoid (by default (0, 0, 0)).
+     * @returns The distance, in meters, from the camera to the horizon.
+     */
+    getOpticalHorizon(cameraPosition: Vector3, center?: Vector3): number | null {
+        center = center ?? ZERO;
+        const ray = tmpRay.set(cameraPosition, center.clone().sub(cameraPosition));
+        const intersection = this.intersectRay(ray, tmpIntersection);
+
+        if (intersection == null) {
+            return null;
+        }
+
+        const height = cameraPosition.distanceTo(intersection);
+        const horizonDistance = Math.sqrt(height * (2 * this.semiMajorAxis + height));
+
+        return horizonDistance;
     }
 
     /**

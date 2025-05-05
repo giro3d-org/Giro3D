@@ -1,4 +1,4 @@
-import { Sphere, Vector2, Vector3 } from 'three';
+import { Box3, type Camera, Sphere, Vector2, Vector3 } from 'three';
 import type Context from '../core/Context';
 import Coordinates from '../core/geographic/Coordinates';
 import Ellipsoid from '../core/geographic/Ellipsoid';
@@ -19,7 +19,11 @@ import type TileMesh from './tiles/TileMesh';
 import type TileVolume from './tiles/TileVolume';
 
 const tempDims = new Vector2();
+const tempWorldPosition = new Vector3();
+const tempCameraPosition = new Vector3();
 const tmpWGS84Coordinates = new Coordinates('EPSG:4326', 0, 0);
+const horizonSphere = new Sphere();
+const tempBox = new Box3();
 
 /**
  * Options for Globe terrains.
@@ -87,6 +91,7 @@ export default class Globe extends Map {
     private readonly _ellipsoid: Ellipsoid;
 
     private _enableHorizonCulling = true;
+    private _horizonDistance: number | null = null;
 
     /**
      * The ellipsoid used to draw this globe.
@@ -130,23 +135,36 @@ export default class Globe extends Map {
         return frustumVisible && horizonVisible;
     }
 
+    private computeHorizonDistance(camera: Camera) {
+        if (this._enableHorizonCulling) {
+            const cameraPosition = camera.getWorldPosition(tempCameraPosition);
+            const horizonDistance = this.ellipsoid.getOpticalHorizon(
+                cameraPosition,
+                this.object3d.getWorldPosition(tempWorldPosition),
+            );
+
+            this._horizonDistance = horizonDistance;
+        }
+    }
+
+    override preUpdate(context: Context, changeSources: Set<unknown>): TileMesh[] {
+        this.computeHorizonDistance(context.view.camera);
+
+        return super.preUpdate(context, changeSources);
+    }
+
     protected testHorizonVisibility(node: TileMesh, context: Context): boolean {
         const cameraPosition = context.view.camera.position;
-        const corners = node.getBoundingBoxCorners();
 
-        // Since the actual earth is not an ellipsoid (because of terrain),
-        // let's use a smaller ellipsoid for horizon testing purposes so that
-        // points located below the actual ellipsoid (for example on the sea bed
-        // in very deep areas) do not produce false negatives.
-        const FACTOR = 0.99;
+        if (this._horizonDistance != null) {
+            horizonSphere.set(cameraPosition, this._horizonDistance);
 
-        for (const corner of corners) {
-            if (this._ellipsoid.isHorizonVisible(cameraPosition, corner, FACTOR)) {
-                return true;
+            if (!horizonSphere.intersectsBox(node.getWorldSpaceBoundingBox(tempBox))) {
+                return false;
             }
         }
 
-        return false;
+        return true;
     }
 
     protected override shouldSubdivide(context: Context, node: TileMesh): boolean {
