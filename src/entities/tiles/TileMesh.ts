@@ -194,7 +194,7 @@ class TileMesh
         onElevationChanged: (tile: TileMesh) => void;
     }) {
         super(
-            params.geometryBuilder(params.extent, params.segments, params.skirtDepth ?? null),
+            params.geometryBuilder.build({ extent: params.extent, tile: params.coord }),
             params.material,
         );
 
@@ -325,7 +325,7 @@ class TileMesh
 
     private createGeometry() {
         this.geometry.dispose();
-        this.geometry = this._geometryBuilder(this.extent, this.segments, this._skirtDepth ?? null);
+        this.geometry = this._geometryBuilder.build({ extent: this.extent, tile: this.coordinate });
         this._tileGeometry = this.geometry;
 
         if (this._helpers.colliderMesh) {

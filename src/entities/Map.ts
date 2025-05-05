@@ -71,13 +71,14 @@ import ShadowLayeredMaterial from '../renderer/ShadowLayeredMaterial';
 import { computeDistanceToFitSphere, computeZoomToFitSphere } from '../renderer/View';
 import { isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
 import TextureGenerator from '../utils/TextureGenerator';
+import { nonNull } from '../utils/tsutils';
 import type { EntityUserData } from './Entity';
 import Entity3D, { type Entity3DEventMap } from './Entity3D';
 import type MapLightingOptions from './MapLightingOptions';
 import { MapLightingMode } from './MapLightingOptions';
-import PlanarTileGeometry from './tiles/PlanarTileGeometry';
+import EllipsoidTileGeometryBuilder from './tiles/EllipsoidTileGeometryBuilder';
+import PlanarTileGeometryBuilder from './tiles/PlanarTileGeometryBuilder';
 import PlanarTileVolume from './tiles/PlanarTileVolume';
-import type TileGeometry from './tiles/TileGeometry';
 import type { TileGeometryBuilder } from './tiles/TileGeometry';
 import TileIndex, { type NeighbourList } from './tiles/TileIndex';
 import TileMesh, { isTileMesh } from './tiles/TileMesh';
@@ -110,18 +111,6 @@ function isStitchableNeighbour(neighbour: TileMesh): boolean {
         neighbour.material.visible &&
         neighbour.material.getElevationTexture() != null
     );
-}
-
-function defaultGeometryBuilder(
-    extent: Extent,
-    segments: number,
-    skirtDepth: number | null,
-): TileGeometry {
-    return new PlanarTileGeometry({
-        extent,
-        segments,
-        skirtDepth: skirtDepth ?? undefined,
-    });
 }
 
 /**
@@ -283,22 +272,6 @@ function getLightingOptions(
         hillshadeIntensity: input.hillshadeIntensity ?? defaultValue.hillshadeIntensity,
         zFactor: input.zFactor ?? defaultValue.zFactor,
     };
-}
-
-export function selectBestSubdivisions(extent: Extent) {
-    const dims = extent.dimensions();
-    const ratio = dims.x / dims.y;
-    let x = 1;
-    let y = 1;
-    if (ratio > 1) {
-        // Our extent is an horizontal rectangle
-        x = Math.min(Math.round(ratio), MAX_SUPPORTED_ASPECT_RATIO);
-    } else if (ratio < 1) {
-        // Our extent is an vertical rectangle
-        y = Math.min(Math.round(1 / ratio), MAX_SUPPORTED_ASPECT_RATIO);
-    }
-
-    return { x, y };
 }
 
 /**
@@ -572,6 +545,8 @@ class Map<UserData extends EntityUserData = EntityUserData>
     private readonly _layerIndices: globalThis.Map<string, number>;
     private readonly _layerIds: Set<string> = new Set();
     private readonly _materialOptions: MaterialOptions;
+
+    private _geometryBuilder: TileGeometryBuilder | null = null;
 
     private _hasElevationLayer = false;
     private _colorAtlasDataType: TextureDataType = UnsignedByteType;
@@ -887,6 +862,14 @@ class Map<UserData extends EntityUserData = EntityUserData>
         if (this._materialOptions.terrain.segments !== v) {
             if (MathUtils.isPowerOfTwo(v) && v >= 1 && v <= 128) {
                 this._materialOptions.terrain.segments = v;
+
+                if (
+                    this._geometryBuilder instanceof PlanarTileGeometryBuilder ||
+                    this._geometryBuilder instanceof EllipsoidTileGeometryBuilder
+                ) {
+                    this._geometryBuilder.segments = v;
+                }
+
                 this.updateGeometries();
                 this.notifyChange(this);
             } else {
@@ -959,7 +942,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
      * Gets the number of vertical and horizontal subdivisions for the root tile matrix.
      */
     protected getRootTileMatrix(): { x: number; y: number } {
-        return selectBestSubdivisions(this.extent);
+        return nonNull(this._geometryBuilder).rootTileMatrix;
     }
 
     override preprocess() {
@@ -968,6 +951,8 @@ class Map<UserData extends EntityUserData = EntityUserData>
                 `The extent of this map is not in the correct CRS. Expected: ${this.getComposerProjection()}, got: ${this.extent.crs}`,
             );
         }
+
+        this._geometryBuilder = this.getGeometryBuilder();
 
         const subdivs = this.getRootTileMatrix();
 
@@ -1020,7 +1005,12 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     protected getGeometryBuilder(): TileGeometryBuilder {
-        return defaultGeometryBuilder;
+        return new PlanarTileGeometryBuilder({
+            extent: this.extent,
+            maxAspectRatio: MAX_SUPPORTED_ASPECT_RATIO,
+            segments: this.segments,
+            skirtDepth: this.terrain.skirts.enabled ? this.terrain.skirts.depth : undefined,
+        });
     }
 
     private requestNewTile(
@@ -1069,7 +1059,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
             skirtDepth: this.terrain.skirts.enabled ? this.terrain.skirts.depth : undefined,
             enableTerrainDeformation: this._materialOptions.terrain.enabled ?? true,
             onElevationChanged: this._onTileElevationChanged,
-            geometryBuilder: this.getGeometryBuilder(),
+            geometryBuilder: nonNull(this._geometryBuilder),
             volume: this.createTileVolume(extent),
         });
 
