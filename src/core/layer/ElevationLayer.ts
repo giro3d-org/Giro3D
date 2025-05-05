@@ -150,6 +150,12 @@ class ElevationLayer<UserData extends LayerUserData = LayerUserData> extends Lay
         );
     }
 
+    protected override canDeleteTarget(): boolean {
+        // We don't want to delete any target of elevation layer to avoid
+        // issues with tile volume computation.
+        return false;
+    }
+
     protected applyEmptyTextureToNode(target: Target) {
         (target.node as TileMesh).removeElevationTexture();
     }
