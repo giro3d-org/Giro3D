@@ -13,6 +13,7 @@ import {
     type RenderTargetOptions,
     type Texture,
     type TextureDataType,
+    UnsignedByteType,
     Vector2,
     type WebGLRenderTarget,
 } from 'three';
@@ -29,6 +30,7 @@ import type ColorMap from '../ColorMap';
 import type Context from '../Context';
 import type Disposable from '../Disposable';
 import type ElevationRange from '../ElevationRange';
+import type Coordinates from '../geographic/Coordinates';
 import Extent from '../geographic/Extent';
 import type Instance from '../Instance';
 import type MemoryUsage from '../MemoryUsage';
@@ -970,6 +972,69 @@ abstract class Layer<
         }
 
         return this._sortedTargets;
+    }
+
+    /**
+     * Get the pixels colors of this layer at coordinate.
+     * This will samples all pixel colors within a square region of specified size, centered at the given coordinate.
+     * Returns undefined if no non-transparent (colored) pixels are found, or if no texture is available for this coordinate.
+     *
+     * Note: only 8-bit layers are supported. If the layer has non 8-bit pixels, returns `undefined`.
+     * @returns The colors
+     */
+    getPixel(params: {
+        /**
+         * The coordinate to sample.
+         */
+        coordinates: Coordinates;
+        /**
+         * The size, in pixels, of the square to sample
+         * @defaultValue 1
+         */
+        size?: number;
+    }): Color[] | undefined {
+        const coordinates = params.coordinates.as(this.instance.referenceCrs);
+
+        if (this.source.datatype !== UnsignedByteType) {
+            return undefined;
+        }
+
+        const smallestTargetAtCoordinates = this.getSortedTargets().find(target =>
+            target.extent.isPointInside(coordinates),
+        );
+
+        if (!smallestTargetAtCoordinates || !smallestTargetAtCoordinates.renderTarget) {
+            return undefined;
+        }
+
+        const uv = smallestTargetAtCoordinates.extent.offsetInExtent(coordinates, tmpDims);
+
+        const size = params.size ?? 1;
+        const pixels = new Uint8ClampedArray(size * size * 4);
+
+        this.instance.renderer.readRenderTargetPixels(
+            smallestTargetAtCoordinates.renderTarget,
+            smallestTargetAtCoordinates.width * uv.x,
+            smallestTargetAtCoordinates.height * uv.y,
+            size,
+            size,
+            pixels,
+        );
+
+        if (pixels.reduce((sum, value) => sum + value) > 0) {
+            const colors = [];
+            for (let i = 0; i < pixels.length; i += 4) {
+                const r = pixels[i] / 255;
+                const g = pixels[i + 1] / 255;
+                const b = pixels[i + 2] / 255;
+                const color = new Color(r, g, b);
+                colors.push(color);
+            }
+
+            return colors;
+        } else {
+            return undefined;
+        }
     }
 
     /**
