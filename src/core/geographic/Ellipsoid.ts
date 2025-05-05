@@ -339,8 +339,8 @@ export default class Ellipsoid {
     /**
      * Determine whether the given point is visible from the camera or occluded by the horizon
      * of this ellipsoid.
-     * @param cameraPosition - The camera position.
-     * @param point - The point to test.
+     * @param cameraPosition - The camera position, in world space coordinates.
+     * @param point - The point to test, in world space coordinates.
      * @param radiusFactor - An optional factor to apply to ellipsoid radii to add a margin of error.
      * @returns `true` if the given point is above the horizon, `false` otherwise.
      */
