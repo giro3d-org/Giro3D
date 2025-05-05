@@ -153,8 +153,8 @@ export default class Globe extends Map {
             return false;
         }
 
-        // // Safety mechanism to avoid subdividing extremely elongated tiles at the poles
-        // // that would lead to hundred or thousands of tiles displayed simultaneously.
+        // Safety mechanism to avoid subdividing extremely elongated tiles at the poles
+        // that would lead to hundred or thousands of tiles displayed simultaneously.
         if (node.lod > 3 && (node.extent.north === 90 || node.extent.south === -90)) {
             return false;
         }

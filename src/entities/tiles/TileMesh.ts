@@ -1,4 +1,5 @@
 import {
+    Box3Helper,
     Group,
     MathUtils,
     Matrix4,
@@ -7,11 +8,13 @@ import {
     Ray,
     RGBAFormat,
     Sphere,
+    SphereGeometry,
     UnsignedByteType,
     Vector2,
     Vector3,
     type Box3,
     type BufferGeometry,
+    type ColorRepresentation,
     type Intersection,
     type Object3D,
     type Object3DEventMap,
@@ -44,6 +47,7 @@ import type RenderingState from '../../renderer/RenderingState';
 import type ShadowLayeredMaterial from '../../renderer/ShadowLayeredMaterial';
 import type View from '../../renderer/View';
 import { isPerspectiveCamera } from '../../utils/predicates';
+import { nonNull } from '../../utils/tsutils';
 import type TileCoordinate from './TileCoordinate';
 import type TileGeometry from './TileGeometry';
 import type { TileGeometryBuilder } from './TileGeometry';
@@ -55,6 +59,8 @@ const inverseMatrix = new Matrix4();
 const THIS_RECT = new Rect(0, 1, 0, 1);
 const tmpSphere = new Sphere();
 
+const sphereGeometry = new SphereGeometry(1, 32, 16);
+
 const helperMaterial = new MeshBasicMaterial({
     color: '#75eba8',
     depthTest: false,
@@ -62,6 +68,8 @@ const helperMaterial = new MeshBasicMaterial({
     wireframe: true,
     transparent: true,
 });
+
+const noRaycast = () => {};
 
 const NO_NEIGHBOUR = -99;
 const NO_OFFSET_SCALE = new OffsetScale(0, 0, 0, 0);
@@ -106,8 +114,13 @@ class TileMesh
     private _helperRoot: Group | null = null;
 
     private readonly _helpers: {
+        boundingSphere?: Mesh<SphereGeometry, MeshBasicMaterial>;
+        volumeColor: ColorRepresentation;
         colliderMesh?: Mesh<BufferGeometry, MeshBasicMaterial, Object3DEventMap>;
-    } = {};
+        boundingBox?: Box3Helper;
+    } = {
+        volumeColor: 'cyan',
+    };
     private _elevationLayerInfo: {
         layer: ElevationLayer;
         offsetScale: OffsetScale;
@@ -301,6 +314,97 @@ class TileMesh
         }
     }
 
+    private deleteBoundingBoxHelper() {
+        if (this._helpers.boundingBox != null) {
+            this._helpers.boundingBox.dispose();
+            this._helpers.boundingBox.removeFromParent();
+            this._helpers.boundingBox = undefined;
+        }
+    }
+
+    private deleteBoundingSphereHelper() {
+        if (this._helpers.boundingSphere != null) {
+            this._helpers.boundingSphere.removeFromParent();
+            this._helpers.boundingSphere = undefined;
+        }
+    }
+
+    private recreateBoundingBoxHelper() {
+        this.deleteBoundingBoxHelper();
+
+        this._helpers.boundingBox = new Box3Helper(
+            this._volume.getLocalBoundingBox(),
+            this.volumeColor,
+        );
+
+        this._helpers.boundingBox.raycast = noRaycast;
+
+        this.createHelperRootIfNecessary();
+
+        nonNull(this._helperRoot).add(this._helpers.boundingBox);
+        this._helpers.boundingBox.updateMatrixWorld(true);
+    }
+
+    private recreateBoundingSphereHelper() {
+        this.deleteBoundingSphereHelper();
+
+        this._helpers.boundingSphere = new Mesh(
+            sphereGeometry,
+            new MeshBasicMaterial({ color: this.volumeColor, wireframe: true }),
+        );
+
+        this._helpers.boundingSphere.rotateX(MathUtils.degToRad(90));
+        this._helpers.boundingSphere.raycast = noRaycast;
+
+        const sphere = this._volume.getLocalBoundingBox().getBoundingSphere(tmpSphere);
+        this._helpers.boundingSphere.scale.set(sphere.radius, sphere.radius, sphere.radius);
+        this._helpers.boundingSphere.position.copy(sphere.center);
+
+        this.createHelperRootIfNecessary();
+
+        nonNull(this._helperRoot).add(this._helpers.boundingSphere);
+
+        this._helpers.boundingSphere.updateMatrixWorld(true);
+    }
+
+    get showBoundingBox() {
+        return this._helpers.boundingBox?.visible ?? false;
+    }
+
+    set showBoundingBox(show: boolean) {
+        if (show && this._helpers.boundingBox == null) {
+            this.recreateBoundingBoxHelper();
+        } else if (!show && this._helpers.boundingBox != null) {
+            this.deleteBoundingBoxHelper();
+        }
+    }
+
+    get showBoundingSphere() {
+        return this._helpers.boundingSphere?.visible ?? false;
+    }
+
+    set showBoundingSphere(show: boolean) {
+        if (show && this._helpers.boundingSphere == null) {
+            this.recreateBoundingSphereHelper();
+        } else if (!show && this._helpers.boundingSphere != null) {
+            this.deleteBoundingSphereHelper();
+        }
+    }
+
+    get volumeColor() {
+        return this._helpers.volumeColor;
+    }
+
+    set volumeColor(color: ColorRepresentation) {
+        this._helpers.volumeColor = color;
+        if (this.showBoundingBox) {
+            this.recreateBoundingBoxHelper();
+        }
+        if (this.showBoundingSphere) {
+            this.recreateBoundingSphereHelper();
+        }
+    }
+
     get segments() {
         return this._segments;
     }
@@ -465,7 +569,10 @@ class TileMesh
             }
         }
 
+        this.volumeColor = materialOptions.volumeColor ?? 'cyan';
         this.showColliderMesh = materialOptions.showColliderMeshes ?? false;
+        this.showBoundingBox = materialOptions.showBoundingBoxes ?? false;
+        this.showBoundingSphere = materialOptions.showBoundingSpheres ?? false;
     }
 
     isVisible() {
@@ -708,6 +815,13 @@ class TileMesh
 
     private updateVolume(min: number, max: number) {
         this._volume.setElevationRange({ min, max });
+
+        if (this.showBoundingBox) {
+            this.recreateBoundingBoxHelper();
+        }
+        if (this.showBoundingSphere) {
+            this.recreateBoundingSphereHelper();
+        }
     }
 
     get minmax() {

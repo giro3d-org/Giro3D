@@ -584,6 +584,9 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
         this._materialOptions = {
             showColliderMeshes: false,
+            showBoundingSpheres: false,
+            volumeColor: 'cyan',
+            showBoundingBoxes: false,
             forceTextureAtlases: options.forceTextureAtlases ?? false,
             lighting: getLightingOptions(options.lighting, this.getDefaultLightingOptions()),
             contourLines: getContourLineOptions(options.contourLines),
@@ -844,6 +847,48 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     /**
+     * Shows volumes of tiles.
+     */
+    get showBoundingBoxes(): boolean {
+        return this._materialOptions.showBoundingBoxes;
+    }
+
+    set showBoundingBoxes(show: boolean) {
+        if (this._materialOptions.showBoundingBoxes !== show) {
+            this._materialOptions.showBoundingBoxes = show;
+            this.notifyChange(this);
+        }
+    }
+
+    /**
+     * Shows volumes of tiles.
+     */
+    get showBoundingSpheres(): boolean {
+        return this._materialOptions.showBoundingSpheres;
+    }
+
+    set showBoundingSpheres(show: boolean) {
+        if (this._materialOptions.showBoundingSpheres !== show) {
+            this._materialOptions.showBoundingSpheres = show;
+            this.notifyChange(this);
+        }
+    }
+
+    /**
+     * Shows volumes of tiles.
+     */
+    get volumeColor(): ColorRepresentation {
+        return this._materialOptions.volumeColor;
+    }
+
+    set volumeColor(color: ColorRepresentation) {
+        if (this._materialOptions.volumeColor !== color) {
+            this._materialOptions.volumeColor = color;
+            this.notifyChange(this);
+        }
+    }
+
+    /**
      * Shows meshes used for raycasting purposes.
      */
     get showColliderMeshes(): boolean {
@@ -851,7 +896,10 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     set showColliderMeshes(show: boolean) {
-        this._materialOptions.showColliderMeshes = show;
+        if (this._materialOptions.showColliderMeshes !== show) {
+            this._materialOptions.showColliderMeshes = show;
+            this.notifyChange(this);
+        }
     }
 
     get segments() {

@@ -1,4 +1,5 @@
 import type {
+    ColorRepresentation,
     IUniform,
     Light,
     Side,
@@ -222,6 +223,15 @@ export interface MaterialOptions {
      * Displays the collider meshes used for raycast.
      */
     showColliderMeshes: boolean;
+    /**
+     * Displays the bounding boxes of tiles.
+     */
+    showBoundingBoxes: boolean;
+    /**
+     * Displays the bounding spheres of tiles.
+     */
+    showBoundingSpheres: boolean;
+    volumeColor: ColorRepresentation;
     depthTest: boolean;
 }
 
