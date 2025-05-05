@@ -1,10 +1,11 @@
-import { Vector2, Vector3 } from 'three';
+import { Sphere, Vector2, Vector3 } from 'three';
 import type Context from '../core/Context';
 import Coordinates from '../core/geographic/Coordinates';
 import Ellipsoid from '../core/geographic/Ellipsoid';
 import Extent from '../core/geographic/Extent';
 import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
 import type PointOfView from '../core/PointOfView';
+import ScreenSpaceError from '../core/ScreenSpaceError';
 import type TerrainOptions from '../core/TerrainOptions';
 import { computeDistanceToFitSphere, computeZoomToFitSphere } from '../renderer/View';
 import { isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
@@ -159,12 +160,13 @@ export default class Globe extends Map {
             return false;
         }
 
-        const { width, height } = node.getScreenPixelSize(context.view);
+        const worldSphere = node.getWorldSpaceBoundingSphere(new Sphere()); // TODO
+        const geometricError = worldSphere.radius;
 
-        const screenSize = Math.max(width, height);
-        const textureSize = Math.max(node.textureSize.width, node.textureSize.height);
+        const sse = ScreenSpaceError.computeFromSphere(context.view, worldSphere, geometricError);
+        const textureSize = Math.min(node.textureSize.x, node.textureSize.y);
 
-        if (screenSize / textureSize > this.subdivisionThreshold) {
+        if (sse / textureSize > this.subdivisionThreshold) {
             return true;
         }
 
@@ -214,11 +216,11 @@ export default class Globe extends Map {
 
     protected override canSubdivideTile(tile: TileMesh): boolean {
         // Terrain is negligible at low LODs.
-        if (this.extent.equals(Extent.WGS84) && tile.lod < 10) {
+        if (this.extent.equals(Extent.WGS84) && tile.lod < 5) {
             return true;
         }
 
-        // After LOD 10, we have to be much stricter than the Map implementation.
+        // After LOD 5, we have to be much stricter than the Map implementation.
         // We have zero tolerance here because of extreme recursion levels when
         // zooming in close to mountainous areas, due to the fact that we need to
         // have the strictest bounding volumes.
