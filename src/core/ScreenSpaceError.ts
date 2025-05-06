@@ -175,6 +175,10 @@ export default {
     },
 
     computeFromSphere(view: View, sphere: Sphere, geometricError: number) {
+        if (sphere.containsPoint(view.camera.position)) {
+            return +Infinity;
+        }
+
         const distance = Math.max(0.0, sphere.distanceToPoint(view.camera.position));
         temp[0].set(geometricError, 0, -distance);
         temp[0].applyMatrix4(view.camera.projectionMatrix);

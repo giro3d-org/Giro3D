@@ -11,6 +11,8 @@ const tmpMatrix4 = new Matrix4();
 const tmpRay = new Ray();
 const tmpEast = new Vector3();
 const tmpNorth = new Vector3();
+const ZERO = new Vector3(0, 0, 0);
+const tmpIntersection = new Vector3();
 
 let wgs84: unknown;
 
@@ -337,10 +339,31 @@ export default class Ellipsoid {
     }
 
     /**
+     * Gets the distance to the horizon given a camera position.
+     * @param cameraPosition - The camera position.
+     * @param center - The center of the ellipsoid (by default (0, 0, 0)).
+     * @returns The distance, in meters, from the camera to the horizon.
+     */
+    getOpticalHorizon(cameraPosition: Vector3, center?: Vector3): number | null {
+        center = center ?? ZERO;
+        const ray = tmpRay.set(cameraPosition, center.clone().sub(cameraPosition));
+        const intersection = this.intersectRay(ray, tmpIntersection);
+
+        if (intersection == null) {
+            return null;
+        }
+
+        const height = cameraPosition.distanceTo(intersection);
+        const horizonDistance = Math.sqrt(height * (2 * this.semiMajorAxis + height));
+
+        return horizonDistance;
+    }
+
+    /**
      * Determine whether the given point is visible from the camera or occluded by the horizon
      * of this ellipsoid.
-     * @param cameraPosition - The camera position.
-     * @param point - The point to test.
+     * @param cameraPosition - The camera position, in world space coordinates.
+     * @param point - The point to test, in world space coordinates.
      * @param radiusFactor - An optional factor to apply to ellipsoid radii to add a margin of error.
      * @returns `true` if the given point is above the horizon, `false` otherwise.
      */

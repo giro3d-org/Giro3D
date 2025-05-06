@@ -1,4 +1,5 @@
 import type {
+    ColorRepresentation,
     IUniform,
     Light,
     Side,
@@ -222,6 +223,15 @@ export interface MaterialOptions {
      * Displays the collider meshes used for raycast.
      */
     showColliderMeshes: boolean;
+    /**
+     * Displays the bounding boxes of tiles.
+     */
+    showBoundingBoxes: boolean;
+    /**
+     * Displays the bounding spheres of tiles.
+     */
+    showBoundingSpheres: boolean;
+    helperColor: ColorRepresentation;
     depthTest: boolean;
 }
 
@@ -337,6 +347,8 @@ type Uniforms = ThreeUniforms & {
     neighbourTextures: IUniform<(Texture | null)[]>;
 
     elevationRange: IUniform<Vector2>;
+
+    baseTextureSize: IUniform<Vector2>;
 
     graticule: IUniform<GraticuleUniform>;
 
@@ -499,6 +511,8 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
             farDistance: new Uniform(1000),
 
             uuid: new Uniform(0),
+
+            baseTextureSize: new Uniform(this._textureSize),
 
             hillshading: new Uniform<HillshadingUniform>({
                 mode: mapLightingMode(options.lighting),

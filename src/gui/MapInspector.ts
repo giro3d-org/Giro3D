@@ -1,11 +1,10 @@
 import type GUI from 'lil-gui';
 import type { AxesHelper, GridHelper, Side } from 'three';
-import { Color, MathUtils, Mesh, MeshBasicMaterial, Sphere, SphereGeometry } from 'three';
+import { Color } from 'three';
 import type Instance from '../core/Instance';
 import { isGlobe } from '../entities/Globe';
 import type Map from '../entities/Map';
 import type TileMesh from '../entities/tiles/TileMesh';
-import { isTileMesh } from '../entities/tiles/TileMesh';
 import type { BoundingBoxHelper } from '../helpers/Helpers';
 import Helpers from '../helpers/Helpers';
 import RenderingState from '../renderer/RenderingState';
@@ -18,8 +17,6 @@ import LayerInspector from './LayerInspector';
 import MapLightingPanel from './MapLightingPanel';
 import MapTerrainPanel from './MapTerrainPanel';
 import TileInfoPanel from './TileInfoPanel';
-
-const tmpSphere = new Sphere();
 
 type Sidedness = 'Front' | 'Back' | 'DoubleSide';
 
@@ -51,10 +48,6 @@ class MapInspector extends EntityInspector<Map> {
     visibleTiles: number;
     terrainPanel: MapTerrainPanel;
     side: Sidedness = 'Front';
-    showSphereVolumes = false;
-    boundingSpheres: Set<Mesh<SphereGeometry, MeshBasicMaterial>> = new Set();
-    sphereMaterial?: MeshBasicMaterial;
-    sphereGeometry?: SphereGeometry;
 
     /**
      * Creates an instance of MapInspector.
@@ -71,6 +64,7 @@ class MapInspector extends EntityInspector<Map> {
             opacity: true,
         });
 
+        this.boundingBoxColor = `#${new Color(this.entity.helperColor).getHexString()}`;
         this.frozen = this.entity.frozen ?? false;
         this.showGrid = false;
         this.renderState = 'Normal';
@@ -137,9 +131,7 @@ class MapInspector extends EntityInspector<Map> {
         this.addColorController(this, 'extentColor')
             .name('Extent color')
             .onChange(() => this.updateExtentColor());
-        this.addController(this, 'showSphereVolumes')
-            .name('Show sphere volumes')
-            .onChange(() => this.notify());
+        this.addController(this.entity, 'showBoundingSpheres');
         this.addController(this.entity, 'subdivisionThreshold')
             .name('Subdivision threshold')
             .min(0.1)
@@ -175,11 +167,6 @@ class MapInspector extends EntityInspector<Map> {
         this.entity.addEventListener('layer-removed', this._fillLayersCb);
         this.entity.addEventListener('layer-order-changed', this._fillLayersCb);
 
-        this.instance.addEventListener(
-            'after-camera-update',
-            this.updateBoundingSpheres.bind(this),
-        );
-
         this.fillLayers();
     }
 
@@ -192,85 +179,9 @@ class MapInspector extends EntityInspector<Map> {
         this.notify();
     }
 
-    private updateBoundingSpheres() {
-        if (!this.showSphereVolumes) {
-            if (this.boundingSpheres.size > 0) {
-                this.boundingSpheres.forEach(mesh => {
-                    mesh.removeFromParent();
-                    mesh.userData.owner.userData.boundingSphere = null;
-                });
-                this.boundingSpheres.clear();
-            }
-            return;
-        }
-
-        if (!this.sphereMaterial) {
-            this.sphereMaterial = new MeshBasicMaterial({
-                color: this.boundingBoxColor,
-                wireframe: true,
-            });
-        }
-
-        if (!this.sphereGeometry) {
-            this.sphereGeometry = new SphereGeometry(1, 32, 16);
-        }
-
-        this.sphereMaterial.color = new Color(this.boundingBoxColor);
-
-        [...this.boundingSpheres].forEach(mesh => {
-            const tile: TileMesh = mesh.userData.owner;
-            if (tile.disposed) {
-                mesh.removeFromParent();
-                this.boundingSpheres.delete(mesh);
-            } else {
-                mesh.visible = tile.visible && tile.material.visible;
-            }
-        });
-
-        this.entity.traverseTiles(tile => {
-            if (tile.userData.boundingSphere == null) {
-                const mesh = new Mesh(this.sphereGeometry, this.sphereMaterial);
-                tile.userData.boundingSphere = mesh;
-
-                this.instance.add(mesh);
-                this.boundingSpheres.add(mesh);
-
-                mesh.userData.owner = tile;
-                // So that the poles of the sphere match the vertical axis
-                mesh.rotateX(MathUtils.degToRad(90));
-            }
-
-            const mesh: Mesh = tile.userData.boundingSphere;
-            const sphere = tile.getWorldSpaceBoundingSphere(tmpSphere);
-
-            const r = sphere.radius;
-
-            mesh.scale.set(r, r, r);
-            mesh.position.copy(sphere.center);
-
-            mesh.updateMatrixWorld(true);
-        });
-    }
-
     override toggleBoundingBoxes() {
-        const color = new Color(this.boundingBoxColor);
-        const noDataColor = new Color('gray');
-        // by default, adds axis-oriented bounding boxes to each object in the hierarchy.
-        // custom implementations may override this to have a different behaviour.
-        // @ts-expect-error monkey patched method
-        this.rootObject.traverseOnce(tile => {
-            if (isTileMesh(tile)) {
-                let finalColor = new Color();
-                const layerCount = tile.material?.getLayerCount();
-                if (layerCount === 0) {
-                    finalColor = noDataColor;
-                } else {
-                    finalColor = color;
-                }
-                this.addOrRemoveBoundingBox(tile, this.boundingBoxes, finalColor);
-            }
-        });
-        this.notify(this.entity);
+        this.entity.showBoundingBoxes = this.boundingBoxes;
+        this.entity.helperColor = this.boundingBoxColor;
     }
 
     override updateControllers(): void {

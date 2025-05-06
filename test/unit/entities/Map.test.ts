@@ -3,7 +3,7 @@ import Instance from '@giro3d/giro3d/core/Instance';
 import ColorLayer, { isColorLayer } from '@giro3d/giro3d/core/layer/ColorLayer';
 import ElevationLayer, { isElevationLayer } from '@giro3d/giro3d/core/layer/ElevationLayer';
 import type { LayerUserData } from '@giro3d/giro3d/core/layer/Layer';
-import Map, { selectBestSubdivisions } from '@giro3d/giro3d/entities/Map';
+import Map from '@giro3d/giro3d/entities/Map';
 import type TileMesh from '@giro3d/giro3d/entities/tiles/TileMesh.js';
 import { DEFAULT_AZIMUTH, DEFAULT_ZENITH } from '@giro3d/giro3d/renderer/LayeredMaterial';
 import RenderingState from '@giro3d/giro3d/renderer/RenderingState';
@@ -236,18 +236,6 @@ describe('Map', () => {
 
         it('should have an tileIndex', () => {
             expect(map.tileIndex).toBeDefined();
-        });
-    });
-
-    describe('selectBestSubdivisions', () => {
-        it('should produce multiple horizontal root tiles if needed', async () => {
-            const horizontalExtent = new Extent('EPSG:3857', -250, 250, -100, 100);
-            expect(selectBestSubdivisions(horizontalExtent)).toEqual({ x: 3, y: 1 });
-        });
-
-        it('should produce multiple vertical root tiles if needed', async () => {
-            const verticalExtent = new Extent('EPSG:3857', -100, 100, -250, 250);
-            expect(selectBestSubdivisions(verticalExtent)).toEqual({ x: 1, y: 3 });
         });
     });
 

@@ -7,11 +7,13 @@ import {
     Ray,
     RGBAFormat,
     Sphere,
+    SphereGeometry,
     UnsignedByteType,
     Vector2,
     Vector3,
     type Box3,
     type BufferGeometry,
+    type ColorRepresentation,
     type Intersection,
     type Object3D,
     type Object3DEventMap,
@@ -20,6 +22,8 @@ import {
     type WebGLRenderer,
     type WebGLRenderTarget,
 } from 'three';
+
+import { type OBB } from 'three/examples/jsm/Addons.js';
 
 import type Disposable from '../../core/Disposable';
 import type Ellipsoid from '../../core/geographic/Ellipsoid';
@@ -35,6 +39,7 @@ import OffsetScale from '../../core/OffsetScale';
 import Rect from '../../core/Rect';
 import type UniqueOwner from '../../core/UniqueOwner';
 import { intoUniqueOwner } from '../../core/UniqueOwner';
+import OBBHelper from '../../helpers/OBBHelper';
 import { readRGRenderTargetIntoRGBAU8Buffer } from '../../renderer/composition/WebGLComposer';
 import type LayeredMaterial from '../../renderer/LayeredMaterial';
 import type { MaterialOptions } from '../../renderer/LayeredMaterial';
@@ -44,6 +49,7 @@ import type RenderingState from '../../renderer/RenderingState';
 import type ShadowLayeredMaterial from '../../renderer/ShadowLayeredMaterial';
 import type View from '../../renderer/View';
 import { isPerspectiveCamera } from '../../utils/predicates';
+import { nonNull } from '../../utils/tsutils';
 import type TileCoordinate from './TileCoordinate';
 import type TileGeometry from './TileGeometry';
 import type { TileGeometryBuilder } from './TileGeometry';
@@ -55,6 +61,8 @@ const inverseMatrix = new Matrix4();
 const THIS_RECT = new Rect(0, 1, 0, 1);
 const tmpSphere = new Sphere();
 
+const sphereGeometry = new SphereGeometry(1, 32, 16);
+
 const helperMaterial = new MeshBasicMaterial({
     color: '#75eba8',
     depthTest: false,
@@ -62,6 +70,8 @@ const helperMaterial = new MeshBasicMaterial({
     wireframe: true,
     transparent: true,
 });
+
+const noRaycast = () => {};
 
 const NO_NEIGHBOUR = -99;
 const NO_OFFSET_SCALE = new OffsetScale(0, 0, 0, 0);
@@ -106,8 +116,13 @@ class TileMesh
     private _helperRoot: Group | null = null;
 
     private readonly _helpers: {
+        boundingSphere?: Mesh<SphereGeometry, MeshBasicMaterial>;
+        color: ColorRepresentation;
         colliderMesh?: Mesh<BufferGeometry, MeshBasicMaterial, Object3DEventMap>;
-    } = {};
+        boundingBox?: OBBHelper;
+    } = {
+        color: 'cyan',
+    };
     private _elevationLayerInfo: {
         layer: ElevationLayer;
         offsetScale: OffsetScale;
@@ -145,6 +160,10 @@ class TileMesh
      */
     get lod() {
         return this.coordinate.z;
+    }
+
+    getOBB(): OBB {
+        return this._volume.getOBB(this.matrixWorld);
     }
 
     getWorldSpaceBoundingBox(target: Box3): Box3 {
@@ -194,7 +213,7 @@ class TileMesh
         onElevationChanged: (tile: TileMesh) => void;
     }) {
         super(
-            params.geometryBuilder(params.extent, params.segments, params.skirtDepth ?? null),
+            params.geometryBuilder.build({ extent: params.extent, tile: params.coord }),
             params.material,
         );
 
@@ -301,6 +320,98 @@ class TileMesh
         }
     }
 
+    private deleteBoundingBoxHelper() {
+        if (this._helpers.boundingBox != null) {
+            this._helpers.boundingBox.dispose();
+            this._helpers.boundingBox.removeFromParent();
+            this._helpers.boundingBox = undefined;
+        }
+    }
+
+    private deleteBoundingSphereHelper() {
+        if (this._helpers.boundingSphere != null) {
+            this._helpers.boundingSphere.removeFromParent();
+            this._helpers.boundingSphere = undefined;
+        }
+    }
+
+    private recreateBoundingBoxHelper() {
+        this.deleteBoundingBoxHelper();
+
+        const obb = this._volume.getOBB(this.matrixWorld);
+
+        const helper = new OBBHelper(obb, this.helperColor);
+
+        helper.raycast = noRaycast;
+
+        this.createHelperRootIfNecessary();
+
+        nonNull(this._helperRoot).attach(helper);
+        helper.updateMatrixWorld(true);
+
+        this._helpers.boundingBox = helper;
+    }
+
+    private recreateBoundingSphereHelper() {
+        this.deleteBoundingSphereHelper();
+
+        this._helpers.boundingSphere = new Mesh(
+            sphereGeometry,
+            new MeshBasicMaterial({ color: this.helperColor, wireframe: true }),
+        );
+
+        this._helpers.boundingSphere.rotateX(MathUtils.degToRad(90));
+        this._helpers.boundingSphere.raycast = noRaycast;
+
+        const sphere = this._volume.getWorldSpaceBoundingSphere(tmpSphere, this.matrixWorld);
+        this._helpers.boundingSphere.scale.set(sphere.radius, sphere.radius, sphere.radius);
+        this._helpers.boundingSphere.position.copy(sphere.center);
+
+        this.createHelperRootIfNecessary();
+
+        nonNull(this._helperRoot).attach(this._helpers.boundingSphere);
+
+        this._helpers.boundingSphere.updateMatrixWorld(true);
+    }
+
+    get showBoundingBox() {
+        return this._helpers.boundingBox?.visible ?? false;
+    }
+
+    set showBoundingBox(show: boolean) {
+        if (show && this._helpers.boundingBox == null) {
+            this.recreateBoundingBoxHelper();
+        } else if (!show && this._helpers.boundingBox != null) {
+            this.deleteBoundingBoxHelper();
+        }
+    }
+
+    get showBoundingSphere() {
+        return this._helpers.boundingSphere?.visible ?? false;
+    }
+
+    set showBoundingSphere(show: boolean) {
+        if (show && this._helpers.boundingSphere == null) {
+            this.recreateBoundingSphereHelper();
+        } else if (!show && this._helpers.boundingSphere != null) {
+            this.deleteBoundingSphereHelper();
+        }
+    }
+
+    get helperColor() {
+        return this._helpers.color;
+    }
+
+    set helperColor(color: ColorRepresentation) {
+        this._helpers.color = color;
+        if (this.showBoundingBox) {
+            this.recreateBoundingBoxHelper();
+        }
+        if (this.showBoundingSphere) {
+            this.recreateBoundingSphereHelper();
+        }
+    }
+
     get segments() {
         return this._segments;
     }
@@ -325,7 +436,7 @@ class TileMesh
 
     private createGeometry() {
         this.geometry.dispose();
-        this.geometry = this._geometryBuilder(this.extent, this.segments, this._skirtDepth ?? null);
+        this.geometry = this._geometryBuilder.build({ extent: this.extent, tile: this.coordinate });
         this._tileGeometry = this.geometry;
 
         if (this._helpers.colliderMesh) {
@@ -465,7 +576,10 @@ class TileMesh
             }
         }
 
+        this.helperColor = materialOptions.helperColor ?? 'cyan';
         this.showColliderMesh = materialOptions.showColliderMeshes ?? false;
+        this.showBoundingBox = materialOptions.showBoundingBoxes ?? false;
+        this.showBoundingSphere = materialOptions.showBoundingSpheres ?? false;
     }
 
     isVisible() {
@@ -708,6 +822,13 @@ class TileMesh
 
     private updateVolume(min: number, max: number) {
         this._volume.setElevationRange({ min, max });
+
+        if (this.showBoundingBox) {
+            this.recreateBoundingBoxHelper();
+        }
+        if (this.showBoundingSphere) {
+            this.recreateBoundingSphereHelper();
+        }
     }
 
     get minmax() {

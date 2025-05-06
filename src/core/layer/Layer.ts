@@ -1388,6 +1388,21 @@ abstract class Layer<
         return result;
     }
 
+    protected canDeleteTarget(target: Target): boolean {
+        const level = target.node.lod;
+
+        // Can we unload it ?
+        // - We don't unload root nodes (level = 0)
+        // - We also don't unload nodes every 3 levels
+        // - We also don't unload nodes that do not have any loaded ancestor,
+        //   to avoid sudden blank tiles.
+        if (level > 0 && level % 3 !== 0 && this.getLoadedAncestor(target)) {
+            return true;
+        }
+
+        return false;
+    }
+
     protected deleteUnusedTargets() {
         nodesToDelete.length = 0;
 
@@ -1398,14 +1413,7 @@ abstract class Layer<
             // Is this target invisible ? We can only unload invisible targets.
             // Note that we never delete root nodes so that we can always have some fallback data
             if (!target.node.material.visible) {
-                const level = target.node.lod;
-
-                // Can we unload it ?
-                // - We don't unload root nodes (level = 0)
-                // - We also don't unload nodes every 3 levels
-                // - We also don't unload nodes that do not have any loaded ancestor,
-                //   to avoid sudden blank tiles.
-                if (level > 0 && level % 3 !== 0 && this.getLoadedAncestor(target)) {
+                if (this.canDeleteTarget(target)) {
                     nodesToDelete.push(target.node);
                 }
             }

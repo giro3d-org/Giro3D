@@ -1,24 +1,30 @@
-import { Vector2, Vector3 } from 'three';
+import { Box3, type Camera, Sphere, Vector2, Vector3 } from 'three';
 import type Context from '../core/Context';
 import Coordinates from '../core/geographic/Coordinates';
 import Ellipsoid from '../core/geographic/Ellipsoid';
 import Extent from '../core/geographic/Extent';
 import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
 import type PointOfView from '../core/PointOfView';
+import ScreenSpaceError from '../core/ScreenSpaceError';
 import type TerrainOptions from '../core/TerrainOptions';
 import { computeDistanceToFitSphere, computeZoomToFitSphere } from '../renderer/View';
 import { isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
 import Map, { type MapConstructorOptions } from './Map';
 import type MapLightingOptions from './MapLightingOptions';
 import { MapLightingMode } from './MapLightingOptions';
-import EllipsoidTileGeometry from './tiles/EllipsoidTileGeometry';
+import EllipsoidTileGeometryBuilder from './tiles/EllipsoidTileGeometryBuilder';
 import EllipsoidTileVolume from './tiles/EllipsoidTileVolume';
 import type { TileGeometryBuilder } from './tiles/TileGeometry';
 import type TileMesh from './tiles/TileMesh';
 import type TileVolume from './tiles/TileVolume';
 
 const tempDims = new Vector2();
+const tempWorldPosition = new Vector3();
+const tempCameraPosition = new Vector3();
 const tmpWGS84Coordinates = new Coordinates('EPSG:4326', 0, 0);
+const horizonSphere = new Sphere();
+const boundingSphere = new Sphere();
+const tempBox = new Box3();
 
 /**
  * Options for Globe terrains.
@@ -64,17 +70,6 @@ export interface GlobeConstructorOptions extends Omit<MapConstructorOptions, 'ex
     terrain?: boolean | Partial<GlobeTerrainOptions>;
 }
 
-function createBuilder(ellipsoid: Ellipsoid): TileGeometryBuilder {
-    return (extent, segments, skirtDepth) => {
-        return new EllipsoidTileGeometry({
-            extent,
-            segments,
-            ellipsoid,
-            skirtDepth,
-        });
-    };
-}
-
 /**
  * Displays a Globe.
  *
@@ -95,9 +90,9 @@ export default class Globe extends Map {
     override readonly type: string = 'Globe' as const;
 
     private readonly _ellipsoid: Ellipsoid;
-    private readonly _geometryBuilder: TileGeometryBuilder;
 
     private _enableHorizonCulling = true;
+    private _horizonDistance: number | null = null;
 
     /**
      * The ellipsoid used to draw this globe.
@@ -125,8 +120,6 @@ export default class Globe extends Map {
         });
 
         this._ellipsoid = options?.ellipsoid ?? Ellipsoid.WGS84;
-
-        this._geometryBuilder = createBuilder(this._ellipsoid);
     }
 
     protected override testVisibility(node: TileMesh, context: Context): boolean {
@@ -143,23 +136,36 @@ export default class Globe extends Map {
         return frustumVisible && horizonVisible;
     }
 
+    private computeHorizonDistance(camera: Camera) {
+        if (this._enableHorizonCulling) {
+            const cameraPosition = camera.getWorldPosition(tempCameraPosition);
+            const horizonDistance = this.ellipsoid.getOpticalHorizon(
+                cameraPosition,
+                this.object3d.getWorldPosition(tempWorldPosition),
+            );
+
+            this._horizonDistance = horizonDistance;
+        }
+    }
+
+    override preUpdate(context: Context, changeSources: Set<unknown>): TileMesh[] {
+        this.computeHorizonDistance(context.view.camera);
+
+        return super.preUpdate(context, changeSources);
+    }
+
     protected testHorizonVisibility(node: TileMesh, context: Context): boolean {
         const cameraPosition = context.view.camera.position;
-        const corners = node.getBoundingBoxCorners();
 
-        // Since the actual earth is not an ellipsoid (because of terrain),
-        // let's use a smaller ellipsoid for horizon testing purposes so that
-        // points located below the actual ellipsoid (for example on the sea bed
-        // in very deep areas) do not produce false negatives.
-        const FACTOR = 0.99;
+        if (this._horizonDistance != null) {
+            horizonSphere.set(cameraPosition, this._horizonDistance);
 
-        for (const corner of corners) {
-            if (this._ellipsoid.isHorizonVisible(cameraPosition, corner, FACTOR)) {
-                return true;
+            if (!horizonSphere.intersectsBox(node.getWorldSpaceBoundingBox(tempBox))) {
+                return false;
             }
         }
 
-        return false;
+        return true;
     }
 
     protected override shouldSubdivide(context: Context, node: TileMesh): boolean {
@@ -167,28 +173,25 @@ export default class Globe extends Map {
             return false;
         }
 
-        // // Safety mechanism to avoid subdividing extremely elongated tiles at the poles
-        // // that would lead to hundred or thousands of tiles displayed simultaneously.
+        // Safety mechanism to avoid subdividing extremely elongated tiles at the poles
+        // that would lead to hundred or thousands of tiles displayed simultaneously.
+        // Since pixels are extremely stretched in those places, the quality would not be
+        // much improved anyway.
         if (node.lod > 3 && (node.extent.north === 90 || node.extent.south === -90)) {
             return false;
         }
 
-        const { width, height } = node.getScreenPixelSize(context.view);
+        const worldSphere = node.getWorldSpaceBoundingSphere(boundingSphere);
+        const geometricError = worldSphere.radius;
 
-        const screenSize = Math.max(width, height);
-        const textureSize = Math.max(node.textureSize.width, node.textureSize.height);
+        const sse = ScreenSpaceError.computeFromSphere(context.view, worldSphere, geometricError);
+        const textureSize = Math.min(node.textureSize.x, node.textureSize.y);
 
-        if (screenSize / textureSize > this.subdivisionThreshold) {
+        if (sse / textureSize > this.subdivisionThreshold) {
             return true;
         }
 
         return false;
-    }
-
-    protected override getRootTileMatrix(): Vector2 {
-        // Equirectangular projection with 2 tiles on the Y axis
-        // and 4 on the X axis, so that tiles are perfect squares.
-        return new Vector2(4, 2);
     }
 
     protected override getTextureSize(extent: Extent): Vector2 {
@@ -199,7 +202,11 @@ export default class Globe extends Map {
     }
 
     protected override getGeometryBuilder(): TileGeometryBuilder {
-        return this._geometryBuilder;
+        return new EllipsoidTileGeometryBuilder(
+            this.ellipsoid,
+            this.segments,
+            this.terrain.skirts.enabled ? this.terrain.skirts.depth : null,
+        );
     }
 
     protected override createTileVolume(extent: Extent): TileVolume {
@@ -230,11 +237,11 @@ export default class Globe extends Map {
 
     protected override canSubdivideTile(tile: TileMesh): boolean {
         // Terrain is negligible at low LODs.
-        if (this.extent.equals(Extent.WGS84) && tile.lod < 10) {
+        if (this.extent.equals(Extent.WGS84) && tile.lod < 5) {
             return true;
         }
 
-        // After LOD 10, we have to be much stricter than the Map implementation.
+        // After LOD 5, we have to be much stricter than the Map implementation.
         // We have zero tolerance here because of extreme recursion levels when
         // zooming in close to mountainous areas, due to the fact that we need to
         // have the strictest bounding volumes.

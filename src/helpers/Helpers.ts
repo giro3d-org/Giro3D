@@ -1,4 +1,10 @@
-import type { BufferGeometry, LineBasicMaterial, LineSegments, MeshBasicMaterial } from 'three';
+import type {
+    BufferGeometry,
+    LineBasicMaterial,
+    LineSegments,
+    MeshBasicMaterial,
+    Object3D,
+} from 'three';
 import {
     ArrowHelper,
     AxesHelper,
@@ -9,17 +15,10 @@ import {
     Mesh,
     Vector3,
     type Material,
-    type Object3D,
 } from 'three';
 import type { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
-import type OBB from '../core/OBB.js';
-import { isMaterial } from '../utils/predicates';
+import { isMaterial, isObject } from '../utils/predicates';
 import { nonNull } from '../utils/tsutils';
-import OBBHelper from './OBBHelper';
-
-export class VolumeHelper extends OBBHelper {
-    readonly isvolumeHelper = true;
-}
 
 export class SphereHelper extends Mesh<BufferGeometry, MeshBasicMaterial> {
     readonly isHelper = true;
@@ -34,16 +33,12 @@ interface HasBoundingBox extends Object3D {
     boundingBox: Box3;
 }
 
-interface HasVolumeHelper extends Object3D {
-    volumeHelper: VolumeHelper;
-}
-
 interface HasBoundingBoxHelper extends Object3D {
     volumeHelper: BoundingBoxHelper;
 }
 
-export function hasVolumeHelper(obj: unknown): obj is HasVolumeHelper {
-    return (obj as HasVolumeHelper)?.volumeHelper !== undefined;
+function hasBoundingBoxHelper(obj: unknown): obj is HasBoundingBoxHelper {
+    return isObject(obj) && (obj as HasBoundingBoxHelper).volumeHelper != null;
 }
 
 interface HasSelectionHelper extends Object3D {
@@ -54,7 +49,6 @@ interface HasBoundingVolumeHelper extends Object3D {
     boundingVolumeHelper: {
         object3d:
             | SphereHelper
-            | VolumeHelper
             | LineSegments<LineSegmentsGeometry | BufferGeometry, LineBasicMaterial>
             | Mesh<BufferGeometry, MeshBasicMaterial>;
         absolute: boolean;
@@ -145,14 +139,11 @@ class Helpers {
         if ((obj as BoundingBoxHelper).isvolumeHelper) {
             return;
         }
-        if (hasVolumeHelper(obj)) {
-            obj.volumeHelper.updateMatrixWorld(true);
-        } else {
-            const helper = Helpers.createBoxHelper(makeLocalBbox(obj), getColor(color));
-            obj.add(helper);
-            (obj as HasBoundingBoxHelper).volumeHelper = helper;
-            helper.updateMatrixWorld(true);
-        }
+
+        const helper = Helpers.createBoxHelper(makeLocalBbox(obj), getColor(color));
+        obj.add(helper);
+        (obj as HasBoundingBoxHelper).volumeHelper = helper;
+        helper.updateMatrixWorld(true);
     }
 
     static createBoxHelper(box: Box3, color: Color) {
@@ -192,39 +183,6 @@ class Helpers {
     }
 
     /**
-     * Adds an oriented bounding box (OBB) helper to the object.
-     * If a bounding box is already present, it is updated instead.
-     *
-     * @param obj - The object to decorate.
-     * @param obb - The OBB.
-     * @param color - The color.
-     * @example
-     * // add an OBB to 'obj'
-     * Helpers.addOBB(obj, obj.OBB, 'green');
-     */
-    static addOBB(obj: Object3D, obb: OBB, color: Color) {
-        if (hasVolumeHelper(obj)) {
-            obj.volumeHelper.update(obb, color);
-        } else {
-            const helper = new VolumeHelper(obb, color);
-            helper.name = 'OBBHelper';
-            obj.add(helper);
-            (obj as HasVolumeHelper).volumeHelper = helper;
-            helper.updateMatrixWorld(true);
-        }
-    }
-
-    static removeOBB(obj: Object3D) {
-        if (hasVolumeHelper(obj)) {
-            const helper = (obj as HasVolumeHelper).volumeHelper;
-            helper.removeFromParent();
-            helper.dispose();
-            // @ts-expect-error cannot remove "mandatory" property
-            delete obj.volumeHelper;
-        }
-    }
-
-    /**
      * Create a grid on the XZ plane.
      *
      * @param origin - The grid origin.
@@ -257,29 +215,6 @@ class Helpers {
         return axes;
     }
 
-    static remove3DTileBoundingVolume(obj: Object3D) {
-        if (hasBoundingVolumeHelper(obj)) {
-            // The helper is not necessarily attached to the object, in the
-            // case of helpers with absolute position.
-            const obj3d = obj.boundingVolumeHelper.object3d;
-            obj3d.removeFromParent();
-
-            obj3d.geometry?.dispose();
-            obj3d.material?.dispose();
-            // @ts-expect-error cannot remove "mandatory" property
-            delete obj.boundingVolumeHelper;
-        }
-    }
-
-    static update3DTileBoundingVolume(obj: Object3D, properties: { color: Color }) {
-        if (!hasBoundingVolumeHelper(obj)) {
-            return;
-        }
-        if (properties.color != null) {
-            obj.boundingVolumeHelper.object3d.material.color = properties.color;
-        }
-    }
-
     /**
      * Creates an arrow between the two points.
      *
@@ -301,10 +236,12 @@ class Helpers {
      * Helpers.removeBoundingBox(obj);
      */
     static removeBoundingBox(obj: Object3D) {
-        if (hasVolumeHelper(obj)) {
-            const volumeHelper = (obj as HasVolumeHelper).volumeHelper;
+        if (hasBoundingBoxHelper(obj)) {
+            const volumeHelper = (obj as HasBoundingBoxHelper).volumeHelper;
             obj.remove(volumeHelper);
-            volumeHelper.dispose();
+            if ('dispose' in volumeHelper && typeof volumeHelper.dispose === 'function') {
+                volumeHelper.dispose();
+            }
             // @ts-expect-error cannot remove "mandatory" property
             delete obj.volumeHelper;
         }

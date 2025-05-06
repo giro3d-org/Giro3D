@@ -1,0 +1,64 @@
+---
+title: Simple Globe
+shortdesc: Display a simple globe with a single color layer.
+attribution: © <a target="_blank" href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors
+tags: [ecef, globe, map, layers]
+---
+
+<div class="side-pane-with-status-bar">
+    <div class="card">
+        <div class="card-header">Parameters</div>
+        <div class="card-body">
+            <!-- Toggle tile outlines -->
+            <div class="form-check form-switch">
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    role="switch"
+                    id="show-outlines"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="show-outlines">Show tiles</label>
+            </div>
+
+            <!-- Toggle bounding boxes -->
+            <div class="form-check form-switch">
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    role="switch"
+                    id="show-bounding-boxes"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="show-bounding-boxes"
+                    >Show bounding boxes</label
+                >
+            </div>
+
+            <!-- Toggle LOD spheres -->
+            <div class="form-check form-switch">
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    role="switch"
+                    id="show-lod-spheres"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="show-lod-spheres">Show LOD spheres</label>
+            </div>
+
+            <!-- Toggle color layer -->
+            <div class="form-check form-switch">
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    role="switch"
+                    id="show-layer"
+                    checked
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="show-layer">Show color layer</label>
+            </div>
+        </div>
+    </div>
+</div>

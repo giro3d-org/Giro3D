@@ -10,7 +10,7 @@ import { isEuler, isMatrix4, isPerspectiveCamera, isQuaternion } from '../utils/
 import { computeEllipsoidalImageSize } from './Globe';
 import type { MapConstructorOptions } from './Map';
 import Map from './Map';
-import PanoramaTileGeometry from './tiles/PanoramaTileGeometry';
+import PanoramaTileGeometryBuilder from './tiles/PanoramaTileGeometryBuilder';
 import PanoramaTileVolume from './tiles/PanoramaTileVolume';
 import type { TileGeometryBuilder } from './tiles/TileGeometry';
 import type TileVolume from './tiles/TileVolume';
@@ -135,6 +135,10 @@ export default class SphericalPanorama extends Map {
         this.side = params?.side ?? FrontSide;
     }
 
+    protected override getGeometryBuilder(): TileGeometryBuilder {
+        return new PanoramaTileGeometryBuilder(this._radius, this.segments);
+    }
+
     protected override get isEllipsoidal(): boolean {
         return true;
     }
@@ -148,16 +152,6 @@ export default class SphericalPanorama extends Map {
         // on the location of the tile. We must compute a reasonable approximation of
         // the width and height of the extent in meters.
         return computeEllipsoidalImageSize(extent, this._sphere);
-    }
-
-    protected override getGeometryBuilder(): TileGeometryBuilder {
-        return (extent, segments) => {
-            return new PanoramaTileGeometry({
-                extent,
-                segments,
-                radius: this._radius,
-            });
-        };
     }
 
     protected override createTileVolume(extent: Extent): TileVolume {

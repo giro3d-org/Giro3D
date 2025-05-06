@@ -53,6 +53,8 @@ uniform vec3        brightnessContrastSaturation; // Brightness/contrast/saturat
 
 uniform vec4        extent; // The extent of the tile in local coordinates (e.g meters for cartesian, or degrees for geographic)
 
+uniform vec2        baseTextureSize; // The theoretical texture size of the tile (not the actual texture size of any texture)
+
 #include <giro3d_colormap_pars_fragment>
 #include <giro3d_outline_pars_fragment>
 #include <giro3d_graticule_pars_fragment>

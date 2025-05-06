@@ -11,6 +11,7 @@ import {
     Sphere,
     Vector3,
 } from 'three';
+import { type OBB } from 'three/examples/jsm/Addons.js';
 import type Disposable from '../core/Disposable';
 import Coordinates from '../core/geographic/Coordinates';
 import Ellipsoid from '../core/geographic/Ellipsoid';
@@ -20,10 +21,13 @@ import type PointOfView from '../core/PointOfView';
 import { isPointOfView } from '../core/PointOfView';
 import { isBox3, isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
 
+const ZERO = new Vector3(0, 0, 0);
+
 const tmp = {
     vec3: new Vector3(),
     frustum: new Frustum(),
     matrix: new Matrix4(),
+    obbMatrix: new Matrix4(),
     box3: new Box3(),
     up: new Vector3(),
     sphere: new Sphere(),
@@ -318,6 +322,20 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
      */
     position(crs?: string) {
         return new Coordinates(this.crs, this.camera.position).as(crs ?? this.crs);
+    }
+
+    isOBBVisible(worldOBB: OBB): boolean {
+        const box = tmp.box3.setFromCenterAndSize(ZERO, worldOBB.getSize(tmp.vec3));
+
+        const obbMatrix = tmp.obbMatrix
+            .setFromMatrix3(worldOBB.rotation)
+            .setPosition(worldOBB.center);
+
+        const matrix = tmp.matrix.multiplyMatrices(this._viewMatrix, obbMatrix);
+
+        tmp.frustum.setFromProjectionMatrix(matrix);
+
+        return tmp.frustum.intersectsBox(box);
     }
 
     isBox3Visible(box3: Box3, matrixWorld?: Matrix4) {
