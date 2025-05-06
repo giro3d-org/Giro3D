@@ -1,84 +1,33 @@
-import {
-    BufferAttribute,
-    BufferGeometry,
-    LineBasicMaterial,
-    LineSegments,
-    Vector3,
-    type Color,
-} from 'three';
-import type OBB from '../core/OBB';
+import type { ColorRepresentation } from 'three';
+import { Box3, Box3Helper, Matrix4, Object3D, Vector3 } from 'three';
+import type { OBB } from 'three/examples/jsm/Addons.js';
 
-const points = [
-    new Vector3(),
-    new Vector3(),
-    new Vector3(),
-    new Vector3(),
-    new Vector3(),
-    new Vector3(),
-    new Vector3(),
-    new Vector3(),
-];
-
-/**
- * Displays an Oriented Bounding Box (OBB).
- *
- */
-class OBBHelper extends LineSegments<BufferGeometry, LineBasicMaterial> {
-    override readonly type = 'OBBHelper' as const;
-    readonly isHelper = true as const;
-
-    constructor(OBB: OBB | undefined, color: Color) {
-        const indices = new Uint16Array([
-            0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7,
-        ]);
-        const positions = new Float32Array(8 * 3);
-
-        const geometry = new BufferGeometry();
-        geometry.setIndex(new BufferAttribute(indices, 1));
-        geometry.setAttribute('position', new BufferAttribute(positions, 3));
-
-        super(
-            geometry,
-            new LineBasicMaterial({
-                color: color.getHex(),
-                linewidth: 3,
-            }),
-        );
-
-        this.frustumCulled = false;
-
-        if (OBB !== undefined) {
-            this.update(OBB, color);
-        }
-    }
+export default class OBBHelper extends Object3D {
+    private readonly _helper: Box3Helper;
 
     dispose() {
-        this.material.dispose();
-        this.geometry.dispose();
+        this._helper.dispose();
     }
 
-    setMaterialVisibility(show: boolean) {
-        this.material.visible = show;
-        // this.textMesh.material.visible = show;
-    }
+    constructor(
+        readonly obb: OBB,
+        color: ColorRepresentation,
+    ) {
+        super();
 
-    update(OBB: OBB, color: Color) {
-        const { position } = this.geometry.attributes;
-        const { array } = position;
+        const helper = new Box3Helper(
+            new Box3().setFromCenterAndSize(new Vector3(0, 0, 0), obb.getSize(new Vector3())),
+            color,
+        );
 
-        this.material.setValues({ color: color.getHex() });
-        OBB._points(points);
-        let offset = 0;
-        for (const pt of points) {
-            pt.toArray(array, offset);
-            offset += 3;
-        }
+        this._helper = helper;
+        helper.raycast = () => {};
+        this.raycast = () => {};
+        this.add(helper);
 
-        position.needsUpdate = true;
-
+        this.setRotationFromMatrix(new Matrix4().setFromMatrix3(obb.rotation));
+        this.position.copy(obb.center);
         this.updateMatrix();
         this.updateMatrixWorld(true);
     }
 }
-
-export default OBBHelper;

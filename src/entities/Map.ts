@@ -584,6 +584,9 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
         this._materialOptions = {
             showColliderMeshes: false,
+            showBoundingSpheres: false,
+            helperColor: 'cyan',
+            showBoundingBoxes: false,
             forceTextureAtlases: options.forceTextureAtlases ?? false,
             lighting: getLightingOptions(options.lighting, this.getDefaultLightingOptions()),
             contourLines: getContourLineOptions(options.contourLines),
@@ -844,6 +847,48 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     /**
+     * Shows volumes of tiles.
+     */
+    get showBoundingBoxes(): boolean {
+        return this._materialOptions.showBoundingBoxes;
+    }
+
+    set showBoundingBoxes(show: boolean) {
+        if (this._materialOptions.showBoundingBoxes !== show) {
+            this._materialOptions.showBoundingBoxes = show;
+            this.notifyChange(this);
+        }
+    }
+
+    /**
+     * Shows volumes of tiles.
+     */
+    get showBoundingSpheres(): boolean {
+        return this._materialOptions.showBoundingSpheres;
+    }
+
+    set showBoundingSpheres(show: boolean) {
+        if (this._materialOptions.showBoundingSpheres !== show) {
+            this._materialOptions.showBoundingSpheres = show;
+            this.notifyChange(this);
+        }
+    }
+
+    /**
+     * Shows volumes of tiles.
+     */
+    get helperColor(): ColorRepresentation {
+        return this._materialOptions.helperColor;
+    }
+
+    set helperColor(color: ColorRepresentation) {
+        if (this._materialOptions.helperColor !== color) {
+            this._materialOptions.helperColor = color;
+            this.notifyChange(this);
+        }
+    }
+
+    /**
      * Shows meshes used for raycasting purposes.
      */
     get showColliderMeshes(): boolean {
@@ -851,7 +896,10 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     set showColliderMeshes(show: boolean) {
-        this._materialOptions.showColliderMeshes = show;
+        if (this._materialOptions.showColliderMeshes !== show) {
+            this._materialOptions.showColliderMeshes = show;
+            this.notifyChange(this);
+        }
     }
 
     get segments() {
@@ -1499,7 +1547,8 @@ class Map<UserData extends EntityUserData = EntityUserData>
         node.update(this._materialOptions);
 
         // Frustum culling
-        return context.view.isBox3Visible(node.getWorldSpaceBoundingBox(tmpBox3));
+        const obb = node.getOBB();
+        return context.view.isOBBVisible(obb);
     }
 
     override postUpdate(context: Context) {

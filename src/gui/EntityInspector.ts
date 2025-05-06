@@ -6,7 +6,7 @@ import type Instance from '../core/Instance';
 import * as MemoryUsage from '../core/MemoryUsage';
 import type PointOfView from '../core/PointOfView';
 import type Entity3D from '../entities/Entity3D';
-import Helpers, { hasVolumeHelper } from '../helpers/Helpers';
+import Helpers, { hasBoundingVolumeHelper } from '../helpers/Helpers';
 import { isMaterial, isVector3 } from '../utils/predicates';
 import Panel from './Panel';
 
@@ -134,7 +134,7 @@ class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
     visible: boolean;
     /** Toggle the visibility of the bounding boxes. */
     boundingBoxes: boolean;
-    boundingBoxColor: Color | string;
+    boundingBoxColor: string;
     state: string;
     clippingPlanePanel: ClippingPlanePanel;
     cpuMemoryUsage = 'unknown';
@@ -307,8 +307,8 @@ class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
     updateBoundingBoxColor(colorHex: ColorRepresentation) {
         const color = new Color(colorHex);
         this.rootObject.traverse(obj => {
-            if (hasVolumeHelper(obj)) {
-                obj.volumeHelper.material.color = color;
+            if (hasBoundingVolumeHelper(obj)) {
+                obj.boundingVolumeHelper.object3d.material.color = color;
             }
         });
 

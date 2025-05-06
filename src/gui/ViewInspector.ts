@@ -1,5 +1,14 @@
 import type GUI from 'lil-gui';
-import { CameraHelper, type OrthographicCamera, type PerspectiveCamera, type Vector3 } from 'three';
+import {
+    CameraHelper,
+    Mesh,
+    MeshBasicMaterial,
+    SphereGeometry,
+    type OrthographicCamera,
+    type PerspectiveCamera,
+    type Vector3,
+} from 'three';
+import Ellipsoid from '../core/geographic/Ellipsoid';
 import type Instance from '../core/Instance';
 import type View from '../renderer/View';
 import { isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
@@ -9,6 +18,7 @@ class CameraInspector extends Panel {
     view: View;
     camera: PerspectiveCamera | OrthographicCamera;
     snapshots: CameraHelper[] = [];
+    horizonDistance = 'N/A';
 
     /**
      * @param gui - The GUI.
@@ -41,6 +51,21 @@ class CameraInspector extends Panel {
         this.addController(this.view, 'minNearPlane').name('Min near plane').onChange(notify);
         this.addController(this.view, 'width').name('Width (pixels)');
         this.addController(this.view, 'height').name('Height (pixels)');
+
+        if (instance.referenceCrs === 'EPSG:4978') {
+            this.addController(this, 'horizonDistance');
+            instance.addEventListener('after-camera-update', () => {
+                const distance = Ellipsoid.WGS84.getOpticalHorizon(instance.view.camera.position);
+
+                this.horizonDistance =
+                    distance != null
+                        ? distance > 10000
+                            ? (distance / 1000).toFixed(0) + ' km'
+                            : distance.toFixed(0) + 'm'
+                        : 'N/A';
+            });
+        }
+
         this.addController(this, 'createFrustumSnapshot').name('Create frustum snapshot');
         this.addController(this, 'deleteSnapshots').name('Delete frustum snapshots');
 
@@ -73,6 +98,23 @@ class CameraInspector extends Panel {
         this.instance.add(helper);
         helper.update();
         this.instance.notifyChange();
+
+        if (
+            this.instance.referenceCrs === 'EPSG:4978' &&
+            isPerspectiveCamera(this.instance.view.camera)
+        ) {
+            const distance = Ellipsoid.WGS84.getOpticalHorizon(this.instance.view.camera.position);
+
+            if (distance != null) {
+                helper.add(
+                    new Mesh(
+                        new SphereGeometry(distance, 32, 16),
+                        new MeshBasicMaterial({ wireframe: true, color: 'green' }),
+                    ),
+                );
+            }
+        }
+
         helper.updateMatrixWorld(true);
         this.snapshots.push(helper);
     }

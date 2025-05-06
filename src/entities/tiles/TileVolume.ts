@@ -1,5 +1,5 @@
-import type { Matrix4, Sphere, Vector3 } from 'three';
-import { Box3 } from 'three';
+import { Box3, type Matrix4, type Sphere, type Vector3 } from 'three';
+import { OBB } from 'three/examples/jsm/Addons.js';
 import type ElevationRange from '../../core/ElevationRange';
 
 const tmpBox = new Box3();
@@ -53,6 +53,13 @@ export default abstract class TileVolume {
         result.applyMatrix4(matrix);
 
         return result;
+    }
+
+    /**
+     * Gets the world-space oriented bounding box of this tile volume.
+     */
+    getOBB(matrix: Matrix4): OBB {
+        return new OBB().fromBox3(this.getWorldSpaceBoundingBox(new Box3(), matrix));
     }
 
     getWorldSpaceBoundingSphere(target: Sphere, matrix: Matrix4): Sphere {

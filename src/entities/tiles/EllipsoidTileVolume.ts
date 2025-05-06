@@ -1,4 +1,5 @@
-import { Box3, MathUtils, type Matrix4, Vector2, Vector3 } from 'three';
+import { Box3, MathUtils, Matrix3, Matrix4, Plane, type Sphere, Vector2, Vector3 } from 'three';
+import { OBB } from 'three/examples/jsm/Addons.js';
 import type ElevationRange from '../../core/ElevationRange';
 import Coordinates from '../../core/geographic/Coordinates';
 import type Ellipsoid from '../../core/geographic/Ellipsoid';
@@ -8,15 +9,18 @@ import TileVolume from './TileVolume';
 const vec3 = new Vector3();
 const vec2 = new Vector2();
 const coord = new Coordinates('EPSG:4326', 0, 0);
+const matrix4 = new Matrix4();
 
 export default class EllipsoidTileVolume extends TileVolume {
     private readonly _ellipsoid: Ellipsoid;
     private readonly _extent: Extent;
     private _range: ElevationRange = { min: -1, max: +1 };
 
+    private _obb: OBB | null = null;
     private _corners: Vector3[] | null = null;
     private _max = 0;
     private _min = 0;
+    private _origin: Vector3 | undefined = undefined;
 
     get extent(): Readonly<Extent> {
         return this._extent;
@@ -26,6 +30,15 @@ export default class EllipsoidTileVolume extends TileVolume {
         return this._ellipsoid;
     }
 
+    get origin() {
+        if (this._origin == null) {
+            const { x, y } = this.extent.centerAsVector2();
+            this._origin = this.ellipsoid.toCartesian(x, y, 0, this._origin);
+        }
+
+        return this._origin;
+    }
+
     constructor(options: { extent: Extent; range: ElevationRange; ellipsoid: Ellipsoid }) {
         super();
         this._extent = options.extent;
@@ -33,7 +46,7 @@ export default class EllipsoidTileVolume extends TileVolume {
         this._ellipsoid = options.ellipsoid;
     }
 
-    getWorldSpaceCorners(matrix: Matrix4): Vector3[] {
+    getWorldSpaceCorners(matrix?: Matrix4): Vector3[] {
         if (this._corners == null) {
             const dims = this._extent.dimensions(vec2);
 
@@ -55,8 +68,10 @@ export default class EllipsoidTileVolume extends TileVolume {
                     const p0 = this._ellipsoid.toCartesian(latitude, longitude, this._min);
                     const p1 = this._ellipsoid.toCartesian(latitude, longitude, this._max);
 
-                    p0.applyMatrix4(matrix);
-                    p1.applyMatrix4(matrix);
+                    if (matrix) {
+                        p0.applyMatrix4(matrix);
+                        p1.applyMatrix4(matrix);
+                    }
 
                     this._corners[index++] = p0;
                     this._corners[index++] = p1;
@@ -65,6 +80,94 @@ export default class EllipsoidTileVolume extends TileVolume {
         }
 
         return this._corners;
+    }
+
+    override getOBB(): OBB {
+        if (this._obb == null) {
+            const center = this._extent.center(coord);
+
+            const cartesianCenter = this.ellipsoid.toCartesian(
+                center.latitude,
+                center.longitude,
+                0,
+            );
+
+            // To help us compute the thickness (on the local Z axis) of the box,
+            // we create a tangent plane on the ellipsoid, then measure the distance from
+            // the corners to this plane.
+            const distanceFromOrigin = cartesianCenter.length();
+            const normal = this.ellipsoid.getNormalFromCartesian(cartesianCenter);
+            const plane = new Plane(normal, -distanceFromOrigin);
+
+            const corners = this.getWorldSpaceCorners();
+
+            let localMax = 0;
+            let localMin = 0;
+
+            for (let i = 0; i < corners.length; i++) {
+                const element = corners[i];
+                const distance = plane.distanceToPoint(element);
+                if (distance >= 0) {
+                    localMax = Math.max(localMax, distance);
+                } else {
+                    localMin = Math.min(localMin, distance);
+                }
+            }
+
+            const thickness = Math.abs(localMax - localMin);
+
+            let horizontalDistance: number;
+
+            // To compute the width and height of the box, we
+            // measure the arc chords associated to the vertical
+            // and horizontal sides of the extent (which looks like a curved sheet).
+            const sw = this.extent.sampleUV(0, 0);
+            const se = this.extent.sampleUV(1, 0);
+            const nw = this.extent.sampleUV(0, 1);
+            const ne = this.extent.sampleUV(1, 1);
+
+            // We have to use the greatest chord length for the horizontal chord,
+            // since tiles that touch the pole have a chord length of zero at the pole.
+
+            if (center.latitude > 0) {
+                // Northern hemisphere
+                horizontalDistance = this._ellipsoid
+                    .toCartesian(sw.latitude, sw.longitude, 0)
+                    .distanceTo(this._ellipsoid.toCartesian(se.latitude, se.longitude, 0));
+            } else {
+                // Southern hemisphere
+                horizontalDistance = this._ellipsoid
+                    .toCartesian(nw.latitude, nw.longitude, 0)
+                    .distanceTo(this._ellipsoid.toCartesian(ne.latitude, ne.longitude, 0));
+            }
+
+            // The vertical distance is simpler, since
+            // it is the same on both sides of the extent.
+            const verticalDistance = this._ellipsoid
+                .toCartesian(sw.latitude, sw.longitude, 0)
+                .distanceTo(this._ellipsoid.toCartesian(nw.latitude, nw.longitude, 0));
+
+            const halfSize = new Vector3(
+                horizontalDistance / 2,
+                verticalDistance / 2,
+                thickness / 2,
+            );
+
+            // The center is located on the tangent plane, but it's incorrect:
+            // we have to move it down so that it is located at the actual
+            // center of the computed volume.
+            const midHeight = MathUtils.lerp(localMax, localMin, 0.5);
+            cartesianCenter.addScaledVector(normal, midHeight);
+
+            // Finally, the rotation component of the OBB is simply the ENU matrix at the center.
+            const rotation = new Matrix3().setFromMatrix4(
+                this.ellipsoid.getEastNorthUpMatrixFromCartesian(cartesianCenter, matrix4),
+            );
+
+            this._obb = new OBB(cartesianCenter, halfSize, rotation);
+        }
+
+        return this._obb;
     }
 
     protected override computeLocalBox(): Box3 {
@@ -134,6 +237,19 @@ export default class EllipsoidTileVolume extends TileVolume {
             this._max = max;
             this._localBox = this.computeLocalBox();
             this._corners = null;
+            this._obb = null;
         }
+    }
+
+    override getWorldSpaceBoundingSphere(target: Sphere): Sphere {
+        const obb = this.getOBB();
+        // Technically not a bounding sphere because we are selecting
+        // the smallest side for the radius, but since this is used
+        // for LOD computation rather than culling, it's fine.
+        // The reason we are picking the smallest radius is to avoid having
+        // giant spheres for very elongated tiles near the poles, leading to
+        // very incorrect LOD selection for those regions.
+        const radius = Math.min(obb.halfSize.x, obb.halfSize.y);
+        return target.set(obb.center, radius);
     }
 }
