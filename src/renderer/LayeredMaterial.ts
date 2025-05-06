@@ -231,7 +231,7 @@ export interface MaterialOptions {
      * Displays the bounding spheres of tiles.
      */
     showBoundingSpheres: boolean;
-    volumeColor: ColorRepresentation;
+    helperColor: ColorRepresentation;
     depthTest: boolean;
 }
 

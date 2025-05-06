@@ -585,7 +585,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         this._materialOptions = {
             showColliderMeshes: false,
             showBoundingSpheres: false,
-            volumeColor: 'cyan',
+            helperColor: 'cyan',
             showBoundingBoxes: false,
             forceTextureAtlases: options.forceTextureAtlases ?? false,
             lighting: getLightingOptions(options.lighting, this.getDefaultLightingOptions()),
@@ -877,13 +877,13 @@ class Map<UserData extends EntityUserData = EntityUserData>
     /**
      * Shows volumes of tiles.
      */
-    get volumeColor(): ColorRepresentation {
-        return this._materialOptions.volumeColor;
+    get helperColor(): ColorRepresentation {
+        return this._materialOptions.helperColor;
     }
 
-    set volumeColor(color: ColorRepresentation) {
-        if (this._materialOptions.volumeColor !== color) {
-            this._materialOptions.volumeColor = color;
+    set helperColor(color: ColorRepresentation) {
+        if (this._materialOptions.helperColor !== color) {
+            this._materialOptions.helperColor = color;
             this.notifyChange(this);
         }
     }

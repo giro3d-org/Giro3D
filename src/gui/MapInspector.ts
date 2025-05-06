@@ -64,6 +64,7 @@ class MapInspector extends EntityInspector<Map> {
             opacity: true,
         });
 
+        this.boundingBoxColor = `#${new Color(this.entity.helperColor).getHexString()}`;
         this.frozen = this.entity.frozen ?? false;
         this.showGrid = false;
         this.renderState = 'Normal';
@@ -180,7 +181,7 @@ class MapInspector extends EntityInspector<Map> {
 
     override toggleBoundingBoxes() {
         this.entity.showBoundingBoxes = this.boundingBoxes;
-        this.entity.volumeColor = this.boundingBoxColor;
+        this.entity.helperColor = this.boundingBoxColor;
     }
 
     override updateControllers(): void {

@@ -134,7 +134,7 @@ class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
     visible: boolean;
     /** Toggle the visibility of the bounding boxes. */
     boundingBoxes: boolean;
-    boundingBoxColor: Color | string;
+    boundingBoxColor: string;
     state: string;
     clippingPlanePanel: ClippingPlanePanel;
     cpuMemoryUsage = 'unknown';

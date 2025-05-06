@@ -117,11 +117,11 @@ class TileMesh
 
     private readonly _helpers: {
         boundingSphere?: Mesh<SphereGeometry, MeshBasicMaterial>;
-        volumeColor: ColorRepresentation;
+        color: ColorRepresentation;
         colliderMesh?: Mesh<BufferGeometry, MeshBasicMaterial, Object3DEventMap>;
         boundingBox?: OBBHelper;
     } = {
-        volumeColor: 'cyan',
+        color: 'cyan',
     };
     private _elevationLayerInfo: {
         layer: ElevationLayer;
@@ -340,7 +340,7 @@ class TileMesh
 
         const obb = this._volume.getOBB(this.matrixWorld);
 
-        const helper = new OBBHelper(obb, this.volumeColor);
+        const helper = new OBBHelper(obb, this.helperColor);
 
         helper.raycast = noRaycast;
 
@@ -357,7 +357,7 @@ class TileMesh
 
         this._helpers.boundingSphere = new Mesh(
             sphereGeometry,
-            new MeshBasicMaterial({ color: this.volumeColor, wireframe: true }),
+            new MeshBasicMaterial({ color: this.helperColor, wireframe: true }),
         );
 
         this._helpers.boundingSphere.rotateX(MathUtils.degToRad(90));
@@ -398,12 +398,12 @@ class TileMesh
         }
     }
 
-    get volumeColor() {
-        return this._helpers.volumeColor;
+    get helperColor() {
+        return this._helpers.color;
     }
 
-    set volumeColor(color: ColorRepresentation) {
-        this._helpers.volumeColor = color;
+    set helperColor(color: ColorRepresentation) {
+        this._helpers.color = color;
         if (this.showBoundingBox) {
             this.recreateBoundingBoxHelper();
         }
@@ -576,7 +576,7 @@ class TileMesh
             }
         }
 
-        this.volumeColor = materialOptions.volumeColor ?? 'cyan';
+        this.helperColor = materialOptions.helperColor ?? 'cyan';
         this.showColliderMesh = materialOptions.showColliderMeshes ?? false;
         this.showBoundingBox = materialOptions.showBoundingBoxes ?? false;
         this.showBoundingSphere = materialOptions.showBoundingSpheres ?? false;
