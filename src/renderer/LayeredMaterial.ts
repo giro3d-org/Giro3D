@@ -348,6 +348,8 @@ type Uniforms = ThreeUniforms & {
 
     elevationRange: IUniform<Vector2>;
 
+    baseTextureSize: IUniform<Vector2>;
+
     graticule: IUniform<GraticuleUniform>;
 
     contourLines: IUniform<ContourLineUniform>;
@@ -509,6 +511,8 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
             farDistance: new Uniform(1000),
 
             uuid: new Uniform(0),
+
+            baseTextureSize: new Uniform(this._textureSize),
 
             hillshading: new Uniform<HillshadingUniform>({
                 mode: mapLightingMode(options.lighting),
