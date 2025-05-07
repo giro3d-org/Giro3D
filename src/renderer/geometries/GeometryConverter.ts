@@ -152,12 +152,10 @@ function createFloorVertices(params: {
             positions.push(coord[X] - offset.x);
             positions.push(coord[Y] - offset.y);
             let z = 0;
-            if (!ignoreZ) {
-                if (stride === 3) {
-                    z = coord[Z];
-                } else if (elevation != null) {
-                    z = Array.isArray(elevation) ? elevation[i] : elevation;
-                }
+            if (!ignoreZ && stride === 3) {
+                z = coord[Z];
+            } else if (elevation != null) {
+                z = Array.isArray(elevation) ? elevation[i] : elevation;
             }
             z -= offset.z;
             positions.push(z);
