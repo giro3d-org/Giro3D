@@ -11,6 +11,7 @@ import Fetcher from '../utils/Fetcher';
 import ProjUtils from '../utils/ProjUtils';
 import { nonNull } from '../utils/tsutils';
 import WorkerPool from '../utils/WorkerPool';
+import type { CommonOptions } from './las/CommonOptions';
 import { getLazPerf } from './las/config';
 import createWorker from './las/createWorker';
 import type { DimensionName } from './las/dimension';
@@ -48,9 +49,9 @@ async function decodeLazFileSync(data: Uint8Array): Promise<Uint8Array> {
     return Las.PointData.decompressFile(data, lazPerf);
 }
 
-function decodeLazFileUsingWorker(data: Uint8Array): Promise<Uint8Array> {
+function decodeLazFileUsingWorker(data: Uint8Array, concurrency?: number): Promise<Uint8Array> {
     if (pool == null) {
-        pool = new WorkerPool({ createWorker });
+        pool = new WorkerPool({ createWorker, concurrency });
     }
 
     return pool
@@ -58,36 +59,17 @@ function decodeLazFileUsingWorker(data: Uint8Array): Promise<Uint8Array> {
         .then(res => new Uint8Array(res));
 }
 
-export type LASSourceOptions = {
+export type LASSourceOptions = CommonOptions & {
     /**
      * The URL to the remote LAS file, or a function to retrieve the remote file.
      */
     url: string | Getter;
-    /**
-     * If true, colors are compressed to 8-bit (instead of 16-bit).
-     * @defaultValue true
-     */
-    compressColorsTo8Bit?: boolean;
-    /**
-     * If specified, will keep every Nth point. For example, a decimation value of 10 will keep
-     * one point out of ten, and discard the 9 other points. Useful to reduce memory usage.
-     * @defaultValue 1
-     */
-    decimate?: number;
-    /**
-     * Enable web workers to perform CPU intensive tasks.
-     * @defaultValue true
-     */
-    enableWorkers?: boolean;
-    /**
-     * The filters to use.
-     */
-    filters?: Readonly<DimensionFilter[]>;
 };
 
 type PerfOptions = {
     decimate: number;
     enableWorkers: boolean;
+    workerConcurrency?: number;
     compressColorsToUint8: boolean;
 };
 
@@ -195,6 +177,7 @@ export default class LASSource extends PointCloudSourceBase {
         }
 
         this._options.enableWorkers = options.enableWorkers ?? true;
+        this._options.workerConcurrency = options.workerConcurrency ?? undefined;
 
         if (options.filters != null && options.filters.length > 0) {
             this._filters.push(...options.filters);
@@ -231,9 +214,10 @@ export default class LASSource extends PointCloudSourceBase {
         if (this._options.enableWorkers === false) {
             decompressed = await decodeLazFileSync(data).finally(() => this._opCounter.decrement());
         } else {
-            decompressed = await decodeLazFileUsingWorker(data).finally(() =>
-                this._opCounter.decrement(),
-            );
+            decompressed = await decodeLazFileUsingWorker(
+                data,
+                this._options.workerConcurrency,
+            ).finally(() => this._opCounter.decrement());
         }
 
         const view = Las.View.create(decompressed, header, undefined, include);

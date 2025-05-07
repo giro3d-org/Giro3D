@@ -58,9 +58,9 @@ let sharedPool: Pool | undefined = undefined;
  */
 export type ChannelMapping = [number] | [number, number, number] | [number, number, number, number];
 
-function getPool(): Pool | undefined {
+function getPool(concurrency?: number): Pool | undefined {
     if (sharedPool == null && window.Worker != null) {
-        sharedPool = new Pool();
+        sharedPool = new Pool(concurrency);
     }
 
     return sharedPool;
@@ -232,6 +232,12 @@ export interface GeoTIFFSourceOptions extends ImageSourceOptions {
      * @defaultValue true
      */
     enableWorkers?: boolean;
+    /**
+     * The maximum number of workers created by the worker pool.
+     * If `undefined`, the maximum number of workers will be allowed.
+     * @defaultValue undefined
+     */
+    workerConcurrency?: number;
 }
 
 /**
@@ -288,7 +294,7 @@ class GeoTIFFSource extends ImageSource {
         this.url = options.url;
         this.crs = options.crs;
         this._enableWorkers = options.enableWorkers ?? true;
-        this._pool = this._enableWorkers ? getPool() : undefined;
+        this._pool = this._enableWorkers ? getPool(options.workerConcurrency) : undefined;
         this._imageCount = 0;
         this._images = [];
         this._masks = [];

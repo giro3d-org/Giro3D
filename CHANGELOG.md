@@ -86,6 +86,7 @@ instance.add(panorama);
 - add `SphericalPanorama` entity (#504)
 - add `Atmosphere`, `SkyDome` and `Glow` entities
 - add support for temporal WMS layers (WMS-T)
+- enable setting worker concurrency for all classes that use workers (#600)
 - **HttpConfiguration**: support arbitrary request options (#599)
 - **Ellipsoid**: add `Ellipsoid` class
 - **Layer**: add `dispose` event

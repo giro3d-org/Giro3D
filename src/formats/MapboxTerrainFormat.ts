@@ -22,6 +22,7 @@ class MapboxTerrainFormat extends ImageFormat {
     override readonly type = 'MapboxTerrainFormat' as const;
 
     private readonly _enableWorkers: boolean = true;
+    private readonly _workerConcurrency: number | undefined;
 
     /**
      * @param options - Decoder options.
@@ -32,10 +33,17 @@ class MapboxTerrainFormat extends ImageFormat {
          * @defaultValue true
          */
         enableWorkers?: boolean;
+        /**
+         * The maximum number of workers created by the worker pool.
+         * If `undefined`, the maximum number of workers will be allowed.
+         * @defaultValue undefined
+         */
+        workerConcurrency?: number;
     }) {
         super(true, FloatType);
 
         this._enableWorkers = options?.enableWorkers ?? true;
+        this._workerConcurrency = options?.workerConcurrency ?? undefined;
     }
 
     /**
@@ -50,7 +58,11 @@ class MapboxTerrainFormat extends ImageFormat {
         let result: DecodeMapboxTerrainResult;
 
         if (this._enableWorkers) {
-            result = await this.getHeightValuesUsingWorker(blob, options?.noDataValue);
+            result = await this.getHeightValuesUsingWorker(
+                blob,
+                options?.noDataValue,
+                this._workerConcurrency,
+            );
         } else {
             result = await decodeMapboxTerrainImage(blob, options?.noDataValue);
         }
@@ -78,9 +90,10 @@ class MapboxTerrainFormat extends ImageFormat {
     private async getHeightValuesUsingWorker(
         blob: Blob,
         noData?: number,
+        concurrency?: number,
     ): Promise<DecodeMapboxTerrainResult> {
         if (workerPool == null) {
-            workerPool = new WorkerPool({ createWorker });
+            workerPool = new WorkerPool({ createWorker, concurrency });
         }
 
         const buffer = await blob.arrayBuffer();

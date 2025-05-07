@@ -1,6 +1,6 @@
 import { LazPerf } from 'laz-perf';
 
-export const DEFAULT_LAZPERF_PATH = 'https://cdn.jsdelivr.net/npm/laz-perf@0.0.6/lib';
+export const DEFAULT_LAZPERF_PATH = 'https://cdn.jsdelivr.net/npm/laz-perf@0.0.7/lib';
 
 let lazPerfPath = DEFAULT_LAZPERF_PATH;
 
