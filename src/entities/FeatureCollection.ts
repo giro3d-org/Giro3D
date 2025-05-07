@@ -871,7 +871,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
 
         // @ts-expect-error loader_ is private
         if (this._source.loader_ === VOID) {
-            resolve(this._source.getFeatures());
+            resolve(this._source.getFeaturesInExtent(olExtent));
         } else {
             // @ts-expect-error loader_ is private
             this._source.loader_(olExtent, resolution, this._targetProjection, resolve, reject);
