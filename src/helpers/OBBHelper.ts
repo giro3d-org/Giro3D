@@ -2,12 +2,11 @@ import type { ColorRepresentation } from 'three';
 import { Box3, Box3Helper, Matrix4, Object3D, Vector3 } from 'three';
 import type { OBB } from 'three/examples/jsm/Addons.js';
 
+/**
+ * Helper object to visualize an {@link OBB | Oriented Bounding Box}.
+ */
 export default class OBBHelper extends Object3D {
     private readonly _helper: Box3Helper;
-
-    dispose() {
-        this._helper.dispose();
-    }
 
     constructor(
         readonly obb: OBB,
@@ -29,5 +28,14 @@ export default class OBBHelper extends Object3D {
         this.position.copy(obb.center);
         this.updateMatrix();
         this.updateMatrixWorld(true);
+    }
+
+    /**
+     * Frees the GPU-related resources allocated by this instance
+     * @remarks
+     * Call this method whenever this instance is no longer used in your app.
+     */
+    dispose() {
+        this._helper.dispose();
     }
 }
