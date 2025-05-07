@@ -928,7 +928,9 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
 
         // if not visible we can stop early
         if (!tile.visible) {
-            this.disposeTile(tile);
+            if (!this._level0Nodes.includes(tile)) {
+                this.disposeTile(tile);
+            }
             return null;
         }
 
