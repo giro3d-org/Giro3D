@@ -141,7 +141,7 @@ class ElevationLayer<UserData extends LayerUserData = LayerUserData> extends Lay
 
         node.setElevationTexture(this, {
             ...value,
-            renderTarget: nonNull(target.renderTarget),
+            renderTarget: nonNull(target.renderTarget).object,
         });
     }
 
