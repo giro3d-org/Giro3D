@@ -1289,6 +1289,8 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     override preUpdate(context: Context, changeSources: Set<unknown>) {
+        super.preUpdate(context, changeSources);
+
         this._materialOptions.colorMapAtlas?.update();
 
         this._tileIndex.update();
