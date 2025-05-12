@@ -35,7 +35,6 @@ class TileInfoPanel extends Panel {
         imageSize: boolean;
         minMax: boolean;
         layerInfo: boolean;
-        progress: boolean;
         color: Color;
     } = {
         enabled: false,
@@ -43,7 +42,6 @@ class TileInfoPanel extends Panel {
         imageSize: true,
         layerInfo: false,
         minMax: false,
-        progress: false,
         color: new Color('yellow'),
     };
 
@@ -61,21 +59,13 @@ class TileInfoPanel extends Panel {
             .name('Show tile info')
             .onChange(() => this.updateValues());
 
-        this.addController(this.params, 'imageSize')
-            .name('Image size')
-            .onChange(() => this.updateValues());
+        this.addController(this.params, 'imageSize').onChange(() => this.updateValues());
 
         this.addController(this.params, 'minMax')
             .name('Elevation range')
             .onChange(() => this.updateValues());
 
-        this.addController(this.params, 'progress')
-            .name('Progress')
-            .onChange(() => this.updateValues());
-
-        this.addController(this.params, 'layerInfo')
-            .name('Layer info')
-            .onChange(() => this.updateValues());
+        this.addController(this.params, 'layerInfo').onChange(() => this.updateValues());
     }
 
     getOrCreateLabel(obj: TileMesh) {
@@ -103,9 +93,6 @@ class TileInfoPanel extends Panel {
             tmpLines.push(
                 `Node #${tile.id} LOD=${tile.lod} (${tile.coordinate.x}, ${tile.coordinate.y})`,
             );
-        }
-        if (this.params.progress) {
-            tmpLines.push(`Progress: ${Math.ceil(tile.progress * 100)}%`);
         }
         if (this.params.minMax) {
             tmpLines.push(`min: ${tile.minmax.min.toFixed(1)}, max: ${tile.minmax.max.toFixed(1)}`);

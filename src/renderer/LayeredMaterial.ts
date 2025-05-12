@@ -61,14 +61,6 @@ const EMPTY_IMAGE_SIZE = 16;
 
 const tmpDims = new Vector2();
 
-interface ElevationTexture extends Texture {
-    /**
-     * Flag to determine if the texture is borrowed from
-     * an ancestor of it is the final texture of this material.
-     */
-    isFinal: boolean;
-}
-
 const emptyTexture = new EmptyTexture();
 
 const COLORMAP_DISABLED = 0;
@@ -402,7 +394,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         };
         elevation: {
             offsetScale: OffsetScale;
-            texture: ElevationTexture | null;
+            texture: Texture | null;
         };
     };
 
@@ -421,7 +413,6 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
     };
 
     private _options?: MaterialOptions;
-    private _hasElevationLayer = false;
 
     getMemoryUsage(context: GetMemoryUsageContext) {
         // We only consider textures that this material owns. That excludes layer textures.
@@ -485,7 +476,6 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         this.lights = true;
         this._renderer = params.renderer;
         this._forceTextureAtlas = options.forceTextureAtlases ?? false;
-        this._hasElevationLayer = params.hasElevationLayer;
         this._composerDataType = params.textureDataType;
         this._colorMapAtlas = options.colorMapAtlas ?? null;
 
@@ -825,29 +815,25 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
 
     pushElevationLayer(layer: ElevationLayer) {
         this._elevationLayer = layer;
-        this._hasElevationLayer = true;
     }
 
     removeElevationLayer() {
         this._elevationLayer = null;
         this.uniforms.elevationTexture.value = null;
         this._texturesInfo.elevation.texture = null;
-        this._hasElevationLayer = false;
         MaterialUtils.setDefine(this, 'ELEVATION_LAYER', false);
     }
 
     setElevationTexture(
         layer: ElevationLayer,
         { texture, pitch }: { texture: Texture; pitch: OffsetScale },
-        isFinal: boolean,
     ) {
         this._elevationLayer = layer;
 
         MaterialUtils.setDefine(this, 'ELEVATION_LAYER', true);
 
         this.uniforms.elevationTexture.value = texture;
-        this._texturesInfo.elevation.texture = texture as ElevationTexture;
-        (texture as ElevationTexture).isFinal = isFinal;
+        this._texturesInfo.elevation.texture = texture;
         this._texturesInfo.elevation.offsetScale.copy(pitch);
 
         const uniform = this.uniforms.elevationLayer.value;
@@ -1308,25 +1294,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         this._mustUpdateUniforms = true;
     }
 
-    canProcessColorLayer(): boolean {
-        if (!this._elevationLayer) {
-            return true;
-        }
-        if (!this._elevationLayer.visible) {
-            return true;
-        }
-        return this.isElevationLayerTextureLoaded();
-    }
-
-    isElevationLayerTextureLoaded() {
-        if (!this._hasElevationLayer) {
-            return true;
-        }
-        const texture = this._texturesInfo.elevation.texture;
-        return texture != null && texture.isFinal === true;
-    }
-
-    getElevationTexture(): ElevationTexture | null {
+    getElevationTexture(): Texture | null {
         return this._texturesInfo.elevation.texture;
     }
 
@@ -1354,40 +1322,6 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
      */
     getLayerCount() {
         return (this._elevationLayer ? 1 : 0) + this._colorLayers.length;
-    }
-
-    /**
-     * Gets the progress of the loading of textures on this material.
-     * The progress is the number of currently present textures divided
-     * by the number of expected textures.
-     */
-    get progress() {
-        let total = 0;
-        let weight = 0;
-        if (this._elevationLayer != null) {
-            if (this.isElevationLayerTextureLoaded()) {
-                total += 1;
-            }
-            weight += 1;
-        }
-
-        for (const layer of this._colorLayers) {
-            if (this.isColorLayerTextureLoaded(layer)) {
-                total += 1;
-            }
-            weight += 1;
-        }
-
-        if (weight === 0) {
-            // No layer present
-            return 1;
-        }
-
-        return total / weight;
-    }
-
-    get loading() {
-        return this.progress < 1;
     }
 
     setUuid(uuid: number) {

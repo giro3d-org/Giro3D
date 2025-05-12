@@ -1377,6 +1377,17 @@ abstract class Layer<
         // Implemented in derived classes
     }
 
+    /**
+     * Returns true if this layer has loaded data for this node.
+     */
+    isLoaded(node: LayerNode) {
+        const target = this._targets.get(node.id);
+        if (target) {
+            return target.state === TargetState.Complete;
+        }
+        return false;
+    }
+
     protected abstract applyTextureToNode(
         texture: TextureAndPitch,
         target: Target,

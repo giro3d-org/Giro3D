@@ -1912,6 +1912,8 @@ class Map<UserData extends EntityUserData = EntityUserData>
         let current = tile;
         let ancestorLevel = 0;
 
+        const elevationLayer = this.getElevationLayers()[0];
+
         // To be able to subdivide a tile, we need to ensure that we
         // have proper elevation data on this tile (if applicable).
         // Otherwise the newly created tiles will not have a correct bounding box,
@@ -1921,11 +1923,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         // the color layers will display correctly.
         const LOD_MARGIN = 3;
         while (ancestorLevel < LOD_MARGIN && current != null) {
-            if (
-                current != null &&
-                current.material != null &&
-                current.material.isElevationLayerTextureLoaded()
-            ) {
+            if (current != null && current.material != null && elevationLayer.isLoaded(current)) {
                 return true;
             }
             ancestorLevel++;

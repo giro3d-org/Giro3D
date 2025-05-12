@@ -650,7 +650,12 @@ class TileMesh
     }
 
     canProcessColorLayer(): boolean {
-        return this.material.canProcessColorLayer();
+        if (!this._elevationLayerInfo) {
+            // No elevation layer that prevents loading color data
+            return true;
+        }
+
+        return this._elevationLayerInfo.layer.isLoaded(this);
     }
 
     removeElevationTexture() {
@@ -668,7 +673,6 @@ class TileMesh
             max?: number;
             renderTarget: WebGLRenderTarget;
         },
-        isFinal = false,
     ) {
         if (this.disposed) {
             return;
@@ -680,7 +684,7 @@ class TileMesh
             renderTarget: elevation.renderTarget,
         };
 
-        this.material.setElevationTexture(layer, elevation, isFinal);
+        this.material.setElevationTexture(layer, elevation);
 
         this.setBBoxZ(elevation.min, elevation.max);
 
@@ -876,24 +880,6 @@ class TileMesh
         }
 
         return null;
-    }
-
-    /**
-     * Gets whether this mesh is currently performing processing.
-     *
-     * @returns `true` if the mesh is currently performing processing, `false` otherwise.
-     */
-    get loading() {
-        return this.material.loading;
-    }
-
-    /**
-     * Gets the progress percentage (normalized in [0, 1] range) of the processing.
-     *
-     * @returns The progress percentage.
-     */
-    get progress() {
-        return this.material.progress;
     }
 
     /**

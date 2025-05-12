@@ -245,7 +245,7 @@ export default class Globe extends Map {
         // We have zero tolerance here because of extreme recursion levels when
         // zooming in close to mountainous areas, due to the fact that we need to
         // have the strictest bounding volumes.
-        return tile.material.isElevationLayerTextureLoaded();
+        return super.canSubdivideTile(tile);
     }
 
     protected override getDefaultTerrainOptions(): Readonly<TerrainOptions> {

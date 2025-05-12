@@ -43,7 +43,7 @@ export default class ShadowLayeredMaterial extends LayeredMaterial {
             const texture = this._source.getElevationTexture();
             if (texture) {
                 const offsetScale = this._source.getElevationOffsetScale();
-                this.setElevationTexture(layer, { texture, pitch: offsetScale }, true);
+                this.setElevationTexture(layer, { texture, pitch: offsetScale });
             }
         } else {
             this.removeElevationLayer();
