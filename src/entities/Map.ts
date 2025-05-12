@@ -543,6 +543,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     private readonly _allTiles: Set<TileMesh> = new Set();
     private readonly _tileIndex: TileIndex<TileMesh>;
     private readonly _layerIndices: globalThis.Map<string, number>;
+    private readonly _cachedTraversals: globalThis.Map<Object3D, TileMesh[]> = new globalThis.Map();
     private readonly _layerIds: Set<string> = new Set();
     private readonly _materialOptions: MaterialOptions;
 
@@ -1115,6 +1116,8 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
         this._tileIndex.addTile(tile);
 
+        this._cachedTraversals.clear();
+
         tile.material.opacity = this.opacity;
 
         const position = tile.absolutePosition;
@@ -1534,6 +1537,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
                 // update uniforms
                 if (!requestChildrenUpdate) {
+                    this._cachedTraversals.clear();
                     return node.detachChildren();
                 }
             }
@@ -1542,6 +1546,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         }
 
         node.setDisplayed(false);
+        this._cachedTraversals.clear();
         return node.detachChildren();
     }
 
@@ -1899,12 +1904,21 @@ class Map<UserData extends EntityUserData = EntityUserData>
     traverseTiles(callback: (arg0: TileMesh) => void, root: Object3D | undefined = undefined) {
         const origin = root ?? this.object3d;
 
-        if (origin != null) {
+        let cached = this._cachedTraversals.get(origin);
+
+        if (cached == null) {
+            cached = [];
             origin.traverse(o => {
                 if (isTileMesh(o)) {
                     callback(o);
+                    cached?.push(o);
                 }
             });
+            this._cachedTraversals.set(origin, cached);
+        } else {
+            for (let i = 0; i < cached.length; i++) {
+                callback(cached[i]);
+            }
         }
     }
 
