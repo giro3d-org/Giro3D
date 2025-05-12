@@ -1471,39 +1471,7 @@ abstract class Layer<
         return result;
     }
 
-    protected canDeleteTarget(target: Target): boolean {
-        const level = target.node.lod;
-
-        // Can we unload it ?
-        // - We don't unload root nodes (level = 0)
-        // - We also don't unload nodes every 3 levels
-        // - We also don't unload nodes that do not have any loaded ancestor,
-        //   to avoid sudden blank tiles.
-        if (level > 0 && level % 3 !== 0 && this.getLoadedAncestor(target)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    protected deleteUnusedTargets() {
-        const sorted = this.getSortedTargets();
-
-        // Let's start from the smallest tiles (i.e with the highest resolution) first.
-        for (const target of sorted) {
-            // Is this target invisible ? We can only unload invisible targets.
-            // Note that we never delete root nodes so that we can always have some fallback data
-            if (!target.node.material.visible) {
-                if (this.canDeleteTarget(target)) {
-                    this.unregisterNode(target.node);
-                }
-            }
-        }
-    }
-
     postUpdate() {
-        this.deleteUnusedTargets();
-
         if (this._targetsToDestroy.length > 0) {
             this._targetsToDestroy.forEach(t => this.destroyTarget(t));
             this._targetsToDestroy.length = 0;
