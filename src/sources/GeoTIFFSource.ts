@@ -23,6 +23,9 @@ import { nonNull } from '../utils/tsutils';
 import ConcurrentDownloader from './ConcurrentDownloader';
 import ImageSource, { ImageResult, type ImageSourceOptions } from './ImageSource';
 
+const DEFAULT_RETRIES = 3;
+const DEFAULT_TIMEOUT = 10000;
+
 const tmpDim = new Vector2();
 
 let sharedPool: Pool | undefined = undefined;
@@ -142,16 +145,20 @@ export class FetcherResponse extends BaseResponse {
  * to centralize requests and benefit from the HTTP configuration module.
  */
 class FetcherClient extends BaseClient {
-    private readonly _downloader = new ConcurrentDownloader({
-        fetch: Fetcher.fetch,
-        retry: 3,
-        timeout: 10000,
-    });
-    private _priority: RequestPriority;
+    private readonly _downloader: ConcurrentDownloader;
+    private readonly _priority: RequestPriority;
 
-    constructor(url: string, options: { priority: RequestPriority }) {
+    constructor(
+        url: string,
+        options: { priority: RequestPriority; retries: number; httpTimeout: number },
+    ) {
         super(url);
         this._priority = options.priority;
+        this._downloader = new ConcurrentDownloader({
+            fetch: Fetcher.fetch,
+            retry: options.retries,
+            timeout: options.httpTimeout,
+        });
     }
 
     // @ts-expect-error (untyped base method)
@@ -228,6 +235,21 @@ export interface GeoTIFFSourceOptions extends ImageSourceOptions {
      */
     cacheOptions?: GeoTIFFCacheOptions;
     /**
+     * The optional HTTP request timeout, in milliseconds.
+     *
+     * @defaultValue 10000
+     */
+    httpTimeout?: number;
+    /**
+     * How many retries to execute when an HTTP request ends up in error.
+     * @defaultValue 3
+     */
+    retries?: number;
+    /**
+     * Enable web workers.
+     * @defaultValue true
+     */
+    /**
      * Enables web workers for CPU-intensive processing.
      * @defaultValue true
      */
@@ -261,6 +283,8 @@ class GeoTIFFSource extends ImageSource {
     private readonly _cache: Cache = GlobalCache;
     private readonly _pool: Pool | undefined;
     private readonly _enableWorkers: boolean;
+    private readonly _retries: number;
+    private readonly _httpTimeout: number;
 
     private _imageCount: number;
     private _images: Level[];
@@ -294,6 +318,8 @@ class GeoTIFFSource extends ImageSource {
         this._masks = [];
         this._channels = options.channels ?? this._channels;
         this._cacheOptions = options.cacheOptions;
+        this._retries = options.retries ?? DEFAULT_RETRIES;
+        this._httpTimeout = options.httpTimeout ?? DEFAULT_TIMEOUT;
     }
 
     private getInternalCache(): QuickLRU<number, CachedBlock> | undefined {
@@ -411,7 +437,11 @@ class GeoTIFFSource extends ImageSource {
             blockSize: this._cacheOptions?.blockSize,
         };
         const url = this.url;
-        const client = new FetcherClient(url, { priority: this.priority });
+        const client = new FetcherClient(url, {
+            priority: this.priority,
+            retries: this._retries,
+            httpTimeout: this._httpTimeout,
+        });
         // We are using a custom client to ensure that outgoing requests are done through
         // the Fetcher so we can benefit from automatic HTTP configuration and control over
         // outgoing requests.
