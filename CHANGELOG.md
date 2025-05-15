@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.42.5 (2025-05-15)
+
+### Feat
+
+- **GeoTIFFSource**: expose retries and timeout
+
+### Fix
+
+- **ConcurrentDownloader**: fix incorrect cancellation of requests (#607)
+
 ## v0.42.4 (2025-04-05)
 
 ### Fix
