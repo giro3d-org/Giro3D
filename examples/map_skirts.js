@@ -63,7 +63,7 @@ const elevationLayer = new ElevationLayer({
     extent,
     preloadImages: true,
     resolutionFactor: 0.5,
-    minmax: { min: 5000, max: 9000 },
+    minmax: { min: 0, max: 5000 },
     source: new TiledImageSource({
         format: new MapboxTerrainFormat(),
         source: new XYZ({

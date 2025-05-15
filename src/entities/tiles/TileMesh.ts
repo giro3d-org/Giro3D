@@ -113,14 +113,15 @@ class TileMesh
     private _skirtDepth: number | undefined;
     private _minmax: { min: number; max: number } = { min: -Infinity, max: +Infinity };
     private _shouldUpdateHeightMap = false;
-    private _helperRoot: Group | null = null;
 
     private readonly _helpers: {
+        root: Group | null;
         boundingSphere?: Mesh<SphereGeometry, MeshBasicMaterial>;
         color: ColorRepresentation;
         colliderMesh?: Mesh<BufferGeometry, MeshBasicMaterial, Object3DEventMap>;
         boundingBox?: OBBHelper;
     } = {
+        root: null,
         color: 'cyan',
     };
     private _elevationLayerInfo: {
@@ -305,7 +306,7 @@ class TileMesh
             this._helpers.colliderMesh.matrixAutoUpdate = false;
             this._helpers.colliderMesh.name = 'collider helper';
             this.createHelperRootIfNecessary();
-            this._helperRoot?.add(this._helpers.colliderMesh);
+            this._helpers.root?.add(this._helpers.colliderMesh);
             this._helpers.colliderMesh.updateMatrix();
             this._helpers.colliderMesh.updateMatrixWorld(true);
         }
@@ -346,7 +347,7 @@ class TileMesh
 
         this.createHelperRootIfNecessary();
 
-        nonNull(this._helperRoot).attach(helper);
+        nonNull(this._helpers.root).attach(helper);
         helper.updateMatrixWorld(true);
 
         this._helpers.boundingBox = helper;
@@ -369,7 +370,7 @@ class TileMesh
 
         this.createHelperRootIfNecessary();
 
-        nonNull(this._helperRoot).attach(this._helpers.boundingSphere);
+        nonNull(this._helpers.root).attach(this._helpers.boundingSphere);
 
         this._helpers.boundingSphere.updateMatrixWorld(true);
     }
@@ -426,11 +427,11 @@ class TileMesh
     }
 
     private createHelperRootIfNecessary() {
-        if (!this._helperRoot) {
-            this._helperRoot = new Group();
-            this._helperRoot.name = 'helpers';
-            this.add(this._helperRoot);
-            this._helperRoot.updateMatrixWorld(true);
+        if (!this._helpers.root) {
+            this._helpers.root = new Group();
+            this._helpers.root.name = 'helpers';
+            this.add(this._helpers.root);
+            this._helpers.root.updateMatrixWorld(true);
         }
     }
 
@@ -589,8 +590,10 @@ class TileMesh
     setDisplayed(show: boolean) {
         const currentVisibility = this.material.visible;
         this.material.visible = show && this.material.update();
-        if (this._helperRoot) {
-            this._helperRoot.visible = this.material.visible;
+        if (this._helpers.root) {
+            if (this._helpers.boundingBox) {
+                this._helpers.boundingBox.color = show ? this.helperColor : 'gray';
+            }
         }
         if (currentVisibility !== show) {
             this.dispatchEvent({ type: 'visibility-changed' });
