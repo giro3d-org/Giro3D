@@ -112,7 +112,7 @@ export default class ConcurrentDownloader {
         const signal = options?.signal;
 
         signal?.addEventListener('abort', () => {
-            const current = this._requests.get(url);
+            const current = this._requests.get(key);
             if (current && current.signals.every(s => s.aborted)) {
                 current.abortController.abort(PromiseUtils.abortError());
             }
@@ -144,7 +144,10 @@ export default class ConcurrentDownloader {
                 ...options,
                 signal: abortController.signal,
                 retries: this._retry,
-            }).finally(() => this._requests.delete(key)),
+            }).finally(() => {
+                this._requests.delete(key);
+                clearTimeout(this._timeout);
+            }),
         };
 
         this._requests.set(key, data);
