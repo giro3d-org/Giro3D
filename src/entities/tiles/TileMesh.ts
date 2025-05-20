@@ -496,6 +496,10 @@ class TileMesh
     }
 
     override raycast(raycaster: Raycaster, intersects: Intersection[]): void {
+        if (!this.material.visible) {
+            return;
+        }
+
         // Updating the heightmap is quite costly operation that requires a texture readback.
         // Let's do it only if the ray intersects the volume of this tile.
         if (this.checkRayVolumeIntersection(raycaster)) {
