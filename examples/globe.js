@@ -211,7 +211,9 @@ const elevationLayer = new ElevationLayer({
     preloadImages: true,
     colorMap: new ColorMap({ colors: makeColorRamp('greens'), min: -1500, max: 6000 }),
     minmax: { min: -500, max: 8000 },
-    resolutionFactor: 0.5,
+    // We dont want the full resolution because the terrain
+    // mesh has a much lower resolution than the raster image
+    resolutionFactor: 1 / 8,
     source: new TiledImageSource({
         retries: 0,
         format: new MapboxTerrainFormat(),

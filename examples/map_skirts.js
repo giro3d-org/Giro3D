@@ -53,6 +53,7 @@ instance.add(ambientLight);
 directionalLight.updateMatrixWorld(true);
 directionalLight.target.updateMatrixWorld(true);
 
+/** @type {Map} */
 let map;
 
 const key =
@@ -62,7 +63,7 @@ const key =
 const elevationLayer = new ElevationLayer({
     extent,
     preloadImages: true,
-    resolutionFactor: 0.5,
+    resolutionFactor: 1 / 8,
     minmax: { min: 0, max: 5000 },
     source: new TiledImageSource({
         format: new MapboxTerrainFormat(),
@@ -138,7 +139,7 @@ bindNumberInput('skirt-depth', v => {
 bindColorPicker('color', newColor => {
     skirtColor = new Color(newColor);
     if (map) {
-        instance.remove(map);
+        map.backgroundColor = skirtColor;
+        instance.notifyChange(map);
     }
-    load();
 });

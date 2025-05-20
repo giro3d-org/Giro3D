@@ -154,8 +154,14 @@ const demSource = new TiledImageSource({
 });
 
 // Then create the elevation layer.
+// We have set the resolution factor to 1/8th of the resolution
+// of each map tile, because we are not going to display the pixels
+// of the layer, but rather use the elevation data to deform the
+// terrain mesh. Since the terrain mesh has a much lower resolution
+// than the terrain textures, we don't want to waste resources.
 const elevationLayer = new ElevationLayer({
     name: 'dem',
+    resolutionFactor: 1 / 8,
     extent: map.extent,
     source: demSource,
 });

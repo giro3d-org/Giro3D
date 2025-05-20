@@ -39,6 +39,9 @@ function addLayers(key) {
     const elevationLayer = new ElevationLayer({
         name: 'xyz_elevation',
         extent,
+        // We dont want the full resolution because the terrain
+        // mesh has a much lower resolution than the raster image
+        resolutionFactor: 1 / 8,
         source: new TiledImageSource({
             format: new MapboxTerrainFormat(),
             source: new XYZ({

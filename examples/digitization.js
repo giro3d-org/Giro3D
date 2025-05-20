@@ -60,7 +60,7 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
             new ElevationLayer({
                 name: 'wmts_elevation',
                 extent: map.extent,
-                resolutionFactor: 0.5,
+                resolutionFactor: 1 / 8,
                 minmax: { min: 0, max: 500 },
                 noDataOptions: {
                     replaceNoData: false,
