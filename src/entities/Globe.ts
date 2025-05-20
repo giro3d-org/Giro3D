@@ -253,7 +253,6 @@ export default class Globe extends Map {
         return {
             ...base,
             stitching: false,
-            segments: 16, // Because 32 has too much performance cost
         };
     }
 
