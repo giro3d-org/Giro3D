@@ -1,15 +1,18 @@
-import { Box3, type Camera, Sphere, Vector2, Vector3 } from 'three';
+import { Box3, Sphere, Vector2, Vector3, type Camera } from 'three';
 import type Context from '../core/Context';
 import Coordinates from '../core/geographic/Coordinates';
 import Ellipsoid from '../core/geographic/Ellipsoid';
 import Extent from '../core/geographic/Extent';
 import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
+import { isColorLayer } from '../core/layer/ColorLayer';
+import { isElevationLayer } from '../core/layer/ElevationLayer';
 import type PointOfView from '../core/PointOfView';
 import ScreenSpaceError from '../core/ScreenSpaceError';
 import type TerrainOptions from '../core/TerrainOptions';
 import { computeDistanceToFitSphere, computeZoomToFitSphere } from '../renderer/View';
 import { isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
-import Map, { type MapConstructorOptions } from './Map';
+import type { MapSubdivisionStrategy } from './Map';
+import Map, { defaultMapSubdivisionStrategy, type MapConstructorOptions } from './Map';
 import type MapLightingOptions from './MapLightingOptions';
 import { MapLightingMode } from './MapLightingOptions';
 import EllipsoidTileGeometryBuilder from './tiles/EllipsoidTileGeometryBuilder';
@@ -25,6 +28,28 @@ const tmpWGS84Coordinates = new Coordinates('EPSG:4326', 0, 0);
 const horizonSphere = new Sphere();
 const boundingSphere = new Sphere();
 const tempBox = new Box3();
+
+/**
+ * Always allow subdivision up to LOD 4, then use the default map strategy for subsequent LODs.
+ */
+// eslint-disable-next-line no-use-before-define
+export const defaultGlobeSubdivisionStrategy: MapSubdivisionStrategy = (tile, context) => {
+    if (context.entity.extent.equals(Extent.WGS84) && tile.lod < 5) {
+        return context.layers.every(
+            layer =>
+                !layer.visible ||
+                // Terrain is negligible at low LODs.
+                isElevationLayer(layer) ||
+                (isColorLayer(layer) && layer.isLoaded(tile.id)),
+        );
+    }
+
+    // After LOD 5, we have to be much stricter than the Map implementation.
+    // We have zero tolerance here because of extreme recursion levels when
+    // zooming in close to mountainous areas, due to the fact that we need to
+    // have the strictest bounding volumes.
+    return defaultMapSubdivisionStrategy(tile, context);
+};
 
 /**
  * Options for Globe terrains.
@@ -115,6 +140,7 @@ export default class Globe extends Map {
 
     constructor(options?: GlobeConstructorOptions) {
         super({
+            subdivisionStrategy: defaultGlobeSubdivisionStrategy,
             ...options,
             extent: Extent.WGS84,
         });
@@ -233,19 +259,6 @@ export default class Globe extends Map {
 
     protected override getComposerProjection(): string {
         return 'EPSG:4326';
-    }
-
-    override canSubdivide(tile: TileMesh): boolean {
-        // Terrain is negligible at low LODs.
-        if (this.extent.equals(Extent.WGS84) && tile.lod < 5) {
-            return true;
-        }
-
-        // After LOD 5, we have to be much stricter than the Map implementation.
-        // We have zero tolerance here because of extreme recursion levels when
-        // zooming in close to mountainous areas, due to the fact that we need to
-        // have the strictest bounding volumes.
-        return super.canSubdivide(tile);
     }
 
     protected override getDefaultTerrainOptions(): Readonly<TerrainOptions> {

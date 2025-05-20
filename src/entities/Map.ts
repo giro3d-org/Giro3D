@@ -85,6 +85,61 @@ import TileMesh, { isTileMesh } from './tiles/TileMesh';
 import type TileVolume from './tiles/TileVolume';
 
 /**
+ * A function that allows subdivision of the specified tile.
+ * If the function returns `true`, the node can be subdivided.
+ */
+export type MapSubdivisionStrategy = (
+    /**
+     * The tile to subdivide.
+     */
+    tile: Readonly<
+        Object3D & {
+            /**
+             * The level of detail (LOD) of the tile. LOD 0 means the tile is a root tile.
+             */
+            lod: number;
+            /**
+             * The geographic extent of the tile.
+             */
+            extent: Extent;
+        }
+    >,
+    // eslint-disable-next-line no-use-before-define
+    context: { entity: Readonly<Map>; layers: readonly Readonly<Layer>[] },
+) => boolean;
+
+/**
+ * Allows subdivision if:
+ * - **if elevation layer present and active and terrain deformation is enabled**: wait for all elevation layers to have finished loading the tile,
+ * - otherwise allow subdivision without condition
+ */
+export const defaultMapSubdivisionStrategy: MapSubdivisionStrategy = (tile, context) => {
+    // No problem subdividing if terrain deformation is disabled,
+    // since bounding boxes are always up to date (as they don't have an elevation component).
+    if (!context.entity.terrain.enabled) {
+        return true;
+    }
+
+    // We have to wait until elevation data is loaded for this
+    // tile so that the bounding box is up to date.
+    return context.layers.every(
+        layer =>
+            !layer.visible ||
+            isColorLayer(layer) ||
+            (isElevationLayer(layer) && layer.isLoaded(tile.id)),
+    );
+};
+
+/**
+ * Allows subdivision if all layers have loaded this node, regardless the type of the layer.
+ * This strategy has a greater memory, network and CPU consumption than the default strategy,
+ * but can be useful to ensure a smooth rendering of tiles without visible flicker or "jumps".
+ */
+export const allLayersLoadedSubdivisionStrategy: MapSubdivisionStrategy = (tile, context) => {
+    return context.layers.every(layer => layer.isLoaded(tile.id));
+};
+
+/**
  * The default background color of maps.
  */
 export const DEFAULT_MAP_BACKGROUND_COLOR: ColorRepresentation = '#0a3b59';
@@ -449,6 +504,11 @@ export type MapConstructorOptions = {
      * @defaultValue true
      */
     receiveShadow?: boolean;
+    /**
+     * The subdivision strategy used to subdivide map tiles.
+     * @defaultValue {@link defaultMapSubdivisionStrategy}
+     */
+    subdivisionStrategy?: MapSubdivisionStrategy;
 };
 
 type ObjectOptions = {
@@ -546,6 +606,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     private readonly _cachedTraversals: globalThis.Map<Object3D, TileMesh[]> = new globalThis.Map();
     private readonly _layerIds: Set<string> = new Set();
     private readonly _materialOptions: MaterialOptions;
+    private readonly _subdivisionStrategy: MapSubdivisionStrategy;
 
     private _geometryBuilder: TileGeometryBuilder | null = null;
 
@@ -578,6 +639,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         }
         this.extent = options.extent;
 
+        this._subdivisionStrategy = options.subdivisionStrategy ?? defaultMapSubdivisionStrategy;
         this._subdivisionThreshold = options.subdivisionThreshold ?? DEFAULT_SUBDIVISION_THRESHOLD;
         this.maxSubdivisionLevel = options.maxSubdivisionLevel ?? 30;
         this._onTileElevationChanged = this.onTileElevationChanged.bind(this);
@@ -1518,7 +1580,10 @@ class Map<UserData extends EntityUserData = EntityUserData>
             let requestChildrenUpdate = false;
 
             if (!this.frozen) {
-                if (this.shouldSubdivide(context, node) && this.canSubdivide(node)) {
+                if (
+                    this.shouldSubdivide(context, node) &&
+                    this._subdivisionStrategy(node, { entity: this, layers: this._layers })
+                ) {
                     this.subdivideNode(context, node);
                     // display iff children aren't ready
                     node.setDisplayed(false);
@@ -1920,22 +1985,6 @@ class Map<UserData extends EntityUserData = EntityUserData>
                 callback(cached[i]);
             }
         }
-    }
-
-    /**
-     * @param node - The node to subdivide.
-     * @returns True if the node can be subdivided.
-     */
-    canSubdivide(node: TileMesh): boolean {
-        // No problem subdividing if terrain deformation is disabled,
-        // since bounding boxes are always up to date (as they don't have an elevation component).
-        if (!this._materialOptions.terrain.enabled) {
-            return true;
-        }
-
-        // We have to wait until elevation data is loaded for this
-        // tile so that the bounding box is up to date.
-        return this._layers.every(layer => isColorLayer(layer) || layer.isLoaded(node));
     }
 
     private testTileSSE(tile: TileMesh, sse: SSE | null) {

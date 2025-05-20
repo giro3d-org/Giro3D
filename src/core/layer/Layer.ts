@@ -1495,8 +1495,8 @@ abstract class Layer<
     /**
      * Returns true if this layer has loaded data for this node.
      */
-    isLoaded(node: LayerNode) {
-        const target = this._targets.get(node.id);
+    isLoaded(nodeId: LayerNode['id']) {
+        const target = this._targets.get(nodeId);
         if (target) {
             return target.state === TargetState.Complete;
         }

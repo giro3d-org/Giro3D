@@ -659,7 +659,7 @@ class TileMesh
             return true;
         }
 
-        return this._elevationLayerInfo.layer.isLoaded(this);
+        return this._elevationLayerInfo.layer.isLoaded(this.id);
     }
 
     removeElevationTexture() {
