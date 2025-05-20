@@ -385,6 +385,8 @@ export interface MapEventMap extends Entity3DEventMap {
     'layer-removed': { layer: Layer };
     /** Fires when elevation data has changed on a specific extent of the map. */
     'elevation-changed': { extent: Extent };
+    /** Fires when all tiles are painted */
+    'paint-complete': unknown;
 }
 
 export type MapConstructorOptions = {
@@ -607,7 +609,9 @@ class Map<UserData extends EntityUserData = EntityUserData>
     private readonly _layerIds: Set<string> = new Set();
     private readonly _materialOptions: MaterialOptions;
     private readonly _subdivisionStrategy: MapSubdivisionStrategy;
+    private readonly _onNodeComplete: () => void;
 
+    private _paintCompleteTimeout: NodeJS.Timeout | null = null;
     private _geometryBuilder: TileGeometryBuilder | null = null;
 
     private _hasElevationLayer = false;
@@ -638,6 +642,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
             );
         }
         this.extent = options.extent;
+        this._onNodeComplete = this.onNodeComplete.bind(this);
 
         this._subdivisionStrategy = options.subdivisionStrategy ?? defaultMapSubdivisionStrategy;
         this._subdivisionThreshold = options.subdivisionThreshold ?? DEFAULT_SUBDIVISION_THRESHOLD;
@@ -689,6 +694,33 @@ class Map<UserData extends EntityUserData = EntityUserData>
      */
     override get loading() {
         return this._layers.some(l => l.loading);
+    }
+
+    private onNodeComplete() {
+        if (this._paintCompleteTimeout) {
+            clearTimeout(this._paintCompleteTimeout);
+        }
+
+        this._paintCompleteTimeout = setTimeout(this.evaluatePaintComplete.bind(this), 500);
+    }
+
+    private evaluatePaintComplete() {
+        let complete = true;
+        this.traverseTiles(tile => {
+            if (tile.visible && tile.material.visible) {
+                const tileComplete = this._layers
+                    .filter(l => l.visible)
+                    .every(l => l.isLoaded(tile.id));
+
+                if (!tileComplete) {
+                    complete = false;
+                }
+            }
+        });
+
+        if (complete) {
+            this.dispatchEvent({ type: 'paint-complete' });
+        }
     }
 
     /**
@@ -1696,6 +1728,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
             composerProjection: this.getComposerProjection(),
         });
 
+        layer.addEventListener('node-complete', this._onNodeComplete);
         layer.addEventListener('visible-property-changed', this._onLayerVisibilityChanged);
 
         if (isColorLayer(layer)) {
@@ -1760,6 +1793,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
                 layer.unregisterNode(tile);
             });
             layer.removeEventListener('visible-property-changed', this._onLayerVisibilityChanged);
+            layer.removeEventListener('node-complete', this._onNodeComplete);
             layer.postUpdate();
             this.reorderLayers();
             this.dispatchEvent({ type: 'layer-removed', layer });

@@ -233,6 +233,10 @@ export interface LayerEvents {
      * Fires when the layer is disposed.
      */
     dispose: unknown;
+    /**
+     * Fires when a node has been completed.
+     */
+    'node-complete': { node: LayerNode };
 }
 
 export interface LayerOptions {
@@ -1199,7 +1203,7 @@ abstract class Layer<
         const signal = target.controller.signal;
 
         if (signal.aborted) {
-            target.state = TargetState.Pending;
+            this.setTargetState(target, TargetState.Pending);
             return;
         }
 
@@ -1223,7 +1227,7 @@ abstract class Layer<
                 }
             }
 
-            target.state = TargetState.Processing;
+            this.setTargetState(target, TargetState.Processing);
 
             // If the source is synchronous, the whole pipeline is also synchronous.
             if (this.source.synchronous) {
@@ -1232,7 +1236,7 @@ abstract class Layer<
                     this.paintTarget(target);
                 } catch (e) {
                     console.error(e);
-                    target.state = TargetState.Pending;
+                    this.setTargetState(target, TargetState.Pending);
                 }
             } else {
                 this.fetchImages({
@@ -1249,15 +1253,15 @@ abstract class Layer<
                         // However any other error implies an abnormal termination of the processing.
                         if (err.name !== 'AbortError') {
                             console.error(err);
-                            target.state = TargetState.Complete;
+                            this.setTargetState(target, TargetState.Complete);
                         } else {
-                            target.state = TargetState.Pending;
+                            this.setTargetState(target, TargetState.Pending);
                         }
                     });
             }
         } else {
             // The layer does not overlap with this tile, let's apply an empty texture.
-            target.state = TargetState.Complete;
+            this.setTargetState(target, TargetState.Complete);
             this.applyEmptyTextureToNode(target);
         }
     }
@@ -1284,7 +1288,7 @@ abstract class Layer<
         const allImagesReady = composer.hasAll(target.imageIds);
 
         if (!allImagesReady) {
-            target.state = TargetState.Pending;
+            this.setTargetState(target, TargetState.Pending);
             return;
         }
 
@@ -1306,9 +1310,9 @@ abstract class Layer<
         target.textureIsFinal = isLastRender;
 
         if (isLastRender) {
-            target.state = TargetState.Complete;
+            this.setTargetState(target, TargetState.Complete);
         } else {
-            target.state = TargetState.Pending;
+            this.setTargetState(target, TargetState.Pending);
         }
 
         target.paintCount++;
@@ -1316,6 +1320,18 @@ abstract class Layer<
         const texture = nonNull(target.renderTarget).object.texture;
         this.applyTextureToNode({ texture, pitch }, target, isLastRender);
         this.instance.notifyChange(this);
+    }
+
+    private setTargetState(target: Target, state: TargetState) {
+        if (target.state === state) {
+            return;
+        }
+
+        target.state = state;
+
+        if (state === TargetState.Complete) {
+            this.dispatchEvent({ type: 'node-complete', node: target.node });
+        }
     }
 
     /**
