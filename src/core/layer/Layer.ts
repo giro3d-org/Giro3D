@@ -1223,10 +1223,6 @@ abstract class Layer<
                 }
             }
 
-            if (!this.canFetchImages(target)) {
-                return;
-            }
-
             target.state = TargetState.Processing;
 
             // If the source is synchronous, the whole pipeline is also synchronous.
@@ -1398,8 +1394,6 @@ abstract class Layer<
         // Repaint the target if necessary.
         this.processTarget(target);
     }
-
-    protected abstract canFetchImages(target: Target): boolean;
 
     /**
      * @param extent - The extent to test.

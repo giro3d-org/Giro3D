@@ -1307,14 +1307,6 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         return this._elevationLayer;
     }
 
-    isColorLayerTextureLoaded(layer: ColorLayer) {
-        const index = this.indexOfColorLayer(layer);
-        if (index < 0) {
-            return false;
-        }
-        return this._texturesInfo.color.infos[index].texture !== emptyTexture;
-    }
-
     /**
      * Gets the number of layers on this material.
      *

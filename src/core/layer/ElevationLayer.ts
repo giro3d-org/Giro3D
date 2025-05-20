@@ -99,10 +99,6 @@ class ElevationLayer<UserData extends LayerUserData = LayerUserData> extends Lay
         }
     }
 
-    protected canFetchImages(): boolean {
-        return true;
-    }
-
     override unregisterNode(node: TileMesh) {
         super.unregisterNode(node);
 
