@@ -68,15 +68,17 @@ const elevationSource = new TiledImageSource({
 const elevationLayer = new ElevationLayer({
     name: 'wms_elevation',
     extent,
+    resolutionFactor: 1 / 2,
     source: elevationSource,
 });
 
 map.addLayer(elevationLayer);
 
-instance.view.camera.position.set(extent.west, extent.south, 2000);
+const center = extent.centerAsVector3();
+instance.view.camera.position.set(center.x, center.y, 17000);
 
 const controls = new MapControls(instance.view.camera, instance.domElement);
-controls.target = extent.centerAsVector3();
+controls.target = center;
 controls.saveState();
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
