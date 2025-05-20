@@ -29,7 +29,7 @@ const map = new Map({ extent });
 
 instance.add(map);
 
-function addLayers(key) {
+async function addLayers(key) {
     const layers = map.getLayers();
     for (const current of layers) {
         map.removeLayer(current);
@@ -51,7 +51,7 @@ function addLayers(key) {
             }),
         }),
     });
-    map.addLayer(elevationLayer);
+    await map.addLayer(elevationLayer);
 
     // Adds a XYZ color layer with MapBox satellite tileset
     const satelliteLayer = new ColorLayer({
@@ -65,13 +65,13 @@ function addLayers(key) {
             }),
         }),
     });
-    map.addLayer(satelliteLayer);
+    await map.addLayer(satelliteLayer);
 }
 
 // Create our elevation layer using Giro3D's default mapbox api key
 addLayers(
     'pk.eyJ1IjoidG11Z3VldCIsImEiOiJjbGJ4dTNkOW0wYWx4M25ybWZ5YnpicHV6In0.KhDJ7W5N3d1z3ArrsDjX_A',
-);
+).catch(console.error);
 
 instance.view.camera.position.set(extent.east, extent.south, 2000);
 
