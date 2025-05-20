@@ -1922,31 +1922,6 @@ class Map<UserData extends EntityUserData = EntityUserData>
         }
     }
 
-    protected canSubdivideTile(tile: TileMesh): boolean {
-        let current = tile;
-        let ancestorLevel = 0;
-
-        const elevationLayer = this.getElevationLayers()[0];
-
-        // To be able to subdivide a tile, we need to ensure that we
-        // have proper elevation data on this tile (if applicable).
-        // Otherwise the newly created tiles will not have a correct bounding box,
-        // and this will mess with frustum culling / level of detail selection, in turn leading
-        // to dangerous levels of subdivisions (and hundreds/thousands of undesired tiles).
-        // On the other hand, we can afford a bit of undesired tiles if it means that
-        // the color layers will display correctly.
-        const LOD_MARGIN = 3;
-        while (ancestorLevel < LOD_MARGIN && current != null) {
-            if (current != null && current.material != null && elevationLayer.isLoaded(current)) {
-                return true;
-            }
-            ancestorLevel++;
-            current = current.parent as TileMesh;
-        }
-
-        return false;
-    }
-
     /**
      * @param node - The node to subdivide.
      * @returns True if the node can be subdivided.
@@ -1958,28 +1933,9 @@ class Map<UserData extends EntityUserData = EntityUserData>
             return true;
         }
 
-        // Prevent subdivision if node is covered by at least one elevation layer
-        // and if node doesn't have a elevation texture yet.
-        for (const e of this.getElevationLayers()) {
-            if (e.visible) {
-                // If the elevation layer is not ready, we are still waiting for
-                // some information related to the terrain (min/max values).
-                if (!e.ready && !e.frozen) {
-                    return false;
-                }
-
-                if (!this.canSubdivideTile(node)) {
-                    return false;
-                }
-            }
-        }
-
-        if (!node.isLeaf) {
-            // No need to prevent subdivision, since we've already done it before
-            return true;
-        }
-
-        return true;
+        // We have to wait until elevation data is loaded for this
+        // tile so that the bounding box is up to date.
+        return this._layers.every(layer => isColorLayer(layer) || layer.isLoaded(node));
     }
 
     private testTileSSE(tile: TileMesh, sse: SSE | null) {

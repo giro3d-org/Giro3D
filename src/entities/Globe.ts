@@ -235,7 +235,7 @@ export default class Globe extends Map {
         return 'EPSG:4326';
     }
 
-    protected override canSubdivideTile(tile: TileMesh): boolean {
+    override canSubdivide(tile: TileMesh): boolean {
         // Terrain is negligible at low LODs.
         if (this.extent.equals(Extent.WGS84) && tile.lod < 5) {
             return true;
@@ -245,7 +245,7 @@ export default class Globe extends Map {
         // We have zero tolerance here because of extreme recursion levels when
         // zooming in close to mountainous areas, due to the fact that we need to
         // have the strictest bounding volumes.
-        return super.canSubdivideTile(tile);
+        return super.canSubdivide(tile);
     }
 
     protected override getDefaultTerrainOptions(): Readonly<TerrainOptions> {
