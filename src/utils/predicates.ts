@@ -10,6 +10,7 @@ import type {
     Matrix3,
     Matrix4,
     Mesh,
+    MeshBasicMaterial,
     Object3D,
     OrthographicCamera,
     PerspectiveCamera,
@@ -110,6 +111,10 @@ export function getColor(input: ColorRepresentation): Color {
 
 export function isShaderMaterial(obj: unknown): obj is ShaderMaterial {
     return isObject(obj) && (obj as ShaderMaterial).isShaderMaterial === true;
+}
+
+export function isMeshBasicMaterial(obj: unknown): obj is MeshBasicMaterial {
+    return isObject(obj) && (obj as MeshBasicMaterial).isMeshBasicMaterial === true;
 }
 
 export function isCSS2DObject(obj: unknown): obj is CSS2DObject {
