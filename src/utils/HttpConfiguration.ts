@@ -1,6 +1,7 @@
 class PrefixEntry {
     urlPrefix: string;
     headers: Map<string, string>;
+    options: Partial<RequestInit> | null = null;
 
     /**
      * @param urlPrefix - The URL prefix for this host entry.
@@ -23,6 +24,29 @@ class PrefixEntry {
 }
 
 const perHostProperties: Map<string, Array<PrefixEntry>> = new Map();
+
+function getEntry(urlPrefix: string): PrefixEntry {
+    const url = new URL(urlPrefix);
+    const hostname = url.hostname;
+
+    let hostEntry = perHostProperties.get(hostname);
+
+    if (!hostEntry) {
+        hostEntry = [];
+        perHostProperties.set(hostname, hostEntry);
+    }
+
+    let prefixEntry = hostEntry.find(entry => entry.urlPrefix === urlPrefix);
+
+    if (!prefixEntry) {
+        prefixEntry = new PrefixEntry(urlPrefix);
+        hostEntry.push(prefixEntry);
+        // We want prefixes to be ordered from longer (more specific) to shorter (more global)
+        hostEntry.sort((a, b) => b.urlPrefix.length - a.urlPrefix.length);
+    }
+
+    return prefixEntry;
+}
 
 /**
  * Update the request options with stored configuration applicable to this URL.
@@ -88,9 +112,13 @@ function applyConfiguration(
     const headers = (options.headers ?? {}) as Record<string, string>;
 
     const urlString = urlObj.toString();
+    let customOptions: Partial<RequestInit> = {};
 
     for (const entry of properties) {
         if (urlString.startsWith(entry.urlPrefix)) {
+            // Apply custom options with priority to the earlier entries.
+            customOptions = { ...entry.options, ...customOptions };
+
             for (const [k, v] of entry.headers.entries()) {
                 if (headers[k]) {
                     // The request already has a header with the same name.
@@ -104,9 +132,21 @@ function applyConfiguration(
         }
     }
 
+    const keys = Object.keys(customOptions) as (keyof RequestInit)[];
+    for (const key of keys) {
+        // @ts-expect-error the responsibility of checking the type falls on the caller
+        options[key] = customOptions[key];
+    }
+
     options.headers = headers;
 
     return options;
+}
+
+function setOptions(urlPrefix: string, options: Partial<RequestInit>) {
+    const entry = getEntry(urlPrefix);
+
+    entry.options = options;
 }
 
 /**
@@ -119,24 +159,7 @@ function applyConfiguration(
  * @param value - The header value.
  */
 function setHeader(urlPrefix: string, name: string, value: string) {
-    const url = new URL(urlPrefix);
-    const hostname = url.hostname;
-
-    let hostEntry = perHostProperties.get(hostname);
-
-    if (!hostEntry) {
-        hostEntry = [];
-        perHostProperties.set(hostname, hostEntry);
-    }
-
-    let prefixEntry = hostEntry.find(entry => entry.urlPrefix === urlPrefix);
-
-    if (!prefixEntry) {
-        prefixEntry = new PrefixEntry(urlPrefix);
-        hostEntry.push(prefixEntry);
-        // We want prefixes to be ordered from longer (more specific) to shorter (more global)
-        hostEntry.sort((a, b) => b.urlPrefix.length - a.urlPrefix.length);
-    }
+    const prefixEntry = getEntry(urlPrefix);
 
     prefixEntry.setHeader(name, value);
 }
@@ -212,6 +235,7 @@ function clear() {
 export default {
     setAuth,
     setHeader,
+    setOptions,
     applyConfiguration,
     clear,
 };

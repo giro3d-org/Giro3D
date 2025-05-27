@@ -175,26 +175,24 @@ class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
 
         if (options.visibility === true) {
             this.addController(this, 'visible')
-                .name('Visible')
+                .name('👁️ Visible')
                 .onChange(v => this.toggleVisibility(v));
         }
-        if (hasDefaultPointOfView(entity)) {
-            this.addController(this, 'goToEntity');
-            this.addController(this, 'lookAt');
-        }
+
         this.addController(this.entity, 'frozen')
-            .name('Freeze updates')
+            .name('❄️ Freeze')
             .onChange(() => this.notify(this.entity));
+
         if (options.opacity === true) {
             this.addController(this.entity, 'opacity')
-                .name('Opacity')
+                .name('🪟 Opacity')
                 .min(0)
                 .max(1)
                 .onChange(() => this.notify(this.entity));
         }
         if (options.boundingBoxes === true) {
             this.addController(this, 'boundingBoxes')
-                .name('Show volumes')
+                .name('🔳 Show volumes')
                 .onChange(v => this.toggleBoundingBoxes(v));
             if (options.boundingBoxColor === true) {
                 this.addColorController(this, 'boundingBoxColor')
@@ -203,7 +201,12 @@ class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
             }
         }
 
-        this.addController(this, 'deleteEntity').name('Delete entity');
+        if (hasDefaultPointOfView(entity)) {
+            this.addController(this, 'goToEntity').name('👣 Go to');
+            this.addController(this, 'lookAt').name('🎥 Look at');
+        }
+
+        this.addController(this, 'deleteEntity').name('❌ Delete entity');
     }
 
     private updateControlsWithDefaultView(defaultView: PointOfView | null) {

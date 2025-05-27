@@ -332,7 +332,7 @@ const hoveredPoint = new Shape({
     },
 });
 hoveredPoint.name = 'hovered-point';
-hoveredPoint.points.push(new Vector3());
+hoveredPoint.setPoints([new Vector3()]);
 hoveredPoint.renderOrder = measure.renderOrder + 2;
 hoveredPoint.color = measure.color;
 hoveredPoint.visible = false;

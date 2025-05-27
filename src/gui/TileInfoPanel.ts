@@ -185,8 +185,6 @@ class TileInfoPanel extends Panel {
         this._map.traverseTiles(tile => {
             this.updateLabel(tile);
         });
-
-        this.notify();
     }
 }
 

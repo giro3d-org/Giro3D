@@ -43,6 +43,7 @@ class BilFormat extends ImageFormat {
     override readonly type = 'BilFormat' as const;
 
     private _enableWorkers: boolean = true;
+    private _workerConcurrency: number | undefined;
 
     /**
      * @param options - Decoder options.
@@ -53,10 +54,17 @@ class BilFormat extends ImageFormat {
          * @defaultValue true
          */
         enableWorkers?: boolean;
+        /**
+         * The maximum number of workers created by the worker pool.
+         * If `undefined`, the maximum number of workers will be allowed.
+         * @defaultValue undefined
+         */
+        workerConcurrency?: number;
     }) {
         super(true, FloatType);
 
         this._enableWorkers = options?.enableWorkers ?? true;
+        this._workerConcurrency = options?.workerConcurrency ?? undefined;
     }
 
     /**
@@ -77,7 +85,7 @@ class BilFormat extends ImageFormat {
 
         if (this._enableWorkers) {
             if (workerPool == null) {
-                workerPool = new WorkerPool({ createWorker });
+                workerPool = new WorkerPool({ createWorker, concurrency: this._workerConcurrency });
             }
 
             result = await workerPool.queue('DecodeBilTerrainMessage', { buffer, noData });

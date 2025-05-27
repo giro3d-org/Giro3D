@@ -8,7 +8,7 @@ This release brings two major new feature: globes and panoramic images.
 
 It is now possible to create globe maps with the `Globe` entity. Each globe can be initialized with a custom `Ellipsoid` (or use the default WGS 84 ellipsoid). It is possible to have multiple globes in the same scene, and move/rotate them freely (for example to create a simulation of the solar system). The APIs of Globes is exactly the same as the one for `Map`, with the exception that it is not possible to set the extent of the globe (it will use the entire globe surface).
 
-The coordinate system to use for a globe scene is `EPSG:4978`:
+The coordinate system to use for an earth-centered scene is [EPSG:4978](https://epsg.io/4978):
 
 ```js
 const instance = new Instance({
@@ -86,6 +86,8 @@ instance.add(panorama);
 - add `SphericalPanorama` entity (#504)
 - add `Atmosphere`, `SkyDome` and `Glow` entities
 - add support for temporal WMS layers (WMS-T)
+- enable setting worker concurrency for all classes that use workers (#600)
+- **HttpConfiguration**: support arbitrary request options (#599)
 - **Ellipsoid**: add `Ellipsoid` class
 - **Layer**: add `dispose` event
 - **Layer**: add support for custom texture filters (#597)
@@ -117,6 +119,9 @@ instance.add(panorama);
 - **FeatureCollection**: rebuild mesh if extrusion offset / elevation changes (#348)
 - **FeatureCollection**: handle sources without loaders
 - **DrawTool**: fix `onAbort` never called when abort controller is aborted
+- **FeatureCollection**: don't dispose level0 tiles, as they are never recreated
+- **GeometryConverter**: honour passed elevation with ignoreZ=true
+- **FeatureCollection**: only get features in requested extent
 
 ## v0.42.3 (2025-03-18)
 

@@ -9,6 +9,7 @@ import Fetcher from '../utils/Fetcher';
 import ProjUtils from '../utils/ProjUtils';
 import { nonNull } from '../utils/tsutils';
 import WorkerPool from '../utils/WorkerPool';
+import type { CommonOptions } from './las/CommonOptions';
 import { getLazPerf } from './las/config';
 import createWorker from './las/createWorker';
 import type { DimensionName } from './las/dimension';
@@ -47,6 +48,7 @@ const getter: (url: string) => Getter = url => {
 type PerfOptions = {
     decimate: number;
     enableWorkers: boolean;
+    workerConcurrency?: number;
     compressColorsToUint8: boolean;
 };
 
@@ -57,9 +59,13 @@ async function decodeLazChunkSync(chunk: Uint8Array, metadata: Metadata): Promis
     return Las.PointData.decompressChunk(chunk, metadata, lp);
 }
 
-function decodeLazChunkUsingWorker(chunk: Uint8Array, metadata: Metadata): Promise<Uint8Array> {
+function decodeLazChunkUsingWorker(
+    chunk: Uint8Array,
+    metadata: Metadata,
+    concurrency?: number,
+): Promise<Uint8Array> {
     if (pool == null) {
-        pool = new WorkerPool({ createWorker });
+        pool = new WorkerPool({ createWorker, concurrency });
     }
 
     return pool
@@ -67,31 +73,11 @@ function decodeLazChunkUsingWorker(chunk: Uint8Array, metadata: Metadata): Promi
         .then(res => new Uint8Array(res));
 }
 
-export type COPCSourceOptions = {
+export type COPCSourceOptions = CommonOptions & {
     /**
-     * The URL to the remote COPC LAS file, or a copc.js `Getter` function to directly access the file.
+     * The URL to the remote COPC LAS file, or a copc.js `Getter` function to directly access the file byte range.
      */
     url: string | Getter;
-    /**
-     * If true, colors are compressed to 8-bit (instead of 16-bit).
-     * @defaultValue true
-     */
-    compressColorsTo8Bit?: boolean;
-    /**
-     * If specified, will keep every Nth point. For example, a decimation value of 10 will keep
-     * one point out of ten, and discard the 9 other points. Useful to reduce memory usage.
-     * @defaultValue 1
-     */
-    decimate?: number;
-    /**
-     * Enable web workers to perform CPU intensive tasks.
-     * @defaultValue true
-     */
-    enableWorkers?: boolean;
-    /**
-     * The filters to use.
-     */
-    filters?: Readonly<DimensionFilter[]>;
 };
 
 /**
@@ -288,6 +274,7 @@ export default class COPCSource extends PointCloudSourceBase {
         }
 
         this._options.enableWorkers = options.enableWorkers ?? true;
+        this._options.workerConcurrency = options.workerConcurrency ?? undefined;
 
         if (options.filters != null && options.filters.length > 0) {
             this._filters.push(...options.filters);
@@ -573,7 +560,10 @@ export default class COPCSource extends PointCloudSourceBase {
             this._opCounter.increment();
 
             if (!pool) {
-                pool = new WorkerPool({ createWorker });
+                pool = new WorkerPool({
+                    createWorker,
+                    concurrency: this._options.workerConcurrency,
+                });
             }
 
             return await pool.queue(
@@ -658,11 +648,15 @@ export default class COPCSource extends PointCloudSourceBase {
             // Note that we have to clone the buffer since we send it to the worker
             // and we want this buffer to be reusable for subsequent requests if necessary
             const chunk = new Uint8Array(buffer.slice(0));
-            decoded = await decodeLazChunkUsingWorker(chunk, {
-                pointCount: node.pointCount,
-                pointDataRecordFormat: copc.header.pointDataRecordFormat,
-                pointDataRecordLength: copc.header.pointDataRecordLength,
-            });
+            decoded = await decodeLazChunkUsingWorker(
+                chunk,
+                {
+                    pointCount: node.pointCount,
+                    pointDataRecordFormat: copc.header.pointDataRecordFormat,
+                    pointDataRecordLength: copc.header.pointDataRecordLength,
+                },
+                this._options.workerConcurrency,
+            );
         } else {
             const chunk = new Uint8Array(buffer);
             decoded = await decodeLazChunkSync(chunk, {
