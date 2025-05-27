@@ -4,7 +4,7 @@ import PromiseUtils from '../utils/PromiseUtils';
 import type { CustomContainsFn, GetImageOptions } from './ImageSource';
 import ImageSource, { ImageResult } from './ImageSource';
 
-class DebugSource extends ImageSource {
+export default class DebugSource extends ImageSource {
     readonly isDebugSource: boolean = true as const;
     override readonly type = 'DebugSource' as const;
 
@@ -12,7 +12,7 @@ class DebugSource extends ImageSource {
     private readonly _extent: Extent;
     private readonly _opacity: number;
     private readonly _subdivisions: number;
-    private readonly _color: Color;
+    private readonly _color: Color | ((options: GetImageOptions) => Color);
 
     /**
      * @param options - options
@@ -25,7 +25,7 @@ class DebugSource extends ImageSource {
         /** The opacity of the images. */
         opacity?: number;
         /** The color of the images. */
-        color?: Color;
+        color?: Color | ((options: GetImageOptions) => Color);
         /** How many images per tile are served. */
         subdivisions?: number;
         /** The custom function to test if a given extent is contained in this source. */
@@ -53,7 +53,20 @@ class DebugSource extends ImageSource {
         this._extent = extent;
     }
 
-    private getImage(width: number, height: number, id: string) {
+    override adjustExtentAndPixelSize(
+        requestExtent: Extent,
+        requestWidth: number,
+        requestHeight: number,
+    ): { extent: Extent; width: number; height: number } | null {
+        // To help visualize the images, we don't adjust their extent at all.
+        return {
+            extent: requestExtent,
+            height: requestHeight,
+            width: requestWidth,
+        };
+    }
+
+    private getImage(width: number, height: number, id: string, color: Color) {
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
@@ -65,11 +78,11 @@ class DebugSource extends ImageSource {
 
         const prefix = id.substring(0, 10);
 
-        context.fillStyle = `#${this._color.getHexString()}`;
+        context.fillStyle = `#${color.getHexString()}`;
         context.globalAlpha = this._opacity ?? 1;
         context.fillRect(0, 0, width, height);
         context.globalAlpha = 1;
-        context.strokeStyle = `#${this._color.getHexString()}`;
+        context.strokeStyle = `#${color.getHexString()}`;
         context.lineWidth = 16;
         context.strokeRect(0, 0, width, height);
         context.fillStyle = 'black';
@@ -103,10 +116,11 @@ class DebugSource extends ImageSource {
         for (let i = 0; i < extents.length; i++) {
             const ex = extents[i];
             const imageId = `${id}-${i}`;
+            const color = typeof this._color === 'function' ? this._color(options) : this._color;
             const request = () =>
                 PromiseUtils.delay(this._delay()).then(() => {
                     signal?.throwIfAborted();
-                    const texture = this.getImage(w, h, imageId);
+                    const texture = this.getImage(w, h, imageId, color);
                     return new ImageResult({ extent: ex, texture, id: imageId });
                 });
             requests.push({ id: imageId, request });
@@ -115,5 +129,3 @@ class DebugSource extends ImageSource {
         return requests;
     }
 }
-
-export default DebugSource;

@@ -75,8 +75,7 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
         map.addLayer(
             new ElevationLayer({
                 extent: map.extent,
-                preloadImages: true,
-                resolutionFactor: 0.5,
+                resolutionFactor: 1 / 8,
                 minmax: { min: 500, max: 1500 },
                 source: source,
             }),
@@ -90,7 +89,6 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
     .then(source => {
         map.addLayer(
             new ColorLayer({
-                preloadImages: true,
                 extent: map.extent,
                 source: source,
             }),

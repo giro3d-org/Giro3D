@@ -9,15 +9,22 @@ import Entity, { type EntityEventMap, type EntityUserData } from './Entity';
 import Entity3D, { type Entity3DEventMap } from './Entity3D';
 import FeatureCollection, { type MeshUserData } from './FeatureCollection';
 import type Globe from './Globe';
-import type { GlobeConstructorOptions, GlobeTerrainOptions } from './Globe';
+import type {
+    GlobeConstructorOptions,
+    GlobeTerrainOptions,
+    defaultGlobeSubdivisionStrategy,
+} from './Globe';
 import type Glow from './Glow';
 import type Map from './Map';
 import {
     DEFAULT_MAP_BACKGROUND_COLOR,
     DEFAULT_SUBDIVISION_THRESHOLD,
+    allLayersLoadedSubdivisionStrategy,
+    defaultMapSubdivisionStrategy,
     type LayerCompareFn,
     type MapConstructorOptions,
     type MapEventMap,
+    type MapSubdivisionStrategy,
 } from './Map';
 import MapLightingOptions, { MapLightingMode } from './MapLightingOptions';
 import PointCloud, { PointCloudOptions, UnsupportedAttributeError } from './PointCloud';
@@ -57,17 +64,21 @@ export {
     MapEventMap,
     MapLightingMode,
     MapLightingOptions,
+    MapSubdivisionStrategy,
     MeshUserData,
     PointCloud,
     PointCloudBatchTableAttributeMapping,
     PointCloudOptions,
     Shape,
-    shape,
-    sphericalPanorama,
     SphericalPanorama,
     Tiles3D,
     Tiles3DOptions,
     Tiles3DPickResult,
     UnsupportedAttributeError,
     WellKnown3DTilesPointCloudAttributes,
+    allLayersLoadedSubdivisionStrategy,
+    defaultGlobeSubdivisionStrategy,
+    defaultMapSubdivisionStrategy,
+    shape,
+    sphericalPanorama,
 };

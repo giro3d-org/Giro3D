@@ -35,6 +35,7 @@ function createMap(mapExtent, tileset) {
     const elevationLayer = new ElevationLayer({
         name: 'xyz_elevation',
         extent,
+        resolutionFactor: 1 / 8,
         source: new TiledImageSource({
             format: new MapboxTerrainFormat(),
             source: new XYZ({

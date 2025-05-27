@@ -556,6 +556,16 @@ class LayerComposer implements MemoryUsage {
         return this.images.has(imageId);
     }
 
+    hasAll(imageIds: Iterable<string>): boolean {
+        for (const id of imageIds) {
+            if (!this.has(id)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     /**
      * Copies the source texture into the destination texture, taking into account the extent
      * of both textures.
@@ -569,6 +579,7 @@ class LayerComposer implements MemoryUsage {
         source: {
             texture: TextureWithMinMax;
             extent: Extent;
+            renderOrder: number;
         }[];
         /** The destination render target. */
         dest: WebGLRenderTarget;
@@ -581,10 +592,12 @@ class LayerComposer implements MemoryUsage {
         let min = +Infinity;
         let max = -Infinity;
 
-        for (const { texture, extent } of options.source) {
+        for (const { texture, extent, renderOrder } of options.source) {
             const sourceExtent = extent;
 
-            const mesh = this.composer.draw(texture, Rect.fromExtent(sourceExtent));
+            const mesh = this.composer.draw(texture, Rect.fromExtent(sourceExtent), {
+                renderOrder,
+            });
 
             meshes.push(mesh);
 

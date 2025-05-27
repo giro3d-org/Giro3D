@@ -42,12 +42,14 @@ class MapInspector extends EntityInspector<Map> {
     layerFolder: GUI;
     layers: LayerInspector[];
     private _fillLayersCb: () => void;
+    private _paintCompleteCb: () => void;
     grid?: GridHelper;
     axes?: AxesHelper;
     reachableTiles: number;
     visibleTiles: number;
     terrainPanel: MapTerrainPanel;
     side: Sidedness = 'Front';
+    completePaints = 0;
 
     /**
      * Creates an instance of MapInspector.
@@ -106,6 +108,7 @@ class MapInspector extends EntityInspector<Map> {
         if (isGlobe(this.entity)) {
             this.addController(this.entity, 'horizonCulling');
         }
+        this.addController(this, 'completePaints');
         this.addController(this.entity, 'castShadow');
         this.addController(this.entity, 'receiveShadow');
         this.addController(this, 'showGrid')
@@ -162,12 +165,19 @@ class MapInspector extends EntityInspector<Map> {
         this.layers = [];
 
         this._fillLayersCb = () => this.fillLayers();
+        this._paintCompleteCb = () => this.paintComplete();
 
         this.entity.addEventListener('layer-added', this._fillLayersCb);
         this.entity.addEventListener('layer-removed', this._fillLayersCb);
         this.entity.addEventListener('layer-order-changed', this._fillLayersCb);
+        this.entity.addEventListener('paint-complete', this._paintCompleteCb);
 
         this.fillLayers();
+    }
+
+    private paintComplete() {
+        this.completePaints++;
+        this.updateControllers();
     }
 
     disposeMapAndLayers() {

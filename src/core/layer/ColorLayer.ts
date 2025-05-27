@@ -208,16 +208,6 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
         return RGBAFormat;
     }
 
-    protected canFetchImages(target: Target): boolean {
-        // A special case for synchronous sources, since this optimization is not necessary
-        // as synchronous sources can immediately return the image without actually loading
-        // anything (i.e no HTTP requests). This is necessary to fix #525
-        if (this.source.synchronous) {
-            return true;
-        }
-        return target.node.canProcessColorLayer();
-    }
-
     override unregisterNode(node: LayerNode) {
         super.unregisterNode(node);
         const material = node.material;
