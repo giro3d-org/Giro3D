@@ -1026,7 +1026,7 @@ abstract class Layer<
         const pixels = new Uint8ClampedArray(size * size * 4);
 
         this.instance.renderer.readRenderTargetPixels(
-            smallestTargetAtCoordinates.renderTarget,
+            smallestTargetAtCoordinates.renderTarget.object,
             smallestTargetAtCoordinates.width * uv.x,
             smallestTargetAtCoordinates.height * uv.y,
             size,
