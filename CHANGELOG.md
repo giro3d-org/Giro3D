@@ -87,6 +87,7 @@ instance.add(panorama);
 - add `Atmosphere`, `SkyDome` and `Glow` entities
 - add support for temporal WMS layers (WMS-T)
 - enable setting worker concurrency for all classes that use workers (#600)
+- **Map/Globe**: support custom subdivision strategies via a callback function
 - **HttpConfiguration**: support arbitrary request options (#599)
 - **Ellipsoid**: add `Ellipsoid` class
 - **Layer**: add `dispose` event
@@ -122,6 +123,7 @@ instance.add(panorama);
 - **FeatureCollection**: don't dispose level0 tiles, as they are never recreated
 - **GeometryConverter**: honour passed elevation with ignoreZ=true
 - **FeatureCollection**: only get features in requested extent
+- **Map**: Reduce blurry tiles when zooming in/out by (#550)
 
 ## v0.42.3 (2025-03-18)
 
