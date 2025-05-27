@@ -38,6 +38,7 @@ import OperationCounter from '../OperationCounter';
 import type Progress from '../Progress';
 import type RequestQueue from '../RequestQueue';
 import { DefaultQueue } from '../RequestQueue';
+import Shared from '../Shared';
 import type ColorLayer from './ColorLayer';
 import Interpretation from './Interpretation';
 import LayerComposer from './LayerComposer';
@@ -134,7 +135,7 @@ export class Target implements MemoryUsage {
     extent: Extent;
     width: number;
     height: number;
-    renderTarget: WebGLRenderTarget | null = null;
+    renderTarget: Shared<WebGLRenderTarget, this> | null = null;
     imageIds: Set<string>;
     controller: AbortController;
     state: TargetState;
@@ -149,8 +150,8 @@ export class Target implements MemoryUsage {
     }
 
     getMemoryUsage(context: GetMemoryUsageContext) {
-        if (this.renderTarget) {
-            return TextureGenerator.getMemoryUsage(context, this.renderTarget);
+        if (this.renderTarget && this.renderTarget.owner === this) {
+            return TextureGenerator.getMemoryUsage(context, this.renderTarget.object);
         }
     }
 
@@ -232,6 +233,10 @@ export interface LayerEvents {
      * Fires when the layer is disposed.
      */
     dispose: unknown;
+    /**
+     * Fires when a node has been completed.
+     */
+    'node-complete': { node: LayerNode };
 }
 
 export interface LayerOptions {
@@ -302,8 +307,6 @@ export interface LayerOptions {
 }
 
 export type LayerUserData = Record<string, unknown>;
-
-const nodesToDelete: LayerNode[] = [];
 
 /**
  * Base class of layers. Layers are components of maps or any compatible entity.
@@ -405,6 +408,7 @@ abstract class Layer<
     /** @internal */
     protected _composer: LayerComposer | null = null;
     private readonly _targets: Map<number, Target>;
+    private readonly _targetsToDestroy: Target[] = [];
     private readonly _filter: (id: string) => boolean;
     /** @internal */
     protected readonly _queue: RequestQueue;
@@ -890,22 +894,31 @@ abstract class Layer<
         await Promise.allSettled(allImages);
     }
 
+    private destroyTarget(target: Target) {
+        const node = target.node;
+        target.renderTarget?.dispose();
+        this._targets.delete(node.id);
+        nonNull(this._composer).unlock(target.imageIds, node.id);
+        target.dispose();
+        this._sortedTargets = null;
+    }
+
     /**
      * Removes the node from this layer.
      *
      * @param node - The disposed node.
      */
-    unregisterNode(node: LayerNode) {
+    unregisterNode(node: LayerNode, immediate = false) {
         const id = node.id;
         const target = this._targets.get(id);
+        node.removeEventListener('dispose', this._onNodeDisposed);
 
         if (target) {
-            this.releaseRenderTarget(target.renderTarget);
-            this._targets.delete(id);
-            nonNull(this._composer).unlock(target.imageIds, id);
-            target.dispose();
-            this._sortedTargets = null;
-            node.removeEventListener('dispose', this._onNodeDisposed);
+            if (immediate) {
+                this.destroyTarget(target);
+            } else {
+                this._targetsToDestroy.push(target);
+            }
         }
     }
 
@@ -995,50 +1008,170 @@ abstract class Layer<
         return null;
     }
 
+    private getLoadedDirectChildren(target: Target): Target[] | null {
+        const extent = target.geometryExtent;
+        const targets = this.getSortedTargets();
+        const childLod = target.node.lod + 1;
+        const result: Target[] = [];
+
+        for (const t of targets) {
+            const otherExtent = t.geometryExtent;
+            if (
+                t.node.lod === childLod &&
+                extent.contains(otherExtent, 0.00000001) &&
+                t.state === TargetState.Complete &&
+                t.renderTarget != null
+            ) {
+                result.push(t);
+            }
+        }
+
+        if (result.length > 0) {
+            return result;
+        }
+        return null;
+    }
+
+    private borrowTextureFromAncestor(target: Target, onApplied: () => void): boolean {
+        const parent = this.getLoadedAncestor(target);
+
+        if (parent) {
+            // Borrow  texture from parent
+            const parentTarget = nonNull(parent.renderTarget);
+
+            // We have already borrowed it
+            if (target.renderTarget && target.renderTarget.owner === parent) {
+                return true;
+            }
+
+            onApplied();
+
+            // Important note: we are not here disposing the texture itself, just
+            // one instance of the shared ownership of the texture. This texture might
+            // belong to another tile.
+            target.renderTarget?.dispose();
+            // Here we are cloning the shared object rather than the texture.
+            target.renderTarget = parentTarget.clone();
+
+            const pitch = target.extent.offsetToParent(parent.extent).combine(target.pitch);
+            const texture = target.renderTarget.object.texture;
+
+            this.applyTextureToNode({ texture, pitch }, target, false);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private borrowTexturesFromChildren(target: Target, onApplied: () => void): boolean {
+        const children = this.getLoadedDirectChildren(target);
+
+        if (children) {
+            this.createRenderTargetIfNecessary(target);
+            const renderTarget = nonNull(target.renderTarget).object;
+            const composer = nonNull(this._composer);
+
+            const imagesToBorrow = children.map(c => ({
+                texture: nonNull(c.renderTarget).object.texture,
+                extent: c.extent,
+                renderOrder: 1,
+            }));
+
+            // If we don't have enough children to fill the tile,
+            // let's also use an ancestor image, but with a lower render order
+            // so that it does not cover the child images.
+            if (children.length < 4) {
+                const ancestor = this.getLoadedAncestor(target);
+                if (ancestor) {
+                    imagesToBorrow.push({
+                        extent: ancestor.extent,
+                        texture: nonNull(ancestor.renderTarget).object.texture,
+                        renderOrder: 0,
+                    });
+                }
+            }
+
+            composer.copy({
+                dest: renderTarget,
+                targetExtent: target.extent,
+                source: imagesToBorrow,
+            });
+
+            const texture = renderTarget.texture;
+            const pitch = target.pitch;
+
+            this.applyTextureToNode({ texture, pitch }, target, false);
+
+            onApplied();
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private generateDefaultTextureFromExistingComposerImages(
+        target: Target,
+        onApplied: () => void,
+    ) {
+        this.createRenderTargetIfNecessary(target);
+
+        const composer = nonNull(this._composer);
+        const renderTarget = nonNull(target.renderTarget).object;
+
+        // We didn't find any parent nor child, use whatever is present in the composer.
+        composer.render({
+            extent: target.extent,
+            width: target.width,
+            height: target.height,
+            target: renderTarget,
+            imageIds: target.imageIds,
+            isFallbackMode: true,
+        });
+
+        const texture = renderTarget.texture;
+        const pitch = target.pitch;
+
+        this.applyTextureToNode({ texture, pitch }, target, false);
+
+        onApplied();
+    }
+
     /**
-     * @param target - The target.
+     * Immediately applies a temporary texture to the target while
+     * the actual texture is being asynchronously processed, to
+     * avoid displaying a black texture.
      */
-    protected applyDefaultTexture(target: Target) {
+    protected applyInterimTexture(target: Target) {
         if (target.isDisposed()) {
             return;
         }
 
-        const parent = this.getLoadedAncestor(target);
+        const onApplied = () => {
+            // Ensure that the material is up to date with the default texture
+            this.updateMaterial(target.node.material);
+            this.instance.notifyChange(this);
+            target.paintCount++;
+        };
 
-        const renderTarget = nonNull(target.renderTarget);
-        const composer = nonNull(this._composer);
-
-        if (parent) {
-            const parentRenderTarget = nonNull(parent.renderTarget);
-
-            const img = { texture: parentRenderTarget.texture, extent: parent.extent };
-
-            // Inherit parent's texture by copying the data of the parent into the child.
-            composer.copy({
-                source: [img],
-                dest: renderTarget,
-                targetExtent: target.extent,
-            });
-        } else {
-            // We didn't find any parent nor child, use whatever is present in the composer.
-            composer.render({
-                extent: target.extent,
-                width: target.width,
-                height: target.height,
-                target: renderTarget,
-                imageIds: target.imageIds,
-                isFallbackMode: true,
-            });
+        // The first step is too look for children of this target.
+        // If they (still) exist, it means that this target becomes
+        // visible in stead of its children (aka a "zoom out" in a 2D map),
+        // and so we want to reuse the textures from the children.
+        if (!this.borrowTexturesFromChildren(target, onApplied)) {
+            // Next, we wan to see if an ancestor has a texture we can use.
+            // This is typically the case when we are subdividing a tile (aka a "zoom in").
+            // Not here we are taking the ancestor that is the closest to the target.
+            // Here we are simply reusing the texture without any other processing, meaning
+            // it is very fast.
+            if (!this.borrowTextureFromAncestor(target, onApplied)) {
+                // Finally, this is the worst case scenario: we have to fill the
+                // render target with images in the composer. It's less performant that
+                // simply reusing a texture, though.
+                this.generateDefaultTextureFromExistingComposerImages(target, onApplied);
+            }
         }
-
-        const texture = renderTarget.texture;
-        this.applyTextureToNode({ texture, pitch: target.pitch }, target, false);
-
-        // Ensure that the material is up to date with the default texture
-        this.updateMaterial(target.node.material);
-
-        this.instance.notifyChange(this);
-        target.paintCount++;
     }
 
     /**
@@ -1070,7 +1203,7 @@ abstract class Layer<
         const signal = target.controller.signal;
 
         if (signal.aborted) {
-            target.state = TargetState.Pending;
+            this.setTargetState(target, TargetState.Pending);
             return;
         }
 
@@ -1081,10 +1214,6 @@ abstract class Layer<
         // Fetch adequate images from the source...
         const isContained = this.contains(extent);
         if (isContained) {
-            if (!target.renderTarget) {
-                target.renderTarget = this.acquireRenderTarget(width, height);
-            }
-
             // If the source is not synchronous, we need a default texture
             // to avoid seeing a blank texture on the tile.
             if (!this.source.synchronous) {
@@ -1094,15 +1223,11 @@ abstract class Layer<
                 // In that case we want to avoid applying a blank texture and create a very
                 // nasty flickering effect.
                 if (!target.textureIsFinal) {
-                    this.applyDefaultTexture(target);
+                    this.applyInterimTexture(target);
                 }
             }
 
-            if (!this.canFetchImages(target)) {
-                return;
-            }
-
-            target.state = TargetState.Processing;
+            this.setTargetState(target, TargetState.Processing);
 
             // If the source is synchronous, the whole pipeline is also synchronous.
             if (this.source.synchronous) {
@@ -1111,7 +1236,7 @@ abstract class Layer<
                     this.paintTarget(target);
                 } catch (e) {
                     console.error(e);
-                    target.state = TargetState.Pending;
+                    this.setTargetState(target, TargetState.Pending);
                 }
             } else {
                 this.fetchImages({
@@ -1128,16 +1253,28 @@ abstract class Layer<
                         // However any other error implies an abnormal termination of the processing.
                         if (err.name !== 'AbortError') {
                             console.error(err);
-                            target.state = TargetState.Complete;
+                            this.setTargetState(target, TargetState.Complete);
                         } else {
-                            target.state = TargetState.Pending;
+                            this.setTargetState(target, TargetState.Pending);
                         }
                     });
             }
         } else {
             // The layer does not overlap with this tile, let's apply an empty texture.
-            target.state = TargetState.Complete;
+            this.setTargetState(target, TargetState.Complete);
             this.applyEmptyTextureToNode(target);
+        }
+    }
+
+    private createRenderTargetIfNecessary(target: Target) {
+        if (!target.renderTarget || target.renderTarget.owner !== target) {
+            target.renderTarget?.dispose();
+
+            const renderTarget = this.acquireRenderTarget(target.width, target.height);
+
+            target.renderTarget = Shared.new(renderTarget, target, obj =>
+                this.releaseRenderTarget(obj),
+            );
         }
     }
 
@@ -1146,32 +1283,55 @@ abstract class Layer<
             return;
         }
 
+        const composer = nonNull(this._composer);
+
+        const allImagesReady = composer.hasAll(target.imageIds);
+
+        if (!allImagesReady) {
+            this.setTargetState(target, TargetState.Pending);
+            return;
+        }
+
         const extent = target.extent;
         const width = target.width;
         const height = target.height;
         const pitch = target.pitch;
 
+        this.createRenderTargetIfNecessary(target);
+
         const { isLastRender } = nonNull(this._composer).render({
             extent,
             width,
             height,
-            target: nonNull(target.renderTarget),
+            target: nonNull(target.renderTarget).object,
             imageIds: target.imageIds,
         });
 
         target.textureIsFinal = isLastRender;
 
         if (isLastRender) {
-            target.state = TargetState.Complete;
+            this.setTargetState(target, TargetState.Complete);
         } else {
-            target.state = TargetState.Pending;
+            this.setTargetState(target, TargetState.Pending);
         }
 
         target.paintCount++;
 
-        const texture = nonNull(target.renderTarget).texture;
+        const texture = nonNull(target.renderTarget).object.texture;
         this.applyTextureToNode({ texture, pitch }, target, isLastRender);
         this.instance.notifyChange(this);
+    }
+
+    private setTargetState(target: Target, state: TargetState) {
+        if (target.state === state) {
+            return;
+        }
+
+        target.state = state;
+
+        if (state === TargetState.Complete) {
+            this.dispatchEvent({ type: 'node-complete', node: target.node });
+        }
     }
 
     /**
@@ -1251,8 +1411,6 @@ abstract class Layer<
         this.processTarget(target);
     }
 
-    protected abstract canFetchImages(target: Target): boolean;
-
     /**
      * @param extent - The extent to test.
      * @returns `true` if this layer contains the specified extent, `false` otherwise.
@@ -1323,44 +1481,11 @@ abstract class Layer<
         return result;
     }
 
-    protected canDeleteTarget(target: Target): boolean {
-        const level = target.node.lod;
-
-        // Can we unload it ?
-        // - We don't unload root nodes (level = 0)
-        // - We also don't unload nodes every 3 levels
-        // - We also don't unload nodes that do not have any loaded ancestor,
-        //   to avoid sudden blank tiles.
-        if (level > 0 && level % 3 !== 0 && this.getLoadedAncestor(target)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    protected deleteUnusedTargets() {
-        nodesToDelete.length = 0;
-
-        const sorted = this.getSortedTargets();
-
-        // Let's start from the smallest tiles (i.e with the highest resolution) first.
-        for (const target of sorted) {
-            // Is this target invisible ? We can only unload invisible targets.
-            // Note that we never delete root nodes so that we can always have some fallback data
-            if (!target.node.material.visible) {
-                if (this.canDeleteTarget(target)) {
-                    nodesToDelete.push(target.node);
-                }
-            }
-        }
-
-        for (const node of nodesToDelete) {
-            this.unregisterNode(node);
-        }
-    }
-
     postUpdate() {
-        this.deleteUnusedTargets();
+        if (this._targetsToDestroy.length > 0) {
+            this._targetsToDestroy.forEach(t => this.destroyTarget(t));
+            this._targetsToDestroy.length = 0;
+        }
 
         this._composer?.postUpdate();
     }
@@ -1375,6 +1500,17 @@ abstract class Layer<
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected updateMaterial(material: Material) {
         // Implemented in derived classes
+    }
+
+    /**
+     * Returns true if this layer has loaded data for this node.
+     */
+    isLoaded(nodeId: LayerNode['id']) {
+        const target = this._targets.get(nodeId);
+        if (target) {
+            return target.state === TargetState.Complete;
+        }
+        return false;
     }
 
     protected abstract applyTextureToNode(
@@ -1393,7 +1529,7 @@ abstract class Layer<
         this._composer?.dispose();
         for (const target of this._targets.values()) {
             target.abort();
-            this.unregisterNode(target.node);
+            this.unregisterNode(target.node, true);
         }
 
         this.dispatchEvent({ type: 'dispose' });

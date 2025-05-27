@@ -17,7 +17,7 @@ const instance = new Instance({
 });
 
 const globe = new Globe({
-    backgroundColor: 'cyan',
+    backgroundColor: '#aad3df',
 });
 
 globe.helperColor = 'black';

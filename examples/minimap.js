@@ -62,7 +62,7 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
                 name: 'wmts_elevation',
                 extent: map.extent,
                 // We don't need the full resolution of terrain because we are not using any shading
-                resolutionFactor: 0.25,
+                resolutionFactor: 1 / 8,
                 minmax: { min: 0, max: 5000 },
                 noDataOptions: {
                     replaceNoData: false,

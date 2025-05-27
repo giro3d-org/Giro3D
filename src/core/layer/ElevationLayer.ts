@@ -99,10 +99,6 @@ class ElevationLayer<UserData extends LayerUserData = LayerUserData> extends Lay
         }
     }
 
-    protected canFetchImages(): boolean {
-        return true;
-    }
-
     override unregisterNode(node: TileMesh) {
         super.unregisterNode(node);
 
@@ -122,11 +118,7 @@ class ElevationLayer<UserData extends LayerUserData = LayerUserData> extends Lay
         return { min, max };
     }
 
-    protected applyTextureToNode(
-        textureAndPitch: TextureAndPitch,
-        target: Target,
-        isLastRender: boolean,
-    ) {
+    protected applyTextureToNode(textureAndPitch: TextureAndPitch, target: Target) {
         const { texture, pitch } = textureAndPitch;
         const { min, max } = this.getMinMax(texture);
 
@@ -143,17 +135,10 @@ class ElevationLayer<UserData extends LayerUserData = LayerUserData> extends Lay
             node.material.pushElevationLayer(this);
         }
 
-        node.setElevationTexture(
-            this,
-            { ...value, renderTarget: nonNull(target.renderTarget) },
-            isLastRender,
-        );
-    }
-
-    protected override canDeleteTarget(): boolean {
-        // We don't want to delete any target of elevation layer to avoid
-        // issues with tile volume computation.
-        return false;
+        node.setElevationTexture(this, {
+            ...value,
+            renderTarget: nonNull(target.renderTarget).object,
+        });
     }
 
     protected applyEmptyTextureToNode(target: Target) {

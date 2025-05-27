@@ -94,8 +94,7 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
         const layer = new ElevationLayer({
             name: 'terrain',
             extent: map.extent,
-            // We don't need the full resolution of terrain because we are not using any shading
-            resolutionFactor: 0.5,
+            resolutionFactor: 1 / 4,
             minmax: { min: 0, max: 5000 },
             noDataOptions: {
                 replaceNoData: false,

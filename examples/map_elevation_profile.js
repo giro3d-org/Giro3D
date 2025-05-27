@@ -68,7 +68,6 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
         map.addLayer(
             new ElevationLayer({
                 extent: map.extent,
-                preloadImages: true,
                 minmax: { min: 0, max: 5000 },
                 noDataOptions: {
                     replaceNoData: false,
@@ -91,7 +90,6 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
 })
     .then(orthophotoWmts => {
         colorLayer = new ColorLayer({
-            preloadImages: true,
             extent: map.extent,
             source: orthophotoWmts,
         });

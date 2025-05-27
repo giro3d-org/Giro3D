@@ -44,8 +44,6 @@ const instance = new Instance({
 });
 
 instance.renderingOptions.enableEDL = true;
-instance.renderingOptions.enableInpainting = true;
-instance.renderingOptions.enablePointCloudOcclusion = true;
 
 const map = new Map({
     extent,
@@ -76,7 +74,7 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
                 name: 'wmts_elevation',
                 extent: map.extent,
                 // We don't need the full resolution of terrain because we are not using any shading
-                resolutionFactor: 0.25,
+                resolutionFactor: 1 / 8,
                 minmax: { min: 0, max: 5000 },
                 noDataOptions: {
                     replaceNoData: false,
@@ -102,7 +100,10 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
     .catch(console.error);
 
 // Create the 3D tiles entity
-const pointcloud = new Tiles3D({ url: 'https://3d.oslandia.com/lidar_hd/tileset.json' });
+const pointcloud = new Tiles3D({
+    url: 'https://3d.oslandia.com/lidar_hd/tileset.json',
+    errorTarget: 16,
+});
 
 pointcloud.name = 'point cloud';
 

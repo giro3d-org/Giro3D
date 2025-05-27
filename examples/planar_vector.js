@@ -42,7 +42,7 @@ const key =
 // Adds a XYZ elevation layer with MapBox terrain RGB tileset
 const elevationLayer = new ElevationLayer({
     extent,
-    resolutionFactor: 0.25,
+    resolutionFactor: 1 / 8,
     source: new TiledImageSource({
         format: new MapboxTerrainFormat(),
         source: new XYZ({

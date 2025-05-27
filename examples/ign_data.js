@@ -55,7 +55,6 @@ const map = new Giro3dMap({
         enabled: true,
         elevationLayersOnly: true,
     },
-    discardNoData: true,
     side: DoubleSide,
 });
 
@@ -79,7 +78,7 @@ WmtsSource.fromCapabilities(url, {
                 // We don't need the full resolution of terrain
                 // because we are not using any shading. This will save a lot of memory
                 // and make the terrain faster to load.
-                resolutionFactor: 0.25,
+                resolutionFactor: 1 / 8,
                 minmax: { min: 0, max: 5000 },
                 noDataOptions: {
                     replaceNoData: false,
