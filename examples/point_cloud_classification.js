@@ -1,4 +1,4 @@
-import { Color } from 'three';
+import { Color, Vector2 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
@@ -11,6 +11,9 @@ import StatusBar from './widgets/StatusBar.js';
 import { bindColorPicker } from './widgets/bindColorPicker.js';
 import { bindSlider } from './widgets/bindSlider.js';
 import { bindToggle } from './widgets/bindToggle.js';
+import { Pass } from 'three/examples/jsm/postprocessing/Pass.js';
+import { DotScreenPass } from 'three/examples/jsm/postprocessing/DotScreenPass.js';
+import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js';
 
 Instance.registerCRS(
     'EPSG:2154',
@@ -22,6 +25,15 @@ const instance = new Instance({
     crs: 'EPSG:2154',
     backgroundColor: null, // To make the canvas transparent and show the actual CSS background
 });
+// function initPass() {
+//     class BlurPass extends Pass {
+
+//     }
+//     instance.engine._renderPipeline.effectComposer.addPass(pass);
+//     instance.removeEventListener('after-render', initPass);
+// }
+const pass = new DotScreenPass(new Vector2(0, 0), 0.1, 80);
+instance.engine.renderingOptions.customPasses = [pass];
 
 // Enables post-processing effects to improve readability of point cloud.
 instance.renderingOptions.enableEDL = true;
