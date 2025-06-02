@@ -754,6 +754,8 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
     }
 
     private updateMaterial(scene: Object3D) {
+        this.traverseMaterials(m => this.setupMaterial(m), scene);
+
         if (isPNTSScene(scene)) {
             this._pointCloudPlugin.updateMaterial(scene.material as PointCloudMaterial);
         }
