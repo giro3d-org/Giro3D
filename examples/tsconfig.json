@@ -3,7 +3,7 @@
 
     "extends": "../tsconfig.json",
     "include": ["./**/*"],
-    "exclude": ["node_modules/**/*"],
+    "exclude": ["../node_modules/**/*"],
     "compilerOptions": {
         "paths": {
             "@giro3d/giro3d/*": ["../build/giro3d/*"]
@@ -11,8 +11,10 @@
         "typeRoots": ["../build/giro3d/*"],
         "allowJs": true,
         "checkJs": true,
+        "skipLibCheck": true,
         "noImplicitAny": false,
         "strictNullChecks": false,
-        "lib": ["DOM", "ES2021"]
+        "target": "es2021",
+        "lib": ["DOM", "DOM.Iterable", "ES2021"]
     }
 }
