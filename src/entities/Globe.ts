@@ -32,7 +32,6 @@ const tempBox = new Box3();
 /**
  * Always allow subdivision up to LOD 4, then use the default map strategy for subsequent LODs.
  */
-// eslint-disable-next-line no-use-before-define
 export const defaultGlobeSubdivisionStrategy: MapSubdivisionStrategy = (tile, context) => {
     if (context.entity.extent.equals(Extent.WGS84) && tile.lod < 5) {
         return context.layers.every(

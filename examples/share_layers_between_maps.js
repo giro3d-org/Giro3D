@@ -28,7 +28,6 @@ const instance = new Instance({
 const layer = new ColorLayer({
     name: 'osm',
     source: new TiledImageSource({
-        // @ts-expect-error missing properties (but they are actually optional)
         source: new StadiaMaps({ layer: 'stamen_watercolor', wrapX: false }),
     }),
 });

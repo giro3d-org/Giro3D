@@ -76,7 +76,6 @@ function createMap(extent) {
             new ColorLayer({
                 name: 'osm',
                 extent,
-                // @ts-expect-error missing properties (but they are actually optional)
                 source: new TiledImageSource({ source: new StadiaMaps({ layer, wrapX: false }) }),
             }),
         )
