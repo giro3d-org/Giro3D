@@ -1,5 +1,5 @@
 import { MathUtils, Vector3 } from 'three';
-import { MapControls } from 'three/examples/jsm/controls/MapControls';
+import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 export function placeCameraOnTop(volume, instance) {
     if (!instance) {
