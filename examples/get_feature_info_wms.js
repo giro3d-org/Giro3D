@@ -7,14 +7,14 @@ import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
-
-import StatusBar from './widgets/StatusBar.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
-import { TileWMS } from 'ol/source.js';
+
 import { get as getProjection } from 'ol/proj.js';
+import { TileWMS } from 'ol/source.js';
 import { bindColorPicker } from './widgets/bindColorPicker.js';
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import StatusBar from './widgets/StatusBar.js';
 
 const extent = new Extent(
     CoordinateSystem.epsg3857,
@@ -65,46 +65,46 @@ const wmsLayer = new ColorLayer({
     }),
 });
 
-WmtsSource.fromCapabilities(capabilitiesUrl, {
-    layer: 'HR.ORTHOIMAGERY.ORTHOPHOTOS',
-})
-    .then(orthophotoWmts => {
-        const layer = new ColorLayer({
-            name: 'orthophotos',
-            extent: map.extent,
-            source: orthophotoWmts,
-        });
-        layer.userData.zOrder = 0;
+async function initializeWmts() {
+    const orthophotoWmts = await WmtsSource.fromCapabilities(capabilitiesUrl, {
+        layer: 'HR.ORTHOIMAGERY.ORTHOPHOTOS',
+    });
 
-        map.addLayer(layer);
-        map.addLayer(wmsLayer);
-    })
-    .catch(console.error);
+    const layer = new ColorLayer({
+        name: 'orthophotos',
+        extent: map.extent,
+        source: orthophotoWmts,
+    });
+    layer.userData.zOrder = 0;
 
-const [setColor, _, colorPicker] = bindColorPicker('color', () => {});
+    await Promise.all([map.addLayer(layer), map.addLayer(wmsLayer)]);
 
-instance.domElement.addEventListener('pointermove', event => {
-    const canvasCoords = instance.eventToCanvasCoords(event, new Vector2());
+    const [setColor, _, colorPicker] = bindColorPicker('color', () => {});
 
-    const results = map.pick(canvasCoords);
+    instance.domElement.addEventListener('pointermove', event => {
+        const canvasCoords = instance.eventToCanvasCoords(event, new Vector2());
 
-    if (results && results.length > 0) {
-        const point = results[0].point;
-        const coordinates = new Coordinates(instance.coordinateSystem, point.x, point.y);
+        const results = map.pick(canvasCoords);
 
-        const hit = wmsLayer.getPixel({ coordinates, size: 10 });
+        if (results && results.length > 0) {
+            const point = results[0].point;
+            const coordinates = new Coordinates(instance.coordinateSystem, point.x, point.y);
 
-        if (hit && hit.length > 0) {
-            setColor(hit[0]);
+            const hit = wmsLayer.getPixel({ coordinates, size: 10 });
+
+            if (hit && hit.length > 0) {
+                setColor(hit[0]);
+            }
+
+            colorPicker.style.display = hit ? 'block' : 'none';
+            instance.domElement.style.cursor = hit ? 'pointer' : '';
+        } else {
+            colorPicker.style.display = 'none';
+            instance.domElement.style.cursor = '';
         }
-
-        colorPicker.style.display = hit ? 'block' : 'none';
-        instance.domElement.style.cursor = hit ? 'pointer' : '';
-    } else {
-        colorPicker.style.display = 'none';
-        instance.domElement.style.cursor = '';
-    }
-});
+    });
+}
 
 Inspector.attach('inspector', instance);
 StatusBar.bind(instance);
+initializeWmts();
