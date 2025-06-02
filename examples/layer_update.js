@@ -111,24 +111,29 @@ source.addFeatures([point, line, polygon]);
 
 const [setStrokeWidth] = bindSlider('stroke-width', v => {
     style.getStroke().setWidth(v);
-    style.getImage().getStroke().setWidth(v);
-    style.getImage().setRadius(style.getImage().getRadius());
+
+    const circle = /** @type {Circle} */ (style.getImage());
+
+    circle.getStroke().setWidth(v);
+    circle.setRadius(circle.getRadius());
     source.update();
 });
 const [setPointRadius] = bindSlider('point-radius', v => {
-    style.getImage().setRadius(v);
+    const circle = /** @type {Circle} */ (style.getImage());
+
+    circle.setRadius(v);
     style.setImage(style.getImage());
     source.update();
 });
 const [setOpacity] = bindSlider('style-opacity', v => {
-    style
-        .getImage()
+    const circle = /** @type {Circle} */ (style.getImage());
+
+    circle
         .getStroke()
         .setColor(
             `rgba(${strokeColor.r * 255}, ${strokeColor.g * 255}, ${strokeColor.b * 255}, ${v})`,
         );
-    style
-        .getImage()
+    circle
         .getFill()
         .setColor(`rgba(${fillColor.r * 255}, ${fillColor.g * 255}, ${fillColor.b * 255}, ${v})`);
     style
@@ -140,7 +145,7 @@ const [setOpacity] = bindSlider('style-opacity', v => {
         .getFill()
         .setColor(`rgba(${fillColor.r * 255}, ${fillColor.g * 255}, ${fillColor.b * 255}, ${v})`);
 
-    style.getImage().setRadius(style.getImage().getRadius());
+    circle.setRadius(circle.getRadius());
 
     source.update();
 });

@@ -2,13 +2,15 @@ import {
     Clock,
     Color,
     DirectionalLight,
-    MathUtils,
     Mesh,
     MeshBasicMaterial,
     MeshStandardMaterial,
     SphereGeometry,
     Vector3,
 } from 'three';
+
+import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';
 import Ellipsoid from '@giro3d/giro3d/core/geographic/Ellipsoid';
@@ -17,15 +19,13 @@ import Atmosphere from '@giro3d/giro3d/entities/Atmosphere';
 import Inspector from '@giro3d/giro3d/gui/Inspector';
 import DrawTool from '@giro3d/giro3d/interactions/DrawTool';
 import SkyDome from '@giro3d/giro3d/entities/SkyDome';
+import EllipsoidHelper from '@giro3d/giro3d/helpers/EllipsoidHelper';
 
 import { bindButton } from './widgets/bindButton';
 import { bindColorPicker } from './widgets/bindColorPicker';
 import { bindSlider } from './widgets/bindSlider';
 import { bindToggle } from './widgets/bindToggle';
 import StatusBar from './widgets/StatusBar';
-import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import EllipsoidHelper from '@giro3d/giro3d/helpers/EllipsoidHelper';
 
 const Z_UP = new Vector3(0, 0, 1);
 

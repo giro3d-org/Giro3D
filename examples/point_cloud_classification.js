@@ -1,4 +1,4 @@
-import { Color } from 'three';
+import { Color, Mesh } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
@@ -171,6 +171,10 @@ function updateLabel(mouseEvent) {
     if (results && results.length > 0) {
         for (const result of results) {
             const { object, point, index } = result;
+
+            if (!(object instanceof Mesh)) {
+                continue;
+            }
 
             const classificationIndex = object.geometry.getAttribute('classification').getX(index);
 

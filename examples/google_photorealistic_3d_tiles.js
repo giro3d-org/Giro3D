@@ -50,7 +50,6 @@ function run(apiKey) {
     tiles.registerPlugin(new TilesFadePlugin());
 
     const controls = new GlobeControls(instance.scene, camera, instance.domElement, tiles);
-    // @ts-expect-error field not yet exposed. See https://github.com/NASA-AMMOS/3DTilesRendererJS/pull/925
     controls.enableDamping = true;
 
     /** @type {Array<{ type: string, value: any }>} */

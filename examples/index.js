@@ -24,10 +24,14 @@ function executeSearchQuery(elem) {
 
 function collectExamples() {
     document.querySelectorAll("[id^='example-card']").forEach(e => {
-        const obj = {};
-        obj.element = e;
-        obj.display = e.style.display;
-        examples.push(obj);
+        if (e instanceof HTMLDivElement) {
+            const obj = {};
+            obj.element = e;
+            obj.display = e.style.display;
+            examples.push(obj);
+        } else {
+            console.error('the element with ID example-card must be a <div>');
+        }
     });
 }
 

@@ -223,6 +223,9 @@ class ControlsInspector extends Panel {
         this.controls.addEventListener('update', this._eventhandlers.control);
     }
 
+    /**
+     * @override
+     */
     dispose() {
         this.controls.removeEventListener('update', this._eventhandlers.control);
         super.dispose();

@@ -184,7 +184,6 @@ function updateProfileChart(points) {
             datasets: [dataset],
         },
         options: {
-            animation: true,
             parsing: false,
             responsive: true,
             maintainAspectRatio: true,
