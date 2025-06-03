@@ -7,6 +7,7 @@ import { Fill, Style } from 'ol/style.js';
 
 import GlobeControls from '@giro3d/giro3d/controls/GlobeControls.js';
 import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Ellipsoid from '@giro3d/giro3d/core/geographic/Ellipsoid.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Sun from '@giro3d/giro3d/core/geographic/Sun.js';
@@ -39,7 +40,7 @@ import { updateLabel } from './widgets/updateLabel.js';
 
 const instance = new Instance({
     target: 'view',
-    crs: 'EPSG:4978',
+    crs: CoordinateSystem.epsg4978,
     backgroundColor: 'black',
 });
 
@@ -95,7 +96,7 @@ instance.add(moon);
 const moonLayer = new ColorLayer({
     source: new GeoTIFFSource({
         url: 'https://3d.oslandia.com/giro3d/rasters/moon.tif',
-        crs: 'EPSG:4326',
+        crs: CoordinateSystem.epsg4326,
     }),
 });
 
@@ -132,7 +133,7 @@ const marsLayer = new ColorLayer({
     source: new GeoTIFFSource({
         // From https://www.solarsystemscope.com/textures/
         url: 'https://3d.oslandia.com/giro3d/rasters/8k_mars.tif',
-        crs: 'EPSG:4326',
+        crs: CoordinateSystem.epsg4326,
     }),
 });
 
@@ -172,7 +173,7 @@ const sunLayer = new ColorLayer({
     source: new GeoTIFFSource({
         // From https://www.solarsystemscope.com/textures/
         url: 'https://3d.oslandia.com/giro3d/rasters/8k_sun.tif',
-        crs: 'EPSG:4326',
+        crs: CoordinateSystem.epsg4326,
     }),
 });
 
@@ -228,7 +229,7 @@ earth.addLayer(elevationLayer).catch(console.error);
 const watermask = new ColorLayer({
     name: 'watermask',
     source: new VectorSource({
-        dataProjection: 'EPSG:4326',
+        dataProjection: CoordinateSystem.epsg4326,
         data: {
             url: 'https://3d.oslandia.com/giro3d/vectors/water_mask.topojson',
             format: new TopoJSON(),

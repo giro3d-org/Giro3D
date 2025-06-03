@@ -1,5 +1,3 @@
-import colormap from 'colormap';
-
 import {
     AmbientLight,
     ArrowHelper,
@@ -21,14 +19,15 @@ import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import XYZ from 'ol/source/XYZ.js';
 
 import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
-import { MapLightingMode } from '@giro3d/giro3d/entities/MapLightingOptions.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Sun from '@giro3d/giro3d/core/geographic/Sun.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
+import { MapLightingMode } from '@giro3d/giro3d/entities/MapLightingOptions.js';
 import MapboxTerrainFormat from '@giro3d/giro3d/formats/MapboxTerrainFormat.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
@@ -49,13 +48,20 @@ const min = 1500;
 const max = 2000;
 
 // Monument Valley coordinates
-const center = new Coordinates('EPSG:4326', -110.08252, 36.98715).as('EPSG:3857').toVector3();
+const center = new Coordinates(CoordinateSystem.epsg4326, -110.08252, 36.98715)
+    .as(CoordinateSystem.epsg3857)
+    .toVector3();
 
-const extent = Extent.fromCenterAndSize('EPSG:3857', center, EXTENT_SIZE, EXTENT_SIZE);
+const extent = Extent.fromCenterAndSize(
+    CoordinateSystem.epsg3857,
+    center,
+    EXTENT_SIZE,
+    EXTENT_SIZE,
+);
 
 const instance = new Instance({
     target: 'view',
-    crs: 'EPSG:3857',
+    crs: CoordinateSystem.epsg3857,
     backgroundColor: null,
 });
 

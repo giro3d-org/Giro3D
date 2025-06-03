@@ -1,3 +1,4 @@
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import FeatureCollection from '@giro3d/giro3d/entities/FeatureCollection';
 import VectorSource from 'ol/source/Vector';
@@ -5,7 +6,7 @@ import VectorSource from 'ol/source/Vector';
 describe('FeatureCollection', () => {
     describe('constructor', () => {
         const source = new VectorSource();
-        const extent = new Extent('EPSG:4326', {
+        const extent = new Extent(CoordinateSystem.epsg4326, {
             west: 0,
             east: 10,
             south: 0,
@@ -21,7 +22,7 @@ describe('FeatureCollection', () => {
 
         it('should throw if the extent is invalid', () => {
             // reversed extent (min values are greater than max values)
-            const invalid = new Extent('EPSG:3857', +10, -10, +5, -5);
+            const invalid = new Extent(CoordinateSystem.epsg3857, +10, -10, +5, -5);
 
             expect(() => new FeatureCollection({ source, extent: invalid })).toThrow(
                 /Invalid extent/,

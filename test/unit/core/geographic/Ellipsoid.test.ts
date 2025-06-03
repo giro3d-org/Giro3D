@@ -1,3 +1,4 @@
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Ellipsoid from '@giro3d/giro3d/core/geographic/Ellipsoid';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import { MathUtils } from 'three';
@@ -73,7 +74,7 @@ describe('Ellipsoid', () => {
                 const altitude = 2560;
                 const n = wgs84.toGeodetic(0, 0, wgs84.semiMinorAxis + altitude);
 
-                expect(n.crs).toEqual('EPSG:4979');
+                expect(n.crs.isEpsg(4979)).toEqual(true);
 
                 expect(n.latitude).toBeCloseTo(90, PRECISION);
                 expect(n.longitude).toBeCloseTo(0, PRECISION);
@@ -84,7 +85,7 @@ describe('Ellipsoid', () => {
                 const altitude = 2560;
                 const n = wgs84.toGeodetic(0, 0, -(wgs84.semiMinorAxis + altitude));
 
-                expect(n.crs).toEqual('EPSG:4979');
+                expect(n.crs.isEpsg(4979)).toEqual(true);
 
                 expect(n.latitude).toBeCloseTo(-90, PRECISION);
                 expect(n.longitude).toBeCloseTo(0, PRECISION);
@@ -95,7 +96,7 @@ describe('Ellipsoid', () => {
                 const altitude = 2560;
                 const n = wgs84.toGeodetic(wgs84.semiMajorAxis + altitude, 0, 0);
 
-                expect(n.crs).toEqual('EPSG:4979');
+                expect(n.crs.isEpsg(4979)).toEqual(true);
 
                 expect(n.latitude).toBeCloseTo(0, PRECISION);
                 expect(n.longitude).toBeCloseTo(0, PRECISION);
@@ -106,7 +107,7 @@ describe('Ellipsoid', () => {
                 const altitude = 2560;
                 const n = wgs84.toGeodetic(0, wgs84.semiMajorAxis + altitude, 0);
 
-                expect(n.crs).toEqual('EPSG:4979');
+                expect(n.crs.isEpsg(4979)).toEqual(true);
 
                 expect(n.latitude).toBeCloseTo(0, PRECISION);
                 expect(n.longitude).toBeCloseTo(90, PRECISION);
@@ -117,7 +118,7 @@ describe('Ellipsoid', () => {
                 const altitude = 2560;
                 const n = wgs84.toGeodetic(0, -(wgs84.semiMajorAxis + altitude), 0);
 
-                expect(n.crs).toEqual('EPSG:4979');
+                expect(n.crs.isEpsg(4979)).toEqual(true);
 
                 expect(n.latitude).toBeCloseTo(0, PRECISION);
                 expect(n.longitude).toBeCloseTo(-90, PRECISION);
@@ -128,7 +129,7 @@ describe('Ellipsoid', () => {
                 const altitude = 2560;
                 const n = wgs84.toGeodetic(-(wgs84.semiMajorAxis + altitude), 0, 0);
 
-                expect(n.crs).toEqual('EPSG:4979');
+                expect(n.crs.isEpsg(4979)).toEqual(true);
 
                 expect(n.latitude).toBeCloseTo(0, PRECISION);
                 expect(n.longitude).toBeCloseTo(180, PRECISION);
@@ -275,14 +276,14 @@ describe('Ellipsoid', () => {
 
     describe('getExtentDimensions', () => {
         it('should throw if extent is not in WGS 84', () => {
-            expect(() => wgs84.getExtentDimensions(new Extent('EPSG:3857', 0, 1, 0, 1))).toThrow(
-                /not a WGS 84 extent/,
-            );
+            expect(() =>
+                wgs84.getExtentDimensions(new Extent(CoordinateSystem.epsg3857, 0, 1, 0, 1)),
+            ).toThrow(/not a WGS 84 extent/);
         });
 
         describe('trivial cases', () => {
             it('[-5°, 5°, -5°, 5°]', () => {
-                const extent = new Extent('EPSG:4326', -5, +5, -5, +5);
+                const extent = new Extent(CoordinateSystem.epsg4326, -5, +5, -5, +5);
                 const dims = wgs84.getExtentDimensions(extent);
 
                 expect(dims.width).toEqual(wgs84.equatorialCircumference / 36);
@@ -290,7 +291,7 @@ describe('Ellipsoid', () => {
             });
 
             it('[-1°, 1°, -1°, 1°]', () => {
-                const extent = new Extent('EPSG:4326', -1, +1, -1, +1);
+                const extent = new Extent(CoordinateSystem.epsg4326, -1, +1, -1, +1);
                 const dims = wgs84.getExtentDimensions(extent);
 
                 expect(dims.width).toEqual(wgs84.equatorialCircumference / 180);

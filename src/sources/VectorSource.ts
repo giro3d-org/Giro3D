@@ -26,6 +26,7 @@ import {
     scale as scaleTransform,
     translate as translateTransform,
 } from 'ol/transform.js';
+import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import Extent from '../core/geographic/Extent';
 import EmptyTexture from '../renderer/EmptyTexture';
 import Fetcher from '../utils/Fetcher';
@@ -135,7 +136,7 @@ export interface VectorSourceOptions extends ImageSourceOptions {
      * The projection of the data source. Must be specified if the source
      * does not have the same projection as the Giro3D instance.
      */
-    dataProjection?: string;
+    dataProjection?: CoordinateSystem;
 
     /**
      * The data content.
@@ -181,12 +182,12 @@ class VectorSource extends ImageSource {
     override readonly type = 'VectorSource' as const;
 
     readonly data: DataSource;
-    readonly dataProjection: string | undefined;
+    readonly dataProjection: CoordinateSystem | undefined;
 
     readonly source: Vector;
 
     // After initialization
-    private _targetProjection: string | undefined;
+    private _targetProjection: CoordinateSystem | undefined;
 
     /**
      * The current style.
@@ -252,10 +253,15 @@ class VectorSource extends ImageSource {
      * @param feature - The feature to reproject.
      */
     reproject(feature: Feature) {
-        feature.getGeometry()?.transform(this.dataProjection, this._targetProjection);
+        feature
+            .getGeometry()
+            ?.transform(
+                this.dataProjection?.srid?.asString,
+                this._targetProjection?.srid?.asString,
+            );
     }
 
-    override async initialize(opts: { targetProjection: string }) {
+    override async initialize(opts: { targetProjection: CoordinateSystem }) {
         await this.loadFeatures();
 
         this._targetProjection = opts.targetProjection;
@@ -386,7 +392,7 @@ class VectorSource extends ImageSource {
         // Note that since we are reprojecting vector _inside_ the source,
         // the source projection is the same as the target projection, indicating
         // that no projection needs to be done on images produced by this source.
-        return this._targetProjection as string;
+        return this._targetProjection ?? CoordinateSystem.unknown;
     }
 
     getExtent() {

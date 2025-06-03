@@ -4,6 +4,7 @@ import type UrlTile from 'ol/source/UrlTile';
 import type { UrlFunction } from 'ol/Tile';
 import type TileGrid from 'ol/tilegrid/TileGrid.js';
 import { UnsignedByteType, Vector2, type Texture } from 'three';
+import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import type Extent from '../core/geographic/Extent';
 import type ImageFormat from '../formats/ImageFormat';
 import EmptyTexture from '../renderer/EmptyTexture';
@@ -149,7 +150,10 @@ export default class TiledImageSource extends ImageSource {
         this.noDataValue = options.noDataValue;
         this._sourceExtent =
             options.extent ??
-            OpenLayersUtils.fromOLExtent(tileGrid.getExtent(), projection.getCode());
+            OpenLayersUtils.fromOLExtent(
+                tileGrid.getExtent(),
+                CoordinateSystem.fromSrid(projection.getCode()),
+            );
     }
 
     getExtent() {
@@ -157,7 +161,7 @@ export default class TiledImageSource extends ImageSource {
     }
 
     getCrs() {
-        return this.olprojection.getCode();
+        return CoordinateSystem.fromSrid(this.olprojection.getCode());
     }
 
     override adjustExtentAndPixelSize(
@@ -248,7 +252,7 @@ export default class TiledImageSource extends ImageSource {
 
         signal?.throwIfAborted();
 
-        if (extent.crs !== this.getCrs()) {
+        if (!extent.crs.equals(this.getCrs())) {
             throw new Error('invalid CRS');
         }
 
@@ -410,7 +414,7 @@ export default class TiledImageSource extends ImageSource {
      */
     private loadTiles(
         tileRange: TileRange,
-        crs: string,
+        crs: CoordinateSystem,
         zoom: number,
         createDataTexture: boolean,
         signal: AbortSignal | undefined,

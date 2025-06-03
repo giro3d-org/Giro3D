@@ -27,6 +27,7 @@ import {
     type PointMaterialGenerator,
     type SurfaceMaterialGenerator,
 } from '../core/FeatureTypes';
+import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import type Extent from '../core/geographic/Extent';
 import LayerUpdateState from '../core/layer/LayerUpdateState';
 import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../core/MemoryUsage';
@@ -259,7 +260,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
     /**
      * The projection code of the data source.
      */
-    readonly dataProjection: string | null;
+    readonly dataProjection: CoordinateSystem | null;
 
     /**
      * The minimum LOD at which this entity is displayed.
@@ -320,10 +321,10 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         /**
          * The projection code for the projections of the features. If null or empty,
          * no reprojection will be done. If a valid epsg code is given and if different from
-         * `instance.referenceCrs`, each feature will be reprojected before mesh
+         * `instance.coordinateSystem`, each feature will be reprojected before mesh
          * conversion occurs. Note that reprojection can be somewhat heavy on CPU resources.
          */
-        dataProjection?: string;
+        dataProjection?: CoordinateSystem;
         /** The geographic extent of the entity. */
         extent: Extent;
         /** The optional 3D object to use as the root */
@@ -478,7 +479,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
     }
 
     override preprocess() {
-        this._targetProjection = new Projection({ code: this.instance.referenceCrs });
+        this._targetProjection = new Projection({ code: this.instance.coordinateSystem.id });
 
         // If the map is not square, we want to have more than a single
         // root tile to avoid elongated tiles that hurt visual quality and SSE computation.
@@ -520,7 +521,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
     private buildNewTile(extent: Extent, z: number, x = 0, y = 0) {
         // create a simple square shape. We duplicate the top left and bottom right
         // vertices because each vertex needs to appear once per triangle.
-        extent = extent.as(this.instance.referenceCrs);
+        extent = extent.as(this.instance.coordinateSystem);
 
         const origin = extent.centerAsVector3();
         const name = `tile @ (z=${z}, x=${x}, y=${y})`;

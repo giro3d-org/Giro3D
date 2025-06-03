@@ -58,7 +58,7 @@ class FeatureCollectionInspector extends EntityInspector<FeatureCollection> {
 
         this.wireframe = false;
         this.frozen = this.entity.frozen ?? false;
-        this.dataProjection = this.entity.dataProjection ?? '';
+        this.dataProjection = this.entity.dataProjection?.id ?? '';
 
         this.showGrid = false;
 

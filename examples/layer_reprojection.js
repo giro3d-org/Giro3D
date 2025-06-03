@@ -1,18 +1,19 @@
+import { GeoJSON } from 'ol/format.js';
 import XYZ from 'ol/source/XYZ.js';
 import { Stroke, Style } from 'ol/style.js';
-import { GeoJSON } from 'ol/format.js';
 
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
-import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
-import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
+import { crsToUnit } from '@giro3d/giro3d/core/geographic/Coordinates.js';
+import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
 import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';
-import { crsToUnit } from '@giro3d/giro3d/core/geographic/Coordinates.js';
+import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
+import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 import { bindButton } from './widgets/bindButton.js';
@@ -51,7 +52,7 @@ function addCogLayer() {
         showTileBorders: true,
         source: new GeoTIFFSource({
             url: 'https://3d.oslandia.com/giro3d/rasters/TCI.tif',
-            crs: 'EPSG:3857',
+            crs: CoordinateSystem.epsg3857,
         }),
     });
     map.addLayer(cogLayer).catch(e => console.error(e));
@@ -71,14 +72,14 @@ function addVectorLayer() {
                 format: new GeoJSON(),
             },
             style: outlineStyle,
-            dataProjection: 'EPSG:4326',
+            dataProjection: CoordinateSystem.epsg4326,
         }),
     });
 
     map.addLayer(boundaries).catch(e => console.error(e));
 }
 
-function createScene(crs, extent) {
+function createScene(/** @type CoordinateSystem */ crs, extent) {
     if (instance) {
         map.getLayers().forEach(l => l.dispose());
         controls.dispose();
@@ -125,8 +126,8 @@ function createScene(crs, extent) {
     StatusBar.bind(instance, { disableUrlUpdate: true });
 }
 
-async function fetchCrs(crs) {
-    const code = crs.split(':')[1];
+async function fetchCrs(/** @type CoordinateSystem */ crs) {
+    const code = crs.srid.tryGetEpsgCode();
     const res = await fetch(`https://epsg.io/${code}.wkt2`, { mode: 'cors' });
     const wkt2 = await res.text();
 
@@ -138,16 +139,16 @@ async function fetchCrs(crs) {
 
     const proj = await (await fetch(`https://epsg.io/${code}.proj4`, { mode: 'cors' })).text();
 
-    Instance.registerCRS(crs, proj);
+    Instance.registerCRS(crs.id, proj);
 
-    const extent = new Extent('EPSG:4326', {
+    const extent = new Extent(CoordinateSystem.epsg4326, {
         west: Number.parseFloat(minLon),
         east: Number.parseFloat(maxLon),
         north: Number.parseFloat(maxLat),
         south: Number.parseFloat(minLat),
     });
 
-    document.getElementById('srid').innerText = crs;
+    document.getElementById('srid').innerText = crs.id;
     document.getElementById('name').innerText = name;
     document.getElementById('description').innerText = area;
     // @ts-expect-error typing
@@ -161,7 +162,7 @@ async function fetchCrs(crs) {
     return { def: wkt2, extent: extent.as(crs) };
 }
 
-async function initialize(crs) {
+async function initialize(/** @type CoordinateSystem */ crs) {
     const error = document.getElementById('message');
 
     try {
@@ -189,8 +190,8 @@ bindButton('create', () => {
     const content = epsgCodeElt.value;
 
     if (content) {
-        initialize(content);
+        initialize(CoordinateSystem.fromSrid(content));
     }
 });
 
-initialize('EPSG:2154');
+initialize(CoordinateSystem.fromEpsg(2154));

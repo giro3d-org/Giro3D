@@ -94,6 +94,8 @@ class TileMesh
     readonly extent: Extent;
     readonly textureSize: Vector2;
 
+    private _verticalScaling = 1;
+
     override customDepthMaterial: ShadowLayeredMaterial;
     override customDistanceMaterial: ShadowLayeredMaterial;
 
@@ -287,6 +289,11 @@ class TileMesh
                 MaterialUtils.setDefine(material, 'ENABLE_SKIRTS', false);
             });
         }
+    }
+
+    setVerticalScaling(scaling: number): void {
+        this._verticalScaling = scaling;
+        this.material.setElevationScaling(scaling);
     }
 
     get absolutePosition() {
@@ -757,6 +764,7 @@ class TileMesh
             UnsignedByteType,
             precision,
             offset,
+            this._verticalScaling,
         );
         this._heightMap = intoUniqueOwner(heightMap, this);
     }

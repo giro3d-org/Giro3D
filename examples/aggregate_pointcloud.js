@@ -1,6 +1,7 @@
 import { Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import PointCloud from '@giro3d/giro3d/entities/PointCloud.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
@@ -28,7 +29,7 @@ Instance.registerCRS(
 
 const instance = new Instance({
     target: 'view',
-    crs: 'EPSG:2154',
+    crs: CoordinateSystem.fromEpsg(2154),
     backgroundColor: 'black',
     renderer: {
         logarithmicDepthBuffer: true,

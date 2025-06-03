@@ -30,7 +30,7 @@ export default class PointCloudSourceInspector extends Panel {
         } else if (isCOPCSource(source)) {
             source.getMetadata().then(metadata => {
                 if (metadata.crs && typeof metadata.crs.srid !== 'undefined') {
-                    this.addController(metadata.crs, 'srid').name('CRS');
+                    this.addController(metadata.crs.srid, 'asString').name('CRS');
                 }
                 this.addController(metadata.attributes, 'length').name('Attributes');
             });

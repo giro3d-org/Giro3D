@@ -3,6 +3,7 @@ import type Disposable from '../core/Disposable';
 import type MemoryUsage from '../core/MemoryUsage';
 import type { GetMemoryUsageContext } from '../core/MemoryUsage';
 import type Progress from '../core/Progress';
+import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 
 export type PointCloudAttribute = {
     /**
@@ -42,12 +43,6 @@ export type PointCloudAttribute = {
 };
 
 /**
- * A dataset CRS definition. Useful when loading datasets from unknown sources, where we don't
- * have this information beforehand.
- */
-export type PointCloudCrs = { name: string; srid?: string; definition?: string };
-
-/**
  * Contains lightweight metadata about the source, such as point count.
  */
 export type PointCloudMetadata = {
@@ -73,7 +68,7 @@ export type PointCloudMetadata = {
     /**
      * The coordinate system of this source, if any.
      */
-    crs?: PointCloudCrs;
+    crs?: CoordinateSystem;
 };
 
 /**

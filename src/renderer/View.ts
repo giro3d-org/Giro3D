@@ -13,6 +13,7 @@ import {
 } from 'three';
 import { type OBB } from 'three/examples/jsm/Addons.js';
 import type Disposable from '../core/Disposable';
+import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import Coordinates from '../core/geographic/Coordinates';
 import Ellipsoid from '../core/geographic/Ellipsoid';
 import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
@@ -92,7 +93,7 @@ export function computeZoomToFitSphere(camera: OrthographicCamera, radius: numbe
  * Adds geospatial capabilities to three.js cameras.
  */
 class View extends EventDispatcher<ViewEvents> implements Disposable {
-    private readonly _crs: string;
+    private readonly _coordinateSystem: CoordinateSystem;
     private readonly _viewMatrix: Matrix4;
     private _camera: PerspectiveCamera | OrthographicCamera;
     private _width: number;
@@ -140,7 +141,7 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
      * @param options - optional values
      */
     constructor(params: {
-        crs: string;
+        crs: CoordinateSystem;
         width: number;
         height: number;
         camera?: PerspectiveCamera | OrthographicCamera;
@@ -149,7 +150,7 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
 
         const { width, height, crs } = params;
 
-        this._crs = crs;
+        this._coordinateSystem = crs;
 
         this._camera = params.camera ?? new PerspectiveCamera(30, width / height);
         this._camera.near = DEFAULT_MIN_NEAR_PLANE;
@@ -163,7 +164,7 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
     }
 
     get crs() {
-        return this._crs;
+        return this._coordinateSystem;
     }
 
     get preSSE() {
@@ -320,7 +321,7 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
      * returned in this CRS
      * @returns Coordinates object holding camera's position
      */
-    position(crs?: string) {
+    position(crs?: CoordinateSystem) {
         return new Coordinates(this.crs, this.camera.position).as(crs ?? this.crs);
     }
 
@@ -392,7 +393,7 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
      * @returns The up vector at this location.
      */
     private getUpVector(coordinate: Vector3, target?: Vector3): Vector3 {
-        if (this._crs === 'EPSG:4978') {
+        if (this._coordinateSystem.isEpsg(4978)) {
             return Ellipsoid.WGS84.getNormalFromCartesian(coordinate, target);
         }
 

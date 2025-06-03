@@ -2,22 +2,23 @@ import XYZ from 'ol/source/XYZ.js';
 
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
-import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
-import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import MapboxTerrainFormat from '@giro3d/giro3d/formats/MapboxTerrainFormat.js';
+import Inspector from '@giro3d/giro3d/gui/Inspector.js';
+import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-const extent = new Extent('EPSG:3857', -13611854, -13593262, 5806332, 5820603);
+const extent = new Extent(CoordinateSystem.epsg3857, -13611854, -13593262, 5806332, 5820603);
 
 const instance = new Instance({
     target: 'view',
-    crs: 'EPSG:3857',
+    crs: CoordinateSystem.epsg3857,
 });
 
 function createMap(mapExtent, tileset) {
@@ -40,7 +41,7 @@ function createMap(mapExtent, tileset) {
             format: new MapboxTerrainFormat(),
             source: new XYZ({
                 url: `https://api.mapbox.com/v4/mapbox.terrain-rgb/{z}/{x}/{y}.pngraw?access_token=${key}`,
-                projection: extent.crs,
+                projection: extent.crs.id,
                 crossOrigin: 'anonymous',
             }),
         }),
@@ -54,7 +55,7 @@ function createMap(mapExtent, tileset) {
         source: new TiledImageSource({
             source: new XYZ({
                 url: `https://api.mapbox.com/v4/mapbox.${tileset}/{z}/{x}/{y}.webp?access_token=${key}`,
-                projection: extent.crs,
+                projection: extent.crs.id,
                 crossOrigin: 'anonymous',
             }),
         }),

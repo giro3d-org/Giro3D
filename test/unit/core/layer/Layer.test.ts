@@ -1,3 +1,4 @@
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import type Instance from '@giro3d/giro3d/core/Instance';
 import type {
@@ -100,7 +101,7 @@ describe('Layer', () => {
     describe('constructor', () => {
         it('should assign the provided properties', () => {
             const id = 'foo';
-            const extent = new Extent('EPSG:4326', 0, 0, 0, 0);
+            const extent = new Extent(CoordinateSystem.epsg4326, 0, 0, 0, 0);
             const layer = new TestLayer({
                 name: id,
                 extent,
@@ -129,7 +130,7 @@ describe('Layer', () => {
                 notifyChange: jest.fn(),
             } as unknown as Instance;
 
-            await layer.initialize({ composerProjection: 'EPSG:3857', instance });
+            await layer.initialize({ composerProjection: CoordinateSystem.epsg3857, instance });
 
             expect(source.initialize).toHaveBeenCalledTimes(1);
         });

@@ -2,25 +2,29 @@ import { OSM } from 'ol/source';
 
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import Instance from '@giro3d/giro3d/core/Instance';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer';
 import Map from '@giro3d/giro3d/entities/Map';
+import Inspector from '@giro3d/giro3d/gui/Inspector';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource';
 import WmsSource from '@giro3d/giro3d/sources/WmsSource';
 import StatusBar from './widgets/StatusBar';
-import Inspector from '@giro3d/giro3d/gui/Inspector';
 
 import { bindButton } from './widgets/bindButton';
 
 const instance = new Instance({
     target: 'view',
-    crs: 'EPSG:3857',
+    crs: CoordinateSystem.epsg3857,
 });
 
-const extent = new Extent('EPSG:4326', { west: -25, south: 36, north: 65, east: 65 }).as(
-    instance.referenceCrs,
-);
+const extent = new Extent(CoordinateSystem.epsg4326, {
+    west: -25,
+    south: 36,
+    north: 65,
+    east: 65,
+}).as(instance.coordinateSystem);
 
 const map = new Map({
     extent,

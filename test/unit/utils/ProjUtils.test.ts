@@ -1,3 +1,4 @@
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import ProjUtils from '@giro3d/giro3d/utils/ProjUtils';
 import { Vector2 } from 'three';
 
@@ -5,8 +6,8 @@ describe('transformBufferInPlace', () => {
     it('should do nothing if both CRSes are equal', () => {
         const buffer = new Float64Array([0, 1, 2]);
         ProjUtils.transformBufferInPlace(buffer, {
-            srcCrs: 'EPSG:1234',
-            dstCrs: 'EPSG:1234',
+            srcCrs: CoordinateSystem.fromEpsg(1234),
+            dstCrs: CoordinateSystem.fromEpsg(1234),
             stride: 3,
         });
 
@@ -22,8 +23,8 @@ describe('transformBufferInPlace', () => {
         const vec4Buffer = new Float64Array([1.2, 0.2, Z, W, 2.3, 10.2, Z, W]);
 
         ProjUtils.transformBufferInPlace(vec3Buffer, {
-            srcCrs: 'EPSG:4326',
-            dstCrs: 'EPSG:3857',
+            srcCrs: CoordinateSystem.epsg4326,
+            dstCrs: CoordinateSystem.epsg3857,
             stride: 3,
         });
 
@@ -36,8 +37,8 @@ describe('transformBufferInPlace', () => {
         expect(vec3Buffer[5]).toEqual(Z);
 
         ProjUtils.transformBufferInPlace(vec4Buffer, {
-            srcCrs: 'EPSG:4326',
-            dstCrs: 'EPSG:3857',
+            srcCrs: CoordinateSystem.epsg4326,
+            dstCrs: CoordinateSystem.epsg3857,
             stride: 4,
         });
 
@@ -57,8 +58,8 @@ describe('transformBufferInPlace', () => {
         const vec3Buffer = new Float64Array([1.2, 0.2, Z, 2.3, 10.2, Z]);
 
         ProjUtils.transformBufferInPlace(vec3Buffer, {
-            srcCrs: 'EPSG:4326',
-            dstCrs: 'EPSG:3857',
+            srcCrs: CoordinateSystem.epsg4326,
+            dstCrs: CoordinateSystem.epsg3857,
             stride: 3,
             offset: new Vector2(-1000, -1000),
         });
@@ -100,10 +101,11 @@ describe('readCrsFromWkt', () => {
             AUTHORITY["EPSG","2154"]]
         `;
 
-        const parsedCrs = ProjUtils.readCrsFromWkt(wkt);
+        const parsedCrs = CoordinateSystem.fromWkt(wkt);
         expect(parsedCrs).toBeDefined();
         expect(parsedCrs!.name).toEqual('RGF93 v1 / Lambert-93');
-        expect(parsedCrs!.srid).toEqual('EPSG:2154');
+        expect(parsedCrs!.srid?.asString).toEqual('EPSG:2154');
+        expect(parsedCrs!.srid?.isEpsg(2154)).toEqual(true);
     });
 
     it('should return correct CRS name for COMPD_CS WKT without authority', () => {
@@ -136,7 +138,7 @@ describe('readCrsFromWkt', () => {
                 AUTHORITY["EPSG","5703"]]]
         `;
 
-        const parsedCrs = ProjUtils.readCrsFromWkt(wkt);
+        const parsedCrs = CoordinateSystem.fromWkt(wkt);
         expect(parsedCrs).toBeDefined();
         expect(parsedCrs!.name).toEqual('NAD83(2011) / UTM zone 14N');
         expect(parsedCrs!.srid).toBeUndefined();
@@ -163,7 +165,7 @@ describe('readCrsFromWkt', () => {
     AXIS["Easting",EAST],
     AXIS["Northing",NORTH]]`;
 
-        const parsedCrs = ProjUtils.readCrsFromWkt(wkt);
+        const parsedCrs = CoordinateSystem.fromWkt(wkt);
         expect(parsedCrs).toBeDefined();
         expect(parsedCrs!.name).toEqual(
             'Projected CRS NAD83(2011) / Tennessee (ftUS) with ellipsoidal NAD83(2011) height demoted to 2D',
@@ -188,10 +190,11 @@ describe('readCrsFromWkt', () => {
             AUTHORITY["EPSG","4978"]]
         `;
 
-        const parsedCrs = ProjUtils.readCrsFromWkt(wkt);
+        const parsedCrs = CoordinateSystem.fromWkt(wkt);
         expect(parsedCrs).toBeDefined();
         expect(parsedCrs!.name).toEqual('WGS 84');
-        expect(parsedCrs!.srid).toEqual('EPSG:4978');
+        expect(parsedCrs!.srid?.asString).toEqual('EPSG:4978');
+        expect(parsedCrs!.srid?.isEpsg(4978)).toEqual(true);
     });
 
     it('should return correct CRS name for WKT 2', () => {
@@ -239,9 +242,10 @@ describe('readCrsFromWkt', () => {
             ID["EPSG",2154]]
         `;
 
-        const parsedCrs = ProjUtils.readCrsFromWkt(wkt);
+        const parsedCrs = CoordinateSystem.fromWkt(wkt);
         expect(parsedCrs).toBeDefined();
         expect(parsedCrs!.name).toEqual('RGF93 v1 / Lambert-93');
-        expect(parsedCrs!.srid).toEqual('EPSG:2154');
+        expect(parsedCrs!.srid?.asString).toEqual('EPSG:2154');
+        expect(parsedCrs!.srid?.isEpsg(2154)).toEqual(true);
     });
 });

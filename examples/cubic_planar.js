@@ -1,17 +1,18 @@
 import {
-    Mesh,
-    Vector3,
-    Euler,
-    MeshBasicMaterial,
-    BoxGeometry,
-    Object3D,
-    DoubleSide,
     AxesHelper,
+    BoxGeometry,
+    DoubleSide,
+    Euler,
+    Mesh,
+    MeshBasicMaterial,
+    Object3D,
+    Vector3,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 import TileWMS from 'ol/source/TileWMS.js';
 
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
@@ -21,8 +22,8 @@ import Map, { isMap } from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
-import StatusBar from './widgets/StatusBar.js';
 import WmsSource from '@giro3d/giro3d/sources/WmsSource.js';
+import StatusBar from './widgets/StatusBar.js';
 
 const wmsLayers = [
     'metropole-de-lyon:fpc_fond_plan_communaut.fpcilot',
@@ -67,7 +68,13 @@ Instance.registerCRS(
 );
 
 // Define geographic extent: CRS, min/max X, min/max Y
-const extent = new Extent('EPSG:3946', 1837900, 1837900 + 8000, 5170100, 5170100 + 8000);
+const extent = new Extent(
+    CoordinateSystem.fromEpsg(3946),
+    1837900,
+    1837900 + 8000,
+    5170100,
+    5170100 + 8000,
+);
 
 const scale = new Vector3(1, 1, 1).divideScalar(extent.dimensions().x);
 

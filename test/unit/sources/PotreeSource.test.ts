@@ -50,7 +50,8 @@ describe('PotreeSource', () => {
                 const metadata = await source.getMetadata();
 
                 expect(metadata.pointCount).toBeUndefined();
-                expect(metadata.crs).toBeUndefined();
+                expect(metadata.crs!.name).toBe('unknown');
+                expect(metadata.crs!.srid).toBeUndefined();
                 expect(metadata.volume).toBeDefined();
 
                 const volume = metadata.volume!;

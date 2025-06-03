@@ -615,6 +615,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     private _geometryBuilder: TileGeometryBuilder | null = null;
 
     private _hasElevationLayer = false;
+    private _elevationScaling = 1;
     private _colorAtlasDataType: TextureDataType = UnsignedByteType;
     private _wireframe = false;
     private _subdivisionThreshold;
@@ -1089,9 +1090,9 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     override preprocess() {
-        if (this.extent.crs !== this.getComposerProjection()) {
+        if (!this.extent.crs.equals(this.getComposerProjection())) {
             throw new Error(
-                `The extent of this map is not in the correct CRS. Expected: ${this.getComposerProjection()}, got: ${this.extent.crs}`,
+                `The extent of this map is not in the correct CRS. Expected: ${this.getComposerProjection().id}, got: ${this.extent.crs.id}`,
             );
         }
 
@@ -1144,7 +1145,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     protected getComposerProjection() {
-        return this.instance.referenceCrs;
+        return this.instance.coordinateSystem;
     }
 
     protected getGeometryBuilder(): TileGeometryBuilder {
@@ -1205,6 +1206,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
             geometryBuilder: nonNull(this._geometryBuilder),
             volume: this.createTileVolume(extent),
         });
+        tile.setVerticalScaling(this._elevationScaling);
 
         this._allTiles.add(tile);
 
@@ -1301,7 +1303,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
             const pickResult: MapPickResult = {
                 isMapPickResult: true,
-                coord: new Coordinates(this.instance.referenceCrs, x, y, z),
+                coord: new Coordinates(this.instance.coordinateSystem, x, y, z),
                 entity: this,
                 ...intersect,
             };
@@ -1735,6 +1737,12 @@ class Map<UserData extends EntityUserData = EntityUserData>
             this.registerColorLayer();
         } else if (isElevationLayer(layer)) {
             this._hasElevationLayer = true;
+            this._elevationScaling =
+                layer.source.getCrs().metersPerVerticalUnit /
+                this.instance.coordinateSystem.metersPerVerticalUnit;
+            for (const tileMesh of this._allTiles) {
+                tileMesh.setVerticalScaling(this._elevationScaling);
+            }
             this.updateGlobalMinMax();
         }
 

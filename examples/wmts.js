@@ -1,5 +1,6 @@
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
@@ -9,7 +10,7 @@ import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-const extent = new Extent('EPSG:3857', -551152, 876637, 5178404, 6631315);
+const extent = new Extent(CoordinateSystem.epsg3857, -551152, 876637, 5178404, 6631315);
 
 const instance = new Instance({
     target: 'view',

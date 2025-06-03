@@ -3,6 +3,7 @@ import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
 import Instance from '@giro3d/giro3d/core/Instance.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Tiles3D from '@giro3d/giro3d/entities/Tiles3D.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import { ASPRS_CLASSIFICATIONS, MODE } from '@giro3d/giro3d/renderer/PointCloudMaterial.js';
@@ -19,7 +20,7 @@ Instance.registerCRS(
 
 const instance = new Instance({
     target: 'view',
-    crs: 'EPSG:2154',
+    crs: CoordinateSystem.fromEpsg(2154),
     backgroundColor: null, // To make the canvas transparent and show the actual CSS background
 });
 

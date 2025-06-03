@@ -72,8 +72,8 @@ export default class PanoramaTileGeometry
             new Vector3(),
         );
 
-        if (this._extent.crs !== 'equirectangular') {
-            throw new Error(`invalid CRS. Expected 'equirectangular', got: ${this._extent.crs}`);
+        if (!this._extent.crs.isEquirectangular()) {
+            throw new Error(`invalid CRS. Expected 'equirectangular', got: ${this._extent.crs.id}`);
         }
 
         this.buildBuffers(this);

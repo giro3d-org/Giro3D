@@ -1,11 +1,12 @@
 import type Context from '@giro3d/giro3d/core/Context';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import AxisGrid, { DEFAULT_STYLE, type Volume } from '@giro3d/giro3d/entities/AxisGrid';
 import View from '@giro3d/giro3d/renderer/View';
 import * as THREE from 'three';
 import { Vector3 } from 'three';
 
-const DEFAULT_EXTENT = new Extent('EPSG:3857', -10, 10, -10, 10);
+const DEFAULT_EXTENT = new Extent(CoordinateSystem.epsg3857, -10, 10, -10, 10);
 const defaultVolume: Volume = {
     extent: DEFAULT_EXTENT,
     ceiling: 0,
@@ -20,7 +21,7 @@ describe('AxisGrid', () => {
     beforeEach(() => {
         camera = new THREE.PerspectiveCamera(45);
         view = new View({
-            crs: 'foo',
+            crs: CoordinateSystem.fromSrid('foo'),
             width: 1,
             height: 1,
             camera,
@@ -85,12 +86,16 @@ describe('AxisGrid', () => {
     describe('volume', () => {
         it('should set the volume property', () => {
             const grid = new AxisGrid({ volume: defaultVolume });
-            grid.volume = { ceiling: 199, floor: 111, extent: new Extent('EPSG:3857', 1, 2, 3, 4) };
+            grid.volume = {
+                ceiling: 199,
+                floor: 111,
+                extent: new Extent(CoordinateSystem.epsg3857, 1, 2, 3, 4),
+            };
 
             expect(grid.volume).toEqual({
                 ceiling: 199,
                 floor: 111,
-                extent: new Extent('EPSG:3857', 1, 2, 3, 4),
+                extent: new Extent(CoordinateSystem.epsg3857, 1, 2, 3, 4),
             });
         });
     });

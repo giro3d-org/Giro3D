@@ -1,22 +1,28 @@
+import { GeoJSON } from 'ol/format.js';
 import XYZ from 'ol/source/XYZ.js';
 import { Fill, Stroke, Style } from 'ol/style.js';
-import { GeoJSON } from 'ol/format.js';
 
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
-import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
+import MaskLayer, { MaskMode } from '@giro3d/giro3d/core/layer/MaskLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import MaskLayer, { MaskMode } from '@giro3d/giro3d/core/layer/MaskLayer.js';
+import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
 
-import StatusBar from './widgets/StatusBar.js';
 import { bindNumericalDropDown } from './widgets/bindNumericalDropDown.js';
+import StatusBar from './widgets/StatusBar.js';
 
-const extent = Extent.fromCenterAndSize('EPSG:3857', { x: 260000, y: 6251379 }, 32000, 32000);
+const extent = Extent.fromCenterAndSize(
+    CoordinateSystem.epsg3857,
+    { x: 260000, y: 6251379 },
+    32000,
+    32000,
+);
 
 const instance = new Instance({
     target: 'view',
@@ -38,7 +44,7 @@ const basemap = new ColorLayer({
     source: new TiledImageSource({
         source: new XYZ({
             url: `https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.webp?access_token=${apiKey}`,
-            projection: extent.crs,
+            projection: extent.crs.id,
             crossOrigin: 'anonymous',
         }),
     }),

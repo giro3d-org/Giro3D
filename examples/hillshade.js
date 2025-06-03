@@ -1,18 +1,19 @@
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
-import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
+import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 
-import StatusBar from './widgets/StatusBar.js';
-import { bindToggle } from './widgets/bindToggle.js';
-import { bindSlider } from './widgets/bindSlider.js';
 import { MapLightingMode } from '@giro3d/giro3d/entities/MapLightingOptions.js';
+import { bindSlider } from './widgets/bindSlider.js';
+import { bindToggle } from './widgets/bindToggle.js';
+import StatusBar from './widgets/StatusBar.js';
 
 Instance.registerCRS(
     'EPSG:3946',
@@ -24,7 +25,13 @@ Instance.registerCRS(
     'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]',
 );
 
-const extent = new Extent('EPSG:3946', 1837816.94334, 1847692.32501, 5170036.4587, 5178412.82698);
+const extent = new Extent(
+    CoordinateSystem.fromEpsg(3946),
+    1837816.94334,
+    1847692.32501,
+    5170036.4587,
+    5178412.82698,
+);
 
 const instance = new Instance({
     target: 'view',

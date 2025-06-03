@@ -355,6 +355,8 @@ type Uniforms = ThreeUniforms & {
     layersColorMaps: IUniform<ColorMapUniform[]>;
     elevationColorMap: IUniform<ColorMapUniform>;
 
+    elevationScaling: IUniform<number>;
+
     elevationTexture: IUniform<Texture | null>;
     atlasTexture: IUniform<Texture | null>;
     colorTextures: IUniform<Texture[]>;
@@ -557,6 +559,8 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
                 min: 0,
             }),
 
+            elevationScaling: new Uniform(1),
+
             elevationTexture: new Uniform(elevInfo.texture),
             atlasTexture: new Uniform(this._texturesInfo.color.atlasTexture),
             colorTextures: new Uniform([]),
@@ -600,6 +604,10 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         this.uniforms.neighbours.value[neighbour].diffLevel = diffLevel;
         this.uniforms.neighbours.value[neighbour].offsetScale = offsetScale;
         this.uniforms.neighbourTextures.value[neighbour] = texture;
+    }
+
+    setElevationScaling(scaling: number): void {
+        this.uniforms.elevationScaling.value = scaling;
     }
 
     override onBeforeCompile(parameters: WebGLProgramParametersWithUniforms): void {

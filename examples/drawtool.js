@@ -1,14 +1,21 @@
 import { Color, DoubleSide, MathUtils, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
-import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
+import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
-import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
+import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
-import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
+import Shape, {
+    DEFAULT_SURFACE_OPACITY,
+    angleSegmentFormatter,
+    isShapePickResult,
+    slopeSegmentFormatter,
+} from '@giro3d/giro3d/entities/Shape.js';
 import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
+import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import DrawTool, {
     afterRemovePointOfRing,
     afterUpdatePointOfRing,
@@ -16,21 +23,15 @@ import DrawTool, {
     inhibitHook,
     limitRemovePointHook,
 } from '@giro3d/giro3d/interactions/DrawTool.js';
-import Shape, {
-    DEFAULT_SURFACE_OPACITY,
-    angleSegmentFormatter,
-    isShapePickResult,
-    slopeSegmentFormatter,
-} from '@giro3d/giro3d/entities/Shape.js';
+import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 import Fetcher from '@giro3d/giro3d/utils/Fetcher.js';
-import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
 import { bindButton } from './widgets/bindButton.js';
-import { bindSlider } from './widgets/bindSlider.js';
 import { bindColorPicker } from './widgets/bindColorPicker.js';
 import { bindDropDown } from './widgets/bindDropDown.js';
+import { bindSlider } from './widgets/bindSlider.js';
 
 Instance.registerCRS(
     'EPSG:2154',
@@ -43,11 +44,16 @@ Instance.registerCRS(
 
 const instance = new Instance({
     target: 'view',
-    crs: 'EPSG:2154',
+    crs: CoordinateSystem.fromEpsg(2154),
     backgroundColor: null,
 });
 
-const extent = Extent.fromCenterAndSize('EPSG:2154', { x: 972_027, y: 6_299_491 }, 10_000, 10_000);
+const extent = Extent.fromCenterAndSize(
+    CoordinateSystem.fromEpsg(2154),
+    { x: 972_027, y: 6_299_491 },
+    10_000,
+    10_000,
+);
 
 const map = new Map({
     extent,
@@ -141,7 +147,9 @@ document.addEventListener('keydown', e => {
 });
 
 function vertexLabelFormatter({ position }) {
-    const latlon = new Coordinates(instance.referenceCrs, position.x, position.y).as('EPSG:4326');
+    const latlon = new Coordinates(instance.coordinateSystem, position.x, position.y).as(
+        CoordinateSystem.epsg4326,
+    );
 
     return `lat: ${latlon.latitude.toFixed(5)}°, lon: ${latlon.longitude.toFixed(5)}°`;
 }
@@ -220,11 +228,11 @@ function fromGeoJSON(feature) {
         throw new Error('not a valid GeoJSON feature');
     }
 
-    const crs = 'EPSG:4326';
+    const crs = CoordinateSystem.epsg4326;
 
     const getPoint = c => {
         const coord = new Coordinates(crs, c[0], c[1], c[2] ?? 0);
-        return coord.as(instance.referenceCrs, coord).toVector3();
+        return coord.as(instance.coordinateSystem, coord).toVector3();
     };
 
     const uuid = MathUtils.generateUUID();

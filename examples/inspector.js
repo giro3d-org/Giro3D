@@ -4,11 +4,12 @@ import StadiaMaps from 'ol/source/StadiaMaps.js';
 
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
-import Inspector from '@giro3d/giro3d/gui/Inspector.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
+import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import Panel from '@giro3d/giro3d/gui/Panel.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
@@ -42,7 +43,7 @@ class MyCustomPanel extends Panel {
 }
 
 const extent = new Extent(
-    'EPSG:3857',
+    CoordinateSystem.epsg3857,
     -20037508.342789244,
     20037508.342789244,
     -20037508.342789244,

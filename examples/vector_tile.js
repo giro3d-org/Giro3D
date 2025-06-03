@@ -2,17 +2,18 @@ import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import { Fill, Icon, Stroke, Style, Text } from 'ol/style.js';
 
-import VectorTileSource from '@giro3d/giro3d/sources/VectorTileSource.js';
-import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
+import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
+import VectorTileSource from '@giro3d/giro3d/sources/VectorTileSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
 const extent = new Extent(
-    'EPSG:3857',
+    CoordinateSystem.epsg3857,
     -20037508.342789244,
     20037508.342789244,
     -20048966.1,

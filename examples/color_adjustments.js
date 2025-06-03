@@ -1,22 +1,23 @@
 import { Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
-import { Fill, Stroke, Style } from 'ol/style.js';
 import GeoJSON from 'ol/format/GeoJSON.js';
+import { Fill, Stroke, Style } from 'ol/style.js';
 
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
-import Map from '@giro3d/giro3d/entities/Map.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
+import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import WmsSource from '@giro3d/giro3d/sources/WmsSource.js';
 import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
+import WmsSource from '@giro3d/giro3d/sources/WmsSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-import { bindSlider } from './widgets/bindSlider.js';
 import { bindButton } from './widgets/bindButton.js';
 import { bindDropDown } from './widgets/bindDropDown.js';
+import { bindSlider } from './widgets/bindSlider.js';
 
 Instance.registerCRS(
     'EPSG:3946',
@@ -26,7 +27,7 @@ Instance.registerCRS('EPSG:4171', '+proj=longlat +ellps=GRS80 +no_defs +type=crs
 
 const instance = new Instance({
     target: 'view',
-    crs: 'EPSG:3946',
+    crs: CoordinateSystem.fromEpsg(3946),
 });
 
 const xmin = 1837816.94334;
@@ -34,7 +35,7 @@ const xmax = 1847692.32501;
 const ymin = 5170036.4587;
 const ymax = 5178412.82698;
 
-const extent = new Extent('EPSG:3946', xmin, xmax, ymin, ymax);
+const extent = new Extent(CoordinateSystem.fromEpsg(3946), xmin, xmax, ymin, ymax);
 
 const map = new Map({ extent });
 instance.add(map);
@@ -65,7 +66,7 @@ const geoJsonLayer = new ColorLayer({
         // Defines the dataProjection to reproject the data,
         // GeoJSON specifications say that the crs should be EPSG:4326 but
         // here we are using a different one.
-        dataProjection: 'EPSG:4171',
+        dataProjection: CoordinateSystem.fromEpsg(4171),
         style: feature =>
             new Style({
                 fill: new Fill({

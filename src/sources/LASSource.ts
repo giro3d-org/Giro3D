@@ -4,11 +4,11 @@ import { Header } from 'copc/lib/las';
 import { Binary as BinaryUtils } from 'copc/lib/utils/binary';
 import type { BufferAttribute } from 'three';
 import { Box3, Float32BufferAttribute, Vector3 } from 'three';
+import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import type { GetMemoryUsageContext } from '../core/MemoryUsage';
 import OperationCounter from '../core/OperationCounter';
 import { defer } from '../core/RequestQueue';
 import Fetcher from '../utils/Fetcher';
-import ProjUtils from '../utils/ProjUtils';
 import { nonNull } from '../utils/tsutils';
 import WorkerPool from '../utils/WorkerPool';
 import type { CommonOptions } from './las/CommonOptions';
@@ -265,9 +265,10 @@ export default class LASSource extends PointCloudSourceBase {
 
             const wkt = BinaryUtils.toCString(getBufferChunk(wktVlrBegin, wktVlrEnd));
             if (wkt !== null && wkt) {
-                const crs = ProjUtils.readCrsFromWkt(wkt);
-                if (crs) {
-                    result.crs = crs;
+                try {
+                    result.crs = CoordinateSystem.fromWkt(wkt);
+                } catch (error: unknown) {
+                    console.error(`Failed to parse WKT for LAS "${this.id}": `, error);
                 }
             }
         }

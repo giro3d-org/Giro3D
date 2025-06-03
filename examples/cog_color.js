@@ -1,16 +1,23 @@
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
-import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
-import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
+import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
+import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 import { bindDropDown } from './widgets/bindDropDown.js';
 
-const extent = new Extent('EPSG:3857', 1818329.448, 1987320.77, 6062229.082, 6231700.791);
+const extent = new Extent(
+    CoordinateSystem.epsg3857,
+    1818329.448,
+    1987320.77,
+    6062229.082,
+    6231700.791,
+);
 const center = extent.centerAsVector3();
 
 const instance = new Instance({

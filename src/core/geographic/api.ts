@@ -4,5 +4,15 @@ import type Ellipsoid from './Ellipsoid';
 import type Extent from './Extent';
 import type { ExtentParameters } from './Extent';
 import type Sun from './Sun';
+import type * as coordinatesystem from './coordinate-system/api';
 
-export { CoordinateParameters, Coordinates, DMS, Ellipsoid, Extent, ExtentParameters, Sun };
+export {
+    CoordinateParameters,
+    Coordinates,
+    coordinatesystem,
+    DMS,
+    Ellipsoid,
+    Extent,
+    ExtentParameters,
+    Sun,
+};

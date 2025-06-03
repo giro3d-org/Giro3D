@@ -1,24 +1,25 @@
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
+import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/ColorMap.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
-import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
+import AxisGrid from '@giro3d/giro3d/entities/AxisGrid.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/ColorMap.js';
-import AxisGrid from '@giro3d/giro3d/entities/AxisGrid.js';
+import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
 import { makeColorRamp } from './widgets/makeColorRamp.js';
 
-const extent = new Extent('EPSG:3857', 2285900, 2444000, 4230900, 4386100);
+const extent = new Extent(CoordinateSystem.epsg3857, 2285900, 2444000, 4230900, 4386100);
 
 const instance = new Instance({
     target: 'view',
-    crs: 'EPSG:3857',
+    crs: CoordinateSystem.epsg3857,
     backgroundColor: null, // Make the canvas transparent
 });
 
@@ -30,7 +31,7 @@ instance.add(map);
 
 const source = new GeoTIFFSource({
     url: 'https://3d.oslandia.com/giro3d/rasters/bathymetry-emodnet.cog.tif',
-    crs: 'EPSG:3857',
+    crs: CoordinateSystem.epsg3857,
 });
 
 const min = -5200;

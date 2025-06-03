@@ -198,7 +198,7 @@ export interface AxisGridEventMap extends Entity3DEventMap {
  *
  * ```js
  * // Create a 200x200 meters extent
- * const extent = new Extent('EPSG:3857', -100, +100, -100, +100);
+ * const extent = new Extent(CoordinateSystem.epsg3857, -100, +100, -100, +100);
  *
  * // Create an AxisGrid on this extent, with the grid floor at zero meters,
  * // and the grid ceiling at 2500 meters.

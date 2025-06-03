@@ -45,6 +45,7 @@ import type FeatureFormat from 'ol/format/Feature.js';
 import type { Projection } from 'ol/proj';
 import type RenderFeature from 'ol/render/Feature';
 import type { StyleFunction } from 'ol/style/Style';
+import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import type Extent from '../core/geographic/Extent';
 import Fetcher, { isHttpError } from '../utils/Fetcher';
 import OpenLayersUtils from '../utils/OpenLayersUtils';
@@ -177,7 +178,7 @@ class VectorTileSource extends ImageSource {
     private _sourceProjection: Projection;
     private _extent: Extent | undefined;
     private readonly _tileGrid: TileGrid;
-    private readonly _crs: string;
+    private readonly _crs: CoordinateSystem;
     private readonly _olUID = MathUtils.generateUUID();
 
     /**
@@ -234,7 +235,7 @@ class VectorTileSource extends ImageSource {
             'could not get projection from source',
         );
 
-        this._crs = projection.getCode();
+        this._crs = CoordinateSystem.fromSrid(projection.getCode());
         const tileGrid = this.source.getTileGridForProjection(projection);
         this._tileGrid = tileGrid;
         this._sourceProjection = projection;

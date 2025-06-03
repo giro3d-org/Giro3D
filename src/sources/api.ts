@@ -1,3 +1,4 @@
+// import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import AggregatePointCloudSource, {
     AggregatePointCloudSourceOptions,
 } from './AggregatePointCloudSource';
@@ -20,7 +21,6 @@ import LASSource, { LASSourceOptions } from './LASSource';
 import {
     GetNodeDataOptions,
     PointCloudAttribute,
-    PointCloudCrs,
     PointCloudMetadata,
     PointCloudNode,
     PointCloudNodeData,
@@ -46,6 +46,7 @@ export {
     AggregatePointCloudSource,
     AggregatePointCloudSourceOptions,
     ChannelMapping,
+    // CoordinateSystem,
     COPCSource,
     COPCSourceOptions,
     CustomContainsFn,
@@ -63,7 +64,6 @@ export {
     LASSource,
     LASSourceOptions,
     PointCloudAttribute,
-    PointCloudCrs,
     PointCloudMetadata,
     PointCloudNode,
     PointCloudNodeData,

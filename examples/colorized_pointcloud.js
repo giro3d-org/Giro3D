@@ -1,11 +1,10 @@
-import colormap from 'colormap';
-
 import { Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
+import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
-import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import Tiles3D from '@giro3d/giro3d/entities/Tiles3D.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
@@ -47,7 +46,7 @@ Instance.registerCRS(
 
 const instance = new Instance({
     target: 'view',
-    crs: 'EPSG:3946',
+    crs: CoordinateSystem.fromEpsg(3946),
     backgroundColor: 0xcccccc,
 });
 
@@ -87,7 +86,7 @@ function initializeCamera() {
     const lookAt = bbox.getCenter(tmpVec3);
     lookAt.z = bbox.min.z;
 
-    const extent = Extent.fromBox3('EPSG:3946', bbox);
+    const extent = Extent.fromBox3(CoordinateSystem.fromEpsg(3946), bbox);
 
     placeCamera(position, lookAt);
 

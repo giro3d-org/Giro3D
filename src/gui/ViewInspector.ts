@@ -52,7 +52,7 @@ class CameraInspector extends Panel {
         this.addController(this.view, 'width').name('Width (pixels)');
         this.addController(this.view, 'height').name('Height (pixels)');
 
-        if (instance.referenceCrs === 'EPSG:4978') {
+        if (instance.coordinateSystem.isEpsg(4978)) {
             this.addController(this, 'horizonDistance');
             instance.addEventListener('after-camera-update', () => {
                 const distance = Ellipsoid.WGS84.getOpticalHorizon(instance.view.camera.position);
@@ -100,7 +100,7 @@ class CameraInspector extends Panel {
         this.instance.notifyChange();
 
         if (
-            this.instance.referenceCrs === 'EPSG:4978' &&
+            this.instance.coordinateSystem.isEpsg(4978) &&
             isPerspectiveCamera(this.instance.view.camera)
         ) {
             const distance = Ellipsoid.WGS84.getOpticalHorizon(this.instance.view.camera.position);

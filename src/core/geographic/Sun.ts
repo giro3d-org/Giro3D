@@ -1,5 +1,6 @@
 import { MathUtils, Spherical, Vector3 } from 'three';
 import Coordinates from './Coordinates';
+import CoordinateSystem from './coordinate-system/CoordinateSystem';
 
 function computeJulianDate(date: Date) {
     let year = date.getUTCFullYear();
@@ -97,9 +98,9 @@ function getGeographicPosition(date?: Date, target?: Coordinates): Coordinates {
 
     const { latitude, longitude } = celestialToGeographic({ rightAscension, declination }, date);
 
-    target = target ?? new Coordinates('EPSG:4326', 0, 0);
+    target = target ?? new Coordinates(CoordinateSystem.epsg4326, 0, 0);
 
-    target.set('EPSG:4326', longitude, latitude);
+    target.set(CoordinateSystem.epsg4326, longitude, latitude);
 
     return target;
 }

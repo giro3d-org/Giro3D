@@ -1,3 +1,4 @@
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Instance from '@giro3d/giro3d/core/Instance';
 import Entity from '@giro3d/giro3d/entities/Entity';
 import Entity3D from '@giro3d/giro3d/entities/Entity3D';
@@ -67,7 +68,7 @@ describe('Instance', () => {
         });
         instance = new Instance({
             target: viewerDiv,
-            crs: 'EPSG:3857',
+            crs: CoordinateSystem.epsg3857,
             renderer,
         });
         Fetcher.json = jest.fn();

@@ -5,14 +5,15 @@ import { Fill, Stroke, Style } from 'ol/style.js';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
-import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
+import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
-import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
-import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
+import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
@@ -22,7 +23,7 @@ Instance.registerCRS(
 );
 
 const extent = new Extent(
-    'EPSG:30174',
+    CoordinateSystem.fromEpsg(30174),
     -201012.900985493,
     -198191.63799031873,
     1066954.2964232096,
@@ -70,7 +71,7 @@ const topoJsonSource = new VectorSource({
         url: 'https://3d.oslandia.com/giro3d/vectors/tokyo_buildings.topojson',
         format: new TopoJSON(),
     },
-    dataProjection: 'EPSG:4326',
+    dataProjection: CoordinateSystem.epsg4326,
     style: buildingsStyle,
 });
 
@@ -125,7 +126,7 @@ function pickFeatures(mouseEvent) {
     if (picked) {
         const { x, y } = picked.point;
         const features = buildingsLayer.getVectorFeaturesAtCoordinate(
-            new Coordinates(instance.referenceCrs, x, y),
+            new Coordinates(instance.coordinateSystem, x, y),
         );
 
         if (features.length > 0) {

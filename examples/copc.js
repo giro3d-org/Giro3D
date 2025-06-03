@@ -25,6 +25,7 @@ import { bindToggle } from './widgets/bindToggle.js';
 import { formatPointCount } from './widgets/formatPointCount.js';
 import { makeColorRamp } from './widgets/makeColorRamp.js';
 import { placeCameraOnTop } from './widgets/placeCameraOnTop.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 
 // LAS processing requires the WebAssembly laz-perf library
 // This path is specific to your project, and must be set accordingly.
@@ -218,11 +219,9 @@ function loadMap(instance, extent) {
 }
 
 /**
- * @param {string} crs
+ * @param {number} code
  */
-async function fetchCrsDefinition(crs) {
-    const code = crs.split(':')[1];
-
+async function fetchCrsDefinitionFromEpsg(code) {
     async function fetchText(url) {
         const res = await fetch(url, { mode: 'cors' });
         const def = await res.text();
@@ -283,11 +282,10 @@ function bindFilter(index, attributes, onChange) {
 }
 
 /**
- * @param {string | undefined} srid
  * @param {PointCloud} entity
  * @param {COPCSource} source
  */
-function populateGUI(srid, entity, source) {
+function populateGUI(entity, source) {
     document.getElementById('accordion').style.display = 'block';
 
     const tableElement = document.getElementById('table');
@@ -296,9 +294,10 @@ function populateGUI(srid, entity, source) {
     /** @type {HTMLLinkElement} */
     // @ts-expect-error casting
     const projectionElement = document.getElementById('projection');
-    if (typeof srid === 'string' && srid.startsWith('EPSG:')) {
-        projectionElement.href = `https://epsg.io/${instance.referenceCrs.split(':')[1]}`;
-        projectionElement.innerHTML = instance.referenceCrs;
+    const epsgCode = instance.coordinateSystem.srid?.tryGetEpsgCode();
+    if (typeof epsgCode === 'number') {
+        projectionElement.href = `https://epsg.io/${epsgCode}`;
+        projectionElement.innerHTML = instance.coordinateSystem.id;
     } else {
         projectionElement.parentElement.remove();
     }
@@ -343,13 +342,10 @@ async function load(url) {
     }
 
     const metadata = await source.getMetadata();
-    let crs = 'unknown';
-    if (metadata.crs) {
-        crs = metadata.crs.srid ?? metadata.crs.name;
-    }
+
     instance = new Instance({
         target: 'view',
-        crs,
+        crs: metadata.crs,
         backgroundColor: null,
     });
 
@@ -416,18 +412,14 @@ async function load(url) {
     // If the source provides a coordinate system, we can load a map
     // to display as a geographic context and be able to check that the
     // point cloud is properly positioned.
-    if (metadata.crs) {
+    const epsgCode = metadata.crs.srid?.tryGetEpsgCode();
+    if (typeof epsgCode === 'number') {
         try {
-            const { name, definition, srid } = metadata.crs;
-            if (srid) {
-                const definitionFromAuthority = await fetchCrsDefinition(srid);
-                Instance.registerCRS(srid, definitionFromAuthority);
-            } else {
-                Instance.registerCRS(name, definition);
-            }
+            const definitionFromEpsg = await fetchCrsDefinitionFromEpsg(epsgCode);
+            Instance.registerCRS(metadata.crs.id, definitionFromEpsg);
 
             // We create the extent from the volume of the point cloud.
-            const extent = Extent.fromBox3(instance.referenceCrs, volume);
+            const extent = Extent.fromBox3(CoordinateSystem.fromEpsg(epsgCode), volume);
             const map = loadMap(instance, extent.withRelativeMargin(1.2));
 
             document.getElementById('basemap-group').style.display = 'block';
@@ -461,14 +453,12 @@ async function load(url) {
     addClassification(17, 'Bridge deck', entity.classifications);
     addClassification(18, 'High noise', entity.classifications);
 
-    populateGUI(metadata.crs?.srid, entity, source);
+    populateGUI(entity, source);
 
     Inspector.attach('inspector', instance);
 
-    try {
+    if (instance.coordinateSystem.srid) {
         StatusBar.bind(instance, { disableUrlUpdate: true });
-    } catch (error) {
-        console.warn(`Failed to bind status bar: `, error);
     }
 
     placeCameraOnTop(volume, instance);

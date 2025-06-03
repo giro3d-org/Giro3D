@@ -1,6 +1,7 @@
 import type GUI from 'lil-gui';
 import { Color } from 'three';
 
+import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import type Instance from '../core/Instance';
 import { isColorLayer } from '../core/layer/ColorLayer';
 import { isElevationLayer } from '../core/layer/ElevationLayer';
@@ -30,7 +31,7 @@ class LayerInspector extends Panel {
     layer: Layer;
     entity: Entity3D;
     state: string;
-    sourceCrs: string;
+    sourceCrs: CoordinateSystem;
     interpretation: string;
     minmax: { min: number; max: number } | undefined;
     extentColor: Color;
@@ -60,7 +61,7 @@ class LayerInspector extends Panel {
 
         this.entity = entity;
         this.state = 'idle';
-        this.sourceCrs = layer.source.getCrs() ?? instance.referenceCrs;
+        this.sourceCrs = layer.source.getCrs() ?? instance.coordinateSystem;
 
         this.updateValues();
 
@@ -70,7 +71,7 @@ class LayerInspector extends Panel {
         if (layer.name != null) {
             this.addController(this.layer, 'name').name('Name');
         }
-        this.addController(this, 'sourceCrs').name('Source CRS');
+        this.addController(this.sourceCrs, 'id').name('Source CRS');
 
         this.addController(this, 'state').name('Status');
         this.addController(this.layer, 'resolutionFactor').name('Resolution factor');

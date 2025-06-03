@@ -1,5 +1,6 @@
 import type GUI from 'lil-gui';
 import { Color } from 'three';
+import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import Coordinates from '../core/geographic/Coordinates';
 import type Instance from '../core/Instance';
 import type Shape from '../entities/Shape';
@@ -10,8 +11,8 @@ import Panel from './Panel';
 const vertexLabelFormatter: (instance: Instance) => VertexLabelFormatter =
     (instance: Instance) =>
     ({ position }) => {
-        const latlon = new Coordinates(instance.referenceCrs, position.x, position.y).as(
-            'EPSG:4326',
+        const latlon = new Coordinates(instance.coordinateSystem, position.x, position.y).as(
+            CoordinateSystem.epsg4326,
         );
 
         return `lat: ${latlon.latitude.toFixed(5)}°, lon: ${latlon.longitude.toFixed(5)}°`;

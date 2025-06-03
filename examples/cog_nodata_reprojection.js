@@ -3,13 +3,14 @@ import colormap from 'colormap';
 import { Box3Helper, Color, DoubleSide } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
-import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
-import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';
+import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/ColorMap.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
+import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer';
 import Map from '@giro3d/giro3d/entities/Map';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/ColorMap.js';
+import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 import { bindToggle } from './widgets/bindToggle.js';
@@ -20,14 +21,14 @@ Instance.registerCRS(
 );
 
 const datasetExtent = new Extent(
-    'EPSG:3857',
+    CoordinateSystem.epsg3857,
     -13581040.085,
     -13469591.026,
     5780261.83,
     5942165.048,
 );
 
-const extent = datasetExtent.clone().as('EPSG:32742');
+const extent = datasetExtent.clone().as(CoordinateSystem.fromEpsg(32742));
 
 const instance = new Instance({
     target: 'view',
@@ -46,7 +47,7 @@ instance.view.setControls(controls);
 const source = new GeoTIFFSource({
     // https://pubs.er.usgs.gov/publication/ds904
     url: 'https://3d.oslandia.com/cog_data/COG_EPSG3857_USGS_13_n47w122_20220919.tif',
-    crs: 'EPSG:3857',
+    crs: CoordinateSystem.epsg3857,
 });
 
 const values = colormap({ colormap: 'viridis', nshades: 256 });

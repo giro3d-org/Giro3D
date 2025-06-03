@@ -1,7 +1,8 @@
-import { Vector3, Object3D, MathUtils } from 'three';
-import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import StadiaMaps from 'ol/source/StadiaMaps.js';
+import { MathUtils, Object3D, Vector3 } from 'three';
+import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
@@ -10,11 +11,11 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import Helpers from '@giro3d/giro3d/helpers/Helpers.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
-import StatusBar from './widgets/StatusBar.js';
 import { bindButton } from './widgets/bindButton.js';
+import StatusBar from './widgets/StatusBar.js';
 
 const EPSG3857_BOUNDS = new Extent(
-    'EPSG:3857',
+    CoordinateSystem.epsg3857,
     -20037508.342789244,
     20037508.342789244,
     -20037508.342789244,
@@ -92,9 +93,12 @@ bindButton('createMap', () => {
     const x = MathUtils.randFloat(-dimensions.width / 2, +dimensions.width / 2);
     const y = MathUtils.randFloat(-dimensions.height / 2, +dimensions.height / 2);
 
-    const extent = Extent.fromCenterAndSize('EPSG:3857', { x, y }, width, height).intersect(
-        EPSG3857_BOUNDS,
-    );
+    const extent = Extent.fromCenterAndSize(
+        CoordinateSystem.epsg3857,
+        { x, y },
+        width,
+        height,
+    ).intersect(EPSG3857_BOUNDS);
 
     createMap(extent);
 });

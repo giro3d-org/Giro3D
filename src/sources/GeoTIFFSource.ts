@@ -14,6 +14,7 @@ import {
 import type QuickLRU from 'quick-lru';
 
 import { GlobalCache, type Cache } from '../core/Cache';
+import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import Extent from '../core/geographic/Extent';
 import { type GetMemoryUsageContext } from '../core/MemoryUsage';
 import Fetcher from '../utils/Fetcher';
@@ -224,7 +225,7 @@ export interface GeoTIFFSourceOptions extends ImageSourceOptions {
     /**
      * The Coordinate Reference System of the image.
      */
-    crs: string;
+    crs: CoordinateSystem;
     /**
      * How to map bands in the source GeoTIFF to color channels in Giro3D textures.
      */
@@ -282,7 +283,7 @@ class GeoTIFFSource extends ImageSource {
     override readonly type = 'GeoTIFFSource' as const;
 
     readonly url: string;
-    readonly crs: string;
+    readonly crs: CoordinateSystem;
 
     private readonly _cacheId: string = MathUtils.generateUUID();
     private readonly _cacheOptions?: GeoTIFFCacheOptions;
@@ -371,7 +372,7 @@ class GeoTIFFSource extends ImageSource {
      * @param crs - The CRS.
      * @param tiffImage - The TIFF image.
      */
-    static computeExtent(crs: string, tiffImage: GeoTIFFImage) {
+    static computeExtent(crs: CoordinateSystem, tiffImage: GeoTIFFImage) {
         const [minx, miny, maxx, maxy] = tiffImage.getBoundingBox();
 
         const extent = new Extent(crs, minx, maxx, miny, maxy);

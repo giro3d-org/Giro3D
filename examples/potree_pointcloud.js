@@ -16,6 +16,7 @@ import { bindToggle } from './widgets/bindToggle.js';
 import { formatPointCount } from './widgets/formatPointCount.js';
 import { makeColorRamp } from './widgets/makeColorRamp.js';
 import { placeCameraOnTop } from './widgets/placeCameraOnTop.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 
 // Some Potree datasets contain LAZ files.
 // LAS processing requires the WebAssembly laz-perf library
@@ -188,15 +189,15 @@ async function load(url) {
 
     const metadata = await source.getMetadata();
 
-    let crs = 'unknown';
-    if (metadata.crs != null) {
-        crs = metadata.crs.name;
+    let crs = CoordinateSystem.unknown;
+    if (!metadata.crs.isUnknown()) {
+        crs = metadata.crs;
         Instance.registerCRS(metadata.crs.name, metadata.crs.definition);
     }
 
     instance = new Instance({
         target: 'view',
-        crs: crs,
+        crs,
         backgroundColor: null,
         renderer: {
             logarithmicDepthBuffer: true,

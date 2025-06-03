@@ -1,25 +1,26 @@
 import * as turf from '@turf/turf';
 
+import { DoubleSide } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import XYZ from 'ol/source/XYZ.js';
 
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
-import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import GeoTIFFFormat from '@giro3d/giro3d/formats/GeoTIFFFormat.js';
+import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import Fetcher from '@giro3d/giro3d/utils/Fetcher.js';
 
 import StatusBar from './widgets/StatusBar.js';
-import { DoubleSide } from 'three';
 
 const x = -13602618.385789588;
 const y = 5811042.273912458;
 
-const extent = new Extent('EPSG:3857', x - 12000, x + 13000, y - 4000, y + 26000);
+const extent = new Extent(CoordinateSystem.epsg3857, x - 12000, x + 13000, y - 4000, y + 26000);
 
 const instance = new Instance({
     target: 'view',

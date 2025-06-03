@@ -118,7 +118,7 @@ class TileInfoPanel extends Panel {
     private getLabelVisibility(tile: TileMesh, position: Vector3): boolean {
         let result = tile.visible && tile.material.visible;
 
-        if (this.instance.referenceCrs === 'EPSG:4978') {
+        if (this.instance.coordinateSystem.isEpsg(4978)) {
             const camPos = this.instance.view.camera.position;
             result = result && Ellipsoid.WGS84.isHorizonVisible(camPos, position);
         }
@@ -132,7 +132,7 @@ class TileInfoPanel extends Panel {
         const sample = elev.samples?.sort((a, b) => a.resolution - b.resolution)[0];
         const z = sample?.elevation ?? 0;
 
-        if (this.instance.referenceCrs === 'EPSG:4978') {
+        if (this.instance.coordinateSystem.isEpsg(4978)) {
             return Ellipsoid.WGS84.toCartesian(center.latitude, center.longitude, z);
         } else {
             return new Vector3(center.x, center.y, z);

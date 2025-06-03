@@ -40,9 +40,13 @@ Test files are located in `test/unit`, under a folder hierachy that mirrors the 
 describe('Extent', () => {
     describe('isValid', () => {
         it('should return false if extent has infinite values', () => {
-            expect(new Extent('EPSG:3857', NaN, 1, 0, 1).isValid()).toEqual(false);
-            expect(new Extent('EPSG:3857', Infinity, 1, 0, 1).isValid()).toEqual(false);
-            expect(new Extent('EPSG:3857', 0, 1, Infinity, 1).isValid()).toEqual(false);
+            expect(new Extent(CoordinateSystem.epsg3857, NaN, 1, 0, 1).isValid()).toEqual(false);
+            expect(new Extent(CoordinateSystem.epsg3857, Infinity, 1, 0, 1).isValid()).toEqual(
+                false,
+            );
+            expect(new Extent(CoordinateSystem.epsg3857, 0, 1, Infinity, 1).isValid()).toEqual(
+                false,
+            );
         });
     });
 });

@@ -2,6 +2,7 @@ import { AxesHelper, Matrix4, Raycaster, Vector2, Vector3 } from 'three';
 
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';
 import Ellipsoid from '@giro3d/giro3d/core/geographic/Ellipsoid';
 import Instance from '@giro3d/giro3d/core/Instance.js';
@@ -10,17 +11,17 @@ import EllipsoidHelper from '@giro3d/giro3d/helpers/EllipsoidHelper';
 
 import { bindButton } from './widgets/bindButton';
 import { bindNumberInput } from './widgets/bindNumberInput';
-import StatusBar from './widgets/StatusBar';
 import { bindToggle } from './widgets/bindToggle';
+import StatusBar from './widgets/StatusBar';
 
 const instance = new Instance({
     target: 'view',
-    crs: 'EPSG:4978',
+    crs: CoordinateSystem.epsg4978,
     backgroundColor: 'black',
 });
 
 const DEFAULT_PARAMS = {
-    observer: new Coordinates('EPSG:4326', 30, 40, 36_000_000),
+    observer: new Coordinates(CoordinateSystem.epsg4326, 30, 40, 36_000_000),
     semiMajorAxis: Ellipsoid.WGS84.semiMajorAxis,
     semiMinorAxis: Ellipsoid.WGS84.semiMinorAxis,
     ellipsoid: Ellipsoid.WGS84,

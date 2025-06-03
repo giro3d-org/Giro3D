@@ -1,8 +1,8 @@
 import {
     AnimationMixer,
-    DirectionalLight,
     Clock,
     Color,
+    DirectionalLight,
     Fog,
     HemisphereLight,
     Mesh,
@@ -15,6 +15,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 
 import Instance from '@giro3d/giro3d/core/Instance.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 
 import StatusBar from './widgets/StatusBar.js';
@@ -22,7 +23,7 @@ import { bindNumericalDropDown } from './widgets/bindNumericalDropDown.js';
 
 const instance = new Instance({
     target: 'view',
-    crs: 'EPSG:3857',
+    crs: CoordinateSystem.epsg3857,
 });
 
 const camera = instance.view.camera;

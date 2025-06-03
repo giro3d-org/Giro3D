@@ -5,25 +5,32 @@ import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import XYZ from 'ol/source/XYZ.js';
 
+import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/ColorMap.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import GeoTIFFFormat from '@giro3d/giro3d/formats/GeoTIFFFormat.js';
-import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/ColorMap.js';
-import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
+import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
-import StatusBar from './widgets/StatusBar.js';
 import { bindNumericalDropDown } from './widgets/bindNumericalDropDown.js';
 import { bindSlider } from './widgets/bindSlider.js';
 import { bindToggle } from './widgets/bindToggle.js';
+import StatusBar from './widgets/StatusBar.js';
 
 const x = -13602000;
 const y = 5812000;
 const halfWidth = 2500;
 
-const extent = new Extent('EPSG:3857', x - halfWidth, x + halfWidth, y - halfWidth, y + halfWidth);
+const extent = new Extent(
+    CoordinateSystem.epsg3857,
+    x - halfWidth,
+    x + halfWidth,
+    y - halfWidth,
+    y + halfWidth,
+);
 
 const instance = new Instance({
     target: 'view',

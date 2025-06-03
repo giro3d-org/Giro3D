@@ -11,10 +11,11 @@ import {
 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
+import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
-import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Tiles3D from '@giro3d/giro3d/entities/Tiles3D.js';
@@ -43,7 +44,7 @@ Instance.registerCRS(
 
 const instance = new Instance({
     target: 'view',
-    crs: 'EPSG:2154',
+    crs: CoordinateSystem.fromEpsg(2154),
 });
 
 instance.renderingOptions.enableEDL = true;
@@ -87,7 +88,7 @@ function getPlanesFromBoxSides(box) {
 }
 
 const extent = new Extent(
-    'EPSG:2154',
+    CoordinateSystem.fromEpsg(2154),
     902000.3307342547,
     927999.9889373797,
     6444999.999618538,

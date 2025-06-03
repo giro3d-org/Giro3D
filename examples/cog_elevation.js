@@ -1,23 +1,27 @@
-import colormap from 'colormap';
-
-import { Color } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
-import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
-import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';
+import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/ColorMap.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
+import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Interpretation from '@giro3d/giro3d/core/layer/Interpretation.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/ColorMap.js';
+import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
-import { makeColorRamp } from './widgets/makeColorRamp.js';
 import { bindDropDown } from './widgets/bindDropDown.js';
+import { makeColorRamp } from './widgets/makeColorRamp.js';
 
-const extent = new Extent('EPSG:3857', -13581040.085, -13469591.026, 5780261.83, 5942165.048);
+const extent = new Extent(
+    CoordinateSystem.epsg3857,
+    -13581040.085,
+    -13469591.026,
+    5780261.83,
+    5942165.048,
+);
 
 const instance = new Instance({
     target: 'view',

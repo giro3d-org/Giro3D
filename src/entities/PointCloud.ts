@@ -1144,7 +1144,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
 
         const mesh = new PointCloudMesh({
             geometry,
-            extent: Extent.fromBox3(this.instance.referenceCrs, volume),
+            extent: Extent.fromBox3(this.instance.coordinateSystem, volume),
             material: this.createMaterial(),
             textureSize: TEXTURE_SIZE,
         });

@@ -1,6 +1,7 @@
 import type { Matrix4 } from 'three';
 import { Box3, MathUtils, Sphere, Vector2, Vector3 } from 'three';
 import type ElevationRange from '../../core/ElevationRange';
+import CoordinateSystem from '../../core/geographic/coordinate-system/CoordinateSystem';
 import Coordinates from '../../core/geographic/Coordinates';
 import type Extent from '../../core/geographic/Extent';
 import { toCartesian } from './PanoramaTileGeometry';
@@ -8,7 +9,7 @@ import TileVolume from './TileVolume';
 
 const vec3 = new Vector3();
 const vec2 = new Vector2();
-const coord = new Coordinates('EPSG:4326', 0, 0);
+const coord = new Coordinates(CoordinateSystem.epsg4326, 0, 0);
 const tmpCorners: Vector3[] = [];
 
 export default class PanoramaTileVolume extends TileVolume {

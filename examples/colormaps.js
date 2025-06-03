@@ -1,33 +1,37 @@
-import colormap from 'colormap';
-
-import { Vector3, Color, DoubleSide } from 'three';
+import { DoubleSide, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import XYZ from 'ol/source/XYZ.js';
 
 import * as FunctionCurveEditor from 'function-curve-editor';
 
-import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
-import Instance from '@giro3d/giro3d/core/Instance.js';
-import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
-import MapboxTerrainFormat from '@giro3d/giro3d/formats/MapboxTerrainFormat.js';
-import Map from '@giro3d/giro3d/entities/Map.js';
-import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
 import ColorMapMode from '@giro3d/giro3d/core/ColorMapMode.js';
-import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
+import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
+import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
+import Map from '@giro3d/giro3d/entities/Map.js';
+import MapboxTerrainFormat from '@giro3d/giro3d/formats/MapboxTerrainFormat.js';
+import Inspector from '@giro3d/giro3d/gui/Inspector.js';
+import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-import { bindToggle } from './widgets/bindToggle.js';
-import { bindSlider } from './widgets/bindSlider.js';
-import { bindDropDown } from './widgets/bindDropDown.js';
 import { bindButton } from './widgets/bindButton.js';
-import { makeColorRamp } from './widgets/makeColorRamp.js';
 import { bindColorMapBounds } from './widgets/bindColorMapBounds.js';
+import { bindDropDown } from './widgets/bindDropDown.js';
+import { bindSlider } from './widgets/bindSlider.js';
+import { bindToggle } from './widgets/bindToggle.js';
+import { makeColorRamp } from './widgets/makeColorRamp.js';
 
-const extent = Extent.fromCenterAndSize('EPSG:3857', { x: 697313, y: 5591324 }, 30000, 30000);
+const extent = Extent.fromCenterAndSize(
+    CoordinateSystem.epsg3857,
+    { x: 697313, y: 5591324 },
+    30000,
+    30000,
+);
 
 const instance = new Instance({
     target: 'view',
@@ -103,7 +107,7 @@ const source = new TiledImageSource({
     format: new MapboxTerrainFormat(),
     source: new XYZ({
         url: `https://api.mapbox.com/v4/mapbox.terrain-rgb/{z}/{x}/{y}.pngraw?access_token=${key}`,
-        projection: extent.crs,
+        projection: extent.crs.id,
         crossOrigin: 'anonymous',
     }),
 });
@@ -114,7 +118,7 @@ const backgroundLayer = new ColorLayer({
     source: new TiledImageSource({
         source: new XYZ({
             url: `https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.webp?access_token=${key}`,
-            projection: extent.crs,
+            projection: extent.crs.id,
             crossOrigin: 'anonymous',
         }),
     }),
