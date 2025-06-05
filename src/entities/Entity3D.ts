@@ -201,7 +201,9 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
                 // != null: we want the test to pass if opacity is 0
                 const currentTransparent = material.transparent;
                 material.transparent = this.opacity < 1.0;
-                material.needsUpdate = currentTransparent !== material.transparent;
+                if (currentTransparent !== material.transparent) {
+                    material.needsUpdate = true;
+                }
                 material.opacity = this.opacity;
             }
         });
