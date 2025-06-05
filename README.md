@@ -210,3 +210,7 @@ In case you don't want to code your own application, you can also use [Piero](ht
 ### Where does the name Giro3D come from ?
 
 The name is a reference to the italian mathematician and inventor [Girolamo Cardano](https://en.wikipedia.org/wiki/Gerolamo_Cardano).
+
+### What licenses does Giro3D use ?
+
+The Giro3D source code and example code is licensed under the [MIT license](https://opensource.org/license/mit). The Giro3D website, documentation, and images are licensed under the [CC BY-SA](https://creativecommons.org/licenses/by-sa/4.0/deed.en) license.
