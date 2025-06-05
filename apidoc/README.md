@@ -12,6 +12,10 @@ Welcome to the API documentation of Giro3D.
 
 Here is a brief overview of the main concepts behind Giro3D.
 
+## About this documentation
+
+This documentation is licensed under the [Creative Commons BY SA](https://creativecommons.org/licenses/by-sa/4.0/).
+
 ## Instance
 
 The [`Instance`](./classes/core.Instance.html) is the entry point of a Giro3D context. It contains [**entities**](./modules/entities.html) that represent dynamically updated objects and make the most of a Giro3D scene. Each instance is hosted by a DOM element (a `<div>`) that will contain the `<canvas>` used to render the scene.
