@@ -27,6 +27,13 @@ import {
     type MapSubdivisionStrategy,
 } from './Map';
 import MapLightingOptions, { MapLightingMode } from './MapLightingOptions';
+import OrientedImageCollection, {
+    type ImageOrientation,
+    type OrientedImageCollectionOptions,
+    type OrientedImageCollectionPickResult,
+    type OrientedImageCollectionSource,
+    type OrientedImageSource,
+} from './OrientedImageCollection';
 import PointCloud, { PointCloudOptions, UnsupportedAttributeError } from './PointCloud';
 import Shape, * as shape from './Shape';
 import SphericalPanorama, * as sphericalPanorama from './SphericalPanorama';
@@ -58,6 +65,7 @@ export {
     GlobeConstructorOptions,
     GlobeTerrainOptions,
     Glow,
+    ImageOrientation,
     LayerCompareFn,
     Map,
     MapConstructorOptions,
@@ -66,6 +74,11 @@ export {
     MapLightingOptions,
     MapSubdivisionStrategy,
     MeshUserData,
+    OrientedImageCollection,
+    OrientedImageCollectionOptions,
+    OrientedImageCollectionPickResult,
+    OrientedImageCollectionSource,
+    OrientedImageSource,
     PointCloud,
     PointCloudBatchTableAttributeMapping,
     PointCloudOptions,

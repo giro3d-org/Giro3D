@@ -1,5 +1,11 @@
 import type { BufferGeometry, IUniform, Material, Object3D, WebGLRenderer } from 'three';
-import { isBufferGeometry, isMaterial, isShaderMaterial, isTexture } from '../utils/predicates';
+import {
+    isBufferGeometry,
+    isMaterial,
+    isMeshBasicMaterial,
+    isShaderMaterial,
+    isTexture,
+} from '../utils/predicates';
 import TextureGenerator from '../utils/TextureGenerator';
 
 export type MemoryUsageReport = {
@@ -117,6 +123,11 @@ export function getMaterialMemoryUsage(context: GetMemoryUsageContext, material:
         for (const uniform of Object.values(material.uniforms)) {
             getUniformMemoryUsage(context, uniform);
         }
+    } else if (isMeshBasicMaterial(material)) {
+        if (material.map) {
+            TextureGenerator.getMemoryUsage(context, material.map);
+        }
+        // TODO other textures
     }
     // TODO other kinds of materials
 }
