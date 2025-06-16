@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.43.1 (2025-06-16)
+
+### Fix
+
+- **Tiles3D**: set clipping planes of tiles that became visible (#612)
+
 ## v0.43.0 (2025-04-08)
 
 This release brings two major new feature: globes and panoramic images.
