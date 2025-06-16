@@ -37,7 +37,7 @@ map.addLayer(
 );
 
 const source = new WmsSource({
-    url: 'http://globalfloods-ows.ecmwf.int/glofas-ows/ows.py',
+    url: 'https://globalfloods-ows.ecmwf.int/glofas-ows/ows.py',
     layer: 'AccRainEGE',
     projection: 'EPSG:4326',
     imageFormat: 'image/png',
