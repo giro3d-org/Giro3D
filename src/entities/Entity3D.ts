@@ -224,6 +224,7 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
     updateClippingPlanes() {
         this.traverseMaterials(mat => {
             mat.clippingPlanes = this._clippingPlanes;
+            mat.clipShadows = true;
         });
     }
 
@@ -287,6 +288,7 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
      */
     protected setupMaterial(material: Material) {
         material.clippingPlanes = this._clippingPlanes;
+        material.clipShadows = true;
         material.opacity = this._opacity;
         if (material.opacity < 1.0) {
             material.transparent = true;
