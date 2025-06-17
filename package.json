@@ -51,7 +51,7 @@
         "lint-prettier": "prettier --check .",
         "lint-commit": "commitlint -x @commitlint/config-conventional --from=origin/HEAD --to=HEAD",
         "lint-doc": "node tasks/build-apidoc.mjs --lint-only",
-        "lint-eslint": "npm run _transpile && eslint \"src/**/*.ts\" \"test/**/*.ts\" \"examples/**/*.js\"",
+        "lint-eslint": "npm run _transpile && eslint \"tasks/**/*.mjs\" \"src/**/*.ts\" \"test/**/*.ts\" \"examples/**/*.js\"",
         "lint-markdownlint": "markdownlint . --ignore-path .gitignore",
         "lint": "npm run check-circular-dependencies && npm run typecheck && npm run build && npm run typecheck-examples && npm run lint-doc && npm run _check-folders && npm run lint-eslint && npm run lint-prettier && npm run lint-markdownlint",
         "make-package": "npm run build-package && npm pack build/giro3d/",

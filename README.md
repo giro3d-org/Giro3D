@@ -210,3 +210,28 @@ In case you don't want to code your own application, you can also use [Piero](ht
 ### Where does the name Giro3D come from ?
 
 The name is a reference to the italian mathematician and inventor [Girolamo Cardano](https://en.wikipedia.org/wiki/Gerolamo_Cardano).
+
+### What licenses does Giro3D use ?
+
+The Giro3D source code and example code is licensed under the [MIT license](https://opensource.org/license/mit). The Giro3D website, documentation, and images are licensed under the [CC BY-SA](https://creativecommons.org/licenses/by-sa/4.0/deed.en) license.
+
+### Can I use Giro3D in React/Vue/Angular... framework ?
+
+Yes, Giro3D should integrate without issue in those frameworks. We have tested and integrated Giro3D in React and Vue extensively.
+
+If you notice any issue while integrating Giro3D in your GUI framework, please let us know by [creating an issue](https://gitlab.com/giro3d/giro3d/-/issues).
+
+### Does Giro3D support this data format ?
+
+Giro3D can directly load a number of data formats as mentioned in the "supported data sources" section of this document.
+
+Additionally, some other formats might be directly supported by Giro3D via OpenLayers, but are not yet tested.
+
+Finally, you can easily implement your own data sources by subclassing the relevant base class, such as `ImageSource` for draped image, `PointCloudSource` for point cloud data, and so on.
+
+> [!note]
+> If you wish to see a particular format supported in Giro3D, you can let us know by [creating an issue](https://gitlab.com/giro3d/giro3d/-/issues). Keep in mind however that Giro3D is a **web library** and thus puts emphasis on formats that are optimized for web streaming, such as COPC for point cloud, 3D Tiles, Cloud optimized GeoTIFFs, etc.
+
+### Can Giro3D work as a desktop application ?
+
+A web app built with Giro3D can be packaged using [Electron](https://www.electronjs.org) or any similar application packagers. However, if you encouter compatibility issues, please let us know by [creating an issue](https://gitlab.com/giro3d/giro3d/-/issues).

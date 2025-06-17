@@ -74,13 +74,19 @@ uniform LayerInfo   elevationLayer;
 uniform ColorMap    elevationColorMap;  // The elevation layer's optional color map
 #endif
 
-void applyDiffuse(vec3 diffuse) {
-    // Shading expects an sRGB color space, so we have to convert the color
-    // temporarily to sRGB, then back to sRGB-linear. Otherwise the result
-    // looks washed out and lacks contrast.
-    gl_FragColor = sRGBTransferOETF(gl_FragColor);
-    gl_FragColor.rgb *= diffuse;
-    gl_FragColor = sRGBToLinear(gl_FragColor);
+void applyDiffuse(vec3 diffuse, int mode) {
+    if (mode == HILLSHADE_SIMPLE) {
+        // Hillshading expects an sRGB color space, so we have to convert the color
+        // temporarily to sRGB, then back to sRGB-linear. Otherwise the result
+        // looks washed out and lacks contrast.
+        gl_FragColor = sRGBTransferOETF(gl_FragColor);
+        gl_FragColor.rgb *= diffuse;
+        gl_FragColor = sRGBToLinear(gl_FragColor);
+    } else {
+        // However in light-based lighting, we want to use exactly the same lighting
+        // model as the other shaders in three.js to avoid discrepancies
+        gl_FragColor.rgb *= diffuse;
+    }
 }
 
 void renderDistance() {
@@ -249,7 +255,7 @@ void main() {
 #if defined(APPLY_SHADING_ON_COLORLAYERS)
     // Do nothing
 #else
-    applyDiffuse(outgoingLight);
+    applyDiffuse(outgoingLight, hillshading.mode);
 #endif
 
     // Step 4 : process all color layers (either directly sampling the atlas texture, or use a color map).
@@ -330,7 +336,7 @@ if (isSurface) {
 #endif // COLOR_RENDER
 
 #if defined(APPLY_SHADING_ON_COLORLAYERS)
-    applyDiffuse(outgoingLight);
+    applyDiffuse(outgoingLight, hillshading.mode);
 #endif
 
     gl_FragColor.a *= opacity;

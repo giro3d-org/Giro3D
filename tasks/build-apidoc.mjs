@@ -55,6 +55,7 @@ export async function buildApidoc(parameters) {
         navigationLinks: {},
         releaseName: parameters.releaseName,
         releaseVersion: parameters.version,
+        customFooterHtml: `Copyright <strong>Giro3D</strong> 2018-${new Date().getFullYear()}, licensed under <a target="blank" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA</href>`,
     });
 
     log('apidoc', 'Building documentation...');
