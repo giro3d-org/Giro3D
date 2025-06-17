@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.43.2 (2025-06-17)
+
+### Feat
+
+- **Entity3D**: enable `clipShadows = true` on materials (#619)
+
+### Fix
+
+- **TileFS.glsl**: avoid sRGB conversion for light-based lighting (#606)
+
 ## v0.43.1 (2025-06-16)
 
 ### Fix
