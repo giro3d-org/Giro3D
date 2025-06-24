@@ -10,6 +10,8 @@ import AggregatePointCloudSource, {
     AggregatePointCloudSourceOptions,
 } from './AggregatePointCloudSource';
 import COPCSource, { COPCSourceOptions } from './COPCSource';
+import { FeatureSource, GetFeatureRequest, GetFeatureResult } from './FeatureSource';
+import FileFeatureSource from './FileFeatureSource';
 import GeoTIFFSource, {
     type ChannelMapping,
     type GeoTIFFCacheOptions,
@@ -59,9 +61,13 @@ export {
     COPCSource,
     COPCSourceOptions,
     CustomContainsFn,
+    FeatureSource,
+    FileFeatureSource,
     GeoTIFFCacheOptions,
     GeoTIFFSource,
     GeoTIFFSourceOptions,
+    GetFeatureRequest,
+    GetFeatureResult,
     GetImageOptions,
     GetNodeDataOptions,
     ImageResponse,
