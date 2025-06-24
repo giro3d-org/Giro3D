@@ -17,6 +17,7 @@ import {
     type Camera,
     type ColorRepresentation,
     type Intersection,
+    type Mesh,
     type Object3D,
     type Side,
     type TextureDataType,
@@ -93,6 +94,20 @@ import TileIndex, { type NeighbourList } from './tiles/TileIndex';
 import TileMesh, { isTileMesh } from './tiles/TileMesh';
 
 /**
+ * Interface for Map tiles.
+ */
+export interface Tile extends Mesh {
+    /**
+     * The level of detail (LOD) of the tile. LOD 0 means the tile is a root tile.
+     */
+    lod: number;
+    /**
+     * The geographic extent of the tile. If the tile has LOD 0, then it is the same as the extent of its parent map.
+     */
+    extent: Extent;
+}
+
+/**
  * A function that allows subdivision of the specified tile.
  * If the function returns `true`, the node can be subdivided.
  */
@@ -100,18 +115,7 @@ export type MapSubdivisionStrategy = (
     /**
      * The tile to subdivide.
      */
-    tile: Readonly<
-        Object3D & {
-            /**
-             * The level of detail (LOD) of the tile. LOD 0 means the tile is a root tile.
-             */
-            lod: number;
-            /**
-             * The geographic extent of the tile.
-             */
-            extent: Extent;
-        }
-    >,
+    tile: Readonly<Tile>,
     context: { entity: Readonly<Map>; layers: readonly Readonly<Layer>[] },
 ) => boolean;
 
@@ -384,6 +388,10 @@ export interface MapEventMap extends Entity3DEventMap {
     'elevation-changed': { extent: Extent };
     /** Fires when all tiles are painted */
     'paint-complete': unknown;
+    /** Fires when a tile is created. */
+    'tile-created': { tile: Tile };
+    /** Fires when a tile is deleted. */
+    'tile-deleted': { tile: Tile };
 }
 
 /**
@@ -1229,6 +1237,8 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
         this.updateObject(tile);
 
+        this.dispatchEvent({ type: 'tile-created', tile });
+
         this.onObjectCreated(tile);
 
         if (parent) {
@@ -1867,6 +1877,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     private disposeTile(tile: TileMesh): void {
         tile.traverseTiles(desc => {
             desc.dispose();
+            this.dispatchEvent({ type: 'tile-deleted', tile: desc });
             this._allTiles.delete(desc);
         });
     }
