@@ -5,6 +5,18 @@
  */
 
 import type Feature from 'ol/Feature';
+import type {
+    Circle,
+    Geometry,
+    LinearRing,
+    LineString,
+    MultiLineString,
+    MultiPoint,
+    MultiPolygon,
+    Point,
+    Polygon,
+    SimpleGeometry,
+} from 'ol/geom';
 import type { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 
 import {
@@ -29,6 +41,42 @@ function hasUUID(obj: unknown): obj is { uuid: string } {
         return false;
     }
     return 'uuid' in obj && typeof obj.uuid === 'string';
+}
+
+export type GeometryFn<T, O> = (geom: T) => O;
+
+export function mapGeometry<O>(
+    geom: SimpleGeometry,
+    callbacks: {
+        processPoint?: GeometryFn<Point, O>;
+        processPolygon?: GeometryFn<Polygon, O>;
+        processLineString?: GeometryFn<LineString, O>;
+        processMultiPoint?: GeometryFn<MultiPoint, O>;
+        processLinearRing?: GeometryFn<LinearRing, O>;
+        processMultiLineString?: GeometryFn<MultiLineString, O>;
+        processMultiPolygon?: GeometryFn<MultiPolygon, O>;
+        processCircle?: GeometryFn<Circle, O>;
+        fallback?: GeometryFn<Geometry, void>;
+    },
+) {
+    switch (geom.getType()) {
+        case 'Point':
+            return callbacks.processPoint?.(geom as Point);
+        case 'LineString':
+            return callbacks.processLineString?.(geom as LineString);
+        case 'LinearRing':
+            return callbacks.processLinearRing?.(geom as LinearRing);
+        case 'Polygon':
+            return callbacks.processPolygon?.(geom as Polygon);
+        case 'MultiPoint':
+            return callbacks.processMultiPoint?.(geom as MultiPoint);
+        case 'MultiLineString':
+            return callbacks.processMultiLineString?.(geom as MultiLineString);
+        case 'MultiPolygon':
+            return callbacks.processMultiPolygon?.(geom as MultiPolygon);
+        case 'Circle':
+            return callbacks.processCircle?.(geom as Circle);
+    }
 }
 
 /**
