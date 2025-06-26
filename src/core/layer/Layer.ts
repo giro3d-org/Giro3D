@@ -1387,17 +1387,17 @@ abstract class Layer<
 
         target.textureIsFinal = isLastRender;
 
-        if (isLastRender) {
-            this.setTargetState(target, TargetState.Complete);
-        } else {
-            this.setTargetState(target, TargetState.Pending);
-        }
-
         target.paintCount++;
 
         const texture = nonNull(target.renderTarget).object.texture;
         this.applyTextureToNode({ texture, pitch }, target, isLastRender);
         this.instance.notifyChange(this);
+
+        if (isLastRender) {
+            this.setTargetState(target, TargetState.Complete);
+        } else {
+            this.setTargetState(target, TargetState.Pending);
+        }
     }
 
     private setTargetState(target: Target, state: TargetState): void {
