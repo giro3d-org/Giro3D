@@ -247,7 +247,8 @@ export interface LayerEvents {
     /**
      * Fires when a node has been completed.
      */
-    'node-complete': { node: LayerNode };
+    // eslint-disable-next-line no-use-before-define
+    'node-complete': { node: LayerNode; layer: Layer };
 }
 
 export interface LayerOptions {
@@ -1408,7 +1409,7 @@ abstract class Layer<
         target.state = state;
 
         if (state === TargetState.Complete) {
-            this.dispatchEvent({ type: 'node-complete', node: target.node });
+            this.dispatchEvent({ type: 'node-complete', node: target.node, layer: this });
         }
     }
 

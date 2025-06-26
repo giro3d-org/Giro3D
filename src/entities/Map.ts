@@ -39,6 +39,7 @@ import type ColorLayer from '../core/layer/ColorLayer';
 import type ElevationLayer from '../core/layer/ElevationLayer';
 import type HasLayers from '../core/layer/HasLayers';
 import type Layer from '../core/layer/Layer';
+import type { LayerEvents } from '../core/layer/Layer';
 import type MemoryUsage from '../core/MemoryUsage';
 import type Pickable from '../core/picking/Pickable';
 import type PickableFeatures from '../core/picking/PickableFeatures';
@@ -386,6 +387,8 @@ export interface MapEventMap extends Entity3DEventMap {
     'layer-removed': { layer: Layer };
     /** Fires when elevation data has changed on a specific extent of the map. */
     'elevation-changed': { extent: Extent };
+    /** Fires when (final, non-interim) elevation data has been loaded for a specific tile */
+    'elevation-loaded': { tile: Tile };
     /** Fires when all tiles are painted */
     'paint-complete': unknown;
     /** Fires when a tile is created. */
@@ -608,7 +611,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     private readonly _layerIds: Set<string> = new Set();
     private readonly _materialOptions: MaterialOptions;
     private readonly _subdivisionStrategy: MapSubdivisionStrategy;
-    private readonly _onNodeComplete: () => void;
+    private readonly _onNodeComplete: (e: LayerEvents['node-complete']) => void;
 
     private _paintCompleteTimeout: NodeJS.Timeout | null = null;
     private _geometryBuilder: TileGeometryBuilder | null = null;
@@ -696,9 +699,13 @@ class Map<UserData extends EntityUserData = EntityUserData>
         return this._layers.some(l => l.loading);
     }
 
-    private onNodeComplete(): void {
+    private onNodeComplete(e: LayerEvents['node-complete']): void {
         if (this._paintCompleteTimeout) {
             clearTimeout(this._paintCompleteTimeout);
+        }
+
+        if (isElevationLayer(e.layer)) {
+            this.dispatchEvent({ type: 'elevation-loaded', tile: e.node as unknown as Tile });
         }
 
         this._paintCompleteTimeout = setTimeout(this.evaluatePaintComplete.bind(this), 500);
