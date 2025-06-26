@@ -121,6 +121,13 @@ class TileMesh
     private _skirtDepth: number | undefined;
     private _minmax: { min: number; max: number } = { min: -Infinity, max: +Infinity };
     private _shouldUpdateHeightMap = false;
+    // eslint-disable-next-line no-use-before-define
+    private _childTiles: [TileMesh | null, TileMesh | null, TileMesh | null, TileMesh | null] = [
+        null,
+        null,
+        null,
+        null,
+    ];
 
     private readonly _helpers: {
         root: Group | null;
@@ -139,7 +146,7 @@ class TileMesh
     } | null = null;
 
     public disposed = false;
-    public isLeaf = false;
+    public isLeaf = true;
 
     public getMemoryUsage(context: GetMemoryUsageContext): void {
         this.material?.getMemoryUsage(context);
@@ -472,6 +479,12 @@ class TileMesh
         this.add(tile);
         tile.updateMatrix();
         tile.updateMatrixWorld();
+
+        const center = tile.extent.centerAsVector2(tempVec2);
+        const quadrant = this.extent.getQuadrant(center.x, center.y);
+
+        this._childTiles[quadrant] = tile;
+        this.isLeaf = false;
 
         if (this._heightMap) {
             const heightMap = this._heightMap.payload;
@@ -841,6 +854,7 @@ class TileMesh
         const childTiles = this.children.filter(c => isTileMesh(c)) as TileMesh[];
         childTiles.forEach(c => c.dispose());
         this.remove(...childTiles);
+        this.isLeaf = true;
         return childTiles;
     }
 
@@ -935,6 +949,20 @@ class TileMesh
         callbackFn(this.material);
         callbackFn(this.customDepthMaterial);
         callbackFn(this.customDistanceMaterial);
+    }
+
+    public getLeafThatContains(x: number, y: number): TileMesh | undefined {
+        if (!this.extent.isXYInside(x, y)) {
+            throw new Error('this tile does not contain the coordinates');
+        }
+
+        if (this.isLeaf) {
+            return this;
+        }
+
+        const quadrant = this.extent.getQuadrant(x, y);
+
+        return this._childTiles[quadrant]?.getLeafThatContains(x, y);
     }
 
     public dispose(): void {

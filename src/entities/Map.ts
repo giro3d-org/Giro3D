@@ -29,7 +29,7 @@ import type Context from '../core/Context';
 import type ContourLineOptions from '../core/ContourLineOptions';
 import type ElevationProvider from '../core/ElevationProvider';
 import type ElevationRange from '../core/ElevationRange';
-import type CoordinateSystem from '../core/geographic/CoordinateSystem';
+import type ElevationSample from '../core/ElevationSample';
 import type Extent from '../core/geographic/Extent';
 import type GetElevationOptions from '../core/GetElevationOptions';
 import type GetElevationResult from '../core/GetElevationResult';
@@ -56,6 +56,7 @@ import type TileVolume from './tiles/TileVolume';
 
 import { defaultColorimetryOptions } from '../core/ColorimetryOptions';
 import Coordinates from '../core/geographic/Coordinates';
+import CoordinateSystem from '../core/geographic/CoordinateSystem';
 import { isColorLayer } from '../core/layer/ColorLayer';
 import { isElevationLayer } from '../core/layer/ElevationLayer';
 import { isLayer } from '../core/layer/Layer';
@@ -192,6 +193,7 @@ const tmpVector = new Vector3();
 const tmpBox3 = new Box3();
 const tempNDC = new Vector2();
 const tempDims = new Vector2();
+const tempElevationCoords = new Coordinates(CoordinateSystem.epsg4326, 0, 0);
 const tempCanvasCoords = new Vector2();
 const tmpSseSizes: [number, number] = [0, 0];
 const tmpIntersectList: Intersection<TileMesh>[] = [];
@@ -1949,6 +1951,44 @@ class Map<UserData extends EntityUserData = EntityUserData>
             }
         }
         return { min: 0, max: 0 };
+    }
+
+    private getRootTileThatContainsXY(x: number, y: number): TileMesh {
+        for (const root of this._rootTiles) {
+            if (root.extent.isXYInside(x, y)) {
+                return root;
+            }
+        }
+
+        throw new Error('no root tile contains the coordinate');
+    }
+
+    public getElevationFast(x: number, y: number): ElevationSample | undefined {
+        const elevationLayer = this.getElevationLayers()[0];
+
+        if (!elevationLayer.visible) {
+            return undefined;
+        }
+
+        if (!this.extent.isXYInside(x, y)) {
+            return undefined;
+        }
+
+        const root = this.getRootTileThatContainsXY(x, y);
+        const leaf = root.getLeafThatContains(x, y);
+
+        tempElevationCoords.set(this.instance.coordinateSystem, x, y);
+
+        const result = leaf?.getElevation({ coordinates: tempElevationCoords });
+
+        if (result == null) {
+            return undefined;
+        }
+
+        return {
+            ...result,
+            source: this,
+        } satisfies ElevationSample;
     }
 
     /**

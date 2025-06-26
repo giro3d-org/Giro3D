@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
+import type ElevationSample from './ElevationSample';
 import type GetElevationOptions from './GetElevationOptions';
 import type GetElevationResult from './GetElevationResult';
 
@@ -13,6 +14,12 @@ import type GetElevationResult from './GetElevationResult';
  * Note: to combine multiple providers into one, you can use the {@link aggregateElevationProviders} function.
  */
 export default interface ElevationProvider {
+    /**
+     * Returns the elevation at the specified coordinates, without any coordinate conversion.
+     * @param x - The X coordinate of the location to sample, in the same coordinate system as this elevation provider.
+     * @param y - The Y coordinate of the location to sample, in the same coordinate system as this elevation provider.
+     */
+    getElevationFast(x: number, y: number): ElevationSample | undefined;
     /**
      * Sample the elevation at the specified coordinate.
      *
@@ -33,6 +40,26 @@ class AggregateProvider implements ElevationProvider {
 
     public constructor(providers: Readonly<ElevationProvider[]>) {
         this._providers = providers;
+    }
+
+    public getElevationFast(x: number, y: number): ElevationSample | undefined {
+        const samples: ElevationSample[] = [];
+        // Accumulate elevation samples from all providers.
+        for (let i = 0; i < this._providers.length; i++) {
+            const provider = this._providers[i];
+            const sample = provider.getElevationFast(x, y);
+            if (sample) {
+                samples.push(sample);
+            }
+        }
+
+        if (samples.length > 0) {
+            samples.sort((a, b) => a.resolution - b.resolution);
+
+            return samples[0];
+        }
+
+        return undefined;
     }
 
     public getElevation(
