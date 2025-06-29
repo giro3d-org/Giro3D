@@ -85,7 +85,10 @@ export default class FileFeatureSource extends FeatureSourceBase {
 
         const features = this._format.readFeatures(data) as Feature[];
 
-        const targetProjection = nonNull(this._targetProjection, 'this source is not initialized');
+        const targetProjection = nonNull(
+            this._targetCoordinateSystem,
+            'this source is not initialized',
+        );
         const sourceProjection = nonNull(this._sourceProjection);
 
         const actualFeatures = await processFeatures(features, sourceProjection, targetProjection);

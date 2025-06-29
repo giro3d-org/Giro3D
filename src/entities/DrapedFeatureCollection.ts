@@ -2,15 +2,14 @@ import type Feature from 'ol/Feature';
 
 import { Box3, Group, Sphere, Vector3 } from 'three';
 
-import GUI from 'lil-gui';
+import type GUI from 'lil-gui';
 import { type Coordinate } from 'ol/coordinate';
 import { getCenter } from 'ol/extent';
 import type { Circle, Point, SimpleGeometry } from 'ol/geom';
 import { LineString, MultiLineString, MultiPolygon, Polygon } from 'ol/geom';
 import type ElevationProvider from '../core/ElevationProvider';
+import type { FeatureExtrusionOffset, FeatureExtrusionOffsetCallback } from '../core/FeatureTypes';
 import {
-    FeatureExtrusionOffset,
-    FeatureExtrusionOffsetCallback,
     mapGeometry,
     type FeatureStyle,
     type FeatureStyleCallback,
@@ -20,7 +19,7 @@ import {
 } from '../core/FeatureTypes';
 import type Extent from '../core/geographic/Extent';
 import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
-import Instance from '../core/Instance';
+import type Instance from '../core/Instance';
 import type PointOfView from '../core/PointOfView';
 import EntityInspector from '../gui/EntityInspector';
 import EntityPanel from '../gui/EntityPanel';
@@ -32,7 +31,7 @@ import type {
 import GeometryConverter from '../renderer/geometries/GeometryConverter';
 import type SimpleGeometryMesh from '../renderer/geometries/SimpleGeometryMesh';
 import { computeDistanceToFitSphere, computeZoomToFitSphere } from '../renderer/View';
-import type { FeatureSource } from '../sources/FeatureSource';
+import type { FeatureSource, FeatureSourceEventMap } from '../sources/FeatureSource';
 import OLUtils from '../utils/OpenLayersUtils';
 import { isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
 import { nonNull } from '../utils/tsutils';
@@ -341,6 +340,8 @@ export default class DrapedFeatureCollection extends Entity3D {
         onTileCreated: EventHandler<MapEventMap['tile-created']>;
         onTileDeleted: EventHandler<MapEventMap['tile-deleted']>;
         onElevationLoaded: EventHandler<MapEventMap['tile-deleted']>;
+        onSourceUpdated: EventHandler<FeatureSourceEventMap['updated']>;
+        onTextureLoaded: () => void;
     };
     private readonly _style: FeatureStyle | FeatureStyleCallback | undefined;
 
@@ -366,6 +367,7 @@ export default class DrapedFeatureCollection extends Entity3D {
         this._drapingMode = options.drapingMode ?? 'per-vertex';
         this._extrusionCallback = options.extrusionOffset;
         this._source = options.source;
+        this._style = options.style;
         this._minLod = options.minLod ?? this._minLod;
         this._elevationCallback = options.elevationCallback ?? defaultElevationCallback;
 
@@ -373,6 +375,8 @@ export default class DrapedFeatureCollection extends Entity3D {
             onTileCreated: this.onTileCreated.bind(this),
             onTileDeleted: this.onTileDeleted.bind(this),
             onElevationLoaded: this.onElevationLoaded.bind(this),
+            onTextureLoaded: this.notifyChange.bind(this),
+            onSourceUpdated: this.onSourceUpdated.bind(this),
         };
 
         this._geometryConverter = new GeometryConverter<MeshUserData>({
@@ -381,12 +385,30 @@ export default class DrapedFeatureCollection extends Entity3D {
             lineMaterialGenerator: options.lineMaterialGenerator,
             pointMaterialGenerator: options.pointMaterialGenerator,
         });
-        this._style = options.style;
-        this._geometryConverter.addEventListener('texture-loaded', () => this.notifyChange(this));
+
+        this._geometryConverter.addEventListener(
+            'texture-loaded',
+            this._eventHandlers.onTextureLoaded,
+        );
+
+        this._source.addEventListener('updated', this._eventHandlers.onSourceUpdated);
+    }
+
+    private onSourceUpdated() {
+        this._features.forEach(v => {
+            v.mesh?.dispose();
+            v.mesh?.removeFromParent();
+        });
+
+        this._features.clear();
+
+        for (const tile of [...this._activeTiles.values()]) {
+            this.registerTile(tile, true);
+        }
     }
 
     override async preprocess() {
-        await this._source.initialize({ targetProjection: this.instance.coordinateSystem });
+        await this._source.initialize({ targetCoordinateSystem: this.instance.coordinateSystem });
     }
 
     attach(map: MapEntity): this {
@@ -561,6 +583,7 @@ export default class DrapedFeatureCollection extends Entity3D {
             } else if (drapingMode === 'per-vertex') {
                 shouldReplaceMesh = true;
                 // TODO support multipoint ?
+                // @ts-expect-error cast
                 actualGeometry = applyPerVertexDraping(geometry, this._map);
             }
 
@@ -596,9 +619,9 @@ export default class DrapedFeatureCollection extends Entity3D {
                 // then we can simply translate the Mesh itself, rather than recreate it.
                 if (verticalOffset !== 0) {
                     mesh.position.setZ(existing.originalZ + verticalOffset);
-                    mesh.updateMatrix();
                 }
 
+                mesh.updateMatrix();
                 mesh.updateMatrixWorld(true);
             }
         }

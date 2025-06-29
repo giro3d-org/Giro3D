@@ -17,7 +17,7 @@ export interface FeatureSourceEventMap {
 }
 
 export interface FeatureSource extends EventDispatcher<FeatureSourceEventMap> {
-    initialize(options: { targetProjection: CoordinateSystem }): Promise<void>;
+    initialize(options: { targetCoordinateSystem: CoordinateSystem }): Promise<void>;
     getFeatures(request: GetFeatureRequest): Promise<GetFeatureResult>;
 }
 
@@ -27,15 +27,15 @@ export abstract class FeatureSourceBase
 {
     abstract readonly type: string;
 
-    protected _targetProjection: CoordinateSystem | null = null;
+    protected _targetCoordinateSystem: CoordinateSystem | null = null;
     protected _initialized = false;
 
     constructor() {
         super();
     }
 
-    initialize(options: { targetProjection: CoordinateSystem }): Promise<void> {
-        this._targetProjection = options.targetProjection;
+    initialize(options: { targetCoordinateSystem: CoordinateSystem }): Promise<void> {
+        this._targetCoordinateSystem = options.targetCoordinateSystem;
 
         this._initialized = true;
         return Promise.resolve();

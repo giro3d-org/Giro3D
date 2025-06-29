@@ -1,13 +1,29 @@
 import type { Feature } from 'ol';
+import { MathUtils } from 'three';
+import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import { nonNull } from '../utils/tsutils';
 import type { GetFeatureRequest, GetFeatureResult } from './FeatureSource';
 import { FeatureSourceBase } from './FeatureSource';
 import { filterByExtent } from './features/processor';
+
+function preprocess(feature: Feature, src: CoordinateSystem, dst: CoordinateSystem) {
+    if (feature.getId() == null) {
+        feature.setId(MathUtils.generateUUID());
+    }
+
+    if (src.id !== dst.id) {
+        feature.getGeometry()?.transform(src.id, dst.id);
+    }
+
+    return feature;
+}
 
 export default class StaticFeatureSource extends FeatureSourceBase {
     readonly isStaticFeatureSource = true as const;
     override readonly type = 'StaticFeatureSource' as const;
 
     private readonly _features: Set<Feature> = new Set();
+    private readonly _coordinateSystem: CoordinateSystem;
 
     /**
      * Returns a copy of the features contained in this source.
@@ -16,8 +32,14 @@ export default class StaticFeatureSource extends FeatureSourceBase {
         return [...this._features];
     }
 
-    constructor() {
+    constructor(options: { features?: Feature[]; coordinateSystem: CoordinateSystem }) {
         super();
+
+        this._coordinateSystem = options.coordinateSystem;
+
+        if (options.features) {
+            this._features = new Set(options.features);
+        }
     }
 
     /**
@@ -26,7 +48,11 @@ export default class StaticFeatureSource extends FeatureSourceBase {
      * Note: if you want to add multiple features at once, use {@link addFeatures} for better performance.
      */
     addFeature(feature: Feature) {
-        this._features.add(feature);
+        this.throwIfNotInitialized();
+
+        this._features.add(
+            preprocess(feature, this._coordinateSystem, nonNull(this._targetCoordinateSystem)),
+        );
 
         this.update();
     }
@@ -51,8 +77,12 @@ export default class StaticFeatureSource extends FeatureSourceBase {
      * Adds multiple features.
      */
     addFeatures(features: Iterable<Feature>) {
+        this.throwIfNotInitialized();
+
         for (const feature of features) {
-            this._features.add(feature);
+            this._features.add(
+                preprocess(feature, this._coordinateSystem, nonNull(this._targetCoordinateSystem)),
+            );
         }
 
         this.update();

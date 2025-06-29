@@ -14,12 +14,15 @@ import DrapedFeatureCollection from '@giro3d/giro3d/entities/DrapedFeatureCollec
 import Giro3dMap from '@giro3d/giro3d/entities/Map.js';
 import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
+import StaticFeatureSource from '@giro3d/giro3d/sources/StaticFeatureSource.js';
 import FileFeatureSource from '@giro3d/giro3d/sources/FileFeatureSource.js';
 import StreamableFeatureSource, {
     ogcApiFeaturesBuilder,
 } from '@giro3d/giro3d/sources/StreamableFeatureSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { Feature } from 'ol';
+import { Point } from 'ol/geom.js';
 
 Instance.registerCRS(
     'EPSG:2154',
@@ -149,11 +152,6 @@ const bdTopoIgn = new StreamableFeatureSource({
     },
 });
 
-const bdTopoLocal = new StreamableFeatureSource({
-    sourceProjection: CoordinateSystem.epsg4326,
-    queryBuilder: ogcApiFeaturesBuilder('http://localhost:14002/', 'public.batiment_038_isere'),
-});
-
 const hoverColor = new Color('yellow');
 
 const bdTopoStyle = feature => {
@@ -214,36 +212,40 @@ const extrusionOffsetCallback = feature => {
     return extrusionOffset;
 };
 
+const sources = {
+    static: new StaticFeatureSource({
+        coordinateSystem: CoordinateSystem.fromEpsg(2154),
+    }),
+    batiment: new StreamableFeatureSource({
+        sourceProjection: CoordinateSystem.epsg4326,
+        queryBuilder: ogcApiFeaturesBuilder('http://localhost:14002/', 'public.batiment_038_isere'),
+    }),
+};
+
+const pointStyle = {
+    point: {
+        pointSize: 48,
+        depthTest: false,
+        image: 'http://localhost:14000/images/pin.png',
+    },
+};
+
 const entity = new DrapedFeatureCollection({
-    source: bdTopoLocal,
-    minLod: 10,
+    source: sources['static'],
+    minLod: 0,
     drapingMode: 'per-feature',
-    extrusionOffset: extrusionOffsetCallback,
-    style: bdTopoStyle,
-    // style: feature => ({
-    //     // stroke: {
-    //     //     color: 'yellow',
-    //     //     lineWidth: 2,
-    //     //     lineWidthUnits: 'pixels',
-    //     //     depthTest: false,
-    //     //     renderOrder: 1,
-    //     // },
-    //     fill: {
-    //         // renderOrder: 1,
-    //         color: new Color().setHSL(MathUtils.randFloat(0, 1), 1, 0.5),
-    //         shading: true,
-    //         // depthTest: false,
-    //     },
-    //     point: {
-    //         pointSize: 92,
-    //         depthTest: true,
-    //         image: 'http://localhost:14000/images/pin.png',
-    //     },
-    // }),
+    // extrusionOffset: extrusionOffsetCallback,
+    style: pointStyle,
 });
 
 instance.add(entity).then(() => {
     entity.attach(map);
+
+    setInterval(() => {
+        const x = MathUtils.lerp(map.extent.west, map.extent.east, MathUtils.randFloat(0.3, 0.7));
+        const y = MathUtils.lerp(map.extent.south, map.extent.north, MathUtils.randFloat(0.3, 0.7));
+        sources['static'].addFeature(new Feature(new Point([x, y])));
+    }, 500);
 });
 
 // Add a sunlight
