@@ -18,27 +18,46 @@ function preprocess(feature: Feature, src: CoordinateSystem, dst: CoordinateSyst
     return feature;
 }
 
+/**
+ * A feature source that does not read from any remote source, but
+ * instead acts as a container for features added by the user.
+ *
+ * Note: when features are added to this source, they might be transformed to match the target
+ * coordinate system, as well as assigning them unique IDs.
+ */
 export default class StaticFeatureSource extends FeatureSourceBase {
     readonly isStaticFeatureSource = true as const;
     override readonly type = 'StaticFeatureSource' as const;
 
+    private readonly _initialFeatures: Feature[] | undefined = undefined;
     private readonly _features: Set<Feature> = new Set();
     private readonly _coordinateSystem: CoordinateSystem;
 
     /**
      * Returns a copy of the features contained in this source.
+     *
+     * Note: this property returns an empty array if the source is not yet initialized.
      */
     get features(): Readonly<Feature[]> {
         return [...this._features];
     }
 
-    constructor(options: { features?: Feature[]; coordinateSystem: CoordinateSystem }) {
+    constructor(options: {
+        /**
+         * The initial features in this source.
+         */
+        features?: Feature[];
+        /**
+         * The coordinate system of features contained in this source.
+         */
+        coordinateSystem: CoordinateSystem;
+    }) {
         super();
 
         this._coordinateSystem = options.coordinateSystem;
 
         if (options.features) {
-            this._features = new Set(options.features);
+            this._initialFeatures = [...options.features];
         }
     }
 
@@ -50,9 +69,7 @@ export default class StaticFeatureSource extends FeatureSourceBase {
     addFeature(feature: Feature) {
         this.throwIfNotInitialized();
 
-        this._features.add(
-            preprocess(feature, this._coordinateSystem, nonNull(this._targetCoordinateSystem)),
-        );
+        this.doAddFeatures(feature);
 
         this.update();
     }
@@ -79,11 +96,7 @@ export default class StaticFeatureSource extends FeatureSourceBase {
     addFeatures(features: Iterable<Feature>) {
         this.throwIfNotInitialized();
 
-        for (const feature of features) {
-            this._features.add(
-                preprocess(feature, this._coordinateSystem, nonNull(this._targetCoordinateSystem)),
-            );
-        }
+        this.doAddFeatures([...features]);
 
         this.update();
     }
@@ -95,6 +108,7 @@ export default class StaticFeatureSource extends FeatureSourceBase {
      */
     removeFeatures(features: Iterable<Feature>): boolean {
         let actuallyRemoved = false;
+
         for (const feature of features) {
             if (this._features.delete(feature)) {
                 actuallyRemoved = true;
@@ -116,6 +130,31 @@ export default class StaticFeatureSource extends FeatureSourceBase {
         if (this._features.size > 0) {
             this._features.clear();
             this.update();
+        }
+    }
+
+    private doAddFeatures(features: Feature | Feature[]) {
+        if (Array.isArray(features)) {
+            features.forEach(f => {
+                preprocess(f, this._coordinateSystem, nonNull(this._targetCoordinateSystem));
+                this._features.add(f);
+            });
+        } else {
+            preprocess(features, this._coordinateSystem, nonNull(this._targetCoordinateSystem));
+            this._features.add(features);
+        }
+    }
+
+    override async initialize(options: {
+        targetCoordinateSystem: CoordinateSystem;
+    }): Promise<void> {
+        await super.initialize(options);
+
+        // Let's prepare the features that were added during construction.
+        // We couldn't do that before since the target coordinate system was not known.
+        if (this._initialFeatures) {
+            this.doAddFeatures(this._initialFeatures);
+            this._initialFeatures.length = 0;
         }
     }
 
