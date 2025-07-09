@@ -1,6 +1,7 @@
 import type { Feature } from 'ol';
 import type FeatureFormat from 'ol/format/Feature';
 import type { Type } from 'ol/format/Feature';
+import GeoJSON from 'ol/format/GeoJSON';
 import type { Geometry } from 'ol/geom';
 import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import Fetcher from '../utils/Fetcher';
@@ -23,6 +24,33 @@ const defaultGetter: Getter = (url, type) => {
     }
 };
 
+export interface FileFeatureSourceOptions {
+    /**
+     * The URL to the remote file.
+     */
+    url: string;
+    /**
+     * The format to parse the file.
+     * @defaultValue {@link GeoJSON}
+     */
+    format?: FeatureFormat;
+    /**
+     * A function to retrieve the file remotely.
+     * If not specified, will use standard fetch functions to download the file.
+     * Mostly useful for unit testing.
+     */
+    getter?: Getter;
+    /**
+     * The coordinate system of the features in this source.
+     * 1. If not provided, will attempt to read it from the file.
+     * 2. If the file does not contain coordinate system information, will assume EPSG:4326.
+     */
+    sourceCoordinateSystem?: CoordinateSystem;
+}
+
+/**
+ * Loads features from a remote file (such as GeoJSON, GPX, etc.)
+ */
 export default class FileFeatureSource extends FeatureSourceBase {
     readonly isFileFeatureSource = true as const;
     readonly type = 'FileFeatureSource' as const;
@@ -32,27 +60,19 @@ export default class FileFeatureSource extends FeatureSourceBase {
     private _loadFeaturePromise: Promise<Feature<Geometry>[]> | null = null;
     private _getter: Getter;
     private _url: string;
-    private _sourceProjection?: CoordinateSystem;
-    private _abortController: AbortController | null = null;
+    private _sourceCoordinateSystem?: CoordinateSystem;
 
-    constructor(params: {
-        format: FeatureFormat;
-        url: string;
-        getter?: Getter;
-        sourceProjection?: CoordinateSystem;
-    }) {
+    constructor(params: FileFeatureSourceOptions) {
         super();
-        this._format = params.format;
+
+        this._format = params.format ?? new GeoJSON();
         this._url = params.url;
-        this._sourceProjection = params.sourceProjection;
+        this._sourceCoordinateSystem = params.sourceCoordinateSystem;
         this._getter = params.getter ?? defaultGetter;
     }
 
     private loadFeatures() {
         this.throwIfNotInitialized();
-
-        this._abortController?.abort();
-        this._abortController = new AbortController();
 
         if (this._features != null) {
             return this._features;
@@ -62,24 +82,20 @@ export default class FileFeatureSource extends FeatureSourceBase {
             return this._loadFeaturePromise;
         }
 
-        this._loadFeaturePromise = this.loadFeaturesOnce(this._abortController.signal);
+        this._loadFeaturePromise = this.loadFeaturesOnce();
 
         return this._loadFeaturePromise;
     }
 
-    private async loadFeaturesOnce(signal: AbortSignal): Promise<Feature<Geometry>[]> {
-        signal.throwIfAborted();
-
+    private async loadFeaturesOnce(): Promise<Feature<Geometry>[]> {
         const data = await this._getter(this._url, this._format.getType());
 
-        signal.throwIfAborted();
-
-        if (!this._sourceProjection) {
+        if (!this._sourceCoordinateSystem) {
             const dataProjection = this._format.readProjection(data);
             if (dataProjection) {
-                this._sourceProjection = CoordinateSystem.fromSrid(dataProjection?.getCode());
+                this._sourceCoordinateSystem = CoordinateSystem.fromSrid(dataProjection?.getCode());
             } else {
-                this._sourceProjection = CoordinateSystem.epsg4326;
+                this._sourceCoordinateSystem = CoordinateSystem.epsg4326;
             }
         }
 
@@ -89,13 +105,11 @@ export default class FileFeatureSource extends FeatureSourceBase {
             this._targetCoordinateSystem,
             'this source is not initialized',
         );
-        const sourceProjection = nonNull(this._sourceProjection);
+        const sourceProjection = nonNull(this._sourceCoordinateSystem);
 
         const actualFeatures = await processFeatures(features, sourceProjection, targetProjection);
 
-        if (!signal.aborted) {
-            this._features = actualFeatures;
-        }
+        this._features = actualFeatures;
 
         return actualFeatures;
     }
@@ -114,10 +128,12 @@ export default class FileFeatureSource extends FeatureSourceBase {
         return { features: filtered };
     }
 
+    /**
+     * Deletes the already loaded features, and dispatch an event to reload the features.
+     */
     reload() {
         this._features = null;
         this._loadFeaturePromise = null;
-        this._abortController?.abort();
 
         this.dispatchEvent({ type: 'updated' });
     }

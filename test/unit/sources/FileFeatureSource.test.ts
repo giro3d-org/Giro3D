@@ -6,6 +6,24 @@ import FileFeatureSource from '@giro3d/giro3d/sources/FileFeatureSource';
 import { Projection } from 'ol/proj';
 
 describe('FileFeatureSource', () => {
+    describe('reload', () => {
+        it('should dispatch the updated event', () => {
+            const source = new FileFeatureSource({
+                url: 'foo',
+            });
+
+            const listener = jest.fn();
+
+            source.addEventListener('updated', listener);
+
+            expect(listener).not.toHaveBeenCalled();
+
+            source.reload();
+
+            expect(listener).toHaveBeenCalledTimes(1);
+        });
+    });
+
     describe('getFeatures', () => {
         it('should load the file', async () => {
             // @ts-expect-error incomplete implementation
@@ -24,7 +42,7 @@ describe('FileFeatureSource', () => {
                 getter,
             });
 
-            await source.initialize({ targetProjection: CoordinateSystem.epsg4326 });
+            await source.initialize({ targetCoordinateSystem: CoordinateSystem.epsg4326 });
 
             await source.getFeatures({ extent: Extent.WGS84 });
 

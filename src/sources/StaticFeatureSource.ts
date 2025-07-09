@@ -1,6 +1,6 @@
 import type { Feature } from 'ol';
 import { MathUtils } from 'three';
-import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import { nonNull } from '../utils/tsutils';
 import type { GetFeatureRequest, GetFeatureResult } from './FeatureSource';
 import { FeatureSourceBase } from './FeatureSource';
@@ -16,6 +16,18 @@ function preprocess(feature: Feature, src: CoordinateSystem, dst: CoordinateSyst
     }
 
     return feature;
+}
+
+export interface StaticFeaturesSourceOptions {
+    /**
+     * The initial features in this source.
+     */
+    features?: Feature[];
+    /**
+     * The coordinate system of features contained in this source.
+     * @defaultValue {@link CoordinateSystem.epsg4326}
+     */
+    coordinateSystem?: CoordinateSystem;
 }
 
 /**
@@ -42,21 +54,12 @@ export default class StaticFeatureSource extends FeatureSourceBase {
         return [...this._features];
     }
 
-    constructor(options: {
-        /**
-         * The initial features in this source.
-         */
-        features?: Feature[];
-        /**
-         * The coordinate system of features contained in this source.
-         */
-        coordinateSystem: CoordinateSystem;
-    }) {
+    constructor(options?: StaticFeaturesSourceOptions) {
         super();
 
-        this._coordinateSystem = options.coordinateSystem;
+        this._coordinateSystem = options?.coordinateSystem ?? CoordinateSystem.epsg4326;
 
-        if (options.features) {
+        if (options?.features) {
             this._initialFeatures = [...options.features];
         }
     }
