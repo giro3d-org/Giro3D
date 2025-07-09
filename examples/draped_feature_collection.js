@@ -80,7 +80,7 @@ WmtsSource.fromCapabilities(url, {
                 // We don't need the full resolution of terrain
                 // because we are not using any shading. This will save a lot of memory
                 // and make the terrain faster to load.
-                resolutionFactor: 1,
+                resolutionFactor: 1 / 2,
                 minmax: { min: 0, max: 5000 },
                 noDataOptions: {
                     replaceNoData: false,
@@ -115,7 +115,7 @@ const geojson = new FileFeatureSource({
     // url: 'http://localhost:14000/vectors/geojson/grenoble_batiments.geojson',
     // url: 'http://localhost:14002/collections/public.cadastre/items.json',
     url: 'http://localhost:14002/collections/public.cadastre/items.json?limit=500',
-    sourceProjection: CoordinateSystem.epsg4326,
+    sourceCoordinateSystem: CoordinateSystem.epsg4326,
 });
 
 const communes = new StreamableFeatureSource({
@@ -201,7 +201,7 @@ const bdTopoStyle = feature => {
 };
 
 // Let's compute the extrusion offset of building polygons to give them walls.
-const extrusionOffsetCallback = feature => {
+const bdTopoExtrusionOffset = feature => {
     const properties = feature.getProperties();
     const buildingHeight = properties['hauteur'];
     const extrusionOffset = buildingHeight;
@@ -212,40 +212,95 @@ const extrusionOffsetCallback = feature => {
     return extrusionOffset;
 };
 
-const sources = {
-    static: new StaticFeatureSource({
-        coordinateSystem: CoordinateSystem.fromEpsg(2154),
-    }),
-    batiment: new StreamableFeatureSource({
-        sourceProjection: CoordinateSystem.epsg4326,
-        queryBuilder: ogcApiFeaturesBuilder('http://localhost:14002/', 'public.batiment_038_isere'),
-    }),
-};
-
 const pointStyle = {
     point: {
-        pointSize: 48,
-        depthTest: false,
+        pointSize: 96,
+        depthTest: true,
         image: 'http://localhost:14000/images/pin.png',
     },
 };
 
+/**
+ * @type {Record<string, {
+ *  minLod: number;
+ *  source: import('@giro3d/giro3d/sources/FeatureSource.js').FeatureSource;
+ *  style: import('@giro3d/giro3d/core/FeatureTypes.js').FeatureStyle | import('@giro3d/giro3d/core/FeatureTypes.js').FeatureStyleCallback;
+ * extrusionOffset?: import('@giro3d/giro3d/core/FeatureTypes.js').FeatureExtrusionOffset | import('@giro3d/giro3d/core/FeatureTypes.js').FeatureExtrusionOffsetCallback | undefined;
+ *  drapingMode: import('@giro3d/giro3d/entities/DrapedFeatureCollection.js').DrapingMode
+ * }>}
+ */
+const sources = {
+    static: {
+        minLod: 0,
+        drapingMode: 'per-feature',
+        style: pointStyle,
+        source: new StaticFeatureSource({
+            coordinateSystem: CoordinateSystem.fromEpsg(2154),
+        }),
+    },
+    hydrants: {
+        source: hydrants,
+        style: pointStyle,
+        drapingMode: 'per-feature',
+        minLod: 2,
+    },
+    communes: {
+        source: communes,
+        minLod: 5,
+        drapingMode: 'per-vertex',
+        style: {
+            stroke: {
+                color: 'black',
+                lineWidth: 4,
+                depthTest: false,
+                renderOrder: 2,
+            },
+        },
+    },
+    batiment: {
+        minLod: 12,
+        drapingMode: 'per-feature',
+        extrusionOffset: bdTopoExtrusionOffset,
+        source: new StreamableFeatureSource({
+            sourceProjection: CoordinateSystem.epsg4326,
+            queryBuilder: ogcApiFeaturesBuilder(
+                'http://localhost:14002/',
+                'public.batiment_038_isere',
+            ),
+        }),
+        style: bdTopoStyle,
+    },
+};
+
+const data = sources.hydrants;
+
 const entity = new DrapedFeatureCollection({
-    source: sources['static'],
-    minLod: 0,
-    drapingMode: 'per-feature',
-    // extrusionOffset: extrusionOffsetCallback,
-    style: pointStyle,
+    source: data.source,
+    minLod: data.minLod,
+    drapingMode: data.drapingMode,
+    extrusionOffset: data.extrusionOffset,
+    style: data.style,
 });
 
 instance.add(entity).then(() => {
     entity.attach(map);
 
-    setInterval(() => {
-        const x = MathUtils.lerp(map.extent.west, map.extent.east, MathUtils.randFloat(0.3, 0.7));
-        const y = MathUtils.lerp(map.extent.south, map.extent.north, MathUtils.randFloat(0.3, 0.7));
-        sources['static'].addFeature(new Feature(new Point([x, y])));
-    }, 500);
+    if (data === sources.static) {
+        setInterval(() => {
+            const x = MathUtils.lerp(
+                map.extent.west,
+                map.extent.east,
+                MathUtils.randFloat(0.3, 0.7),
+            );
+            const y = MathUtils.lerp(
+                map.extent.south,
+                map.extent.north,
+                MathUtils.randFloat(0.3, 0.7),
+            );
+            // @ts-expect-error casting
+            sources['static'].source.addFeature(new Feature(new Point([x, y])));
+        }, 500);
+    }
 });
 
 // Add a sunlight
