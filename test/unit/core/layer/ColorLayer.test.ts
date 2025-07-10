@@ -1,164 +1,163 @@
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer';
 import NullSource from '@giro3d/giro3d/sources/NullSource';
+import { describe, expect, it, vitest } from 'vitest';
 
-describe('ColorLayer', () => {
-    describe('constructor', () => {
-        it('should auto-generate an id if no id is specified', () => {
-            const layer = new ColorLayer({ source: new NullSource() });
+describe('constructor', () => {
+    it('should auto-generate an id if no id is specified', () => {
+        const layer = new ColorLayer({ source: new NullSource() });
 
-            expect(layer.id).toBeDefined();
-        });
-
-        it('should define layer properties', () => {
-            const layer = new ColorLayer({ source: new NullSource(), name: 'foo' });
-
-            expect(layer.frozen).toEqual(false);
-            expect(layer.visible).toEqual(true);
-            expect(layer.opacity).toEqual(1.0);
-            expect(layer.name).toEqual('foo');
-        });
-
-        it('should disable no-data filling by default', () => {
-            const layer = new ColorLayer({ source: new NullSource() });
-
-            expect(layer.noDataOptions).toEqual({ replaceNoData: false });
-        });
+        expect(layer.id).toBeDefined();
     });
 
-    describe('opacity', () => {
-        it('should return the correct value', () => {
-            const layer = new ColorLayer({ source: new NullSource() });
+    it('should define layer properties', () => {
+        const layer = new ColorLayer({ source: new NullSource(), name: 'foo' });
 
-            expect(layer.opacity).toEqual(1);
-
-            layer.opacity = 0.1;
-            expect(layer.opacity).toEqual(0.1);
-        });
-
-        it('should raise the opacity-property-changed event', () => {
-            const layer = new ColorLayer({ source: new NullSource() });
-
-            const listener = jest.fn();
-            layer.addEventListener('opacity-property-changed', listener);
-
-            expect(listener).not.toHaveBeenCalled();
-
-            layer.opacity = 0.5;
-            layer.opacity = 0.5;
-            layer.opacity = 0.5;
-
-            // The event should be called only when the value actually changes
-            expect(listener).toHaveBeenCalledTimes(1);
-        });
+        expect(layer.frozen).toEqual(false);
+        expect(layer.visible).toEqual(true);
+        expect(layer.opacity).toEqual(1.0);
+        expect(layer.name).toEqual('foo');
     });
 
-    describe('brightness', () => {
-        it('should return the correct value', () => {
-            const layer = new ColorLayer({ source: new NullSource() });
+    it('should disable no-data filling by default', () => {
+        const layer = new ColorLayer({ source: new NullSource() });
 
-            expect(layer.brightness).toEqual(0);
+        expect(layer.noDataOptions).toEqual({ replaceNoData: false });
+    });
+});
 
-            layer.brightness = 0.1;
-            expect(layer.brightness).toEqual(0.1);
-        });
+describe('opacity', () => {
+    it('should return the correct value', () => {
+        const layer = new ColorLayer({ source: new NullSource() });
 
-        it('should raise the brightness-property-changed event', () => {
-            const layer = new ColorLayer({ source: new NullSource() });
+        expect(layer.opacity).toEqual(1);
 
-            const listener = jest.fn();
-            layer.addEventListener('brightness-property-changed', listener);
-
-            expect(listener).not.toHaveBeenCalled();
-
-            layer.brightness = 0.5;
-            layer.brightness = 0.5;
-            layer.brightness = 0.5;
-
-            // The event should be called only when the value actually changes
-            expect(listener).toHaveBeenCalledTimes(1);
-        });
+        layer.opacity = 0.1;
+        expect(layer.opacity).toEqual(0.1);
     });
 
-    describe('contrast', () => {
-        it('should return the correct value', () => {
-            const layer = new ColorLayer({ source: new NullSource() });
+    it('should raise the opacity-property-changed event', () => {
+        const layer = new ColorLayer({ source: new NullSource() });
 
-            expect(layer.contrast).toEqual(1);
+        const listener = vitest.fn();
+        layer.addEventListener('opacity-property-changed', listener);
 
-            layer.contrast = 0.1;
-            expect(layer.contrast).toEqual(0.1);
-        });
+        expect(listener).not.toHaveBeenCalled();
 
-        it('should raise the contrast-property-changed event', () => {
-            const layer = new ColorLayer({ source: new NullSource() });
+        layer.opacity = 0.5;
+        layer.opacity = 0.5;
+        layer.opacity = 0.5;
 
-            const listener = jest.fn();
-            layer.addEventListener('contrast-property-changed', listener);
+        // The event should be called only when the value actually changes
+        expect(listener).toHaveBeenCalledTimes(1);
+    });
+});
 
-            expect(listener).not.toHaveBeenCalled();
+describe('brightness', () => {
+    it('should return the correct value', () => {
+        const layer = new ColorLayer({ source: new NullSource() });
 
-            layer.contrast = 0.5;
-            layer.contrast = 0.5;
-            layer.contrast = 0.5;
+        expect(layer.brightness).toEqual(0);
 
-            // The event should be called only when the value actually changes
-            expect(listener).toHaveBeenCalledTimes(1);
-        });
+        layer.brightness = 0.1;
+        expect(layer.brightness).toEqual(0.1);
     });
 
-    describe('saturation', () => {
-        it('should return the correct value', () => {
-            const layer = new ColorLayer({ source: new NullSource() });
+    it('should raise the brightness-property-changed event', () => {
+        const layer = new ColorLayer({ source: new NullSource() });
 
-            expect(layer.saturation).toEqual(1);
+        const listener = vitest.fn();
+        layer.addEventListener('brightness-property-changed', listener);
 
-            layer.saturation = 0.1;
-            expect(layer.saturation).toEqual(0.1);
-        });
+        expect(listener).not.toHaveBeenCalled();
 
-        it('should raise the saturation-property-changed event', () => {
-            const layer = new ColorLayer({ source: new NullSource() });
+        layer.brightness = 0.5;
+        layer.brightness = 0.5;
+        layer.brightness = 0.5;
 
-            const listener = jest.fn();
-            layer.addEventListener('saturation-property-changed', listener);
+        // The event should be called only when the value actually changes
+        expect(listener).toHaveBeenCalledTimes(1);
+    });
+});
 
-            expect(listener).not.toHaveBeenCalled();
+describe('contrast', () => {
+    it('should return the correct value', () => {
+        const layer = new ColorLayer({ source: new NullSource() });
 
-            layer.saturation = 0.5;
-            layer.saturation = 0.5;
-            layer.saturation = 0.5;
+        expect(layer.contrast).toEqual(1);
 
-            // The event should be called only when the value actually changes
-            expect(listener).toHaveBeenCalledTimes(1);
-        });
+        layer.contrast = 0.1;
+        expect(layer.contrast).toEqual(0.1);
     });
 
-    describe('elevationRange', () => {
-        it('should return the correct value', () => {
-            const layer = new ColorLayer({ source: new NullSource() });
+    it('should raise the contrast-property-changed event', () => {
+        const layer = new ColorLayer({ source: new NullSource() });
 
-            expect(layer.elevationRange).toBeNull();
+        const listener = vitest.fn();
+        layer.addEventListener('contrast-property-changed', listener);
 
-            layer.elevationRange = { min: 1, max: 2 };
+        expect(listener).not.toHaveBeenCalled();
 
-            expect(layer.elevationRange).toEqual({ min: 1, max: 2 });
-        });
+        layer.contrast = 0.5;
+        layer.contrast = 0.5;
+        layer.contrast = 0.5;
 
-        it('should raise the elevationRange-property-changed event', () => {
-            const layer = new ColorLayer({ source: new NullSource() });
+        // The event should be called only when the value actually changes
+        expect(listener).toHaveBeenCalledTimes(1);
+    });
+});
 
-            const listener = jest.fn();
-            layer.addEventListener('elevationRange-property-changed', listener);
+describe('saturation', () => {
+    it('should return the correct value', () => {
+        const layer = new ColorLayer({ source: new NullSource() });
 
-            expect(listener).not.toHaveBeenCalled();
+        expect(layer.saturation).toEqual(1);
 
-            layer.elevationRange = { min: 1, max: 2 };
+        layer.saturation = 0.1;
+        expect(layer.saturation).toEqual(0.1);
+    });
 
-            expect(listener).toHaveBeenCalledTimes(1);
+    it('should raise the saturation-property-changed event', () => {
+        const layer = new ColorLayer({ source: new NullSource() });
 
-            layer.elevationRange = null;
+        const listener = vitest.fn();
+        layer.addEventListener('saturation-property-changed', listener);
 
-            expect(listener).toHaveBeenCalledTimes(2);
-        });
+        expect(listener).not.toHaveBeenCalled();
+
+        layer.saturation = 0.5;
+        layer.saturation = 0.5;
+        layer.saturation = 0.5;
+
+        // The event should be called only when the value actually changes
+        expect(listener).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe('elevationRange', () => {
+    it('should return the correct value', () => {
+        const layer = new ColorLayer({ source: new NullSource() });
+
+        expect(layer.elevationRange).toBeNull();
+
+        layer.elevationRange = { min: 1, max: 2 };
+
+        expect(layer.elevationRange).toEqual({ min: 1, max: 2 });
+    });
+
+    it('should raise the elevationRange-property-changed event', () => {
+        const layer = new ColorLayer({ source: new NullSource() });
+
+        const listener = vitest.fn();
+        layer.addEventListener('elevationRange-property-changed', listener);
+
+        expect(listener).not.toHaveBeenCalled();
+
+        layer.elevationRange = { min: 1, max: 2 };
+
+        expect(listener).toHaveBeenCalledTimes(1);
+
+        layer.elevationRange = null;
+
+        expect(listener).toHaveBeenCalledTimes(2);
     });
 });

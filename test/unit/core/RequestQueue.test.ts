@@ -1,96 +1,96 @@
 import RequestQueue from '@giro3d/giro3d/core/RequestQueue';
+import { AbortError } from '@giro3d/giro3d/utils/PromiseUtils';
+import { describe, expect, it } from 'vitest';
 
-describe('RequestQueue', () => {
-    describe('progress & loading', () => {
-        it('progress should return the ratio between enqueued tasks and executed tasks', async () => {
-            const queue = new RequestQueue({ maxConcurrentRequests: 1 });
+describe('progress & loading', () => {
+    it('progress should return the ratio between enqueued tasks and executed tasks', async () => {
+        const queue = new RequestQueue({ maxConcurrentRequests: 1 });
 
-            expect(queue.loading).toEqual(false);
-            expect(queue.progress).toEqual(1);
+        expect(queue.loading).toEqual(false);
+        expect(queue.progress).toEqual(1);
 
-            let executedTasks = 0;
-            const totalTasks = 30;
+        let executedTasks = 0;
+        const totalTasks = 30;
 
-            queue.addEventListener('task-executed', () => {
-                executedTasks++;
-            });
-
-            for (let i = 0; i < totalTasks; i++) {
-                queue.enqueue({
-                    id: `${i}`,
-                    request: () => Promise.resolve(),
-                });
-            }
-
-            while (executedTasks < totalTasks) {
-                expect(queue.loading).toEqual(true);
-                expect(queue.progress).toBeCloseTo(executedTasks / totalTasks, 1);
-
-                await null;
-            }
-
-            expect(queue.progress).toEqual(1);
-            expect(queue.loading).toEqual(false);
+        queue.addEventListener('task-executed', () => {
+            executedTasks++;
         });
+
+        for (let i = 0; i < totalTasks; i++) {
+            queue.enqueue({
+                id: `${i}`,
+                request: () => Promise.resolve(),
+            });
+        }
+
+        while (executedTasks < totalTasks) {
+            expect(queue.loading).toEqual(true);
+            expect(queue.progress).toBeCloseTo(executedTasks / totalTasks, 1);
+
+            await null;
+        }
+
+        expect(queue.progress).toEqual(1);
+        expect(queue.loading).toEqual(false);
+    });
+});
+
+describe('enqueue', () => {
+    it('should return a rejected promise if the shouldExecute() function returned false', async () => {
+        const queue = new RequestQueue({ maxConcurrentRequests: 1 });
+
+        await expect(
+            queue.enqueue({
+                id: 'foo',
+                request: () => Promise.resolve(),
+                shouldExecute: () => false,
+            }),
+        ).rejects.toEqual(new AbortError());
     });
 
-    describe('enqueue', () => {
-        it('should return a rejected promise if the shouldExecute() function returned false', async () => {
-            const queue = new RequestQueue({ maxConcurrentRequests: 1 });
+    it('should return a rejected promise if the signal was aborted', async () => {
+        const queue = new RequestQueue({ maxConcurrentRequests: 1 });
 
-            await expect(
-                queue.enqueue({
-                    id: 'foo',
-                    request: () => Promise.resolve(),
-                    shouldExecute: () => false,
-                }),
-            ).rejects.toEqual(new Error('aborted'));
-        });
+        const controller = new AbortController();
+        controller.abort();
 
-        it('should return a rejected promise if the signal was aborted', async () => {
-            const queue = new RequestQueue({ maxConcurrentRequests: 1 });
+        await expect(
+            queue.enqueue({
+                id: 'foo',
+                signal: controller.signal,
+                request: () => Promise.resolve(),
+            }),
+        ).rejects.toEqual(new AbortError());
+    });
 
-            const controller = new AbortController();
-            controller.abort();
+    it('should return an existing promise for the same id', async () => {
+        const queue = new RequestQueue({ maxConcurrentRequests: 1 });
 
-            await expect(
-                queue.enqueue({
-                    id: 'foo',
-                    signal: controller.signal,
-                    request: () => Promise.resolve(),
-                }),
-            ).rejects.toEqual(new Error('aborted'));
-        });
+        const id = 'uniqueId';
 
-        it('should return an existing promise for the same id', async () => {
-            const queue = new RequestQueue({ maxConcurrentRequests: 1 });
+        const promise1 = queue.enqueue({ id, request: () => Promise.resolve() });
+        const promise2 = queue.enqueue({ id, request: () => Promise.resolve() });
+        const promise3 = queue.enqueue({ id, request: () => Promise.resolve() });
 
-            const id = 'uniqueId';
+        await promise1;
+        await promise2;
+        await promise3;
 
-            const promise1 = queue.enqueue({ id, request: () => Promise.resolve() });
-            const promise2 = queue.enqueue({ id, request: () => Promise.resolve() });
-            const promise3 = queue.enqueue({ id, request: () => Promise.resolve() });
+        expect(promise1).toBe(promise2);
+        expect(promise1).toBe(promise3);
+    });
 
-            await promise1;
-            await promise2;
-            await promise3;
+    it('should infer the return type of the promise', async () => {
+        const queue = new RequestQueue({ maxConcurrentRequests: 1 });
 
-            expect(promise1).toBe(promise2);
-            expect(promise1).toBe(promise3);
-        });
+        const id = 'uniqueId';
 
-        it('should infer the return type of the promise', async () => {
-            const queue = new RequestQueue({ maxConcurrentRequests: 1 });
+        const request = () => Promise.resolve(1);
 
-            const id = 'uniqueId';
+        const promise1: Promise<number> = queue.enqueue({ id, request });
 
-            const request = () => Promise.resolve(1);
+        const result = await promise1;
 
-            const promise1: Promise<number> = queue.enqueue({ id, request });
-
-            const result = await promise1;
-
-            expect(result).toEqual(1);
-        });
+        expect(result).toEqual(1);
     });
 });

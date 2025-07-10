@@ -12,6 +12,7 @@ import {
     type StrokeStyle,
 } from '@giro3d/giro3d/core/FeatureTypes';
 import { Color } from 'three';
+import { describe, expect, it } from 'vitest';
 
 describe('getFullStrokeStyle', () => {
     it('should return a completely defined style', () => {
@@ -69,12 +70,15 @@ describe('hashStyle', () => {
             opacity: 0.12,
             color: new Color(1, 0, 0),
             renderOrder: 3,
+            shading: false,
             depthTest: true,
         };
 
         const hashValue = hashStyle('prefix', style1);
 
-        expect(hashValue).toBe('prefix::color=ff0000,depthTest=true,opacity=0.12,renderOrder=3');
+        expect(hashValue).toEqual(
+            'prefix::color=ff0000,depthTest=true,opacity=0.12,renderOrder=3,shading=false',
+        );
 
         expect(hashStyle('prefix', style1)).toEqual(hashStyle('prefix', { ...style1 }));
 

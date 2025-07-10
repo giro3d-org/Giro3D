@@ -3,8 +3,9 @@ import LineStringMesh, {
 } from '@giro3d/giro3d/renderer/geometries/LineStringMesh';
 import { isSimpleGeometryMesh } from '@giro3d/giro3d/renderer/geometries/SimpleGeometryMesh';
 import { Vector2, type WebGLRenderer } from 'three';
-import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry';
-import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
+import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
+import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
+import { describe, expect, it, vitest } from 'vitest';
 
 describe('constructor', () => {
     it('should assign properties', () => {
@@ -26,10 +27,10 @@ describe('update', () => {
         const geometry = new LineGeometry();
         const mesh = new LineStringMesh(geometry, oldMaterial, 1);
 
-        oldMaterial.dispose = jest.fn();
+        oldMaterial.dispose = vitest.fn();
         const newMaterial = new LineMaterial();
 
-        mesh.update({ material: newMaterial, opacity: 1 });
+        mesh.update({ material: newMaterial, opacity: 1, renderOrder: 0 });
 
         expect(mesh.material).toBe(newMaterial);
         expect(oldMaterial.dispose).not.toHaveBeenCalled();
@@ -42,10 +43,10 @@ describe('update', () => {
 
         mesh.visible = false;
 
-        mesh.update({ material: new LineMaterial(), opacity: 1 });
+        mesh.update({ material: new LineMaterial(), opacity: 1, renderOrder: 0 });
         expect(mesh.visible).toEqual(true);
 
-        mesh.update({ material: null, opacity: 1 });
+        mesh.update({ material: null, opacity: 1, renderOrder: 0 });
         expect(mesh.visible).toEqual(false);
     });
 
@@ -54,11 +55,11 @@ describe('update', () => {
         const geometry = new LineGeometry();
         const mesh = new LineStringMesh(geometry, oldMaterial, 1);
 
-        oldMaterial.dispose = jest.fn();
+        oldMaterial.dispose = vitest.fn();
         mesh.opacity = 0.2;
         const newMaterial = new LineMaterial();
 
-        mesh.update({ material: newMaterial, opacity: 0.5 });
+        mesh.update({ material: newMaterial, opacity: 0.5, renderOrder: 0 });
 
         expect(newMaterial.opacity).toEqual(0.2 * 0.5);
     });

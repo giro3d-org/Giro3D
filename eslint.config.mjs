@@ -2,7 +2,7 @@ import { FlatCompat } from '@eslint/eslintrc';
 import js from '@eslint/js';
 import typescriptEslint from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
-import jest from 'eslint-plugin-jest';
+import vitest from '@vitest/eslint-plugin';
 import prettier from 'eslint-plugin-prettier';
 import tsdoc from 'eslint-plugin-tsdoc';
 import globals from 'globals';
@@ -28,7 +28,6 @@ export default [
     ),
     {
         plugins: {
-            jest,
             '@typescript-eslint': typescriptEslint,
             tsdoc,
             prettier,
@@ -39,7 +38,6 @@ export default [
                 ...globals.browser,
                 ...globals.amd,
                 ...globals.commonjs,
-                ...globals.jest,
             },
 
             parser: tsParser,
@@ -61,11 +59,6 @@ export default [
 
         rules: {
             curly: 'error',
-            'jest/no-disabled-tests': 'warn',
-            'jest/no-focused-tests': 'error',
-            'jest/no-identical-title': 'error',
-            'jest/prefer-to-have-length': 'warn',
-            'jest/valid-expect': 'error',
             'tsdoc/syntax': 'warn',
             'no-console': 'off',
             eqeqeq: ['error', 'smart'],
@@ -184,9 +177,13 @@ export default [
     },
     {
         files: ['test/**/*.ts'],
-
+        plugins: {
+            vitest,
+        },
         rules: {
+            ...vitest.configs.recommended.rules,
             '@typescript-eslint/no-non-null-assertion': 'off',
+            'vitest/max-nested-describe': ['error', { max: 3 }],
         },
     },
     {

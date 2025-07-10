@@ -4,6 +4,7 @@ import HeightMap from '@giro3d/giro3d/core/HeightMap';
 import OffsetScale from '@giro3d/giro3d/core/OffsetScale';
 import PlanarTileGeometry from '@giro3d/giro3d/entities/tiles/PlanarTileGeometry';
 import { FloatType, RGFormat } from 'three';
+import { describe, expect, it } from 'vitest';
 
 const extent = new Extent(CoordinateSystem.epsg3857, -100, 100, -100, 100);
 const DEFAULT_OFFSET_SCALE = new OffsetScale(0, 0, 1, 1);
@@ -32,124 +33,122 @@ const indicesSquare = new Uint16Array([
     31, 32, 26, 26, 32, 27, 32, 33, 27, 27, 33, 28, 33, 34, 28, 28, 34, 29, 34, 35, 29,
 ]);
 
-describe('PlanarTileGeometry', () => {
-    it('should have the proper attributes for a 6x6 squared grid given segment=5 parameter', () => {
-        const geometry = new PlanarTileGeometry({ extent, segments: 5 });
+it('should have the proper attributes for a 6x6 squared grid given segment=5 parameter', () => {
+    const geometry = new PlanarTileGeometry({ extent, segments: 5 });
 
-        expect(geometry.attributes.position.array).toStrictEqual(positionsSquare);
-        expect(geometry.attributes.uv.array).toStrictEqual(uvsSquare);
-        expect(geometry.index!.array).toStrictEqual(indicesSquare);
+    expect(geometry.attributes.position.array).toStrictEqual(positionsSquare);
+    expect(geometry.attributes.uv.array).toStrictEqual(uvsSquare);
+    expect(geometry.index!.array).toStrictEqual(indicesSquare);
+});
+
+it('should create an index buffer with 16bit numbers if possible', () => {
+    const small = new PlanarTileGeometry({ extent, segments: 5 });
+    const big = new PlanarTileGeometry({ extent, segments: 300 });
+
+    expect(small.getIndex()!.array.BYTES_PER_ELEMENT).toEqual(2);
+    expect(big.getIndex()!.array.BYTES_PER_ELEMENT).toEqual(4);
+});
+
+describe('resetHeights', () => {
+    it('should set all Z coordinates to zero', () => {
+        const geometry = new PlanarTileGeometry({ extent, segments: 3 });
+        const positions = geometry.getAttribute('position');
+        for (let i = 0; i < positions.count; i++) {
+            positions.setZ(i, 999);
+        }
+        geometry.resetHeights();
+
+        for (let i = 0; i < positions.count; i++) {
+            expect(positions.getZ(i)).toEqual(0);
+        }
+    });
+});
+
+describe('applyHeightMap', () => {
+    it('should return the min/max height of computed vertices', () => {
+        const width = 2;
+        const height = 2;
+        const buffer = new Float32Array(width * height * 2);
+
+        const ALPHA = 1;
+        buffer[0] = -102;
+        buffer[1] = ALPHA;
+        buffer[2] = 989;
+        buffer[3] = ALPHA;
+        buffer[4] = 600;
+        buffer[5] = ALPHA;
+        buffer[6] = 800;
+        buffer[7] = ALPHA;
+
+        const grid_2x2 = new PlanarTileGeometry({ extent, segments: 2 });
+
+        const { min, max } = grid_2x2.applyHeightMap(
+            new HeightMap(buffer, width, height, DEFAULT_OFFSET_SCALE, RGFormat, FloatType),
+        );
+
+        expect(min).toEqual(-102);
+        expect(max).toEqual(989);
     });
 
-    it('should create an index buffer with 16bit numbers if possible', () => {
-        const small = new PlanarTileGeometry({ extent, segments: 5 });
-        const big = new PlanarTileGeometry({ extent, segments: 300 });
+    it('should correctly sample the buffer', () => {
+        const small = new PlanarTileGeometry({ extent, segments: 2 });
 
-        expect(small.getIndex()!.array.BYTES_PER_ELEMENT).toEqual(2);
-        expect(big.getIndex()!.array.BYTES_PER_ELEMENT).toEqual(4);
-    });
+        // Create 2x2 heightmap, with a stride of 2 (the elevation is in the even indices)
+        const width = 2;
+        const height = 2;
+        const buffer = new Float32Array(width * height * 2);
 
-    describe('resetHeights', () => {
-        it('should set all Z coordinates to zero', () => {
-            const geometry = new PlanarTileGeometry({ extent, segments: 3 });
-            const positions = geometry.getAttribute('position');
-            for (let i = 0; i < positions.count; i++) {
-                positions.setZ(i, 999);
-            }
-            geometry.resetHeights();
+        const ALPHA = 1;
+        buffer[0] = 200;
+        buffer[1] = ALPHA;
+        buffer[2] = 400;
+        buffer[3] = ALPHA;
+        buffer[4] = 600;
+        buffer[5] = ALPHA;
+        buffer[6] = 800;
+        buffer[7] = ALPHA;
 
-            for (let i = 0; i < positions.count; i++) {
-                expect(positions.getZ(i)).toEqual(0);
-            }
-        });
-    });
+        // The heightmap looks like this:
+        //
+        // +-----+-----+
+        // | 200 | 400 |
+        // +-----+-----+
+        // | 600 | 800 |
+        // +-----+-----+
 
-    describe('applyHeightMap', () => {
-        it('should return the min/max height of computed vertices', () => {
-            const width = 2;
-            const height = 2;
-            const buffer = new Float32Array(width * height * 2);
+        // The grid looks like this:
+        //
+        // 6 --- 7 --- 8
+        // |     |     |
+        // 3 --- 4 --- 5
+        // |     |     |
+        // 0 --- 1 --- 2
 
-            const ALPHA = 1;
-            buffer[0] = -102;
-            buffer[1] = ALPHA;
-            buffer[2] = 989;
-            buffer[3] = ALPHA;
-            buffer[4] = 600;
-            buffer[5] = ALPHA;
-            buffer[6] = 800;
-            buffer[7] = ALPHA;
+        const heightMap = new HeightMap(
+            buffer,
+            width,
+            height,
+            DEFAULT_OFFSET_SCALE,
+            RGFormat,
+            FloatType,
+        );
+        small.applyHeightMap(heightMap);
 
-            const grid_2x2 = new PlanarTileGeometry({ extent, segments: 2 });
+        const positions = small.getAttribute('position');
 
-            const { min, max } = grid_2x2.applyHeightMap(
-                new HeightMap(buffer, width, height, DEFAULT_OFFSET_SCALE, RGFormat, FloatType),
-            );
+        // Top row
+        expect(positions.getZ(0)).toEqual(600);
+        expect(positions.getZ(1)).toEqual(600);
+        expect(positions.getZ(2)).toEqual(800);
 
-            expect(min).toEqual(-102);
-            expect(max).toEqual(989);
-        });
+        // Middle row
+        expect(positions.getZ(3)).toEqual(200);
+        expect(positions.getZ(4)).toEqual(200);
+        expect(positions.getZ(5)).toEqual(400);
 
-        it('should correctly sample the buffer', () => {
-            const small = new PlanarTileGeometry({ extent, segments: 2 });
-
-            // Create 2x2 heightmap, with a stride of 2 (the elevation is in the even indices)
-            const width = 2;
-            const height = 2;
-            const buffer = new Float32Array(width * height * 2);
-
-            const ALPHA = 1;
-            buffer[0] = 200;
-            buffer[1] = ALPHA;
-            buffer[2] = 400;
-            buffer[3] = ALPHA;
-            buffer[4] = 600;
-            buffer[5] = ALPHA;
-            buffer[6] = 800;
-            buffer[7] = ALPHA;
-
-            // The heightmap looks like this:
-            //
-            // +-----+-----+
-            // | 200 | 400 |
-            // +-----+-----+
-            // | 600 | 800 |
-            // +-----+-----+
-
-            // The grid looks like this:
-            //
-            // 6 --- 7 --- 8
-            // |     |     |
-            // 3 --- 4 --- 5
-            // |     |     |
-            // 0 --- 1 --- 2
-
-            const heightMap = new HeightMap(
-                buffer,
-                width,
-                height,
-                DEFAULT_OFFSET_SCALE,
-                RGFormat,
-                FloatType,
-            );
-            small.applyHeightMap(heightMap);
-
-            const positions = small.getAttribute('position');
-
-            // Top row
-            expect(positions.getZ(0)).toEqual(600);
-            expect(positions.getZ(1)).toEqual(600);
-            expect(positions.getZ(2)).toEqual(800);
-
-            // Middle row
-            expect(positions.getZ(3)).toEqual(200);
-            expect(positions.getZ(4)).toEqual(200);
-            expect(positions.getZ(5)).toEqual(400);
-
-            // Bottom row
-            expect(positions.getZ(6)).toEqual(200);
-            expect(positions.getZ(7)).toEqual(200);
-            expect(positions.getZ(8)).toEqual(400);
-        });
+        // Bottom row
+        expect(positions.getZ(6)).toEqual(200);
+        expect(positions.getZ(7)).toEqual(200);
+        expect(positions.getZ(8)).toEqual(400);
     });
 });

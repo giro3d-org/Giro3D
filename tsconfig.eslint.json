@@ -1,5 +1,12 @@
 {
     "extends": "./tsconfig.json",
-    "include": ["src/**/*", "test/**/*", "examples/**/*", "tasks/**/*"],
+    "include": [
+        "src/**/*",
+        "test/**/*",
+        "examples/**/*",
+        "tasks/**/*",
+        "vitest.setup.ts",
+        "vitest.config.mts"
+    ],
     "exclude": ["node_modules/**/*", "package-lock.json"]
 }

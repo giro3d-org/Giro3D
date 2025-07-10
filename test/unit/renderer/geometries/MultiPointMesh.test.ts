@@ -4,6 +4,7 @@ import MultiPointMesh, {
 import PointMesh from '@giro3d/giro3d/renderer/geometries/PointMesh';
 import { isSimpleGeometryMesh } from '@giro3d/giro3d/renderer/geometries/SimpleGeometryMesh';
 import { SpriteMaterial } from 'three';
+import { describe, expect, it, vitest } from 'vitest';
 
 function makeDefaultObjects(options?: { material?: SpriteMaterial; opacity?: number }) {
     const material = options?.material ?? new SpriteMaterial();
@@ -45,7 +46,7 @@ describe('dispose', () => {
         const { mesh, points } = makeDefaultObjects();
 
         function mockDispose(obj: PointMesh) {
-            obj.dispose = jest.fn();
+            obj.dispose = vitest.fn();
         }
 
         mockDispose(points[0]);

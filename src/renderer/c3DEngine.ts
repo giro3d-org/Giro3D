@@ -434,7 +434,7 @@ class C3DEngine {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
 
-        if (!ctx) {
+        if (ctx == null) {
             throw new Error('could not acquire 2D rendering context on canvas');
         }
 

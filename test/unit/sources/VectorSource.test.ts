@@ -1,36 +1,35 @@
 import VectorSource from '@giro3d/giro3d/sources/VectorSource';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import { Style } from 'ol/style.js';
+import { beforeEach, describe, expect, it, vitest } from 'vitest';
 
-describe('VectorSource', () => {
-    describe('setStyle', () => {
-        let source: VectorSource;
+describe('setStyle', () => {
+    let source: VectorSource;
 
-        beforeEach(() => {
-            source = new VectorSource({
-                data: {
-                    url: 'http://example.com/geojson',
-                    format: new GeoJSON(),
-                },
-                style: new Style(),
-            });
+    beforeEach(() => {
+        source = new VectorSource({
+            data: {
+                url: 'http://example.com/geojson',
+                format: new GeoJSON(),
+            },
+            style: new Style(),
+        });
+    });
+
+    it('should trigger an update', () => {
+        const listener = vitest.fn();
+        source.addEventListener('updated', listener);
+
+        source.setStyle(() => {
+            /** empty */
         });
 
-        it('should trigger an update', () => {
-            const listener = jest.fn();
-            source.addEventListener('updated', listener);
+        expect(listener).toHaveBeenCalled();
+    });
 
-            source.setStyle(() => {
-                /** empty */
-            });
-
-            expect(listener).toHaveBeenCalled();
-        });
-
-        it('should assign the style', () => {
-            const style = new Style();
-            source.setStyle(style);
-            expect(source.style).toBe(style);
-        });
+    it('should assign the style', () => {
+        const style = new Style();
+        source.setStyle(style);
+        expect(source.style).toBe(style);
     });
 });

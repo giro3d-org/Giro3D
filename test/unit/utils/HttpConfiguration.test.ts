@@ -1,136 +1,128 @@
 import HttpConfiguration from '@giro3d/giro3d/utils/HttpConfiguration';
+import { beforeEach, describe, expect, it } from 'vitest';
 
-describe('HttpConfiguration', () => {
-    beforeEach(() => {
-        HttpConfiguration.clear();
+beforeEach(() => {
+    HttpConfiguration.clear();
+});
+
+describe('setOptions', () => {
+    it('should set the correct option', () => {
+        HttpConfiguration.setOptions('https://example.com', { credentials: 'include' });
+        HttpConfiguration.setOptions('https://example.com/OMIT', { credentials: 'omit' });
+
+        const not = 'https://example.org';
+
+        const root = 'https://example.com';
+        const omit = 'https://example.com/OMIT';
+        const include = 'https://example.com/INCLUDE';
+
+        const notOpts = HttpConfiguration.applyConfiguration(not);
+        const rootOpts = HttpConfiguration.applyConfiguration(root)!;
+        const includeOpts = HttpConfiguration.applyConfiguration(include)!;
+        const omitOpts = HttpConfiguration.applyConfiguration(omit, {})!;
+
+        expect(notOpts).toBeUndefined();
+        expect(rootOpts.credentials).toEqual('include');
+        expect(includeOpts.credentials).toEqual('include');
+        expect(omitOpts.credentials).toEqual('omit');
     });
 
-    describe('setOptions', () => {
-        it('should set the correct option', () => {
-            HttpConfiguration.setOptions('https://example.com', { credentials: 'include' });
-            HttpConfiguration.setOptions('https://example.com/OMIT', { credentials: 'omit' });
+    it('should have lower precedence than setHeader()', () => {
+        HttpConfiguration.setHeader('https://example.com', 'CUSTOMHEADER', 'bar');
 
-            const not = 'https://example.org';
-
-            const root = 'https://example.com';
-            const omit = 'https://example.com/OMIT';
-            const include = 'https://example.com/INCLUDE';
-
-            const notOpts = HttpConfiguration.applyConfiguration(not);
-            const rootOpts = HttpConfiguration.applyConfiguration(root)!;
-            const includeOpts = HttpConfiguration.applyConfiguration(include)!;
-            const omitOpts = HttpConfiguration.applyConfiguration(omit, {})!;
-
-            expect(notOpts).toBeUndefined();
-            expect(rootOpts.credentials).toEqual('include');
-            expect(includeOpts.credentials).toEqual('include');
-            expect(omitOpts.credentials).toEqual('omit');
+        HttpConfiguration.setOptions('https://example.com', {
+            headers: { CUSTOMHEADER: 'foo' },
         });
 
-        it('should have lower precedence than setHeader()', () => {
-            HttpConfiguration.setHeader('https://example.com', 'CUSTOMHEADER', 'bar');
+        const root = 'https://example.com';
 
-            HttpConfiguration.setOptions('https://example.com', {
-                headers: { CUSTOMHEADER: 'foo' },
-            });
+        const options = HttpConfiguration.applyConfiguration(root)!;
 
-            const root = 'https://example.com';
+        expect((options.headers as Record<string, string>)['CUSTOMHEADER']).toEqual('bar');
+    });
+});
 
-            const options = HttpConfiguration.applyConfiguration(root)!;
+describe('setHeader', () => {
+    it('should set the correct entry', () => {
+        HttpConfiguration.setHeader('https://example.com', 'Authorization', 'Bearer foo');
 
-            expect((options.headers as Record<string, string>)['CUSTOMHEADER']).toEqual('bar');
-        });
+        const not = 'https://example.org';
+
+        const root = 'https://example.com';
+        const foo = 'https://example.com/foo';
+        const foobar = 'https://example.com/foo/bar';
+
+        const notOpts = HttpConfiguration.applyConfiguration(not);
+        const rootOpts = HttpConfiguration.applyConfiguration(root)!;
+        const fooOpts = HttpConfiguration.applyConfiguration(foo, {})!;
+        const foobarOpts = HttpConfiguration.applyConfiguration(foobar, {})!;
+
+        expect(notOpts).toBeUndefined();
+        expect((rootOpts.headers as Record<string, string>).Authorization).toEqual('Bearer foo');
+        expect((fooOpts.headers as Record<string, string>).Authorization).toEqual('Bearer foo');
+        expect((foobarOpts.headers as Record<string, string>).Authorization).toEqual('Bearer foo');
     });
 
-    describe('setHeader', () => {
-        it('should set the correct entry', () => {
-            HttpConfiguration.setHeader('https://example.com', 'Authorization', 'Bearer foo');
+    it('should return undefined if no configuration applies and no object is passed', () => {
+        const output = HttpConfiguration.applyConfiguration('http://nothing.com');
 
-            const not = 'https://example.org';
+        expect(output).toBeUndefined();
+    });
 
-            const root = 'https://example.com';
-            const foo = 'https://example.com/foo';
-            const foobar = 'https://example.com/foo/bar';
+    it('should return the same object that was passed', () => {
+        const inputOpts = {};
+        const outputOpts = HttpConfiguration.applyConfiguration('http://nothing.com', inputOpts);
 
-            const notOpts = HttpConfiguration.applyConfiguration(not);
-            const rootOpts = HttpConfiguration.applyConfiguration(root)!;
-            const fooOpts = HttpConfiguration.applyConfiguration(foo, {})!;
-            const foobarOpts = HttpConfiguration.applyConfiguration(foobar, {})!;
+        expect(inputOpts).toBe(outputOpts);
+    });
 
-            expect(notOpts).toBeUndefined();
-            expect((rootOpts.headers as Record<string, string>).Authorization).toEqual(
-                'Bearer foo',
-            );
-            expect((fooOpts.headers as Record<string, string>).Authorization).toEqual('Bearer foo');
-            expect((foobarOpts.headers as Record<string, string>).Authorization).toEqual(
-                'Bearer foo',
-            );
-        });
+    it('should honor precedence of prefixes', () => {
+        HttpConfiguration.setHeader(
+            'https://example.com/very/specific/prefix',
+            'Authorization',
+            'HIGH',
+        );
 
-        it('should return undefined if no configuration applies and no object is passed', () => {
-            const output = HttpConfiguration.applyConfiguration('http://nothing.com');
+        HttpConfiguration.setHeader('https://example.com/lower/prefix', 'Authorization', 'LOW');
 
-            expect(output).toBeUndefined();
-        });
+        const high = 'https://example.com/very/specific/prefix/resource/foo/bar/baz.html';
+        const low = 'https://example.com/lower/prefix/some/resource.html';
 
-        it('should return the same object that was passed', () => {
-            const inputOpts = {};
-            const outputOpts = HttpConfiguration.applyConfiguration(
-                'http://nothing.com',
-                inputOpts,
-            );
+        const highOpts = HttpConfiguration.applyConfiguration(high, {})!;
+        const lowOpts = HttpConfiguration.applyConfiguration(low, {})!;
 
-            expect(inputOpts).toBe(outputOpts);
-        });
+        expect((highOpts.headers as Record<string, string>).Authorization).toEqual('HIGH');
+        expect((lowOpts.headers as Record<string, string>).Authorization).toEqual('LOW');
+    });
 
-        it('should honor precedence of prefixes', () => {
-            HttpConfiguration.setHeader(
-                'https://example.com/very/specific/prefix',
-                'Authorization',
-                'HIGH',
-            );
+    it('should preserve all properties in the passed options', () => {
+        const opts = {
+            method: 'POST',
+            headers: {
+                'X-custom': 'yes',
+            },
+        } as RequestInit;
 
-            HttpConfiguration.setHeader('https://example.com/lower/prefix', 'Authorization', 'LOW');
+        HttpConfiguration.setHeader('https://example.com', 'Authorization', 'auth');
 
-            const high = 'https://example.com/very/specific/prefix/resource/foo/bar/baz.html';
-            const low = 'https://example.com/lower/prefix/some/resource.html';
+        HttpConfiguration.applyConfiguration('https://example.com', opts);
 
-            const highOpts = HttpConfiguration.applyConfiguration(high, {})!;
-            const lowOpts = HttpConfiguration.applyConfiguration(low, {})!;
+        expect(opts.method).toEqual('POST');
+        expect((opts.headers as Record<string, string>)['X-custom']).toEqual('yes');
+        expect((opts.headers as Record<string, string>).Authorization).toEqual('auth');
+    });
 
-            expect((highOpts.headers as Record<string, string>).Authorization).toEqual('HIGH');
-            expect((lowOpts.headers as Record<string, string>).Authorization).toEqual('LOW');
-        });
+    it('should respect existing configuration without overriding it', () => {
+        HttpConfiguration.setHeader('https://example.com', 'Authorization', 'DO_NOT_USE_THIS');
 
-        it('should preserve all properties in the passed options', () => {
-            const opts = {
-                method: 'POST',
-                headers: {
-                    'X-custom': 'yes',
-                },
-            } as RequestInit;
+        const opts = {
+            headers: {
+                Authorization: 'USE_THIS_INSTEAD',
+            },
+        };
 
-            HttpConfiguration.setHeader('https://example.com', 'Authorization', 'auth');
+        HttpConfiguration.applyConfiguration('https://example.com', opts);
 
-            HttpConfiguration.applyConfiguration('https://example.com', opts);
-
-            expect(opts.method).toEqual('POST');
-            expect((opts.headers as Record<string, string>)['X-custom']).toEqual('yes');
-            expect((opts.headers as Record<string, string>).Authorization).toEqual('auth');
-        });
-
-        it('should respect existing configuration without overriding it', () => {
-            HttpConfiguration.setHeader('https://example.com', 'Authorization', 'DO_NOT_USE_THIS');
-
-            const opts = {
-                headers: {
-                    Authorization: 'USE_THIS_INSTEAD',
-                },
-            };
-
-            HttpConfiguration.applyConfiguration('https://example.com', opts);
-
-            expect(opts.headers.Authorization).toEqual('USE_THIS_INSTEAD');
-        });
+        expect(opts.headers.Authorization).toEqual('USE_THIS_INSTEAD');
     });
 });

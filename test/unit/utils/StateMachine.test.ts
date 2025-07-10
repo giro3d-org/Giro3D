@@ -1,82 +1,81 @@
 import StateMachine from '@giro3d/giro3d/utils/StateMachine';
+import { beforeEach, describe, expect, it, vitest } from 'vitest';
 
-describe('StateMachine', () => {
-    type State = 'start' | 'nope' | 'end';
-    type Obj = { state: State };
+type State = 'start' | 'nope' | 'end';
+type Obj = { state: State };
 
-    let sm: StateMachine<State, Obj>;
+let sm: StateMachine<State, Obj>;
 
-    beforeEach(() => {
-        sm = new StateMachine<State, Obj>({
-            legalTransitions: [
-                ['start', 'end'],
-                ['end', 'start'],
-            ],
-        });
+beforeEach(() => {
+    sm = new StateMachine<State, Obj>({
+        legalTransitions: [
+            ['start', 'end'],
+            ['end', 'start'],
+        ],
+    });
+});
+
+describe('transition', () => {
+    it('should throw on an illegal transition', () => {
+        const value: Obj = { state: 'start' };
+
+        expect(() => sm.transition(value, 'nope')).toThrow(/illegal transition/);
     });
 
-    describe('transition', () => {
-        it('should throw on an illegal transition', () => {
-            const value: Obj = { state: 'start' };
+    it('should do nothing if start and end states are the same, except if allowSelfTransition is true', () => {
+        const value: Obj = { state: 'start' };
+        const callback = vitest.fn();
 
-            expect(() => sm.transition(value, 'nope')).toThrow(/illegal transition/);
-        });
+        sm.addPreTransitionCallback('start', callback);
 
-        it('should do nothing if start and end states are the same, except if allowSelfTransition is true', () => {
-            const value: Obj = { state: 'start' };
-            const callback = jest.fn();
+        const result = sm.transition(value, 'start');
 
-            sm.addPreTransitionCallback('start', callback);
+        expect(result).toEqual(false);
+        expect(value.state).toEqual('start');
+        expect(callback).not.toHaveBeenCalled();
 
-            const result = sm.transition(value, 'start');
+        const result2 = sm.transition(value, 'start', { allowSelfTransition: true });
 
-            expect(result).toEqual(false);
-            expect(value.state).toEqual('start');
-            expect(callback).not.toHaveBeenCalled();
+        expect(result2).toEqual(true);
+        expect(value.state).toEqual('start');
+        expect(callback).toHaveBeenCalledTimes(1);
+    });
 
-            const result2 = sm.transition(value, 'start', { allowSelfTransition: true });
+    it('should apply the pre-transition callbacks to the object', () => {
+        const endCallback = vitest.fn();
+        const startCallback = vitest.fn();
 
-            expect(result2).toEqual(true);
-            expect(value.state).toEqual('start');
-            expect(callback).toHaveBeenCalledTimes(1);
-        });
+        sm.addPreTransitionCallback('end', endCallback);
+        sm.addPreTransitionCallback('start', startCallback);
 
-        it('should apply the pre-transition callbacks to the object', () => {
-            const endCallback = jest.fn();
-            const startCallback = jest.fn();
+        const value: Obj = { state: 'start' };
 
-            sm.addPreTransitionCallback('end', endCallback);
-            sm.addPreTransitionCallback('start', startCallback);
+        sm.transition(value, 'end');
+        expect(startCallback).toHaveBeenCalledWith({ value, from: 'start', to: 'end' });
+        expect(endCallback).not.toHaveBeenCalled();
 
-            const value: Obj = { state: 'start' };
+        sm.transition(value, 'start');
 
-            sm.transition(value, 'end');
-            expect(startCallback).toHaveBeenCalledWith({ value, from: 'start', to: 'end' });
-            expect(endCallback).not.toHaveBeenCalled();
+        expect(startCallback).toHaveBeenCalledTimes(1);
+        expect(endCallback).toHaveBeenCalledWith({ value, from: 'end', to: 'start' });
+    });
 
-            sm.transition(value, 'start');
+    it('should apply the post transition callbacks to the object', () => {
+        const endCallback = vitest.fn();
+        const startCallback = vitest.fn();
 
-            expect(startCallback).toHaveBeenCalledTimes(1);
-            expect(endCallback).toHaveBeenCalledWith({ value, from: 'end', to: 'start' });
-        });
+        sm.addPostTransitionCallback('end', endCallback);
+        sm.addPostTransitionCallback('start', startCallback);
 
-        it('should apply the post transition callbacks to the object', () => {
-            const endCallback = jest.fn();
-            const startCallback = jest.fn();
+        const value: Obj = { state: 'start' };
 
-            sm.addPostTransitionCallback('end', endCallback);
-            sm.addPostTransitionCallback('start', startCallback);
+        sm.transition(value, 'end');
+        expect(endCallback).toHaveBeenCalledWith({ value, from: 'start', to: 'end' });
+        expect(startCallback).not.toHaveBeenCalled();
 
-            const value: Obj = { state: 'start' };
+        sm.transition(value, 'start');
 
-            sm.transition(value, 'end');
-            expect(endCallback).toHaveBeenCalledWith({ value, from: 'start', to: 'end' });
-            expect(startCallback).not.toHaveBeenCalled();
-
-            sm.transition(value, 'start');
-
-            expect(endCallback).toHaveBeenCalledTimes(1);
-            expect(startCallback).toHaveBeenCalledWith({ value, from: 'end', to: 'start' });
-        });
+        expect(endCallback).toHaveBeenCalledTimes(1);
+        expect(startCallback).toHaveBeenCalledWith({ value, from: 'end', to: 'start' });
     });
 });

@@ -1,13 +1,12 @@
 {
-    // This config file is used to support remapped import paths in the tests.
-
     "extends": "../tsconfig.json",
-    "include": ["./**/*"],
+    "include": ["./**/*", "../src/**/*"],
     "exclude": ["node_modules/**/*"],
     "compilerOptions": {
+        "lib": ["DOM", "ES2021", "ESNext.WeakRef"],
         "paths": {
             "@giro3d/giro3d/*": ["../src/*"]
         },
-        "allowJs": true
+        "types": ["vite-plugin-glsl/ext"]
     }
 }

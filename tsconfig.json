@@ -6,7 +6,7 @@
         "strict": true,
         "noImplicitOverride": true,
         "target": "ES2021",
-        "lib": ["ES2021"],
+        "lib": ["DOM", "ES2021", "DOM.Iterable"],
         "module": "ES2020",
         // Tells TypeScript to read JS files, as
         // normally they are ignored as source files

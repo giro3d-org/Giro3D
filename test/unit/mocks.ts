@@ -1,14 +1,17 @@
+import type { Mock } from 'vitest';
+import { vitest } from 'vitest';
+
 export const resizeObservers: ResizeObserver[] = [];
 
 class ResizeObserverMock {
-    readonly observe: jest.Mock;
-    readonly unobserve: jest.Mock;
-    readonly disconnect: jest.Mock;
+    readonly observe: Mock;
+    readonly unobserve: Mock;
+    readonly disconnect: Mock;
 
     constructor() {
-        this.observe = jest.fn();
-        this.unobserve = jest.fn();
-        this.disconnect = jest.fn();
+        this.observe = vitest.fn();
+        this.unobserve = vitest.fn();
+        this.disconnect = vitest.fn();
 
         resizeObservers.push(this as ResizeObserver);
     }
@@ -20,5 +23,5 @@ class ResizeObserverMock {
  */
 export function setupGlobalMocks() {
     window.ResizeObserver = ResizeObserverMock;
-    window.fetch = jest.fn();
+    window.fetch = vitest.fn();
 }
