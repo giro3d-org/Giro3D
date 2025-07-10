@@ -46,14 +46,57 @@ export const ogcApiFeaturesBuilder: (
 
         const bbox = params.extent.as(params.sourceCoordinateSystem);
 
-        url.searchParams.append('bbox', `${bbox.west},${bbox.south},${bbox.east},${bbox.north}`);
+        url.searchParams.set('bbox', `${bbox.west},${bbox.south},${bbox.east},${bbox.north}`);
 
         const limit = opts?.limit ?? 1000;
-        url.searchParams.append('limit', limit.toString());
+        url.searchParams.set('limit', limit.toString());
 
         if (opts?.params) {
             for (const [key, value] of Object.entries(opts.params)) {
-                url.searchParams.append(key, value);
+                url.searchParams.set(key, value);
+            }
+        }
+
+        return url;
+    };
+};
+
+/**
+ * A query builder to fetch data from an WFS service.
+ * @param serviceUrl - The base URL to the service.
+ * @param typename - The name of the feature collection.
+ * @param options - Optional parameters to customize the query.
+ */
+export const wfsBuilder: (
+    serverUrl: string,
+    typename: string,
+    options?: {
+        /**
+         * Additional parameters to pass to the query, with the exception
+         * of the `bbox` parameter (dynamically computed for each query).
+         */
+        params?: Record<string, string>;
+    },
+) => StreamableFeatureSourceQueryBuilder = (serviceUrl, typename, opts) => {
+    return params => {
+        const url = new URL(serviceUrl);
+
+        url.searchParams.set('SERVICE', 'WFS');
+        url.searchParams.set('VERSION', '2.0.0');
+        url.searchParams.set('request', 'GetFeature');
+        url.searchParams.set('typename', typename);
+        url.searchParams.set('outputFormat', 'application/json');
+        // url.searchParams.set('startIndex', '0');
+        url.searchParams.set('SRSNAME', params.sourceCoordinateSystem.id);
+        const bbox = params.extent.as(params.sourceCoordinateSystem);
+        url.searchParams.set(
+            'bbox',
+            `${bbox.west},${bbox.south},${bbox.east},${bbox.north},${params.sourceCoordinateSystem.id}`,
+        );
+
+        if (opts?.params) {
+            for (const [key, value] of Object.entries(opts.params)) {
+                url.searchParams.set(key, value);
             }
         }
 
