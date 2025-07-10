@@ -120,16 +120,16 @@ const geojson = new FileFeatureSource({
 
 const communes = new StreamableFeatureSource({
     queryBuilder: ogcApiFeaturesBuilder('http://localhost:14002/', 'public.cadastre'),
-    sourceProjection: CoordinateSystem.epsg4326,
+    sourceCoordinateSystem: CoordinateSystem.epsg4326,
 });
 
 const hydrants = new StreamableFeatureSource({
     queryBuilder: ogcApiFeaturesBuilder('http://localhost:14002/', 'public.hydrants_sdis_64'),
-    sourceProjection: CoordinateSystem.epsg4326,
+    sourceCoordinateSystem: CoordinateSystem.epsg4326,
 });
 
 const bdTopoIgn = new StreamableFeatureSource({
-    sourceProjection: CoordinateSystem.fromEpsg(2154),
+    sourceCoordinateSystem: CoordinateSystem.fromEpsg(2154),
     queryBuilder: params => {
         const url = new URL('https://data.geopf.fr/wfs/ows');
 
@@ -262,7 +262,7 @@ const sources = {
         drapingMode: 'per-feature',
         extrusionOffset: bdTopoExtrusionOffset,
         source: new StreamableFeatureSource({
-            sourceProjection: CoordinateSystem.epsg4326,
+            sourceCoordinateSystem: CoordinateSystem.epsg4326,
             queryBuilder: ogcApiFeaturesBuilder(
                 'http://localhost:14002/',
                 'public.batiment_038_isere',

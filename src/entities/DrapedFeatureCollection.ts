@@ -26,15 +26,22 @@ import type PointOfView from '../core/PointOfView';
 import EntityInspector from '../gui/EntityInspector';
 import EntityPanel from '../gui/EntityPanel';
 import type {
+    BaseOptions,
     LineOptions,
     PointOptions,
     PolygonOptions,
 } from '../renderer/geometries/GeometryConverter';
 import GeometryConverter from '../renderer/geometries/GeometryConverter';
+import type LineStringMesh from '../renderer/geometries/LineStringMesh';
 import { isLineStringMesh } from '../renderer/geometries/LineStringMesh';
+import type MultiLineStringMesh from '../renderer/geometries/MultiLineStringMesh';
+import { isMultiPolygonMesh } from '../renderer/geometries/MultiPolygonMesh';
+import type PointMesh from '../renderer/geometries/PointMesh';
 import { isPointMesh } from '../renderer/geometries/PointMesh';
+import { isPolygonMesh } from '../renderer/geometries/PolygonMesh';
 import type SimpleGeometryMesh from '../renderer/geometries/SimpleGeometryMesh';
 import { isSimpleGeometryMesh } from '../renderer/geometries/SimpleGeometryMesh';
+import type SurfaceMesh from '../renderer/geometries/SurfaceMesh';
 import { isSurfaceMesh } from '../renderer/geometries/SurfaceMesh';
 import { computeDistanceToFitSphere, computeZoomToFitSphere } from '../renderer/View';
 import type { FeatureSource, FeatureSourceEventMap } from '../sources/FeatureSource';
@@ -115,6 +122,19 @@ function cloneAsXYZIfRequired<G extends Polygon | LineString | MultiLineString |
     }
 
     throw new Error();
+}
+
+function getRootMesh(obj: Object3D): SimpleGeometryMesh<MeshUserData> | null {
+    let current = obj;
+
+    while (isSimpleGeometryMesh<MeshUserData>(current.parent)) {
+        current = current.parent;
+    }
+
+    if (isSimpleGeometryMesh<MeshUserData>(current)) {
+        return current;
+    }
+    return null;
 }
 
 function getFeatureElevation(
@@ -421,6 +441,98 @@ export default class DrapedFeatureCollection extends Entity3D {
         });
     }
 
+    /**
+     * Updates the styles of the  given objects, or all objects if unspecified.
+     * @param objects - The objects to update.
+     */
+    updateStyles(objects?: (SimpleGeometryMesh<MeshUserData> | SurfaceMesh<MeshUserData>)[]) {
+        if (objects != null) {
+            objects.forEach(obj => {
+                if (obj.userData.parentEntity === this) {
+                    this.updateStyle(getRootMesh(obj));
+                }
+            });
+        } else {
+            this._features.forEach(v => {
+                if (v.mesh) {
+                    this.updateStyle(v.mesh);
+                }
+            });
+        }
+
+        // Make sure new materials have the correct opacity
+        this.updateOpacity();
+
+        this.notifyChange(this);
+    }
+
+    private updateStyle(obj: SimpleGeometryMesh<MeshUserData> | null) {
+        if (!obj) {
+            return;
+        }
+
+        const feature = obj.userData.feature as Feature;
+        const style = this.getStyle(feature);
+
+        const commonOptions: BaseOptions = {
+            origin: obj.position,
+            // TODO
+            // ignoreZ: draping === 'none',
+        };
+
+        switch (obj.type) {
+            case 'PointMesh':
+                this._geometryConverter.updatePointMesh(obj as PointMesh<MeshUserData>, {
+                    ...commonOptions,
+                    ...style?.point,
+                });
+                break;
+            case 'PolygonMesh':
+            case 'MultiPolygonMesh':
+                {
+                    // TODO
+                    // const elevation =
+                    //     typeof this._elevation === 'function'
+                    //         ? this._elevation(feature)
+                    //         : this._elevation;
+
+                    const extrusionOffset = this.getExtrusionOffset(feature);
+
+                    const options = {
+                        ...commonOptions,
+                        ...style,
+                        extrusionOffset,
+                        // elevation, // TODO
+                    };
+                    if (isPolygonMesh(obj)) {
+                        this._geometryConverter.updatePolygonMesh(obj, options);
+                    } else if (isMultiPolygonMesh(obj)) {
+                        this._geometryConverter.updateMultiPolygonMesh(obj, options);
+                    }
+                }
+                break;
+            case 'LineStringMesh':
+                this._geometryConverter.updateLineStringMesh(obj as LineStringMesh<MeshUserData>, {
+                    ...commonOptions,
+                    ...style?.stroke,
+                });
+                break;
+            case 'MultiLineStringMesh':
+                this._geometryConverter.updateMultiLineStringMesh(
+                    obj as MultiLineStringMesh<MeshUserData>,
+                    {
+                        ...commonOptions,
+                        ...style?.stroke,
+                    },
+                );
+                break;
+        }
+
+        // Since changing the style of the feature might create additional objects,
+        // we have to use this method again.
+        this.prepare(obj, feature, style);
+    }
+
     private updateObjectOption<K extends keyof ObjectOptions>(key: K, value: ObjectOptions[K]) {
         if (this._objectOptions[key] !== value) {
             this._objectOptions[key] = value;
@@ -513,9 +625,8 @@ export default class DrapedFeatureCollection extends Entity3D {
         return this;
     }
 
-    private onTileCreated(_: MapEventMap['tile-created']) {
-        // TODO
-        // this.registerTile(tile);
+    private onTileCreated({ tile }: MapEventMap['tile-created']) {
+        this.registerTile(tile);
     }
 
     private onTileDeleted({ tile }: MapEventMap['tile-deleted']) {
@@ -591,7 +702,7 @@ export default class DrapedFeatureCollection extends Entity3D {
         };
     }
 
-    private getPolygonOptions(feature: Feature, style?: FeatureStyle): PolygonOptions {
+    private getExtrusionOffset(feature: Feature) {
         let extrusionOffset: FeatureExtrusionOffset | undefined = undefined;
         if (this._extrusionCallback != null) {
             extrusionOffset =
@@ -600,10 +711,14 @@ export default class DrapedFeatureCollection extends Entity3D {
                     : this._extrusionCallback;
         }
 
+        return extrusionOffset;
+    }
+
+    private getPolygonOptions(feature: Feature, style?: FeatureStyle): PolygonOptions {
         return {
             fill: style?.fill,
             stroke: style?.stroke,
-            extrusionOffset,
+            extrusionOffset: this.getExtrusionOffset(feature),
         };
     }
 
@@ -614,13 +729,15 @@ export default class DrapedFeatureCollection extends Entity3D {
         };
     }
 
-    private createMesh(feature: Feature, geometry: SimpleGeometry): SimpleGeometryMesh | undefined {
-        let style: FeatureStyle | undefined = undefined;
+    private getStyle(feature: Feature): FeatureStyle | undefined {
         if (typeof this._style === 'function') {
-            style = this._style(feature);
-        } else {
-            style = this._style;
+            return this._style(feature);
         }
+        return this._style;
+    }
+
+    private createMesh(feature: Feature, geometry: SimpleGeometry): SimpleGeometryMesh | undefined {
+        const style = this.getStyle(feature);
 
         const converter = this._geometryConverter;
 
@@ -629,6 +746,7 @@ export default class DrapedFeatureCollection extends Entity3D {
             processPolygon: p => converter.build(p, this.getPolygonOptions(feature, style)),
             processLineString: p => converter.build(p, this.getLineOptions(style)),
             processMultiPolygon: p => converter.build(p, this.getPolygonOptions(feature, style)),
+            processMultiLineString: p => converter.build(p, this.getLineOptions(style)),
             // TODO faire le reste:
         });
 
