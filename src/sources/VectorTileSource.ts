@@ -40,8 +40,8 @@ import {
     translate as translateTransform,
 } from 'ol/transform.js';
 
-import { MVT } from 'ol/format.js';
 import type FeatureFormat from 'ol/format/Feature.js';
+import MVT from 'ol/format/MVT.js';
 import type { Projection } from 'ol/proj';
 import type RenderFeature from 'ol/render/Feature';
 import type { StyleFunction } from 'ol/style/Style';
@@ -149,7 +149,7 @@ export interface VectorTileSourceOptions extends ImageSourceOptions {
     /**
      * The format of the vector tile. Default is {@link MVT}.
      */
-    format?: FeatureFormat<typeof RenderFeature>;
+    format?: FeatureFormat<RenderFeature>;
 
     /**
      * The style or style function.

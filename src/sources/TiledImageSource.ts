@@ -437,6 +437,11 @@ export default class TiledImageSource extends ImageSource {
                 }
 
                 const tile = source.getTile(zoom, i, j, 1, this.olprojection);
+
+                if (!tile) {
+                    continue;
+                }
+
                 const coord = tile.tileCoord;
                 const olExtent = tileGrid.getTileCoordExtent(coord);
                 const tileExtent = OpenLayersUtils.fromOLExtent(olExtent, crs);

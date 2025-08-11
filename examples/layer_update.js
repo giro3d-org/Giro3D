@@ -131,25 +131,18 @@ const [setPointRadius] = bindSlider('point-radius', v => {
     style.setImage(style.getImage());
     source.update();
 });
+
+const toCssColor = (color, alpha) =>
+    `rgba(${Math.round(color.r * 255)}, ${Math.round(color.g * 255)}, ${Math.round(color.b * 255)}, ${alpha})`;
+
 const [setOpacity] = bindSlider('style-opacity', v => {
     const circle = /** @type {Circle} */ (style.getImage());
 
-    circle
-        .getStroke()
-        .setColor(
-            `rgba(${strokeColor.r * 255}, ${strokeColor.g * 255}, ${strokeColor.b * 255}, ${v})`,
-        );
-    circle
-        .getFill()
-        .setColor(`rgba(${fillColor.r * 255}, ${fillColor.g * 255}, ${fillColor.b * 255}, ${v})`);
-    style
-        .getStroke()
-        .setColor(
-            `rgba(${strokeColor.r * 255}, ${strokeColor.g * 255}, ${strokeColor.b * 255}, ${v})`,
-        );
-    style
-        .getFill()
-        .setColor(`rgba(${fillColor.r * 255}, ${fillColor.g * 255}, ${fillColor.b * 255}, ${v})`);
+    circle.getStroke().setColor(toCssColor(strokeColor, v));
+    circle.getFill().setColor(toCssColor(fillColor, v));
+
+    style.getStroke().setColor(toCssColor(strokeColor, v));
+    style.getFill().setColor(toCssColor(fillColor, v));
 
     circle.setRadius(circle.getRadius());
 
@@ -196,19 +189,19 @@ bindButton('randomize', () => {
 
     const newStyle = new Style({
         fill: new Fill({
-            color: `rgba(${fillColor.r * 255}, ${fillColor.g * 255}, ${fillColor.b * 255}, ${opacity})`,
+            color: toCssColor(fillColor, opacity),
         }),
         stroke: new Stroke({
-            color: `rgba(${strokeColor.r * 255}, ${strokeColor.g * 255}, ${strokeColor.b * 255}, ${opacity})`,
+            color: toCssColor(strokeColor, opacity),
             width: strokeWidth,
         }),
         image: new Circle({
             radius: pointRadius,
             fill: new Fill({
-                color: `rgba(${fillColor.r * 255}, ${fillColor.g * 255}, ${fillColor.b * 255}, ${opacity})`,
+                color: toCssColor(fillColor, opacity),
             }),
             stroke: new Stroke({
-                color: `rgba(${strokeColor.r * 255}, ${strokeColor.g * 255}, ${strokeColor.b * 255}, ${opacity})`,
+                color: toCssColor(strokeColor, opacity),
                 width: strokeWidth,
             }),
         }),
