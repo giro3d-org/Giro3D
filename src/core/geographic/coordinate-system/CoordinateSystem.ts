@@ -122,6 +122,11 @@ export default class CoordinateSystem {
                         srid: parseAuthority(parsed.AUTHORITY),
                     });
                 }
+
+                if ('title' in parsed && typeof parsed.title === 'string') {
+                    return new CoordinateSystem({ name, srid: new Authority(parsed.title) });
+                }
+
                 return new CoordinateSystem({ name });
             }
         } catch (error: unknown) {
