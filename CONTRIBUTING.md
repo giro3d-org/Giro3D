@@ -101,7 +101,6 @@ Triaging consists mainly in settings labels. Labels provide a clear view on what
     | ~"example"       | Examples provided on the website                                             |
 
     TODO:
-
     - add "API" to easily know what impacts the public API
     - add relevant areas/modules: "Map", "Controls", "Sources", "Core", etc.
 

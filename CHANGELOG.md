@@ -182,7 +182,6 @@ Maps now support light-based shadows and lighting provided by [three.js lights](
 ### BREAKING CHANGE
 
 - Map lighting and shading options have changed:
-
     - Map lighting options are now under `entities/` rather than `core/`
     - Map lighing options are renamed `MapLightingOptions`
     - Hillshade specific lighting options are prefixed `hillshade` (e.g
@@ -354,7 +353,6 @@ This release brings **color layer blending modes** as well as many fixes and API
 
 - `CogSource` is renamed to `GeoTIFFSource` for clarity.
   Other changes include types related to this source:
-
     - `CogCacheOptions` -> `GeoTIFFCacheOptions`
     - `CogSourceOptions` -> `GeoTIFFSourceOptions`
 
@@ -432,7 +430,6 @@ This release brings **color layer blending modes** as well as many fixes and API
 
 - The constructor of `Instance` now handles rendering
   options differently:
-
     - to specify the background color, use the `backgroundColor` property
       (previously named `clearColor`):
 
@@ -1299,7 +1296,6 @@ Quality of Life improvements, with most of the codebase migrated to TypeScript.
     ```
 
 - Event names for the `Instance` are `kebab-case`:
-
     - `before_update` -> `before-update`
     - `after_update` -> `after-update`
     - `before_camera_update` -> `before-camera-update`
@@ -1310,7 +1306,6 @@ Quality of Life improvements, with most of the codebase migrated to TypeScript.
     - `update_start` -> `update-start`
 
     The events mentioning layers are renamed to mention entities
-
     - `before_layer_update` -> `before-entity-update`
     - `after_layer_update` -> `after-entity-update`
 

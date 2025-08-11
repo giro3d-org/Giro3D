@@ -5,15 +5,12 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to contribute to Giro3
 The following people have contributed to Giro3D.
 
 - [Argeo](https://argeo.no)
-
     - Charlie Ives
 
 - [AtolCD](http://www.atolcd.com)
-
     - [Thomas Broyer](https://github.com/tbroyer)
 
 - [IGN](http://www.ign.fr)
-
     - [Adrien Berthet](https://github.com/zarov)
     - [Alexandre Devaux](https://github.com/nosy-b)
     - [Gérald Choqueux](https://github.com/gchoqueux)
@@ -26,14 +23,12 @@ The following people have contributed to Giro3D.
     - [Victor Coindet](https://github.com/VictorCo)
 
 - [LIRIS](https://liris.cnrs.fr/)
-
     - [Emmanuel Schmück](https://github.com/EmmanuelSchmuck/)
     - [Marie Lamure](https://github.com/mlamure)
     - [Nicolas Saul](https://github.com/NikoSaul)
     - [Vincent Jaillot](https://github.com/jailln)
 
 - [Oslandia](http://www.oslandia.com)
-
     - [Antoine Facchini](https://gitlab.com/antoinefacchini)
     - [Augustin Trancart](https://github.com/autra)
     - [Benoît Blanc](https://github.com/benoitblanc)
@@ -51,7 +46,6 @@ The following people have contributed to Giro3D.
     - [Vincent Picavet](https://github.com/vpicavet)
 
 - [OSM Data](https://demo.openstreetmap.fr/map)
-
     - [Karl TAYOU](https://gitlab.com/nelsontayou1)
 
 - [Phoenix LiDAR Systems](https://phoenixlidar.com)
