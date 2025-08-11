@@ -68,7 +68,7 @@ export default class AggregatePointCloudSource extends PointCloudSourceBase {
     /**
      * The sources in this source.
      */
-    get sources() {
+    get sources(): Readonly<PointCloudSource[]> {
         return this._sources;
     }
 
@@ -106,6 +106,8 @@ export default class AggregatePointCloudSource extends PointCloudSourceBase {
 
         this._sources.length = 0;
         this._sources.push(...actualSources);
+
+        Object.freeze(this._sources);
 
         if (notifyWarning) {
             console.warn('one or more sources could not be initialized.');

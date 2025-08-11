@@ -1,0 +1,61 @@
+---
+title: Stacked WMTS layers
+shortdesc: Stack multiple WMTS layers into a single layer.
+longdesc: The <a target="_blank" href="../apidoc/classes/sources.AggregateImageSource.html"><code>AggregateImageSource</code></a> can combine multiple <a target="_blank" href="../apidoc/classes/sources.ImageSource.html"><code>ImageSource</code></a>s into one. One the many benefits of this approach is that is reduces the number of layers in a map, which helps improve performance. In this example, we display seveveral WMTS layers in a single Map layer.
+attribution: © <a target="_blank" href="https://ign.fr/">IGN</a>
+tags: ['map', 'wmts']
+---
+
+<div class="side-pane-with-status-bar">
+    <div class="card">
+        <div class="card-header">Sources</div>
+        <div class="card-body">
+            <fieldset id="options">
+                <!-- TRANSPORTNETWORKS.ROADS -->
+                <div class="form-check form-switch">
+                    <input
+                        class="form-check-input"
+                        type="checkbox"
+                        checked="true"
+                        role="switch"
+                        id="TRANSPORTNETWORKS.ROADS"
+                        autocomplete="off"
+                    />
+                    <label class="form-check-label" for="show-top-source"
+                        >TRANSPORTNETWORKS.ROADS</label
+                    >
+                </div>
+
+                <!-- ADMINEXPRESS-COG.LATEST -->
+                <div class="form-check form-switch">
+                    <input
+                        class="form-check-input"
+                        type="checkbox"
+                        checked="true"
+                        role="switch"
+                        id="ADMINEXPRESS-COG.LATEST"
+                        autocomplete="off"
+                    />
+                    <label class="form-check-label" for="show-top-source"
+                        >ADMINEXPRESS-COG.LATEST</label
+                    >
+                </div>
+
+                <!-- ORTHOIMAGERY.ORTHOPHOTOS.BDORTHO -->
+                <div class="form-check form-switch">
+                    <input
+                        class="form-check-input"
+                        type="checkbox"
+                        checked="true"
+                        role="switch"
+                        id="ORTHOIMAGERY.ORTHOPHOTOS.BDORTHO"
+                        autocomplete="off"
+                    />
+                    <label class="form-check-label" for="show-top-source"
+                        >ORTHOIMAGERY.ORTHOPHOTOS.BDORTHO</label
+                    >
+                </div>
+            </fieldset>
+        </div>
+    </div>
+</div>

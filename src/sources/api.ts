@@ -1,4 +1,5 @@
 // import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import AggregateImageSource from './AggregateImageSource';
 import AggregatePointCloudSource, {
     AggregatePointCloudSourceOptions,
 } from './AggregatePointCloudSource';
@@ -43,6 +44,7 @@ import WmtsSource, { type WmtsFromCapabilitiesOptions, type WmtsSourceOptions } 
  * Data sources.
  */
 export {
+    AggregateImageSource,
     AggregatePointCloudSource,
     AggregatePointCloudSourceOptions,
     ChannelMapping,

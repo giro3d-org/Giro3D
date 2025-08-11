@@ -1,0 +1,46 @@
+---
+title: Multi-resolution elevation data
+shortdesc: Combine multiple elevation sources into a single layer.
+longdesc: The <a target="_blank" href="../apidoc/classes/sources.AggregateImageSource.html"><code>AggregateImageSource</code></a> can combine multiple <a target="_blank" href="../apidoc/classes/sources.ImageSource.html"><code>ImageSource</code></a>s into one. One the many benefits of this approach is that is reduces the number of layers in a map, which helps improve performance. It also makes it possible to have more than one elevation source on a map, which only supports a single elevation layer.
+attribution: © <a target="_blank" href="https://www.usgs.gov/">U.S. Geological Survey</a>, © <a target="_blank" href="https://www.nasa.gov/">NASA</a>,
+tags: ['terrain', 'map', 'layer']
+---
+
+<div class="side-pane-with-status-bar">
+    <div class="card">
+        <div class="card-header">Parameters</div>
+        <div class="card-body">
+            <fieldset id="options">
+                <!-- Show top source -->
+                <div class="form-check form-switch">
+                    <input
+                        class="form-check-input"
+                        type="checkbox"
+                        checked="true"
+                        role="switch"
+                        id="show-top-source"
+                        autocomplete="off"
+                    />
+                    <label class="form-check-label" for="show-top-source"
+                        >Show high-resolution source</label
+                    >
+                </div>
+
+                <!-- Show bottom source -->
+                <div class="form-check form-switch">
+                    <input
+                        class="form-check-input"
+                        type="checkbox"
+                        checked="true"
+                        role="switch"
+                        id="show-bottom-source"
+                        autocomplete="off"
+                    />
+                    <label class="form-check-label" for="show-bottom-source"
+                        >Show low-resolution source</label
+                    >
+                </div>
+            </fieldset>
+        </div>
+    </div>
+</div>

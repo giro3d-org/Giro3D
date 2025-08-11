@@ -439,6 +439,8 @@ class LayerComposer implements MemoryUsage {
         max?: number;
         /** Force constant visibility of this image. */
         alwaysVisible?: boolean;
+        /** Optional z-index to apply to the image. */
+        zIndex?: number;
     }) {
         const { extent, texture, id } = options;
 
@@ -492,7 +494,7 @@ class LayerComposer implements MemoryUsage {
         const composerOptions: DrawOptions = {
             transparent: this.transparent,
             flipY: options.flipY,
-            renderOrder: this.computeRenderOrder(extent),
+            renderOrder: options.zIndex ?? this.computeRenderOrder(extent),
         };
         if (this.needsReprojection) {
             // Draw a warped image

@@ -641,6 +641,7 @@ abstract class Layer<
         });
 
         this._composer = new LayerComposer({
+            transparent: this.source.transparent,
             renderer: this.instance.renderer,
             showImageOutlines: this.showTileBorders,
             showEmptyTextures: this.showEmptyTextures,
