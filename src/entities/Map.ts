@@ -104,7 +104,6 @@ export type MapSubdivisionStrategy = (
             extent: Extent;
         }
     >,
-    // eslint-disable-next-line no-use-before-define
     context: { entity: Readonly<Map>; layers: readonly Readonly<Layer>[] },
 ) => boolean;
 
@@ -228,9 +227,7 @@ function getTerrainOptions(
 ): Required<TerrainOptions> {
     if (input == null) {
         // Default values
-        return {
-            ...defaultValue,
-        };
+        return { ...defaultValue };
     }
 
     if (typeof input === 'boolean') {
@@ -238,10 +235,7 @@ function getTerrainOptions(
             enabled: input,
             stitching: defaultValue.stitching,
             segments: defaultValue.segments,
-            skirts: {
-                enabled: false,
-                depth: 0,
-            },
+            skirts: { enabled: false, depth: 0 },
         };
     }
 
@@ -305,17 +299,12 @@ function getLightingOptions(
 ): Required<MapLightingOptions> {
     if (input == null) {
         // Default values
-        return {
-            ...defaultValue,
-        };
+        return { ...defaultValue };
     }
 
     if (typeof input === 'boolean') {
         // Default values
-        return {
-            ...defaultValue,
-            enabled: input,
-        };
+        return { ...defaultValue, enabled: input };
     }
 
     return {
@@ -513,10 +502,7 @@ export type MapConstructorOptions = {
     subdivisionStrategy?: MapSubdivisionStrategy;
 };
 
-type ObjectOptions = {
-    castShadow: boolean;
-    receiveShadow: boolean;
-};
+type ObjectOptions = { castShadow: boolean; receiveShadow: boolean };
 
 /**
  * A map is an {@link Entity3D} that represents a flat surface displaying one or more {@link core.layer.Layer | layer(s)}.
@@ -593,10 +579,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     readonly extent: Extent;
     readonly maxSubdivisionLevel: number;
 
-    private readonly _objectOptions: ObjectOptions = {
-        castShadow: true,
-        receiveShadow: true,
-    };
+    private readonly _objectOptions: ObjectOptions = { castShadow: true, receiveShadow: true };
 
     private readonly _layers: Layer[] = [];
     private readonly _onLayerVisibilityChanged: (event: { target: Layer }) => void;
@@ -1245,10 +1228,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     protected createTileVolume(extent: Extent): TileVolume {
-        return new PlanarTileVolume({
-            extent,
-            range: { min: -1, max: +1 },
-        });
+        return new PlanarTileVolume({ extent, range: { min: -1, max: +1 } });
     }
 
     private onTileElevationChanged(tile: TileMesh) {
@@ -1319,10 +1299,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
             enabled: DEFAULT_ENABLE_TERRAIN,
             stitching: DEFAULT_ENABLE_STITCHING,
             segments: DEFAULT_MAP_SEGMENTS,
-            skirts: {
-                enabled: false,
-                depth: 0,
-            },
+            skirts: { enabled: false, depth: 0 },
         };
     }
 
@@ -1866,13 +1843,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
      * @param options - Options.
      * @param options -.disposeLayers If true, layers are also disposed.
      */
-    override dispose(
-        options: {
-            disposeLayers?: boolean;
-        } = {
-            disposeLayers: false,
-        },
-    ) {
+    override dispose(options: { disposeLayers?: boolean } = { disposeLayers: false }) {
         // Dispose all tiles so that every layer will unload data relevant to those tiles.
         this.traverseTiles(t => this.disposeTile(t));
 

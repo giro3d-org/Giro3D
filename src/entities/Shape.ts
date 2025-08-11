@@ -68,12 +68,10 @@ export type LineLabelFormatOptions = {
     /**
      * The shape the lable belongs to.
      */
-    // eslint-disable-next-line no-use-before-define
     shape: Shape;
     /**
      * The default formatter for line labels.
      */
-    // eslint-disable-next-line no-use-before-define
     defaultFormatter: LineLabelFormatter;
     /**
      * The length of the segment or line, in CRS units.
@@ -92,12 +90,10 @@ export type SegmentLabelFormatOptions = {
     /**
      * The shape the lable belongs to.
      */
-    // eslint-disable-next-line no-use-before-define
     shape: Shape;
     /**
      * The default formatter for segments.
      */
-    // eslint-disable-next-line no-use-before-define
     defaultFormatter: SegmentLabelFormatter;
     /**
      * The length of the segment or line, in CRS units.
@@ -124,12 +120,10 @@ export type VerticalLineFormatOptions = {
     /**
      * The shape the lable belongs to.
      */
-    // eslint-disable-next-line no-use-before-define
     shape: Shape;
     /**
      * The default formatter used as fallback.
      */
-    // eslint-disable-next-line no-use-before-define
     defaultFormatter: VerticalLineLabelFormatter;
     /**
      * The index of the vertex that this line is connected to.
@@ -149,12 +143,10 @@ export type VerticalLineFormatOptions = {
 export type VerticalLineLabelFormatter = Formatter<VerticalLineFormatOptions>;
 
 export type SurfaceFormatOptions = {
-    // eslint-disable-next-line no-use-before-define
     shape: Shape;
     /**
      * The default formatter used as fallback.
      */
-    // eslint-disable-next-line no-use-before-define
     defaultFormatter: SurfaceLabelFormatter;
     /**
      * The area to format, in CRS square units.
@@ -169,16 +161,13 @@ export type SurfaceFormatOptions = {
  */
 export type SurfaceLabelFormatter = Formatter<SurfaceFormatOptions>;
 
-// eslint-disable-next-line no-use-before-define
 export type SurfaceLabelPlacement = (params: { shape: Shape }) => Vector3;
 
 export type VertexFormatOptions = {
-    // eslint-disable-next-line no-use-before-define
     shape: Shape;
     /**
      * The default formatter for vertices.
      */
-    // eslint-disable-next-line no-use-before-define
     defaultFormatter: VertexLabelFormatter;
     /**
      * The index of the vertex in the order in which they were defined.
@@ -209,7 +198,6 @@ export type RemovePointHook = {
     /**
      * The shape that triggered the hook.
      */
-    // eslint-disable-next-line no-use-before-define
     shape: Shape;
     /**
      * The index of the removed point.
@@ -228,7 +216,6 @@ export type UpdatePointHook = {
     /**
      * The shape that triggered the hook.
      */
-    // eslint-disable-next-line no-use-before-define
     shape: Shape;
     /**
      * The index of the updated point.
@@ -251,7 +238,6 @@ export type InsertPointHook = {
     /**
      * The shape that triggered the hook.
      */
-    // eslint-disable-next-line no-use-before-define
     shape: Shape;
     /**
      * The index of the inserted point.
@@ -289,7 +275,6 @@ export type ShapePickResult = PickResult & {
      * `true` if a label was picked, `false` otherwise.
      */
     pickedLabel?: boolean;
-    // eslint-disable-next-line no-use-before-define
     entity: Shape;
 };
 
@@ -305,7 +290,6 @@ export type ShapeExportOptions = {
     includeAltitudes?: boolean;
 };
 
-// eslint-disable-next-line no-use-before-define
 function defaultLabelPlacement(options: { shape: Shape }): Vector3 {
     const { points } = options.shape;
 
@@ -501,11 +485,7 @@ function getClosedPolygon(points: Vector3[]): Vector3[] {
 function computeArea(
     points: Vector3[],
     computeGeometry: boolean,
-): {
-    area?: number;
-    geometry?: BufferGeometry;
-    origin?: Vector3;
-} {
+): { area?: number; geometry?: BufferGeometry; origin?: Vector3 } {
     if (points.length < 2) {
         return { area: undefined, geometry: undefined };
     }
@@ -676,10 +656,7 @@ class LineWithBorder extends Group {
     private readonly _innerLine: Line2;
     private readonly _outerLine: Line2;
 
-    override readonly userData: {
-        midPoint: Vector3;
-        length: number;
-    } = {
+    override readonly userData: { midPoint: Vector3; length: number } = {
         midPoint: new Vector3(),
         length: 0,
     };
@@ -1980,9 +1957,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     override pick(canvasCoordinates: Vector2, _options?: PickOptions): ShapePickResult[] {
         const normalized = this.instance.canvasToNormalizedCoords(canvasCoordinates, tmpNDC);
         const raycaster = new Raycaster();
-        raycaster.params.Line2 = {
-            threshold: this.lineWidth * 8,
-        };
+        raycaster.params.Line2 = { threshold: this.lineWidth * 8 };
 
         raycaster.setFromCamera(normalized, this.instance.view.camera);
 
@@ -2236,10 +2211,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
 
     private createLabel(
         formattedValue: string,
-        options?: {
-            vertical?: boolean;
-            alignment?: 'middle' | 'right';
-        },
+        options?: { vertical?: boolean; alignment?: 'middle' | 'right' },
     ): Label {
         const container = document.createElement('div');
         const span = document.createElement('span');
@@ -2443,9 +2415,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
                 });
 
                 if (labelText != null) {
-                    const label = this.createLabel(labelText, {
-                        alignment: 'right',
-                    });
+                    const label = this.createLabel(labelText, { alignment: 'right' });
 
                     label.name = 'label';
                     label.position.copy(position);
@@ -2668,42 +2638,36 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
             tmp.y = p.y;
             tmp.z = p.z;
 
-            const { x, y, z } = proj.transform(src, dst, tmp);
+            const projected = proj.transform(src, dst, tmp, true);
 
-            if (options?.includeAltitudes === true) {
-                return [x, y, z];
-            } else {
-                return [x, y];
+            if (projected) {
+                const { x, y, z } = projected;
+
+                if (z != null && options?.includeAltitudes === true) {
+                    return [x, y, z];
+                } else {
+                    return [x, y];
+                }
             }
+
+            throw new Error('could not project geometry to WGS84');
         }
 
         if (this._points.length === 1) {
-            return {
-                type: 'Point',
-                coordinates: toWGS84(this._points[0]),
-            } as Point;
+            return { type: 'Point', coordinates: toWGS84(this._points[0]) } as Point;
         }
 
         if (this.isClosed) {
             if (this.showSurface) {
-                return {
-                    type: 'Polygon',
-                    coordinates: [this._points.map(toWGS84)],
-                } as Polygon;
+                return { type: 'Polygon', coordinates: [this._points.map(toWGS84)] } as Polygon;
             }
         } else {
             if (!this.showLine) {
-                return {
-                    type: 'MultiPoint',
-                    coordinates: this._points.map(toWGS84),
-                } as MultiPoint;
+                return { type: 'MultiPoint', coordinates: this._points.map(toWGS84) } as MultiPoint;
             }
         }
 
-        return {
-            type: 'LineString',
-            coordinates: this._points.map(toWGS84),
-        } as LineString;
+        return { type: 'LineString', coordinates: this._points.map(toWGS84) } as LineString;
     }
 }
 

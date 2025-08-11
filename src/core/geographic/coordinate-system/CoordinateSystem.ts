@@ -6,31 +6,14 @@ import parseCode from 'proj4/lib/parseCode';
 
 type ID = Record<string, number>;
 
-type Unit = {
-    name: string;
-    convert: number;
-    AUTHORITY?: object;
-};
+type Unit = { name: string; convert: number; AUTHORITY?: object };
 
-type ProjCS = {
-    type: 'PROJCS';
-    name: string;
-    UNIT: Unit;
-    AUTHORITY?: object;
-};
-type VertCS = {
-    UNIT: Unit;
-};
+type ProjCS = { type: 'PROJCS'; name: string; UNIT: Unit; AUTHORITY?: object };
+type VertCS = { UNIT: Unit };
 
-type ProjCRS = {
-    ID: ID;
-};
+type ProjCRS = { ID: ID };
 
-type CompoundCS = {
-    type: 'COMPD_CS';
-    PROJCS: ProjCS;
-    VERT_CS: VertCS;
-};
+type CompoundCS = { type: 'COMPD_CS'; PROJCS: ProjCS; VERT_CS: VertCS };
 
 function parseLinearUnit(unit: Unit): LinearUnit {
     return new LinearUnit(unit.name, unit.convert);
@@ -63,12 +46,8 @@ function getProjCsInfos(projCs: ProjCS): ProjCSInfos {
 type Parameters = {
     name: string;
     srid?: Authority;
-    horizontal?: {
-        unit: LinearUnit;
-    };
-    vertical?: {
-        unit: LinearUnit;
-    };
+    horizontal?: { unit: LinearUnit };
+    vertical?: { unit: LinearUnit };
     definition?: string;
 };
 
@@ -91,9 +70,7 @@ export default class CoordinateSystem {
                     name: projCsInfos.name,
                     srid: projCsInfos.srid,
                     definition: wkt,
-                    horizontal: {
-                        unit: projCsInfos.unit,
-                    },
+                    horizontal: { unit: projCsInfos.unit },
                 };
                 if ('VERT_CS' in parsed) {
                     parameters.vertical = { unit: parseLinearUnit(parsed.VERT_CS.UNIT) };
@@ -106,9 +83,7 @@ export default class CoordinateSystem {
                     name: projCsInfos.name,
                     srid: projCsInfos.srid,
                     definition: wkt,
-                    horizontal: {
-                        unit: projCsInfos.unit,
-                    },
+                    horizontal: { unit: projCsInfos.unit },
                 });
             } else {
                 const name = getNicename(parsed);
@@ -117,11 +92,13 @@ export default class CoordinateSystem {
                     typeof parsed.AUTHORITY === 'object' &&
                     parsed.AUTHORITY
                 ) {
-                    return new CoordinateSystem({
-                        name,
-                        srid: parseAuthority(parsed.AUTHORITY),
-                    });
+                    return new CoordinateSystem({ name, srid: parseAuthority(parsed.AUTHORITY) });
                 }
+
+                if ('title' in parsed && typeof parsed.title === 'string') {
+                    return new CoordinateSystem({ name, srid: new Authority(parsed.title) });
+                }
+
                 return new CoordinateSystem({ name });
             }
         } catch (error: unknown) {
@@ -151,12 +128,8 @@ export default class CoordinateSystem {
 
     public readonly name: string;
     public readonly srid?: Authority;
-    public readonly horizontal?: {
-        readonly unit: LinearUnit;
-    };
-    public readonly vertical?: {
-        readonly unit: LinearUnit;
-    };
+    public readonly horizontal?: { readonly unit: LinearUnit };
+    public readonly vertical?: { readonly unit: LinearUnit };
     public readonly definition?: string;
 
     public get id(): string {

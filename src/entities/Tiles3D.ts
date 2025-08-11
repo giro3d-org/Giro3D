@@ -466,6 +466,10 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
             // Preprocessing is done when the root tileset is loaded
             const listener = () => {
                 this._tiles.removeEventListener('load-content', listener);
+                // The two next lines became necessary starting with
+                // 3d-tile-renderer v0.4.8 but the actual reason is unclear.
+                this._tiles.update();
+                this.notifyChange(this);
                 resolve();
             };
             this._tiles.addEventListener('load-content', listener);
