@@ -27,6 +27,7 @@ const DEFAULT_RETRIES = 3;
 const DEFAULT_TIMEOUT = 10000;
 
 const tmpDim = new Vector2();
+const tmpCroppedDim = new Vector2();
 
 let sharedPool: Pool | undefined = undefined;
 
@@ -378,6 +379,38 @@ class GeoTIFFSource extends ImageSource {
         return extent;
     }
 
+    private adjustExtentAndPixelSizeForEquirectangular(
+        requestExtent: Extent,
+        requestWidth: number,
+        requestHeight: number,
+        margin = 0,
+    ) {
+        // First, ensure that the input extent is not bigger than our image
+        const croppedExtent = requestExtent.clone().intersect(nonNull(this._extent));
+
+        const origDims = requestExtent.dimensions(tmpDim);
+        const croppedDims = croppedExtent.dimensions(tmpCroppedDim);
+
+        // Adjust the theoretical dimensions of the cropped image
+        const croppedWidth = Math.round((croppedDims.width / origDims.width) * requestWidth);
+        const croppedHeight = Math.round((croppedDims.height / origDims.height) * requestHeight);
+
+        const { image } = this.selectLevel(croppedExtent.clone(), croppedWidth, croppedHeight);
+
+        const [pixelWidth, pixelHeight] = image.resolution;
+
+        // Then compute a new extent with the added pixel margins
+        const marginExtent = croppedExtent.withMargin(
+            Math.abs(pixelWidth * margin),
+            Math.abs(pixelHeight * margin),
+        );
+
+        // Finally, ensure that this margin extent exactly fits on the geotiff image pixel borders
+        const result = marginExtent.fitToGrid(nonNull(this._extent), image.width, image.height);
+
+        return result;
+    }
+
     /**
      * @param requestExtent - The request extent.
      * @param requestWidth - The width, in pixels, of the request extent.
@@ -391,6 +424,18 @@ class GeoTIFFSource extends ImageSource {
         requestHeight: number,
         margin = 0,
     ) {
+        // Special case to avoid the ugly visible seam at the 180° line on
+        // spherical panoramas.
+        // https://gitlab.com/giro3d/giro3d/-/issues/630
+        if (this.crs === 'equirectangular') {
+            return this.adjustExtentAndPixelSizeForEquirectangular(
+                requestExtent,
+                requestWidth,
+                requestHeight,
+                margin,
+            );
+        }
+
         const { image } = this.selectLevel(requestExtent, requestWidth, requestHeight);
 
         const dims = nonNull(this._dimensions);
