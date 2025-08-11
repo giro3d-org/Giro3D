@@ -85,7 +85,7 @@
         "Firefox ESR"
     ],
     "dependencies": {
-        "3d-tiles-renderer": "^0.4.3",
+        "3d-tiles-renderer": "^0.4.8",
         "chart.js": "^3.9.1",
         "copc": "^0.0.8",
         "earcut": "^2.2.4",
