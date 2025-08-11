@@ -105,7 +105,6 @@ if (esMain(import.meta)) {
     program.parse();
 
     const { watch, clean, ...options } = program.opts();
-    // eslint-disable-next-line no-undef
     const pwd = process.cwd();
     options.output = path.resolve(pwd, options.output);
 
