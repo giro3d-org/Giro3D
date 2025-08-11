@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.43.3 (2025-08-11)
+
+### Fix
+
+- **GeoTIFFSource**: fix visible seam at the edge of panoramic images (#630)
+
 ## v0.43.2 (2025-06-17)
 
 ### Feat

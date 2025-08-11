@@ -587,10 +587,10 @@ class Extent {
         const pixelWidth = gridDims.x / gridWidth;
         const pixelHeight = gridDims.y / gridHeight;
 
-        let leftPixels = (this.west - gridExtent.west) / pixelWidth;
-        let rightPixels = (this.east - gridExtent.west) / pixelWidth;
-        let bottomPixels = (this.south - gridExtent.south) / pixelHeight;
-        let topPixels = (this.north - gridExtent.south) / pixelHeight;
+        let leftPixels = Math.floor((this.west - gridExtent.west) / pixelWidth);
+        let rightPixels = Math.ceil((this.east - gridExtent.west) / pixelWidth);
+        let bottomPixels = Math.floor((this.south - gridExtent.south) / pixelHeight);
+        let topPixels = Math.ceil((this.north - gridExtent.south) / pixelHeight);
 
         if (minPixWidth !== undefined && minPixHeight !== undefined) {
             const pixelCountX = rightPixels - leftPixels;

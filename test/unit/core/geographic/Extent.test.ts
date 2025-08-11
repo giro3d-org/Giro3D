@@ -644,6 +644,17 @@ describe('Extent', () => {
             const { extent } = inputExtent.fitToGrid(gridExtent, 1, 1);
             expect(extent).toEqual(gridExtent);
         });
+
+        it('should return the grid itself if the input extent is bigger than the grid', () => {
+            const gridExtent = new Extent('EPSG:3857', 0, 10, 0, 10);
+            const inputExtent = new Extent('EPSG:3857', -10, 20, -10, 20);
+
+            const { extent, width, height } = inputExtent.fitToGrid(gridExtent, 10, 10);
+
+            expect(extent).toEqual(gridExtent);
+            expect(width).toEqual(10);
+            expect(height).toEqual(10);
+        });
     });
 
     describe('union', () => {
