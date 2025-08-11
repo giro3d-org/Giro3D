@@ -49,7 +49,12 @@ function transformBufferInPlace(
     for (let i = 0; i < length; i += stride) {
         tmp.x = buf[i + 0];
         tmp.y = buf[i + 1];
-        const out = proj.transform(src, dst, tmp);
+
+        const out = proj.transform(src, dst, tmp, true);
+
+        if (out == null) {
+            throw new Error(`could not reproject from ${src.name} to ${dst.name}`);
+        }
         buf[i + 0] = out.x + offset.x;
         buf[i + 1] = out.y + offset.y;
     }
@@ -79,7 +84,4 @@ function transformVectors<T extends Vector2 | Vector3>(
     }
 }
 
-export default {
-    transformBufferInPlace,
-    transformVectors,
-};
+export default { transformBufferInPlace, transformVectors };
