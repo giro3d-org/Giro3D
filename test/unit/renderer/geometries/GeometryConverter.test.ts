@@ -15,6 +15,7 @@ import type PointMesh from '@giro3d/giro3d/renderer/geometries/PointMesh';
 import { isPointMesh } from '@giro3d/giro3d/renderer/geometries/PointMesh';
 import type PolygonMesh from '@giro3d/giro3d/renderer/geometries/PolygonMesh';
 import { nonNull } from '@giro3d/giro3d/utils/tsutils';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 const SIMPLE_SQUARE = [
     [

@@ -4,7 +4,8 @@ import MultiPolygonMesh, {
 import type PolygonMesh from '@giro3d/giro3d/renderer/geometries/PolygonMesh';
 import { isSimpleGeometryMesh } from '@giro3d/giro3d/renderer/geometries/SimpleGeometryMesh';
 import { MeshBasicMaterial } from 'three';
-import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
+import { LineMaterial } from 'three/examples/jsm/Addons.js';
+import { describe, expect, it, vitest } from 'vitest';
 import { makePolygonMesh } from './PolygonMesh.test';
 
 function makeDefaultObjects(options?: {
@@ -52,7 +53,7 @@ describe('dispose', () => {
         const { mesh, polygons } = makeDefaultObjects();
 
         function mockDispose(obj: PolygonMesh) {
-            obj.dispose = jest.fn();
+            obj.dispose = vitest.fn();
         }
 
         mockDispose(polygons[0]);

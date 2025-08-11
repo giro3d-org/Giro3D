@@ -6,6 +6,7 @@ import type {
     ImageResponse,
 } from '@giro3d/giro3d/sources/ImageSource';
 import ImageSource from '@giro3d/giro3d/sources/ImageSource';
+import { describe, expect, it, vitest } from 'vitest';
 
 class TestSource extends ImageSource {
     extent: Extent;
@@ -29,31 +30,29 @@ class TestSource extends ImageSource {
     }
 }
 
-describe('ImageSource', () => {
-    describe('contains', () => {
-        it('should use the custom contains function if it exists', () => {
-            const customFunction = jest.fn();
-            const sourceExtent = new Extent(CoordinateSystem.epsg3857, 0, 10, 0, 10);
+describe('contains', () => {
+    it('should use the custom contains function if it exists', () => {
+        const customFunction = vitest.fn();
+        const sourceExtent = new Extent(CoordinateSystem.epsg3857, 0, 10, 0, 10);
 
-            const source = new TestSource({ containsFn: customFunction, extent: sourceExtent });
+        const source = new TestSource({ containsFn: customFunction, extent: sourceExtent });
 
-            const extentToTest = new Extent(CoordinateSystem.epsg4326, -179, 180, -90, 90);
+        const extentToTest = new Extent(CoordinateSystem.epsg4326, -179, 180, -90, 90);
 
-            source.contains(extentToTest);
+        source.contains(extentToTest);
 
-            expect(customFunction).not.toHaveBeenCalledWith(extentToTest);
-            expect(customFunction).toHaveBeenCalledWith(
-                extentToTest.clone().as(CoordinateSystem.epsg3857),
-            );
-        });
+        expect(customFunction).not.toHaveBeenCalledWith(extentToTest);
+        expect(customFunction).toHaveBeenCalledWith(
+            extentToTest.clone().as(CoordinateSystem.epsg3857),
+        );
+    });
 
-        it('should default to the intersection of the extent and the source extent', () => {
-            const sourceExtent = new Extent(CoordinateSystem.epsg3857, 0, 10, 0, 10);
-            const extentToTest = new Extent(CoordinateSystem.epsg3857, 1, 2, 3, 4);
+    it('should default to the intersection of the extent and the source extent', () => {
+        const sourceExtent = new Extent(CoordinateSystem.epsg3857, 0, 10, 0, 10);
+        const extentToTest = new Extent(CoordinateSystem.epsg3857, 1, 2, 3, 4);
 
-            const source = new TestSource({ extent: sourceExtent });
+        const source = new TestSource({ extent: sourceExtent });
 
-            expect(source.contains(extentToTest)).toEqual(true);
-        });
+        expect(source.contains(extentToTest)).toEqual(true);
     });
 });

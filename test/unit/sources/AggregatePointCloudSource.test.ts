@@ -1,13 +1,13 @@
-import type { GetMemoryUsageContext } from '@giro3d/giro3d/core/MemoryUsage';
 import AggregatePointCloudSource from '@giro3d/giro3d/sources/AggregatePointCloudSource';
-import {
-    traverseNode,
-    type PointCloudAttribute,
-    type PointCloudMetadata,
-    type PointCloudNode,
-    type PointCloudSource,
+import type {
+    PointCloudAttribute,
+    PointCloudMetadata,
+    PointCloudNode,
+    PointCloudSource,
 } from '@giro3d/giro3d/sources/PointCloudSource';
+import { traverseNode } from '@giro3d/giro3d/sources/PointCloudSource';
 import { Box3, EventDispatcher, MathUtils } from 'three';
+import { describe, expect, it, vitest } from 'vitest';
 
 type AsyncFn<T> = () => Promise<T>;
 
@@ -19,15 +19,15 @@ function mock(params?: {
     // @ts-expect-error incomplete type
     const result: PointCloudSource = {
         id: params?.id ?? MathUtils.generateUUID(),
-        addEventListener: jest.fn(),
-        initialize: jest.fn(),
-        getMetadata: params?.getMetadata ?? jest.fn(),
-        dispose: jest.fn(),
-        getHierarchy: params?.getHierarchy ?? jest.fn(),
-        getNodeData: jest.fn(),
+        addEventListener: vitest.fn(),
+        initialize: vitest.fn(),
+        getMetadata: params?.getMetadata ?? vitest.fn(),
+        dispose: vitest.fn(),
+        getHierarchy: params?.getHierarchy ?? vitest.fn(),
+        getNodeData: vitest.fn(),
         progress: 1,
         loading: false,
-        getMemoryUsage: jest.fn(),
+        getMemoryUsage: vitest.fn(),
     };
 
     result.initialize = () => Promise.resolve(result);
@@ -48,13 +48,13 @@ describe('constructor', () => {
         // @ts-expect-error type not satisfied
         const source1: PointCloudSource = {
             id: 'source1',
-            addEventListener: jest.fn(),
+            addEventListener: vitest.fn(),
         };
 
         // @ts-expect-error type not satisfied
         const source2: PointCloudSource = {
             id: 'source2',
-            addEventListener: jest.fn(),
+            addEventListener: vitest.fn(),
         };
 
         const sources: PointCloudSource[] = [source1, source2];
@@ -74,7 +74,7 @@ describe('constructor', () => {
 
         const source = new AggregatePointCloudSource({ sources });
 
-        const listener = jest.fn();
+        const listener = vitest.fn();
 
         source.addEventListener('progress', listener);
 
@@ -162,8 +162,8 @@ describe('initialize', () => {
 
         const source = new AggregatePointCloudSource({ sources: [s1, s2] });
 
-        s1.initialize = jest.fn();
-        s2.initialize = jest.fn();
+        s1.initialize = vitest.fn();
+        s2.initialize = vitest.fn();
 
         await source.initialize();
         await source.initialize();

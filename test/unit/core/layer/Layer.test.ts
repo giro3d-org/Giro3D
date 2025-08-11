@@ -11,6 +11,7 @@ import Layer from '@giro3d/giro3d/core/layer/Layer';
 import type RequestQueue from '@giro3d/giro3d/core/RequestQueue';
 import NullSource from '@giro3d/giro3d/sources/NullSource';
 import { RGBAFormat, UnsignedByteType } from 'three';
+import { beforeEach, describe, expect, it, vitest } from 'vitest';
 import { setupGlobalMocks } from '../../mocks';
 
 // @ts-expect-error missing implementations of abstract superclass
@@ -43,122 +44,120 @@ interface UserData extends LayerUserData {
     foo: string;
 }
 
-describe('Layer', () => {
-    beforeEach(() => {
-        setupGlobalMocks();
+beforeEach(() => {
+    setupGlobalMocks();
+});
+
+describe('userData', () => {
+    it('returns correct values', () => {
+        const layer = new TestLayer<LayerEvents, UserData>({ source: new NullSource() });
+
+        layer.userData.bar = 3;
+        layer.userData.foo = 'hello';
+
+        expect(layer.userData.bar).toEqual(3);
+        expect(layer.userData.foo).toEqual('hello');
+    });
+});
+
+describe('progress & loading', () => {
+    it('should return the progress and loading of the underlying queue', () => {
+        const layer = new TestLayer({ source: new NullSource() });
+
+        expect(layer.progress).toBe(layer.getQueue().progress);
+        expect(layer.loading).toBe(layer.getQueue().loading);
+    });
+});
+
+describe('dispose', () => {
+    it('should dispose the source', () => {
+        const source = new NullSource();
+        source.dispose = vitest.fn();
+        const layer = new TestLayer({ source });
+
+        expect(source.dispose).not.toHaveBeenCalled();
+
+        layer.dispose();
+
+        expect(source.dispose).toHaveBeenCalled();
     });
 
-    describe('userData', () => {
-        it('returns correct values', () => {
-            const layer = new TestLayer<LayerEvents, UserData>({ source: new NullSource() });
+    it('should dispatch the dispose event', () => {
+        const source = new NullSource();
+        const layer = new TestLayer({ source });
 
-            layer.userData.bar = 3;
-            layer.userData.foo = 'hello';
+        const listener = vitest.fn();
 
-            expect(layer.userData.bar).toEqual(3);
-            expect(layer.userData.foo).toEqual('hello');
+        layer.addEventListener('dispose', listener);
+
+        expect(listener).not.toHaveBeenCalled();
+
+        layer.dispose();
+
+        expect(listener).toHaveBeenCalled();
+    });
+});
+
+describe('constructor', () => {
+    it('should assign the provided properties', () => {
+        const id = 'foo';
+        const extent = new Extent(CoordinateSystem.epsg4326, 0, 0, 0, 0);
+        const layer = new TestLayer({
+            name: id,
+            extent,
+            source: new NullSource(),
         });
+
+        expect(layer.name).toEqual(id);
+        expect(layer.extent).toEqual(extent);
     });
 
-    describe('progress & loading', () => {
-        it('should return the progress and loading of the underlying queue', () => {
-            const layer = new TestLayer({ source: new NullSource() });
+    it('should not accept all sources', () => {
+        // @ts-expect-error null argument
+        expect(() => new TestLayer({ source: null })).toThrowError(/missing or invalid source/);
+    });
+});
 
-            expect(layer.progress).toBe(layer.getQueue().progress);
-            expect(layer.loading).toBe(layer.getQueue().loading);
-        });
+describe('initialize', () => {
+    it('should initialize the source', async () => {
+        const source = new NullSource();
+        source.initialize = vitest.fn();
+        const layer = new TestLayer({ source });
+        layer.getRenderTargetDataType = () => UnsignedByteType;
+        layer.getRenderTargetPixelFormat = () => RGBAFormat;
+
+        const instance: Instance = {
+            notifyChange: vitest.fn(),
+        } as unknown as Instance;
+
+        await layer.initialize({ composerProjection: CoordinateSystem.epsg3857, instance });
+
+        expect(source.initialize).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe('visible', () => {
+    it('should return the correct value', () => {
+        const layer = new TestLayer({ source: new NullSource() });
+
+        expect(layer.visible).toEqual(true);
+
+        layer.visible = false;
+        expect(layer.visible).toEqual(false);
     });
 
-    describe('dispose', () => {
-        it('should dispose the source', () => {
-            const source = new NullSource();
-            source.dispose = jest.fn();
-            const layer = new TestLayer({ source });
+    it('should raise the visible-property-changed event', () => {
+        const layer = new TestLayer({ source: new NullSource() });
 
-            expect(source.dispose).not.toHaveBeenCalled();
+        const listener = vitest.fn();
+        layer.addEventListener('visible-property-changed', listener);
 
-            layer.dispose();
+        expect(listener).not.toHaveBeenCalled();
 
-            expect(source.dispose).toHaveBeenCalled();
-        });
+        layer.visible = false;
+        layer.visible = false;
+        layer.visible = false;
 
-        it('should dispatch the dispose event', () => {
-            const source = new NullSource();
-            const layer = new TestLayer({ source });
-
-            const listener = jest.fn();
-
-            layer.addEventListener('dispose', listener);
-
-            expect(listener).not.toHaveBeenCalled();
-
-            layer.dispose();
-
-            expect(listener).toHaveBeenCalled();
-        });
-    });
-
-    describe('constructor', () => {
-        it('should assign the provided properties', () => {
-            const id = 'foo';
-            const extent = new Extent(CoordinateSystem.epsg4326, 0, 0, 0, 0);
-            const layer = new TestLayer({
-                name: id,
-                extent,
-                source: new NullSource(),
-            });
-
-            expect(layer.name).toEqual(id);
-            expect(layer.extent).toEqual(extent);
-        });
-
-        it('should not accept all sources', () => {
-            // @ts-expect-error null argument
-            expect(() => new TestLayer({ source: null })).toThrowError(/missing or invalid source/);
-        });
-    });
-
-    describe('initialize', () => {
-        it('should initialize the source', async () => {
-            const source = new NullSource();
-            source.initialize = jest.fn();
-            const layer = new TestLayer({ source });
-            layer.getRenderTargetDataType = () => UnsignedByteType;
-            layer.getRenderTargetPixelFormat = () => RGBAFormat;
-
-            const instance: Instance = {
-                notifyChange: jest.fn(),
-            } as unknown as Instance;
-
-            await layer.initialize({ composerProjection: CoordinateSystem.epsg3857, instance });
-
-            expect(source.initialize).toHaveBeenCalledTimes(1);
-        });
-    });
-
-    describe('visible', () => {
-        it('should return the correct value', () => {
-            const layer = new TestLayer({ source: new NullSource() });
-
-            expect(layer.visible).toEqual(true);
-
-            layer.visible = false;
-            expect(layer.visible).toEqual(false);
-        });
-
-        it('should raise the visible-property-changed event', () => {
-            const layer = new TestLayer({ source: new NullSource() });
-
-            const listener = jest.fn();
-            layer.addEventListener('visible-property-changed', listener);
-
-            expect(listener).not.toHaveBeenCalled();
-
-            layer.visible = false;
-            layer.visible = false;
-            layer.visible = false;
-
-            expect(listener).toHaveBeenCalledTimes(1);
-        });
+        expect(listener).toHaveBeenCalledTimes(1);
     });
 });

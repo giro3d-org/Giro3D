@@ -4,8 +4,8 @@ import { isSimpleGeometryMesh } from '@giro3d/giro3d/renderer/geometries/SimpleG
 import SurfaceMesh from '@giro3d/giro3d/renderer/geometries/SurfaceMesh';
 import { Polygon } from 'ol/geom';
 import { BufferGeometry, MeshBasicMaterial, Vector3 } from 'three';
-import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry';
-import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
+import { LineGeometry, LineMaterial } from 'three/examples/jsm/Addons.js';
+import { beforeEach, describe, expect, it, vitest } from 'vitest';
 
 const DEFAULT_POLYGON = new Polygon([]);
 
@@ -84,8 +84,8 @@ describe('dispose', () => {
         const surface = makeFlatSurface();
         const linearRings = makeRings({ count: 10 });
 
-        surface.dispose = jest.fn();
-        linearRings.forEach(r => (r.dispose = jest.fn()));
+        surface.dispose = vitest.fn();
+        linearRings.forEach(r => (r.dispose = vitest.fn()));
 
         const mesh = new PolygonMesh({ source: DEFAULT_POLYGON, surface, linearRings });
         mesh.dispose();
@@ -121,7 +121,7 @@ describe('surface', () => {
     describe('set', () => {
         it('should replace the current surface', () => {
             const oldSurface = mesh.surface!;
-            oldSurface.dispose = jest.fn();
+            oldSurface.dispose = vitest.fn();
             const newSurface = makeFlatSurface();
 
             mesh.opacity = 0.33;
@@ -161,7 +161,7 @@ describe('linearRings', () => {
 
         it('should remove current rings', () => {
             const currentRings = mesh.linearRings!;
-            currentRings.forEach(ring => (ring.dispose = jest.fn()));
+            currentRings.forEach(ring => (ring.dispose = vitest.fn()));
 
             const newRings = makeRings();
 
@@ -175,7 +175,7 @@ describe('linearRings', () => {
 
         it('should set linearRings to new rings', () => {
             const currentRings = mesh.linearRings!;
-            currentRings.forEach(ring => (ring.dispose = jest.fn()));
+            currentRings.forEach(ring => (ring.dispose = vitest.fn()));
 
             const newRings = makeRings();
 
@@ -187,7 +187,7 @@ describe('linearRings', () => {
 
         it('should update the opacity of new rings', () => {
             const currentRings = mesh.linearRings!;
-            currentRings.forEach(ring => (ring.dispose = jest.fn()));
+            currentRings.forEach(ring => (ring.dispose = vitest.fn()));
 
             const newRings = makeRings();
 

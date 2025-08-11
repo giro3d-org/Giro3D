@@ -8,10 +8,4 @@ module.exports = {
     // API barrel files are only there to generate the documentation
     // We really don't want barrel files in the exported package
     ignore: ['**/api.ts'],
-    env: {
-        test: {
-            presets: ['jest', ['@babel/preset-env']],
-            plugins: ['babel-plugin-transform-import-meta'],
-        },
-    },
 };

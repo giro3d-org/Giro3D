@@ -39,7 +39,7 @@ async function main() {
     delete pkg.style;
     delete pkg.eslintConfig;
     delete pkg.private;
-    delete pkg.jest;
+    delete pkg.vitest;
     await fse.writeJSON(path.join(buildDir, 'package.json'), pkg, { spaces: 2 });
 
     // copy in readme and license files

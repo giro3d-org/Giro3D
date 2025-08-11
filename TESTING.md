@@ -13,13 +13,14 @@ The codebase now favors Typescript over Javascript, but the transition is progre
 
 ## 🧪 Unit tests
 
-Unit tests use the [Jest framework](https://jestjs.io/).
+Unit tests use the [Vitest framework](https://vitest.dev/).
 
 Test files are located in `test/unit`, under a folder hierachy that mirrors the hierarchy in `src/`, i.e: the tests for `src/core/Cache.js` are in `test/unit/core/Cache.test.js`
 
 ### Structure
 
-- The root `describe()` should contain the name of the tested class:
+- If the tested file contains only one class (or free functions), no need for a root `describe()`.
+- If the tested file contains several classes, then create one top-level `describe()` for each tested class:
 
     ```js
     describe('Extent', () => {...});

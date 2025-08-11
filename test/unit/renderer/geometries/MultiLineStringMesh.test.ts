@@ -3,8 +3,8 @@ import MultiLineStringMesh, {
     isMultiLineStringMesh,
 } from '@giro3d/giro3d/renderer/geometries/MultiLineStringMesh';
 import { isSimpleGeometryMesh } from '@giro3d/giro3d/renderer/geometries/SimpleGeometryMesh';
-import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry';
-import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
+import { LineGeometry, LineMaterial } from 'three/examples/jsm/Addons.js';
+import { describe, expect, it } from 'vitest';
 
 function makeDefaultObjects() {
     const material = new LineMaterial();

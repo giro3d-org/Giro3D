@@ -5,30 +5,10 @@ import Entity3D from '@giro3d/giro3d/entities/Entity3D';
 import Fetcher from '@giro3d/giro3d/utils/Fetcher';
 import proj4 from 'proj4';
 import { Group, Object3D, Vector2, WebGLRenderer } from 'three';
+import { beforeEach, describe, expect, it, vitest } from 'vitest';
 import { resizeObservers, setupGlobalMocks } from '../mocks';
 
 const renderer = new WebGLRenderer();
-
-jest.mock('@giro3d/giro3d/renderer/c3DEngine', () => {
-    return jest.fn().mockImplementation(() => {
-        return {
-            dispose: jest.fn(),
-            renderer: {
-                domElement: {
-                    addEventListener: jest.fn(),
-                    removeEventListener: jest.fn(),
-                    getBoundingClientRect() {
-                        return { x: 10, y: 10 };
-                    },
-                },
-            },
-            getWindowSize() {
-                return { x: 10, y: 10 };
-            },
-        };
-    });
-});
-
 class FakeEntity extends Entity {}
 class FakeEntity3D extends Entity3D {}
 
@@ -71,7 +51,7 @@ describe('Instance', () => {
             crs: CoordinateSystem.epsg3857,
             renderer,
         });
-        Fetcher.json = jest.fn();
+        Fetcher.json = vitest.fn();
     });
 
     describe('constructor', () => {
@@ -215,7 +195,7 @@ describe('Instance', () => {
         it('should remove the entity object3d from the scenegraph', async () => {
             const entity1 = new FakeEntity3D(new Object3D());
 
-            entity1.object3d.removeFromParent = jest.fn();
+            entity1.object3d.removeFromParent = vitest.fn();
 
             await instance.add(entity1);
 
@@ -267,7 +247,7 @@ describe('Instance', () => {
 
         it('should call the dispose() method if it exists', () => {
             const entity = new FakeEntity();
-            entity.dispose = jest.fn();
+            entity.dispose = vitest.fn();
 
             return instance.add(entity).then(() => {
                 instance.remove(entity);
@@ -306,13 +286,13 @@ describe('Instance', () => {
             let map2Loading = false;
 
             Object.defineProperty(entity1, 'loading', {
-                get: jest.fn(() => map1Loading),
-                set: jest.fn(),
+                get: vitest.fn(() => map1Loading),
+                set: vitest.fn(),
             });
 
             Object.defineProperty(entity2, 'loading', {
-                get: jest.fn(() => map2Loading),
-                set: jest.fn(),
+                get: vitest.fn(() => map2Loading),
+                set: vitest.fn(),
             });
 
             instance.add(entity1);
@@ -395,13 +375,13 @@ describe('Instance', () => {
             const map2 = new FakeEntity();
 
             Object.defineProperty(map1, 'progress', {
-                get: jest.fn(() => 0.7),
-                set: jest.fn(),
+                get: vitest.fn(() => 0.7),
+                set: vitest.fn(),
             });
 
             Object.defineProperty(map2, 'progress', {
-                get: jest.fn(() => 0.2),
-                set: jest.fn(),
+                get: vitest.fn(() => 0.2),
+                set: vitest.fn(),
             });
 
             instance.add(map1);
@@ -443,7 +423,7 @@ describe('Instance', () => {
 
     describe('dispose', () => {
         it('should fire the dispose event', () => {
-            const listener = jest.fn();
+            const listener = vitest.fn();
             instance.addEventListener('dispose', listener);
 
             expect(listener).toHaveBeenCalledTimes(0);

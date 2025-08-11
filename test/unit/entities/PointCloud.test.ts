@@ -1,4 +1,3 @@
-import type Instance from '@giro3d/giro3d/core/Instance';
 import PointCloud from '@giro3d/giro3d/entities/PointCloud';
 import type {
     PointCloudAttribute,
@@ -7,6 +6,7 @@ import type {
     PointCloudSource,
 } from '@giro3d/giro3d/sources/PointCloudSource';
 import { Box3, MathUtils } from 'three';
+import { describe, expect, it, vitest } from 'vitest';
 
 function mockSource(options?: {
     metadata?: PointCloudMetadata;
@@ -14,10 +14,10 @@ function mockSource(options?: {
 }): PointCloudSource {
     const result = {
         id: MathUtils.generateUUID(),
-        dispose: jest.fn(),
-        addEventListener: jest.fn(),
-        removeEventListener: jest.fn(),
-        initialize: jest.fn(),
+        dispose: vitest.fn(),
+        addEventListener: vitest.fn(),
+        removeEventListener: vitest.fn(),
+        initialize: vitest.fn(),
         getMetadata: () => Promise.resolve(options?.metadata ?? {}),
         getHierarchy: () => Promise.resolve(options?.root ?? {}),
     };
@@ -26,76 +26,74 @@ function mockSource(options?: {
     return result;
 }
 
-describe('PointCloud', () => {
-    describe('constructor', () => {
-        it('should clone the default colormap', () => {
-            const source = mockSource();
-            const entity1 = new PointCloud({ source, cleanupDelay: 1234 });
-            const entity2 = new PointCloud({ source, cleanupDelay: 1234 });
+describe('constructor', () => {
+    it('should clone the default colormap', () => {
+        const source = mockSource();
+        const entity1 = new PointCloud({ source, cleanupDelay: 1234 });
+        const entity2 = new PointCloud({ source, cleanupDelay: 1234 });
 
-            expect(entity1.colorMap).not.toBe(entity2.colorMap);
-        });
-
-        it('should set properties', () => {
-            const source = mockSource();
-            const entity = new PointCloud({ source, cleanupDelay: 1234 });
-
-            expect(entity.source).toBe(source);
-            expect(entity.cleanupDelay).toBe(1234);
-
-            expect(entity.brightness).toBe(0);
-            expect(entity.contrast).toBe(1);
-            expect(entity.saturation).toBe(1);
-        });
+        expect(entity1.colorMap).not.toBe(entity2.colorMap);
     });
 
-    describe('dispose', () => {
-        it('should dispose the source', () => {
-            const source = mockSource();
+    it('should set properties', () => {
+        const source = mockSource();
+        const entity = new PointCloud({ source, cleanupDelay: 1234 });
 
-            const entity = new PointCloud({ source });
+        expect(entity.source).toBe(source);
+        expect(entity.cleanupDelay).toBe(1234);
 
-            expect(source.dispose).not.toHaveBeenCalled();
-
-            entity.dispose();
-
-            expect(source.dispose).toHaveBeenCalled();
-        });
+        expect(entity.brightness).toBe(0);
+        expect(entity.contrast).toBe(1);
+        expect(entity.saturation).toBe(1);
     });
+});
 
-    describe('initialize', () => {
-        it('should initialize the source', async () => {
-            const attributes: PointCloudAttribute[] = [
-                { name: 'foo', dimension: 1, type: 'signed', size: 2, interpretation: 'unknown' },
-                { name: 'bar', dimension: 1, type: 'signed', size: 2, interpretation: 'unknown' },
-                { name: 'baz', dimension: 1, type: 'signed', size: 2, interpretation: 'unknown' },
-            ];
+describe('dispose', () => {
+    it('should dispose the source', () => {
+        const source = mockSource();
 
-            const metadata: PointCloudMetadata = {
-                pointCount: 12345,
-                volume: new Box3().setFromArray([0, 0, 0, 1, 1, 1]),
-                attributes,
-            };
+        const entity = new PointCloud({ source });
 
-            // @ts-expect-error incomplete
-            const root: PointCloudNode = {};
+        expect(source.dispose).not.toHaveBeenCalled();
 
-            const source = mockSource({ metadata, root });
+        entity.dispose();
 
-            const entity = new PointCloud({ source });
+        expect(source.dispose).toHaveBeenCalled();
+    });
+});
 
-            // @ts-expect-error incomplete
-            const instance: Instance = { notifyChange: jest.fn() };
+describe('initialize', () => {
+    it('should initialize the source', async () => {
+        const attributes: PointCloudAttribute[] = [
+            { name: 'foo', dimension: 1, type: 'signed', size: 2, interpretation: 'unknown' },
+            { name: 'bar', dimension: 1, type: 'signed', size: 2, interpretation: 'unknown' },
+            { name: 'baz', dimension: 1, type: 'signed', size: 2, interpretation: 'unknown' },
+        ];
 
-            expect(source.initialize).not.toHaveBeenCalled();
+        const metadata: PointCloudMetadata = {
+            pointCount: 12345,
+            volume: new Box3().setFromArray([0, 0, 0, 1, 1, 1]),
+            attributes,
+        };
 
-            await entity.initialize({ instance });
+        // @ts-expect-error incomplete
+        const root: PointCloudNode = {};
 
-            expect(source.initialize).toHaveBeenCalled();
+        const source = mockSource({ metadata, root });
 
-            expect(entity.getBoundingBox()).toEqual(metadata.volume);
-            expect(entity.pointCount).toEqual(12345);
-            expect(entity.getSupportedAttributes()).toEqual(attributes);
-        });
+        const entity = new PointCloud({ source });
+
+        // @ts-expect-error incomplete
+        const instance: Instance = { notifyChange: vitest.fn() };
+
+        expect(source.initialize).not.toHaveBeenCalled();
+
+        await entity.initialize({ instance });
+
+        expect(source.initialize).toHaveBeenCalled();
+
+        expect(entity.getBoundingBox()).toEqual(metadata.volume);
+        expect(entity.pointCount).toEqual(12345);
+        expect(entity.getSupportedAttributes()).toEqual(attributes);
     });
 });
