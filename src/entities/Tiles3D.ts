@@ -826,5 +826,6 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
             'updated',
             this._listeners.onColorMapUpdated,
         );
+        this._tiles.dispose();
     }
 }
