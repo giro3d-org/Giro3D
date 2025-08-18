@@ -33,10 +33,15 @@ export function bindDropDown(id, onChange) {
 
     /** @type {SetOptionsCallback} */
     const setOptions = options => {
-        const items = options.map(
-            opt => `<option value=${opt.id} ${opt.selected ? 'selected' : ''}>${opt.name}</option>`,
-        );
-        element.innerHTML = items.join('\n');
+        element.innerHTML = '';
+
+        options.forEach(opt => {
+            const optElement = document.createElement('option');
+            optElement.value = opt.id;
+            optElement.selected = opt.selected;
+            optElement.textContent = opt.name;
+            element.appendChild(optElement);
+        });
     };
 
     return [callback, element.value, element, setOptions];
