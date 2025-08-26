@@ -110,7 +110,7 @@ export function getWorldSpaceRadius(
     let fieldOfViewHeight: number;
 
     if (isPerspectiveCamera(camera)) {
-        const fovRads = MathUtils.degToRad(camera.fov) / 2;
+        const fovRads = MathUtils.degToRad(camera.getEffectiveFOV()) / 2;
         fieldOfViewHeight = 2 * Math.tan(fovRads) * dist;
     } else if (isOrthographicCamera(camera)) {
         fieldOfViewHeight = Math.abs(camera.top - camera.bottom) / camera.zoom;
@@ -122,9 +122,7 @@ export function getWorldSpaceRadius(
 
     const pixelRatio = screenSpaceRadius / size.height;
 
-    const worldSpaceRadius = fieldOfViewHeight * pixelRatio;
-
-    return worldSpaceRadius;
+    return fieldOfViewHeight * pixelRatio;
 }
 
 export function isConstantSizeSphere(obj: unknown): obj is ConstantSizeSphere {

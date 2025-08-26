@@ -28,6 +28,9 @@ The following people have contributed to Giro3D.
     - [Nicolas Saul](https://github.com/NikoSaul)
     - [Vincent Jaillot](https://github.com/jailln)
 
+- [My Digital Buildings](https://www.mydigitalbuildings.com/)
+    - [Gabriel Touzalin](https://github.com/TheEmperorPenguin)
+
 - [Oslandia](http://www.oslandia.com)
     - [Antoine Facchini](https://gitlab.com/antoinefacchini)
     - [Augustin Trancart](https://github.com/autra)
