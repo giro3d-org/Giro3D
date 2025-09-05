@@ -12,7 +12,7 @@ import type Atmosphere from '../entities/Atmosphere';
 import EntityInspector from './EntityInspector';
 
 export default class AtmosphereInspector extends EntityInspector<Atmosphere> {
-    constructor(parentGui: GUI, instance: Instance, atmosphere: Atmosphere) {
+    public constructor(parentGui: GUI, instance: Instance, atmosphere: Atmosphere) {
         super(parentGui, instance, atmosphere, {
             boundingBoxColor: false,
             boundingBoxes: false,
@@ -20,7 +20,7 @@ export default class AtmosphereInspector extends EntityInspector<Atmosphere> {
             visibility: true,
         });
 
-        const notify = () => this.notify();
+        const notify = (): void => this.notify();
 
         this.addController(atmosphere.inner, 'visible').name('Inner').onChange(notify);
         this.addController(atmosphere.outer, 'visible').name('Outer').onChange(notify);

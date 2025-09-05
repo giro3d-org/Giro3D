@@ -12,7 +12,7 @@ import type OrientedImageCollection from '../entities/OrientedImageCollection';
 import EntityInspector from './EntityInspector';
 
 export default class OrientedImageCollectionInspector extends EntityInspector<OrientedImageCollection> {
-    constructor(
+    public constructor(
         parentGui: GUI,
         instance: Instance,
         orientedImageCollection: OrientedImageCollection,
@@ -24,7 +24,7 @@ export default class OrientedImageCollectionInspector extends EntityInspector<Or
             visibility: true,
         });
 
-        const notify = () => this.notify();
+        const notify = (): void => this.notify();
 
         const imagesCount = orientedImageCollection.source.images.length;
 

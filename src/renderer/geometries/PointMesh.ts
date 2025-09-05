@@ -19,17 +19,17 @@ export default class PointMesh<UserData extends DefaultUserData = DefaultUserDat
     extends Sprite
     implements SimpleGeometryMesh<UserData>
 {
-    readonly isSimpleGeometryMesh = true as const;
-    readonly isPointMesh = true as const;
-    override readonly type = 'PointMesh' as const;
+    public readonly isSimpleGeometryMesh = true as const;
+    public readonly isPointMesh = true as const;
+    public override readonly type = 'PointMesh' as const;
 
     private _featureOpacity = 1;
     private _styleOpacity = 1;
     private _pointSize: number;
 
-    override userData: Partial<UserData> = {};
+    public override userData: Partial<UserData> = {};
 
-    constructor(params: ConstructorParams) {
+    public constructor(params: ConstructorParams) {
         super(params.material);
         this._styleOpacity = params.opacity ?? 1;
         this._pointSize = params.pointSize ?? DEFAULT_POINT_SIZE;
@@ -42,19 +42,19 @@ export default class PointMesh<UserData extends DefaultUserData = DefaultUserDat
         this.updateMatrixWorld(true);
     }
 
-    set opacity(opacity: number) {
+    public set opacity(opacity: number) {
         this._featureOpacity = opacity;
         this.updateOpacity();
     }
 
-    private updateOpacity() {
+    private updateOpacity(): void {
         this.material.opacity = this._featureOpacity * this._styleOpacity;
         // Because of textures, we have to force transparency
         this.material.transparent = true;
         this.matrixAutoUpdate = false;
     }
 
-    override onBeforeRender(renderer: WebGLRenderer, _scene: Scene, camera: Camera): void {
+    public override onBeforeRender(renderer: WebGLRenderer, _scene: Scene, camera: Camera): void {
         // sprite size stand for sprite height in view
         const perspective = camera as PerspectiveCamera;
         const resolutionHeight = renderer.getRenderTarget()?.height ?? renderer.domElement?.height;
@@ -71,12 +71,12 @@ export default class PointMesh<UserData extends DefaultUserData = DefaultUserDat
         }
     }
 
-    update(
+    public update(
         options: Omit<ConstructorParams, 'material'> & {
             material: SpriteMaterial | null;
             renderOrder: number;
         },
-    ) {
+    ): void {
         if (options.material) {
             this.material = options.material;
             this._styleOpacity = options.opacity ?? 1;
@@ -91,7 +91,7 @@ export default class PointMesh<UserData extends DefaultUserData = DefaultUserDat
         this.visible = options.material != null;
     }
 
-    dispose(): void {
+    public dispose(): void {
         this.geometry.dispose();
         // Don't dispose the material as it is not owned by this mesh.
 

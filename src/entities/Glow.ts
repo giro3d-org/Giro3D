@@ -34,14 +34,14 @@ const tmpVec2 = new Vector2();
 const sphere = new SphereGeometry(1, 64, 64);
 
 class GlowMaterial extends ShaderMaterial {
-    override uniforms: {
+    public override uniforms: {
         opacity: IUniform<number>;
         atmoIN: IUniform<boolean>;
         screenSize: IUniform<Vector2>;
         glowColor: IUniform<Color>;
     };
 
-    constructor(options: {
+    public constructor(options: {
         side: Side;
         atmoIn: boolean;
         depthWrite: boolean;
@@ -67,15 +67,15 @@ class GlowMaterial extends ShaderMaterial {
         };
     }
 
-    get color() {
+    public get color(): Color {
         return this.uniforms.glowColor.value;
     }
 
-    set color(v: Color) {
+    public set color(v: Color) {
         this.uniforms.glowColor.value.copy(v);
     }
 
-    set screenSize(v: Vector2) {
+    public set screenSize(v: Vector2) {
         this.uniforms.screenSize.value.copy(v);
     }
 }
@@ -84,8 +84,8 @@ class GlowMaterial extends ShaderMaterial {
  * Displays a simple glow around an ellipsoid.
  */
 export default class Glow extends Entity3D {
-    readonly isGlow = true as const;
-    override readonly type = 'Glow' as const;
+    public readonly isGlow = true as const;
+    public override readonly type = 'Glow' as const;
 
     private readonly _ellipsoid: Ellipsoid;
     private readonly _sphere: Sphere;
@@ -93,11 +93,11 @@ export default class Glow extends Entity3D {
     private readonly _outerGlow: Mesh<SphereGeometry, GlowMaterial>;
     private readonly _innerGlow: Mesh<SphereGeometry, GlowMaterial>;
 
-    get color() {
+    public get color(): Color {
         return this._outerGlow.material.color;
     }
 
-    set color(v: ColorRepresentation) {
+    public set color(v: ColorRepresentation) {
         const color = new Color(v);
 
         this._innerGlow.material.color = color;
@@ -106,7 +106,7 @@ export default class Glow extends Entity3D {
         this.notifyChange();
     }
 
-    constructor(options: {
+    public constructor(options: {
         /**
          * The color of the glow.
          */
@@ -161,19 +161,19 @@ export default class Glow extends Entity3D {
         return result;
     }
 
-    override updateOpacity(): void {
+    public override updateOpacity(): void {
         this._outerGlow.material.uniforms.opacity.value = this.opacity;
         this._innerGlow.material.uniforms.opacity.value = this.opacity;
     }
 
-    private updateMinMaxDistance(context: Context) {
+    private updateMinMaxDistance(context: Context): void {
         const distance = context.distance.plane.distanceToPoint(this.object3d.position);
         const radius = this._sphere.radius * 2;
         this._distance.min = Math.min(this._distance.min, distance - radius);
         this._distance.max = Math.max(this._distance.max, distance + radius);
     }
 
-    override postUpdate(context: Context, _changeSources: Set<unknown>): void {
+    public override postUpdate(context: Context, _changeSources: Set<unknown>): void {
         this.instance.engine.getWindowSize(tmpVec2);
 
         this._outerGlow.material.screenSize = tmpVec2;
@@ -182,7 +182,7 @@ export default class Glow extends Entity3D {
         this.updateMinMaxDistance(context);
     }
 
-    override pick(): PickResult[] {
+    public override pick(): PickResult[] {
         return [];
     }
 }

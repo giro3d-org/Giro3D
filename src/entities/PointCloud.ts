@@ -93,9 +93,9 @@ type NodeInfo = {
     positionDirty: boolean;
 };
 
-const nothing = () => {};
+const nothing = (): void => {};
 
-function createBoxHelper(box: Box3, color: ColorRepresentation) {
+function createBoxHelper(box: Box3, color: ColorRepresentation): Box3Helper {
     const helper = new Box3Helper(box, color);
 
     // To make it clearly visible
@@ -110,7 +110,7 @@ function createBoxHelper(box: Box3, color: ColorRepresentation) {
 /***
  * Creates a box helper for the geometry bounding box of the node.
  */
-function createTightVolumeHelper(info: NodeInfo) {
+function createTightVolumeHelper(info: NodeInfo): Box3Helper {
     const mesh = nonNull(info.mesh);
 
     const localBoundingBox = nonNull(mesh.geometry.boundingBox);
@@ -128,7 +128,7 @@ function createTightVolumeHelper(info: NodeInfo) {
 /**
  * Creates a box helper for the volume of the node.
  */
-function createVolumeHelper(info: NodeInfo) {
+function createVolumeHelper(info: NodeInfo): Box3Helper {
     const node = info.node;
 
     const box = createBoxHelper(node.volume, STATE_COLORS[info.state]);
@@ -152,7 +152,7 @@ function emptyNodeInfo(node: PointCloudNode): NodeInfo {
 const cachedMaterials: PointCloudMaterial[] = [];
 
 export class UnsupportedAttributeError extends Error {
-    constructor(attribute: string) {
+    public constructor(attribute: string) {
         super(`attribute '${attribute}' is not supported in this source`);
     }
 }
@@ -162,7 +162,7 @@ function computeScreenSpaceError(
     pointSize: number,
     preSSE: number,
     distance: number,
-) {
+): number {
     if (distance <= 0) {
         return Infinity;
     }
@@ -229,9 +229,9 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
     implements HasLayers
 {
     /** Readonly flag to indicate that this object is a PointCloud instance. */
-    readonly isPointCloud = true as const;
-    override readonly type = 'PointCloud' as const;
-    readonly hasLayers = true as const;
+    public readonly isPointCloud = true as const;
+    public override readonly type = 'PointCloud' as const;
+    public readonly hasLayers = true as const;
 
     private readonly _stateMachine: StateMachine<NodeState, NodeInfo>;
 
@@ -242,7 +242,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
     private readonly _classifications: Classification[] = ASPRS_CLASSIFICATIONS.map(c => c.clone());
 
     /** The source of this entity. */
-    readonly source: PointCloudSource;
+    public readonly source: PointCloudSource;
 
     private _colorLayer: ColorLayer | null = null;
     private _depthTest = true;
@@ -265,7 +265,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
     private _metadata: PointCloudMetadata | null = null;
     private _volumeHelper: Box3Helper | null = null;
 
-    constructor(options: PointCloudOptions) {
+    public constructor(options: PointCloudOptions) {
         super(new Group());
 
         this.source = options.source;
@@ -315,7 +315,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
             ],
         });
 
-        const onStateChanged = (info: NodeInfo) => {
+        const onStateChanged = (info: NodeInfo): void => {
             // Track the timestamp of the state change,
             // so we can measure the expiration delay before
             // we are allowed to cleanup mesh data.
@@ -386,11 +386,11 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
      *
      * @defaultValue true
      */
-    get depthTest() {
+    public get depthTest(): boolean {
         return this._depthTest;
     }
 
-    set depthTest(v: boolean) {
+    public set depthTest(v: boolean) {
         if (this._depthTest !== v) {
             this._depthTest = v;
             this.traversePointCloudMaterials(m => (m.depthTest = v));
@@ -398,19 +398,19 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         }
     }
 
-    override get progress() {
+    public override get progress(): number {
         return this.source.progress;
     }
 
-    override get loading() {
+    public override get loading(): boolean {
         return this.source.loading;
     }
 
-    get layerCount(): number {
+    public get layerCount(): number {
         return this._colorLayer != null ? 1 : 0;
     }
 
-    private updateMaterials() {
+    private updateMaterials(): void {
         this.forEachNodeInfo(info => {
             if (info.mesh != null) {
                 this.updateMaterial(info.mesh);
@@ -421,11 +421,11 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
     /**
      * Gets or sets the brightness of this point cloud.
      */
-    get brightness() {
+    public get brightness(): number {
         return this._colorimetry.brightness;
     }
 
-    set brightness(v: number) {
+    public set brightness(v: number) {
         if (this._colorimetry.brightness !== v) {
             this._colorimetry.brightness = v;
             this.updateMaterials();
@@ -436,11 +436,11 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
     /**
      * Gets or sets the contrast of this point cloud.
      */
-    get contrast() {
+    public get contrast(): number {
         return this._colorimetry.contrast;
     }
 
-    set contrast(v: number) {
+    public set contrast(v: number) {
         if (this._colorimetry.contrast !== v) {
             this._colorimetry.contrast = v;
             this.updateMaterials();
@@ -451,11 +451,11 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
     /**
      * Gets or sets the saturation of this point cloud.
      */
-    get saturation() {
+    public get saturation(): number {
         return this._colorimetry.saturation;
     }
 
-    set saturation(v: number) {
+    public set saturation(v: number) {
         if (this._colorimetry.saturation !== v) {
             this._colorimetry.saturation = v;
             this.updateMaterials();
@@ -466,11 +466,11 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
     /**
      * The colormap used to colorize scalar attributes.
      */
-    get colorMap() {
+    public get colorMap(): ColorMap {
         return this._colorMap;
     }
 
-    set colorMap(c: ColorMap | null) {
+    public set colorMap(c: ColorMap | null) {
         if (this._colorMap !== c) {
             this._colorMap.removeEventListener('updated', this._listeners.updateColorMap);
 
@@ -483,7 +483,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         }
     }
 
-    private updateColorMap() {
+    private updateColorMap(): void {
         this.forEachNodeInfo(info => {
             // We don't want to immediately update the colormap for nodes that are
             // not completely loaded to avoid inconsistent situations where the node
@@ -509,11 +509,11 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
      *
      * @defaultValue 1
      */
-    get subdivisionThreshold() {
+    public get subdivisionThreshold(): number {
         return this._subdivisionThreshold;
     }
 
-    set subdivisionThreshold(v: number) {
+    public set subdivisionThreshold(v: number) {
         if (v !== this._subdivisionThreshold) {
             this._subdivisionThreshold = v;
             this.instance.notifyChange(this);
@@ -523,7 +523,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
     /**
      * Returns the list of supported attributes in the source.
      */
-    getSupportedAttributes() {
+    public getSupportedAttributes(): PointCloudAttribute[] {
         return nonNull(this._metadata?.attributes, 'the entity is not yet ready');
     }
 
@@ -534,11 +534,11 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
      *
      * @defaultValue 0
      */
-    get pointSize() {
+    public get pointSize(): number {
         return this._pointSize;
     }
 
-    set pointSize(size: number) {
+    public set pointSize(size: number) {
         if (this._pointSize !== size) {
             this._pointSize = size;
             this.traversePointCloudMaterials(m => (m.size = size));
@@ -551,7 +551,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
      *
      * Note: to set the active attribute, use {@link setActiveAttribute}.
      */
-    get activeAttribute() {
+    public get activeAttribute(): PointCloudAttribute | null {
         return this._activeAttribute;
     }
 
@@ -561,7 +561,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
      * - `attribute`: the point cloud is colorized from the source attributes (e.g color, classification...)
      * previously set with {@link setActiveAttribute}.
      */
-    setColoringMode(mode: 'layer' | 'attribute') {
+    public setColoringMode(mode: 'layer' | 'attribute'): void {
         if (mode === 'layer') {
             this._shaderMode = MODE.TEXTURE;
             this.notifyChange(this);
@@ -573,7 +573,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         this.traversePointCloudMaterials(m => (m.mode = this._shaderMode));
     }
 
-    private updateColoringFromAttribute() {
+    private updateColoringFromAttribute(): void {
         const attribute = nonNull(this._activeAttribute);
 
         switch (attribute.interpretation) {
@@ -626,7 +626,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
      *
      * @throws {@link UnsupportedAttributeError} If the attribute is not supported by the source.
      */
-    setActiveAttribute(attributeName: string): void {
+    public setActiveAttribute(attributeName: string): void {
         if (this._activeAttribute?.name === attributeName) {
             return;
         }
@@ -648,11 +648,11 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
     /**
      * Toggles the visibility of the point cloud volume.
      */
-    get showVolume() {
+    public get showVolume(): boolean {
         return this._showVolume;
     }
 
-    set showVolume(show: boolean) {
+    public set showVolume(show: boolean) {
         if (this._showVolume !== show) {
             this._showVolume = show;
 
@@ -683,11 +683,11 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
      * is a purely graphical setting. This does, however, improve rendering performance by reducing
      * the number of points to draw on the screen.
      */
-    get decimation() {
+    public get decimation(): number {
         return this._decimation;
     }
 
-    set decimation(v: number) {
+    public set decimation(v: number) {
         if (this._decimation !== v) {
             this._decimation = v;
             this.notifyChange(this);
@@ -700,11 +700,11 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
      *
      * Setting it to zero will cleanup immediately after a node becomes invisible.
      */
-    get cleanupDelay() {
+    public get cleanupDelay(): number {
         return this._cleanupDelay;
     }
 
-    set cleanupDelay(delay: number) {
+    public set cleanupDelay(delay: number) {
         if (delay < 0) {
             throw new Error('expected a positive integer, got: ' + delay);
         }
@@ -715,11 +715,11 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
      * Enables or disables the display of the point cloud.
      * @defaultValue true
      */
-    get showPoints() {
+    public get showPoints(): boolean {
         return this._showPoints;
     }
 
-    set showPoints(v: boolean) {
+    public set showPoints(v: boolean) {
         if (this._showPoints !== v) {
             this._showPoints = v;
             this.traversePointCloudMaterials(m => (m.visible = v));
@@ -730,11 +730,11 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
     /**
      * Toggles the visibility of invidividual node volumes.
      */
-    get showNodeVolumes() {
+    public get showNodeVolumes(): boolean {
         return this._tileVolumeRoot.visible;
     }
 
-    set showNodeVolumes(show: boolean) {
+    public set showNodeVolumes(show: boolean) {
         this._tileVolumeRoot.visible = show;
 
         if (!show) {
@@ -757,11 +757,11 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
      * Note: octree-based point clouds have cube-shaped node volumes, whereas
      * their  node data volume is a tight bounding box around the actual points of the node.
      */
-    get showNodeDataVolumes() {
+    public get showNodeDataVolumes(): boolean {
         return this._showNodeDataVolumes;
     }
 
-    set showNodeDataVolumes(show: boolean) {
+    public set showNodeDataVolumes(show: boolean) {
         if (this._showNodeDataVolumes !== show) {
             this._showNodeDataVolumes = show;
 
@@ -779,7 +779,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
      *
      * @defaultValue `ASPRS_CLASSIFICATIONS`
      */
-    get classifications(): Readonly<Classification[]> {
+    public get classifications(): Readonly<Classification[]> {
         return this._classifications;
     }
 
@@ -789,14 +789,14 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
      *
      * Note: the entity must be initialized to be able to access this property.
      */
-    get pointCount() {
+    public get pointCount(): number | undefined {
         return nonNull(this._metadata, 'not initialized').pointCount;
     }
 
     /**
      * Gets the number of points currently displayed.
      */
-    get displayedPointCount() {
+    public get displayedPointCount(): number {
         let sum = 0;
         this.traversePointCloudMeshes(m => {
             if (m.visible && m.material.visible) {
@@ -812,11 +812,11 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
      * {@link decimation} property every frame, based on the number of currently displayed points.
      * A value of `null` removes the point budget and stop automatic decimation computation.
      */
-    get pointBudget() {
+    public get pointBudget(): number | null {
         return this._pointBudget;
     }
 
-    set pointBudget(v: number | null) {
+    public set pointBudget(v: number | null) {
         if (this._pointBudget !== v) {
             this._pointBudget = v;
             if (v == null) {
@@ -826,7 +826,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         }
     }
 
-    override getMemoryUsage(context: GetMemoryUsageContext): void {
+    public override getMemoryUsage(context: GetMemoryUsageContext): void {
         this.traversePointCloudMeshes(m => getGeometryMemoryUsage(context, m.geometry));
 
         this.forEachLayer(layer => {
@@ -836,7 +836,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         this.source.getMemoryUsage(context);
     }
 
-    override updateOpacity(): void {
+    public override updateOpacity(): void {
         // We don't want to change the opacity of volume helpers
         this.traversePointCloudMaterials(m => {
             m.opacity = this.opacity;
@@ -847,7 +847,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
     /**
      * Forces the point cloud to reload all data.
      */
-    clear() {
+    public clear(): void {
         this.forEachNodeInfo(info => {
             if (info.state === 'loading' || info.state === 'displayed') {
                 // we have to reload the position here, since the number of points per node might
@@ -862,7 +862,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         this.notifyChange(this);
     }
 
-    override getBoundingBox(): Box3 | null {
+    public override getBoundingBox(): Box3 | null {
         return this._metadata?.volume ?? this._rootNode?.volume ?? null;
     }
 
@@ -881,7 +881,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         }
     }
 
-    private deleteNodeHierarchy(root: PointCloudNode) {
+    private deleteNodeHierarchy(root: PointCloudNode): void {
         // Delete this node and its descendants
         traverseNode(root, subNode => {
             const subInfo = this.getNodeInfo(subNode);
@@ -900,7 +900,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         });
     }
 
-    override preUpdate(context: Context): unknown[] | null {
+    public override preUpdate(context: Context): unknown[] | null {
         if (!this.visible || this.frozen || !this._rootNode) {
             return null;
         }
@@ -940,7 +940,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         return null;
     }
 
-    private updateDecimation(totalPointCount: number, materials: PointCloudMaterial[]) {
+    private updateDecimation(totalPointCount: number, materials: PointCloudMaterial[]): void {
         // Automatically compute decimation based on point budget
         // Otherwise, use the decimation value.
         if (this._pointBudget != null) {
@@ -960,7 +960,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         }
     }
 
-    override postUpdate(context: Context): void {
+    public override postUpdate(context: Context): void {
         if (!this.visible || this.frozen) {
             return;
         }
@@ -993,7 +993,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
     /**
      * Disposes this entity and deletes unmanaged graphical resources.
      */
-    override dispose(): void {
+    public override dispose(): void {
         if (this._disposed) {
             return;
         }
@@ -1019,7 +1019,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         this.source.dispose();
     }
 
-    override pick(canvasCoords: Vector2, options?: PickOptions): PickResult[] {
+    public override pick(canvasCoords: Vector2, options?: PickOptions): PickResult[] {
         return pickPointsAt(this.instance, canvasCoords, this, options);
     }
 
@@ -1030,7 +1030,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
      *
      * @param colorLayer - The color layer.
      */
-    setColorLayer(colorLayer: ColorLayer): void {
+    public setColorLayer(colorLayer: ColorLayer): void {
         if (this._colorLayer !== colorLayer) {
             this._colorLayer = colorLayer;
 
@@ -1038,7 +1038,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         }
     }
 
-    removeColorLayer(): void {
+    public removeColorLayer(): void {
         if (this._colorLayer) {
             this.traversePointCloudMeshes(m => this._colorLayer?.unregisterNode(m));
             this._colorLayer = null;
@@ -1046,13 +1046,13 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         }
     }
 
-    forEachLayer(callback: (layer: Layer) => void): void {
+    public forEachLayer(callback: (layer: Layer) => void): void {
         if (this._colorLayer) {
             callback(this._colorLayer);
         }
     }
 
-    getLayers(predicate?: (arg0: Layer) => boolean): Layer[] {
+    public getLayers(predicate?: (arg0: Layer) => boolean): Layer[] {
         if (this._colorLayer) {
             if (!predicate || predicate(this._colorLayer)) {
                 return [this._colorLayer];
@@ -1062,7 +1062,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         return [];
     }
 
-    private updateMinMaxDistance(context: Context, node: PointCloudNode) {
+    private updateMinMaxDistance(context: Context, node: PointCloudNode): void {
         const bbox = node.volume;
         const distance = context.distance.plane.distanceToPoint(bbox.getCenter(tmpVector3));
         const radius = bbox.getSize(tmpVector3).length() * 0.5;
@@ -1071,7 +1071,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         this._distance.max = Math.max(this._distance.max, distance + radius);
     }
 
-    private traversePointCloudMaterials(callback: (m: PointCloudMaterial) => void) {
+    private traversePointCloudMaterials(callback: (m: PointCloudMaterial) => void): void {
         this.traverseMaterials(m => {
             if (PointCloudMaterial.isPointCloudMaterial(m)) {
                 callback(m);
@@ -1082,7 +1082,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
     /**
      * Creates a volume helper for the entire entity.
      */
-    private createGlobalVolumeHelper() {
+    private createGlobalVolumeHelper(): void {
         const volume = nonNull(this._metadata).volume;
         if (volume) {
             this._volumeHelper = createBoxHelper(volume, new Color('cyan'));
@@ -1093,7 +1093,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         }
     }
 
-    private cleanup() {
+    private cleanup(): void {
         const now = performance.now();
 
         this.forEachNodeInfo(info => {
@@ -1112,7 +1112,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         return sse > this.subdivisionThreshold;
     }
 
-    private updateGeometry(geometry: BufferGeometry, data: PointCloudNodeData) {
+    private updateGeometry(geometry: BufferGeometry, data: PointCloudNodeData): BufferGeometry {
         if (data.position) {
             geometry.setAttribute('position', data.position);
         }
@@ -1131,7 +1131,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         return geometry;
     }
 
-    private createGeometry(data: PointCloudNodeData) {
+    private createGeometry(data: PointCloudNodeData): BufferGeometry {
         const geometry = new BufferGeometry();
 
         this.updateGeometry(geometry, data);
@@ -1139,7 +1139,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         return geometry;
     }
 
-    private createMaterial() {
+    private createMaterial(): PointCloudMaterial {
         const result = new PointCloudMaterial({
             mode: this._shaderMode,
             size: this.pointSize,
@@ -1190,7 +1190,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         return mesh;
     }
 
-    private updateMaterial(mesh: PointCloudMesh) {
+    private updateMaterial(mesh: PointCloudMesh): void {
         const material = mesh.material;
 
         material.setupFromGeometry(mesh.geometry);
@@ -1207,14 +1207,12 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         material.saturation = this._colorimetry.saturation;
         material.contrast = this._colorimetry.contrast;
 
-        if (this.colorMap) {
-            material.colorMap = this.colorMap;
-        }
+        material.colorMap = this.colorMap;
 
         material.updateUniforms();
     }
 
-    private cleanupNodeIfNecessary(info: NodeInfo, now: DOMHighResTimeStamp) {
+    private cleanupNodeIfNecessary(info: NodeInfo, now: DOMHighResTimeStamp): void {
         const delayExpired = now - info.stateTimestamp > this._cleanupDelay;
 
         if (info.state === 'hidden' && delayExpired) {
@@ -1222,7 +1220,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         }
     }
 
-    private disposeMesh(mesh: PointCloudMesh) {
+    private disposeMesh(mesh: PointCloudMesh): void {
         mesh.removeFromParent();
         mesh.dispose();
     }
@@ -1242,7 +1240,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         info: NodeInfo,
         signal: AbortSignal,
         attribute: PointCloudAttribute | null,
-    ) {
+    ): Promise<void> {
         try {
             if (signal.aborted) {
                 return;
@@ -1291,7 +1289,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         }
     }
 
-    private async showNode(node: PointCloudNode) {
+    private async showNode(node: PointCloudNode): Promise<void> {
         const info = this.getNodeInfo(node);
 
         if (info.state === 'hidden') {
@@ -1311,7 +1309,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         return withInfo.info;
     }
 
-    private removeDataVolumeHelper(info: NodeInfo) {
+    private removeDataVolumeHelper(info: NodeInfo): void {
         if (info.dataVolumeHelper) {
             const helper = info.dataVolumeHelper;
             helper.geometry.dispose();
@@ -1321,7 +1319,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         }
     }
 
-    private removeVolumeHelper(info: NodeInfo) {
+    private removeVolumeHelper(info: NodeInfo): void {
         if (info.volumeHelper) {
             const helper = info.volumeHelper;
             helper.geometry.dispose();
@@ -1338,7 +1336,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         });
     }
 
-    private updateHelpers() {
+    private updateHelpers(): void {
         this.forEachNodeInfo(info => {
             if (this.showNodeVolumes) {
                 if (info.state !== 'empty' && info.volumeHelper == null) {

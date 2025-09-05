@@ -39,18 +39,18 @@ export abstract class VectorArray<
     /**
      * The length in bytes of the array.
      */
-    get byteLength(): number {
+    public get byteLength(): number {
         return this.array.byteLength;
     }
 
-    get capacity(): number {
+    public get capacity(): number {
         return this.array.length / this._dimension;
     }
 
     /**
      * Gets the underlying {@link Buffer}.
      */
-    get array(): Buffer {
+    public get array(): Buffer {
         return this._array;
     }
 
@@ -59,7 +59,7 @@ export abstract class VectorArray<
      * Note: if the underlying array is already a Float32Array, this array is returned.
      * Otherwise, a new array is constructed.
      */
-    toFloat32Array(): Float32Array {
+    public toFloat32Array(): Float32Array {
         if (this._array instanceof Float32Array) {
             if (this._array.length === this._length * this._dimension) {
                 // Return the same array as it is already in the correct format and size
@@ -91,20 +91,20 @@ export abstract class VectorArray<
     /**
      * Returns the number of vectors in this array.
      */
-    get length() {
+    public get length(): number {
         return this._length;
     }
 
-    set length(v: number) {
+    public set length(v: number) {
         this._length = v;
     }
 
     /**
      * Gets the vector at the specified index.
      */
-    abstract get(index: number, target?: V): V;
+    public abstract get(index: number, target?: V): V;
 
-    setX(index: number, value: number): void {
+    public setX(index: number, value: number): void {
         const idx = index * this._dimension;
         this._array[idx + X] = value;
     }
@@ -112,12 +112,12 @@ export abstract class VectorArray<
     /**
      * Gets the first component of the vector at the specified index.
      */
-    getX(index: number): number {
+    public getX(index: number): number {
         const idx = index * this._dimension;
         return this._array[idx + X];
     }
 
-    setY(index: number, value: number): void {
+    public setY(index: number, value: number): void {
         const idx = index * this._dimension;
         this._array[idx + Y] = value;
     }
@@ -125,12 +125,12 @@ export abstract class VectorArray<
     /**
      * Gets the second component of the vector at the specified index.
      */
-    getY(index: number): number {
+    public getY(index: number): number {
         const idx = index * this._dimension;
         return this._array[idx + Y];
     }
 
-    setZ(index: number, value: number): void {
+    public setZ(index: number, value: number): void {
         if (this._dimension >= 3) {
             const idx = index * this._dimension;
             this._array[idx + Z] = value;
@@ -141,7 +141,7 @@ export abstract class VectorArray<
      * Gets the third component of the vector at the specified index, or `null` if the dimension
      * of this array is less than 3.
      */
-    getZ(index: number): number | null {
+    public getZ(index: number): number | null {
         if (this._dimension >= 3) {
             const idx = index * this._dimension;
             return this._array[idx + Z];
@@ -149,7 +149,7 @@ export abstract class VectorArray<
         return null;
     }
 
-    setW(index: number, value: number): void {
+    public setW(index: number, value: number): void {
         if (this._dimension >= 4) {
             const idx = index * this._dimension;
             this._array[idx + W] = value;
@@ -160,7 +160,7 @@ export abstract class VectorArray<
      * Gets the fourth component of the vector at the specified index, or `null` if the dimension
      * of this array is less than 4.
      */
-    getW(index: number): number | null {
+    public getW(index: number): number | null {
         if (this._dimension >= 4) {
             const idx = index * this._dimension;
             return this._array[idx + W];
@@ -171,7 +171,7 @@ export abstract class VectorArray<
     /**
      * Sets the vector at the specified index.
      */
-    setVector(index: number, v: V): void {
+    public setVector(index: number, v: V): void {
         const idx = index * this._dimension;
 
         this._array[idx + X] = v.getComponent(X);
@@ -187,7 +187,7 @@ export abstract class VectorArray<
     /**
      * Sets the component of the array at the specified index.
      */
-    set(index: number, x: number, y: number, z?: number, w?: number): void {
+    public set(index: number, x: number, y: number, z?: number, w?: number): void {
         const idx = index * this._dimension;
         if (idx >= this._array.length) {
             throw new Error('index out of bounds');
@@ -205,7 +205,7 @@ export abstract class VectorArray<
     /**
      * Copies an element from one location to another in the array.
      */
-    copyItem(from: number, to: number): void {
+    public copyItem(from: number, to: number): void {
         const dim = this._dimension;
         const toIdx = to * dim;
         const fromIdx = from * dim;
@@ -220,7 +220,7 @@ export abstract class VectorArray<
         }
     }
 
-    private computeExpansionSize() {
+    private computeExpansionSize(): number {
         if (this._lastExpansion === 0) {
             this._lastExpansion = 32;
         } else {
@@ -234,7 +234,7 @@ export abstract class VectorArray<
     /**
      * Removes unused capacity.
      */
-    trim(): void {
+    public trim(): void {
         if (this._capacity > this._length) {
             this._capacity = this._length;
             this._array = this._array.slice(0, this._length * this._dimension) as Buffer;
@@ -260,7 +260,7 @@ export abstract class VectorArray<
     /**
      * Pushes a vector at the end of the array, allocating memory if necessary.
      */
-    push(x: number, y: number, z?: number, w?: number): void {
+    public push(x: number, y: number, z?: number, w?: number): void {
         this.allocateIfFull();
 
         this.setX(this._length, x);
@@ -278,7 +278,7 @@ export abstract class VectorArray<
     /**
      * Pushes a vector at the end of the array, allocating memory if necessary.
      */
-    pushVector(v: V): void {
+    public pushVector(v: V): void {
         this.allocateIfFull();
         this.assignVector(this._length * this._dimension, v);
         this._length++;
@@ -289,7 +289,7 @@ export abstract class VectorArray<
      * of the previous array at the beginning of the new array.
      * @param newSize - The new size, in number of vectors.
      */
-    expand(newSize: number): this {
+    public expand(newSize: number): this {
         // @ts-expect-error "this expression is not constructable"
         const newArray = new this.array.constructor(newSize * this._dimension);
         newArray.set(this._array);
@@ -331,7 +331,7 @@ export abstract class VectorArray<
      * @param callbackfn - A function that accepts up to three arguments. forEach calls the
      * callbackfn function one time for each element in the array.
      */
-    forEach(callbackfn: (value: Readonly<V>, index: number, array: this) => void): void {
+    public forEach(callbackfn: (value: Readonly<V>, index: number, array: this) => void): void {
         const value = this.getTempVector();
 
         const stride = this._dimension;
@@ -348,7 +348,7 @@ export abstract class VectorArray<
     /**
      * Clones this array.
      */
-    abstract clone(): ThisType<this>;
+    public abstract clone(): ThisType<this>;
 }
 
 /**
@@ -360,19 +360,19 @@ export class Vector2Array<Buffer extends TypedArray = TypedArray> extends Vector
     Vector2,
     Buffer
 > {
-    readonly dimension = 2 as const;
+    public readonly dimension = 2 as const;
 
-    constructor(buffer: Buffer) {
+    public constructor(buffer: Buffer) {
         super(buffer, 2);
     }
 
-    override get(index: number, target?: Vector2): Vector2 {
+    public override get(index: number, target?: Vector2): Vector2 {
         target = target ?? new Vector2();
 
         return target.set(this.getX(index), this.getY(index));
     }
 
-    clone(): Vector2Array {
+    public clone(): Vector2Array {
         return new Vector2Array(this._array.slice(0));
     }
 
@@ -400,23 +400,23 @@ export class Vector3Array<Buffer extends TypedArray = TypedArray> extends Vector
     Vector3,
     Buffer
 > {
-    readonly dimension = 3 as const;
+    public readonly dimension = 3 as const;
 
-    constructor(buffer: Buffer) {
+    public constructor(buffer: Buffer) {
         super(buffer, 3);
     }
 
-    override get(index: number, target?: Vector3): Vector3 {
+    public override get(index: number, target?: Vector3): Vector3 {
         target = target ?? new Vector3();
 
         return target.set(this.getX(index), this.getY(index), nonNull(this.getZ(index)));
     }
 
-    clone(): Vector3Array {
+    public clone(): Vector3Array {
         return new Vector3Array(this._array.slice(0));
     }
 
-    override getZ(index: number): number {
+    public override getZ(index: number): number {
         return super.getZ(index) as number;
     }
 
@@ -445,13 +445,13 @@ export class Vector4Array<Buffer extends TypedArray = TypedArray> extends Vector
     Vector4,
     Buffer
 > {
-    readonly dimension = 4 as const;
+    public readonly dimension = 4 as const;
 
-    constructor(buffer: Buffer) {
+    public constructor(buffer: Buffer) {
         super(buffer, 4);
     }
 
-    override get(index: number, target?: Vector4): Vector4 {
+    public override get(index: number, target?: Vector4): Vector4 {
         target = target ?? new Vector4();
 
         return target.set(
@@ -462,15 +462,15 @@ export class Vector4Array<Buffer extends TypedArray = TypedArray> extends Vector
         );
     }
 
-    override getZ(index: number): number {
+    public override getZ(index: number): number {
         return super.getZ(index) as number;
     }
 
-    override getW(index: number): number {
+    public override getW(index: number): number {
         return super.getW(index) as number;
     }
 
-    clone(): Vector4Array {
+    public clone(): Vector4Array {
         return new Vector4Array(this._array.slice(0));
     }
 

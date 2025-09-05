@@ -8,14 +8,15 @@ import { CanvasTexture, Color } from 'three';
 
 import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import type Extent from '../core/geographic/Extent';
-import type { CustomContainsFn, GetImageOptions } from './ImageSource';
+import type { GridExtent } from '../core/geographic/Extent';
+import type { CustomContainsFn, GetImageOptions, ImageResponse } from './ImageSource';
 
 import PromiseUtils from '../utils/PromiseUtils';
 import ImageSource, { ImageResult } from './ImageSource';
 
 export default class DebugSource extends ImageSource {
-    readonly isDebugSource: boolean = true as const;
-    override readonly type = 'DebugSource' as const;
+    public readonly isDebugSource: boolean = true as const;
+    public override readonly type = 'DebugSource' as const;
 
     private readonly _delay: () => number;
     private readonly _extent: Extent;
@@ -26,7 +27,7 @@ export default class DebugSource extends ImageSource {
     /**
      * @param options - options
      */
-    constructor(options: {
+    public constructor(options: {
         /** The extent. */
         extent: Extent;
         /** The delay before loading the images, in milliseconds. */
@@ -47,12 +48,12 @@ export default class DebugSource extends ImageSource {
             if (typeof delay === 'function') {
                 this._delay = delay;
             } else if (typeof delay === 'number') {
-                this._delay = () => delay;
+                this._delay = (): number => delay;
             } else {
-                this._delay = () => 0;
+                this._delay = (): number => 0;
             }
         } else {
-            this._delay = () => 0;
+            this._delay = (): number => 0;
         }
 
         this._extent = options.extent;
@@ -62,11 +63,11 @@ export default class DebugSource extends ImageSource {
         this._extent = extent;
     }
 
-    override adjustExtentAndPixelSize(
+    public override adjustExtentAndPixelSize(
         requestExtent: Extent,
         requestWidth: number,
         requestHeight: number,
-    ): { extent: Extent; width: number; height: number } | null {
+    ): GridExtent | null {
         // To help visualize the images, we don't adjust their extent at all.
         return {
             extent: requestExtent,
@@ -75,7 +76,7 @@ export default class DebugSource extends ImageSource {
         };
     }
 
-    private getImage(width: number, height: number, id: string, color: Color) {
+    private getImage(width: number, height: number, id: string, color: Color): CanvasTexture {
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
@@ -104,15 +105,15 @@ export default class DebugSource extends ImageSource {
         return texture;
     }
 
-    getCrs(): CoordinateSystem {
+    public getCrs(): CoordinateSystem {
         return this._extent.crs;
     }
 
-    getExtent() {
+    public getExtent(): Extent {
         return this._extent;
     }
 
-    getImages(options: GetImageOptions) {
+    public getImages(options: GetImageOptions): ImageResponse[] {
         const { extent, width, height, signal, id } = options;
         const subdivs = this._subdivisions;
         const extents = extent.split(subdivs, subdivs);
@@ -126,7 +127,7 @@ export default class DebugSource extends ImageSource {
             const ex = extents[i];
             const imageId = `${id}-${i}`;
             const color = typeof this._color === 'function' ? this._color(options) : this._color;
-            const request = () =>
+            const request = (): Promise<ImageResult> =>
                 PromiseUtils.delay(this._delay()).then(() => {
                     signal?.throwIfAborted();
                     const texture = this.getImage(w, h, imageId, color);

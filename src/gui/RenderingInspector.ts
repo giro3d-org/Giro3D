@@ -15,7 +15,7 @@ class RenderingInspector extends Panel {
      * @param parentGui - The parent GUI.
      * @param instance - The instance.
      */
-    constructor(parentGui: GUI, instance: Instance) {
+    public constructor(parentGui: GUI, instance: Instance) {
         super(parentGui, instance, 'Visual parameters');
 
         this.addController(instance.renderingOptions, 'enableMSAA')

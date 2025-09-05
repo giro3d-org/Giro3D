@@ -67,8 +67,8 @@ function aggregateAttributes(attr: PointCloudAttribute[]): PointCloudAttribute {
  * - only attributes that are found in *all* sources are exposed.
  */
 export default class AggregatePointCloudSource extends PointCloudSourceBase {
-    readonly isAggregatePointCloudSource = true as const;
-    readonly type = 'AggregatePointCloudSource' as const;
+    public readonly isAggregatePointCloudSource = true as const;
+    public readonly type = 'AggregatePointCloudSource' as const;
 
     private readonly _sourceMap: Map<string, PointCloudSource> = new Map();
     private readonly _sources: PointCloudSource[];
@@ -76,11 +76,11 @@ export default class AggregatePointCloudSource extends PointCloudSourceBase {
     /**
      * The sources in this source.
      */
-    get sources(): Readonly<PointCloudSource[]> {
+    public get sources(): Readonly<PointCloudSource[]> {
         return this._sources;
     }
 
-    constructor(params: AggregatePointCloudSourceOptions) {
+    public constructor(params: AggregatePointCloudSourceOptions) {
         super();
 
         const sources = nonEmpty(params.sources, 'sources is required');
@@ -124,11 +124,11 @@ export default class AggregatePointCloudSource extends PointCloudSourceBase {
         return this;
     }
 
-    get loading() {
+    public get loading(): boolean {
         return this._sources.some(s => s.loading);
     }
 
-    get progress() {
+    public get progress(): number {
         let sum = 0;
         let count = 0;
         this._sources.forEach(s => {
@@ -145,7 +145,7 @@ export default class AggregatePointCloudSource extends PointCloudSourceBase {
         return 1;
     }
 
-    async getHierarchy(): Promise<PointCloudNode> {
+    public async getHierarchy(): Promise<PointCloudNode> {
         const allRootNodes = await Promise.all(this._sources.map(s => s.getHierarchy()));
 
         const volume = new Box3().makeEmpty();
@@ -167,7 +167,7 @@ export default class AggregatePointCloudSource extends PointCloudSourceBase {
         return pseudoRoot;
     }
 
-    async getMetadata(): Promise<PointCloudMetadata> {
+    public async getMetadata(): Promise<PointCloudMetadata> {
         const sourceCount = this._sources.length;
         const promises = this._sources.map(s => s.getMetadata());
 
@@ -218,7 +218,7 @@ export default class AggregatePointCloudSource extends PointCloudSourceBase {
         };
     }
 
-    getNodeData(params: GetNodeDataOptions): Promise<PointCloudNodeData> {
+    public getNodeData(params: GetNodeDataOptions): Promise<PointCloudNodeData> {
         const { node } = params;
         const targetSource = nonNull(this._sourceMap.get(node.sourceId));
 
@@ -228,11 +228,11 @@ export default class AggregatePointCloudSource extends PointCloudSourceBase {
     /**
      * Disposes this source and all underlying sources.
      */
-    dispose() {
+    public dispose(): void {
         this._sources.forEach(s => s.dispose());
     }
 
-    getMemoryUsage(context: GetMemoryUsageContext): void {
+    public getMemoryUsage(context: GetMemoryUsageContext): void {
         this._sources.forEach(s => s.getMemoryUsage(context));
     }
 }

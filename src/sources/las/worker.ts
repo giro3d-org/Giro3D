@@ -21,14 +21,14 @@ export type Metadata = {
     pointDataRecordLength: number;
 };
 
-async function decompressChunk(chunk: ArrayBuffer, metadata: Metadata) {
+async function decompressChunk(chunk: ArrayBuffer, metadata: Metadata): Promise<copc.Binary> {
     const lazPerf = await getLazPerf();
-    return await copc.Las.PointData.decompressChunk(new Uint8Array(chunk), metadata, lazPerf);
+    return copc.Las.PointData.decompressChunk(new Uint8Array(chunk), metadata, lazPerf);
 }
 
-async function decompressFile(chunk: ArrayBuffer) {
+async function decompressFile(chunk: ArrayBuffer): Promise<copc.Binary> {
     const lazPerf = await getLazPerf();
-    return await copc.Las.PointData.decompressFile(new Uint8Array(chunk), lazPerf);
+    return copc.Las.PointData.decompressFile(new Uint8Array(chunk), lazPerf);
 }
 
 export type BoundingBox = [number, number, number, number, number, number];
@@ -93,7 +93,7 @@ export interface LazWorker extends Worker {
     postMessage(message: SetWasmPathMessage, transfer: Transferable[]): void;
 }
 
-function processDecodeChunkMessage(msg: DecodeLazChunkMessage) {
+function processDecodeChunkMessage(msg: DecodeLazChunkMessage): void {
     decompressChunk(msg.payload.buffer, msg.payload.metadata)
         .then(buf => {
             const response: DecodeLazChunkResponse = {
@@ -107,7 +107,7 @@ function processDecodeChunkMessage(msg: DecodeLazChunkMessage) {
         });
 }
 
-function processDecodeFileMessage(msg: DecodeLazFileMessage) {
+function processDecodeFileMessage(msg: DecodeLazFileMessage): void {
     decompressFile(msg.payload.buffer)
         .then(buf => {
             const response: DecodeLazFileResponse = {
@@ -172,7 +172,7 @@ export function readView(options: {
     return { position, attribute };
 }
 
-function processReadViewMessage(msg: ReadViewMessage) {
+function processReadViewMessage(msg: ReadViewMessage): void {
     const { buffer, metadata, header, eb, include } = msg.payload;
 
     decompressChunk(buffer, metadata)
@@ -202,7 +202,7 @@ function processReadViewMessage(msg: ReadViewMessage) {
         });
 }
 
-onmessage = (event: MessageEvent<Messages>) => {
+onmessage = (event: MessageEvent<Messages>): void => {
     const message = event.data;
 
     switch (message.type) {

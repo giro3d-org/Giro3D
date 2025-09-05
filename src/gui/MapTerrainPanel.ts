@@ -14,15 +14,15 @@ import type Map from '../entities/Map';
 import Panel from './Panel';
 
 class MapTerrainPanel extends Panel {
-    map: Map;
-    segments = 32;
+    public map: Map;
+    public segments = 32;
 
     /**
      * @param map - The map.
      * @param parentGui - Parent GUI
      * @param instance - The instance
      */
-    constructor(map: Map, parentGui: GUI, instance: Instance) {
+    public constructor(map: Map, parentGui: GUI, instance: Instance) {
         super(parentGui, instance, 'Terrain');
 
         this.map = map;
@@ -51,7 +51,7 @@ class MapTerrainPanel extends Panel {
             .onChange(() => this.notify(map));
     }
 
-    updateSegments(v: number) {
+    public updateSegments(v: number): void {
         const val = MathUtils.floorPowerOfTwo(v);
         this.map.segments = val;
         this.segments = val;

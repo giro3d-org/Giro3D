@@ -7,9 +7,9 @@
 import { Texture } from 'three';
 
 export default class EmptyTexture extends Texture {
-    readonly isEmptyTexture = true;
+    public readonly isEmptyTexture = true;
 
-    constructor() {
+    public constructor() {
         super();
     }
 }

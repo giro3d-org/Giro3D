@@ -31,7 +31,7 @@ const _tempArray: Object3D[] = [];
  * @param callback - The callback to call for each visited object.
  */
 // @ts-expect-error monkey patching // FIXME
-Object3D.prototype.traverseOnce = function traverseOnce(callback: (obj: Object3D) => void) {
+Object3D.prototype.traverseOnce = function traverseOnce(callback: (obj: Object3D) => void): void {
     this.traverse((o: Object3D) => _tempArray.push(o));
 
     while (_tempArray.length > 0) {
@@ -43,15 +43,15 @@ Object3D.prototype.traverseOnce = function traverseOnce(callback: (obj: Object3D
 };
 
 class ClippingPlanePanel extends Panel {
-    entity: Entity3D;
-    enableClippingPlane: boolean;
-    normal: Vector3;
-    distance: number;
-    helperSize: number;
-    negate: boolean;
-    planeHelper?: PlaneHelper;
+    public entity: Entity3D;
+    public enableClippingPlane: boolean;
+    public normal: Vector3;
+    public distance: number;
+    public helperSize: number;
+    public negate: boolean;
+    public planeHelper?: PlaneHelper;
 
-    constructor(entity: Entity3D, parentGui: GUI, instance: Instance) {
+    public constructor(entity: Entity3D, parentGui: GUI, instance: Instance) {
         super(parentGui, instance, 'Clipping plane');
 
         this.entity = entity;
@@ -86,7 +86,7 @@ class ClippingPlanePanel extends Panel {
             .onChange(() => this.updateClippingPlane());
     }
 
-    updateClippingPlane() {
+    public updateClippingPlane(): void {
         this.planeHelper?.removeFromParent();
         this.planeHelper?.dispose();
 
@@ -106,7 +106,7 @@ class ClippingPlanePanel extends Panel {
         this.notify(this.entity);
     }
 
-    override dispose() {
+    public override dispose(): void {
         this.planeHelper?.removeFromParent();
         this.planeHelper?.dispose();
     }
@@ -136,18 +136,18 @@ function getTitle(entity: Entity3D): string {
  */
 class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
     /** The inspected entity. */
-    entity: T;
+    public entity: T;
     /** The root object of the entity's hierarchy. */
-    rootObject: Object3D;
+    public rootObject: Object3D;
     /** Toggle the visibility of the entity. */
-    visible: boolean;
+    public visible: boolean;
     /** Toggle the visibility of the bounding boxes. */
-    boundingBoxes: boolean;
-    boundingBoxColor: string;
-    state: string;
-    clippingPlanePanel: ClippingPlanePanel;
-    cpuMemoryUsage = 'unknown';
-    gpuMemoryUsage = 'unknown';
+    public boundingBoxes: boolean;
+    public boundingBoxColor: string;
+    public state: string;
+    public clippingPlanePanel: ClippingPlanePanel;
+    public cpuMemoryUsage = 'unknown';
+    public gpuMemoryUsage = 'unknown';
 
     /**
      * @param parentGui - The parent GUI.
@@ -155,7 +155,7 @@ class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
      * @param entity - The entity to inspect.
      * @param options - The options.
      */
-    constructor(
+    public constructor(
         parentGui: GUI,
         instance: Instance,
         entity: T,
@@ -218,14 +218,14 @@ class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
         this.addController(this, 'deleteEntity').name('❌ Delete entity');
     }
 
-    private updateControlsWithDefaultView(defaultView: PointOfView | null) {
+    private updateControlsWithDefaultView(defaultView: PointOfView | null): void {
         const controls = this.instance.view.controls;
         if (defaultView && controls && 'target' in controls && isVector3(controls.target)) {
             controls.target.copy(defaultView.target);
         }
     }
 
-    goToEntity() {
+    public goToEntity(): void {
         const cast = this.entity as unknown as HasDefaultPointOfView;
 
         const defaultView = this.instance.view.goTo(cast);
@@ -235,7 +235,7 @@ class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
         this.notify();
     }
 
-    lookAt() {
+    public lookAt(): void {
         const cast = this.entity as unknown as HasDefaultPointOfView;
 
         const defaultView = this.instance.view.goTo(cast, { allowTranslation: false });
@@ -245,16 +245,16 @@ class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
         this.notify();
     }
 
-    deleteEntity() {
+    public deleteEntity(): void {
         this.instance.remove(this.entity);
     }
 
-    override dispose() {
+    public override dispose(): void {
         this.toggleBoundingBoxes(false);
         this.clippingPlanePanel.dispose();
     }
 
-    override updateValues() {
+    public override updateValues(): void {
         const ctx: MemoryUsage.GetMemoryUsageContext = {
             renderer: this.instance.renderer,
             objects: new Map(),
@@ -278,7 +278,7 @@ class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
      *
      * @param visible - The new visibility.
      */
-    toggleVisibility(visible: boolean) {
+    public toggleVisibility(visible: boolean): void {
         this.entity.visible = visible;
         this.notify(this.entity);
     }
@@ -289,7 +289,7 @@ class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
      *
      * @param visible - The new state.
      */
-    toggleBoundingBoxes(visible: boolean) {
+    public toggleBoundingBoxes(visible: boolean): void {
         const color = new Color(this.boundingBoxColor);
         // by default, adds axis-oriented bounding boxes to each object in the hierarchy.
         // custom implementations may override this to have a different behaviour.
@@ -304,7 +304,7 @@ class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
      * @param color - The bounding box color.
      */
 
-    addOrRemoveBoundingBox(obj: Object3D, add: boolean, color: Color) {
+    public addOrRemoveBoundingBox(obj: Object3D, add: boolean, color: Color): void {
         if (add) {
             if ('material' in obj && isMaterial(obj.material)) {
                 if (obj.visible && obj.material != null && obj.material.visible) {
@@ -316,7 +316,7 @@ class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
         }
     }
 
-    updateBoundingBoxColor(colorHex: ColorRepresentation) {
+    public updateBoundingBoxColor(colorHex: ColorRepresentation): void {
         const color = new Color(colorHex);
         this.rootObject.traverse(obj => {
             if (hasBoundingVolumeHelper(obj)) {

@@ -20,7 +20,7 @@ export enum PromiseStatus {
 }
 
 export class AbortError extends Error {
-    constructor() {
+    public constructor() {
         super('aborted');
         this.name = 'AbortError';
     }

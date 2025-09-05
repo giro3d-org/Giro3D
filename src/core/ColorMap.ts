@@ -81,7 +81,7 @@ class ColorMap extends EventDispatcher<ColorMapEvents> {
      * @param max - The upper bound of the color map range.
      * @param mode - The mode of the color map.
      */
-    constructor(options: {
+    public constructor(options: {
         /**
          * The colors of this color map.
          */
@@ -134,29 +134,29 @@ class ColorMap extends EventDispatcher<ColorMapEvents> {
      * colorMap.min = 0;
      * colorMap.max = 90;
      */
-    get mode() {
+    public get mode(): ColorMapMode {
         return this._mode;
     }
 
-    set mode(v) {
+    public set mode(v: ColorMapMode) {
         if (this._mode !== v) {
             this._mode = v;
             this.notifyChange();
         }
     }
 
-    private notifyChange() {
+    private notifyChange(): void {
         this.dispatchEvent({ type: 'updated' });
     }
 
     /**
      * Enables or disables the color map.
      */
-    get active() {
+    public get active(): boolean {
         return this._active;
     }
 
-    set active(v) {
+    public set active(v: boolean) {
         if (this._active !== v) {
             this._active = v;
             this.notifyChange();
@@ -166,11 +166,11 @@ class ColorMap extends EventDispatcher<ColorMapEvents> {
     /**
      * Gets or sets the lower bound of the color map range.
      */
-    get min() {
+    public get min(): number {
         return this._min;
     }
 
-    set min(v) {
+    public set min(v: number) {
         if (this._min !== v) {
             this._min = v;
             this.notifyChange();
@@ -180,11 +180,11 @@ class ColorMap extends EventDispatcher<ColorMapEvents> {
     /**
      * Gets or sets the upper bound of the color map range.
      */
-    get max() {
+    public get max(): number {
         return this._max;
     }
 
-    set max(v) {
+    public set max(v: number) {
         if (this._max !== v) {
             this._max = v;
             this.notifyChange();
@@ -197,11 +197,11 @@ class ColorMap extends EventDispatcher<ColorMapEvents> {
      * Note: if there is already an array defined in the {@link opacity} property, and this array
      * does not have the same length as the new color array, then it will be removed.
      */
-    get colors() {
+    public get colors(): Color[] {
         return this._colors;
     }
 
-    set colors(v) {
+    public set colors(v: Color[]) {
         if (this._colors !== v) {
             this._colors = v;
             // Reset the opacity array if it no longer has the same length.
@@ -221,11 +221,11 @@ class ColorMap extends EventDispatcher<ColorMapEvents> {
      *
      * @defaultValue null
      */
-    get opacity() {
+    public get opacity(): number[] | null {
         return this._opacity;
     }
 
-    set opacity(v) {
+    public set opacity(v: number[] | null) {
         if (v && v.length !== this.colors.length) {
             throw new Error('the opacity array must have the same length as the color array');
         }
@@ -241,7 +241,7 @@ class ColorMap extends EventDispatcher<ColorMapEvents> {
      * @param value - The value to sample.
      * @returns The color at the specified value.
      */
-    sample(value: number): Color {
+    public sample(value: number): Color {
         const { min, max, colors } = this;
 
         const clamped = MathUtils.clamp(value, min, max);
@@ -256,7 +256,7 @@ class ColorMap extends EventDispatcher<ColorMapEvents> {
      * @param value - The value to sample.
      * @returns The color at the specified value.
      */
-    sampleOpacity(value: number): number {
+    public sampleOpacity(value: number): number {
         const { min, max, opacity } = this;
 
         if (!opacity) {
@@ -275,7 +275,7 @@ class ColorMap extends EventDispatcher<ColorMapEvents> {
      *
      * @returns The resulting texture.
      */
-    getTexture(): DataTexture {
+    public getTexture(): DataTexture {
         if (this._shouldRecreateTexture || this._cachedTexture == null) {
             this._cachedTexture?.dispose();
 
@@ -297,7 +297,7 @@ class ColorMap extends EventDispatcher<ColorMapEvents> {
     /**
      * Clones this colormap.
      */
-    clone() {
+    public clone(): ColorMap {
         return new ColorMap({
             colors: [...this.colors],
             min: this.min,
@@ -310,7 +310,7 @@ class ColorMap extends EventDispatcher<ColorMapEvents> {
     /**
      * Disposes the texture owned by this color map.
      */
-    dispose() {
+    public dispose(): void {
         this._cachedTexture?.dispose();
     }
 }

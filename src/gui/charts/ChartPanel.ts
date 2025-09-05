@@ -30,7 +30,7 @@ import Panel from '../Panel';
  * @param value - The value
  * @param limit - The limit of the array size, before trimming.
  */
-export function pushTrim<T>(array: Array<T>, value: T, limit: number) {
+export function pushTrim<T>(array: Array<T>, value: T, limit: number): void {
     if (array.length > limit) {
         array.shift();
     }
@@ -41,9 +41,9 @@ export function pushTrim<T>(array: Array<T>, value: T, limit: number) {
  * Base class for all chart panels.
  */
 abstract class ChartPanel extends Panel {
-    ctx: HTMLCanvasElement;
+    public ctx: HTMLCanvasElement;
 
-    constructor(parentGui: GUI, instance: Instance, name: string) {
+    public constructor(parentGui: GUI, instance: Instance, name: string) {
         super(parentGui, instance, name);
 
         Chart.register(

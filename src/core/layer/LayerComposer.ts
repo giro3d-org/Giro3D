@@ -48,7 +48,7 @@ const tmpCoords = new Coordinates(CoordinateSystem.epsg4326, 0, 0);
  *
  * @param texture - The texture to purge.
  */
-function onTextureUploaded(texture: Texture) {
+function onTextureUploaded(texture: Texture): void {
     // The texture is empty.
     if (texture.image == null) {
         return;
@@ -81,7 +81,7 @@ function processMinMax(
         /** The no-data value. */
         noDataValue: number;
     },
-) {
+): { min: number; max: number } {
     if (texture.min != null && texture.max != null) {
         return { min: texture.min, max: texture.max };
     }
@@ -98,23 +98,23 @@ function processMinMax(
 const tmpMemoryUsageMap = new Map<string | number, MemoryUsageReport>();
 
 class Image implements MemoryUsage {
-    readonly isMemoryUsage = true as const;
-    readonly id: string;
-    readonly mesh: Mesh;
-    readonly extent: Extent;
-    readonly texture: Texture;
-    readonly alwaysVisible: boolean;
-    readonly material: Material;
-    readonly min?: number;
-    readonly max?: number;
-    disposed: boolean;
-    readonly owners: Set<number>;
+    public readonly isMemoryUsage = true as const;
+    public readonly id: string;
+    public readonly mesh: Mesh;
+    public readonly extent: Extent;
+    public readonly texture: Texture;
+    public readonly alwaysVisible: boolean;
+    public readonly material: Material;
+    public readonly min?: number;
+    public readonly max?: number;
+    public disposed: boolean;
+    public readonly owners: Set<number>;
 
-    getMemoryUsage(context: GetMemoryUsageContext) {
+    public getMemoryUsage(context: GetMemoryUsageContext): void {
         return TextureGenerator.getMemoryUsage(context, this.texture);
     }
 
-    constructor(options: {
+    public constructor(options: {
         id: string;
         mesh: Mesh;
         texture: Texture;
@@ -135,27 +135,27 @@ class Image implements MemoryUsage {
         this.owners = new Set();
     }
 
-    canBeDeleted() {
+    public canBeDeleted(): boolean {
         return !this.alwaysVisible && this.owners.size === 0;
     }
 
-    set visible(v) {
+    public set visible(v: boolean) {
         this.mesh.visible = v;
     }
 
-    get visible() {
+    public get visible(): boolean {
         return this.mesh.visible;
     }
 
-    set opacity(v) {
+    public set opacity(v: number) {
         this.material.opacity = v;
     }
 
-    get opacity() {
+    public get opacity(): number {
         return this.material.opacity;
     }
 
-    dispose() {
+    public dispose(): void {
         if (this.disposed) {
             throw new Error('already disposed');
         }
@@ -165,39 +165,39 @@ class Image implements MemoryUsage {
 }
 
 class LayerComposer implements MemoryUsage {
-    readonly isMemoryUsage = true as const;
-    readonly computeMinMax: boolean;
-    readonly extent?: Extent;
-    readonly dimensions: Vector2 | null;
-    readonly images: Map<string, Image>;
-    readonly webGLRenderer: WebGLRenderer;
-    readonly transparent: boolean;
-    readonly noDataValue: number;
-    readonly sourceCrs: CoordinateSystem;
-    readonly targetCrs: CoordinateSystem;
-    readonly needsReprojection: boolean;
-    readonly interpretation: Interpretation;
-    readonly composer: WebGLComposer;
-    readonly fillNoData: boolean;
-    readonly fillNoDataAlphaReplacement?: number;
-    readonly fillNoDataRadius?: number;
-    readonly pixelFormat: PixelFormat;
-    readonly textureDataType: TextureDataType;
-    readonly showEmptyTextures: boolean;
+    public readonly isMemoryUsage = true as const;
+    public readonly computeMinMax: boolean;
+    public readonly extent?: Extent;
+    public readonly dimensions: Vector2 | null;
+    public readonly images: Map<string, Image>;
+    public readonly webGLRenderer: WebGLRenderer;
+    public readonly transparent: boolean;
+    public readonly noDataValue: number;
+    public readonly sourceCrs: CoordinateSystem;
+    public readonly targetCrs: CoordinateSystem;
+    public readonly needsReprojection: boolean;
+    public readonly interpretation: Interpretation;
+    public readonly composer: WebGLComposer;
+    public readonly fillNoData: boolean;
+    public readonly fillNoDataAlphaReplacement?: number;
+    public readonly fillNoDataRadius?: number;
+    public readonly pixelFormat: PixelFormat;
+    public readonly textureDataType: TextureDataType;
+    public readonly showEmptyTextures: boolean;
 
     private readonly _minFilter?: MinificationTextureFilter;
     private readonly _magFilter?: MagnificationTextureFilter;
 
     private _needsCleanup: boolean;
 
-    getMemoryUsage(context: GetMemoryUsageContext) {
+    public getMemoryUsage(context: GetMemoryUsageContext): void {
         this.images.forEach(img => img.getMemoryUsage(context));
     }
 
     /**
      * @param options - The options.
      */
-    constructor(options: {
+    public constructor(options: {
         /** The WebGLRenderer. */
         renderer: WebGLRenderer;
         /** Compute min/max on generated images. */
@@ -273,7 +273,7 @@ class LayerComposer implements MemoryUsage {
      * @param id - The image ID to lock.
      * @param nodeId - The node id.
      */
-    lock(id: string, nodeId: number) {
+    public lock(id: string, nodeId: number): void {
         const img = this.images.get(id);
         if (img) {
             img.owners.add(nodeId);
@@ -286,7 +286,7 @@ class LayerComposer implements MemoryUsage {
      * @param ids - The image id to unlock.
      * @param nodeId - The node id.
      */
-    unlock(ids: Set<string>, nodeId: number) {
+    public unlock(ids: Set<string>, nodeId: number): void {
         ids.forEach(id => {
             const image = this.images.get(id);
             if (image) {
@@ -333,7 +333,7 @@ class LayerComposer implements MemoryUsage {
             target?: WebGLRenderTarget<Texture>;
             expandRGB?: boolean;
         },
-    ) {
+    ): TextureWithMinMax {
         const rect = Rect.fromExtent(extent);
         const comp = new WebGLComposer({
             extent: rect,
@@ -386,7 +386,10 @@ class LayerComposer implements MemoryUsage {
      * @param segments - The number of subdivisions of the lattice.
      * A high value will create more faithful reprojections, at the cost of performance.
      */
-    private createWarpedMesh(sourceExtent: Extent, segments: number = DEFAULT_WARP_SUBDIVISIONS) {
+    private createWarpedMesh(
+        sourceExtent: Extent,
+        segments: number = DEFAULT_WARP_SUBDIVISIONS,
+    ): Mesh {
         const dims = sourceExtent.dimensions(tmpVec1);
         // Vector3
         const itemSize = 3;
@@ -432,7 +435,7 @@ class LayerComposer implements MemoryUsage {
      *
      * @param options - opts
      */
-    add(options: {
+    public add(options: {
         /** The image ID. */
         id: string;
         /** The texture. */
@@ -449,7 +452,7 @@ class LayerComposer implements MemoryUsage {
         alwaysVisible?: boolean;
         /** Optional z-index to apply to the image. */
         zIndex?: number;
-    }) {
+    }): void {
         const { extent, texture, id } = options;
 
         if (this.images.has(id)) {
@@ -533,7 +536,7 @@ class LayerComposer implements MemoryUsage {
 
         // Register a handler to be notified when the original texture has
         // been uploaded to the GPU so that we can reclaim the texture data and free memory.
-        texture.onUpdate = () => onTextureUploaded(texture);
+        texture.onUpdate = (): void => onTextureUploaded(texture);
 
         if (this._minFilter) {
             actualTexture.minFilter = this._minFilter;
@@ -563,11 +566,11 @@ class LayerComposer implements MemoryUsage {
      * @param imageId - The image ID.
      * @returns True if the composer contains the image.
      */
-    has(imageId: string): boolean {
+    public has(imageId: string): boolean {
         return this.images.has(imageId);
     }
 
-    hasAll(imageIds: Iterable<string>): boolean {
+    public hasAll(imageIds: Iterable<string>): boolean {
         for (const id of imageIds) {
             if (!this.has(id)) {
                 return false;
@@ -583,7 +586,7 @@ class LayerComposer implements MemoryUsage {
      *
      * @param options - Options.
      */
-    copy(options: {
+    public copy(options: {
         /** The extent of the destination texture. */
         targetExtent: Extent;
         /** The source render targets. */
@@ -594,7 +597,7 @@ class LayerComposer implements MemoryUsage {
         }[];
         /** The destination render target. */
         dest: WebGLRenderTarget;
-    }) {
+    }): void {
         const targetExtent = options.targetExtent;
         const target = options.dest;
 
@@ -645,7 +648,7 @@ class LayerComposer implements MemoryUsage {
      *
      * @param options - The options.
      */
-    clearTexture(options: {
+    public clearTexture(options: {
         /** The geographic extent of the region. */
         extent: Extent;
         /** The width, in pixels of the target texture. */
@@ -656,7 +659,7 @@ class LayerComposer implements MemoryUsage {
         clear: boolean;
         /** The optional render target. */
         target: WebGLRenderTarget;
-    }) {
+    }): void {
         const { extent, width, height, target } = options;
 
         this.images.forEach(img => {
@@ -676,7 +679,7 @@ class LayerComposer implements MemoryUsage {
      *
      * @param extent - The extent.
      */
-    getMinMax(extent: Extent) {
+    public getMinMax(extent: Extent): { min: number; max: number } {
         let min = +Infinity;
         let max = -Infinity;
 
@@ -697,7 +700,7 @@ class LayerComposer implements MemoryUsage {
      *
      * @param options - The options.
      */
-    render(options: {
+    public render(options: {
         /** The geographic extent of the region. */
         extent: Extent;
         /** The width, in pixels of the target texture. */
@@ -712,7 +715,7 @@ class LayerComposer implements MemoryUsage {
         isFallbackMode?: boolean;
         /** The optional render target. */
         target: WebGLRenderTarget;
-    }) {
+    }): { texture: TextureWithMinMax; isLastRender: boolean } {
         const { extent, width, height, target, imageIds } = options;
 
         // Do we have all the required images for this tile ?
@@ -801,7 +804,7 @@ class LayerComposer implements MemoryUsage {
         texture: TextureWithMinMax,
         extent: Extent,
         target: WebGLRenderTarget<Texture>,
-    ) {
+    ): TextureWithMinMax {
         return this.preprocessImage(extent, texture, {
             fillNoData: this.fillNoData,
             fillNoDataAlphaReplacement: this.fillNoDataAlphaReplacement,
@@ -812,7 +815,7 @@ class LayerComposer implements MemoryUsage {
         });
     }
 
-    postUpdate() {
+    public postUpdate(): boolean {
         if (this._needsCleanup) {
             this.cleanup();
             this._needsCleanup = false;
@@ -821,7 +824,7 @@ class LayerComposer implements MemoryUsage {
         return false;
     }
 
-    private disposeImage(img: Image) {
+    private disposeImage(img: Image): void {
         // In the case of reprojection, the mesh's geometry
         // is owned by this layer composer.
         if (this.needsReprojection) {
@@ -832,7 +835,7 @@ class LayerComposer implements MemoryUsage {
         this.images.delete(img.id);
     }
 
-    cleanup() {
+    public cleanup(): void {
         // Delete eligible images.
         for (const img of Array.from(this.images.values())) {
             if (img.canBeDeleted()) {
@@ -844,7 +847,7 @@ class LayerComposer implements MemoryUsage {
     /**
      * Clears the composer.
      */
-    clear(extent?: Extent) {
+    public clear(extent?: Extent): void {
         if (extent) {
             [...this.images.values()].forEach(img => {
                 if (img.extent.intersectsExtent(extent)) {
@@ -861,7 +864,7 @@ class LayerComposer implements MemoryUsage {
     /**
      * Disposes the composer.
      */
-    dispose() {
+    public dispose(): void {
         this.clear();
     }
 }

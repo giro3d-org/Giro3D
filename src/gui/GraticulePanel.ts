@@ -17,7 +17,7 @@ class GraticulePanel extends Panel {
      * @param parentGui - Parent GUI
      * @param instance - The instance
      */
-    constructor(graticule: GraticuleOptions, parentGui: GUI, instance: Instance) {
+    public constructor(graticule: GraticuleOptions, parentGui: GUI, instance: Instance) {
         super(parentGui, instance, 'Graticule');
 
         this.addController(graticule, 'enabled')

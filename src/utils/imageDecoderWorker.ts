@@ -302,7 +302,7 @@ export interface MessageMap extends BaseMessageMap<MessageType> {
 
 export type Messages = CreateImageBitmapMessage | CreatePixelBufferMessage;
 
-onmessage = async function onmessage(ev: MessageEvent<Messages>) {
+onmessage = async function onmessage(ev: MessageEvent<Messages>): Promise<void> {
     const message = ev.data;
 
     try {

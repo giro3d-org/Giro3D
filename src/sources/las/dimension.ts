@@ -34,7 +34,7 @@ export type DimensionName =
     | 'ScannerChannel'
     | 'GpsTime';
 
-const bitRange = (bits: number) => ({ min: 0, max: 2 ** bits - 1 });
+const bitRange = (bits: number): { min: number; max: number } => ({ min: 0, max: 2 ** bits - 1 });
 const boolRange = { min: 0, max: 1 };
 const u8Range = { min: 0, max: 255 };
 const u16Range = { min: 0, max: 65536 };
@@ -104,7 +104,7 @@ export function extractAttributes(
 ): PointCloudAttribute[] {
     const dimensionKeys = new Set(Object.keys(dimensions));
 
-    const has = (...dims: DimensionName[]) => {
+    const has = (...dims: DimensionName[]): boolean => {
         for (const dim of dims) {
             if (!dimensionKeys.has(dim)) {
                 return false;

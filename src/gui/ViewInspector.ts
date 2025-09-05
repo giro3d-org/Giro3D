@@ -24,16 +24,16 @@ import { isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
 import Panel from './Panel';
 
 class CameraInspector extends Panel {
-    view: View;
-    camera: PerspectiveCamera | OrthographicCamera;
-    snapshots: CameraHelper[] = [];
-    horizonDistance = 'N/A';
+    public view: View;
+    public camera: PerspectiveCamera | OrthographicCamera;
+    public snapshots: CameraHelper[] = [];
+    public horizonDistance = 'N/A';
 
     /**
      * @param gui - The GUI.
      * @param instance - The Giro3D instance.
      */
-    constructor(gui: GUI, instance: Instance) {
+    public constructor(gui: GUI, instance: Instance) {
         super(gui, instance, 'View');
 
         this.view = this.instance.view;
@@ -94,7 +94,7 @@ class CameraInspector extends Panel {
         }
     }
 
-    deleteSnapshots() {
+    public deleteSnapshots(): void {
         this.snapshots.forEach(helper => {
             helper.dispose();
             this.instance.remove(helper);
@@ -102,7 +102,7 @@ class CameraInspector extends Panel {
         this.snapshots.length = 0;
     }
 
-    createFrustumSnapshot() {
+    public createFrustumSnapshot(): void {
         const helper = new CameraHelper(this.instance.view.camera);
         this.instance.add(helper);
         helper.update();

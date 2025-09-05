@@ -47,7 +47,7 @@ class MaskLayer<UserData extends LayerUserData = LayerUserData> extends ColorLay
     /**
      * Read-only flag to check if a given object is of type MaskLayer.
      */
-    readonly isMaskLayer: boolean = true;
+    public readonly isMaskLayer: boolean = true;
 
     /**
      * Creates a mask layer.
@@ -56,7 +56,7 @@ class MaskLayer<UserData extends LayerUserData = LayerUserData> extends ColorLay
      *
      * @param options - The layer options.
      */
-    constructor(options: MaskLayerOptions) {
+    public constructor(options: MaskLayerOptions) {
         super(options);
         this.isMaskLayer = true;
         this.type = 'MaskLayer';
@@ -66,19 +66,19 @@ class MaskLayer<UserData extends LayerUserData = LayerUserData> extends ColorLay
     /**
      * Gets or set the mask mode.
      */
-    get maskMode() {
+    public get maskMode(): MaskMode {
         return this._maskMode;
     }
 
-    set maskMode(v) {
+    public set maskMode(v: MaskMode) {
         this._maskMode = v;
     }
 
-    override getRenderTargetDataType(): TextureDataType {
+    public override getRenderTargetDataType(): TextureDataType {
         return UnsignedByteType;
     }
 
-    override applyEmptyTextureToNode(target: Target) {
+    public override applyEmptyTextureToNode(target: Target): void {
         const material = target.node.material;
 
         if (!material.hasColorLayer(this)) {
@@ -94,11 +94,11 @@ class MaskLayer<UserData extends LayerUserData = LayerUserData> extends ColorLay
         });
     }
 
-    override getVectorFeaturesAtCoordinate(): Feature<Geometry>[] {
+    public override getVectorFeaturesAtCoordinate(): Feature<Geometry>[] {
         return [];
     }
 
-    override getVectorFeaturesInExtent(): Feature<Geometry>[] {
+    public override getVectorFeaturesInExtent(): Feature<Geometry>[] {
         return [];
     }
 }

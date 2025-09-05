@@ -14,25 +14,25 @@ import ImageSource from './ImageSource';
  * An image source that produces nothing. Mainly for debugging/testing purposes.
  */
 class NullSource extends ImageSource {
-    readonly isNullSource = true as const;
-    override readonly type = 'NullSource' as const;
+    public readonly isNullSource = true as const;
+    public override readonly type = 'NullSource' as const;
     private readonly _extent: Extent;
 
-    constructor(options: { extent?: Extent } = {}) {
+    public constructor(options: { extent?: Extent } = {}) {
         super();
 
         this._extent = options?.extent ?? new Extent(CoordinateSystem.epsg3857, 0, 10, 0, 10);
     }
 
-    getCrs() {
+    public getCrs(): CoordinateSystem {
         return this._extent.crs;
     }
 
-    getImages(): ImageResponse[] {
+    public getImages(): ImageResponse[] {
         return [];
     }
 
-    getExtent() {
+    public getExtent(): Extent {
         return this._extent;
     }
 }

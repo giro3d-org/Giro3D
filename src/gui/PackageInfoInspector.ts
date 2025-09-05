@@ -14,14 +14,14 @@ import VERSION from '../version';
 import Panel from './Panel';
 
 class PackageInfoInspector extends Panel {
-    olversion: string;
-    giro3dVersion: string;
+    public olversion: string;
+    public giro3dVersion: string;
 
     /**
      * @param parentGui - The parent GUI.
      * @param instance - The Giro3D instance.
      */
-    constructor(parentGui: GUI, instance: Instance) {
+    public constructor(parentGui: GUI, instance: Instance) {
         super(parentGui, instance, 'Info');
 
         this.olversion = olversion;

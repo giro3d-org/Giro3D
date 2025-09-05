@@ -40,7 +40,7 @@ function pickObjectsAt(
     canvasCoords: Vector2,
     object: Object3D,
     options: PickOptions = {},
-) {
+): PickResult[] {
     const radius = Math.max(options.radius ?? 0, 0);
     const limit = options.limit ?? Infinity;
     const filter = options.filter;

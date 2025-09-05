@@ -27,7 +27,7 @@ interface State {
 const tmpVec2 = new Vector2();
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function limitRotation(camera: PerspectiveCamera, rot: number, verticalFOV: number) {
+function limitRotation(camera: PerspectiveCamera, rot: number, verticalFOV: number): number {
     // Limit vertical rotation (look up/down) to make sure the user cannot see
     // outside of the cone defined by verticalFOV
     // const limit = MathUtils.degToRad(verticalFOV - camera.fov * 0.5) * 0.5;
@@ -35,7 +35,7 @@ function limitRotation(camera: PerspectiveCamera, rot: number, verticalFOV: numb
     return MathUtils.clamp(rot, -limit, limit);
 }
 
-function applyRotation(instance: Instance, camera: PerspectiveCamera, state: State) {
+function applyRotation(instance: Instance, camera: PerspectiveCamera, state: State): void {
     camera.quaternion.setFromUnitVectors(new Vector3(0, 1, 0), camera.up);
 
     camera.rotateY(state.rotateY);
@@ -89,7 +89,7 @@ export interface FirstPersonControlsOptions {
 }
 
 class FirstPersonControls {
-    readonly options: FirstPersonControlsOptions = {
+    public readonly options: FirstPersonControlsOptions = {
         moveSpeed: 10,
         verticalFOV: 180,
         focusOnClick: false,
@@ -106,13 +106,13 @@ class FirstPersonControls {
     private _mouseDown = new Vector2();
     private _stateOnMouseDown?: State;
 
-    enabled: boolean;
+    public enabled: boolean;
 
     /**
      * @param instance - the Giro3D instance to control
      * @param options - additional options
      */
-    constructor(instance: Instance, options: Partial<FirstPersonControlsOptions> = {}) {
+    public constructor(instance: Instance, options: Partial<FirstPersonControlsOptions> = {}) {
         if (!isPerspectiveCamera(instance.view.camera)) {
             throw new Error('this control only supports perspective cameras');
         }
@@ -168,7 +168,7 @@ class FirstPersonControls {
         }
     }
 
-    isUserInteracting() {
+    public isUserInteracting(): boolean {
         return this._moves.size !== 0 || this._isMouseDown;
     }
 
@@ -179,7 +179,7 @@ class FirstPersonControls {
      * @param preserveRotationOnX - if true, the look up/down rotation will
      * not be copied from the camera
      */
-    reset(preserveRotationOnX = false) {
+    public reset(preserveRotationOnX = false): void {
         // Compute the correct init state, given the calculus in applyRotation:
         // cam.quaternion = q * r
         // => r = invert(q) * cam.quaterion
@@ -205,7 +205,7 @@ class FirstPersonControls {
      * @param force - set to true if you want to force the update, even if it
      * appears unneeded.
      */
-    update(event: InstanceEvents['after-camera-update'], force = false) {
+    public update(event: InstanceEvents['after-camera-update'], force = false): void {
         if (!this.enabled) {
             return;
         }
@@ -240,7 +240,7 @@ class FirstPersonControls {
         }
     }
 
-    private onInteractionStart(event: MouseEvent | TouchEvent) {
+    private onInteractionStart(event: MouseEvent | TouchEvent): void {
         if (!this.enabled) {
             return;
         }
@@ -254,7 +254,7 @@ class FirstPersonControls {
         this._stateOnMouseDown = this.snapshot();
     }
 
-    private onMouseDown(event: MouseEvent) {
+    private onMouseDown(event: MouseEvent): void {
         if (event.button !== 0) {
             return;
         }
@@ -262,7 +262,7 @@ class FirstPersonControls {
         this.onInteractionStart(event);
     }
 
-    private onTouchStart(event: TouchEvent) {
+    private onTouchStart(event: TouchEvent): void {
         this.onInteractionStart(event);
     }
 
@@ -272,21 +272,21 @@ class FirstPersonControls {
         };
     }
 
-    private onMouseUp(event: MouseEvent) {
+    private onMouseUp(event: MouseEvent): void {
         if (!this.enabled || event.button !== 0) {
             return;
         }
         this._isMouseDown = false;
     }
 
-    private onTouchEnd() {
+    private onTouchEnd(): void {
         if (!this.enabled) {
             return;
         }
         this._isMouseDown = false;
     }
 
-    private onInteractionMove(event: MouseEvent | TouchEvent) {
+    private onInteractionMove(event: MouseEvent | TouchEvent): void {
         if (!this.enabled) {
             return;
         }
@@ -314,7 +314,7 @@ class FirstPersonControls {
         }
     }
 
-    private onMouseMove(event: MouseEvent) {
+    private onMouseMove(event: MouseEvent): void {
         if (event.button !== 0) {
             return;
         }
@@ -322,11 +322,11 @@ class FirstPersonControls {
         this.onInteractionMove(event);
     }
 
-    private onTouchMove(event: TouchEvent) {
+    private onTouchMove(event: TouchEvent): void {
         this.onInteractionMove(event);
     }
 
-    private onMouseWheel(event: WheelEvent) {
+    private onMouseWheel(event: WheelEvent): void {
         if (!this.enabled) {
             return;
         }
@@ -356,7 +356,7 @@ class FirstPersonControls {
     }
 
     // Keyboard handling
-    private onKeyUp(e: KeyboardEvent) {
+    private onKeyUp(e: KeyboardEvent): void {
         if (!this.enabled) {
             return;
         }
@@ -368,7 +368,7 @@ class FirstPersonControls {
         }
     }
 
-    private onKeyDown(e: KeyboardEvent) {
+    private onKeyDown(e: KeyboardEvent): void {
         if (!this.enabled) {
             return;
         }

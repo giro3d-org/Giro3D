@@ -46,7 +46,7 @@ const eventTarget = new FetcherEventDispatcher();
 function addEventListener<T extends keyof FetcherEventMap>(
     type: T,
     listener: EventListener<FetcherEventMap[T], T, FetcherEventDispatcher>,
-) {
+): void {
     eventTarget.addEventListener(type, listener);
 }
 
@@ -73,7 +73,7 @@ function hasEventListener<T extends keyof FetcherEventMap>(
 function removeEventListener<T extends keyof FetcherEventMap>(
     type: T,
     listener: EventListener<FetcherEventMap[T], T, FetcherEventDispatcher>,
-) {
+): void {
     eventTarget.removeEventListener(type, listener);
 }
 
@@ -98,7 +98,7 @@ function toNumericalPriority(priority?: RequestPriority): number | undefined {
  *
  * @param req - The request to queue.
  */
-function enqueue(req: Request, init?: RequestInit) {
+function enqueue(req: Request, init?: RequestInit): Promise<Response> {
     const url = new URL(req.url);
 
     let queue = hostQueues.get(url.hostname);
@@ -107,7 +107,7 @@ function enqueue(req: Request, init?: RequestInit) {
         hostQueues.set(url.hostname, queue);
     }
 
-    const doFetch = async () => {
+    const doFetch = async (): Promise<Response> => {
         req.signal?.throwIfAborted();
         const res = await fetch(req, init);
         return res;
@@ -116,7 +116,7 @@ function enqueue(req: Request, init?: RequestInit) {
     return queue.enqueue({
         id: (id++).toString(),
         request: () => doFetch(),
-        shouldExecute: req.signal == null ? undefined : () => !req.signal.aborted,
+        shouldExecute: req.signal == null ? undefined : (): boolean => !req.signal.aborted,
         priority: toNumericalPriority(init?.priority),
     });
 }
@@ -124,7 +124,7 @@ function enqueue(req: Request, init?: RequestInit) {
 /**
  * @internal
  */
-function getInfo() {
+function getInfo(): { pending: number } {
     let pending = 0;
     hostQueues.forEach(queue => {
         pending += queue.length;
@@ -136,10 +136,10 @@ function getInfo() {
  * An error raised whenever the received response does not have a 2XX status.
  */
 export class HttpError extends Error {
-    readonly isHttpError = true as const;
-    readonly response: Response;
+    public readonly isHttpError = true as const;
+    public readonly response: Response;
 
-    constructor(response: Response) {
+    public constructor(response: Response) {
         super(`${response.status} ${response.statusText} - ${response.url}`);
 
         this.response = response;

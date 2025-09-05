@@ -40,7 +40,7 @@ export interface MessageMap extends BaseMessageMap<MessageType> {
     };
 }
 
-function processReadBinMessage(msg: ReadBinFileMessage) {
+function processReadBinMessage(msg: ReadBinFileMessage): void {
     try {
         const { buffer, info } = msg.payload;
         const result = readBinFile(
@@ -71,7 +71,7 @@ function processReadBinMessage(msg: ReadBinFileMessage) {
     }
 }
 
-onmessage = (e: MessageEvent<Messages>) => {
+onmessage = (e: MessageEvent<Messages>): void => {
     const message = e.data;
 
     switch (message.type) {

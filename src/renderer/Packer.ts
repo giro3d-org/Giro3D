@@ -44,7 +44,7 @@ function findNode(root: Node, w: number, h: number): Node | null {
     return null;
 }
 
-function splitNode(node: Node, w: number, h: number) {
+function splitNode(node: Node, w: number, h: number): Node {
     node.used = true;
     node.down = {
         x: node.x,

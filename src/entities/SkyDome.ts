@@ -6,6 +6,8 @@
 
 import { MathUtils, type Vector3 } from 'three';
 
+import type PickResult from '../core/picking/PickResult';
+
 import SkyDomeObject from '../renderer/SkyDome';
 import Entity3D from './Entity3D';
 
@@ -13,25 +15,28 @@ import Entity3D from './Entity3D';
  * Displays a sky dome with atmospheric scattering and sun disc.
  */
 export default class SkyDome extends Entity3D {
-    readonly isSkyDome = true as const;
-    override readonly type = 'SkyDome' as const;
+    public readonly isSkyDome = true as const;
+    public override readonly type = 'SkyDome' as const;
 
     private readonly _skyDome: SkyDomeObject;
     private _solarDiscDiameter = 2;
 
-    private set<K extends keyof typeof this._skyDome>(key: K, value: (typeof this._skyDome)[K]) {
+    private set<K extends keyof typeof this._skyDome>(
+        key: K,
+        value: (typeof this._skyDome)[K],
+    ): void {
         this._skyDome[key] = value;
         this.notifyChange();
     }
 
-    get solarDiscDiameter() {
+    public get solarDiscDiameter(): number {
         return this._solarDiscDiameter;
     }
 
     /**
      * The apparent diameter of the solar disc, in degrees.
      */
-    set solarDiscDiameter(v: number) {
+    public set solarDiscDiameter(v: number) {
         this._solarDiscDiameter = v;
         const cos = Math.cos(MathUtils.degToRad(v));
         this.set('sunAngularDiameterCos', cos);
@@ -40,47 +45,47 @@ export default class SkyDome extends Entity3D {
     /**
      * The turbidity of the atmosphere. A low turbidity makes the atmosphere appear clearer.
      */
-    get turbidity() {
+    public get turbidity(): number {
         return this._skyDome.turbidity;
     }
 
-    set turbidity(v: number) {
+    public set turbidity(v: number) {
         this.set('turbidity', v);
     }
 
-    get luminance() {
+    public get luminance(): number {
         return this._skyDome.luminance;
     }
 
-    set luminance(v: number) {
+    public set luminance(v: number) {
         this.set('luminance', v);
     }
 
-    get rayleighCoefficient() {
+    public get rayleighCoefficient(): number {
         return this._skyDome.rayleighCoefficient;
     }
 
-    set rayleighCoefficient(v: number) {
+    public set rayleighCoefficient(v: number) {
         this.set('rayleighCoefficient', v);
     }
 
-    get mieCoefficient() {
+    public get mieCoefficient(): number {
         return this._skyDome.mieCoefficient;
     }
 
-    set mieCoefficient(v: number) {
+    public set mieCoefficient(v: number) {
         this.set('mieCoefficient', v);
     }
 
-    get mieDirectionalG() {
+    public get mieDirectionalG(): number {
         return this._skyDome.mieDirectionalG;
     }
 
-    set mieDirectionalG(v: number) {
+    public set mieDirectionalG(v: number) {
         this.set('mieDirectionalG', v);
     }
 
-    constructor(params?: { atmosphereThickness?: number }) {
+    public constructor(params?: { atmosphereThickness?: number }) {
         super(new SkyDomeObject({ atmosphereThickness: params?.atmosphereThickness }));
 
         this._skyDome = this.object3d as SkyDomeObject;
@@ -91,18 +96,18 @@ export default class SkyDome extends Entity3D {
     /**
      * Sets the direction of the sun rays.
      */
-    setSunPosition(position: Vector3) {
+    public setSunPosition(position: Vector3): void {
         this._skyDome.uniforms.sunPosition.value.copy(position);
         this.notifyChange(this);
     }
 
-    override dispose(): void {
+    public override dispose(): void {
         this._skyDome.geometry.dispose();
         this._skyDome.material.dispose();
         this.object3d.clear();
     }
 
-    override pick() {
+    public override pick(): PickResult[] {
         return [];
     }
 }

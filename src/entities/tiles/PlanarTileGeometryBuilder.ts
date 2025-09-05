@@ -32,14 +32,14 @@ export function selectBestSubdivisions(extent: Extent, maxAspectRatio: number): 
  * Builds tile in a planar coordinate system.
  */
 export default class PlanarTileGeometryBuilder implements TileGeometryBuilder<PlanarTileGeometry> {
-    readonly extent: Extent;
+    public readonly extent: Extent;
 
     private readonly _rootTileMatrix: Vector2;
     private readonly _skirtDepth: number | undefined;
 
     private _segments: number;
 
-    constructor(params: {
+    public constructor(params: {
         extent: Extent;
         maxAspectRatio: number;
         segments: number;
@@ -51,15 +51,15 @@ export default class PlanarTileGeometryBuilder implements TileGeometryBuilder<Pl
         this._skirtDepth = params.skirtDepth;
     }
 
-    set segments(v: number) {
+    public set segments(v: number) {
         this._segments = v;
     }
 
-    get rootTileMatrix(): Vector2 {
+    public get rootTileMatrix(): Vector2 {
         return this._rootTileMatrix;
     }
 
-    build(params: { tile: TileCoordinate; extent: Extent }): PlanarTileGeometry {
+    public build(params: { tile: TileCoordinate; extent: Extent }): PlanarTileGeometry {
         return new PlanarTileGeometry({
             extent: params.extent,
             segments: this._segments,

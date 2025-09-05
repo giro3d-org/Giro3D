@@ -140,7 +140,7 @@ function createFloorVertices(params: {
     offset: Vector3;
     elevation?: FeatureElevation;
     ignoreZ: boolean;
-}) {
+}): { flatCoordinates: number[]; holes: number[] } {
     // iterate on polygon and holes
     const holesIndices: number[] = [];
     let currentIndex = 0;
@@ -188,7 +188,7 @@ function createRoof(
     pointCount: number,
     indices: Array<number>,
     extrusionOffset: FeatureExtrusionOffset,
-) {
+): void {
     for (let i = 0; i < pointCount; i++) {
         positions.push(positions[i * VERT_STRIDE + X]);
         positions.push(positions[i * VERT_STRIDE + Y]);
@@ -216,7 +216,7 @@ function createWallForRings(
     end: number,
     indices: Array<number>,
     extrusionOffset: FeatureExtrusionOffset,
-) {
+): void {
     // Each side is formed by the A, B, C, D vertices, where A is the current coordinate,
     // and B is the next coordinate (thus the segment AB is one side of the polygon).
     // C and D are the same points but with a Z offset.
@@ -277,7 +277,10 @@ function createWallForRings(
     }
 }
 
-function createSurfaces(polygon: Polygon, options: PolygonOptions) {
+function createSurfaces(
+    polygon: Polygon,
+    options: PolygonOptions,
+): { positions: Float32Array; indices: Uint16Array | Uint32Array } {
     const stride = polygon.getStride();
 
     // First we compute the positions of the top vertices (that make the 'floor').
@@ -386,7 +389,7 @@ export default class GeometryConverter<
     private readonly _pointMaterialGenerator: PointMaterialGenerator;
     private _disposed = false;
 
-    constructor(options?: {
+    public constructor(options?: {
         shadedSurfaceMaterialGenerator?: SurfaceMaterialGenerator;
         unshadedSurfaceMaterialGenerator?: SurfaceMaterialGenerator;
         lineMaterialGenerator?: LineMaterialGenerator;
@@ -410,11 +413,11 @@ export default class GeometryConverter<
     /**
      * Gets whether this generator is disposed. A disposed generator can no longer be used.
      */
-    get disposed() {
+    public get disposed(): boolean {
         return this._disposed;
     }
 
-    get materialCount() {
+    public get materialCount(): number {
         return this._materialCache.size;
     }
 
@@ -424,28 +427,31 @@ export default class GeometryConverter<
      * @param geometry - The `Point` to convert.
      * @param options  - The options.
      */
-    build(geometry: Point, options?: PointOptions): PointMesh<UserData>;
+    public build(geometry: Point, options?: PointOptions): PointMesh<UserData>;
 
     /**
      * Converts a {@link MultiPoint}.
      * @param geometry - The `MultiPoint` to convert.
      * @param options  - The options.
      */
-    build(geometry: MultiPoint, options?: PointOptions): MultiPointMesh<UserData>;
+    public build(geometry: MultiPoint, options?: PointOptions): MultiPointMesh<UserData>;
 
     /**
      * Converts a {@link MultiPoint} or {@link Point}.
      * @param geometry - The `MultiPoint` or `Point` to convert.
      * @param options  - The options.
      */
-    build(geometry: Point | MultiPoint, options?: PointOptions): SimpleGeometryMesh<UserData>;
+    public build(
+        geometry: Point | MultiPoint,
+        options?: PointOptions,
+    ): SimpleGeometryMesh<UserData>;
 
     /**
      * Converts a {@link Polygon}.
      * @param geometry - The `Polygon` to convert.
      * @param options  - The options.
      */
-    build(geometry: Polygon, options?: PolygonOptions): PolygonMesh<UserData>;
+    public build(geometry: Polygon, options?: PolygonOptions): PolygonMesh<UserData>;
 
     /**
      * Converts a {@link MultiPolygon}.
@@ -454,7 +460,7 @@ export default class GeometryConverter<
      * @param geometry - The `MultiPolygon` to convert.
      * @param options  - The options.
      */
-    build(
+    public build(
         geometry: MultiPolygon,
         options?: PolygonOptions,
     ): PolygonMesh<UserData> | MultiPolygonMesh<UserData>;
@@ -464,14 +470,17 @@ export default class GeometryConverter<
      * @param geometry - The `Polygon` to convert.
      * @param options  - The options.
      */
-    build(geometry: Polygon | MultiPolygon, options?: PolygonOptions): SimpleGeometryMesh<UserData>;
+    public build(
+        geometry: Polygon | MultiPolygon,
+        options?: PolygonOptions,
+    ): SimpleGeometryMesh<UserData>;
 
     /**
      * Converts a {@link LineString}.
      * @param geometry - The `LineString` to convert.
      * @param options  - The options.
      */
-    build(geometry: LineString, options?: LineOptions): LineStringMesh<UserData>;
+    public build(geometry: LineString, options?: LineOptions): LineStringMesh<UserData>;
 
     /**
      * Converts a {@link MultiLineString}.
@@ -480,7 +489,7 @@ export default class GeometryConverter<
      * @param geometry - The `MultiLineString` to convert.
      * @param options  - The options.
      */
-    build(
+    public build(
         geometry: MultiLineString,
         options?: LineOptions,
     ): MultiLineStringMesh<UserData> | LineStringMesh<UserData>;
@@ -492,7 +501,7 @@ export default class GeometryConverter<
      * @param geometry - The `MultiLineString` or `LineString` to convert.
      * @param options  - The options.
      */
-    build(
+    public build(
         geometry: LineString | MultiLineString,
         options?: LineOptions,
     ): SimpleGeometryMesh<UserData>;
@@ -503,7 +512,7 @@ export default class GeometryConverter<
      * @param options - The options.
      * @returns The generated 3D object(s).
      */
-    build<K extends keyof OutputMap>(
+    public build<K extends keyof OutputMap>(
         geometry: InputMap[K],
         options?: OptionMap[K],
     ): OutputMap<UserData>[K] {
@@ -558,7 +567,7 @@ export default class GeometryConverter<
         return result;
     }
 
-    updatePolygonMesh(mesh: PolygonMesh, options: PolygonOptions) {
+    public updatePolygonMesh(mesh: PolygonMesh, options: PolygonOptions): void {
         if (options.stroke && mesh.linearRings == null) {
             // If the style is added, we have to create the rings
             const rings = this.getPolygonRings(mesh.source, options);
@@ -611,15 +620,15 @@ export default class GeometryConverter<
         }
     }
 
-    updateMultiPolygonMesh(mesh: MultiPolygonMesh, options: PolygonOptions) {
+    public updateMultiPolygonMesh(mesh: MultiPolygonMesh, options: PolygonOptions): void {
         mesh.traversePolygons(obj => this.updatePolygonMesh(obj, options));
     }
 
-    updateMultiLineStringMesh(mesh: MultiLineStringMesh, options: LineOptions) {
+    public updateMultiLineStringMesh(mesh: MultiLineStringMesh, options: LineOptions): void {
         mesh.traverseLineStrings(obj => this.updateLineStringMesh(obj, options));
     }
 
-    updateLineStringMesh(mesh: LineStringMesh, options: LineOptions) {
+    public updateLineStringMesh(mesh: LineStringMesh, options: LineOptions): void {
         const style = getFullStrokeStyle(options);
         const lineMaterial = this._lineMaterialGenerator(style);
 
@@ -630,7 +639,7 @@ export default class GeometryConverter<
         });
     }
 
-    updatePointMesh(mesh: PointMesh, style: Partial<PointStyle>) {
+    public updatePointMesh(mesh: PointMesh, style: Partial<PointStyle>): void {
         const fullStyle = getFullPointStyle(style);
         const material = this._pointMaterialGenerator(fullStyle);
         mesh.update({
@@ -641,7 +650,7 @@ export default class GeometryConverter<
         });
     }
 
-    updateSurfaceMesh(mesh: SurfaceMesh, options: PolygonOptions) {
+    public updateSurfaceMesh(mesh: SurfaceMesh, options: PolygonOptions): void {
         if (mesh.parent == null) {
             throw new Error('mesh has no parent polygon');
         }
@@ -653,7 +662,7 @@ export default class GeometryConverter<
      * @param object - The object to finalize.
      * @param options - Options
      */
-    private finalize(object: Object3D, options: BaseOptions & BaseStyle) {
+    private finalize(object: Object3D, options: BaseOptions & BaseStyle): void {
         if (options.origin) {
             object.position.copy(options.origin);
         }
@@ -681,7 +690,7 @@ export default class GeometryConverter<
      * If origin has not be set, compute a default origin point by taking the first
      * coordinate of the geometry.
      */
-    private setDefaultOrigin(geometry: Geometry, options: BaseOptions) {
+    private setDefaultOrigin(geometry: Geometry, options: BaseOptions): void {
         if (options.origin != null) {
             return;
         }
@@ -1045,7 +1054,7 @@ export default class GeometryConverter<
     /**
      * Disposes this generator and all cached materials. Once disposed, this generator cannot be used anymore.
      */
-    dispose({
+    public dispose({
         disposeTextures = true,
         disposeMaterials = true,
     }: {
@@ -1053,7 +1062,7 @@ export default class GeometryConverter<
         disposeTextures?: boolean;
         /** Dispose the materials created by this generator */
         disposeMaterials?: boolean;
-    }) {
+    }): void {
         if (this._disposed) {
             return;
         }

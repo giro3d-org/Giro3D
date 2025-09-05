@@ -12,13 +12,13 @@ import { GlobalCache } from '../core/Cache';
 import Panel from './Panel';
 
 class CachePanel extends Panel {
-    count: string;
-    size: string;
-    ttl: number;
-    capacityMb: number;
-    capacityEntries: number;
+    public count: string;
+    public size: string;
+    public ttl: number;
+    public capacityMb: number;
+    public capacityEntries: number;
 
-    constructor(parentGui: GUI, instance: Instance) {
+    public constructor(parentGui: GUI, instance: Instance) {
         super(parentGui, instance, 'Cache');
 
         this.count = '?';
@@ -59,21 +59,21 @@ class CachePanel extends Panel {
         this.addController(this, 'dump').name('Dump cache to console');
     }
 
-    purge() {
+    public purge(): void {
         GlobalCache.purge();
         this.update();
     }
 
-    dump() {
+    public dump(): void {
         console.log([...GlobalCache.entries()]);
     }
 
-    clear() {
+    public clear(): void {
         GlobalCache.clear();
         this.update();
     }
 
-    override updateValues() {
+    public override updateValues(): void {
         this.count = `${GlobalCache.count} / ${GlobalCache.capacity}`;
 
         const used = (GlobalCache.size / 1024 / 1024).toFixed(1);

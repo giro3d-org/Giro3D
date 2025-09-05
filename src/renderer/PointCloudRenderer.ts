@@ -38,6 +38,11 @@ const RT = {
     EDL_ZERO: 3,
 };
 
+interface SetupStageResult {
+    material?: ShaderMaterial;
+    output?: WebGLRenderTarget;
+}
+
 interface Stage<TParams = unknown> {
     /** The render passes of this stage. */
     passes: ShaderMaterial[];
@@ -51,10 +56,7 @@ interface Stage<TParams = unknown> {
         targets: WebGLRenderTarget[];
         passIdx: number;
         camera: PerspectiveCamera | OrthographicCamera;
-    }) => {
-        material?: ShaderMaterial;
-        output?: WebGLRenderTarget;
-    };
+    }) => SetupStageResult;
 }
 
 interface EdlParams {
@@ -89,22 +91,22 @@ interface InpaintingParams {
  * A post-processing renderer that adds effects to point clouds.
  */
 class PointCloudRenderer {
-    scene: Scene;
-    mesh: Mesh;
-    camera: OrthographicCamera;
-    classic: Stage;
-    edl: Stage<EdlParams>;
-    occlusion: Stage<OcclusionParams>;
-    inpainting: Stage<InpaintingParams>;
-    renderer: WebGLRenderer;
-    renderTargets: WebGLRenderTarget[] | null;
+    public scene: Scene;
+    public mesh: Mesh;
+    public camera: OrthographicCamera;
+    public classic: Stage;
+    public edl: Stage<EdlParams>;
+    public occlusion: Stage<OcclusionParams>;
+    public inpainting: Stage<InpaintingParams>;
+    public renderer: WebGLRenderer;
+    public renderTargets: WebGLRenderTarget[] | null;
 
     /**
      * Creates a point cloud renderer.
      *
      * @param webGLRenderer - The WebGL renderer.
      */
-    constructor(webGLRenderer: WebGLRenderer) {
+    public constructor(webGLRenderer: WebGLRenderer) {
         this.scene = new Scene();
 
         // create 1 big triangle covering the screen
@@ -127,7 +129,7 @@ class PointCloudRenderer {
             passes: [undefined],
             parameters: null,
             enabled: true,
-            setup() {
+            setup(): SetupStageResult {
                 return { material: undefined };
             },
         };
@@ -191,7 +193,7 @@ class PointCloudRenderer {
                 directions: 8,
                 n: 1,
             },
-            setup({ targets, input, passIdx, camera }) {
+            setup({ targets, input, passIdx, camera }): SetupStageResult {
                 const m = this.passes[passIdx];
                 const uniforms = m.uniforms;
                 if (passIdx === 0) {
@@ -248,7 +250,7 @@ class PointCloudRenderer {
                 threshold: 0.9,
                 showRemoved: false,
             },
-            setup({ input, camera }) {
+            setup({ input, camera }): SetupStageResult {
                 const m = this.passes[0];
                 const n = camera.near;
                 const f = camera.far;
@@ -304,7 +306,7 @@ class PointCloudRenderer {
                 zAttMin: 10,
                 zAttMax: 100,
             },
-            setup({ input, camera }) {
+            setup({ input, camera }): SetupStageResult {
                 const m = this.passes[0];
                 const n = camera.near;
                 const f = camera.far;
@@ -330,7 +332,7 @@ class PointCloudRenderer {
         this.renderTargets = null;
     }
 
-    updateRenderTargets(renderTarget: WebGLRenderTarget) {
+    public updateRenderTargets(renderTarget: WebGLRenderTarget): WebGLRenderTarget[] {
         if (
             !this.renderTargets ||
             renderTarget.width !== this.renderTargets[RT.FULL_RES_0].width ||
@@ -347,7 +349,11 @@ class PointCloudRenderer {
         return this.renderTargets;
     }
 
-    createRenderTarget(width: number, height: number, depthBuffer: boolean) {
+    public createRenderTarget(
+        width: number,
+        height: number,
+        depthBuffer: boolean,
+    ): WebGLRenderTarget {
         return new WebGLRenderTarget(width, height, {
             format: RGBAFormat,
             depthBuffer,
@@ -359,7 +365,7 @@ class PointCloudRenderer {
         });
     }
 
-    createRenderTargets(width: number, height: number) {
+    public createRenderTargets(width: number, height: number): WebGLRenderTarget[] {
         const renderTargets = [];
 
         renderTargets.push(this.createRenderTarget(width, height, true));
@@ -370,7 +376,7 @@ class PointCloudRenderer {
         return renderTargets;
     }
 
-    render(scene: Object3D, camera: Camera, renderTarget: WebGLRenderTarget) {
+    public render(scene: Object3D, camera: Camera, renderTarget: WebGLRenderTarget): void {
         const targets = this.updateRenderTargets(renderTarget);
 
         if (!isPerspectiveCamera(camera) && !isOrthographicCamera(camera)) {
@@ -457,7 +463,7 @@ class PointCloudRenderer {
         r.setClearAlpha(oldClearAlpha);
     }
 
-    dispose() {
+    public dispose(): void {
         if (this.renderTargets) {
             this.renderTargets.forEach(t => t.dispose());
             this.renderTargets.length = 0;

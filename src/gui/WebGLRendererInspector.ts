@@ -12,13 +12,13 @@ import type Instance from '../core/Instance';
 import Panel from './Panel';
 
 class WebGLRendererInspector extends Panel {
-    renderer: WebGLRenderer;
+    public renderer: WebGLRenderer;
 
     /**
      * @param gui - The GUI.
      * @param instance - The Giro3D instance.
      */
-    constructor(gui: GUI, instance: Instance) {
+    public constructor(gui: GUI, instance: Instance) {
         super(gui, instance, 'WebGLRenderer');
 
         this.renderer = this.instance.renderer;
@@ -38,13 +38,13 @@ class WebGLRendererInspector extends Panel {
      * @param renderer - The renderer
      * @param rendererPanel - The GUI
      */
-    _addCapabilities(renderer: WebGLRenderer, rendererPanel: GUI) {
+    private _addCapabilities(renderer: WebGLRenderer, rendererPanel: GUI): void {
         const cap = renderer.capabilities;
         const debug = renderer.debug;
 
         const ctrls = this._controllers;
 
-        function add(ctrl: object, prop: string, name: string) {
+        function add(ctrl: object, prop: string, name: string): void {
             ctrls.push(rendererPanel.add(ctrl, prop).name(name));
         }
 

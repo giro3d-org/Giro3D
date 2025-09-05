@@ -24,15 +24,15 @@ class ColorMapInspector extends Panel {
     private readonly _notify: () => void;
     private readonly _colorMapFn: () => ColorMap | null;
 
-    get colorMap() {
+    public get colorMap(): ColorMap {
         return this._colorMapFn() ?? DEFAULT_COLORMAP;
     }
 
-    get mode() {
+    public get mode(): Mode {
         return modes[this.colorMap.mode - 1];
     }
 
-    set mode(v: Mode) {
+    public set mode(v: Mode) {
         this.colorMap.mode = modes.indexOf(v) + 1;
     }
 
@@ -42,7 +42,7 @@ class ColorMapInspector extends Panel {
      * @param layer - The color map owner.
      * @param colorMapFn - The color map to inspect.
      */
-    constructor(
+    public constructor(
         gui: GUI,
         instance: Instance,
         colorMapFn: () => ColorMap | null,
@@ -68,7 +68,7 @@ class ColorMapInspector extends Panel {
             .onChange(notify);
     }
 
-    override updateControllers(): void {
+    public override updateControllers(): void {
         const disabled = this._colorMapFn() == null;
         this._controllers.forEach(c => c.disable(disabled));
         super.updateControllers();

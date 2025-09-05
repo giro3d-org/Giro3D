@@ -18,36 +18,36 @@ export default class SurfaceMesh<UserData extends DefaultUserData = DefaultUserD
     Material,
     SimpleGeometryMeshEventMap
 > {
-    readonly isSurfaceMesh = true as const;
-    override readonly type = 'SurfaceMesh' as const;
+    public readonly isSurfaceMesh = true as const;
+    public override readonly type = 'SurfaceMesh' as const;
 
     private _featureOpacity = 1;
     private _styleOpacity = 1;
 
-    override userData: Partial<UserData> = {};
+    public override userData: Partial<UserData> = {};
 
-    override parent: PolygonMesh<UserData> | null = null;
+    public override parent: PolygonMesh<UserData> | null = null;
 
-    extrusionOffset: FeatureExtrusionOffset | undefined = undefined;
-    elevation: FeatureElevation | undefined = undefined;
+    public extrusionOffset: FeatureExtrusionOffset | undefined = undefined;
+    public elevation: FeatureElevation | undefined = undefined;
 
-    constructor(params: { geometry: BufferGeometry; material: Material; opacity: number }) {
+    public constructor(params: { geometry: BufferGeometry; material: Material; opacity: number }) {
         super(params.geometry, params.material);
         this._styleOpacity = params.opacity;
         this.matrixAutoUpdate = false;
     }
 
-    set opacity(opacity: number) {
+    public set opacity(opacity: number) {
         this._featureOpacity = opacity;
         this.updateOpacity();
     }
 
-    private updateOpacity() {
+    private updateOpacity(): void {
         this.material.opacity = this._featureOpacity * this._styleOpacity;
         this.material.transparent = this.material.opacity < 1;
     }
 
-    update(options: { material: Material; opacity: number; renderOrder: number }) {
+    public update(options: { material: Material; opacity: number; renderOrder: number }): void {
         this.material = options.material;
         this._styleOpacity = options.opacity;
         this.renderOrder = options.renderOrder;
@@ -55,7 +55,7 @@ export default class SurfaceMesh<UserData extends DefaultUserData = DefaultUserD
         this.updateOpacity();
     }
 
-    dispose() {
+    public dispose(): void {
         this.geometry.dispose();
         // Don't dispose the material as it is not owned by this mesh.
         this.dispatchEvent({ type: 'dispose' });

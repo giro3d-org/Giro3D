@@ -12,10 +12,10 @@ import type Glow from '../entities/Glow';
 import EntityInspector from './EntityInspector';
 
 export default class GlowInspector extends EntityInspector<Glow> {
-    sunLongitude = 0;
-    sunLatitude = 0;
+    public sunLongitude = 0;
+    public sunLatitude = 0;
 
-    constructor(parentGui: GUI, instance: Instance, glow: Glow) {
+    public constructor(parentGui: GUI, instance: Instance, glow: Glow) {
         super(parentGui, instance, glow, {
             boundingBoxColor: false,
             boundingBoxes: false,

@@ -67,8 +67,8 @@ type SkyUniforms = {
  * - `.outer`, which represents the visible halo on the edge of the ring
  */
 export default class Atmosphere extends Entity3D {
-    readonly isAtmosphere = true as const;
-    override readonly type = 'Atmosphere' as const;
+    public readonly isAtmosphere = true as const;
+    public override readonly type = 'Atmosphere' as const;
 
     private readonly _ellipsoid: Ellipsoid;
     private readonly _sphere: Sphere;
@@ -79,49 +79,49 @@ export default class Atmosphere extends Entity3D {
 
     private _disposed = false;
 
-    get ellipsoid() {
+    public get ellipsoid(): Ellipsoid {
         return this._ellipsoid;
     }
 
-    get redWavelength() {
+    public get redWavelength(): number {
         return this._wavelengths[0];
     }
 
-    set redWavelength(v: number) {
+    public set redWavelength(v: number) {
         this._wavelengths[0] = v;
         this._sphereUniforms.v3InvWavelength.value.x = 1 / Math.pow(v, 4);
         this.notifyChange();
     }
 
-    get greenWavelength() {
+    public get greenWavelength(): number {
         return this._wavelengths[1];
     }
 
-    set greenWavelength(v: number) {
+    public set greenWavelength(v: number) {
         this._wavelengths[1] = v;
         this._sphereUniforms.v3InvWavelength.value.y = 1 / Math.pow(v, 4);
         this.notifyChange();
     }
 
-    get blueWavelength() {
+    public get blueWavelength(): number {
         return this._wavelengths[2];
     }
 
-    set blueWavelength(v: number) {
+    public set blueWavelength(v: number) {
         this._wavelengths[2] = v;
         this._sphereUniforms.v3InvWavelength.value.z = 1 / Math.pow(v, 4);
         this.notifyChange();
     }
 
-    get outer() {
+    public get outer(): Mesh {
         return this._outer;
     }
 
-    get inner() {
+    public get inner(): Mesh {
         return this._inner;
     }
 
-    constructor(options?: {
+    public constructor(options?: {
         /**
          * The ellipsoid to use.
          * @defaultValue {@link Ellipsoid.WGS84}
@@ -234,7 +234,7 @@ export default class Atmosphere extends Entity3D {
         this.object3d.updateMatrixWorld(true);
     }
 
-    override updateOpacity(): void {
+    public override updateOpacity(): void {
         this.traverseMaterials(m => {
             if (isShaderMaterial(m)) {
                 if (m.uniforms.opacity != null) {
@@ -244,18 +244,18 @@ export default class Atmosphere extends Entity3D {
         });
     }
 
-    private updateMinMaxDistance(context: Context) {
+    private updateMinMaxDistance(context: Context): void {
         const distance = context.distance.plane.distanceToPoint(this.object3d.position);
         const radius = this._sphere.radius * 2;
         this._distance.min = Math.min(this._distance.min, distance - radius);
         this._distance.max = Math.max(this._distance.max, distance + radius);
     }
 
-    override postUpdate(context: Context, _changeSources: Set<unknown>): void {
+    public override postUpdate(context: Context, _changeSources: Set<unknown>): void {
         this.updateMinMaxDistance(context);
     }
 
-    override pick(): PickResult[] {
+    public override pick(): PickResult[] {
         // Atmosphere is not pickable.
         return [];
     }
@@ -263,7 +263,7 @@ export default class Atmosphere extends Entity3D {
     /**
      * Sets the position of the sun.
      */
-    setSunPosition(position: Vector3) {
+    public setSunPosition(position: Vector3): void {
         tmpPos.copy(position);
 
         const direction = tmpPos.sub(this.object3d.getWorldPosition(tmpVec3)).normalize();
@@ -274,7 +274,7 @@ export default class Atmosphere extends Entity3D {
         this.notifyChange(this);
     }
 
-    override dispose(): void {
+    public override dispose(): void {
         if (this._disposed) {
             return;
         }

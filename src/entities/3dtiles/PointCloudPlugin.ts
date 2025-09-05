@@ -40,7 +40,7 @@ export function isPNTSScene(obj: object): obj is PNTSScene {
 export default class PointCloudPlugin {
     private readonly _parameters: PointCloudParameters;
 
-    constructor(parameters: PointCloudParameters) {
+    public constructor(parameters: PointCloudParameters) {
         this._parameters = parameters;
     }
 
@@ -49,7 +49,7 @@ export default class PointCloudPlugin {
         batchTable: BatchTable,
         sourceAttribute: string,
         targetAttribute: WellKnown3DTilesPointCloudAttributes,
-    ) {
+    ): void {
         const count = batchTable.count;
         const array = batchTable.getPropertyArray(sourceAttribute) as TypedArray;
 
@@ -92,7 +92,7 @@ export default class PointCloudPlugin {
         geometry.setAttribute(targetAttribute, bufferAttribute);
     }
 
-    updateMaterial(material: PointCloudMaterial) {
+    public updateMaterial(material: PointCloudMaterial): void {
         material.size = this._parameters.pointSize;
         material.colorMap = this._parameters.pointCloudColorMap;
         material.classifications = this._parameters.classifications;
@@ -116,7 +116,7 @@ export default class PointCloudPlugin {
         material.updateUniforms();
     }
 
-    processTileModel(scene: PNTSScene, tile: Tile) {
+    public processTileModel(scene: PNTSScene, tile: Tile): void {
         if (isPNTSScene(scene)) {
             const batchTable = scene.batchTable;
 
@@ -167,7 +167,7 @@ export default class PointCloudPlugin {
             layerNode.textureSize = new Vector2(pixels, pixels);
 
             // This optimization mechanism does not apply to point clouds
-            layerNode.canProcessColorLayer = () => true;
+            layerNode.canProcessColorLayer = (): boolean => true;
 
             // We will handle manually the disposal of nodes, without
             // letting the layer listening to the dispose event.
@@ -177,7 +177,7 @@ export default class PointCloudPlugin {
             // bounding box and eventually the extent provided by getExtent().
             layerNode.userData.boundingBox = scene.geometry.boundingBox;
 
-            layerNode.getExtent = () => {
+            layerNode.getExtent = (): Extent => {
                 // Note that this extent must be computed once the object
                 // has been added to the hierarchy (since we need the world matrix),
                 // so we cannot do that here.

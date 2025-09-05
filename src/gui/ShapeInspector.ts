@@ -14,7 +14,7 @@ import type Shape from '../entities/Shape';
 import EntityInspector from './EntityInspector';
 
 class ShapeInspector extends EntityInspector<Shape> {
-    color: string;
+    public color: string;
 
     /**
      * Creates an instance of ShapeInspector.
@@ -23,7 +23,7 @@ class ShapeInspector extends EntityInspector<Shape> {
      * @param instance - The Giro3D instance.
      * @param entity - The inspected Map.
      */
-    constructor(parentGui: GUI, instance: Instance, entity: Shape) {
+    public constructor(parentGui: GUI, instance: Instance, entity: Shape) {
         super(parentGui, instance, entity, {
             visibility: true,
             opacity: true,

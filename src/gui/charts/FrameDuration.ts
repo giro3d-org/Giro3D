@@ -17,13 +17,13 @@ import ChartPanel, { pushTrim } from './ChartPanel';
 const MAX_DATA_POINTS = 30;
 
 class FrameDuration extends ChartPanel {
-    render: typeof WebGLInfo.prototype.render;
-    data: ChartData<'bar', ScatterDataPoint[], string>;
-    chart: Chart;
-    updateStart: number;
-    renderStart: number;
+    public render: typeof WebGLInfo.prototype.render;
+    public data: ChartData<'bar', ScatterDataPoint[], string>;
+    public chart: Chart;
+    public updateStart: number;
+    public renderStart: number;
 
-    constructor(parentGui: GUI, instance: Instance) {
+    public constructor(parentGui: GUI, instance: Instance) {
         super(parentGui, instance, 'Frame duration (ms)');
 
         this.render = instance.renderer.info.render;
@@ -120,7 +120,7 @@ class FrameDuration extends ChartPanel {
         });
     }
 
-    override updateValues() {
+    public override updateValues(): void {
         if (this.isClosed()) {
             return;
         }

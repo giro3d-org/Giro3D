@@ -17,20 +17,20 @@ import WebGLRendererInspector from './WebGLRendererInspector';
 
 class InstanceInspector extends Panel {
     /** Store the CRS code of the instance */
-    instanceCrs: string;
-    state: string;
-    webGlRendererPanel: WebGLRendererInspector;
-    enginePanel: RenderingInspector;
-    clearColor: Color;
-    clearAlpha: number;
-    cpuMemoryUsage = 'unknown';
-    gpuMemoryUsage = 'unknown';
+    public instanceCrs: string;
+    public state: string;
+    public webGlRendererPanel: WebGLRendererInspector;
+    public enginePanel: RenderingInspector;
+    public clearColor: Color;
+    public clearAlpha: number;
+    public cpuMemoryUsage = 'unknown';
+    public gpuMemoryUsage = 'unknown';
 
     /**
      * @param gui - The GUI.
      * @param instance - The Giro3D instance.
      */
-    constructor(gui: GUI, instance: Instance) {
+    public constructor(gui: GUI, instance: Instance) {
         super(gui, instance, 'Instance');
 
         this.instanceCrs = this.instance.coordinateSystem.id;
@@ -67,11 +67,11 @@ class InstanceInspector extends Panel {
         this.enginePanel = new RenderingInspector(this.gui, instance);
     }
 
-    triggerUpdate() {
+    public triggerUpdate(): void {
         this.instance.notifyChange();
     }
 
-    override updateValues() {
+    public override updateValues(): void {
         const memUsage = this.instance.getMemoryUsage();
         this.cpuMemoryUsage = MemoryUsage.format(memUsage.cpuMemory);
         this.gpuMemoryUsage = MemoryUsage.format(memUsage.gpuMemory);
@@ -81,7 +81,7 @@ class InstanceInspector extends Panel {
             : 'idle';
     }
 
-    override update() {
+    public override update(): void {
         if (!this.isClosed()) {
             this.updateControllers();
             this.webGlRendererPanel.update();

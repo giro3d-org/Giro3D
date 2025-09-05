@@ -88,7 +88,7 @@ abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserDa
     /**
      * The unique identifier of this entity.
      */
-    readonly id: string;
+    public readonly id: string;
     private _frozen: boolean;
     private _ready = false;
     private _instance?: Instance;
@@ -96,11 +96,11 @@ abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserDa
     /**
      * Determine if this entity is ready to use.
      */
-    get ready() {
+    public get ready(): boolean {
         return this._ready;
     }
 
-    get instance(): Instance {
+    public get instance(): Instance {
         if (!this._instance) {
             throw new Error(
                 'This entity has not been added to an instance or its initialization is not finished.\n' +
@@ -113,26 +113,26 @@ abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserDa
     /**
      * The name of this entity.
      */
-    name: string | undefined;
+    public name: string | undefined;
 
     /**
      * An object that can be used to store custom data about the {@link Entity}.
      */
-    readonly userData: TUserData;
+    public readonly userData: TUserData;
 
     /**
      * Read-only flag to check if a given object is of type Entity.
      */
-    readonly isEntity: boolean = true as const;
+    public readonly isEntity: boolean = true as const;
     /**
      * The name of the type of this object.
      */
-    type: string;
+    public type: string;
 
     /**
      * Creates an entity with the specified unique identifier.
      */
-    constructor() {
+    public constructor() {
         super();
 
         this.id = MathUtils.generateUUID();
@@ -148,11 +148,11 @@ abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserDa
      *
      * Useful for debugging purposes.
      */
-    get frozen() {
+    public get frozen(): boolean {
         return this._frozen;
     }
 
-    set frozen(v) {
+    public set frozen(v: boolean) {
         if (this._frozen !== v) {
             this._frozen = v;
             this.dispatchEvent({ type: 'frozen-property-changed', frozen: v });
@@ -162,7 +162,7 @@ abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserDa
     /**
      * Gets whether this entity is currently loading data.
      */
-    get loading() {
+    public get loading(): boolean {
         // Implement this in derived classes.
         return false;
     }
@@ -171,7 +171,7 @@ abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserDa
      * Gets the current loading progress (between 0 and 1).
      * Note: This property is only meaningful if {@link loading} is `true`.
      */
-    get progress() {
+    public get progress(): number {
         // Implement this in derived classes.
         return 1;
     }
@@ -192,7 +192,7 @@ abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserDa
     /**
      * @internal
      */
-    async initialize(opts: EntityPreprocessOptions): Promise<void> {
+    public async initialize(opts: EntityPreprocessOptions): Promise<void> {
         this._instance = opts.instance;
 
         await this.preprocess(opts);
@@ -211,7 +211,7 @@ abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserDa
      *
      * @returns `true` if should check for update
      */
-    shouldCheckForUpdate(): boolean {
+    public shouldCheckForUpdate(): boolean {
         return this._ready;
     }
 
@@ -227,7 +227,7 @@ abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserDa
      * @param updateSource - Source of change
      * @returns `true` if requires a full update of this object
      */
-    shouldFullUpdate(updateSource: unknown): boolean {
+    public shouldFullUpdate(updateSource: unknown): boolean {
         return updateSource === this || (updateSource as Camera).isCamera;
     }
 
@@ -244,7 +244,7 @@ abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserDa
      * @returns `true` if requires an update of `updateSource`
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    shouldUpdate(updateSource: unknown): boolean {
+    public shouldUpdate(updateSource: unknown): boolean {
         return false;
     }
 
@@ -258,7 +258,7 @@ abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserDa
      * @param updateSources - Sources that triggered an update
      * @returns Set of objects to update
      */
-    filterChangeSources(updateSources: Set<unknown>): Set<unknown> {
+    public filterChangeSources(updateSources: Set<unknown>): Set<unknown> {
         let fullUpdate = false;
         const filtered = new Set<unknown>();
         updateSources.forEach(src => {
@@ -290,7 +290,7 @@ abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserDa
      * @returns the _elements_ to update during `update()`.
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    preUpdate(context: Context, changeSources: Set<unknown>): unknown[] | null {
+    public preUpdate(context: Context, changeSources: Set<unknown>): unknown[] | null {
         return null;
     }
 
@@ -306,7 +306,7 @@ abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserDa
      * @returns New elements to update
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    update(context: Context, element: unknown): unknown[] | undefined | null {
+    public update(context: Context, element: unknown): unknown[] | undefined | null {
         return undefined;
     }
 
@@ -321,7 +321,7 @@ abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserDa
      * on the camera's field of view should be updated.
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    postUpdate(context: Context, changeSources: Set<unknown>) {
+    public postUpdate(context: Context, changeSources: Set<unknown>): void {
         /** do nothing */
     }
 
@@ -334,7 +334,7 @@ abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserDa
      * For example: disposing materials, geometries, stopping HTTP requests, etc.
      *
      */
-    dispose() {
+    public dispose(): void {
         /** do nothing */
     }
 

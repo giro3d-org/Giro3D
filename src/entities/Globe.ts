@@ -119,8 +119,8 @@ export interface GlobeConstructorOptions extends Omit<MapConstructorOptions, 'ex
  * - Z-axis: The rotation axis of the earth (south/north axis).
  */
 export default class Globe extends Map {
-    readonly isGlobe = true as const;
-    override readonly type: string = 'Globe' as const;
+    public readonly isGlobe = true as const;
+    public override readonly type: string = 'Globe' as const;
 
     private readonly _ellipsoid: Ellipsoid;
 
@@ -130,7 +130,7 @@ export default class Globe extends Map {
     /**
      * The ellipsoid used to draw this globe.
      */
-    get ellipsoid(): Ellipsoid {
+    public get ellipsoid(): Ellipsoid {
         return this._ellipsoid;
     }
 
@@ -138,15 +138,15 @@ export default class Globe extends Map {
      * Enables or disable horizon culling.
      * @defaultValue true
      */
-    get horizonCulling() {
+    public get horizonCulling(): boolean {
         return this._enableHorizonCulling;
     }
 
-    set horizonCulling(v: boolean) {
+    public set horizonCulling(v: boolean) {
         this._enableHorizonCulling = v;
     }
 
-    constructor(options?: GlobeConstructorOptions) {
+    public constructor(options?: GlobeConstructorOptions) {
         super({
             subdivisionStrategy: defaultGlobeSubdivisionStrategy,
             ...options,
@@ -170,7 +170,7 @@ export default class Globe extends Map {
         return frustumVisible && horizonVisible;
     }
 
-    private computeHorizonDistance(camera: Camera) {
+    private computeHorizonDistance(camera: Camera): void {
         if (this._enableHorizonCulling) {
             const cameraPosition = camera.getWorldPosition(tempCameraPosition);
             const horizonDistance = this.ellipsoid.getOpticalHorizon(
@@ -182,7 +182,7 @@ export default class Globe extends Map {
         }
     }
 
-    override preUpdate(context: Context, changeSources: Set<unknown>): TileMesh[] {
+    public override preUpdate(context: Context, changeSources: Set<unknown>): TileMesh[] {
         this.computeHorizonDistance(context.view.camera);
 
         return super.preUpdate(context, changeSources);
@@ -289,7 +289,7 @@ export default class Globe extends Map {
     /**
      * Looks at the center of the globe from the [0°, 0°] geographic coordinate.
      */
-    override getDefaultPointOfView(
+    public override getDefaultPointOfView(
         params: Parameters<HasDefaultPointOfView['getDefaultPointOfView']>[0],
     ): ReturnType<HasDefaultPointOfView['getDefaultPointOfView']> {
         const target = new Vector3(0, 0, 0);

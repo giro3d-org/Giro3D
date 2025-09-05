@@ -51,7 +51,7 @@ export default class EllipsoidTileGeometry
     extends BufferGeometry
     implements MemoryUsage, TileGeometry
 {
-    readonly isMemoryUsage = true as const;
+    public readonly isMemoryUsage = true as const;
     private readonly _extent: Extent;
     private readonly _origin: Vector3;
     private readonly _ellipsoid: Ellipsoid;
@@ -61,15 +61,15 @@ export default class EllipsoidTileGeometry
     private _heightMap: HeightMap | null = null;
     private _skirtDepth: number | null = null;
 
-    get vertexCount() {
+    public get vertexCount(): number {
         return this.getAttribute('position').count;
     }
 
-    get segments(): number {
+    public get segments(): number {
         return this._segments;
     }
 
-    set segments(v: number) {
+    public set segments(v: number) {
         if (this._segments !== v) {
             this._segments = v;
             this.buildBuffers(this, Usage.Rendering);
@@ -77,15 +77,15 @@ export default class EllipsoidTileGeometry
         }
     }
 
-    get origin(): Vector3 {
+    public get origin(): Vector3 {
         return this._origin;
     }
 
-    get raycastGeometry() {
+    public get raycastGeometry(): BufferGeometry {
         return this._raycastGeometry;
     }
 
-    constructor(params: {
+    public constructor(params: {
         extent: Extent;
         segments: number;
         ellipsoid: Ellipsoid;
@@ -111,21 +111,21 @@ export default class EllipsoidTileGeometry
         this.buildBuffers(this._raycastGeometry, Usage.Raycasting);
     }
 
-    resetHeights(): void {
+    public resetHeights(): void {
         this.buildBuffers(this.raycastGeometry, Usage.Raycasting);
     }
 
-    applyHeightMap(heightMap: HeightMap): { min: number; max: number } {
+    public applyHeightMap(heightMap: HeightMap): { min: number; max: number } {
         this._heightMap = heightMap;
         return this.buildBuffers(this.raycastGeometry, Usage.Raycasting);
     }
 
-    getMemoryUsage(context: GetMemoryUsageContext) {
+    public getMemoryUsage(context: GetMemoryUsageContext): void {
         getGeometryMemoryUsage(context, this);
         getGeometryMemoryUsage(context, this.raycastGeometry);
     }
 
-    private buildBuffers(geometry: BufferGeometry, usage: Usage) {
+    private buildBuffers(geometry: BufferGeometry, usage: Usage): { min: number; max: number } {
         this.dispose();
 
         const rowVertices = this._segments + 1;

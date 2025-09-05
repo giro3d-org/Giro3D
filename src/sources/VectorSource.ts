@@ -34,7 +34,7 @@ import {
 } from 'ol/transform.js';
 import { CanvasTexture, Vector2 } from 'three';
 
-import type { GetImageOptions, ImageSourceOptions } from './ImageSource';
+import type { GetImageOptions, ImageResponse, ImageSourceOptions } from './ImageSource';
 
 import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import Extent from '../core/geographic/Extent';
@@ -48,7 +48,7 @@ const tmpExtent = new Array(4);
 
 const tmpTransform: Transform = createTransform();
 
-function createCanvas(size: Vector2) {
+function createCanvas(size: Vector2): HTMLCanvasElement {
     const canvas = document.createElement('canvas');
     canvas.width = size.width;
     canvas.height = size.height;
@@ -70,12 +70,12 @@ function renderFeature(
     styles: Style | Style[],
     builderGroup: CanvasBuilderGroup,
     onStyleChanged: (arg0: BaseEvent) => void,
-) {
+): void {
     if (styles == null) {
         return;
     }
 
-    function doRender(style: Style) {
+    function doRender(style: Style): void {
         renderVectorFeature(builderGroup, feature, style, squaredTolerance, onStyleChanged);
     }
 
@@ -101,7 +101,7 @@ function rasterizeBuilderGroup(
     builderGroup: CanvasBuilderGroup,
     extent: Extent,
     size: Vector2,
-) {
+): void {
     const pixelRatio = 1;
     const resX = extent.dimensions().x / size.width;
     const resY = extent.dimensions().y / size.height;
@@ -187,13 +187,13 @@ export interface VectorSourceOptions extends ImageSourceOptions {
  * \});
  */
 class VectorSource extends ImageSource {
-    readonly isVectorSource = true as const;
-    override readonly type = 'VectorSource' as const;
+    public readonly isVectorSource = true as const;
+    public override readonly type = 'VectorSource' as const;
 
-    readonly data: DataSource;
-    readonly dataProjection: CoordinateSystem | undefined;
+    public readonly data: DataSource;
+    public readonly dataProjection: CoordinateSystem | undefined;
 
-    readonly source: Vector;
+    public readonly source: Vector;
 
     // After initialization
     private _targetProjection: CoordinateSystem | undefined;
@@ -202,12 +202,12 @@ class VectorSource extends ImageSource {
      * The current style.
      * Note: to set a new style, use `setStyle()` instead.
      */
-    style?: Style | Style[] | StyleFunction;
+    public style?: Style | Style[] | StyleFunction;
 
     /**
      * @param options - Options.
      */
-    constructor(options: VectorSourceOptions) {
+    public constructor(options: VectorSourceOptions) {
         super({ ...options, synchronous: true });
         if (options.data == null) {
             throw new Error('"data" parameter is required');
@@ -226,13 +226,13 @@ class VectorSource extends ImageSource {
      *
      * @param style - The style, or style function.
      */
-    setStyle(style: Style | StyleFunction) {
+    public setStyle(style: Style | StyleFunction): void {
         this.style = style;
         this.update();
     }
 
-    private loadFeaturesFromContent(content: unknown, format: FeatureFormat) {
-        return format.readFeatures(content) as Feature[];
+    private loadFeaturesFromContent(content: unknown, format: FeatureFormat): Feature[] {
+        return format.readFeatures(content);
     }
 
     /**
@@ -241,7 +241,7 @@ class VectorSource extends ImageSource {
      * - the data string (for example a GeoJSON string)
      * - the features array
      */
-    async loadFeatures() {
+    public async loadFeatures(): Promise<void> {
         if (Array.isArray(this.data)) {
             this.source.addFeatures(this.data);
         } else if ('url' in this.data) {
@@ -261,7 +261,7 @@ class VectorSource extends ImageSource {
      *
      * @param feature - The feature to reproject.
      */
-    reproject(feature: Feature) {
+    public reproject(feature: Feature): void {
         feature
             .getGeometry()
             ?.transform(
@@ -270,7 +270,7 @@ class VectorSource extends ImageSource {
             );
     }
 
-    override async initialize(opts: { targetProjection: CoordinateSystem }) {
+    public override async initialize(opts: { targetProjection: CoordinateSystem }): Promise<void> {
         await this.loadFeatures();
 
         this._targetProjection = opts.targetProjection;
@@ -296,7 +296,7 @@ class VectorSource extends ImageSource {
         });
     }
 
-    get featureCount() {
+    public get featureCount(): number {
         return this.getFeatures().length;
     }
 
@@ -305,7 +305,7 @@ class VectorSource extends ImageSource {
      *
      * @returns The features.
      */
-    getFeatures() {
+    public getFeatures(): Feature[] {
         return this.source.getFeatures();
     }
 
@@ -313,7 +313,7 @@ class VectorSource extends ImageSource {
      * Adds a feature to this source.
      * @param feature - The feature to add.
      */
-    addFeature(feature: Feature) {
+    public addFeature(feature: Feature): void {
         if (feature != null) {
             this.source.addFeature(feature);
         }
@@ -323,7 +323,7 @@ class VectorSource extends ImageSource {
      * Adds features to this source.
      * @param features - The features to add.
      */
-    addFeatures(features: Feature[]) {
+    public addFeatures(features: Feature[]): void {
         if (features != null) {
             this.source.addFeatures(features);
         }
@@ -333,7 +333,7 @@ class VectorSource extends ImageSource {
      * Removes a feature from this source.
      * @param feature - The feature to remove.
      */
-    removeFeature(feature: Feature) {
+    public removeFeature(feature: Feature): void {
         if (feature != null) {
             this.source.removeFeature(feature);
         }
@@ -342,7 +342,7 @@ class VectorSource extends ImageSource {
     /**
      * Removes all feature in this source.
      */
-    clear() {
+    public clear(): void {
         this.source.clear();
         this.update();
     }
@@ -351,7 +351,7 @@ class VectorSource extends ImageSource {
      * Updates the region associated with the feature(s).
      * @param feature - The feature(s) to update.
      */
-    updateFeature(...feature: Feature[]) {
+    public updateFeature(...feature: Feature[]): void {
         if (feature == null || feature.length === 0) {
             return;
         }
@@ -384,7 +384,7 @@ class VectorSource extends ImageSource {
      * @param id - The feature id.
      * @returns The feature.
      */
-    getFeatureById(id: string | number): Feature | null {
+    public getFeatureById(id: string | number): Feature | null {
         return this.source.getFeatureById(id);
     }
 
@@ -393,22 +393,22 @@ class VectorSource extends ImageSource {
      *
      * @param callback - The callback.
      */
-    forEachFeature(callback: (arg0: Feature<Geometry>) => unknown) {
+    public forEachFeature(callback: (arg0: Feature<Geometry>) => unknown): void {
         this.source.forEachFeature(callback);
     }
 
-    getCrs() {
+    public getCrs(): CoordinateSystem {
         // Note that since we are reprojecting vector _inside_ the source,
         // the source projection is the same as the target projection, indicating
         // that no projection needs to be done on images produced by this source.
         return this._targetProjection ?? CoordinateSystem.unknown;
     }
 
-    getExtent() {
+    public getExtent(): Extent {
         return this.getCurrentExtent() as Extent;
     }
 
-    getCurrentExtent() {
+    public getCurrentExtent(): Extent | null {
         const sourceExtent = this.source.getExtent(tmpExtent);
         if (!Number.isFinite(sourceExtent[0])) {
             return null;
@@ -438,8 +438,8 @@ class VectorSource extends ImageSource {
         const defaultStyle = this.style;
 
         let used = false;
-        const onStyleChanged = () => this.update();
-        const render = function render(feature: Feature) {
+        const onStyleChanged = (): void => this.update();
+        const render = function render(feature: Feature): void {
             let styles: Style | Style[];
             const style = feature.getStyleFunction() || defaultStyle;
             if (typeof style === 'function') {
@@ -481,7 +481,7 @@ class VectorSource extends ImageSource {
         return new ImageResult({ id, texture, extent });
     }
 
-    override intersects(extent: Extent) {
+    public override intersects(extent: Extent): boolean {
         // It's a bit an issue with vector sources, as they are dynamic : when the user adds
         // a feature, the extent changes. Thus we cannot cache the extent.
         const sourceExtent = this.getCurrentExtent();
@@ -497,11 +497,11 @@ class VectorSource extends ImageSource {
         return false;
     }
 
-    getImages(options: GetImageOptions) {
+    public getImages(options: GetImageOptions): ImageResponse[] {
         const { extent, width, height, id } = options;
 
         const size = new Vector2(width, height);
-        const request = () => this.createImage(id, extent, size);
+        const request = (): ImageResult => this.createImage(id, extent, size);
 
         return [{ id, request }];
     }

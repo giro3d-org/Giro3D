@@ -77,7 +77,7 @@ const helperMaterial = new MeshBasicMaterial({
     transparent: true,
 });
 
-const noRaycast = () => {};
+const noRaycast = (): void => {};
 
 const NO_NEIGHBOUR = -99;
 const NO_OFFSET_SCALE = new OffsetScale(0, 0, 0, 0);
@@ -94,18 +94,18 @@ class TileMesh
     extends Mesh<TileGeometry, LayeredMaterial, TileMeshEventMap>
     implements Disposable, MemoryUsage
 {
-    readonly isTileMesh = true as const;
-    override readonly type = 'TileMesh' as const;
-    readonly isMemoryUsage = true as const;
-    readonly extent: Extent;
-    readonly textureSize: Vector2;
+    public readonly isTileMesh = true as const;
+    public override readonly type = 'TileMesh' as const;
+    public readonly isMemoryUsage = true as const;
+    public readonly extent: Extent;
+    public readonly textureSize: Vector2;
 
     private _verticalScaling = 1;
 
-    override customDepthMaterial: ShadowLayeredMaterial;
-    override customDistanceMaterial: ShadowLayeredMaterial;
+    public override customDepthMaterial: ShadowLayeredMaterial;
+    public override customDistanceMaterial: ShadowLayeredMaterial;
 
-    readonly coordinate: TileCoordinate;
+    public readonly coordinate: TileCoordinate;
 
     private readonly _extentDimensions: Vector2;
     private readonly _geometryBuilder: TileGeometryBuilder<TileGeometry>;
@@ -138,10 +138,10 @@ class TileMesh
         renderTarget: WebGLRenderTarget<Texture>;
     } | null = null;
 
-    disposed = false;
-    isLeaf = false;
+    public disposed = false;
+    public isLeaf = false;
 
-    getMemoryUsage(context: GetMemoryUsageContext) {
+    public getMemoryUsage(context: GetMemoryUsageContext): void {
         this.material?.getMemoryUsage(context);
 
         // We only count what we own, otherwise the same heightmap will be counted more than once.
@@ -155,7 +155,7 @@ class TileMesh
         this.geometry.getMemoryUsage(context);
     }
 
-    get boundingBox(): Box3 {
+    public get boundingBox(): Box3 {
         if (!this._enableTerrainDeformation || this._elevationLayerInfo?.layer.visible !== true) {
             this._volume.setElevationRange({ min: 0, max: 0 });
         } else {
@@ -167,15 +167,15 @@ class TileMesh
     /**
      * The LOD. Root nodes have LOD 0.
      */
-    get lod() {
+    public get lod(): number {
         return this.coordinate.z;
     }
 
-    getOBB(): OBB {
+    public getOBB(): OBB {
         return this._volume.getOBB(this.matrixWorld);
     }
 
-    getWorldSpaceBoundingBox(target: Box3): Box3 {
+    public getWorldSpaceBoundingBox(target: Box3): Box3 {
         const local = this._volume.getLocalBoundingBox(target);
 
         this.updateMatrixWorld(true);
@@ -185,12 +185,12 @@ class TileMesh
         return local;
     }
 
-    getWorldSpaceBoundingSphere(target: Sphere): Sphere {
+    public getWorldSpaceBoundingSphere(target: Sphere): Sphere {
         this.updateWorldMatrix(true, false);
         return this._volume.getWorldSpaceBoundingSphere(target, this.matrixWorld);
     }
 
-    getBoundingBoxCorners(): Vector3[] {
+    public getBoundingBoxCorners(): Vector3[] {
         this.updateWorldMatrix(true, false);
         return this._volume.getWorldSpaceCorners(this.matrixWorld);
     }
@@ -200,7 +200,7 @@ class TileMesh
      *
      * @param options - Constructor options.
      */
-    constructor(params: {
+    public constructor(params: {
         geometryBuilder: TileGeometryBuilder<TileGeometry>;
         volume: TileVolume;
         /** The tile material. */
@@ -269,12 +269,12 @@ class TileMesh
         this.updateSkirtParameters();
     }
 
-    override onBeforeShadow(): void {
+    public override onBeforeShadow(): void {
         this.customDepthMaterial.onBeforeRender();
         this.customDistanceMaterial.onBeforeRender();
     }
 
-    private updateSkirtParameters() {
+    private updateSkirtParameters(): void {
         const skirtDepth = this._skirtDepth;
 
         if (skirtDepth != null) {
@@ -297,23 +297,23 @@ class TileMesh
         }
     }
 
-    setVerticalScaling(scaling: number): void {
+    public setVerticalScaling(scaling: number): void {
         this._verticalScaling = scaling;
         this.material.setElevationScaling(scaling);
     }
 
-    get absolutePosition() {
+    public get absolutePosition(): Vector3 {
         return this.geometry.origin;
     }
 
-    get showColliderMesh() {
+    public get showColliderMesh(): boolean {
         if (!this._helpers.colliderMesh) {
             return false;
         }
         return this._helpers.colliderMesh.material.visible;
     }
 
-    set showColliderMesh(visible: boolean) {
+    public set showColliderMesh(visible: boolean) {
         if (visible && !this._helpers.colliderMesh) {
             this._helpers.colliderMesh = new Mesh(this.geometry.raycastGeometry, helperMaterial);
             this._helpers.colliderMesh.matrixAutoUpdate = false;
@@ -334,7 +334,7 @@ class TileMesh
         }
     }
 
-    private deleteBoundingBoxHelper() {
+    private deleteBoundingBoxHelper(): void {
         if (this._helpers.boundingBox != null) {
             this._helpers.boundingBox.dispose();
             this._helpers.boundingBox.removeFromParent();
@@ -342,14 +342,14 @@ class TileMesh
         }
     }
 
-    private deleteBoundingSphereHelper() {
+    private deleteBoundingSphereHelper(): void {
         if (this._helpers.boundingSphere != null) {
             this._helpers.boundingSphere.removeFromParent();
             this._helpers.boundingSphere = undefined;
         }
     }
 
-    private recreateBoundingBoxHelper() {
+    private recreateBoundingBoxHelper(): void {
         this.deleteBoundingBoxHelper();
 
         const obb = this._volume.getOBB(this.matrixWorld);
@@ -366,7 +366,7 @@ class TileMesh
         this._helpers.boundingBox = helper;
     }
 
-    private recreateBoundingSphereHelper() {
+    private recreateBoundingSphereHelper(): void {
         this.deleteBoundingSphereHelper();
 
         this._helpers.boundingSphere = new Mesh(
@@ -388,11 +388,11 @@ class TileMesh
         this._helpers.boundingSphere.updateMatrixWorld(true);
     }
 
-    get showBoundingBox() {
+    public get showBoundingBox(): boolean {
         return this._helpers.boundingBox?.visible ?? false;
     }
 
-    set showBoundingBox(show: boolean) {
+    public set showBoundingBox(show: boolean) {
         if (show && this._helpers.boundingBox == null) {
             this.recreateBoundingBoxHelper();
         } else if (!show && this._helpers.boundingBox != null) {
@@ -400,11 +400,11 @@ class TileMesh
         }
     }
 
-    get showBoundingSphere() {
+    public get showBoundingSphere(): boolean {
         return this._helpers.boundingSphere?.visible ?? false;
     }
 
-    set showBoundingSphere(show: boolean) {
+    public set showBoundingSphere(show: boolean) {
         if (show && this._helpers.boundingSphere == null) {
             this.recreateBoundingSphereHelper();
         } else if (!show && this._helpers.boundingSphere != null) {
@@ -412,11 +412,11 @@ class TileMesh
         }
     }
 
-    get helperColor() {
+    public get helperColor(): ColorRepresentation {
         return this._helpers.color;
     }
 
-    set helperColor(color: ColorRepresentation) {
+    public set helperColor(color: ColorRepresentation) {
         this._helpers.color = color;
         if (this.showBoundingBox) {
             this.recreateBoundingBoxHelper();
@@ -426,11 +426,11 @@ class TileMesh
         }
     }
 
-    get segments() {
+    public get segments(): number {
         return this._segments;
     }
 
-    set segments(v) {
+    public set segments(v: number) {
         if (this._segments !== v) {
             this._segments = v;
             this.forEachMaterial(material => (material.segments = v));
@@ -439,7 +439,7 @@ class TileMesh
         }
     }
 
-    private createHelperRootIfNecessary() {
+    private createHelperRootIfNecessary(): void {
         if (!this._helpers.root) {
             this._helpers.root = new Group();
             this._helpers.root.name = 'helpers';
@@ -448,7 +448,7 @@ class TileMesh
         }
     }
 
-    private createGeometry() {
+    private createGeometry(): void {
         this.geometry.dispose();
         this.geometry = this._geometryBuilder.build({ extent: this.extent, tile: this.coordinate });
         this._tileGeometry = this.geometry;
@@ -460,13 +460,13 @@ class TileMesh
         this.updateSkirtParameters();
     }
 
-    onLayerVisibilityChanged(layer: Layer) {
+    public onLayerVisibilityChanged(layer: Layer): void {
         if (isElevationLayer(layer)) {
             this._shouldUpdateHeightMap = true;
         }
     }
 
-    addChildTile(tile: TileMesh) {
+    public addChildTile(tile: TileMesh): void {
         // The absolute position here means "absolute position in the cartographic coordinate system", not in the scene.
         const absolutePosition = tempAbsolutePosition.copy(tile.absolutePosition);
         tile.position.copy(absolutePosition.sub(this.absolutePosition));
@@ -484,7 +484,7 @@ class TileMesh
         }
     }
 
-    reorderLayers() {
+    public reorderLayers(): void {
         this.material.reorderLayers();
     }
 
@@ -508,7 +508,7 @@ class TileMesh
         return ray.intersectsBox(this.boundingBox);
     }
 
-    override raycast(raycaster: Raycaster, intersects: Intersection[]): void {
+    public override raycast(raycaster: Raycaster, intersects: Intersection[]): void {
         if (!this.material.visible) {
             return;
         }
@@ -556,7 +556,7 @@ class TileMesh
      * @param neighbour - The neighbour.
      * @param location - Its location in the neighbour array.
      */
-    private processNeighbour(neighbour: TileMesh, location: number) {
+    private processNeighbour(neighbour: TileMesh, location: number): void {
         const diff = neighbour.lod - this.lod;
 
         const neighbourTexture = neighbour.material.getElevationTexture();
@@ -573,7 +573,7 @@ class TileMesh
     /**
      * @param neighbours - The neighbours.
      */
-    processNeighbours(neighbours: NeighbourList<TileMesh>) {
+    public processNeighbours(neighbours: NeighbourList<TileMesh>): void {
         for (let i = 0; i < neighbours.length; i++) {
             const neighbour = neighbours[i];
             if (neighbour != null && neighbour.material != null && neighbour.material.visible) {
@@ -586,7 +586,7 @@ class TileMesh
         }
     }
 
-    update(materialOptions: MaterialOptions) {
+    public update(materialOptions: MaterialOptions): void {
         if (this._heightMap && this._elevationLayerInfo) {
             if (this._enableTerrainDeformation !== materialOptions.terrain.enabled) {
                 this._enableTerrainDeformation = materialOptions.terrain.enabled;
@@ -600,11 +600,11 @@ class TileMesh
         this.showBoundingSphere = materialOptions.showBoundingSpheres ?? false;
     }
 
-    isVisible() {
+    public isVisible(): boolean {
         return this.visible;
     }
 
-    setDisplayed(show: boolean) {
+    public setDisplayed(show: boolean): void {
         const currentVisibility = this.material.visible;
         this.material.visible = show && this.material.update();
         if (this._helpers.root) {
@@ -620,11 +620,11 @@ class TileMesh
     /**
      * @param v - The new opacity.
      */
-    set opacity(v: number) {
+    public set opacity(v: number) {
         this.material.opacity = v;
     }
 
-    setVisibility(show: boolean) {
+    public setVisibility(show: boolean): void {
         const currentVisibility = this.visible;
         this.visible = show;
         if (currentVisibility !== show) {
@@ -632,7 +632,7 @@ class TileMesh
         }
     }
 
-    isDisplayed() {
+    public isDisplayed(): boolean {
         return this.material.visible;
     }
 
@@ -641,19 +641,19 @@ class TileMesh
      *
      * @param state - The new rendering state.
      */
-    changeState(state: RenderingState) {
+    public changeState(state: RenderingState): void {
         this.material.changeState(state);
     }
 
-    static applyChangeState(o: Object3D, s: RenderingState) {
+    public static applyChangeState(o: Object3D, s: RenderingState): void {
         if ((o as TileMesh).isTileMesh) {
             (o as TileMesh).changeState(s);
         }
     }
 
-    pushRenderState(state: RenderingState) {
+    public pushRenderState(state: RenderingState): () => void {
         if (this.material.uniforms.renderingState.value === state) {
-            return () => {
+            return (): void => {
                 /** do nothing */
             };
         }
@@ -661,12 +661,12 @@ class TileMesh
         const oldState = this.material.uniforms.renderingState.value;
         this.traverse(n => TileMesh.applyChangeState(n, state));
 
-        return () => {
+        return (): void => {
             this.traverse(n => TileMesh.applyChangeState(n, oldState));
         };
     }
 
-    canProcessColorLayer(): boolean {
+    public canProcessColorLayer(): boolean {
         if (!this._elevationLayerInfo) {
             // No elevation layer that prevents loading color data
             return true;
@@ -675,13 +675,13 @@ class TileMesh
         return this._elevationLayerInfo.layer.isLoaded(this.id);
     }
 
-    removeElevationTexture() {
+    public removeElevationTexture(): void {
         this._elevationLayerInfo = null;
         this._shouldUpdateHeightMap = true;
         this.material.removeElevationLayer();
     }
 
-    setElevationTexture(
+    public setElevationTexture(
         layer: ElevationLayer,
         elevation: {
             texture: Texture;
@@ -690,7 +690,7 @@ class TileMesh
             max?: number;
             renderTarget: WebGLRenderTarget;
         },
-    ) {
+    ): void {
         if (this.disposed) {
             return;
         }
@@ -710,7 +710,7 @@ class TileMesh
         this._onElevationChanged(this);
     }
 
-    getScreenPixelSize(view: View, target?: Vector2): Vector2 {
+    public getScreenPixelSize(view: View, target?: Vector2): Vector2 {
         target = target ?? new Vector2();
 
         const sphere = this.getWorldSpaceBoundingSphere(tmpSphere);
@@ -742,7 +742,7 @@ class TileMesh
         return target;
     }
 
-    private createHeightMap(renderTarget: WebGLRenderTarget, offsetScale: OffsetScale) {
+    private createHeightMap(renderTarget: WebGLRenderTarget, offsetScale: OffsetScale): void {
         const outputHeight = Math.floor(renderTarget.height);
         const outputWidth = Math.floor(renderTarget.width);
 
@@ -775,7 +775,7 @@ class TileMesh
         this._heightMap = intoUniqueOwner(heightMap, this);
     }
 
-    private inheritHeightMap(heightMap: UniqueOwner<HeightMap, this>) {
+    private inheritHeightMap(heightMap: UniqueOwner<HeightMap, this>): void {
         this._heightMap = heightMap;
         this._shouldUpdateHeightMap = true;
 
@@ -788,14 +788,14 @@ class TileMesh
         }
     }
 
-    private resetHeights() {
+    private resetHeights(): void {
         this.geometry.resetHeights();
         this.setBBoxZ(0, 0);
 
         this._onElevationChanged(this);
     }
 
-    private applyHeightMap() {
+    private applyHeightMap(): void {
         if (!this._heightMap) {
             return;
         }
@@ -813,7 +813,7 @@ class TileMesh
         this._onElevationChanged(this);
     }
 
-    setBBoxZ(min: number | undefined, max: number | undefined) {
+    public setBBoxZ(min: number | undefined, max: number | undefined): void {
         // 0 is an acceptable value
         if (min == null || max == null) {
             return;
@@ -827,7 +827,7 @@ class TileMesh
         this.updateVolume(min, max);
     }
 
-    traverseTiles(callback: (descendant: TileMesh) => void) {
+    public traverseTiles(callback: (descendant: TileMesh) => void): void {
         this.traverse(obj => {
             if (isTileMesh(obj)) {
                 callback(obj);
@@ -838,14 +838,14 @@ class TileMesh
     /**
      * Removes the child tiles and returns the detached tiles.
      */
-    detachChildren(): TileMesh[] {
+    public detachChildren(): TileMesh[] {
         const childTiles = this.children.filter(c => isTileMesh(c)) as TileMesh[];
         childTiles.forEach(c => c.dispose());
         this.remove(...childTiles);
         return childTiles;
     }
 
-    private updateVolume(min: number, max: number) {
+    private updateVolume(min: number, max: number): void {
         this._volume.setElevationRange({ min, max });
 
         if (this.showBoundingBox) {
@@ -856,7 +856,7 @@ class TileMesh
         }
     }
 
-    get minmax() {
+    public get minmax(): { min: number; max: number } {
         const range = Math.abs(this._minmax.max - this._minmax.min);
         const width = this._extentDimensions.width;
         const height = this._extentDimensions.height;
@@ -874,11 +874,13 @@ class TileMesh
         return this._minmax;
     }
 
-    getExtent() {
+    public getExtent(): Extent {
         return this.extent;
     }
 
-    getElevation(params: GetElevationOptions): { elevation: number; resolution: number } | null {
+    public getElevation(
+        params: GetElevationOptions,
+    ): { elevation: number; resolution: number } | null {
         this.updateHeightMapIfNecessary();
 
         if (this._heightMap) {
@@ -907,7 +909,7 @@ class TileMesh
      * @param tile - the tile to evaluate
      * @returns the resulting common ancestor
      */
-    findCommonAncestor(tile: TileMesh): TileMesh | null {
+    public findCommonAncestor(tile: TileMesh): TileMesh | null {
         if (tile == null) {
             return null;
         }
@@ -926,17 +928,17 @@ class TileMesh
         return this.findCommonAncestor(tile.parent as TileMesh);
     }
 
-    isAncestorOf(tile: TileMesh) {
+    public isAncestorOf(tile: TileMesh): boolean {
         return tile.findCommonAncestor(this) === this;
     }
 
-    private forEachMaterial(callbackFn: (material: LayeredMaterial) => void) {
+    private forEachMaterial(callbackFn: (material: LayeredMaterial) => void): void {
         callbackFn(this.material);
         callbackFn(this.customDepthMaterial);
         callbackFn(this.customDistanceMaterial);
     }
 
-    dispose() {
+    public dispose(): void {
         if (this.disposed) {
             return;
         }

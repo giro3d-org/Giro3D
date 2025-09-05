@@ -44,7 +44,7 @@ function renderTileBuffer(
     map: Map,
     coords: Vector2 | undefined,
     radius: number,
-) {
+): { ids: number[]; uvs: Vector2[]; zs: number[] } {
     const dim = instance.engine.getWindowSize();
 
     coords = coords || new Vector2(Math.floor(dim.x / 2), Math.floor(dim.y / 2));
@@ -100,7 +100,7 @@ function pickTilesAt(
     canvasCoords: Vector2,
     map: Map,
     options: PickOptions = {},
-) {
+): MapPickResult[] {
     const radius = options.radius ?? 0;
     const limit = options.limit ?? Infinity;
     const filter = options.filter;

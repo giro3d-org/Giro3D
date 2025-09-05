@@ -14,7 +14,7 @@ import { TickOrigin } from '../entities/AxisGrid';
 import EntityInspector from './EntityInspector';
 
 class AxisGridInspector extends EntityInspector<AxisGrid> {
-    absoluteTicks: boolean;
+    public absoluteTicks: boolean;
 
     /**
      * Creates an instance of AxisGridInspector.
@@ -23,7 +23,7 @@ class AxisGridInspector extends EntityInspector<AxisGrid> {
      * @param instance - The Giro3D instance.
      * @param grid - The inspected Map.
      */
-    constructor(parentGui: GUI, instance: Instance, grid: AxisGrid) {
+    public constructor(parentGui: GUI, instance: Instance, grid: AxisGrid) {
         super(parentGui, instance, grid, {
             visibility: true,
             opacity: true,
@@ -58,18 +58,18 @@ class AxisGridInspector extends EntityInspector<AxisGrid> {
             .onChange(() => this._rebuild());
     }
 
-    _rebuild() {
+    private _rebuild(): void {
         this.entity.refresh();
         this.notify(this.entity);
     }
 
-    updateTickOrigin(v: boolean) {
+    public updateTickOrigin(v: boolean): void {
         this.entity.origin = v ? TickOrigin.Absolute : TickOrigin.Relative;
         this.entity.refresh();
         this.notify(this.entity);
     }
 
-    updateGridColor(v: ColorRepresentation) {
+    public updateGridColor(v: ColorRepresentation): void {
         this.entity.color = v;
         this.notify(this.entity);
     }

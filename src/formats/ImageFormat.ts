@@ -15,18 +15,24 @@ export type DecodeOptions = {
     noDataValue?: number;
 };
 
+export type DecodeResult = {
+    texture: Texture;
+    min?: number;
+    max?: number;
+};
+
 /**
  * Base class for image decoders. To implement your own image decoder, subclass this class.
  *
  */
 abstract class ImageFormat {
-    readonly isImageFormat = true as const;
+    public readonly isImageFormat = true as const;
 
-    type: string;
-    readonly flipY: boolean;
-    readonly dataType: TextureDataType;
+    public type: string;
+    public readonly flipY: boolean;
+    public readonly dataType: TextureDataType;
 
-    constructor(flipY: boolean, dataType: TextureDataType) {
+    public constructor(flipY: boolean, dataType: TextureDataType) {
         this.isImageFormat = true;
         this.type = 'ImageFormat';
 
@@ -41,14 +47,7 @@ abstract class ImageFormat {
      * @param options - The decoder options.
      * @returns The decoded texture.
      */
-    abstract decode(
-        blob: Blob,
-        options: DecodeOptions,
-    ): Promise<{
-        texture: Texture;
-        min?: number;
-        max?: number;
-    }>;
+    public abstract decode(blob: Blob, options: DecodeOptions): Promise<DecodeResult>;
 }
 
 export default ImageFormat;

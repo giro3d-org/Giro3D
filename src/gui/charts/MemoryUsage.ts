@@ -18,16 +18,16 @@ import ChartPanel, { pushTrim } from './ChartPanel';
 const MAX_DATA_POINTS = 20;
 
 class MemoryUsage extends ChartPanel {
-    render: typeof WebGLInfo.prototype.render;
-    memory: typeof WebGLInfo.prototype.memory;
-    labels: string[];
-    textures: ChartDataset<'line', ScatterDataPoint[]>;
-    geometries: ChartDataset<'line', ScatterDataPoint[]>;
-    renderTargets: ChartDataset<'line', ScatterDataPoint[]>;
-    programs: ChartDataset<'line', ScatterDataPoint[]>;
-    data: ChartData<'line', ScatterDataPoint[], string>;
+    public render: typeof WebGLInfo.prototype.render;
+    public memory: typeof WebGLInfo.prototype.memory;
+    public labels: string[];
+    public textures: ChartDataset<'line', ScatterDataPoint[]>;
+    public geometries: ChartDataset<'line', ScatterDataPoint[]>;
+    public renderTargets: ChartDataset<'line', ScatterDataPoint[]>;
+    public programs: ChartDataset<'line', ScatterDataPoint[]>;
+    public data: ChartData<'line', ScatterDataPoint[], string>;
     private _onRenderTargetPoolCleanup: () => void;
-    chart: Chart;
+    public chart: Chart;
 
     /**
      * Creates an instance of MemoryUsage.
@@ -35,7 +35,7 @@ class MemoryUsage extends ChartPanel {
      * @param parentGui - The parent GUI.
      * @param instance - The giro3D instance.
      */
-    constructor(parentGui: GUI, instance: Instance) {
+    public constructor(parentGui: GUI, instance: Instance) {
         super(parentGui, instance, 'Memory');
 
         this.render = instance.renderer.info.render;
@@ -137,11 +137,11 @@ class MemoryUsage extends ChartPanel {
         });
     }
 
-    override dispose(): void {
+    public override dispose(): void {
         GlobalRenderTargetPool.removeEventListener('cleanup', this._onRenderTargetPoolCleanup);
     }
 
-    override updateValues() {
+    public override updateValues(): void {
         if (this.isClosed()) {
             return;
         }

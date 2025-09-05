@@ -13,14 +13,14 @@ import { Box3, Box3Helper, Color, Matrix4, Object3D, Vector3 } from 'three';
  * Helper object to visualize an {@link OBB | Oriented Bounding Box}.
  */
 export default class OBBHelper extends Object3D {
-    override readonly type = 'OBBHelper' as const;
-    readonly isOBBHelper = true as const;
+    public override readonly type = 'OBBHelper' as const;
+    public readonly isOBBHelper = true as const;
 
     private _helper: Box3Helper;
     private _color: Color;
 
-    constructor(
-        readonly obb: OBB,
+    public constructor(
+        public readonly obb: OBB,
         color: ColorRepresentation,
     ) {
         super();
@@ -34,20 +34,20 @@ export default class OBBHelper extends Object3D {
         this.updateMatrixWorld(true);
     }
 
-    private buildHelper() {
+    private buildHelper(): Box3Helper {
         const helper = new Box3Helper(
             new Box3().setFromCenterAndSize(new Vector3(0, 0, 0), this.obb.getSize(new Vector3())),
             this._color,
         );
 
-        helper.raycast = () => {};
-        this.raycast = () => {};
+        helper.raycast = (): void => {};
+        this.raycast = (): void => {};
         this.add(helper);
 
         return helper;
     }
 
-    set color(v: ColorRepresentation) {
+    public set color(v: ColorRepresentation) {
         const newColor = new Color(v);
 
         if (!newColor.equals(this._color)) {
@@ -64,7 +64,7 @@ export default class OBBHelper extends Object3D {
      * @remarks
      * Call this method whenever this instance is no longer used in your app.
      */
-    dispose() {
+    public dispose(): void {
         this._helper.dispose();
     }
 }

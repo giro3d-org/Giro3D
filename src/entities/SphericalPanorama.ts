@@ -122,13 +122,13 @@ export interface SphericalPanoramaOptions extends Omit<MapConstructorOptions, 'e
  * at the coordinate of the center of the sphere, then the angles are applied.
  */
 export default class SphericalPanorama extends Map {
-    readonly isSphericalPanorama = true as const;
-    override readonly type = 'SphericalPanorama' as const;
+    public readonly isSphericalPanorama = true as const;
+    public override readonly type = 'SphericalPanorama' as const;
 
     private readonly _sphere: Ellipsoid;
     private readonly _radius: number;
 
-    constructor(params?: SphericalPanoramaOptions) {
+    public constructor(params?: SphericalPanoramaOptions) {
         super({
             ...params,
             extent: Extent.fullEquirectangularProjection,
@@ -168,7 +168,7 @@ export default class SphericalPanorama extends Map {
         return new PanoramaTileVolume({ extent, radius: this._radius });
     }
 
-    override addLayer<TLayer extends Layer>(layer: TLayer): Promise<TLayer> {
+    public override addLayer<TLayer extends Layer>(layer: TLayer): Promise<TLayer> {
         if (isColorLayer(layer)) {
             return super.addLayer(layer);
         }
@@ -181,7 +181,7 @@ export default class SphericalPanorama extends Map {
      *
      * Note: only perspective cameras are supported. Any other camera type will return `null`.
      */
-    override getDefaultPointOfView(
+    public override getDefaultPointOfView(
         params: Parameters<HasDefaultPointOfView['getDefaultPointOfView']>[0],
     ): ReturnType<HasDefaultPointOfView['getDefaultPointOfView']> {
         if (isPerspectiveCamera(params.camera)) {
@@ -208,7 +208,7 @@ export default class SphericalPanorama extends Map {
      *
      * @param params - The parameters. If undefined, the orientation is reset to the default orientation.
      */
-    setOrientation(params?: {
+    public setOrientation(params?: {
         /**
          * The heading (azimuth), in degrees. Zero is north, 90 is east, and so on.
          * @defaultValue 0
@@ -222,7 +222,7 @@ export default class SphericalPanorama extends Map {
          * The roll, in degrees. Positives values tilt the image on the right.
          */
         roll?: number;
-    }) {
+    }): void {
         let baseOrientation: Quaternion | Matrix4 = IDENTITY_QUATERNION;
 
         if (this.instance.coordinateSystem.isEpsg(4978)) {

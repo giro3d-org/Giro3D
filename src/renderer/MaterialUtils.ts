@@ -40,7 +40,7 @@ function setDefine<M extends HasDefines, K extends keyof M['defines']>(
     material: M,
     name: K,
     condition: boolean | undefined | null,
-) {
+): void {
     condition = condition ?? false;
     if (material.defines == null) {
         throw new Error('material.defines is null');

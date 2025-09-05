@@ -51,7 +51,7 @@ export interface MessageMap extends BaseMessageMap<MessageType> {
     };
 }
 
-onmessage = function onmessage(ev: MessageEvent<DecodeBilTerrainMessage>) {
+onmessage = function onmessage(ev: MessageEvent<DecodeBilTerrainMessage>): void {
     const message = ev.data;
 
     try {

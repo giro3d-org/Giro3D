@@ -87,7 +87,7 @@ export type PotreeSourceOptions = {
 // Create an A(xis)A(ligned)B(ounding)B(ox) for the child `childIndex` of one aabb.
 // (PotreeConverter protocol builds implicit octree hierarchy by applying the same
 // subdivision algo recursively)
-function createChildAABB(aabb: Box3, childIndex: number) {
+function createChildAABB(aabb: Box3, childIndex: number): Box3 {
     // Code taken from potree
     let { min } = aabb;
     let { max } = aabb;
@@ -315,8 +315,8 @@ function createPotreeWorker(): Worker {
  * The default path is {@link sources.las.config.DEFAULT_LAZPERF_PATH | DEFAULT_LAZPERF_PATH}.
  */
 export default class PotreeSource extends PointCloudSourceBase {
-    readonly type = 'PotreeSource' as const;
-    readonly isPotreeSource = true as const;
+    public readonly type = 'PotreeSource' as const;
+    public readonly isPotreeSource = true as const;
 
     private readonly _opCounter = new OperationCounter();
     private readonly _options: Required<PotreeSourceOptions>;
@@ -329,15 +329,15 @@ export default class PotreeSource extends PointCloudSourceBase {
         dataFilesExtension: 'bin' | 'laz';
     } | null = null;
 
-    get progress() {
+    public get progress(): number {
         return this._opCounter.progress;
     }
 
-    get loading() {
+    public get loading(): boolean {
         return this._opCounter.loading;
     }
 
-    constructor(options: PotreeSourceOptions) {
+    public constructor(options: PotreeSourceOptions) {
         super();
 
         this._opCounter.addEventListener('changed', () => this.dispatchEvent({ type: 'progress' }));
@@ -458,7 +458,7 @@ export default class PotreeSource extends PointCloudSourceBase {
         pointByteSize: number,
         positionAttribute: PotreePointCloudAttribute,
         optionalAttribute?: PotreePointCloudAttribute,
-    ) {
+    ): Promise<ParseResult> {
         return readBinFile(buffer, pointByteSize, positionAttribute, optionalAttribute);
     }
 
@@ -522,7 +522,7 @@ export default class PotreeSource extends PointCloudSourceBase {
         return result;
     }
 
-    async getNodeData(params: GetNodeDataOptions): Promise<PointCloudNodeData> {
+    public async getNodeData(params: GetNodeDataOptions): Promise<PointCloudNodeData> {
         const { metadata, dataFilesExtension, pointByteSize, attributes } = nonNull(
             this._datasetInfo,
             'not initialized',
@@ -612,7 +612,7 @@ export default class PotreeSource extends PointCloudSourceBase {
         };
     }
 
-    async getHierarchy(): Promise<PointCloudNode> {
+    public async getHierarchy(): Promise<PointCloudNode> {
         this._opCounter.increment();
 
         const metadata = nonNull(this._datasetInfo?.metadata, 'not initialized');
@@ -636,15 +636,15 @@ export default class PotreeSource extends PointCloudSourceBase {
         return root;
     }
 
-    dispose(): void {
+    public dispose(): void {
         // Nothing to do
     }
 
-    getMemoryUsage(): void {
+    public getMemoryUsage(): void {
         // Nothing to do
     }
 
-    getMetadata(): Promise<PointCloudMetadata> {
+    public getMetadata(): Promise<PointCloudMetadata> {
         const { metadata, attributes } = nonNull(this._datasetInfo, 'not initialized');
 
         const { lx, ly, lz, ux, uy, uz } = metadata.tightBoundingBox ?? metadata.boundingBox;

@@ -31,7 +31,7 @@ class ColorMapAtlas {
     /**
      * @param renderer - The renderer
      */
-    constructor(renderer: WebGLRenderer) {
+    public constructor(renderer: WebGLRenderer) {
         this._renderer = renderer;
     }
 
@@ -40,7 +40,7 @@ class ColorMapAtlas {
      *
      * @param colorMap - The color map.
      */
-    add(colorMap: ColorMap) {
+    public add(colorMap: ColorMap): void {
         this._colorMaps.set(colorMap, { offset: 0, texture: '' });
         this._dirty = true;
     }
@@ -50,16 +50,16 @@ class ColorMapAtlas {
      *
      * @param colorMap - The color map.
      */
-    remove(colorMap: ColorMap) {
+    public remove(colorMap: ColorMap): void {
         this._colorMaps.delete(colorMap);
         this._dirty = true;
     }
 
-    forceUpdate() {
+    public forceUpdate(): void {
         this._dirty = true;
     }
 
-    update() {
+    public update(): void {
         // The atlas should be re-rendered if any colormap texture has changed.
         for (const [colorMap, info] of this._colorMaps.entries()) {
             const texture = colorMap.getTexture();
@@ -70,7 +70,7 @@ class ColorMapAtlas {
         }
     }
 
-    private createTexture() {
+    private createTexture(): void {
         this._texture?.dispose();
         this._texture = null;
 
@@ -124,7 +124,7 @@ class ColorMapAtlas {
     /**
      * Gets the atlas texture.
      */
-    get texture() {
+    public get texture(): Texture | null {
         if (this._dirty) {
             this.createTexture();
         }
@@ -137,14 +137,14 @@ class ColorMapAtlas {
      * @param colorMap - The color map.
      * @returns The offset.
      */
-    getOffset(colorMap: ColorMap): number | undefined {
+    public getOffset(colorMap: ColorMap): number | undefined {
         if (this._dirty) {
             this.createTexture();
         }
         return this._colorMaps.get(colorMap)?.offset;
     }
 
-    dispose() {
+    public dispose(): void {
         if (this._disposed) {
             return;
         }

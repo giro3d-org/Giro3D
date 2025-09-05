@@ -15,31 +15,31 @@ class PseudoTileGroup {
     private _obj: Object3D;
     private _matrixWorldInverse: Matrix4;
 
-    constructor(obj: Object3D) {
+    public constructor(obj: Object3D) {
         this._obj = obj;
 
         this._matrixWorldInverse = new Matrix4();
     }
 
-    get matrix() {
+    public get matrix(): Matrix4 {
         return this._obj.matrix;
     }
 
-    get matrixWorld() {
+    public get matrixWorld(): Matrix4 {
         return this._obj.matrixWorld;
     }
 
-    get matrixWorldInverse() {
+    public get matrixWorldInverse(): Matrix4 {
         this._matrixWorldInverse.copy(this.matrixWorld).invert();
         return this._matrixWorldInverse;
     }
 }
 
 class PseudoTileRenderer extends EventDispatcher {
-    readonly ellipsoid: WrappedEllipsoid;
-    readonly group: PseudoTileGroup;
+    public readonly ellipsoid: WrappedEllipsoid;
+    public readonly group: PseudoTileGroup;
 
-    constructor(root: Object3D, ellipsoid: WrappedEllipsoid) {
+    public constructor(root: Object3D, ellipsoid: WrappedEllipsoid) {
         super();
 
         this.group = new PseudoTileGroup(root);
@@ -113,7 +113,7 @@ export default class GlobeControls extends EventDispatcher<GlobeControlsEvents> 
         end: () => void;
     };
 
-    constructor(params: GlobeControlsOptions) {
+    public constructor(params: GlobeControlsOptions) {
         super();
 
         const { scene, camera, domElement } = params;
@@ -123,9 +123,9 @@ export default class GlobeControls extends EventDispatcher<GlobeControlsEvents> 
         this._camera = camera;
 
         this._eventListeners = {
-            change: () => this.dispatchEvent({ type: 'change' }),
-            start: () => this.dispatchEvent({ type: 'start' }),
-            end: () => this.dispatchEvent({ type: 'end' }),
+            change: (): void => this.dispatchEvent({ type: 'change' }),
+            start: (): void => this.dispatchEvent({ type: 'start' }),
+            end: (): void => this.dispatchEvent({ type: 'end' }),
         };
 
         const ellipsoid = params.ellipsoid ?? Ellipsoid.WGS84;
@@ -156,35 +156,35 @@ export default class GlobeControls extends EventDispatcher<GlobeControlsEvents> 
         this._controls.addEventListener('change', this._eventListeners.change);
     }
 
-    get enabled() {
+    public get enabled(): boolean {
         return this._controls.enabled;
     }
 
-    set enabled(v: boolean) {
+    public set enabled(v: boolean) {
         this._controls.enabled = v;
     }
 
-    get enableDamping() {
+    public get enableDamping(): boolean {
         return this._controls.enableDamping;
     }
 
-    set enableDamping(v: boolean) {
+    public set enableDamping(v: boolean) {
         this._controls.enableDamping = v;
     }
 
-    get dampingFactor() {
+    public get dampingFactor(): number {
         return this._controls.dampingFactor;
     }
 
-    set dampingFactor(v: number) {
+    public set dampingFactor(v: number) {
         this._controls.dampingFactor = v;
     }
 
-    get minAltitude() {
+    public get minAltitude(): number {
         return this._controls.minAltitude;
     }
 
-    set minAltitude(v: number) {
+    public set minAltitude(v: number) {
         this._controls.minAltitude = v;
     }
 
@@ -192,11 +192,11 @@ export default class GlobeControls extends EventDispatcher<GlobeControlsEvents> 
      * The zoom speed.
      * @defaultValue 1
      */
-    get zoomSpeed() {
+    public get zoomSpeed(): number {
         return this._controls.zoomSpeed;
     }
 
-    set zoomSpeed(v: number) {
+    public set zoomSpeed(v: number) {
         this._controls.zoomSpeed = v;
     }
 
@@ -204,11 +204,11 @@ export default class GlobeControls extends EventDispatcher<GlobeControlsEvents> 
      * The minimal distance to the ellipsoid surface allowed for the controls.
      * @defaultValue 0 (the ellipsoid surface)
      */
-    get minDistance() {
+    public get minDistance(): number {
         return this._controls.minDistance;
     }
 
-    set minDistance(v: number) {
+    public set minDistance(v: number) {
         this._controls.minDistance = v;
     }
 
@@ -216,37 +216,37 @@ export default class GlobeControls extends EventDispatcher<GlobeControlsEvents> 
      * The maximal distance to the ellipsoid surface allowed for the controls.
      * @defaultValue infinity
      */
-    get maxDistance() {
+    public get maxDistance(): number {
         return this._controls.maxDistance;
     }
 
-    set maxDistance(v: number) {
+    public set maxDistance(v: number) {
         this._controls.maxDistance = v;
     }
 
     /**
      * The maximum zoom value (orthographic cameras only).
      */
-    get maxZoom() {
+    public get maxZoom(): number {
         return this._controls.maxZoom;
     }
 
-    set maxZoom(v: number) {
+    public set maxZoom(v: number) {
         this._controls.maxZoom = v;
     }
 
     /**
      * The minimum zoom value (orthographic cameras only).
      */
-    get minZoom() {
+    public get minZoom(): number {
         return this._controls.minZoom;
     }
 
-    set minZoom(v: number) {
+    public set minZoom(v: number) {
         this._controls.minZoom = v;
     }
 
-    update(deltaTime?: number) {
+    public update(deltaTime?: number): void {
         // The controls adjust the clipping planes, but we don't want that.
         // https://github.com/NASA-AMMOS/3DTilesRendererJS/pull/1066
         const near = this._camera.near;
@@ -262,24 +262,24 @@ export default class GlobeControls extends EventDispatcher<GlobeControlsEvents> 
      * Attaches event listeners to the DOM element.
      * If the event listeners are already attached, this will throw an error.
      */
-    attach() {
+    public attach(): void {
         this._controls.attach(this._domElement);
     }
 
     /**
      * Detaches event listeners from the DOM element.
      */
-    detach() {
+    public detach(): void {
         this._controls.detach();
     }
 
-    dispose() {
+    public dispose(): void {
         this._controls.removeEventListener('change', this._eventListeners.change);
 
         this._controls.dispose();
     }
 
-    resetState() {
+    public resetState(): void {
         this._controls.resetState();
     }
 }

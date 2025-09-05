@@ -17,7 +17,7 @@ class ContourLinePanel extends Panel {
      * @param parentGui - Parent GUI
      * @param instance - The instance
      */
-    constructor(options: ContourLineOptions, parentGui: GUI, instance: Instance) {
+    public constructor(options: ContourLineOptions, parentGui: GUI, instance: Instance) {
         super(parentGui, instance, 'Contour lines');
 
         this.addController(options, 'enabled')

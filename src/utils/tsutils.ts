@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-export const nameof = <T>(name: keyof T) => name;
+export const nameof = <T>(name: keyof T): keyof T => name;
 
 /**
  * Extracts the property from the object, throwing an error if it is undefined.

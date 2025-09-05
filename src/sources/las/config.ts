@@ -23,14 +23,14 @@ let lazPerfPath = DEFAULT_LAZPERF_PATH;
  *
  * Note: the default path to the laz-perf library is {@link DEFAULT_LAZPERF_PATH}.
  */
-export function setLazPerfPath(path: string) {
+export function setLazPerfPath(path: string): void {
     lazPerfPath = path;
 }
 
 /**
  * @internal
  */
-export function getLazPerfPath() {
+export function getLazPerfPath(): string {
     return lazPerfPath;
 }
 
@@ -39,9 +39,9 @@ let lazPerf: Promise<LazPerf> | undefined = undefined;
 /**
  * Loads one instance of the LazPerf library.
  */
-async function loadLazPerf(wasmPath: string) {
+async function loadLazPerf(wasmPath: string): Promise<LazPerf> {
     // console.log('initializing laz-perf with path: ' + wasmPath);
-    return await LazPerf.create({
+    return LazPerf.create({
         locateFile: (file: string) => `${wasmPath}/${file}`,
     });
 }
@@ -49,7 +49,7 @@ async function loadLazPerf(wasmPath: string) {
 /**
  * @internal
  */
-export function getLazPerf() {
+export function getLazPerf(): Promise<LazPerf> {
     if (!lazPerf) {
         lazPerf = loadLazPerf(lazPerfPath);
     }

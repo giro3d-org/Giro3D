@@ -36,7 +36,7 @@ function transformBufferInPlace(
         /** The offset to apply after transforming the coordinate. */
         offset?: Vector2;
     },
-) {
+): void {
     const srcCrsId = params.srcCrs.id;
     const dstCrsId = params.dstCrs.id;
     if (srcCrsId === dstCrsId) {

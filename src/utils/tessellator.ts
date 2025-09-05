@@ -26,7 +26,10 @@ const tris = {
  * to the naive Earcut implementation that does not work if all vertices are located on a vertical plane
  * (since the algorithm works on the XY coordinates).
  */
-export function triangulate(flatCoordinates: ArrayLike<number>, holeIndices?: ArrayLike<number>) {
+export function triangulate(
+    flatCoordinates: ArrayLike<number>,
+    holeIndices?: ArrayLike<number>,
+): number[] {
     const coord = flatCoordinates;
 
     tris.a.set(coord[0], coord[1], coord[2]);

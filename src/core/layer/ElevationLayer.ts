@@ -37,11 +37,11 @@ class ElevationLayer<UserData extends LayerUserData = LayerUserData> extends Lay
     LayerEvents,
     UserData
 > {
-    minmax: { min: number; max: number; isDefault?: boolean };
+    public minmax: { min: number; max: number; isDefault?: boolean };
     /**
      * Read-only flag to check if a given object is of type ElevationLayer.
      */
-    readonly isElevationLayer: boolean = true;
+    public readonly isElevationLayer: boolean = true;
 
     /**
      * Creates an elevation layer.
@@ -49,7 +49,7 @@ class ElevationLayer<UserData extends LayerUserData = LayerUserData> extends Lay
      *
      * @param options - The layer options.
      */
-    constructor(options: ElevationLayerOptions) {
+    public constructor(options: ElevationLayerOptions) {
         super({
             ...options,
             noDataOptions: options.noDataOptions ?? {
@@ -69,11 +69,11 @@ class ElevationLayer<UserData extends LayerUserData = LayerUserData> extends Lay
         this.type = 'ElevationLayer';
     }
 
-    getRenderTargetDataType(): TextureDataType {
+    public getRenderTargetDataType(): TextureDataType {
         return FloatType;
     }
 
-    getRenderTargetPixelFormat(): PixelFormat {
+    public getRenderTargetPixelFormat(): PixelFormat {
         // Elevation textures need two channels:
         // - The elevation values
         // - A bitmask to indicate no-data values
@@ -83,7 +83,7 @@ class ElevationLayer<UserData extends LayerUserData = LayerUserData> extends Lay
         return RGFormat;
     }
 
-    protected override adjustExtent(extent: Extent) {
+    protected override adjustExtent(extent: Extent): Extent {
         // If we know the extent of the source/layer, we can additionally
         // crop the margin extent to ensure it does not overflow the layer extent.
         // This is necessary for elevation layers as they do not use an atlas.
@@ -95,7 +95,7 @@ class ElevationLayer<UserData extends LayerUserData = LayerUserData> extends Lay
         return extent;
     }
 
-    protected override async onInitialized() {
+    protected override async onInitialized(): Promise<void> {
         // Compute a min/max approximation using the background images that
         // are already present on the composer.
         if (this.minmax == null || this.minmax.isDefault === true) {
@@ -108,7 +108,7 @@ class ElevationLayer<UserData extends LayerUserData = LayerUserData> extends Lay
         }
     }
 
-    override unregisterNode(node: TileMesh) {
+    public override unregisterNode(node: TileMesh): void {
         super.unregisterNode(node);
 
         node.removeElevationTexture();
@@ -116,7 +116,7 @@ class ElevationLayer<UserData extends LayerUserData = LayerUserData> extends Lay
         node.material.removeElevationLayer();
     }
 
-    private getMinMax(texture: TextureWithMinMax) {
+    private getMinMax(texture: TextureWithMinMax): { min: number; max: number } {
         const min = isFiniteNumber(texture.min) ? texture.min : this.minmax.min;
         const max = isFiniteNumber(texture.max) ? texture.max : this.minmax.max;
 
@@ -127,7 +127,7 @@ class ElevationLayer<UserData extends LayerUserData = LayerUserData> extends Lay
         return { min, max };
     }
 
-    protected applyTextureToNode(textureAndPitch: TextureAndPitch, target: Target) {
+    protected applyTextureToNode(textureAndPitch: TextureAndPitch, target: Target): void {
         const { texture, pitch } = textureAndPitch;
         const { min, max } = this.getMinMax(texture);
 
@@ -150,7 +150,7 @@ class ElevationLayer<UserData extends LayerUserData = LayerUserData> extends Lay
         });
     }
 
-    protected applyEmptyTextureToNode(target: Target) {
+    protected applyEmptyTextureToNode(target: Target): void {
         (target.node as TileMesh).removeElevationTexture();
     }
 

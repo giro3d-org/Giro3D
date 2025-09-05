@@ -13,19 +13,19 @@ let maxTextureSize = 2048;
 let maxAnisotropy = 0;
 
 export default {
-    isLogDepthBufferSupported() {
+    isLogDepthBufferSupported(): boolean {
         return logDepthBufferSupported;
     },
-    getMaxTextureUnitsCount() {
+    getMaxTextureUnitsCount(): number {
         return maxTexturesUnits;
     },
-    getMaxTextureSize() {
+    getMaxTextureSize(): number {
         return maxTextureSize;
     },
-    getMaxAnisotropy() {
+    getMaxAnisotropy(): number {
         return maxAnisotropy;
     },
-    updateCapabilities(renderer: WebGLRenderer) {
+    updateCapabilities(renderer: WebGLRenderer): void {
         const gl = renderer.getContext();
         maxTexturesUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
         maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);

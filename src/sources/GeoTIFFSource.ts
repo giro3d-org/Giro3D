@@ -5,7 +5,7 @@
  */
 
 import type QuickLRU from 'quick-lru';
-import type { TypedArray } from 'three';
+import type { TextureDataType, TypedArray } from 'three';
 
 import {
     BaseClient,
@@ -20,6 +20,9 @@ import {
 import { FloatType, MathUtils, Texture, UnsignedByteType, Vector2 } from 'three';
 
 import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import type { GridExtent } from '../core/geographic/Extent';
+import type { CreateDataTextureResult } from '../utils/TextureGenerator';
+import type { ImageResponse } from './ImageSource';
 
 import { GlobalCache, type Cache } from '../core/Cache';
 import Extent from '../core/geographic/Extent';
@@ -90,7 +93,7 @@ type CachedBlock = {
  * @param image - The image.
  * @returns `true` if the image is a mask.
  */
-function isMask(image: GeoTIFFImage) {
+function isMask(image: GeoTIFFImage): boolean {
     const FILETYPE_MASK = 4;
     const fileDirectory = image.fileDirectory;
     const type = fileDirectory.NewSubfileType ?? 0;
@@ -101,7 +104,7 @@ function isMask(image: GeoTIFFImage) {
 /**
  * Determines if we can safely use the `readRGB()` method from geotiff.js for this image.
  */
-function canReadRGB(image: GeoTIFFImage) {
+function canReadRGB(image: GeoTIFFImage): boolean {
     if (image.getSamplesPerPixel() !== 3) {
         return false;
     }
@@ -121,29 +124,29 @@ function canReadRGB(image: GeoTIFFImage) {
 }
 
 export class FetcherResponse extends BaseResponse {
-    readonly response: Response;
+    public readonly response: Response;
 
     /**
      * BaseResponse facade for fetch API Response
      *
      * @param response - The response.
      */
-    constructor(response: Response) {
+    public constructor(response: Response) {
         super();
         this.response = response;
     }
 
     // @ts-expect-error (the base class does not type this getter)
-    get status() {
+    public get status(): number {
         return this.response.status;
     }
 
-    override getHeader(name: string) {
+    public override getHeader(name: string): string {
         return this.response.headers.get(name) as string;
     }
 
     // @ts-expect-error (incorrectly typed base method, should be a Promise, but is an ArrayBuffer)
-    async getData(): Promise<ArrayBuffer> {
+    public async getData(): Promise<ArrayBuffer> {
         const data = await this.response.arrayBuffer();
         return data;
     }
@@ -157,7 +160,7 @@ class FetcherClient extends BaseClient {
     private readonly _downloader: ConcurrentDownloader;
     private readonly _priority: RequestPriority;
 
-    constructor(
+    public constructor(
         url: string,
         options: { priority: RequestPriority; retries: number; httpTimeout: number },
     ) {
@@ -171,7 +174,7 @@ class FetcherClient extends BaseClient {
     }
 
     // @ts-expect-error (untyped base method)
-    async request({ headers, credentials, signal } = {}): Promise<FetcherResponse> {
+    public async request({ headers, credentials, signal } = {}): Promise<FetcherResponse> {
         const response = await this._downloader.fetch(this.url, {
             headers,
             credentials,
@@ -197,7 +200,7 @@ interface SizedArray<T> extends Array<T> {
     height: number;
 }
 
-function selectDataType(format: number, bitsPerSample: number) {
+function selectDataType(format: number, bitsPerSample: number): TextureDataType {
     switch (format) {
         case 1: // unsigned integer data
             if (bitsPerSample <= 8) {
@@ -287,11 +290,11 @@ export interface GeoTIFFSourceOptions extends ImageSourceOptions {
  * using [Cloud Optimized GeoTIFFs (COGs)](https://www.cogeo.org/) for best performance.
  */
 class GeoTIFFSource extends ImageSource {
-    readonly isGeoTIFFSource: boolean = true as const;
-    override readonly type = 'GeoTIFFSource' as const;
+    public readonly isGeoTIFFSource: boolean = true as const;
+    public override readonly type = 'GeoTIFFSource' as const;
 
-    readonly url: string;
-    readonly crs: CoordinateSystem;
+    public readonly url: string;
+    public readonly crs: CoordinateSystem;
 
     private readonly _cacheId: string = MathUtils.generateUUID();
     private readonly _cacheOptions?: GeoTIFFCacheOptions;
@@ -321,7 +324,7 @@ class GeoTIFFSource extends ImageSource {
      *
      * @param options - options
      */
-    constructor(options: GeoTIFFSourceOptions) {
+    public constructor(options: GeoTIFFSourceOptions) {
         super({ ...options, flipY: options.flipY ?? true });
 
         this.url = options.url;
@@ -346,7 +349,7 @@ class GeoTIFFSource extends ImageSource {
         return source.blockCache;
     }
 
-    override getMemoryUsage(context: GetMemoryUsageContext) {
+    public override getMemoryUsage(context: GetMemoryUsageContext): void {
         if (!this._tiffImage) {
             return;
         }
@@ -366,11 +369,11 @@ class GeoTIFFSource extends ImageSource {
         }
     }
 
-    getExtent() {
+    public getExtent(): Extent {
         return nonNull(this._extent);
     }
 
-    getCrs() {
+    public getCrs(): CoordinateSystem {
         return this.crs;
     }
 
@@ -380,7 +383,7 @@ class GeoTIFFSource extends ImageSource {
      * @param crs - The CRS.
      * @param tiffImage - The TIFF image.
      */
-    static computeExtent(crs: CoordinateSystem, tiffImage: GeoTIFFImage) {
+    public static computeExtent(crs: CoordinateSystem, tiffImage: GeoTIFFImage): Extent {
         const [minx, miny, maxx, maxy] = tiffImage.getBoundingBox();
 
         const extent = new Extent(crs, minx, maxx, miny, maxy);
@@ -392,7 +395,7 @@ class GeoTIFFSource extends ImageSource {
         requestWidth: number,
         requestHeight: number,
         margin = 0,
-    ) {
+    ): GridExtent {
         // First, ensure that the input extent is not bigger than our image
         const croppedExtent = requestExtent.clone().intersect(nonNull(this._extent));
 
@@ -426,12 +429,12 @@ class GeoTIFFSource extends ImageSource {
      * @param margin - The margin, in pixels.
      * @returns The adjusted parameters.
      */
-    override adjustExtentAndPixelSize(
+    public override adjustExtentAndPixelSize(
         requestExtent: Extent,
         requestWidth: number,
         requestHeight: number,
         margin = 0,
-    ) {
+    ): GridExtent {
         // Special case to avoid the ugly visible seam at the 180° line on
         // spherical panoramas.
         // https://gitlab.com/giro3d/giro3d/-/issues/630
@@ -478,7 +481,7 @@ class GeoTIFFSource extends ImageSource {
         };
     }
 
-    override initialize() {
+    public override initialize(): Promise<void> {
         if (!this._initializePromise) {
             this._initializePromise = this.initializeOnce();
         }
@@ -486,7 +489,7 @@ class GeoTIFFSource extends ImageSource {
         return this._initializePromise;
     }
 
-    private async initializeOnce() {
+    private async initializeOnce(): Promise<void> {
         if (this._initialized) {
             return;
         }
@@ -570,7 +573,10 @@ class GeoTIFFSource extends ImageSource {
      * @param resolution - The spatial resolution of the window.
      * @returns The window.
      */
-    private makeWindowFromExtent(extent: Extent, resolution: number[]) {
+    private makeWindowFromExtent(
+        extent: Extent,
+        resolution: number[],
+    ): [number, number, number, number] {
         const [oX, oY] = nonNull(this._origin);
         const [imageResX, imageResY] = resolution;
         const ext = extent.values;
@@ -604,7 +610,7 @@ class GeoTIFFSource extends ImageSource {
      * @param buffers - The buffers (one buffer per band)
      * @returns The generated texture.
      */
-    private async createTexture(buffers: SizedArray<TypedArray>) {
+    private async createTexture(buffers: SizedArray<TypedArray>): Promise<CreateDataTextureResult> {
         // Width and height in pixels of the returned data.
         // The geotiff.js patches the arrays with the width and height properties.
         const { width, height }: SizedArray<TypedArray> = buffers;
@@ -634,7 +640,11 @@ class GeoTIFFSource extends ImageSource {
      * @param requestHeight - The pixel height of the window.
      * @returns The selected zoom level.
      */
-    private selectLevel(requestExtent: Extent, requestWidth: number, requestHeight: number) {
+    private selectLevel(
+        requestExtent: Extent,
+        requestWidth: number,
+        requestHeight: number,
+    ): { image: Level; mask: Level } {
         // Number of images  = original + overviews if any
         const imageCount = this._imageCount;
         const cropped = requestExtent.clone().intersect(nonNull(this._extent));
@@ -669,11 +679,11 @@ class GeoTIFFSource extends ImageSource {
     /**
      * Gets or sets the channel mapping.
      */
-    get channels(): ChannelMapping {
+    public get channels(): ChannelMapping {
         return this._channels;
     }
 
-    set channels(value: ChannelMapping) {
+    public set channels(value: ChannelMapping) {
         if (value == null) {
             throw new Error('expected non-null value');
         }
@@ -693,7 +703,7 @@ class GeoTIFFSource extends ImageSource {
         height: number;
         id: string;
         signal?: AbortSignal;
-    }) {
+    }): Promise<ImageResult> {
         const { extent, width, height, id, signal } = opts;
 
         const { image, mask } = this.selectLevel(extent, width, height);
@@ -742,7 +752,7 @@ class GeoTIFFSource extends ImageSource {
         extent: Extent,
         signal: AbortSignal | undefined,
         id: string,
-    ) {
+    ): Promise<TypedArray | null> {
         const bufs = await this.getRegionBuffers(extent, mask, [0], signal, id);
         if (!bufs) {
             return null;
@@ -878,25 +888,25 @@ class GeoTIFFSource extends ImageSource {
         return result;
     }
 
-    getImages(options: {
+    public getImages(options: {
         id: string;
         extent: Extent;
         width: number;
         height: number;
         signal?: AbortSignal;
-    }) {
+    }): ImageResponse[] {
         const { signal, id } = options;
 
         signal?.throwIfAborted();
 
         const opts = { ...options, id };
 
-        const request = () => this.loadImage(opts);
+        const request = (): Promise<ImageResult> => this.loadImage(opts);
 
         return [{ id, request }];
     }
 
-    override dispose(): void {
+    public override dispose(): void {
         this.getInternalCache()?.clear();
     }
 }

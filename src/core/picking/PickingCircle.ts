@@ -6,7 +6,7 @@
 
 type PickingCircleCallback = (x: number, y: number, idx: number) => boolean | null;
 
-function traversePickingCircle(radius: number, callback: PickingCircleCallback) {
+function traversePickingCircle(radius: number, callback: PickingCircleCallback): void {
     // iterate on radius so we get closer to the mouse
     // results first.
     // Result traversal order for radius=2

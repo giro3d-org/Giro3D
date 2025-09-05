@@ -27,9 +27,9 @@ export type ErrorResponse = BaseResponse & { error: string };
 export type Response<T = unknown> = SuccessResponse<T> | ErrorResponse;
 
 export class WorkerError extends Error {
-    readonly messageId: number;
+    public readonly messageId: number;
 
-    constructor(messageId: number, message: string) {
+    public constructor(messageId: number, message: string) {
         super(message);
         this.messageId = messageId;
     }
@@ -79,7 +79,7 @@ export default class WorkerPool<
 
     private _messageId = 0;
 
-    get loading() {
+    public get loading(): boolean {
         let result = false;
         this._workers.forEach(w => {
             if (w.counter.loading) {
@@ -90,7 +90,7 @@ export default class WorkerPool<
         return result;
     }
 
-    get progress() {
+    public get progress(): number {
         let sum = 0;
         this._workers.forEach(w => {
             sum += w.counter.progress;
@@ -99,7 +99,7 @@ export default class WorkerPool<
         return sum / this._workers.size;
     }
 
-    constructor(options: {
+    public constructor(options: {
         /**
          * The function to create a worker.
          */
@@ -125,7 +125,7 @@ export default class WorkerPool<
         }
     }
 
-    static get defaultConcurrency() {
+    public static get defaultConcurrency(): number {
         if (typeof window !== 'undefined' && window.navigator != null) {
             return window.navigator.hardwareConcurrency;
         } else {
@@ -137,7 +137,7 @@ export default class WorkerPool<
      * Sends a message to the first available worker, then waits for a response matching this
      * message's id, then returns this response, or throw an error if an error response is received.
      */
-    queue<K extends keyof TMessageMap>(
+    public queue<K extends keyof TMessageMap>(
         type: K,
         payload: TMessageMap[K]['payload'],
         transfer?: Transferable[],
@@ -167,7 +167,7 @@ export default class WorkerPool<
             // eslint-disable-next-line prefer-const
             let stopListening: () => void;
 
-            const onResponse = (event: MessageEvent<Response>) => {
+            const onResponse = (event: MessageEvent<Response>): void => {
                 const response = event.data;
 
                 if (response.requestId === message.id) {
@@ -181,7 +181,7 @@ export default class WorkerPool<
                 }
             };
 
-            stopListening = () => {
+            stopListening = (): void => {
                 wrapper.counter.decrement();
 
                 // The worker is idle, start the termination timeout. It will be cancelled
@@ -201,7 +201,7 @@ export default class WorkerPool<
     /**
      * Terminates all workers.
      */
-    dispose(): void {
+    public dispose(): void {
         if (this._disposed) {
             return;
         }
@@ -211,7 +211,7 @@ export default class WorkerPool<
         this._workers.forEach(w => w.worker.terminate());
     }
 
-    private startWorkerTerminationTimeout(wrapper: WorkerWrapper) {
+    private startWorkerTerminationTimeout(wrapper: WorkerWrapper): void {
         const worker = wrapper.worker;
         wrapper.idleTimeout = setTimeout(() => {
             worker.terminate();

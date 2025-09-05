@@ -32,7 +32,7 @@ export enum SkirtSide {
 export function iterateBottomVertices<T extends VectorArray>(
     array: T,
     callback: (index: number) => void,
-) {
+): void {
     const vertexCount = array.length;
 
     callback(vertexCount - 4);
@@ -50,7 +50,7 @@ export function iterateSkirtVertices<T extends VectorArray>(
         skirtTopIndex: number,
         skirtBottomIndex: number,
     ) => void,
-) {
+): void {
     const rowSize = segments + 1;
     const skirtTopStart = rowSize * rowSize;
     const skirtVertexCount = rowSize * 2;

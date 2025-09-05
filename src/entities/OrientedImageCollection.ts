@@ -556,7 +556,7 @@ export default class OrientedImageCollection<
         return source;
     }
 
-    private updateMinMaxDistance(context: Context) {
+    private updateMinMaxDistance(context: Context): void {
         if (!this.visible) {
             return;
         }
@@ -597,8 +597,8 @@ export default class OrientedImageCollection<
         const imageObject: ImageObject = { mesh, material, wasDisposed: false };
 
         // only trigger texture fetching once when the mesh is visible
-        mesh.onBeforeRender = async () => {
-            mesh.onBeforeRender = () => {};
+        mesh.onBeforeRender = async (): Promise<void> => {
+            mesh.onBeforeRender = (): void => {};
 
             try {
                 const texture = await Fetcher.texture(imageSource.imageUrl, {

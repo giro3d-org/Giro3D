@@ -19,7 +19,7 @@ class ColorimetryPanel extends Panel {
      * @param parentGui - Parent GUI
      * @param instance - The instance
      */
-    constructor(options: ColorimetryOptions, parentGui: GUI, instance: Instance) {
+    public constructor(options: ColorimetryOptions, parentGui: GUI, instance: Instance) {
         super(parentGui, instance, 'Colorimetry');
 
         this._options = options;
@@ -46,7 +46,7 @@ class ColorimetryPanel extends Panel {
             .onChange(() => this.notify());
     }
 
-    reset() {
+    public reset(): void {
         this._options.brightness = 0;
         this._options.saturation = 1;
         this._options.contrast = 1;

@@ -102,7 +102,7 @@ export default class WmtsSource extends TiledImageSource {
      * });
      * ```
      */
-    static async fromCapabilities(
+    public static async fromCapabilities(
         url: string,
         options: WmtsFromCapabilitiesOptions,
     ): Promise<WmtsSource> {

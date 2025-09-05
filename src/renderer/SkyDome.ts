@@ -61,11 +61,11 @@ const defaultUniforms: Uniforms = {
 const DEFAULT_ATMOSPHERE_THICKNESS = 40_000;
 
 class SkyDome extends Mesh<SphereGeometry, ShaderMaterial> {
-    readonly isSkyDome = true as const;
-    override readonly type = 'SkyDome' as const;
-    readonly uniforms: Uniforms;
+    public readonly isSkyDome = true as const;
+    public override readonly type = 'SkyDome' as const;
+    public readonly uniforms: Uniforms;
 
-    private set<K extends keyof Uniforms>(key: K, value: Uniforms[K]['value']) {
+    private set<K extends keyof Uniforms>(key: K, value: Uniforms[K]['value']): void {
         this.uniforms[key].value = value;
     }
     private get<K extends keyof Uniforms>(key: K): Uniforms[K]['value'] {
@@ -75,55 +75,55 @@ class SkyDome extends Mesh<SphereGeometry, ShaderMaterial> {
     /**
      * The cosine of the solar disc's apparent diameter, in degrees.
      */
-    get sunAngularDiameterCos() {
+    public get sunAngularDiameterCos(): number {
         return this.get('sunAngularDiameterCos');
     }
 
-    set sunAngularDiameterCos(v: number) {
+    public set sunAngularDiameterCos(v: number) {
         this.set('sunAngularDiameterCos', v);
     }
 
-    get luminance() {
+    public get luminance(): number {
         return this.get('skyDomeLuminance');
     }
 
-    set luminance(v: number) {
+    public set luminance(v: number) {
         this.set('skyDomeLuminance', v);
     }
 
-    get turbidity() {
+    public get turbidity(): number {
         return this.get('turbidity');
     }
 
-    set turbidity(v: number) {
+    public set turbidity(v: number) {
         this.set('turbidity', v);
     }
 
-    get rayleighCoefficient() {
+    public get rayleighCoefficient(): number {
         return this.get('rayleighCoefficient');
     }
 
-    set rayleighCoefficient(v: number) {
+    public set rayleighCoefficient(v: number) {
         this.set('rayleighCoefficient', v);
     }
 
-    get mieCoefficient() {
+    public get mieCoefficient(): number {
         return this.get('mieCoefficient');
     }
 
-    set mieCoefficient(v: number) {
+    public set mieCoefficient(v: number) {
         this.set('mieCoefficient', v);
     }
 
-    get mieDirectionalG() {
+    public get mieDirectionalG(): number {
         return this.get('mieDirectionalG');
     }
 
-    set mieDirectionalG(v: number) {
+    public set mieDirectionalG(v: number) {
         this.set('mieDirectionalG', v);
     }
 
-    constructor(params?: { atmosphereThickness?: number }) {
+    public constructor(params?: { atmosphereThickness?: number }) {
         super(
             new SphereGeometry(params?.atmosphereThickness ?? DEFAULT_ATMOSPHERE_THICKNESS, 64, 32),
             new ShaderMaterial({
@@ -140,7 +140,7 @@ class SkyDome extends Mesh<SphereGeometry, ShaderMaterial> {
         this.uniforms = this.material.uniforms as Uniforms;
     }
 
-    override onBeforeRender(renderer: WebGLRenderer, scene: Scene, camera: Camera): void {
+    public override onBeforeRender(renderer: WebGLRenderer, scene: Scene, camera: Camera): void {
         this.uniforms.up.value.copy(camera.up);
     }
 }

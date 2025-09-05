@@ -106,7 +106,7 @@ function isOperationAllowed<K extends keyof Permissions>(
     return shape.userData.permissions[constraint] ?? true;
 }
 
-const isFirstVertexPicked = (shape: Shape, e: MouseEvent | Vector2) => {
+const isFirstVertexPicked = (shape: Shape, e: MouseEvent | Vector2): boolean => {
     const canvasCoordinates = isVector2(e) ? e : tmpVec2.set(e.offsetX, e.offsetY);
     const pickSelf = shape.pick(canvasCoordinates);
     return pickSelf.length > 0 && pickSelf[0].pickedVertexIndex === 0;
@@ -142,7 +142,7 @@ export type CreateShapeOptions = Partial<ShapeConstructorOptions> &
         constraints?: Permissions;
     };
 
-function inhibit(e: Event) {
+function inhibit(e: Event): void {
     e.preventDefault();
     e.stopImmediatePropagation();
     e.stopPropagation();
@@ -170,20 +170,22 @@ export interface DrawToolEventMap {
 /**
  * A hook that prevents the operation from occuring.
  */
-export const inhibitHook = () => false;
+export const inhibitHook = (): boolean => false;
 
 /**
  * A hook that prevents the removal of a point if the new number of points is below a limit (e.g
  * removing a point of a 2-point LineString).
  */
-export const limitRemovePointHook = (limit: number) => (options: { shape: Shape }) => {
-    return options.shape.points.length > limit;
-};
+export const limitRemovePointHook =
+    (limit: number) =>
+    (options: { shape: Shape }): boolean => {
+        return options.shape.points.length > limit;
+    };
 
 /**
  * A hook that ensures the ring remains closed after the first or last point of the ring is removed.
  */
-export const afterRemovePointOfRing = (options: { shape: Shape; index: number }) => {
+export const afterRemovePointOfRing = (options: { shape: Shape; index: number }): void => {
     const { shape, index } = options;
 
     if (index === 0) {
@@ -204,7 +206,7 @@ export const afterUpdatePointOfRing = (options: {
     shape: Shape;
     index: number;
     newPosition: Vector3;
-}) => {
+}): void => {
     const { index, shape, newPosition } = options;
 
     if (index === 0) {
@@ -220,7 +222,7 @@ const LEFT_BUTTON = 0;
 const MIDDLE_BUTTON = 1;
 const RIGHT_BUTTON = 2;
 
-function middleButtonOrLeftButtonAndAlt(e: Event) {
+function middleButtonOrLeftButtonAndAlt(e: Event): boolean {
     if (e.type === 'mousedown') {
         const mouseEvent = e as MouseEvent;
         if (mouseEvent.button === MIDDLE_BUTTON) {
@@ -236,7 +238,7 @@ function middleButtonOrLeftButtonAndAlt(e: Event) {
     return false;
 }
 
-function leftButton(e: Event) {
+function leftButton(e: Event): boolean {
     if (e.type === 'mousedown') {
         if ((e as MouseEvent).button === LEFT_BUTTON) {
             return true;
@@ -346,7 +348,7 @@ export type PointUpdatedCallback = ShapeModifiedCallback<{
     newPosition: Vector3;
 }>;
 
-function computeMarkerRadius(shape: Shape, type: 'vertex' | 'segment') {
+function computeMarkerRadius(shape: Shape, type: 'vertex' | 'segment'): number {
     let baseRadius: number;
 
     // If we display the vertex marker on a vertex, we need it to be slightly
@@ -404,7 +406,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
     private _mouseEventHandler: (e: MouseEvent) => void;
     private _lastMouseCoordinate: Vector2 | null = null;
 
-    constructor(options: {
+    public constructor(options: {
         /**
          * The Giro3D instance.
          */
@@ -436,7 +438,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
         window.addEventListener('mousemove', this._mouseEventHandler);
     }
 
-    private onMouseEvent(e: MouseEvent) {
+    private onMouseEvent(e: MouseEvent): void {
         const rect = this._domElement.getBoundingClientRect();
         const x = e.clientX - rect.x;
         const y = e.clientY - rect.y;
@@ -455,7 +457,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
         return this._instance.pickObjectsAt(e, { sortByDistance: true });
     }
 
-    private hideVertexMarker() {
+    private hideVertexMarker(): void {
         if (this._selectedVertexMarker) {
             this._selectedVertexMarker.visible = false;
         }
@@ -463,7 +465,12 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
         this._instance.notifyChange();
     }
 
-    private displayVertexMarker(shape: Shape, position: Vector3, radius: number, opacity: number) {
+    private displayVertexMarker(
+        shape: Shape,
+        position: Vector3,
+        radius: number,
+        opacity: number,
+    ): void {
         if (!this._selectedVertexMarker) {
             this._selectedVertexMarker = new ConstantSizeSphere({
                 radius: radius,
@@ -491,7 +498,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
      * Enter edition mode. In this mode, existing {@link Shape}s can be modified (add/remove points, move points).
      * @param options - The options.
      */
-    enterEditMode(options?: {
+    public enterEditMode(options?: {
         /**
          * The custom picking function. If unspecified, the default one will be used.
          */
@@ -531,7 +538,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
          * The shapes to edit. If `undefined` or empty, all shapes become editable.
          */
         shapesToEdit?: Shape[];
-    }) {
+    }): void {
         this._editionModeController?.abort();
         this._editionModeController = new AbortController();
 
@@ -545,16 +552,17 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
             options?.onBeforePointRemoved ?? middleButtonOrLeftButtonAndAlt;
         const onBeforePointMoved = options?.onBeforePointMoved ?? leftButton;
         const onBeforePointInserted = options?.onSegmentClicked ?? leftButton;
-        const noOp = () => {};
+        const noOp = (): void => {};
         const onPointInserted = options?.onPointInserted ?? noOp;
         const onPointRemoved = options?.onPointRemoved ?? noOp;
         const onPointUpdated = options?.onPointUpdated ?? noOp;
 
         const pick: PickCallback = options?.pick ?? this.defaultPick.bind(this);
         const pickShapes: PickCallback<ShapePickResult> =
-            options?.pickShapes ?? (e => this.defaultPickShapes(e, options?.shapesToEdit));
+            options?.pickShapes ??
+            ((e): ShapePickResult[] => this.defaultPickShapes(e, options?.shapesToEdit));
 
-        const pickFirstShape = (e: MouseEvent) => {
+        const pickFirstShape = (e: MouseEvent): ShapePickResult | null => {
             const picked = pickShapes(e);
             for (const item of picked) {
                 const entity = item.entity;
@@ -565,7 +573,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
 
             return null;
         };
-        const pickNonShapes = (e: MouseEvent) => {
+        const pickNonShapes = (e: MouseEvent): PickResult | null => {
             const picked = pick(e);
 
             for (const item of picked) {
@@ -583,7 +591,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
 
         // Clicking will either start dragging the picked vertex,
         // or insert/remove a vertex depending on the mouse button.
-        const onMouseDown = (e: MouseEvent) => {
+        const onMouseDown = (e: MouseEvent): void => {
             if (this._inhibitEdition) {
                 return;
             }
@@ -648,7 +656,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
             }
         };
 
-        const onMouseUp = () => {
+        const onMouseUp = (): void => {
             if (this._inhibitEdition) {
                 return;
             }
@@ -661,7 +669,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
             pickedShape = null;
         };
 
-        const onMouseMove = (e: MouseEvent) => {
+        const onMouseMove = (e: MouseEvent): void => {
             if (this._inhibitEdition) {
                 return;
             }
@@ -727,12 +735,12 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
     /**
      * Exits edition mode.
      */
-    exitEditMode() {
+    public exitEditMode(): void {
         this._editionModeController?.abort();
         this.hideVertexMarker();
     }
 
-    private exitCreateMode() {
+    private exitCreateMode(): void {
         this._inhibitEdition = false;
     }
 
@@ -742,7 +750,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
      * @returns A promise that eventually resolves with the created shape, or `null` if the creation
      * was cancelled.
      */
-    createShape(options: CreateShapeOptions): Promise<Shape | null> {
+    public createShape(options: CreateShapeOptions): Promise<Shape | null> {
         const shape = new Shape<ShapeUserData>({ ...options });
 
         shape.visible = false;
@@ -772,7 +780,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
         const lastPointerLocation = new Vector2();
         const currentPointerLocation = new Vector2();
 
-        function updatePoints() {
+        function updatePoints(): void {
             shape.setPoints([...points]);
         }
 
@@ -781,7 +789,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
 
             let removeListeners: (() => void) | undefined = undefined;
 
-            const finalize = (shape: Shape | null) => {
+            const finalize = (shape: Shape | null): void => {
                 if (shape) {
                     shape.pickableLabels = pickableLabels;
                 }
@@ -792,7 +800,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
                 resolve(shape);
             };
 
-            const onAbort = () => {
+            const onAbort = (): void => {
                 this._instance.remove(shape);
                 if (removeListeners) {
                     removeListeners();
@@ -801,7 +809,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
                 reject(new AbortError());
             };
 
-            const updateTemporaryPoint = (e: MouseEvent | Vector2) => {
+            const updateTemporaryPoint = (e: MouseEvent | Vector2): void => {
                 // When moving the temporary point around, we ecounter two possible scenarios:
                 // - we picked the first point of the shape
                 // - we picked something else
@@ -845,11 +853,11 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
                 }
             };
 
-            const onMouseMove = (e: MouseEvent) => {
+            const onMouseMove = (e: MouseEvent): void => {
                 updateTemporaryPoint(e);
             };
 
-            const finishDrawing = () => {
+            const finishDrawing = (): void => {
                 if (minPoints != null && clickCount >= minPoints) {
                     shape.setPoints(points);
 
@@ -865,11 +873,11 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
                 }
             };
 
-            const onMouseDown = (e: MouseEvent) => {
+            const onMouseDown = (e: MouseEvent): void => {
                 lastPointerLocation.set(e.screenX, e.screenY);
             };
 
-            const onClick = (e: MouseEvent) => {
+            const onClick = (e: MouseEvent): void => {
                 // Not a simple click
                 if (e.detail !== 1) {
                     return;
@@ -922,7 +930,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
 
             const signal = options.signal;
 
-            const handleEvent = (event: MouseEvent) => {
+            const handleEvent = (event: MouseEvent): void => {
                 if (endCondition(event)) {
                     finishDrawing();
                 } else {
@@ -940,7 +948,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
                 }
             };
 
-            removeListeners = () => {
+            removeListeners = (): void => {
                 domElement.removeEventListener('mousedown', handleEvent);
                 domElement.removeEventListener('mousemove', handleEvent);
                 domElement.removeEventListener('mouseup', handleEvent);
@@ -975,7 +983,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
      * @param options - The options.
      * @returns A promise that eventually returns the {@link Shape} or `null` if creation was cancelled.
      */
-    createSegment(options?: CreationOptions): Promise<Shape | null> {
+    public createSegment(options?: CreationOptions): Promise<Shape | null> {
         return this.createShape({
             ...options,
             minPoints: 2,
@@ -995,7 +1003,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
      * @param options - The options.
      * @returns A promise that eventually returns the {@link Shape} or `null` if creation was cancelled.
      */
-    createLineString(options?: CreationOptions): Promise<Shape | null> {
+    public createLineString(options?: CreationOptions): Promise<Shape | null> {
         return this.createShape({
             ...options,
             beforeRemovePoint: limitRemovePointHook(2),
@@ -1011,10 +1019,10 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
      * @param options - The options.
      * @returns A promise that eventually returns the {@link Shape} or `null` if creation was cancelled.
      */
-    createVerticalMeasure(options?: CreationOptions): Promise<Shape | null> {
+    public createVerticalMeasure(options?: CreationOptions): Promise<Shape | null> {
         let canUpdateFloor = true;
 
-        const updateDashSize = (shape: Shape) => {
+        const updateDashSize = (shape: Shape): void => {
             if (shape.points.length > 1) {
                 const p0 = shape.points[0];
                 const p1 = shape.points[1];
@@ -1023,7 +1031,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
             }
         };
 
-        const onPointCreated = (shape: Shape, index: number, position: Vector3) => {
+        const onPointCreated = (shape: Shape, index: number, position: Vector3): void => {
             if (index === 0) {
                 canUpdateFloor = false;
                 const height = position.z;
@@ -1040,12 +1048,12 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
 
         // Whenever the first point is updated, we need to set the floor height to
         // this point's height, so that we always display a nice right triangle.
-        const updateFloor = (shape: Shape, position: Vector3) => {
+        const updateFloor = (shape: Shape, position: Vector3): void => {
             const height = position.z;
             shape.floorElevation = height;
         };
 
-        const onTemporaryPointMoved = (shape: Shape, position: Vector3) => {
+        const onTemporaryPointMoved = (shape: Shape, position: Vector3): void => {
             if (canUpdateFloor) {
                 updateFloor(shape, position);
             }
@@ -1057,7 +1065,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
             shape: Shape;
             index: number;
             newPosition: Vector3;
-        }) => {
+        }): void => {
             const { index, shape, newPosition } = options;
 
             if (index === 0) {
@@ -1096,7 +1104,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
      * @param options - The options.
      * @returns A promise that eventually returns the {@link Shape} or `null` if creation was cancelled.
      */
-    createPoint(options?: CreationOptions): Promise<Shape | null> {
+    public createPoint(options?: CreationOptions): Promise<Shape | null> {
         return this.createShape({
             ...options,
             minPoints: 1,
@@ -1110,7 +1118,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
      * @param options - The options.
      * @returns A promise that eventually returns the {@link Shape} or `null` if creation was cancelled.
      */
-    createMultiPoint(options?: CreationOptions): Promise<Shape | null> {
+    public createMultiPoint(options?: CreationOptions): Promise<Shape | null> {
         return this.createShape({
             showLine: false,
             ...options,
@@ -1125,7 +1133,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
      * @param options - The options.
      * @returns A promise that eventually returns the {@link Shape} or `null` if creation was cancelled.
      */
-    createPolygon(options?: CreationOptions): Promise<Shape | null> {
+    public createPolygon(options?: CreationOptions): Promise<Shape | null> {
         return this.createShape({
             showSurface: true,
             closeRing: true,
@@ -1143,7 +1151,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
      * @param options - The options.
      * @returns A promise that eventually returns the {@link Shape} or `null` if creation was cancelled.
      */
-    createRing(options?: CreationOptions): Promise<Shape | null> {
+    public createRing(options?: CreationOptions): Promise<Shape | null> {
         return this.createShape({
             closeRing: true,
             ...options,
@@ -1160,7 +1168,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
      * @param options - The options.
      * @returns A promise that eventually returns the {@link Shape} or `null` if creation was cancelled.
      */
-    createSector(options?: CreationOptions): Promise<Shape | null> {
+    public createSector(options?: CreationOptions): Promise<Shape | null> {
         return this.createShape({
             vertexLabelFormatter: angleFormatter,
             showVertexLabels: true,
@@ -1179,7 +1187,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
     /**
      * Disposes unmanaged resources created by this instance.
      */
-    dispose() {
+    public dispose(): void {
         this._markerMaterial.dispose();
         if (this._selectedVertexMarker) {
             this._instance.remove(this._selectedVertexMarker);

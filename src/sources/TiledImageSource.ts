@@ -13,7 +13,9 @@ import { TileRange } from 'ol';
 import { UnsignedByteType, Vector2, type Texture } from 'three';
 
 import type Extent from '../core/geographic/Extent';
+import type { GridExtent } from '../core/geographic/Extent';
 import type ImageFormat from '../formats/ImageFormat';
+import type { GetImageOptions, ImageResponse, ImageSourceOptions } from './ImageSource';
 
 import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import EmptyTexture from '../renderer/EmptyTexture';
@@ -24,11 +26,7 @@ import PromiseUtils from '../utils/PromiseUtils';
 import TextureGenerator from '../utils/TextureGenerator';
 import { nonNull } from '../utils/tsutils';
 import ConcurrentDownloader from './ConcurrentDownloader';
-import ImageSource, {
-    ImageResult,
-    type GetImageOptions,
-    type ImageSourceOptions,
-} from './ImageSource';
+import ImageSource, { ImageResult } from './ImageSource';
 
 const MIN_LEVEL_THRESHOLD = 2;
 const DEFAULT_RETRIES = 3;
@@ -108,13 +106,13 @@ export interface TiledImageSourceOptions extends ImageSourceOptions {
  * \});
  */
 export default class TiledImageSource extends ImageSource {
-    readonly isTiledImageSource = true as const;
-    override readonly type = 'TiledImageSource' as const;
+    public readonly isTiledImageSource = true as const;
+    public override readonly type = 'TiledImageSource' as const;
 
-    readonly source: UrlTile;
-    readonly format: ImageFormat | undefined;
-    readonly olprojection: Projection;
-    readonly noDataValue: number | undefined;
+    public readonly source: UrlTile;
+    public readonly format: ImageFormat | undefined;
+    public readonly olprojection: Projection;
+    public readonly noDataValue: number | undefined;
     private readonly _tileGrid: TileGrid;
     private readonly _getTileUrl: UrlFunction;
     private readonly _sourceExtent: Extent;
@@ -122,7 +120,7 @@ export default class TiledImageSource extends ImageSource {
     private readonly _enableWorkers: boolean;
 
     /** @internal */
-    readonly info = {
+    public readonly info = {
         requestedTiles: 0,
         loadedTiles: 0,
     };
@@ -130,7 +128,7 @@ export default class TiledImageSource extends ImageSource {
     /**
      * @param options - The options.
      */
-    constructor(options: TiledImageSourceOptions) {
+    public constructor(options: TiledImageSourceOptions) {
         super({
             ...options,
             flipY: options.flipY ?? options.format?.flipY ?? false,
@@ -165,20 +163,20 @@ export default class TiledImageSource extends ImageSource {
             );
     }
 
-    getExtent() {
+    public getExtent(): Extent {
         return this._sourceExtent;
     }
 
-    getCrs() {
+    public getCrs(): CoordinateSystem {
         return CoordinateSystem.fromSrid(this.olprojection.getCode());
     }
 
-    override adjustExtentAndPixelSize(
+    public override adjustExtentAndPixelSize(
         requestExtent: Extent,
         requestWidth: number,
         requestHeight: number,
         margin = 0,
-    ): { extent: Extent; width: number; height: number } {
+    ): GridExtent {
         const zoom =
             this.getZoomLevel(requestExtent, requestWidth, requestHeight) ??
             this._tileGrid.getMinZoom();
@@ -215,7 +213,7 @@ export default class TiledImageSource extends ImageSource {
         const minZoom = this._tileGrid.getMinZoom();
         const maxZoom = this._tileGrid.getMaxZoom();
 
-        function round1000000(n: number) {
+        function round1000000(n: number): number {
             return Math.round(n * 1000000) / 1000000;
         }
 
@@ -256,7 +254,7 @@ export default class TiledImageSource extends ImageSource {
         return result;
     }
 
-    getImages(options: GetImageOptions) {
+    public getImages(options: GetImageOptions): ImageResponse[] {
         const { extent, width, height, signal } = options;
 
         signal?.throwIfAborted();
@@ -287,7 +285,7 @@ export default class TiledImageSource extends ImageSource {
         return images;
     }
 
-    private async fetchData(url: string, signal: AbortSignal | undefined) {
+    private async fetchData(url: string, signal: AbortSignal | undefined): Promise<Blob | null> {
         try {
             const response = await this._downloader.fetch(url, {
                 signal,
@@ -331,7 +329,7 @@ export default class TiledImageSource extends ImageSource {
         extent: Extent,
         createDataTexture: boolean,
         signal: AbortSignal | undefined,
-    ) {
+    ): Promise<ImageResult> {
         this.info.requestedTiles++;
         if (signal != null) {
             // Let's wait a "frame" to check if the request is really necessary
@@ -408,7 +406,7 @@ export default class TiledImageSource extends ImageSource {
         return convertedExtent.intersectsExtent(this._sourceExtent);
     }
 
-    override update(): void {
+    public override update(): void {
         this.source.refresh();
         super.update();
     }
@@ -427,7 +425,7 @@ export default class TiledImageSource extends ImageSource {
         zoom: number,
         createDataTexture: boolean,
         signal: AbortSignal | undefined,
-    ) {
+    ): ImageResponse[] {
         const source = this.source;
         const tileGrid = this._tileGrid;
 
@@ -461,7 +459,7 @@ export default class TiledImageSource extends ImageSource {
                     const url = this._getTileUrl(coord, 1, this.olprojection);
 
                     if (url != null) {
-                        const request = () =>
+                        const request = (): Promise<ImageResult> =>
                             this.loadTile(id, url, tileExtent, createDataTexture, signal);
 
                         promises.push({ id, request });

@@ -5,6 +5,7 @@
  */
 
 import type { Feature, Geometry, LineString, MultiPoint, Point, Polygon, Position } from 'geojson';
+import type { Feature as OlFeature } from 'ol';
 
 import proj from 'proj4';
 import {
@@ -311,7 +312,7 @@ function defaultLabelPlacement(options: { shape: Shape }): Vector3 {
     return new Vector3(sum.x / points.length, sum.y / points.length, sum.z / points.length);
 }
 
-function setOpacity(material: Material & { opacity: number }, opacity: number) {
+function setOpacity(material: Material & { opacity: number }, opacity: number): void {
     const current = material.opacity;
     if (current !== opacity) {
         const transparent = material.transparent;
@@ -419,7 +420,7 @@ export const vertexHeightFormatter: Formatter<VertexFormatOptions> = (
  * @param length - The length of the line or segment.
  */
 
-function defaultLengthFormatter(opts: { length: number }) {
+function defaultLengthFormatter(opts: { length: number }): string {
     let unit: string;
     let value: number;
     const { length } = opts;
@@ -439,7 +440,7 @@ function defaultLengthFormatter(opts: { length: number }) {
  * Formats the length count into a readable string.
  * @param length - The length of the line or segment.
  */
-function defaultVerticalLineFormatter(opts: { vertexIndex: number; length: number }) {
+function defaultVerticalLineFormatter(opts: { vertexIndex: number; length: number }): string {
     return defaultLengthFormatter(opts);
 }
 
@@ -547,8 +548,8 @@ export const DEFAULT_SHOW_VERTICAL_LINES = false;
 export const DEFAULT_SHOW_FLOOR_LINE = false;
 
 class Vertex extends Group {
-    readonly isVertex = true as const;
-    override readonly type = 'Vertex' as const;
+    public readonly isVertex = true as const;
+    public override readonly type = 'Vertex' as const;
 
     private readonly _inner: ConstantSizeSphere;
     private readonly _outer: ConstantSizeSphere;
@@ -556,29 +557,29 @@ class Vertex extends Group {
     private _borderWidth = DEFAULT_BORDER_WIDTH;
     private _radius = DEFAULT_VERTEX_RADIUS;
 
-    get radius() {
+    public get radius(): number {
         return this._radius;
     }
 
-    set radius(radius: number) {
+    public set radius(radius: number) {
         if (this._radius !== radius) {
             this._radius = radius;
             this.update();
         }
     }
 
-    get borderWidth() {
+    public get borderWidth(): number {
         return this._borderWidth;
     }
 
-    set borderWidth(width: number) {
+    public set borderWidth(width: number) {
         if (this._borderWidth !== width) {
             this._borderWidth = width;
             this.update();
         }
     }
 
-    private update() {
+    private update(): void {
         this._inner.radius = this._radius;
         if (this._borderWidth > 0) {
             this._outer.radius = this._radius + this._borderWidth;
@@ -590,7 +591,7 @@ class Vertex extends Group {
         this.updateMatrixWorld(true);
     }
 
-    constructor(innerMaterial: MeshBasicMaterial, outerMaterial: MeshBasicMaterial) {
+    public constructor(innerMaterial: MeshBasicMaterial, outerMaterial: MeshBasicMaterial) {
         super();
 
         this._inner = new ConstantSizeSphere({ radius: this._radius, material: innerMaterial });
@@ -604,17 +605,17 @@ class Vertex extends Group {
         this.updateMatrixWorld(true);
     }
 
-    override raycast(raycaster: Raycaster, intersects: Intersection[]): void {
+    public override raycast(raycaster: Raycaster, intersects: Intersection[]): void {
         this._inner.raycast(raycaster, intersects);
     }
 
-    setRenderOrder(inner: number, border: number) {
+    public setRenderOrder(inner: number, border: number): void {
         this._inner.renderOrder = inner;
         this._outer.renderOrder = border;
     }
 }
 
-function updateResolution(material: LineMaterial, renderer: WebGLRenderer) {
+function updateResolution(material: LineMaterial, renderer: WebGLRenderer): void {
     // We have to specify the screen size to be able to properly render
     // lines that have a width in pixels. Note that this should be automatically done
     // by three.js in the future, but for now we have to do it manually.
@@ -623,26 +624,26 @@ function updateResolution(material: LineMaterial, renderer: WebGLRenderer) {
 }
 
 function setOnBeforeRender(material: LineMaterial) {
-    return (renderer: WebGLRenderer) => {
+    return (renderer: WebGLRenderer): void => {
         updateResolution(material, renderer);
     };
 }
 
 class Label extends CSS2DObject {
-    override readonly type = 'Label' as const;
-    readonly isLabel = true as const;
+    public override readonly type = 'Label' as const;
+    public readonly isLabel = true as const;
 
-    readonly span: HTMLSpanElement;
+    public readonly span: HTMLSpanElement;
 
-    get pickable() {
+    public get pickable(): boolean {
         return this.span.style.pointerEvents !== 'none';
     }
 
-    set pickable(v: boolean) {
+    public set pickable(v: boolean) {
         this.span.style.pointerEvents = v ? 'auto' : 'none';
     }
 
-    constructor(container: HTMLElement, span: HTMLSpanElement) {
+    public constructor(container: HTMLElement, span: HTMLSpanElement) {
         super(container);
 
         this.span = span;
@@ -655,18 +656,22 @@ class Label extends CSS2DObject {
  * render orders and thickness to simulate the border.
  */
 class LineWithBorder extends Group {
-    readonly isLineWithBorder = true as const;
-    override readonly type = 'LineWithBorder' as const;
+    public readonly isLineWithBorder = true as const;
+    public override readonly type = 'LineWithBorder' as const;
 
     private readonly _innerLine: Line2;
     private readonly _outerLine: Line2;
 
-    override readonly userData: { midPoint: Vector3; length: number } = {
+    public override readonly userData: { midPoint: Vector3; length: number } = {
         midPoint: new Vector3(),
         length: 0,
     };
 
-    constructor(lineMaterial: LineMaterial, borderMaterial: LineMaterial, points: Vector3[]) {
+    public constructor(
+        lineMaterial: LineMaterial,
+        borderMaterial: LineMaterial,
+        points: Vector3[],
+    ) {
         super();
 
         const geom = new LineGeometry();
@@ -699,17 +704,17 @@ class LineWithBorder extends Group {
         this.position.copy(first);
     }
 
-    setRenderOrder(main: number, border: number) {
+    public setRenderOrder(main: number, border: number): void {
         this._innerLine.renderOrder = main;
         this._outerLine.renderOrder = border;
     }
 
-    override removeFromParent(): this {
+    public override removeFromParent(): this {
         this._innerLine.geometry.dispose();
         return super.removeFromParent();
     }
 
-    updateMaterialResolution(renderer: WebGLRenderer): void {
+    public updateMaterialResolution(renderer: WebGLRenderer): void {
         // Even though it's also done in onBeforeRender, this is not sufficient,
         // because for raycasting purposes we need to have the correct resolution set,
         // even for objects not rendered (out of screen).
@@ -717,7 +722,7 @@ class LineWithBorder extends Group {
         updateResolution(this._outerLine.material, renderer);
     }
 
-    override raycast(raycaster: Raycaster, intersects: Intersection[]): void {
+    public override raycast(raycaster: Raycaster, intersects: Intersection[]): void {
         this._innerLine.raycast(raycaster, intersects);
     }
 }
@@ -1088,8 +1093,8 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     Entity3DEventMap,
     UserData
 > {
-    readonly isShape = true as const;
-    override readonly type = 'Shape' as const;
+    public readonly isShape = true as const;
+    public override readonly type = 'Shape' as const;
 
     private readonly _points: Vector3[] = [];
     private readonly _segments: Line3[] = [];
@@ -1174,7 +1179,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
      * Creates a {@link Shape}.
      * @param options - The constructor options.
      */
-    constructor(options?: ShapeConstructorOptions) {
+    public constructor(options?: ShapeConstructorOptions) {
         super(new Group());
 
         this._showVertices = options?.showVertices ?? this._showVertices;
@@ -1275,11 +1280,11 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
      * Gets or sets the specific opacity factor of the surface.
      * The final opacity of the surface is the product of this value with {@link opacity}.
      */
-    get surfaceOpacity() {
+    public get surfaceOpacity(): number {
         return this._surfaceOpacity;
     }
 
-    set surfaceOpacity(v: number) {
+    public set surfaceOpacity(v: number) {
         if (this._surfaceOpacity !== v) {
             this._surfaceOpacity = v;
             this._surfaceMaterial.opacity = this.opacity * v;
@@ -1293,11 +1298,11 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
      * Gets or sets the opacity factor of the labels.
      * The final opacity of the label is the product of this value with {@link opacity}.
      */
-    get labelOpacity() {
+    public get labelOpacity(): number {
         return this._labelOpacity;
     }
 
-    set labelOpacity(v: number) {
+    public set labelOpacity(v: number) {
         if (this._labelOpacity !== v) {
             this._labelOpacity = v;
             this.updateOpacity();
@@ -1307,11 +1312,11 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     /**
      * Toggles depth test on or off.
      */
-    get depthTest() {
+    public get depthTest(): boolean {
         return this._depthTest;
     }
 
-    set depthTest(v: boolean) {
+    public set depthTest(v: boolean) {
         if (this._depthTest !== v) {
             this._depthTest = v;
             this.updateDepthTest();
@@ -1321,11 +1326,11 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     /**
      * Gets or sets the radius of the vertices, in pixels.
      */
-    get vertexRadius() {
+    public get vertexRadius(): number {
         return this._vertexRadius;
     }
 
-    set vertexRadius(radius: number) {
+    public set vertexRadius(radius: number) {
         if (this._vertexRadius !== radius) {
             this._vertexRadius = radius;
 
@@ -1337,11 +1342,11 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     /**
      * Gets or sets the color of the shape.
      */
-    get color() {
+    public get color(): Color {
         return this._color;
     }
 
-    set color(c: ColorRepresentation) {
+    public set color(c: ColorRepresentation) {
         const newColor = new Color(c);
 
         if (!this._color.equals(newColor)) {
@@ -1368,11 +1373,11 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     /**
      * Toggle the display of vertical distances (distances from each vertex to a defined elevation).
      */
-    get showVerticalLines() {
+    public get showVerticalLines(): boolean {
         return this._showVerticalLines;
     }
 
-    set showVerticalLines(show: boolean) {
+    public set showVerticalLines(show: boolean) {
         if (this._showVerticalLines !== show) {
             this._showVerticalLines = show;
             this.rebuildGeometries();
@@ -1382,11 +1387,11 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     /**
      * Toggle the display of floor line.
      */
-    get showFloorLine() {
+    public get showFloorLine(): boolean {
         return this._showFloorLine;
     }
 
-    set showFloorLine(show: boolean) {
+    public set showFloorLine(show: boolean) {
         if (this._showFloorLine !== show) {
             this._showFloorLine = show;
             this.rebuildGeometries();
@@ -1396,11 +1401,11 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     /**
      * Toggle the dash on lines.
      */
-    get dashed() {
+    public get dashed(): boolean {
         return this._innerSecondaryLineMaterial.dashed;
     }
 
-    set dashed(dashed: boolean) {
+    public set dashed(dashed: boolean) {
         this._innerSecondaryLineMaterial.dashed = dashed;
         this._outerSecondaryLineMaterial.dashed = dashed;
 
@@ -1410,11 +1415,11 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     /**
      * The dash size.
      */
-    get dashSize() {
+    public get dashSize(): number {
         return this._innerSecondaryLineMaterial.dashSize;
     }
 
-    set dashSize(size: number) {
+    public set dashSize(size: number) {
         if (size !== this.dashSize) {
             this._innerSecondaryLineMaterial.dashSize = size;
             this._outerSecondaryLineMaterial.dashSize = size;
@@ -1428,11 +1433,11 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     /**
      * The floor elevation for the vertical lines.
      */
-    get floorElevation() {
+    public get floorElevation(): number {
         return this._floorElevation;
     }
 
-    set floorElevation(floor: number) {
+    public set floorElevation(floor: number) {
         if (this._floorElevation !== floor) {
             this._floorElevation = floor;
             this.rebuildGeometries();
@@ -1442,11 +1447,11 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     /**
      * Toggle the display of vertices.
      */
-    get showVertices() {
+    public get showVertices(): boolean {
         return this._showVertices;
     }
 
-    set showVertices(show: boolean) {
+    public set showVertices(show: boolean) {
         if (this._showVertices !== show) {
             this._showVertices = show;
             this.rebuildGeometries();
@@ -1456,11 +1461,11 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     /**
      * Toggle the display of floor vertices.
      */
-    get showFloorVertices() {
+    public get showFloorVertices(): boolean {
         return this._showFloorVertices;
     }
 
-    set showFloorVertices(show: boolean) {
+    public set showFloorVertices(show: boolean) {
         if (this._showFloorVertices !== show) {
             this._showFloorVertices = show;
             this.rebuildGeometries();
@@ -1470,11 +1475,11 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     /**
      * Gets or sets the line width, in pixels.
      */
-    get lineWidth() {
+    public get lineWidth(): number {
         return this._lineWidth;
     }
 
-    set lineWidth(width: number) {
+    public set lineWidth(width: number) {
         if (this._lineWidth !== width) {
             this._lineWidth = width;
             this._innerLineMaterial.linewidth = width;
@@ -1490,11 +1495,11 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
      * Gets or sets the font weight.
      * @defaultValue {@link DEFAULT_FONT_WEIGHT}
      */
-    get fontWeight() {
+    public get fontWeight(): ShapeFontWeight {
         return this._fontWeight;
     }
 
-    set fontWeight(v: ShapeFontWeight) {
+    public set fontWeight(v: ShapeFontWeight) {
         if (this._fontWeight !== v) {
             this._fontWeight = v;
             this.updateLabels();
@@ -1505,11 +1510,11 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
      * Gets or sets the font size, in pixels.
      * @defaultValue {@link DEFAULT_FONT_SIZE}
      */
-    get fontSize() {
+    public get fontSize(): number {
         return this._fontSize;
     }
 
-    set fontSize(v: number) {
+    public set fontSize(v: number) {
         if (this._fontSize !== v) {
             this._fontSize = v;
             this.updateLabels();
@@ -1519,11 +1524,11 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     /**
      * Gets or sets the border width, in pixels.
      */
-    get borderWidth() {
+    public get borderWidth(): number {
         return this._borderWidth;
     }
 
-    set borderWidth(width: number) {
+    public set borderWidth(width: number) {
         if (this._borderWidth !== width) {
             this._borderWidth = width;
             this._outerLineMaterial.linewidth = this.lineWidth + this._borderWidth * 2;
@@ -1543,11 +1548,11 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     /**
      * Toggle display of the line.
      */
-    get showLine() {
+    public get showLine(): boolean {
         return this._showLine;
     }
 
-    set showLine(show: boolean) {
+    public set showLine(show: boolean) {
         if (this._showLine !== show) {
             this._showLine = show;
             this.rebuildGeometries();
@@ -1559,7 +1564,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
      *
      * Note: to modify the point collection, use {@link setPoints} instead.
      */
-    get points(): Readonly<Vector3[]> {
+    public get points(): Readonly<Vector3[]> {
         return this._points;
     }
 
@@ -1568,7 +1573,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
      * @param index - The point index.
      * @param position - The position of the point.
      */
-    insertPoint(index: number, position: Vector3): void {
+    public insertPoint(index: number, position: Vector3): void {
         if (
             this._beforeInsertPoint != null &&
             !this._beforeInsertPoint({ shape: this, index, position })
@@ -1590,7 +1595,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
      * Removes the point at the given index.
      * @param index - The index of the point to update.
      */
-    removePoint(index: number): void {
+    public removePoint(index: number): void {
         if (this._points.length < index - 1) {
             return;
         }
@@ -1619,7 +1624,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
      * @param index - The index of the point to update.
      * @param newPosition - The new position of the point.
      */
-    updatePoint(index: number, newPosition: Vector3): void {
+    public updatePoint(index: number, newPosition: Vector3): void {
         if (this._points.length < index - 1) {
             return;
         }
@@ -1651,7 +1656,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
      * Sets the points of the shape.
      * @param points - The points. If `null`, all points are removed.
      */
-    setPoints(points?: Vector3[]) {
+    public setPoints(points?: Vector3[]): void {
         if (points == null || points.length === 0) {
             this._points.length = 0;
         } else {
@@ -1671,7 +1676,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
      * Note: if the line is not closed, requesting the point before index zero will return null,
      * but if the line is closed, it will return the point before the last one.
      */
-    getPreviousPoint(index: number): Vector3 | null {
+    public getPreviousPoint(index: number): Vector3 | null {
         const isClosed = this.isClosed;
 
         if (index === 0 && !this.isClosed) {
@@ -1697,7 +1702,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
      * Note: if the line is not closed, requesting the point after index (n - 1) will return null,
      * but if the line is closed, it will return the point after the first one.
      */
-    getNextPoint(index: number): Vector3 | null {
+    public getNextPoint(index: number): Vector3 | null {
         const isClosed = this.isClosed;
         const lastIndex = this._points.length - 1;
 
@@ -1722,7 +1727,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
      * Note: if the shape is not a closed shape, returns `null`.
      * @returns The area, in CRS units.
      */
-    getArea(): number | null {
+    public getArea(): number | null {
         if (this.isClosed) {
             const result = computeArea(this._points, false);
             return result.area ?? null;
@@ -1739,7 +1744,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
      *
      * @returns The length, in CRS units.
      */
-    getLength(): number | null {
+    public getLength(): number | null {
         if (this._points.length < 2) {
             return null;
         }
@@ -1758,11 +1763,11 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     /**
      * Make labels pickable.
      */
-    get pickableLabels() {
+    public get pickableLabels(): boolean {
         return this._pickableLabels;
     }
 
-    set pickableLabels(v: boolean) {
+    public set pickableLabels(v: boolean) {
         if (this._pickableLabels !== v) {
             this._pickableLabels = v;
             this.visitLabels(label => (label.pickable = v));
@@ -1772,11 +1777,11 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     /**
      * Toggle the labels for each segment.
      */
-    get showSegmentLabels() {
+    public get showSegmentLabels(): boolean {
         return this._showSegmentLabels;
     }
 
-    set showSegmentLabels(show: boolean) {
+    public set showSegmentLabels(show: boolean) {
         if (this._showSegmentLabels !== show) {
             this._showSegmentLabels = show;
             this.rebuildLineLabels();
@@ -1786,11 +1791,11 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     /**
      * Toggle the vertical line labels (one label per vertical line).
      */
-    get showVerticalLineLabels() {
+    public get showVerticalLineLabels(): boolean {
         return this._showVerticalLineLabels;
     }
 
-    set showVerticalLineLabels(show: boolean) {
+    public set showVerticalLineLabels(show: boolean) {
         if (this._showVerticalLineLabels !== show) {
             this._showVerticalLineLabels = show;
             this.rebuildVerticalLineLabels();
@@ -1800,11 +1805,11 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     /**
      * Toggle the label for the entire line.
      */
-    get showLineLabel() {
+    public get showLineLabel(): boolean {
         return this._showLineLabel;
     }
 
-    set showLineLabel(show: boolean) {
+    public set showLineLabel(show: boolean) {
         if (this._showLineLabel !== show) {
             this._showLineLabel = show;
             this.rebuildLineLabels();
@@ -1814,11 +1819,11 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     /**
      * Toggle the surface label.
      */
-    get showSurfaceLabel() {
+    public get showSurfaceLabel(): boolean {
         return this._showSurfaceLabel;
     }
 
-    set showSurfaceLabel(show: boolean) {
+    public set showSurfaceLabel(show: boolean) {
         if (this._showSurfaceLabel !== show) {
             this._showSurfaceLabel = show;
             this.rebuildSurfaceLabel();
@@ -1828,11 +1833,11 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     /**
      * Toggle the vertex labels.
      */
-    get showVertexLabels() {
+    public get showVertexLabels(): boolean {
         return this._showVertexLabels;
     }
 
-    set showVertexLabels(show: boolean) {
+    public set showVertexLabels(show: boolean) {
         if (this._showVertexLabels !== show) {
             this._showVertexLabels = show;
             this.rebuildVertexLabels();
@@ -1842,11 +1847,11 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     /**
      * Toggle the display of the surface.
      */
-    get showSurface() {
+    public get showSurface(): boolean {
         return this._showSurface;
     }
 
-    set showSurface(show: boolean) {
+    public set showSurface(show: boolean) {
         if (this._showSurface !== show) {
             this._showSurface = show;
             this.rebuildSurface();
@@ -1857,7 +1862,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
      * Ensures that the line makes a closed ring, by duplicating
      * the first point as the last point, if necessary.
      */
-    makeClosed() {
+    public makeClosed(): void {
         if (
             this._points.length > 2 &&
             !this._points[0].equals(this._points[this._points.length - 1])
@@ -1872,7 +1877,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
      *
      * Note: To close the line, use {@link makeClosed}.
      */
-    get isClosed() {
+    public get isClosed(): boolean {
         if (this._points.length >= 3) {
             return this._points[0].equals(this._points[this._points.length - 1]);
         }
@@ -1880,7 +1885,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         return false;
     }
 
-    override updateRenderOrder(): void {
+    public override updateRenderOrder(): void {
         const main = this.renderOrder + 2;
         const border = this.renderOrder + 1;
         const surface = this.renderOrder;
@@ -1893,7 +1898,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         }
     }
 
-    override updateVisibility(): void {
+    public override updateVisibility(): void {
         // Setting the root object's visibility is not enough
         // to set the visibility of CSS2DObjects (labels).
         this.object3d.traverse(o => {
@@ -1901,12 +1906,12 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         });
     }
 
-    private updateLabelOpacity() {
+    private updateLabelOpacity(): void {
         const cssOpacity = `${this.opacity * this._labelOpacity * 100}%`;
         this.visitLabels(label => (label.element.style.opacity = cssOpacity));
     }
 
-    override updateOpacity(): void {
+    public override updateOpacity(): void {
         setOpacity(this._innerLineMaterial, this.opacity);
         setOpacity(this._outerLineMaterial, this.opacity);
         setOpacity(this._innerSecondaryLineMaterial, this.opacity);
@@ -1921,7 +1926,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     /**
      * Rebuilds all labels. Useful if the formatter functions have changed.
      */
-    rebuildLabels() {
+    public rebuildLabels(): void {
         this.rebuildLineLabels();
         this.rebuildVerticalLineLabels();
         this.rebuildSurfaceLabel();
@@ -1934,7 +1939,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
      * @returns An object containing the location of the closest point, as well as the index of the
      * first point that makes the segment in which the point was found.
      */
-    getClosestPointOnLine(point: Vector3): { point: Vector3; previousPointIndex: number } {
+    public getClosestPointOnLine(point: Vector3): { point: Vector3; previousPointIndex: number } {
         this.buildSegmentListIfNecessary();
 
         const result = new Vector3();
@@ -1959,7 +1964,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         return { point: result, previousPointIndex };
     }
 
-    override pick(canvasCoordinates: Vector2, _options?: PickOptions): ShapePickResult[] {
+    public override pick(canvasCoordinates: Vector2, _options?: PickOptions): ShapePickResult[] {
         const normalized = this.instance.canvasToNormalizedCoords(canvasCoordinates, tmpNDC);
         const raycaster = new Raycaster();
         raycaster.params.Line2 = { threshold: this.lineWidth * 8 };
@@ -2039,7 +2044,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     /**
      * Returns the GeoJSON (in WGS84 coordinates) feature equivalent to this shape.
      */
-    toGeoJSON(options?: ShapeExportOptions): Feature {
+    public toGeoJSON(options?: ShapeExportOptions): Feature {
         const actualOptions: ShapeExportOptions = {
             includeAltitudes: options?.includeAltitudes ?? true,
         };
@@ -2055,11 +2060,11 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     /**
      * Returns the OpenLayers feature (in WGS84 coordinates) equivalent to this shape.
      */
-    toOpenLayersFeature(options?: ShapeExportOptions) {
+    public toOpenLayersFeature(options?: ShapeExportOptions): OlFeature {
         return GeoJSONUtils.getOpenLayersFeature(this.toGeoJSON(options));
     }
 
-    private visitMaterials(visitor: (material: Material) => void) {
+    private visitMaterials(visitor: (material: Material) => void): void {
         visitor(this._innerLineMaterial);
         visitor(this._outerLineMaterial);
         visitor(this._innerVertexMaterial);
@@ -2069,7 +2074,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         visitor(this._outerSecondaryLineMaterial);
     }
 
-    private updateDepthTest() {
+    private updateDepthTest(): void {
         const depthTest = this._depthTest;
         this.visitMaterials(m => {
             m.depthTest = depthTest;
@@ -2078,12 +2083,12 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         this.notifyChange();
     }
 
-    private visitVertices(callback: (vertex: Vertex) => void) {
+    private visitVertices(callback: (vertex: Vertex) => void): void {
         this._floorVertices.forEach(callback);
         this._vertices.forEach(callback);
     }
 
-    private visitLines(callback: (line: LineWithBorder) => void) {
+    private visitLines(callback: (line: LineWithBorder) => void): void {
         if (this._mainLine) {
             callback(this._mainLine);
         }
@@ -2093,12 +2098,12 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         this._verticalLines.forEach(callback);
     }
 
-    override preUpdate(): unknown[] | null {
+    public override preUpdate(): unknown[] | null {
         this.visitLines(line => line.updateMaterialResolution(this.instance.renderer));
         return null;
     }
 
-    private visitLabels(callback: (label: Label) => void) {
+    private visitLabels(callback: (label: Label) => void): void {
         if (this._areaLabel) {
             callback(this._areaLabel);
         }
@@ -2107,7 +2112,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         this._vertexLabels.forEach(callback);
     }
 
-    private updateLabels() {
+    private updateLabels(): void {
         this.visitLabels(label => {
             this.updateStyle(label.span);
         });
@@ -2126,7 +2131,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         return symbol;
     }
 
-    private rebuildVertices() {
+    private rebuildVertices(): void {
         this._vertices.forEach(vertex => {
             vertex.removeFromParent();
         });
@@ -2162,7 +2167,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         this.notifyChange();
     }
 
-    override onObjectCreated(obj: Object3D) {
+    public override onObjectCreated(obj: Object3D): void {
         // note: we use traverse() because the object might have its own sub-hierarchy as well.
 
         this.traverse(o => {
@@ -2176,7 +2181,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         }, obj);
     }
 
-    private rebuildLine() {
+    private rebuildLine(): void {
         if (this._mainLine) {
             this._mainLine.removeFromParent();
         }
@@ -2198,7 +2203,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         }
     }
 
-    private updateStyle(span: HTMLSpanElement) {
+    private updateStyle(span: HTMLSpanElement): void {
         const sRgb = sRGB.copyLinearToSRGB(this._color);
         const contrastColor = `#${this._contrastColor.getHexString()}`;
         span.style.backgroundColor = `rgb(${sRgb.r * 255} ${sRgb.g * 255} ${sRgb.b * 255})`;
@@ -2246,7 +2251,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         return object;
     }
 
-    private rebuildSurface() {
+    private rebuildSurface(): void {
         if (this._surface) {
             this._surface.geometry?.dispose();
             this._surface.removeFromParent();
@@ -2267,7 +2272,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         this.notifyChange();
     }
 
-    private rebuildSurfaceLabel() {
+    private rebuildSurfaceLabel(): void {
         if (this._areaLabel) {
             this._areaLabel.removeFromParent();
             this._areaLabel = undefined;
@@ -2297,7 +2302,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         this.notifyChange();
     }
 
-    private rebuildVerticalLineLabels() {
+    private rebuildVerticalLineLabels(): void {
         this._heightLabels.forEach(l => {
             l.element.remove();
             l.removeFromParent();
@@ -2332,7 +2337,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         this.notifyChange();
     }
 
-    private rebuildLineLabels() {
+    private rebuildLineLabels(): void {
         this._lengthLabels.forEach(l => {
             l.element.remove();
             l.removeFromParent();
@@ -2400,7 +2405,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         this.notifyChange();
     }
 
-    private rebuildVertexLabels() {
+    private rebuildVertexLabels(): void {
         this._vertexLabels.forEach(l => {
             l.element.remove();
             l.removeFromParent();
@@ -2434,7 +2439,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         this.notifyChange();
     }
 
-    private rebuildFloorLine() {
+    private rebuildFloorLine(): void {
         if (this._floorLine) {
             this._floorLine.removeFromParent();
         }
@@ -2456,7 +2461,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         }
     }
 
-    private rebuildVerticalLines() {
+    private rebuildVerticalLines(): void {
         this._verticalLines.forEach(line => {
             line.removeFromParent();
         });
@@ -2503,7 +2508,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         }
     }
 
-    private rebuildGeometries() {
+    private rebuildGeometries(): void {
         this.rebuildVertices();
         this.rebuildLine();
         this.rebuildFloorLine();
@@ -2520,7 +2525,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         this.notifyChange();
     }
 
-    private buildSegmentListIfNecessary() {
+    private buildSegmentListIfNecessary(): void {
         if (this._segments.length === 0) {
             for (let i = 0; i < this._points.length - 1; i++) {
                 const start = this._points[i + 0];
@@ -2548,7 +2553,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         return pickedLabel;
     }
 
-    private raycastLabel(label: Label, raycaster: Raycaster, intersects: Intersection[]) {
+    private raycastLabel(label: Label, raycaster: Raycaster, intersects: Intersection[]): void {
         if (label.userData.hover === true) {
             intersects.push({
                 object: label,
@@ -2607,7 +2612,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
         return null;
     }
 
-    override getMemoryUsage(context: GetMemoryUsageContext) {
+    public override getMemoryUsage(context: GetMemoryUsageContext): void {
         if (this._surface) {
             getGeometryMemoryUsage(context, this._surface.geometry);
         }
@@ -2616,7 +2621,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
     /**
      * Disposes the shape.
      */
-    override dispose(): void {
+    public override dispose(): void {
         this._innerLineMaterial.dispose();
         this._outerLineMaterial.dispose();
         this._innerSecondaryLineMaterial.dispose();

@@ -50,7 +50,7 @@ export function parseDMS(dms: DMS): number {
  * @param projunit - - the proj4 UoM string
  * @returns the unit of measure (see `UNIT`)
  */
-function unitFromProj4Unit(projunit: string | undefined) {
+function unitFromProj4Unit(projunit: string | undefined): number | undefined {
     switch (projunit) {
         case 'deg':
         case 'degrees':
@@ -75,7 +75,7 @@ function unitFromProj4Unit(projunit: string | undefined) {
  * @param crs - the CRS to test
  * @returns the unit of measure (see `UNIT`)
  */
-export function crsToUnit(crs: CoordinateSystem) {
+export function crsToUnit(crs: CoordinateSystem): number | undefined {
     if (crs.isEpsg(4326) || crs.isEpsg(4979) || crs.isEquirectangular()) {
         return UNIT.DEGREE;
     }
@@ -91,7 +91,7 @@ export function crsToUnit(crs: CoordinateSystem) {
     return unitFromProj4Unit(p.units);
 }
 
-function crsToUnitWithError(crs: CoordinateSystem) {
+function crsToUnitWithError(crs: CoordinateSystem): number {
     const u = crsToUnit(crs);
     if (crs === undefined || u === undefined) {
         throw new Error(`Invalid crs parameter value '${crs.id}'`);
@@ -99,7 +99,7 @@ function crsToUnitWithError(crs: CoordinateSystem) {
     return u;
 }
 
-export function assertCrsIsValid(crs: CoordinateSystem) {
+export function assertCrsIsValid(crs: CoordinateSystem): void {
     if (proj4.defs(crs.id) == null) {
         throw new Error(`Invalid crs parameter value '${crs.id}'. Did you define it with proj4?`);
     }
@@ -111,7 +111,7 @@ export function assertCrsIsValid(crs: CoordinateSystem) {
  * @param crs - the CRS to test
  * @returns `true` if the CRS is in geographic coordinates.
  */
-export function crsIsGeographic(crs: CoordinateSystem) {
+export function crsIsGeographic(crs: CoordinateSystem): boolean {
     return crsToUnitWithError(crs) !== UNIT.METER;
 }
 
@@ -121,17 +121,17 @@ export function crsIsGeographic(crs: CoordinateSystem) {
  * @param crs - the CRS to test
  * @returns `true` if the CRS is in geocentric coordinates.
  */
-export function crsIsGeocentric(crs: CoordinateSystem) {
+export function crsIsGeocentric(crs: CoordinateSystem): boolean {
     return crsToUnitWithError(crs) === UNIT.METER;
 }
 
-function assertIsGeographic(crs: CoordinateSystem) {
+function assertIsGeographic(crs: CoordinateSystem): void {
     if (!crsIsGeographic(crs)) {
         throw new Error(`Can't query crs ${crs.id} long/lat`);
     }
 }
 
-function assertIsGeocentric(crs: CoordinateSystem) {
+function assertIsGeocentric(crs: CoordinateSystem): void {
     if (!crsIsGeocentric(crs)) {
         throw new Error(`Can't query crs ${crs.id} x/y/z`);
     }
@@ -160,9 +160,9 @@ export type CoordinateParameters = [number, number] | [number, number, number] |
  * Represents coordinates associated with a coordinate reference system (CRS).
  */
 class Coordinates {
-    readonly isCoordinates = true as const;
+    public readonly isCoordinates = true as const;
     private readonly _values: Float64Array;
-    crs: CoordinateSystem;
+    public crs: CoordinateSystem;
 
     /**
      * Build a {@link Coordinates} object, given a [CRS](http://inspire.ec.europa.eu/theme/rs) and a number of coordinates value.
@@ -173,13 +173,13 @@ class Coordinates {
      * @param crs - Geographic or Geocentric coordinates system.
      * @param coordinates - The coordinates.
      */
-    constructor(crs: CoordinateSystem, ...coordinates: CoordinateParameters) {
+    public constructor(crs: CoordinateSystem, ...coordinates: CoordinateParameters) {
         this._values = new Float64Array(3);
         this.crs = crs;
         this.set(crs, ...coordinates);
     }
 
-    get values() {
+    public get values(): Float64Array {
         return this._values;
     }
 
@@ -189,11 +189,11 @@ class Coordinates {
      * @returns The normal vector.
      */
 
-    get geodesicNormal() {
+    public get geodesicNormal(): Vector3 {
         return planarNormal;
     }
 
-    set(crs: CoordinateSystem, ...coordinates: CoordinateParameters) {
+    public set(crs: CoordinateSystem, ...coordinates: CoordinateParameters): this {
         crsToUnitWithError(crs);
         this.crs = crs;
 
@@ -212,7 +212,7 @@ class Coordinates {
         return this;
     }
 
-    clone(target?: Coordinates) {
+    public clone(target?: Coordinates): Coordinates {
         let r;
         if (target) {
             Coordinates.call(target, this.crs, this._values[0], this._values[1], this._values[2]);
@@ -223,7 +223,7 @@ class Coordinates {
         return r;
     }
 
-    copy(src: Coordinates) {
+    public copy(src: Coordinates): this {
         const v = src._values;
         this.set(src.crs, v[0], v[1], v[2]);
         return this;
@@ -252,7 +252,7 @@ class Coordinates {
      * ```
      * @returns The longitude of the position.
      */
-    get longitude() {
+    public get longitude(): number {
         assertIsGeographic(this.crs);
         return this._values[0];
     }
@@ -279,7 +279,7 @@ class Coordinates {
      * ```
      * @returns The latitude of the position.
      */
-    get latitude() {
+    public get latitude(): number {
         assertIsGeographic(this.crs);
         return this._values[1];
     }
@@ -307,7 +307,7 @@ class Coordinates {
      * ```
      * @returns The altitude of the position.
      */
-    get altitude() {
+    public get altitude(): number {
         assertIsGeographic(this.crs);
         return this._values[2];
     }
@@ -320,12 +320,12 @@ class Coordinates {
      * coordinates.setAltitude(10000)
      * ```
      */
-    setAltitude(altitude: number) {
+    public setAltitude(altitude: number): void {
         assertIsGeographic(this.crs);
         this._values[2] = altitude;
     }
 
-    withLongitude(longitude: number | DMS): this {
+    public withLongitude(longitude: number | DMS): this {
         assertIsGeographic(this.crs);
 
         if (typeof longitude === 'number') {
@@ -337,7 +337,7 @@ class Coordinates {
         return this;
     }
 
-    withLatitude(latitude: number | DMS): this {
+    public withLatitude(latitude: number | DMS): this {
         assertIsGeographic(this.crs);
 
         if (typeof latitude === 'number') {
@@ -349,12 +349,12 @@ class Coordinates {
         return this;
     }
 
-    withCRS(crs: CoordinateSystem): this {
+    public withCRS(crs: CoordinateSystem): this {
         this.crs = crs;
         return this;
     }
 
-    withAltitude(altitude: number): this {
+    public withAltitude(altitude: number): this {
         assertIsGeographic(this.crs);
 
         this._values[2] = altitude;
@@ -385,7 +385,7 @@ class Coordinates {
      * ```
      * @returns The `x` component of the position.
      */
-    get x() {
+    public get x(): number {
         assertIsGeocentric(this.crs);
         return this._values[0];
     }
@@ -403,7 +403,7 @@ class Coordinates {
      * ```
      * @returns The `y` component of the position.
      */
-    get y() {
+    public get y(): number {
         assertIsGeocentric(this.crs);
         return this._values[1];
     }
@@ -421,7 +421,7 @@ class Coordinates {
      * ```
      * @returns The `z` component of the position.
      */
-    get z() {
+    public get z(): number {
         assertIsGeocentric(this.crs);
         return this._values[2];
     }
@@ -454,7 +454,7 @@ class Coordinates {
      * @param target - the geocentric coordinate
      * @returns target position
      */
-    toVector3(target?: Vector3): Vector3 {
+    public toVector3(target?: Vector3): Vector3 {
         const v = target || new Vector3();
         v.fromArray(this._values);
         return v;
@@ -487,7 +487,7 @@ class Coordinates {
      * @param target - the geocentric coordinate
      * @returns target position
      */
-    toVector2(target?: Vector2): Vector2 {
+    public toVector2(target?: Vector2): Vector2 {
         const v = target || new Vector2();
         v.fromArray(this._values);
         return v;
@@ -510,7 +510,7 @@ class Coordinates {
      * @param target - the object that is returned
      * @returns the converted coordinate
      */
-    as(crs: CoordinateSystem, target?: Coordinates) {
+    public as(crs: CoordinateSystem, target?: Coordinates): Coordinates {
         if (crsToUnit(crs) === undefined) {
             throw new Error(`Invalid crs paramater value '${crs.id}'`);
         }
@@ -518,7 +518,7 @@ class Coordinates {
     }
 
     // Only support explicit conversions
-    private convert(newCrs: CoordinateSystem, target?: Coordinates) {
+    private convert(newCrs: CoordinateSystem, target?: Coordinates): Coordinates {
         target = target || new Coordinates(newCrs, 0, 0, 0);
         if (newCrs.id === this.crs.id) {
             return target.copy(this);
@@ -556,14 +556,18 @@ class Coordinates {
      * ```
      * @returns `true` if the coordinate is geographic.
      */
-    isGeographic() {
+    public isGeographic(): boolean {
         return crsIsGeographic(this.crs);
     }
 
     /**
      * Creates a geographic coordinate in EPSG:4326
      */
-    static WGS84(latitude: number | DMS, longitude: number | DMS, altitude?: number): Coordinates {
+    public static WGS84(
+        latitude: number | DMS,
+        longitude: number | DMS,
+        altitude?: number,
+    ): Coordinates {
         return new Coordinates(CoordinateSystem.epsg4326, 0, 0)
             .withLatitude(latitude)
             .withLongitude(longitude)

@@ -5,14 +5,14 @@
  */
 
 class PrefixEntry {
-    urlPrefix: string;
-    headers: Map<string, string>;
-    options: Partial<RequestInit> | null = null;
+    public urlPrefix: string;
+    public headers: Map<string, string>;
+    public options: Partial<RequestInit> | null = null;
 
     /**
      * @param urlPrefix - The URL prefix for this host entry.
      */
-    constructor(urlPrefix: string) {
+    public constructor(urlPrefix: string) {
         this.urlPrefix = urlPrefix;
 
         this.headers = new Map();
@@ -24,7 +24,7 @@ class PrefixEntry {
      * @param name - The header name.
      * @param value - The header value.
      */
-    setHeader(name: string, value: string) {
+    public setHeader(name: string, value: string): void {
         this.headers.set(name, value);
     }
 }
@@ -149,7 +149,7 @@ function applyConfiguration(
     return options;
 }
 
-function setOptions(urlPrefix: string, options: Partial<RequestInit>) {
+function setOptions(urlPrefix: string, options: Partial<RequestInit>): void {
     const entry = getEntry(urlPrefix);
 
     entry.options = options;
@@ -164,7 +164,7 @@ function setOptions(urlPrefix: string, options: Partial<RequestInit>) {
  * @param name - The header name.
  * @param value - The header value.
  */
-function setHeader(urlPrefix: string, name: string, value: string) {
+function setHeader(urlPrefix: string, name: string, value: string): void {
     const prefixEntry = getEntry(urlPrefix);
 
     prefixEntry.setHeader(name, value);
@@ -197,14 +197,14 @@ function setHeader(urlPrefix: string, name: string, value: string) {
  * HttpConfiguration.applyConfiguration('https://example.com/sub/resource/index.html')
  * // \{ 'Authorization', 'Bearer SUBRESOURCE' \}
  */
-function setAuth(urlPrefix: string, value: string) {
+function setAuth(urlPrefix: string, value: string): void {
     setHeader(urlPrefix, 'Authorization', value);
 }
 
 /**
  * Removes all configurations.
  */
-function clear() {
+function clear(): void {
     perHostProperties.clear();
 }
 

@@ -56,7 +56,7 @@ function pickPointsAt(
     canvasCoords: Vector2,
     entity: Entity3D,
     options: PickOptions = {},
-) {
+): PointsPickResult[] {
     const radius = Math.floor(options.radius ?? 0);
     const limit = options.limit ?? Infinity;
     const filter = options.filter;

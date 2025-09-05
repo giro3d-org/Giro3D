@@ -8,7 +8,7 @@ import { MathUtils } from 'three';
 
 import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import type { GetMemoryUsageContext } from '../core/MemoryUsage';
-import type { GetImageOptions, ImageResponse } from './ImageSource';
+import type { GetImageOptions, ImageResponse, ImageResult } from './ImageSource';
 
 import Extent from '../core/geographic/Extent';
 import { nonEmpty, nonNull } from '../utils/tsutils';
@@ -34,15 +34,15 @@ type SourceProperties = {
  * - all sub-sources must produce textures that have the same datatype (e.g either 8-bit or 32-bit textures, but not both)
  */
 export default class AggregateImageSource extends ImageSource {
-    readonly isAggregateImageSource = true as const;
-    override readonly type = 'AggregateImageSource' as const;
+    public readonly isAggregateImageSource = true as const;
+    public override readonly type = 'AggregateImageSource' as const;
 
     private readonly _sources: Readonly<ImageSource[]>;
     private readonly _sourceProperties: Map<ImageSource, SourceProperties> = new Map();
 
     private _cachedExtent: Extent | null = null;
 
-    constructor(options: {
+    public constructor(options: {
         /**
          * The sub-sources. The order in which they appear in the array will set their z-index
          * (i.e sources at the end of the array will be displayed on top).
@@ -78,17 +78,19 @@ export default class AggregateImageSource extends ImageSource {
     /**
      * The sources in this source.
      */
-    get sources(): Readonly<ImageSource[]> {
+    public get sources(): Readonly<ImageSource[]> {
         return this._sources;
     }
 
-    override async initialize(options: { targetProjection: CoordinateSystem }): Promise<void> {
+    public override async initialize(options: {
+        targetProjection: CoordinateSystem;
+    }): Promise<void> {
         const promises = this._sources.map(source => source.initialize(options));
 
         await Promise.allSettled(promises);
     }
 
-    override getCrs(): CoordinateSystem {
+    public override getCrs(): CoordinateSystem {
         return this._sources[0].getCrs();
     }
 
@@ -98,7 +100,7 @@ export default class AggregateImageSource extends ImageSource {
      * @param visible - The new visibility.
      * @throws if the sub-source is not present in this source.
      */
-    setSourceVisibility(source: ImageSource, visible: boolean): void {
+    public setSourceVisibility(source: ImageSource, visible: boolean): void {
         const props = nonNull(this._sourceProperties.get(source), 'this source is not present');
 
         if (props.visible !== visible) {
@@ -111,7 +113,7 @@ export default class AggregateImageSource extends ImageSource {
     /**
      * Returns the union of the extent of all the sub-sources.
      */
-    override getExtent(): Extent {
+    public override getExtent(): Extent {
         if (this._cachedExtent == null) {
             const extents = [...this._sourceProperties.keys()].map(source => source.getExtent());
             const extent = Extent.unionMany(...extents);
@@ -121,7 +123,7 @@ export default class AggregateImageSource extends ImageSource {
         return nonNull(this._cachedExtent);
     }
 
-    override getMemoryUsage(context: GetMemoryUsageContext): void {
+    public override getMemoryUsage(context: GetMemoryUsageContext): void {
         this._sources.forEach(source => source.getMemoryUsage(context));
     }
 
@@ -131,7 +133,7 @@ export default class AggregateImageSource extends ImageSource {
     ): ImageResponse['request'] {
         const { zIndex, id } = nonNull(this._sourceProperties.get(source));
 
-        const patched = () => {
+        const patched = (): Promise<ImageResult> | ImageResult => {
             const result = request();
 
             if (result instanceof Promise) {
@@ -155,7 +157,7 @@ export default class AggregateImageSource extends ImageSource {
     /**
      * Returns true if the extent intersects with any sub-source's extent.
      */
-    override contains(extent: Extent): boolean {
+    public override contains(extent: Extent): boolean {
         const convertedExtent = extent.clone().as(this.getCrs());
 
         return this._sources.some(source => source.contains(convertedExtent));
@@ -164,7 +166,7 @@ export default class AggregateImageSource extends ImageSource {
     /**
      * Disposes all sub-sources.
      */
-    override dispose(): void {
+    public override dispose(): void {
         this._sources.forEach(source => source.dispose());
     }
 
@@ -184,7 +186,7 @@ export default class AggregateImageSource extends ImageSource {
         return result;
     }
 
-    override getImages(options: GetImageOptions): Array<ImageResponse> {
+    public override getImages(options: GetImageOptions): ImageResponse[] {
         const result: ImageResponse[] = [];
 
         for (const source of this._sources) {

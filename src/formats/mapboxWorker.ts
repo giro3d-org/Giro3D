@@ -52,7 +52,10 @@ export async function decodeMapboxTerrainImage(
     };
 }
 
-function decodeMapboxTerrainBuffer(pixelData: Uint8ClampedArray, noData?: number) {
+function decodeMapboxTerrainBuffer(
+    pixelData: Uint8ClampedArray,
+    noData?: number,
+): Pick<DecodeMapboxTerrainResult, 'data' | 'min' | 'max'> {
     const stride = pixelData.length % 3 === 0 ? 3 : 4;
 
     const length = pixelData.length / stride;
@@ -99,7 +102,7 @@ export interface MessageMap extends BaseMessageMap<MessageType> {
     };
 }
 
-onmessage = async function onmessage(ev: MessageEvent<DecodeMapboxTerrainMessage>) {
+onmessage = async function onmessage(ev: MessageEvent<DecodeMapboxTerrainMessage>): Promise<void> {
     const message = ev.data;
 
     try {

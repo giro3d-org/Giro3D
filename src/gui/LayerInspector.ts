@@ -8,6 +8,8 @@ import type GUI from 'lil-gui';
 
 import { Color } from 'three';
 
+import type ColorMap from '../core/ColorMap';
+import type { ColorMapMode } from '../core/ColorMap';
 import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import type Instance from '../core/Instance';
 import type Layer from '../core/layer/Layer';
@@ -25,7 +27,7 @@ import ColorMapInspector from './ColorMapInspector';
 import Panel from './Panel';
 import SourceInspector from './SourceInspector';
 
-function getTitle(layer: Layer) {
+function getTitle(layer: Layer): string {
     return [layer.visible ? '👁️' : '❌', layer.type, `(${layer.name ?? layer.id})`].join(' ');
 }
 
@@ -36,25 +38,25 @@ const blendingModes = ['None', 'Normal', 'Add', 'Multiply'];
  */
 class LayerInspector extends Panel {
     /** The inspected layer. */
-    layer: Layer;
-    entity: Entity3D;
-    state: string;
-    sourceCrs: CoordinateSystem;
-    interpretation: string;
-    minmax: { min: number; max: number } | undefined;
-    extentColor: Color;
-    showExtent: boolean;
-    extentHelper: BoundingBoxHelper | null;
-    visible = true;
+    public layer: Layer;
+    public entity: Entity3D;
+    public state: string;
+    public sourceCrs: CoordinateSystem;
+    public interpretation: string;
+    public minmax: { min: number; max: number } | undefined;
+    public extentColor: Color;
+    public showExtent: boolean;
+    public extentHelper: BoundingBoxHelper | null;
+    public visible = true;
     /** The color map inspector */
-    colorMapInspector: ColorMapInspector;
+    public colorMapInspector: ColorMapInspector;
     /** The source inspector. */
-    sourceInspector: SourceInspector | undefined;
-    colorimetryPanel: ColorimetryPanel | undefined;
-    composerImages = 0;
-    cpuMemoryUsage = 'unknown';
-    gpuMemoryUsage = 'unknown';
-    blendingMode = 'Normal';
+    public sourceInspector: SourceInspector | undefined;
+    public colorimetryPanel: ColorimetryPanel | undefined;
+    public composerImages = 0;
+    public cpuMemoryUsage = 'unknown';
+    public gpuMemoryUsage = 'unknown';
+    public blendingMode = 'Normal';
 
     /**
      * @param gui - The GUI.
@@ -62,7 +64,7 @@ class LayerInspector extends Panel {
      * @param entity - The map.
      * @param layer - The layer to inspect
      */
-    constructor(gui: GUI, instance: Instance, entity: Entity3D, layer: Layer) {
+    public constructor(gui: GUI, instance: Instance, entity: Entity3D, layer: Layer) {
         super(gui, instance, getTitle(layer));
 
         this.layer = layer;
@@ -181,30 +183,30 @@ class LayerInspector extends Panel {
         layer.addEventListener('visible-property-changed', () => this.gui.title(getTitle(layer)));
     }
 
-    repaint() {
+    public repaint(): void {
         this.layer.clear();
     }
 
-    get colorMap() {
+    public get colorMap(): Pick<ColorMap, 'min' | 'max' | 'mode'> {
         if (this.layer.colorMap) {
             return this.layer.colorMap;
         }
 
-        return { min: '-1', max: '-1', mode: 'N/A' };
+        return { min: -1, max: -1, mode: 'N/A' as unknown as ColorMapMode };
     }
 
-    removeLayer() {
+    public removeLayer(): void {
         if (isMap(this.entity)) {
             this.entity.removeLayer(this.layer);
         }
     }
 
-    disposeLayer() {
+    public disposeLayer(): void {
         this.layer.dispose();
         this.notify(this.layer);
     }
 
-    updateExtentColor() {
+    public updateExtentColor(): void {
         if (this.extentHelper) {
             this.instance.threeObjects.remove(this.extentHelper);
             if (isMaterial(this.extentHelper.material)) {
@@ -216,7 +218,7 @@ class LayerInspector extends Panel {
         this.toggleExtent();
     }
 
-    toggleExtent() {
+    public toggleExtent(): void {
         if (!this.extentHelper && this.showExtent && isMap(this.entity)) {
             const { min, max } = this.entity.getElevationMinMax();
             const box = this.layer.getExtent()?.toBox3(min, max);
@@ -234,12 +236,12 @@ class LayerInspector extends Panel {
         this.notify(this.layer);
     }
 
-    override updateControllers(): void {
+    public override updateControllers(): void {
         super.updateControllers();
         this.colorMapInspector?.updateControllers();
     }
 
-    override updateValues() {
+    public override updateValues(): void {
         this.state = this.layer.loading
             ? `loading (${Math.round(this.layer.progress * 100)}%)`
             : 'idle';

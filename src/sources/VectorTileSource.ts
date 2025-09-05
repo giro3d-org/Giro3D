@@ -60,11 +60,11 @@ const tmpTransform: Transform = createTransform();
 const MIN_LEVEL_THRESHOLD = 2;
 const tmpDims = new Vector2();
 
-function getZoomLevel(tileGrid: TileGrid, width: number, extent: Extent) {
+function getZoomLevel(tileGrid: TileGrid, width: number, extent: Extent): number | null {
     const minZoom = tileGrid.getMinZoom();
     const maxZoom = tileGrid.getMaxZoom();
 
-    function round1000000(n: number) {
+    function round1000000(n: number): number {
         return Math.round(n * 100000000) / 100000000;
     }
 
@@ -92,14 +92,14 @@ function getZoomLevel(tileGrid: TileGrid, width: number, extent: Extent) {
     return maxZoom;
 }
 
-function createCanvas(width: number, height: number) {
+function createCanvas(width: number, height: number): HTMLCanvasElement {
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
     return canvas;
 }
 
-function handleStyleImageChange() {
+function handleStyleImageChange(): void {
     /** empty */
 }
 
@@ -108,7 +108,7 @@ function renderFeature(
     squaredTolerance: number,
     styles: Style | Style[],
     builderGroup: CanvasBuilderGroup,
-) {
+): boolean {
     if (styles == null) {
         return false;
     }
@@ -172,12 +172,12 @@ export interface VectorTileSourceOptions extends ImageSourceOptions {
  * \});
  */
 class VectorTileSource extends ImageSource {
-    readonly isVectorTileSource: boolean = true as const;
-    override readonly type = 'VectorTileSource' as const;
+    public readonly isVectorTileSource: boolean = true as const;
+    public override readonly type = 'VectorTileSource' as const;
 
-    readonly source: OLVectorTileSourcce;
-    readonly style: Style | StyleFunction;
-    readonly backgroundColor: string | undefined;
+    public readonly source: OLVectorTileSourcce;
+    public readonly style: Style | StyleFunction;
+    public readonly backgroundColor: string | undefined;
     private _sourceProjection: Projection;
     private _extent: Extent | undefined;
     private readonly _tileGrid: TileGrid;
@@ -187,7 +187,7 @@ class VectorTileSource extends ImageSource {
     /**
      * @param options - Options.
      */
-    constructor(options: VectorTileSourceOptions) {
+    public constructor(options: VectorTileSourceOptions) {
         super(options);
         if (!options.url) {
             throw new Error('missing parameter: url');
@@ -200,7 +200,7 @@ class VectorTileSource extends ImageSource {
 
         const priority = this.priority;
 
-        async function tileLoadFunction(tile: Tile, url: string) {
+        async function tileLoadFunction(tile: Tile, url: string): Promise<void> {
             if (tile instanceof VectorTile) {
                 try {
                     const response = await Fetcher.fetch(url, { priority });
@@ -244,11 +244,11 @@ class VectorTileSource extends ImageSource {
         this._sourceProjection = projection;
     }
 
-    getCrs() {
+    public getCrs(): CoordinateSystem {
         return this._crs;
     }
 
-    getExtent() {
+    public getExtent(): Extent {
         if (!this._extent) {
             const tileGrid = this.source.getTileGridForProjection(this._sourceProjection);
             const sourceExtent = tileGrid.getExtent();
@@ -261,7 +261,7 @@ class VectorTileSource extends ImageSource {
      * @param tile - The tile to render.
      * @returns The canvas.
      */
-    private rasterize(tile: VectorRenderTile) {
+    private rasterize(tile: VectorRenderTile): HTMLCanvasElement {
         const tileCoord = tile.getTileCoord();
 
         const pixelRatio = 1;
@@ -306,7 +306,7 @@ class VectorTileSource extends ImageSource {
         return canvas;
     }
 
-    private rasterizeTile(tile: VectorRenderTile) {
+    private rasterizeTile(tile: VectorRenderTile): CanvasTexture {
         if (tile.getState() === TileState.LOADED) {
             this.createBuilderGroup(tile);
         }
@@ -317,7 +317,7 @@ class VectorTileSource extends ImageSource {
         return texture;
     }
 
-    private createBuilderGroup(tile: VectorRenderTile) {
+    private createBuilderGroup(tile: VectorRenderTile): boolean {
         // @ts-expect-error this is not assignable to getReplayState()
         const replayState = tile.getReplayState(this);
         const source = this.source;
@@ -352,7 +352,7 @@ class VectorTileSource extends ImageSource {
 
             const defaultStyle = this.style;
 
-            const render = function render(feature: Feature) {
+            const render = function render(feature: Feature): void {
                 let styles: Style | Style[];
                 const style = feature.getStyleFunction() || defaultStyle;
                 if (typeof style === 'function') {
@@ -461,7 +461,7 @@ class VectorTileSource extends ImageSource {
                 );
                 // Don't bother loading tiles that are not in the source
                 if (tileExtent.intersectsExtent(sourceExtent)) {
-                    const request = () =>
+                    const request = (): Promise<ImageResult> =>
                         this.loadTile(tile).then(
                             texture => new ImageResult({ texture, extent: tileExtent, id }),
                         );
@@ -474,12 +474,12 @@ class VectorTileSource extends ImageSource {
         return requests;
     }
 
-    override update(): void {
+    public override update(): void {
         this.source.refresh();
         super.update();
     }
 
-    getImages(options: GetImageOptions): Array<ImageResponse> {
+    public getImages(options: GetImageOptions): Array<ImageResponse> {
         const { extent, width } = options;
 
         const tileGrid = this.source.getTileGridForProjection(this._sourceProjection);

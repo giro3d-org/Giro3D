@@ -47,14 +47,14 @@ export default class ConstantSizeSphere extends Mesh {
     /**
      * The radius, in pixels.
      */
-    radius: number;
+    public radius: number;
 
-    enableRaycast = true;
+    public enableRaycast = true;
 
-    readonly isConstantSizeSphere = true as const;
-    override readonly type = 'ConstantSizeSphere' as const;
+    public readonly isConstantSizeSphere = true as const;
+    public override readonly type = 'ConstantSizeSphere' as const;
 
-    constructor(options?: {
+    public constructor(options?: {
         /**
          * The sphere apparent radius, in pixels.
          * @defaultValue 10
@@ -71,13 +71,13 @@ export default class ConstantSizeSphere extends Mesh {
         this.radius = options?.radius ?? DEFAULT_RADIUS;
     }
 
-    override raycast(raycaster: Raycaster, intersects: Intersection[]): void {
+    public override raycast(raycaster: Raycaster, intersects: Intersection[]): void {
         if (this.enableRaycast) {
             super.raycast(raycaster, intersects);
         }
     }
 
-    override onBeforeRender(renderer: WebGLRenderer, _scene: Scene, camera: Camera): void {
+    public override onBeforeRender(renderer: WebGLRenderer, _scene: Scene, camera: Camera): void {
         this.updateWorldMatrix(true, false);
 
         const scale = getWorldSpaceRadius(
@@ -109,7 +109,7 @@ export function getWorldSpaceRadius(
     camera: Camera,
     worldPosition: Vector3,
     screenSpaceRadius: number,
-) {
+): number {
     const origin = camera.getWorldPosition(tmpOrigin);
     const dist = origin.distanceTo(worldPosition);
 

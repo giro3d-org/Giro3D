@@ -110,31 +110,31 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
     private _maxFar: number = DEFAULT_MAX_FAR_PLANE;
     private _minNear: number = DEFAULT_MIN_NEAR_PLANE;
     private _controls: ExternalControls | null = null;
-    private _onControlsUpdated = () => this.dispatchEvent({ type: 'change' });
+    private _onControlsUpdated = (): void => this.dispatchEvent({ type: 'change' });
     private _frustum: Frustum = new Frustum();
 
     /**
      * The width, in pixels, of this view.
      */
-    get width() {
+    public get width(): number {
         return this._width;
     }
 
     /**
      * The height, in pixels, of this view.
      */
-    get height() {
+    public get height(): number {
         return this._height;
     }
 
     /**
      * Gets or sets the current camera.
      */
-    get camera(): PerspectiveCamera | OrthographicCamera {
+    public get camera(): PerspectiveCamera | OrthographicCamera {
         return this._camera;
     }
 
-    set camera(c: PerspectiveCamera | OrthographicCamera) {
+    public set camera(c: PerspectiveCamera | OrthographicCamera) {
         if (c != null) {
             this._camera = c;
         } else {
@@ -148,7 +148,7 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
      * @param height - the height in pixels of the camera viewport
      * @param options - optional values
      */
-    constructor(params: {
+    public constructor(params: {
         crs: CoordinateSystem;
         width: number;
         height: number;
@@ -171,27 +171,27 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
         this._preSSE = Infinity;
     }
 
-    get crs() {
+    public get crs(): CoordinateSystem {
         return this._coordinateSystem;
     }
 
-    get preSSE() {
+    public get preSSE(): number {
         return this._preSSE;
     }
 
-    set preSSE(value) {
+    public set preSSE(value: number) {
         this._preSSE = value;
     }
 
-    get viewMatrix() {
+    public get viewMatrix(): Matrix4 {
         return this._viewMatrix;
     }
 
-    get near() {
+    public get near(): number {
         return this.camera.near;
     }
 
-    get frustum(): Readonly<Frustum> {
+    public get frustum(): Readonly<Frustum> {
         return this._frustum;
     }
 
@@ -199,11 +199,11 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
      * Gets or sets the distance to the near plane. The distance will be clamped to be within
      * the bounds defined by {@link minNearPlane} and {@link maxFarPlane}.
      */
-    set near(distance: number) {
+    public set near(distance: number) {
         this.camera.near = MathUtils.clamp(distance, this.minNearPlane, this.maxFarPlane);
     }
 
-    get far() {
+    public get far(): number {
         return this.camera.far;
     }
 
@@ -211,18 +211,18 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
      * Gets or sets the distance to the far plane. The distance will be clamped to be within
      * the bounds defined by {@link minNearPlane} and {@link maxFarPlane}.
      */
-    set far(distance: number) {
+    public set far(distance: number) {
         this.camera.far = MathUtils.clamp(distance, this.minNearPlane, this.maxFarPlane);
     }
 
     /**
      * Gets or sets the maximum distance allowed for the camera far plane.
      */
-    get maxFarPlane() {
+    public get maxFarPlane(): number {
         return this._maxFar;
     }
 
-    set maxFarPlane(distance: number) {
+    public set maxFarPlane(distance: number) {
         this._maxFar = distance;
         this.camera.far = Math.min(this.camera.far, distance);
     }
@@ -230,11 +230,11 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
     /**
      * Gets or sets the minimum distance allowed for the camera near plane.
      */
-    get minNearPlane() {
+    public get minNearPlane(): number {
         return this._minNear;
     }
 
-    set minNearPlane(distance: number) {
+    public set minNearPlane(distance: number) {
         this._minNear = distance;
         this.camera.near = Math.max(this.camera.near, distance);
     }
@@ -244,7 +244,7 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
      *
      * Note: To register controls, use {@link setControls}.
      */
-    get controls(): ExternalControls | null {
+    public get controls(): ExternalControls | null {
         return this._controls;
     }
 
@@ -264,7 +264,7 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
      * @param controls - The controls to register. If `null`, currently registered controls
      * are unregistered (they are not disabled however).
      */
-    setControls(controls: ExternalControls | null) {
+    public setControls(controls: ExternalControls | null): void {
         if (controls != null) {
             controls.addEventListener('change', this._onControlsUpdated);
         } else {
@@ -276,7 +276,7 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
     /**
      * Resets the near and far planes to their default value.
      */
-    resetPlanes() {
+    public resetPlanes(): void {
         this.near = this.minNearPlane;
         this.far = this.maxFarPlane;
     }
@@ -284,7 +284,7 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
     /**
      * @internal
      */
-    update() {
+    public update(): void {
         this._controls?.update();
 
         // update matrix
@@ -300,7 +300,7 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
         this._frustum.setFromProjectionMatrix(this._viewMatrix);
     }
 
-    setSize(width?: number, height?: number) {
+    public setSize(width?: number, height?: number): void {
         if (width != null && height != null) {
             this._width = width;
             this._height = height;
@@ -329,11 +329,11 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
      * returned in this CRS
      * @returns Coordinates object holding camera's position
      */
-    position(crs?: CoordinateSystem) {
+    public position(crs?: CoordinateSystem): Coordinates {
         return new Coordinates(this.crs, this.camera.position).as(crs ?? this.crs);
     }
 
-    isOBBVisible(worldOBB: OBB): boolean {
+    public isOBBVisible(worldOBB: OBB): boolean {
         const box = tmp.box3.setFromCenterAndSize(ZERO, worldOBB.getSize(tmp.vec3));
 
         const obbMatrix = tmp.obbMatrix
@@ -347,7 +347,7 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
         return tmp.frustum.intersectsBox(box);
     }
 
-    isBox3Visible(box3: Box3, matrixWorld?: Matrix4) {
+    public isBox3Visible(box3: Box3, matrixWorld?: Matrix4): boolean {
         if (matrixWorld && !matrixWorld.equals(IDENTITY)) {
             tmp.matrix.multiplyMatrices(this._viewMatrix, matrixWorld);
             tmp.frustum.setFromProjectionMatrix(tmp.matrix);
@@ -357,7 +357,7 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
         }
     }
 
-    isSphereVisible(sphere: Sphere, matrixWorld?: Matrix4) {
+    public isSphereVisible(sphere: Sphere, matrixWorld?: Matrix4): boolean {
         if (matrixWorld && !matrixWorld.equals(IDENTITY)) {
             tmp.matrix.multiplyMatrices(this._viewMatrix, matrixWorld);
             tmp.frustum.setFromProjectionMatrix(tmp.matrix);
@@ -367,7 +367,7 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
         }
     }
 
-    box3SizeOnScreen(box3: Box3, matrixWorld: Matrix4) {
+    public box3SizeOnScreen(box3: Box3, matrixWorld: Matrix4): Box3 {
         const pts = this.projectBox3PointsInCameraSpace(box3, matrixWorld);
 
         // All points are in front of the near plane -> box3 is invisible
@@ -416,7 +416,7 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
      * @param options - Optional parameters.
      * @returns The readonly point of view if it could be computed, `null` otherwise.
      */
-    getDefaultPointOfView(
+    public getDefaultPointOfView(
         obj: Object3D | Box3,
         options?: {
             /**
@@ -509,7 +509,7 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
      * @param options - The options.
      * @returns The immutable {@link PointOfView} that was used to setup the camera, or `null` if it couldn't be computed.
      */
-    goTo(
+    public goTo(
         obj: Object3D | HasDefaultPointOfView | PointOfView,
         options?: {
             /**
@@ -543,7 +543,10 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
         return Object.freeze(pov);
     }
 
-    private projectBox3PointsInCameraSpace(box3: Box3, matrixWorld?: Matrix4) {
+    private projectBox3PointsInCameraSpace(
+        box3: Box3,
+        matrixWorld?: Matrix4,
+    ): Vector3[] | undefined {
         if (!('near' in this.camera)) {
             return undefined;
         }
@@ -579,7 +582,7 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
         return atLeastOneInFrontOfNearPlane ? points : undefined;
     }
 
-    dispose(): void {
+    public dispose(): void {
         this.setControls(null);
     }
 }

@@ -11,11 +11,11 @@ function isTexture(o: unknown): o is Texture {
 }
 
 class TextureState {
-    readonly texture: Texture;
+    public readonly texture: Texture;
 
-    inGpuMemory = false;
+    public inGpuMemory = false;
 
-    constructor(texture: Texture) {
+    public constructor(texture: Texture) {
         this.texture = texture;
         texture.addEventListener('dispose', () => (this.inGpuMemory = false));
 
@@ -23,7 +23,7 @@ class TextureState {
             this.inGpuMemory = true;
         } else {
             const currentOnUpdate = texture.onUpdate;
-            const patchedOnUpdate = () => {
+            const patchedOnUpdate = (): void => {
                 this.inGpuMemory = true;
                 currentOnUpdate?.call(texture);
             };
@@ -66,7 +66,7 @@ class MemoryTracker {
     /**
      * Enables the tracking of allocated objects.
      */
-    static set enable(v: boolean) {
+    public static set enable(v: boolean) {
         if (enabled !== v) {
             enabled = v;
             if (!enabled) {
@@ -75,7 +75,7 @@ class MemoryTracker {
         }
     }
 
-    static get enable() {
+    public static get enable(): boolean {
         return enabled;
     }
 
@@ -85,7 +85,7 @@ class MemoryTracker {
      * @param obj - The object to track.
      * @param name - The name of the tracked object. Does not have to be unique.
      */
-    static track(obj: object, name: string) {
+    public static track(obj: object, name: string): void {
         if (enabled) {
             allocated.push({ name, weakref: new WeakRef(obj) });
             counter++;
@@ -105,7 +105,7 @@ class MemoryTracker {
      * Removes all invalid references.
      *
      */
-    static flush() {
+    public static flush(): void {
         const newArray = [];
         let hasChanged = false;
         for (const entry of allocated) {
@@ -132,7 +132,7 @@ class MemoryTracker {
      *
      * @returns The tracked objects.
      */
-    static getTrackedObjects() {
+    public static getTrackedObjects(): Record<string, { name: string; value: object }[]> {
         const map: Record<string, { name: string; value: object }[]> = {};
         for (const entry of allocated) {
             const { name, weakref } = entry;
@@ -148,7 +148,7 @@ class MemoryTracker {
         return map;
     }
 
-    static getTrackedTextures() {
+    public static getTrackedTextures(): TextureState[] {
         return [...textures.values()];
     }
 }

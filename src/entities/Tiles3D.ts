@@ -191,10 +191,10 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
     extends Entity3D<Tiles3DEventMap, UserData>
     implements Pickable<Tiles3DPickResult>, HasLayers
 {
-    override readonly isPickable = true as const;
-    readonly hasLayers = true as const;
-    readonly isTiles3D = true as const;
-    override readonly type = 'Tiles3D';
+    public override readonly isPickable = true as const;
+    public readonly hasLayers = true as const;
+    public readonly isTiles3D = true as const;
+    public override readonly type = 'Tiles3D';
 
     private readonly _debugPlugin: DebugTilesPlugin;
     private readonly _fetchPlugin: FetchPlugin;
@@ -237,7 +237,7 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
 
     private _colorLayer: ColorLayer | null = null;
 
-    constructor(options?: Tiles3DOptions) {
+    public constructor(options?: Tiles3DOptions) {
         super(new Group());
 
         this._tiles = new TilesRenderer(options?.url);
@@ -316,23 +316,23 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
     /**
      * Returns the underlying renderer.
      */
-    get tiles(): TilesRenderer {
+    public get tiles(): TilesRenderer {
         return this._tiles;
     }
 
-    override onRenderingContextRestored(): void {
+    public override onRenderingContextRestored(): void {
         this.forEachLayer(layer => layer.onRenderingContextRestored());
         this.instance.notifyChange(this);
     }
 
-    override getBoundingBox(): Box3 | null {
+    public override getBoundingBox(): Box3 | null {
         const box = new Box3();
         this._tiles.getBoundingBox(box);
 
         return box;
     }
 
-    override getMemoryUsage(context: GetMemoryUsageContext) {
+    public override getMemoryUsage(context: GetMemoryUsageContext): void {
         this.traverse(obj => {
             if ('geometry' in obj && isBufferGeometry(obj.geometry)) {
                 getGeometryMemoryUsage(context, obj.geometry);
@@ -346,11 +346,11 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         }
     }
 
-    override get loading() {
+    public override get loading(): boolean {
         return this.tiles.loadProgress !== 1 || (this._colorLayer?.loading ?? false);
     }
 
-    override get progress() {
+    public override get progress(): number {
         let sum = this.tiles.loadProgress;
         let count = 1;
         if (this._colorLayer) {
@@ -360,7 +360,10 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         return sum / count;
     }
 
-    private updateObjectOption<K extends keyof ObjectOptions>(key: K, value: ObjectOptions[K]) {
+    private updateObjectOption<K extends keyof ObjectOptions>(
+        key: K,
+        value: ObjectOptions[K],
+    ): void {
         if (this._objectOptions[key] !== value) {
             this._objectOptions[key] = value;
             this.traverse(o => this.updateObject(o));
@@ -373,11 +376,11 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
      *
      * Note: shadow maps require normal attributes on objects.
      */
-    get castShadow() {
+    public get castShadow(): boolean {
         return this._objectOptions.castShadow;
     }
 
-    set castShadow(v: boolean) {
+    public set castShadow(v: boolean) {
         this.updateObjectOption('castShadow', v);
     }
 
@@ -386,15 +389,15 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
      *
      * Note: shadow maps require normal attributes on objects.
      */
-    get receiveShadow() {
+    public get receiveShadow(): boolean {
         return this._objectOptions.receiveShadow;
     }
 
-    set receiveShadow(v: boolean) {
+    public set receiveShadow(v: boolean) {
         this.updateObjectOption('receiveShadow', v);
     }
 
-    getLayers(predicate?: (arg0: Layer) => boolean): Layer[] {
+    public getLayers(predicate?: (arg0: Layer) => boolean): Layer[] {
         if (this._colorLayer) {
             if (typeof predicate != 'function' || predicate(this._colorLayer)) {
                 return [this._colorLayer];
@@ -404,13 +407,13 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         return [];
     }
 
-    forEachLayer(callback: (layer: Layer) => void): void {
+    public forEachLayer(callback: (layer: Layer) => void): void {
         if (this._colorLayer) {
             callback(this._colorLayer);
         }
     }
 
-    removeColorLayer(): void {
+    public removeColorLayer(): void {
         if (this._colorLayer) {
             this.dispatchEvent({ type: 'layer-removed', layer: this._colorLayer });
             this.traverse(obj => {
@@ -426,7 +429,7 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
      * Sets the color layer used to colorize tiles.
      * Note: this feature only works with point cloud tiles.
      */
-    async setColorLayer(layer: ColorLayer): Promise<void> {
+    public async setColorLayer(layer: ColorLayer): Promise<void> {
         if (this._colorLayer) {
             this.removeColorLayer();
         }
@@ -438,14 +441,14 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         this.dispatchEvent({ type: 'layer-removed', layer });
     }
 
-    get layerCount(): number {
+    public get layerCount(): number {
         if (this._colorLayer) {
             return 1;
         }
         return 0;
     }
 
-    override updateOpacity() {
+    public override updateOpacity(): void {
         this.traverseMaterials(material => {
             this.setMaterialOpacity(material);
         });
@@ -473,7 +476,7 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
             }
 
             // Preprocessing is done when the root tileset is loaded
-            const listener = () => {
+            const listener = (): void => {
                 this._tiles.removeEventListener('load-content', listener);
                 // The two next lines became necessary starting with
                 // 3d-tile-renderer v0.4.8 but the actual reason is unclear.
@@ -497,7 +500,7 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         });
     }
 
-    override preUpdate(context: Context): unknown[] | null {
+    public override preUpdate(context: Context): unknown[] | null {
         if (this.frozen || !this.visible) {
             return null;
         }
@@ -510,7 +513,7 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         return null;
     }
 
-    override postUpdate(context: Context): void {
+    public override postUpdate(context: Context): void {
         if (this.frozen || !this.visible) {
             return;
         }
@@ -539,22 +542,22 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
      *
      * @param material - a material belonging to an object of this entity
      */
-    protected setMaterialOpacity(material: Material) {
+    protected setMaterialOpacity(material: Material): void {
         material.opacity = this.opacity * material.userData.originalOpacity;
         const currentTransparent = material.transparent;
         material.transparent = material.opacity < 1.0;
         material.needsUpdate = currentTransparent !== material.transparent;
     }
 
-    private onColorMapUpdated() {
+    private onColorMapUpdated(): void {
         this.traversePointCloudMaterials(m => m.updateUniforms());
     }
 
-    get errorTarget() {
+    public get errorTarget(): number {
         return this._tiles.errorTarget;
     }
 
-    set errorTarget(v: number) {
+    public set errorTarget(v: number) {
         if (this._tiles.errorTarget !== v) {
             this._tiles.errorTarget = v;
             this.notifyChange(this);
@@ -564,11 +567,11 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
     /**
      * Gets or sets the size of points. Only applies to point cloud tiles.
      */
-    get pointSize() {
+    public get pointSize(): number {
         return this._pointCloudParameters.pointSize;
     }
 
-    set pointSize(v: number) {
+    public set pointSize(v: number) {
         if (this._pointCloudParameters.pointSize !== v) {
             this._pointCloudParameters.pointSize = v;
             this.traversePointCloudMaterials(m => {
@@ -581,11 +584,11 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
     /**
      * Gets or sets display mode of point clouds. Only applies to point cloud tiles.
      */
-    get pointCloudMode() {
+    public get pointCloudMode(): PointCloudMaterialMode {
         return this._pointCloudParameters.pointCloudMode;
     }
 
-    set pointCloudMode(v: PointCloudMaterialMode) {
+    public set pointCloudMode(v: PointCloudMaterialMode) {
         if (this._pointCloudParameters.pointCloudMode !== v) {
             this._pointCloudParameters.pointCloudMode = v;
             this.traversePointCloudMaterials(m => (m.mode = v));
@@ -596,11 +599,11 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
     /**
      * Gets or sets the default color of point clouds. Only applies to point cloud tiles.
      */
-    get pointCloudColor() {
+    public get pointCloudColor(): Color | null {
         return this._pointCloudParameters.overlayColor;
     }
 
-    set pointCloudColor(v: ColorRepresentation | null) {
+    public set pointCloudColor(v: ColorRepresentation | null) {
         const color = v != null ? new Color(v) : new Color();
 
         if (
@@ -616,11 +619,11 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
     /**
      * Gets or sets the point cloud brightness, contrast and saturation. Only applies to point cloud tiles.
      */
-    get pointCloudColorimetryOptions(): ColorimetryOptions {
+    public get pointCloudColorimetryOptions(): ColorimetryOptions {
         return this._pointCloudParameters.colorimetry;
     }
 
-    set pointCloudColorimetryOptions(v: ColorimetryOptions) {
+    public set pointCloudColorimetryOptions(v: ColorimetryOptions) {
         if (this._pointCloudParameters.colorimetry !== v) {
             this._pointCloudParameters.colorimetry = v;
             this.traversePointCloudMaterials(m => {
@@ -635,18 +638,18 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
     /**
      * Gets the classifications for point clouds. Only applies to point cloud tiles.
      */
-    get pointCloudClassifications() {
+    public get pointCloudClassifications(): Classification[] {
         return this._pointCloudParameters.classifications;
     }
 
     /**
      * Gets the colormap used for point clouds. Only applies to point cloud tiles.
      */
-    get colorMap() {
+    public get colorMap(): ColorMap {
         return this._pointCloudParameters.pointCloudColorMap;
     }
 
-    private traversePointCloudMaterials(callback: (m: PointCloudMaterial) => void) {
+    private traversePointCloudMaterials(callback: (m: PointCloudMaterial) => void): void {
         this.traverseMaterials(m => {
             if (PointCloudMaterial.isPointCloudMaterial(m)) {
                 callback(m);
@@ -654,7 +657,10 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         });
     }
 
-    private setDebugParam<K extends keyof DebugTilesPlugin>(key: K, value: DebugTilesPlugin[K]) {
+    private setDebugParam<K extends keyof DebugTilesPlugin>(
+        key: K,
+        value: DebugTilesPlugin[K],
+    ): void {
         // This plugin has a severe performance cost until it can be disabled at runtime
         // See https://github.com/NASA-AMMOS/3DTilesRendererJS/issues/647
         let plugin = this._tiles.getPluginByName('DEBUG_TILES_PLUGIN') as DebugTilesPlugin;
@@ -670,7 +676,7 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         this.updateDebugPluginState();
     }
 
-    private updateDebugPluginState() {
+    private updateDebugPluginState(): void {
         this._debugPlugin.enabled =
             this._debugOptions.displayBoxBounds ||
             this._debugOptions.displayRegionBounds ||
@@ -680,11 +686,11 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
     /**
      * Toggles the display of box volumes.
      */
-    get displayBoxBounds(): boolean {
+    public get displayBoxBounds(): boolean {
         return this._debugOptions.displayBoxBounds;
     }
 
-    set displayBoxBounds(v: boolean) {
+    public set displayBoxBounds(v: boolean) {
         if (this._debugOptions.displayBoxBounds !== v) {
             this._debugOptions.displayBoxBounds = v;
             this.setDebugParam('displayBoxBounds', v);
@@ -694,11 +700,11 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
     /**
      * Toggles the display of sphere volumes.
      */
-    get displaySphereBounds(): boolean {
+    public get displaySphereBounds(): boolean {
         return this._debugOptions.displaySphereBounds;
     }
 
-    set displaySphereBounds(v: boolean) {
+    public set displaySphereBounds(v: boolean) {
         if (this._debugOptions.displaySphereBounds !== v) {
             this._debugOptions.displaySphereBounds = v;
             this.setDebugParam('displaySphereBounds', v);
@@ -708,11 +714,11 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
     /**
      * Toggles the display of region volumes.
      */
-    get displayRegionBounds(): boolean {
+    public get displayRegionBounds(): boolean {
         return this._debugOptions.displayRegionBounds;
     }
 
-    set displayRegionBounds(v: boolean) {
+    public set displayRegionBounds(v: boolean) {
         if (this._debugOptions.displayRegionBounds !== v) {
             this._debugOptions.displayRegionBounds = v;
             this.setDebugParam('displayRegionBounds', v);
@@ -722,7 +728,7 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
     /**
      * Prepares the object so that it can receive a color layer.
      */
-    private prepareLayerNode(node: LayerNode) {
+    private prepareLayerNode(node: LayerNode): void {
         if (node.visible && node.userData.extent == null) {
             const localBox = node.userData.boundingBox as Box3;
             const worldBox = localBox.clone().applyMatrix4(node.matrixWorld);
@@ -731,7 +737,7 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         }
     }
 
-    private onTileDisposed(e: { scene: Object3D; tile: Tile }) {
+    private onTileDisposed(e: { scene: Object3D; tile: Tile }): void {
         const { scene } = e;
 
         if (this.layerCount !== 0 && isLayerNode(scene)) {
@@ -741,7 +747,7 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         this.notifyChange(this);
     }
 
-    private onTileVisibilityChanged(e: { scene: Object3D; tile: Tile; visible: boolean }) {
+    private onTileVisibilityChanged(e: { scene: Object3D; tile: Tile; visible: boolean }): void {
         const { scene, visible } = e;
 
         if (this.layerCount !== 0 && isLayerNode(scene)) {
@@ -766,7 +772,7 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         this.notifyChange(this);
     }
 
-    private updateMaterial(scene: Object3D) {
+    private updateMaterial(scene: Object3D): void {
         this.traverseMaterials(m => this.setupMaterial(m), scene);
 
         if (isPNTSScene(scene)) {
@@ -774,7 +780,7 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         }
     }
 
-    private updateObject(obj: Object3D) {
+    private updateObject(obj: Object3D): void {
         const opts = this._objectOptions;
 
         // Note that for object to actually cast/receive shadows, they *must*
@@ -786,7 +792,7 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         obj.receiveShadow = opts.receiveShadow;
     }
 
-    private onModelLoaded(e: unknown) {
+    private onModelLoaded(e: unknown): void {
         if (typeof e === 'object' && e != null && 'scene' in e && isObject3D(e.scene)) {
             this.onObjectCreated(e.scene as Object3D);
             e.scene.traverse(o => this.updateObject(o));
@@ -795,7 +801,7 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         }
     }
 
-    protected override setupMaterial(material: Material) {
+    protected override setupMaterial(material: Material): void {
         material.clippingPlanes = this.clippingPlanes;
         // this object can already be transparent with opacity < 1.0
         // we need to honor it, even when we change the whole entity's opacity
@@ -805,7 +811,7 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         this.setMaterialOpacity(material);
     }
 
-    private updateCameraDistances(context: Context, obj: Object3D) {
+    private updateCameraDistances(context: Context, obj: Object3D): void {
         const plane = context.distance.plane;
 
         if (obj.visible && 'geometry' in obj && isBufferGeometry(obj.geometry)) {
@@ -828,7 +834,7 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         }
     }
 
-    override dispose(): void {
+    public override dispose(): void {
         this._tiles.removeEventListener('load-model', this._listeners.onModelLoaded);
         this._tiles.removeEventListener(
             'tile-visibility-change',

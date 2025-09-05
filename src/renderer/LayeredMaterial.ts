@@ -77,18 +77,18 @@ const COLORMAP_DISABLED = 0;
 const DISABLED_ELEVATION_RANGE = new Vector2(-999999, 999999);
 
 class TextureInfo {
-    readonly layer: ColorLayer;
+    public readonly layer: ColorLayer;
 
-    originalOffsetScale: OffsetScale;
-    offsetScale: OffsetScale;
-    texture: Texture;
-    opacity: number;
-    visible: boolean;
-    color: Color;
-    elevationRange?: Vector2;
-    brightnessContrastSaturation: Vector3;
+    public originalOffsetScale: OffsetScale;
+    public offsetScale: OffsetScale;
+    public texture: Texture;
+    public opacity: number;
+    public visible: boolean;
+    public color: Color;
+    public elevationRange?: Vector2;
+    public brightnessContrastSaturation: Vector3;
 
-    constructor(layer: ColorLayer) {
+    public constructor(layer: ColorLayer) {
         this.layer = layer;
         this.opacity = layer.opacity;
         this.visible = layer.visible;
@@ -99,7 +99,7 @@ class TextureInfo {
         this.brightnessContrastSaturation = new Vector3(0, 1, 1);
     }
 
-    get mode() {
+    public get mode(): MaskMode {
         return (this.layer as MaskLayer).maskMode ?? 0;
     }
 }
@@ -119,7 +119,7 @@ function drawImageOnAtlas(
     composer: WebGLComposer,
     atlasInfo: LayerAtlasInfo,
     texture: Texture,
-) {
+): void {
     const dx = atlasInfo.x;
     const dy = atlasInfo.y + nonNull(atlasInfo.offset);
     const dw = width;
@@ -137,7 +137,7 @@ function updateOffsetScale(
     width: number,
     height: number,
     target: OffsetScale,
-) {
+): void {
     if (originalOffsetScale.z === 0 || originalOffsetScale.w === 0) {
         target.set(0, 0, 0, 0);
         return;
@@ -386,10 +386,10 @@ type Uniforms = ThreeUniforms & {
 } & Record<string, IUniform>;
 
 class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
-    readonly isMemoryUsage = true as const;
+    public readonly isMemoryUsage = true as const;
 
     // Used for point-light shadow maps
-    light?: Light;
+    public light?: Light;
 
     private readonly _getIndexFn: (arg0: Layer) => number;
     private readonly _renderer: WebGLRenderer;
@@ -417,15 +417,15 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
     private _colorMapAtlas: ColorMapAtlas | null = null;
     private _composerDataType: TextureDataType = UnsignedByteType;
 
-    override readonly uniforms: Uniforms;
+    public override readonly uniforms: Uniforms;
 
-    override readonly defines: Defines = {
+    public override readonly defines: Defines = {
         VISIBLE_COLOR_LAYER_COUNT: 0,
     };
 
     private _options?: MaterialOptions;
 
-    getMemoryUsage(context: GetMemoryUsageContext) {
+    public getMemoryUsage(context: GetMemoryUsageContext): void {
         // We only consider textures that this material owns. That excludes layer textures.
         const atlas = this._texturesInfo.color.atlasTexture;
         if (atlas) {
@@ -433,7 +433,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         }
     }
 
-    constructor(params: {
+    public constructor(params: {
         /** the material options. */
         options: MaterialOptions;
         /** the WebGL renderer. */
@@ -600,11 +600,11 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
     /**
      * @param v - The number of segments.
      */
-    set segments(v: number) {
+    public set segments(v: number) {
         this.uniforms.segments.value = v;
     }
 
-    updateNeighbour(
+    public updateNeighbour(
         neighbour: number,
         diffLevel: number,
         offsetScale: OffsetScale,
@@ -615,11 +615,11 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         this.uniforms.neighbourTextures.value[neighbour] = texture;
     }
 
-    setElevationScaling(scaling: number): void {
+    public setElevationScaling(scaling: number): void {
         this.uniforms.elevationScaling.value = scaling;
     }
 
-    override onBeforeCompile(parameters: WebGLProgramParametersWithUniforms): void {
+    public override onBeforeCompile(parameters: WebGLProgramParametersWithUniforms): void {
         // This is a workaround due to a limitation in three.js, documented
         // here: https://github.com/mrdoob/three.js/issues/28020
         // Normally, we would not have to do this and let the loop unrolling do its job.
@@ -632,7 +632,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         );
     }
 
-    private updateColorLayerUniforms() {
+    private updateColorLayerUniforms(): void {
         const useAtlas = this.defines.USE_ATLAS_TEXTURE === 1;
 
         this.sortLayersIfNecessary();
@@ -685,7 +685,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         }
     }
 
-    override dispose() {
+    public override dispose(): void {
         this.dispatchEvent({
             type: 'dispose',
         });
@@ -703,7 +703,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         this._texturesInfo.color.atlasTexture?.dispose();
     }
 
-    getColorTexture(layer: ColorLayer) {
+    public getColorTexture(layer: ColorLayer): Texture | null {
         const index = this.indexOfColorLayer(layer);
 
         if (index === -1) {
@@ -712,7 +712,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         return this._texturesInfo.color.infos[index].texture;
     }
 
-    private countIndividualTextures() {
+    private countIndividualTextures(): { totalTextureUnits: number; visibleColorLayers: number } {
         let totalTextureUnits = 0;
         if (this._elevationLayer) {
             totalTextureUnits++;
@@ -733,7 +733,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         return { totalTextureUnits, visibleColorLayers };
     }
 
-    override onBeforeRender() {
+    public override onBeforeRender(): void {
         this.updateOpacityParameters(this.opacity);
 
         if (this.defines.USE_ATLAS_TEXTURE && this._needsAtlasRepaint) {
@@ -751,7 +751,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
     /**
      * Determine if this material should write to the color buffer.
      */
-    private updateColorWrite() {
+    private updateColorWrite(): void {
         if (this._texturesInfo.elevation.texture == null && this.defines.DISCARD_NODATA_ELEVATION) {
             // No elevation texture means that every single fragment will be discarded,
             // which is an illegal operation in WebGL (raising warnings).
@@ -761,7 +761,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         }
     }
 
-    repaintAtlas() {
+    public repaintAtlas(): void {
         this.rebuildAtlasIfNecessary();
 
         const composer = nonNull(this._composer);
@@ -810,7 +810,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         this.uniforms.atlasTexture.value = this._texturesInfo.color.atlasTexture;
     }
 
-    setColorTextures(layer: ColorLayer, textureAndPitch: TextureAndPitch) {
+    public setColorTextures(layer: ColorLayer, textureAndPitch: TextureAndPitch): void {
         const index = this.indexOfColorLayer(layer);
         if (index < 0) {
             this.pushColorLayer(layer);
@@ -830,21 +830,21 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         this._needsAtlasRepaint = true;
     }
 
-    pushElevationLayer(layer: ElevationLayer) {
+    public pushElevationLayer(layer: ElevationLayer): void {
         this._elevationLayer = layer;
     }
 
-    removeElevationLayer() {
+    public removeElevationLayer(): void {
         this._elevationLayer = null;
         this.uniforms.elevationTexture.value = null;
         this._texturesInfo.elevation.texture = null;
         MaterialUtils.setDefine(this, 'ELEVATION_LAYER', false);
     }
 
-    setElevationTexture(
+    public setElevationTexture(
         layer: ElevationLayer,
         { texture, pitch }: { texture: Texture; pitch: OffsetScale },
-    ) {
+    ): void {
         this._elevationLayer = layer;
 
         MaterialUtils.setDefine(this, 'ELEVATION_LAYER', true);
@@ -863,7 +863,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         this.updateColorMaps();
     }
 
-    private rebuildAtlasInfo() {
+    private rebuildAtlasInfo(): void {
         const colorLayers = this._colorLayers;
 
         // rebuild color textures atlas
@@ -887,7 +887,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         this._atlasInfo.maxY = Math.max(this._atlasInfo.maxY, maxY);
     }
 
-    pushColorLayer(newLayer: ColorLayer) {
+    public pushColorLayer(newLayer: ColorLayer): void {
         if (this._colorLayers.includes(newLayer)) {
             return;
         }
@@ -917,7 +917,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         this.needsUpdate = true;
     }
 
-    private getVisibleColorLayerCount() {
+    private getVisibleColorLayerCount(): number {
         let result = 0;
         for (let i = 0; i < this._colorLayers.length; i++) {
             const layer = this._colorLayers[i];
@@ -928,11 +928,11 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         return result;
     }
 
-    reorderLayers() {
+    public reorderLayers(): void {
         this._needsSorting = true;
     }
 
-    private sortLayersIfNecessary() {
+    private sortLayersIfNecessary(): void {
         const idx = this._getIndexFn;
         if (this._needsSorting) {
             this._colorLayers.sort((a, b) => idx(a) - idx(b));
@@ -941,7 +941,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         }
     }
 
-    removeColorLayer(layer: ColorLayer) {
+    public removeColorLayer(layer: ColorLayer): void {
         const index = this.indexOfColorLayer(layer);
         if (index === -1) {
             return;
@@ -961,11 +961,11 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
      *
      * @param atlas - The atlas.
      */
-    setColorMapAtlas(atlas: ColorMapAtlas | null) {
+    public setColorMapAtlas(atlas: ColorMapAtlas | null): void {
         this._colorMapAtlas = atlas;
     }
 
-    private updateColorMaps() {
+    private updateColorMaps(): void {
         this.sortLayersIfNecessary();
 
         const atlas = this._colorMapAtlas;
@@ -1013,7 +1013,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         }
     }
 
-    private updateGraticuleUniforms(opts: MaterialOptions) {
+    private updateGraticuleUniforms(opts: MaterialOptions): void {
         const graticule = opts.graticule;
         const enabled = graticule.enabled ?? false;
         MaterialUtils.setDefine(this, 'ENABLE_GRATICULE', enabled);
@@ -1031,7 +1031,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         }
     }
 
-    private updateContourLineUniforms(opts: MaterialOptions) {
+    private updateContourLineUniforms(opts: MaterialOptions): void {
         const contourLines = opts.contourLines;
 
         if (contourLines.enabled) {
@@ -1049,7 +1049,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         MaterialUtils.setDefine(this, 'ENABLE_CONTOUR_LINES', contourLines.enabled);
     }
 
-    private updateColorUniforms(opts: MaterialOptions) {
+    private updateColorUniforms(opts: MaterialOptions): void {
         const a = opts.backgroundOpacity;
         const c = opts.backgroundColor;
         const vec4 = new Vector4(c.r, c.g, c.b, a);
@@ -1063,7 +1063,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         );
     }
 
-    private updateHillshadingUniforms(opts: MaterialOptions) {
+    private updateHillshadingUniforms(opts: MaterialOptions): void {
         const params = opts.lighting;
 
         MaterialUtils.setDefine(this, 'APPLY_SHADING_ON_COLORLAYERS', !params.elevationLayersOnly);
@@ -1080,7 +1080,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         uniform.zFactor = params.zFactor ?? 1;
     }
 
-    update(opts?: MaterialOptions) {
+    public update(opts?: MaterialOptions): boolean {
         if (opts) {
             this._options = opts;
 
@@ -1124,7 +1124,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         return this.rebuildAtlasIfNecessary();
     }
 
-    private updateColorLayerCount() {
+    private updateColorLayerCount(): void {
         // If we have fewer textures than allowed by WebGL max texture units,
         // then we can directly use those textures in the shader.
         // Otherwise we have to reduce the number of color textures by aggregating
@@ -1146,11 +1146,11 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         }
     }
 
-    override customProgramCacheKey(): string {
+    public override customProgramCacheKey(): string {
         return (this.defines.VISIBLE_COLOR_LAYER_COUNT ?? 0).toString();
     }
 
-    createComposer() {
+    public createComposer(): WebGLComposer {
         const newComposer = new WebGLComposer({
             extent: new Rect(0, this._atlasInfo.maxX, 0, this._atlasInfo.maxY),
             width: this._atlasInfo.maxX,
@@ -1163,15 +1163,15 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         return newComposer;
     }
 
-    private get composerWidth() {
+    private get composerWidth(): number {
         return this._composer?.width ?? 0;
     }
 
-    private get composerHeight() {
+    private get composerHeight(): number {
         return this._composer?.height ?? 0;
     }
 
-    rebuildAtlasIfNecessary() {
+    public rebuildAtlasIfNecessary(): boolean {
         if (
             this._composer == null ||
             this._atlasInfo.maxX > this.composerWidth ||
@@ -1222,7 +1222,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         return this.composerWidth > 0;
     }
 
-    private rebuildAtlasTexture(newTexture: Texture | null) {
+    private rebuildAtlasTexture(newTexture: Texture | null): void {
         if (newTexture) {
             newTexture.name = 'LayeredMaterial - Atlas';
         }
@@ -1231,7 +1231,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         this.uniforms.atlasTexture.value = this._texturesInfo.color.atlasTexture;
     }
 
-    changeState(state: RenderingState) {
+    public changeState(state: RenderingState): void {
         if (this.uniforms.renderingState.value === state) {
             return;
         }
@@ -1243,7 +1243,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         this.needsUpdate = true;
     }
 
-    private updateBlendingMode() {
+    private updateBlendingMode(): void {
         const state = this.uniforms.renderingState.value;
         if (state === RenderingState.FINAL) {
             const background = this._options?.backgroundOpacity ?? 1;
@@ -1259,30 +1259,30 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         }
     }
 
-    hasColorLayer(layer: ColorLayer) {
+    public hasColorLayer(layer: ColorLayer): boolean {
         return this.indexOfColorLayer(layer) !== -1;
     }
 
-    hasElevationLayer(layer: ElevationLayer) {
+    public hasElevationLayer(layer: ElevationLayer): boolean {
         return this._elevationLayer !== layer;
     }
 
-    indexOfColorLayer(layer: ColorLayer) {
+    public indexOfColorLayer(layer: ColorLayer): number {
         return this._colorLayers.indexOf(layer);
     }
 
-    private updateOpacityParameters(opacity: number) {
+    private updateOpacityParameters(opacity: number): void {
         this.uniforms.opacity.value = opacity;
         this.updateBlendingMode();
     }
 
-    setLayerOpacity(layer: ColorLayer, opacity: number) {
+    public setLayerOpacity(layer: ColorLayer, opacity: number): void {
         const index = this.indexOfColorLayer(layer);
         this._texturesInfo.color.infos[index].opacity = opacity;
         this._mustUpdateUniforms = true;
     }
 
-    setLayerVisibility(layer: ColorLayer, visible: boolean) {
+    public setLayerVisibility(layer: ColorLayer, visible: boolean): void {
         const index = this.indexOfColorLayer(layer);
         this._texturesInfo.color.infos[index].visible = visible;
         this._mustUpdateUniforms = true;
@@ -1291,7 +1291,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         this.updateColorLayerCount();
     }
 
-    setLayerElevationRange(layer: ColorLayer, range: ElevationRange | null) {
+    public setLayerElevationRange(layer: ColorLayer, range: ElevationRange | null): void {
         if (range != null) {
             MaterialUtils.setDefine(this, 'ENABLE_ELEVATION_RANGE', true);
         }
@@ -1301,7 +1301,12 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         this._mustUpdateUniforms = true;
     }
 
-    setColorimetry(layer: ColorLayer, brightness: number, contrast: number, saturation: number) {
+    public setColorimetry(
+        layer: ColorLayer,
+        brightness: number,
+        contrast: number,
+        saturation: number,
+    ): void {
         const index = this.indexOfColorLayer(layer);
         this._texturesInfo.color.infos[index].brightnessContrastSaturation.set(
             brightness,
@@ -1311,16 +1316,16 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         this._mustUpdateUniforms = true;
     }
 
-    getElevationTexture(): Texture | null {
+    public getElevationTexture(): Texture | null {
         return this._texturesInfo.elevation.texture;
     }
 
-    getElevationOffsetScale(): OffsetScale {
+    public getElevationOffsetScale(): OffsetScale {
         return this._texturesInfo.elevation.offsetScale;
     }
 
     /** @internal */
-    getElevationLayer() {
+    public getElevationLayer(): ElevationLayer | null {
         return this._elevationLayer;
     }
 
@@ -1329,11 +1334,11 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
      *
      * @returns The number of layers present on this material.
      */
-    getLayerCount() {
+    public getLayerCount(): number {
         return (this._elevationLayer ? 1 : 0) + this._colorLayers.length;
     }
 
-    setUuid(uuid: number) {
+    public setUuid(uuid: number): void {
         this.uniforms.uuid.value = uuid;
     }
 }

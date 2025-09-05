@@ -15,7 +15,7 @@ import type CoordinateSystem from '../core/geographic/coordinate-system/Coordina
 
 import Extent from '../core/geographic/Extent';
 
-function fromOLExtent(extent: OLExtent, coordinateSystem: CoordinateSystem) {
+function fromOLExtent(extent: OLExtent, coordinateSystem: CoordinateSystem): Extent {
     return new Extent(coordinateSystem, extent[0], extent[2], extent[1], extent[3]);
 }
 
@@ -31,7 +31,7 @@ function toOLExtent(extent: Extent, margin = 0): OLExtent {
 function parseAlpha(css: string): number {
     let color: RegExpExecArray | null;
 
-    const parse = (s: string) => {
+    const parse = (s: string): number => {
         if (!s) {
             return 1;
         }

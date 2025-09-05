@@ -139,11 +139,15 @@ function getPaddingForAdaptiveLabel(ndc: Vector3, fontSize: number, text: string
 }
 
 class Side extends LineSegments {
-    readonly lines: Line3WithLabel[];
+    public readonly lines: Line3WithLabel[];
 
-    logicalVisibility = false;
+    public logicalVisibility = false;
 
-    constructor(geometry: BufferGeometry, material: LineBasicMaterial, lines: Line3WithLabel[]) {
+    public constructor(
+        geometry: BufferGeometry,
+        material: LineBasicMaterial,
+        lines: Line3WithLabel[],
+    ) {
         super(geometry, material);
 
         this.lines = lines;
@@ -151,22 +155,27 @@ class Side extends LineSegments {
 }
 
 class Edge extends Group {
-    readonly isEdge = true as const;
-    readonly side1: Side;
-    readonly side2: Side;
+    public readonly isEdge = true as const;
+    public readonly side1: Side;
+    public readonly side2: Side;
 
-    constructor(side1: Side, side2: Side) {
+    public constructor(side1: Side, side2: Side) {
         super();
         this.side1 = side1;
         this.side2 = side2;
     }
 }
 
-function getCssColor(color: ColorRepresentation) {
+function getCssColor(color: ColorRepresentation): string {
     return `#${new Color(color).getHexString()}`;
 }
 
-function createLabelElement(text: string, color: string, opacity: number, fontSize: number) {
+function createLabelElement(
+    text: string,
+    color: string,
+    opacity: number,
+    fontSize: number,
+): { container: HTMLDivElement; label: HTMLSpanElement } {
     const container = document.createElement('div');
 
     // Static properties
@@ -236,11 +245,11 @@ export interface AxisGridEventMap extends Entity3DEventMap {
  * ```
  */
 class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, UserData> {
-    override readonly type = 'AxisGrid' as const;
+    public override readonly type = 'AxisGrid' as const;
     /**
      * Read-only flag to check if a given object is of type AxisGrid.
      */
-    readonly isAxisGrid = true as const;
+    public readonly isAxisGrid = true as const;
 
     private readonly _root: Group;
     private readonly _edgeLabelRoot: Group;
@@ -275,14 +284,14 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
     private _midHeight: number | null = null;
     private _needsRebuild = false;
 
-    showHelpers: boolean;
+    public showHelpers: boolean;
 
     /**
      * Creates an instance of AxisGrid.
      *
      * @param options - The options.
      */
-    constructor(options: {
+    public constructor(options: {
         /**
          * The grid volume
          */
@@ -365,7 +374,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
         this.refresh();
     }
 
-    override getMemoryUsage(context: GetMemoryUsageContext) {
+    public override getMemoryUsage(context: GetMemoryUsageContext): void {
         this.traverse(obj => {
             if ('geometry' in obj && isBufferGeometry(obj.geometry)) {
                 getGeometryMemoryUsage(context, obj.geometry);
@@ -373,7 +382,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
         });
     }
 
-    override updateOpacity() {
+    public override updateOpacity(): void {
         const v = this.opacity;
         this.forEachLabel(label => (label.element.style.opacity = `${v}`));
 
@@ -387,11 +396,11 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
      * Gets or sets the style.
      * You will need to call {@link refresh} to recreate the grid.
      */
-    get style() {
+    public get style(): Style {
         return this._style;
     }
 
-    set style(v) {
+    public set style(v: Style) {
         if (v === undefined || v === null) {
             throw new Error('cannot assign undefined/null style');
         }
@@ -402,11 +411,11 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
      * Gets or sets the volume.
      * You will need to call {@link refresh} to recreate the grid.
      */
-    get volume() {
+    public get volume(): Volume {
         return this._volume;
     }
 
-    set volume(v) {
+    public set volume(v: Volume) {
         if (v === undefined || v === null) {
             throw new Error('cannot assign undefined/null volume');
         }
@@ -417,11 +426,11 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
      * Gets or sets the tick origin.
      * You will need to call {@link refresh} to recreate the grid.
      */
-    get origin() {
+    public get origin(): TickOrigin {
         return this._origin;
     }
 
-    set origin(v) {
+    public set origin(v: TickOrigin) {
         if (v === undefined || v === null) {
             throw new Error('cannot assign undefined/null origin');
         }
@@ -431,11 +440,11 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
     /**
      * Gets or sets the grid and label color.
      */
-    get color() {
+    public get color(): ColorRepresentation {
         return this.style.color;
     }
 
-    set color(color) {
+    public set color(color: ColorRepresentation) {
         this._material.color = new Color(color);
         this.style.color = color;
         this.refresh();
@@ -444,11 +453,11 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
     /**
      * Shows or hides labels.
      */
-    get showLabels() {
+    public get showLabels(): boolean {
         return this._showLabels;
     }
 
-    set showLabels(v) {
+    public set showLabels(v: boolean) {
         if (v !== this._showLabels) {
             this._showLabels = v;
 
@@ -464,11 +473,11 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
      * at the intersection of their line and the viewport's edges,  so that
      * they remain visible even when the grid sides are out of view.
      */
-    get adaptiveLabels(): boolean {
+    public get adaptiveLabels(): boolean {
         return this._adaptiveLabels;
     }
 
-    set adaptiveLabels(v: boolean) {
+    public set adaptiveLabels(v: boolean) {
         if (v !== this._adaptiveLabels) {
             this._adaptiveLabels = v;
 
@@ -483,11 +492,11 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
     /**
      * Shows or hides the floor grid.
      */
-    get showFloorGrid() {
+    public get showFloorGrid(): boolean {
         return this._showFloorGrid;
     }
 
-    set showFloorGrid(v) {
+    public set showFloorGrid(v: boolean) {
         if (v !== this._showFloorGrid) {
             this._showFloorGrid = v;
             this.updateVisibility();
@@ -497,11 +506,11 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
     /**
      * Shows or hides the ceiling grid.
      */
-    get showCeilingGrid() {
+    public get showCeilingGrid(): boolean {
         return this._showCeilingGrid;
     }
 
-    set showCeilingGrid(v) {
+    public set showCeilingGrid(v: boolean) {
         if (v !== this._showCeilingGrid) {
             this._showCeilingGrid = v;
             this.updateVisibility();
@@ -511,11 +520,11 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
     /**
      * Shows or hides the side grids.
      */
-    get showSideGrids() {
+    public get showSideGrids(): boolean {
         return this._showSideGrids;
     }
 
-    set showSideGrids(v) {
+    public set showSideGrids(v: boolean) {
         if (v !== this._showSideGrids) {
             this._showSideGrids = v;
             this.updateVisibility();
@@ -526,18 +535,18 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
      * Gets or sets the tick intervals.
      * You will need to call {@link refresh} to recreate the grid.
      */
-    get ticks() {
+    public get ticks(): Ticks {
         return this._ticks;
     }
 
-    set ticks(v: Ticks) {
+    public set ticks(v: Ticks) {
         if (v === undefined || v === null) {
             throw new Error('cannot assign undefined/null ticks');
         }
         this._ticks = v;
     }
 
-    private forEachLabel(callback: (label: CSS2DObject) => void) {
+    private forEachLabel(callback: (label: CSS2DObject) => void): void {
         this._edgeLabelRoot.traverse(obj => {
             if (isCSS2DObject(obj)) {
                 callback(obj);
@@ -553,11 +562,11 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
     /**
      * Rebuilds the grid. This is necessary after changing the ticks, volume or origin.
      */
-    refresh() {
+    public refresh(): void {
         this._needsRebuild = true;
     }
 
-    private rebuildObjects() {
+    private rebuildObjects(): void {
         this.volume.extent.centerAsVector2(tmpVec2);
 
         this._root.position.setX(tmpVec2.x);
@@ -576,7 +585,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
         this.updateVisibility();
     }
 
-    private removeEdgeLabels() {
+    private removeEdgeLabels(): void {
         this._edgeLabelRoot.traverse(obj => {
             if (isCSS2DObject(obj)) {
                 obj.element.remove();
@@ -586,7 +595,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
         this._edgeLabelRoot.clear();
     }
 
-    private removeAdaptiveLabels() {
+    private removeAdaptiveLabels(): void {
         this._adaptiveLabelRoot.traverse(obj => {
             if (isCSS2DObject(obj)) {
                 obj.element.remove();
@@ -596,7 +605,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
         this._adaptiveLabelRoot.clear();
     }
 
-    override updateVisibility() {
+    public override updateVisibility(): void {
         super.updateVisibility();
 
         this.updateLabelsVisibility(this._lastCamera);
@@ -610,7 +619,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
         cssColor: string,
         opacity: number,
         fontSize: number,
-    ) {
+    ): CSS2DObject {
         const { container, label } = createLabelElement(text, cssColor, opacity, fontSize);
 
         this.dispatchEvent({ type: 'label-created', label });
@@ -622,7 +631,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
         return labelObject;
     }
 
-    private buildEdgeLabels() {
+    private buildEdgeLabels(): void {
         // Labels are displayed along each edge of the box volume.
         // There are 12 edges in a box, and those edges are linked to their two sides.
 
@@ -659,7 +668,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
             prefix: string,
             suffix: string,
             tick: number,
-        ) => {
+        ): void => {
             const g = new Edge(side1, side2);
             g.name = `${side1.name}-${side2.name}`;
             const edgeCenter = v.lerpVectors(start, end, 0.5).clone();
@@ -763,7 +772,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
      * position depends on the camera.
      * Note: if no line intersects any viewport edge, then no adaptive label is created.
      */
-    private buildAdaptiveLabels(view: View) {
+    private buildAdaptiveLabels(view: View): void {
         this.removeAdaptiveLabels();
 
         const numberFormat = this.style.numberFormat;
@@ -802,7 +811,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
         const marginBox = new Box3();
         const marginBoxSize = new Vector3(1, 1, 1);
 
-        const createLabelsForSide = (side: Side) => {
+        const createLabelsForSide = (side: Side): void => {
             if (!side.visible) {
                 return;
             }
@@ -900,10 +909,10 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
         this._edgeLabelRoot.updateMatrixWorld(true);
     }
 
-    private deleteSides() {
+    private deleteSides(): void {
         const root = this._root;
 
-        function remove(obj: LineSegments | null) {
+        function remove(obj: LineSegments | null): void {
             if (obj) {
                 obj.geometry.dispose();
                 root.remove(obj);
@@ -918,7 +927,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
         remove(this._right);
     }
 
-    private buildSides() {
+    private buildSides(): void {
         this._dimensions = this.volume.extent.dimensions();
         this._height = Math.abs(this.volume.ceiling - this.volume.floor);
         this._midHeight = this.volume.floor + this._height / 2;
@@ -1135,7 +1144,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
             y1: number,
             labelValue: number,
             axis: Axis,
-        ) {
+        ): void {
             const start = new Vector3(x0 - centerX, y0 - centerY, 0);
             const end = new Vector3(x1 - centerX, y1 - centerY, 0);
 
@@ -1186,7 +1195,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
         return mesh;
     }
 
-    private makeArrowHelper(start: Vector3, end: Vector3) {
+    private makeArrowHelper(start: Vector3, end: Vector3): void {
         if (!this._arrowRoot) {
             this._arrowRoot = new Group();
             this.onObjectCreated(this._arrowRoot);
@@ -1212,7 +1221,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
         endPoint.updateMatrixWorld(true);
     }
 
-    private updateLabelsVisibility(camera: Camera | null) {
+    private updateLabelsVisibility(camera: Camera | null): void {
         this._lastCamera = camera;
 
         this.deleteArrowHelpers();
@@ -1224,7 +1233,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
         }
     }
 
-    private deleteArrowHelpers() {
+    private deleteArrowHelpers(): void {
         if (this._arrowRoot) {
             const children = [...this._arrowRoot.children];
             for (const child of children) {
@@ -1233,7 +1242,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
         }
     }
 
-    private updateLabelEdgeVisibility(camera: Camera, edge: Edge) {
+    private updateLabelEdgeVisibility(camera: Camera, edge: Edge): void {
         if (!edge.isEdge) {
             return;
         }
@@ -1341,8 +1350,12 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
         });
     }
 
-    private updateSidesVisibility(camera: Camera) {
-        function updateSideVisibility(side: Side, sideVisibility: boolean, cameraNormal: Vector3) {
+    private updateSidesVisibility(camera: Camera): void {
+        function updateSideVisibility(
+            side: Side,
+            sideVisibility: boolean,
+            cameraNormal: Vector3,
+        ): void {
             tmp.planeNormal.setFromMatrixColumn(side.matrixWorld, 2);
             // The reason why we distinguish between two kinds of visibility is because
             // label visibility rules must take into account the fact that the API
@@ -1363,7 +1376,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
         this.updateLabelsVisibility(camera);
     }
 
-    override preUpdate(context: Context): object[] {
+    public override preUpdate(context: Context): object[] {
         if (!this.visible) {
             return [];
         }
@@ -1388,7 +1401,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
         return [];
     }
 
-    private updateMinMaxDistance(context: Context) {
+    private updateMinMaxDistance(context: Context): void {
         const cameraPos = context.view.camera.position;
 
         const centerDistance = this._boundingSphere.center.distanceTo(cameraPos);
@@ -1398,7 +1411,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
         this._distance.max = centerDistance + radius;
     }
 
-    override dispose() {
+    public override dispose(): void {
         if (this._disposed) {
             return;
         }
