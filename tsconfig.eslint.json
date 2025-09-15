@@ -6,7 +6,9 @@
         "examples/**/*",
         "tasks/**/*",
         "vitest.setup.ts",
-        "vitest.config.mts"
+        "vitest.config.mts",
+        "license-header.js",
+        "eslint.config.mjs"
     ],
     "exclude": ["node_modules/**/*", "package-lock.json"]
 }
