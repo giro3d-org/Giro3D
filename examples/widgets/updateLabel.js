@@ -1,4 +1,10 @@
 /**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
+/**
  * Updates the `<label>` element with the provided text.
  * @param {string} id - The id of the label element.
  * @param {string} text - The label text.

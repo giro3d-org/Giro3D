@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import type { Camera, PerspectiveCamera, Scene, SpriteMaterial, WebGLRenderer } from 'three';
 import { MathUtils, Sprite } from 'three';
 import { DEFAULT_POINT_SIZE } from '../../core/FeatureTypes';

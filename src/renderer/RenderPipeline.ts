@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import type { Camera, Material, Object3D, WebGLRenderer } from 'three';
 import { Color, DepthTexture, FloatType, NearestFilter, WebGLRenderTarget } from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';

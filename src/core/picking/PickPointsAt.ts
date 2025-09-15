@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import { Color, FloatType, Vector3, type Points, type Vector2 } from 'three';
 import type Entity3D from '../../entities/Entity3D';
 import PointCloudMaterial from '../../renderer/PointCloudMaterial';

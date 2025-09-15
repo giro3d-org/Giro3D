@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import VectorSource from '@giro3d/giro3d/sources/VectorSource';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import { Style } from 'ol/style.js';

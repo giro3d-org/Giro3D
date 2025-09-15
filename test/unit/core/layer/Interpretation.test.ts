@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import type { InterpretationUniform } from '@giro3d/giro3d/core/layer/Interpretation';
 import Interpretation, { Mode } from '@giro3d/giro3d/core/layer/Interpretation';
 import { describe, expect, it } from 'vitest';

@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import RequestQueue from '@giro3d/giro3d/core/RequestQueue';
 import { AbortError } from '@giro3d/giro3d/utils/PromiseUtils';
 import { describe, expect, it } from 'vitest';

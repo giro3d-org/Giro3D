@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import type { Euler, Matrix4, Vector2 } from 'three';
 import { FrontSide, MathUtils, Quaternion, Vector3 } from 'three';
 import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';

@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import Fetcher from '@giro3d/giro3d/utils/Fetcher';
 import HttpConfiguration from '@giro3d/giro3d/utils/HttpConfiguration';
 import TextureGenerator from '@giro3d/giro3d/utils/TextureGenerator';

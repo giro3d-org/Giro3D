@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import type { LRUCache, PriorityQueue, Tile } from '3d-tiles-renderer';
 import { TilesRenderer } from '3d-tiles-renderer';
 import {

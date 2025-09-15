@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import { Box3, type Material, type Mesh, type Object3D, type Plane, type Vector2 } from 'three';
 
 import type Context from '../core/Context';

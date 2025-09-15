@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import HeightMap from '@giro3d/giro3d/core/HeightMap';
 import OffsetScale from '@giro3d/giro3d/core/OffsetScale';
 import Rect from '@giro3d/giro3d/core/Rect';

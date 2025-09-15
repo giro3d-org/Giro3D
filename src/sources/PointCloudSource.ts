@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import { EventDispatcher, MathUtils, type Box3, type BufferAttribute, type Vector3 } from 'three';
 import type Disposable from '../core/Disposable';
 import type MemoryUsage from '../core/MemoryUsage';

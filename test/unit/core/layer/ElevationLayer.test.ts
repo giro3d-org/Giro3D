@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer';
 import Interpretation from '@giro3d/giro3d/core/layer/Interpretation';
 import NullSource from '@giro3d/giro3d/sources/NullSource';

@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import type { Matrix4 } from 'three';
 import { Box3, MathUtils, Sphere, Vector2, Vector3 } from 'three';
 import type ElevationRange from '../../core/ElevationRange';

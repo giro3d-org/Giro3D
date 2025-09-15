@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import { GlobeControls as WrappedControls, Ellipsoid as WrappedEllipsoid } from '3d-tiles-renderer';
 import type { Object3D, OrthographicCamera, PerspectiveCamera } from 'three';
 import { EventDispatcher, Matrix4 } from 'three';

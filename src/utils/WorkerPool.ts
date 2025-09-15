@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import type Disposable from '../core/Disposable';
 import OperationCounter from '../core/OperationCounter';
 import type Progress from '../core/Progress';

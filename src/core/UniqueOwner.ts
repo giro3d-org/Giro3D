@@ -1,4 +1,10 @@
 /**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
+/**
  * Trait for objects that have a unique owner.
  */
 type UniqueOwner<T, Owner = unknown> = { owner: Owner; payload: T };

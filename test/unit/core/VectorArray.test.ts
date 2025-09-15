@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import { Vector2Array, Vector3Array, Vector4Array } from '@giro3d/giro3d/core/VectorArray';
 import { Vector2, Vector3, Vector4 } from 'three';
 import { describe, expect, it } from 'vitest';

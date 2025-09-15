@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import type ElevationProvider from '@giro3d/giro3d/core/ElevationProvider';
 import { aggregateElevationProviders } from '@giro3d/giro3d/core/ElevationProvider';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';

@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import { LazPerf } from 'laz-perf';
 
 export const DEFAULT_LAZPERF_PATH = 'https://cdn.jsdelivr.net/npm/laz-perf@0.0.7/lib';

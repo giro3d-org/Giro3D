@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import GeoJSON from 'ol/format/GeoJSON.js';
 import GML32 from 'ol/format/GML32.js';
 import GPX from 'ol/format/GPX.js';
