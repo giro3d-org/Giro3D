@@ -5,10 +5,11 @@
  */
 
 import { MathUtils, Spherical, Vector3 } from 'three';
-import Coordinates from './Coordinates';
-import CoordinateSystem from './coordinate-system/CoordinateSystem';
 
-function computeJulianDate(date: Date) {
+import CoordinateSystem from './coordinate-system/CoordinateSystem';
+import Coordinates from './Coordinates';
+
+function computeJulianDate(date: Date): number {
     let year = date.getUTCFullYear();
     let month = date.getUTCMonth() + 1;
     const day = date.getUTCDate();
@@ -31,7 +32,7 @@ function computeJulianDate(date: Date) {
     return JD0h + dayFraction;
 }
 
-function normalizedDegreesLongitude(degrees: number) {
+function normalizedDegreesLongitude(degrees: number): number {
     const lon = degrees % 360;
 
     return lon > 180 ? lon - 360 : lon < -180 ? 360 + lon : lon;
@@ -44,7 +45,10 @@ function normalizeAngle360(degrees: number): number {
 
 type Celestial = { rightAscension: number; declination: number };
 
-function celestialToGeographic(celestialLocation: Celestial, date: Date) {
+function celestialToGeographic(
+    celestialLocation: Celestial,
+    date: Date,
+): { latitude: number; longitude: number } {
     const julianDate = computeJulianDate(date);
 
     //number of days (positive or negative) since Greenwich noon, Terrestrial Time, on 1 January 2000 (J2000.0)

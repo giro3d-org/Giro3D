@@ -4,11 +4,10 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { Vector3 } from 'three';
-import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
-
 import GeoJSON from 'ol/format/GeoJSON.js';
 import { Fill, Style } from 'ol/style.js';
+import { Vector3 } from 'three';
+import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';

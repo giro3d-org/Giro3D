@@ -5,6 +5,15 @@
  */
 
 import type Atmosphere from './Atmosphere';
+import type Globe from './Globe';
+import type {
+    GlobeConstructorOptions,
+    GlobeTerrainOptions,
+    defaultGlobeSubdivisionStrategy,
+} from './Globe';
+import type Glow from './Glow';
+import type Map from './Map';
+
 import AxisGrid, {
     type TickOrigin as AxisGridOrigin,
     type Style as AxisGridStyle,
@@ -14,14 +23,6 @@ import AxisGrid, {
 import Entity, { type EntityEventMap, type EntityUserData } from './Entity';
 import Entity3D, { type Entity3DEventMap } from './Entity3D';
 import FeatureCollection, { type MeshUserData } from './FeatureCollection';
-import type Globe from './Globe';
-import type {
-    GlobeConstructorOptions,
-    GlobeTerrainOptions,
-    defaultGlobeSubdivisionStrategy,
-} from './Globe';
-import type Glow from './Glow';
-import type Map from './Map';
 import {
     DEFAULT_MAP_BACKGROUND_COLOR,
     DEFAULT_SUBDIVISION_THRESHOLD,

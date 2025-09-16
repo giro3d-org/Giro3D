@@ -14,7 +14,10 @@ type UniqueOwner<T, Owner = unknown> = { owner: Owner; payload: T };
  * @param object - The owned payload.
  * @param owner - The owner.
  */
-export function intoUniqueOwner<T, Owner = unknown>(object: T, owner: Owner) {
+export function intoUniqueOwner<T, Owner = unknown>(
+    object: T,
+    owner: Owner,
+): UniqueOwner<T, Owner> {
     return {
         payload: object,
         owner,

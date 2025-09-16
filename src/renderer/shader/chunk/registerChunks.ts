@@ -40,7 +40,7 @@ type Giro3DShaderChunk = typeof ShaderChunk & {
     giro3d_terrain_vertex: string;
 };
 
-export default function registerChunks() {
+export default function registerChunks(): void {
     const Giro3dShaderChunk = ShaderChunk as Giro3DShaderChunk;
     Giro3dShaderChunk.giro3d_precision_qualifiers = giro3d_precision_qualifiers;
     Giro3dShaderChunk.giro3d_common = giro3d_common;

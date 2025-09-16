@@ -6,14 +6,14 @@
 
 import { Color } from 'three';
 
-import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import Instance from '@giro3d/giro3d/core/Instance.js';
 import PointCloud from '@giro3d/giro3d/entities/PointCloud.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import PotreeSource from '@giro3d/giro3d/sources/PotreeSource.js';
 import { setLazPerfPath } from '@giro3d/giro3d/sources/las/config.js';
+import PotreeSource from '@giro3d/giro3d/sources/PotreeSource.js';
 
-import StatusBar from './widgets/StatusBar.js';
 import { bindColorPicker } from './widgets/bindColorPicker.js';
 import { bindDropDown } from './widgets/bindDropDown.js';
 import { bindProgress } from './widgets/bindProgress.js';
@@ -22,7 +22,7 @@ import { bindToggle } from './widgets/bindToggle.js';
 import { formatPointCount } from './widgets/formatPointCount.js';
 import { makeColorRamp } from './widgets/makeColorRamp.js';
 import { placeCameraOnTop } from './widgets/placeCameraOnTop.js';
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import StatusBar from './widgets/StatusBar.js';
 
 // Some Potree datasets contain LAZ files.
 // LAS processing requires the WebAssembly laz-perf library

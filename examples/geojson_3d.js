@@ -4,23 +4,22 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { AmbientLight, Color, DirectionalLight, Vector3 } from 'three';
-import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
-
 import GeoJSON from 'ol/format/GeoJSON.js';
 import { tile } from 'ol/loadingstrategy.js';
 import VectorSource from 'ol/source/Vector.js';
 import { createXYZ } from 'ol/tilegrid.js';
+import { AmbientLight, Color, DirectionalLight, Vector3 } from 'three';
+import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
-import Instance from '@giro3d/giro3d/core/Instance.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import Instance from '@giro3d/giro3d/core/Instance.js';
 import FeatureCollection from '@giro3d/giro3d/entities/FeatureCollection.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 
-import StatusBar from './widgets/StatusBar.js';
 import { bindToggle } from './widgets/bindToggle.js';
+import StatusBar from './widgets/StatusBar.js';
 
 Instance.registerCRS(
     'EPSG:2154',

@@ -4,9 +4,10 @@
  * SPDX-License-Identifier: MIT
  */
 
+import { describe, expect, it, vitest } from 'vitest';
+
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer';
 import NullSource from '@giro3d/giro3d/sources/NullSource';
-import { describe, expect, it, vitest } from 'vitest';
 
 describe('constructor', () => {
     it('should auto-generate an id if no id is specified', () => {

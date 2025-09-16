@@ -7,6 +7,7 @@
 import { Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
+import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import PointCloud from '@giro3d/giro3d/entities/PointCloud.js';
@@ -15,7 +16,6 @@ import AggregatePointCloudSource from '@giro3d/giro3d/sources/AggregatePointClou
 import COPCSource from '@giro3d/giro3d/sources/COPCSource.js';
 import { setLazPerfPath } from '@giro3d/giro3d/sources/las/config.js';
 
-import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
 import { bindDropDown } from './widgets/bindDropDown.js';
 import { bindNumberInput } from './widgets/bindNumberInput.js';
 import { bindProgress } from './widgets/bindProgress.js';

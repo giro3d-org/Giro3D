@@ -10,9 +10,9 @@ import GPX from 'ol/format/GPX.js';
 import KML from 'ol/format/KML.js';
 import { XYZ } from 'ol/source.js';
 import { Fill, RegularShape, Stroke, Style } from 'ol/style.js';
-
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
@@ -23,7 +23,6 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import StatusBar from './widgets/StatusBar.js';
 
 Instance.registerCRS(

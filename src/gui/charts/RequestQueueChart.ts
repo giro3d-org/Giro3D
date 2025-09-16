@@ -5,22 +5,25 @@
  */
 
 import type { ChartData, ChartDataset, ScatterDataPoint } from 'chart.js';
-import { Chart } from 'chart.js';
 import type GUI from 'lil-gui';
+
+import { Chart } from 'chart.js';
+
 import type Instance from '../../core/Instance';
 import type RequestQueue from '../../core/RequestQueue';
+
 import { DefaultQueue } from '../../core/RequestQueue';
 import ChartPanel, { pushTrim } from './ChartPanel';
 
 const MAX_DATA_POINTS = 20;
 
 class RequestQueueChart extends ChartPanel {
-    labels: string[];
-    queue: RequestQueue;
-    currentRequests: ChartDataset<'line', ScatterDataPoint[]>;
-    pendingRequests: ChartDataset<'line', ScatterDataPoint[]>;
-    data: ChartData<'line', ScatterDataPoint[], string>;
-    chart: Chart;
+    public labels: string[];
+    public queue: RequestQueue;
+    public currentRequests: ChartDataset<'line', ScatterDataPoint[]>;
+    public pendingRequests: ChartDataset<'line', ScatterDataPoint[]>;
+    public data: ChartData<'line', ScatterDataPoint[], string>;
+    public chart: Chart;
 
     /**
      * Creates an instance of RequestQueueChart.
@@ -28,7 +31,7 @@ class RequestQueueChart extends ChartPanel {
      * @param parentGui - The parent GUI.
      * @param instance - The giro3D instance.
      */
-    constructor(parentGui: GUI, instance: Instance) {
+    public constructor(parentGui: GUI, instance: Instance) {
         super(parentGui, instance, 'Request queue');
 
         this.labels = [];
@@ -105,7 +108,7 @@ class RequestQueueChart extends ChartPanel {
         });
     }
 
-    override updateValues() {
+    public override updateValues(): void {
         if (this.isClosed()) {
             return;
         }

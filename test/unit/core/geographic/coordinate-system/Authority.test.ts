@@ -4,8 +4,9 @@
  * SPDX-License-Identifier: MIT
  */
 
-import Authority from '@giro3d/giro3d/core/geographic/coordinate-system/Authority';
 import { describe, expect, it } from 'vitest';
+
+import Authority from '@giro3d/giro3d/core/geographic/coordinate-system/Authority';
 
 describe('constructor', () => {
     it('should assign property crs', () => {

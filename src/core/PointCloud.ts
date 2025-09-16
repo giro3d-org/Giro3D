@@ -12,11 +12,13 @@ import {
     type Object3DEventMap,
     type Vector2,
 } from 'three';
+
 import type PointCloudMaterial from '../renderer/PointCloudMaterial';
-import { enablePointCloudPostProcessing } from '../renderer/RenderPipeline';
-import { nonNull } from '../utils/tsutils';
 import type Disposable from './Disposable';
 import type Extent from './geographic/Extent';
+
+import { enablePointCloudPostProcessing } from '../renderer/RenderPipeline';
+import { nonNull } from '../utils/tsutils';
 
 export interface PointCloudEventMap extends Object3DEventMap {
     'visibility-changed': unknown;
@@ -42,18 +44,18 @@ class PointCloud<M extends PointCloudMaterial = PointCloudMaterial>
     extends Points<BufferGeometry, M>
     implements EventDispatcher<PointCloudEventMap>, Disposable
 {
-    readonly isPointCloud: boolean = true;
-    override readonly type = 'PointCloud';
+    public readonly isPointCloud: boolean = true;
+    public override readonly type = 'PointCloud';
 
-    extent?: Extent;
-    textureSize: Vector2;
-    disposed: boolean;
+    public extent?: Extent;
+    public textureSize: Vector2;
+    public disposed: boolean;
 
-    static isPointCloud(obj: unknown): obj is PointCloud {
+    public static isPointCloud(obj: unknown): obj is PointCloud {
         return (obj as PointCloud)?.isPointCloud;
     }
 
-    get lod(): number {
+    public get lod(): number {
         if (PointCloud.isPointCloud(this.parent)) {
             return this.parent.lod + 1;
         } else {
@@ -61,7 +63,7 @@ class PointCloud<M extends PointCloudMaterial = PointCloudMaterial>
         }
     }
 
-    constructor(opts: PointCloudOptions<M>) {
+    public constructor(opts: PointCloudOptions<M>) {
         super(opts.geometry, opts.material);
 
         enablePointCloudPostProcessing(this);
@@ -87,7 +89,7 @@ class PointCloud<M extends PointCloudMaterial = PointCloudMaterial>
      * @param pointIndex - The index of the point.
      * @returns The intensity value for the specified point, or `undefined` if this point cloud does not support intensities.
      */
-    getIntensity(pointIndex: number): number | undefined {
+    public getIntensity(pointIndex: number): number | undefined {
         return this.getPointValue(pointIndex, 'intensity');
     }
 
@@ -97,19 +99,19 @@ class PointCloud<M extends PointCloudMaterial = PointCloudMaterial>
      * @param pointIndex - The index of the point.
      * @returns The classification number for the specified point, or `undefined` if this point cloud does not support classifications.
      */
-    getClassification(pointIndex: number): number | undefined {
+    public getClassification(pointIndex: number): number | undefined {
         return this.getPointValue(pointIndex, 'classification');
     }
 
-    canProcessColorLayer(): boolean {
+    public canProcessColorLayer(): boolean {
         return true;
     }
 
-    getExtent() {
+    public getExtent(): Extent {
         return nonNull(this.extent);
     }
 
-    dispose() {
+    public dispose(): void {
         if (this.disposed) {
             return;
         }

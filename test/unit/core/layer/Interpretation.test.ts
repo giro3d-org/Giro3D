@@ -4,9 +4,11 @@
  * SPDX-License-Identifier: MIT
  */
 
-import type { InterpretationUniform } from '@giro3d/giro3d/core/layer/Interpretation';
-import Interpretation, { Mode } from '@giro3d/giro3d/core/layer/Interpretation';
 import { describe, expect, it } from 'vitest';
+
+import type { InterpretationUniform } from '@giro3d/giro3d/core/layer/Interpretation';
+
+import Interpretation, { Mode } from '@giro3d/giro3d/core/layer/Interpretation';
 
 describe('constructor', () => {
     it('should assign the properties', () => {

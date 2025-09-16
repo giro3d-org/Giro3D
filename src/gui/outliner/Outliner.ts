@@ -6,10 +6,13 @@
 
 import type GUI from 'lil-gui';
 import type { BufferGeometry, Material, Mesh, Object3D, Scene } from 'three';
+
 import { Color } from 'three';
+
 import type Instance from '../../core/Instance';
 import type Entity3D from '../../entities/Entity3D';
 import type { BoundingBoxHelper } from '../../helpers/Helpers';
+
 import Helpers from '../../helpers/Helpers';
 import { isLight } from '../../utils/predicates';
 import Panel from '../Panel';
@@ -130,7 +133,7 @@ function createTreeViewNode(
     const root = document.createElement('button');
     root.style.width = 'unset';
     root.style.textAlign = 'left';
-    root.onclick = () => clickHandler(object);
+    root.onclick = (): void => clickHandler(object);
 
     const collapseButton = document.createElement('button');
     collapseButton.style.width = '1rem';
@@ -140,7 +143,7 @@ function createTreeViewNode(
     collapseButton.style.margin = '2px';
     collapseButton.style.borderRadius = '3px';
     collapseButton.innerText = object.___outlinerTreeviewCollapsed === true ? '➕' : '➖';
-    collapseButton.onclick = function onclick() {
+    collapseButton.onclick = function onclick(): void {
         if (object.___outlinerTreeviewCollapsed == null) {
             object.___outlinerTreeviewCollapsed = false;
         }
@@ -163,7 +166,7 @@ function createTreeViewNode(
     return { root, collapseButton, name, object, textColor, opacity: undefined };
 }
 
-function updateNode(node: TreeviewNode) {
+function updateNode(node: TreeviewNode): void {
     const { root, object, name } = node;
 
     const opacity = object.visible ? '100%' : '50%';
@@ -195,7 +198,7 @@ function createTreeViewNodeWithDescendants(
     onUpdate: () => void,
     map: Map<number, TreeviewNode>,
     level = 0,
-) {
+): HTMLDivElement | undefined {
     if (obj.type !== 'Scene' && obj.___outlinerTreeviewVisible === false) {
         return undefined;
     }
@@ -235,7 +238,7 @@ function createTreeViewNodeWithDescendants(
     return div;
 }
 
-function setAncestorsVisible(obj: OutlinedObject3D) {
+function setAncestorsVisible(obj: OutlinedObject3D): void {
     if (obj != null) {
         obj.___outlinerTreeviewVisible = true;
         setAncestorsVisible(obj.parent as OutlinedObject3D);
@@ -262,7 +265,7 @@ function matches(obj: Object3D, regex?: RegExp): boolean {
     return false;
 }
 
-function shouldBeDisplayedInTree(obj: OutlinedObject3D, filter: Filter) {
+function shouldBeDisplayedInTree(obj: OutlinedObject3D, filter: Filter): boolean {
     if (isHelper(obj) && !filter.showHelpers) {
         return false;
     }
@@ -282,7 +285,7 @@ function shouldBeDisplayedInTree(obj: OutlinedObject3D, filter: Filter) {
  * @param obj - the object to process
  * @param filter - the search filter
  */
-function applySearchFilter(obj: OutlinedObject3D, filter: Filter) {
+function applySearchFilter(obj: OutlinedObject3D, filter: Filter): void {
     if (shouldBeDisplayedInTree(obj, filter)) {
         setAncestorsVisible(obj);
     } else {
@@ -299,20 +302,20 @@ function applySearchFilter(obj: OutlinedObject3D, filter: Filter) {
  *
  */
 class Outliner extends Panel {
-    filters: Filter;
-    treeviewContainer: HTMLDivElement;
-    treeview: HTMLDivElement;
-    rootNode: HTMLDivElement | undefined;
-    propView: OutlinerPropertyView;
-    selectionHelper?: BoundingBoxHelper;
-    sceneHash: number | undefined = undefined;
+    public filters: Filter;
+    public treeviewContainer: HTMLDivElement;
+    public treeview: HTMLDivElement;
+    public rootNode: HTMLDivElement | undefined;
+    public propView: OutlinerPropertyView;
+    public selectionHelper?: BoundingBoxHelper;
+    public sceneHash: number | undefined = undefined;
     private readonly _nodes: Map<number, TreeviewNode> = new Map();
 
     /**
      * @param gui - The GUI.
      * @param instance - The Giro3D instance.
      */
-    constructor(gui: GUI, instance: Instance) {
+    public constructor(gui: GUI, instance: Instance) {
         super(gui, instance, 'Outliner');
 
         this.filters = {
@@ -362,11 +365,11 @@ class Outliner extends Panel {
         this.propView = new OutlinerPropertyView(this.gui, this.instance);
     }
 
-    override updateValues() {
+    public override updateValues(): void {
         this.updateTreeView();
     }
 
-    onNodeClicked(obj: OutlinedObject3D) {
+    public onNodeClicked(obj: OutlinedObject3D): void {
         this.select(obj);
         this.propView.populateProperties(obj);
         this.instance.notifyChange();
@@ -377,7 +380,7 @@ class Outliner extends Panel {
      *
      * @param obj - The object to select.
      */
-    select(obj: OutlinedObject3D) {
+    public select(obj: OutlinedObject3D): void {
         this.clearSelection();
 
         if ((obj as unknown) === this.selectionHelper) {
@@ -391,14 +394,14 @@ class Outliner extends Panel {
     /**
      * Unselect the currently selected object.
      */
-    clearSelection() {
+    public clearSelection(): void {
         if (this.selectionHelper && this.selectionHelper.parent) {
             this.selectionHelper.parent.remove(this.selectionHelper);
         }
         delete this.selectionHelper;
     }
 
-    search() {
+    public search(): void {
         this.filters.searchQuery = this.filters.searchQuery.trim().toLowerCase();
         this.filters.searchRegex =
             this.filters.searchQuery.length > 0 ? new RegExp(this.filters.searchQuery) : undefined;
@@ -406,16 +409,16 @@ class Outliner extends Panel {
         this.updateTreeView();
     }
 
-    updateObject(o: Object3D) {
+    public updateObject(o: Object3D): void {
         o.updateMatrixWorld(true);
         this.instance.notifyChange();
     }
 
-    private updateExistingNodes() {
+    private updateExistingNodes(): void {
         this._nodes.forEach(n => updateNode(n));
     }
 
-    updateTreeView() {
+    public updateTreeView(): void {
         if (this.isClosed()) {
             // we don't want to refresh the treeview if the GUI is collapsed.
             return;
@@ -435,7 +438,7 @@ class Outliner extends Panel {
 
             this._nodes.clear();
 
-            const onUpdate = () =>
+            const onUpdate = (): void =>
                 queueMicrotask(() => {
                     this.sceneHash = undefined;
                     this.updateTreeView();

@@ -5,27 +5,29 @@
  */
 
 import { Object3D } from 'three';
+
 import type PointMesh from './PointMesh';
-import { isPointMesh } from './PointMesh';
 import type SimpleGeometryMesh from './SimpleGeometryMesh';
 import type { DefaultUserData, SimpleGeometryMeshEventMap } from './SimpleGeometryMesh';
+
+import { isPointMesh } from './PointMesh';
 
 export default class MultiPointMesh<UserData extends DefaultUserData = DefaultUserData>
     extends Object3D<SimpleGeometryMeshEventMap>
     implements SimpleGeometryMesh<UserData>
 {
-    readonly isSimpleGeometryMesh = true as const;
-    readonly isMultiPointMesh = true as const;
-    override readonly type = 'MultiPointMesh' as const;
+    public readonly isSimpleGeometryMesh = true as const;
+    public readonly isMultiPointMesh = true as const;
+    public override readonly type = 'MultiPointMesh' as const;
 
-    override userData: Partial<UserData> = {};
+    public override userData: Partial<UserData> = {};
 
-    constructor(points: PointMesh[]) {
+    public constructor(points: PointMesh[]) {
         super();
         this.add(...points);
     }
 
-    set opacity(opacity: number) {
+    public set opacity(opacity: number) {
         this.traversePoints(p => (p.opacity = opacity));
     }
 
@@ -33,7 +35,7 @@ export default class MultiPointMesh<UserData extends DefaultUserData = DefaultUs
      * Executes the callback on all the {@link PointMesh}es of this mesh.
      * @param callback - The callback to execute.
      */
-    traversePoints(callback: (polygon: PointMesh) => void) {
+    public traversePoints(callback: (polygon: PointMesh) => void): void {
         this.traverse(obj => {
             if (isPointMesh(obj)) {
                 callback(obj);
@@ -41,7 +43,7 @@ export default class MultiPointMesh<UserData extends DefaultUserData = DefaultUs
         });
     }
 
-    dispose(): void {
+    public dispose(): void {
         this.traversePoints(p => p.dispose());
         this.dispatchEvent({ type: 'dispose' });
     }

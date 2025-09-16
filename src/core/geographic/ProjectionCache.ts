@@ -5,9 +5,11 @@
  */
 
 import proj4 from 'proj4';
+
 import type { CreateValueFn } from '../../utils/NestedMap';
-import NestedMap from '../../utils/NestedMap';
 import type CoordinateSystem from './coordinate-system/CoordinateSystem';
+
+import NestedMap from '../../utils/NestedMap';
 
 type SrcCrs = CoordinateSystem;
 type DstCrs = CoordinateSystem;

@@ -5,6 +5,7 @@
  */
 
 import type { WebGLRenderTarget } from 'three';
+
 import {
     AlphaFormat,
     ByteType,
@@ -45,11 +46,13 @@ import {
     type TypedArray,
     type WebGLRenderer,
 } from 'three';
+
+import type * as decoder from './imageDecoderWorker';
+
 import Interpretation, { Mode } from '../core/layer/Interpretation';
 import { type GetMemoryUsageContext, type MemoryUsageReport } from '../core/MemoryUsage';
 import Capabilities from '../core/system/Capabilities';
 import EmptyTexture from '../renderer/EmptyTexture';
-import type * as decoder from './imageDecoderWorker';
 import {
     createPixelBuffer,
     createTypedArrayFromBuffer,
@@ -195,7 +198,7 @@ function estimateSize(texture: Texture): number {
  * @param target - The render target to read back.
  * @param renderer - The WebGL renderer to perform the operation.
  */
-function createDataCopy(target: WebGLRenderTarget, renderer: WebGLRenderer) {
+function createDataCopy(target: WebGLRenderTarget, renderer: WebGLRenderer): void {
     // Render target textures don't have data in CPU memory,
     // we need to transfer their data into a buffer.
     const bufSize = target.width * target.height * getChannelCount(target.texture.format);
@@ -232,7 +235,7 @@ let decoderWorkerPool: WorkerPool<decoder.MessageType, decoder.MessageMap> | nul
 
 function getDecoderPool(): NonNullable<typeof decoderWorkerPool> {
     if (decoderWorkerPool == null) {
-        const createWorker = () =>
+        const createWorker = (): Worker =>
             new Worker(new URL('./imageDecoderWorker.js', import.meta.url), {
                 type: 'module',
             });
@@ -348,7 +351,7 @@ function createTextureFromPixelBuffer(
     height: number,
     format: PixelFormat,
     type: TextureDataType,
-) {
+): { texture: Texture; min: number; max: number } {
     const texture = result.isTransparent
         ? new EmptyTexture()
         : new DataTexture(
@@ -691,7 +694,7 @@ function computeMinMax(
     return null;
 }
 
-function isEmptyTexture(texture: Texture) {
+function isEmptyTexture(texture: Texture): boolean {
     if (texture == null) {
         return true;
     }
@@ -710,7 +713,7 @@ function isEmptyTexture(texture: Texture) {
     }
 }
 
-function getTextureMemoryUsage(context: GetMemoryUsageContext, texture: Texture) {
+function getTextureMemoryUsage(context: GetMemoryUsageContext, texture: Texture): void {
     if (texture == null) {
         return;
     }
@@ -738,7 +741,10 @@ function getTextureMemoryUsage(context: GetMemoryUsageContext, texture: Texture)
     }
 }
 
-function getDepthBufferMemoryUsage(context: GetMemoryUsageContext, renderTarget: RenderTarget) {
+function getDepthBufferMemoryUsage(
+    context: GetMemoryUsageContext,
+    renderTarget: RenderTarget,
+): void {
     const gl = context.renderer.getContext();
     const bpp = gl.getParameter(gl.DEPTH_BITS);
     const bytes = renderTarget.width * renderTarget.height * (bpp / 8);
@@ -746,7 +752,10 @@ function getDepthBufferMemoryUsage(context: GetMemoryUsageContext, renderTarget:
     context.objects.set(renderTarget.texture.id, { gpuMemory: bytes, cpuMemory: 0 });
 }
 
-function getMemoryUsage(context: GetMemoryUsageContext, texture: Texture | RenderTarget | null) {
+function getMemoryUsage(
+    context: GetMemoryUsageContext,
+    texture: Texture | RenderTarget | null,
+): void {
     if (texture == null) {
         return;
     }
@@ -826,7 +835,7 @@ function getCompatibleTextureFilter<
 /**
  * Updates the texture to improve compatibility with various platforms.
  */
-function ensureCompatibility(texture: Texture, renderer: WebGLRenderer) {
+function ensureCompatibility(texture: Texture, renderer: WebGLRenderer): void {
     texture.minFilter = getCompatibleTextureFilter(texture.minFilter, texture.type, renderer);
     texture.magFilter = getCompatibleTextureFilter(texture.magFilter, texture.type, renderer);
 }

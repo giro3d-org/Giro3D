@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
+import StadiaMaps from 'ol/source/StadiaMaps.js';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
@@ -13,7 +14,6 @@ import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
-import StadiaMaps from 'ol/source/StadiaMaps.js';
 
 import StatusBar from './widgets/StatusBar.js';
 

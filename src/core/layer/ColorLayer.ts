@@ -6,16 +6,18 @@
 
 import { type Feature } from 'ol';
 import { FloatType, RGBAFormat, type PixelFormat, type TextureDataType } from 'three';
+
 import type VectorSource from '../../sources/VectorSource';
-import OpenLayersUtils from '../../utils/OpenLayersUtils';
-import { isFiniteNumber } from '../../utils/predicates';
 import type ColorimetryOptions from '../ColorimetryOptions';
-import { defaultColorimetryOptions } from '../ColorimetryOptions';
 import type ElevationRange from '../ElevationRange';
 import type Coordinates from '../geographic/Coordinates';
-import Extent from '../geographic/Extent';
 import type PickableFeatures from '../picking/PickableFeatures';
 import type PickOptions from '../picking/PickOptions';
+
+import OpenLayersUtils from '../../utils/OpenLayersUtils';
+import { isFiniteNumber } from '../../utils/predicates';
+import { defaultColorimetryOptions } from '../ColorimetryOptions';
+import Extent from '../geographic/Extent';
 import { type VectorPickFeature } from '../picking/PickResult';
 import { type MapPickResult } from '../picking/PickTilesAt';
 import BlendingMode from './BlendingMode';
@@ -75,8 +77,8 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
     /**
      * Read-only flag to check if a given object is of type ColorLayer.
      */
-    readonly isColorLayer: boolean = true;
-    readonly isPickableFeatures = true;
+    public readonly isColorLayer: boolean = true;
+    public readonly isPickableFeatures = true;
     private _elevationRange: ElevationRange | null = null;
     private _colorimetry: ColorimetryOptions = defaultColorimetryOptions();
 
@@ -86,7 +88,7 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
      *
      * @param options - The layer options.
      */
-    constructor(options: ColorLayerOptions) {
+    public constructor(options: ColorLayerOptions) {
         super(options);
         this.type = 'ColorLayer';
         this._elevationRange = options.elevationRange ?? null;
@@ -97,14 +99,14 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
     /**
      * Gets the elevation range of this layer, if any.
      */
-    get elevationRange(): ElevationRange | null {
+    public get elevationRange(): ElevationRange | null {
         return this._elevationRange;
     }
 
     /**
      * Sets the elevation range of this layer. Setting it to null removes the elevation range.
      */
-    set elevationRange(range: ElevationRange | null) {
+    public set elevationRange(range: ElevationRange | null) {
         this._elevationRange = range;
         this.dispatchEvent({ type: 'elevationRange-property-changed', range });
     }
@@ -112,11 +114,11 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
     /**
      * Gets or sets the blending mode of this layer.
      */
-    get blendingMode() {
+    public get blendingMode(): BlendingMode {
         return this._blendingMode;
     }
 
-    set blendingMode(v: BlendingMode) {
+    public set blendingMode(v: BlendingMode) {
         if (this._blendingMode !== v) {
             this._blendingMode = v;
             this.dispatchEvent({ type: 'blendingMode-property-changed', blendingMode: v });
@@ -126,11 +128,11 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
     /**
      * Gets or sets the opacity of this layer.
      */
-    get opacity() {
+    public get opacity(): number {
         return this._opacity;
     }
 
-    set opacity(v) {
+    public set opacity(v: number) {
         if (this._opacity !== v) {
             this._opacity = v;
             this.dispatchEvent({ type: 'opacity-property-changed', opacity: v });
@@ -140,18 +142,18 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
     /**
      * Gets the colorimetry parameters of this layer.
      */
-    get colorimetry() {
+    public get colorimetry(): ColorimetryOptions {
         return this._colorimetry;
     }
 
     /**
      * Gets or sets the brightness of this layer.
      */
-    get brightness() {
+    public get brightness(): number {
         return this._colorimetry.brightness;
     }
 
-    set brightness(v) {
+    public set brightness(v: number) {
         if (this._colorimetry.brightness !== v) {
             this._colorimetry.brightness = v;
             this.dispatchEvent({ type: 'brightness-property-changed', brightness: v });
@@ -161,11 +163,11 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
     /**
      * Gets or sets the contrast of this layer.
      */
-    get contrast() {
+    public get contrast(): number {
         return this._colorimetry.contrast;
     }
 
-    set contrast(v) {
+    public set contrast(v: number) {
         if (this._colorimetry.contrast !== v) {
             this._colorimetry.contrast = v;
             this.dispatchEvent({ type: 'contrast-property-changed', contrast: v });
@@ -175,18 +177,18 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
     /**
      * Gets or sets the saturation of this layer.
      */
-    get saturation() {
+    public get saturation(): number {
         return this._colorimetry.saturation;
     }
 
-    set saturation(v) {
+    public set saturation(v: number) {
         if (this._colorimetry.saturation !== v) {
             this._colorimetry.saturation = v;
             this.dispatchEvent({ type: 'saturation-property-changed', saturation: v });
         }
     }
 
-    protected override updateMaterial(material: LayerNodeMaterial) {
+    protected override updateMaterial(material: LayerNodeMaterial): void {
         if (material.hasColorLayer(this)) {
             // Update material parameters
             material.setLayerVisibility(this, this.visible);
@@ -201,7 +203,7 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
         }
     }
 
-    getRenderTargetDataType(): TextureDataType {
+    public getRenderTargetDataType(): TextureDataType {
         switch (this.interpretation.mode) {
             case InterpretationMode.ScaleToMinMax:
                 return FloatType;
@@ -210,11 +212,11 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
         }
     }
 
-    getRenderTargetPixelFormat(): PixelFormat {
+    public getRenderTargetPixelFormat(): PixelFormat {
         return RGBAFormat;
     }
 
-    override unregisterNode(node: LayerNode) {
+    public override unregisterNode(node: LayerNode): void {
         super.unregisterNode(node);
         const material = node.material;
         if (material != null) {
@@ -224,7 +226,7 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
         }
     }
 
-    protected applyTextureToNode(result: TextureAndPitch, target: Target) {
+    protected applyTextureToNode(result: TextureAndPitch, target: Target): void {
         const material = target.node.material;
 
         if (!material.hasColorLayer(this)) {
@@ -234,11 +236,14 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
         target.node.material.setColorTextures(this, result);
     }
 
-    protected applyEmptyTextureToNode(target: Target) {
+    protected applyEmptyTextureToNode(target: Target): void {
         target.node.material.removeColorLayer(this);
     }
 
-    pickFeaturesFrom(pickedResult: MapPickResult, options?: PickOptions): VectorPickFeature[] {
+    public pickFeaturesFrom(
+        pickedResult: MapPickResult,
+        options?: PickOptions,
+    ): VectorPickFeature[] {
         const vectorOptions: {
             radius: number;
             xTileRes: number;
@@ -272,7 +277,7 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
      * @param options - Options
      * @returns Array of features at coordinates (can be empty)
      */
-    getVectorFeaturesAtCoordinate(
+    public getVectorFeaturesAtCoordinate(
         coordinate: Coordinates,
         options?: {
             /**
@@ -363,7 +368,7 @@ class ColorLayer<UserData extends LayerUserData = LayerUserData>
      * @param extent - Extent
      * @returns Array of features intersecting the extent (can be empty)
      */
-    getVectorFeaturesInExtent(extent: Extent): Feature[] {
+    public getVectorFeaturesInExtent(extent: Extent): Feature[] {
         if ((this.source as VectorSource).isVectorSource && this.visible) {
             const layerProjection = this.getExtent()?.crs;
             if (layerProjection == null) {

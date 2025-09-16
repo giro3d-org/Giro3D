@@ -4,11 +4,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
-import type HasDefaultPointOfView from '@giro3d/giro3d/core/HasDefaultPointOfView';
-import type PointOfView from '@giro3d/giro3d/core/PointOfView';
-import type { ExternalControls } from '@giro3d/giro3d/renderer/View';
-import View from '@giro3d/giro3d/renderer/View';
 import {
     BoxGeometry,
     EventDispatcher,
@@ -20,6 +15,13 @@ import {
     Vector3,
 } from 'three';
 import { beforeAll, describe, expect, it, vitest } from 'vitest';
+
+import type HasDefaultPointOfView from '@giro3d/giro3d/core/HasDefaultPointOfView';
+import type PointOfView from '@giro3d/giro3d/core/PointOfView';
+import type { ExternalControls } from '@giro3d/giro3d/renderer/View';
+
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
+import View from '@giro3d/giro3d/renderer/View';
 
 const DEFAULT_CRS = CoordinateSystem.fromEpsg(1234);
 

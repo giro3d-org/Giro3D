@@ -17,7 +17,9 @@ import {
     type ColorRepresentation,
 } from 'three';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+
 import type Disposable from '../core/Disposable';
+
 import Ellipsoid from '../core/geographic/Ellipsoid';
 import { Vector3Array } from '../core/VectorArray';
 
@@ -33,7 +35,7 @@ function createParallel(
     positions: Vector3Array,
     colors: Vector3Array,
     color: Color,
-) {
+): void {
     const step = 360 / segments;
 
     let longitude = 0;
@@ -63,7 +65,7 @@ function createMeridian(
     target: Vector3Array,
     colors: Vector3Array,
     color: Color,
-) {
+): void {
     const step = 360 / segments;
 
     let latitude = -90;
@@ -108,10 +110,10 @@ function createLabel(text: string, color: ColorRepresentation): CSS2DObject {
  * Displays an ellipsoid along with its axes.
  */
 export default class EllipsoidHelper extends Object3D implements Disposable {
-    readonly isEllipsoidHelper = true as const;
-    override readonly type = 'EllipsoidHelper' as const;
+    public readonly isEllipsoidHelper = true as const;
+    public override readonly type = 'EllipsoidHelper' as const;
 
-    readonly ellipsoid: Ellipsoid;
+    public readonly ellipsoid: Ellipsoid;
 
     private readonly _mesh: LineSegments<BufferGeometry, MeshBasicMaterial>;
     private readonly _axes: AxesHelper;
@@ -124,35 +126,35 @@ export default class EllipsoidHelper extends Object3D implements Disposable {
     /**
      * The color of the lines.
      */
-    get color() {
+    public get color(): Color {
         return this._mesh.material.color;
     }
 
-    set color(c: Color) {
+    public set color(c: Color) {
         this._mesh.material.color = c;
     }
 
-    get showLines() {
+    public get showLines(): boolean {
         return this._mesh.visible;
     }
 
-    set showLines(show: boolean) {
+    public set showLines(show: boolean) {
         this._mesh.visible = show;
     }
 
-    get showAxes() {
+    public get showAxes(): boolean {
         return this._axes.visible;
     }
 
-    set showAxes(show: boolean) {
+    public set showAxes(show: boolean) {
         this._axes.visible = show;
     }
 
-    get showNormals() {
+    public get showNormals(): boolean {
         return this._showNormals;
     }
 
-    set showNormals(show: boolean) {
+    public set showNormals(show: boolean) {
         if (this._showNormals !== show) {
             this._showNormals = show;
             if (show) {
@@ -163,15 +165,15 @@ export default class EllipsoidHelper extends Object3D implements Disposable {
         }
     }
 
-    get showLabels() {
+    public get showLabels(): boolean {
         return this._labels[0].visible;
     }
 
-    set showLabels(show: boolean) {
+    public set showLabels(show: boolean) {
         this._labels.forEach(l => (l.visible = show));
     }
 
-    constructor(params?: {
+    public constructor(params?: {
         /**
          * The ellipsoid to use.
          * @defaultValue {@link Ellipsoid.WGS84}
@@ -302,7 +304,7 @@ export default class EllipsoidHelper extends Object3D implements Disposable {
         this.updateMatrixWorld(true);
     }
 
-    private deleteNormalArrows() {
+    private deleteNormalArrows(): void {
         if (this._arrows.length > 0) {
             this._arrows.forEach(arrow => {
                 arrow.dispose();
@@ -312,7 +314,7 @@ export default class EllipsoidHelper extends Object3D implements Disposable {
         }
     }
 
-    private createNormalArrows() {
+    private createNormalArrows(): void {
         const normal = new Vector3();
         for (let i = 0; i < 10; i++) {
             for (let j = 0; j < 20; j++) {
@@ -335,7 +337,7 @@ export default class EllipsoidHelper extends Object3D implements Disposable {
         }
     }
 
-    dispose(): void {
+    public dispose(): void {
         if (this._disposed) {
             return;
         }

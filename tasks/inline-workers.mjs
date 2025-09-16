@@ -5,13 +5,12 @@
  */
 
 import esMain from 'es-main';
+import * as esbuild from 'esbuild';
 import fs from 'fs';
 import { globSync } from 'glob';
 import path from 'path';
-
-import * as esbuild from 'esbuild';
-
 import { MathUtils } from 'three';
+
 import { log, logOk, logWarning } from './utils.mjs';
 
 function formatBytes(bytes) {

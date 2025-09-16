@@ -5,11 +5,14 @@
  */
 
 import type { FloatType, RedFormat, RGFormat, TypedArray, UnsignedShortType } from 'three';
+
 import { MathUtils, RGBAFormat, UnsignedByteType, Vector2 } from 'three';
-import TextureGenerator from '../utils/TextureGenerator';
+
 import type ElevationRange from './ElevationRange';
 import type OffsetScale from './OffsetScale';
 import type Rect from './Rect';
+
+import TextureGenerator from '../utils/TextureGenerator';
 
 const RGBA_OFFSET = 20000;
 
@@ -34,49 +37,49 @@ export default class HeightMap {
     /**
      * The heightmap data.
      */
-    readonly buffer: TypedArray;
+    public readonly buffer: TypedArray;
     /**
      * The width, in pixels, of the heightmap buffer.
      */
-    readonly width: number;
+    public readonly width: number;
     /**
      * The height, in pixels, of the heightmap buffer.
      */
-    readonly height: number;
+    public readonly height: number;
     /**
      * The transformation to apply to UV coordinates before sampling the buffer.
      */
-    readonly offsetScale: OffsetScale;
+    public readonly offsetScale: OffsetScale;
     /**
      * The distance between each elevation value in the buffer.
      * e.g If the buffer is an RGBA buffer, stride is 4.
      */
-    readonly stride: number;
+    public readonly stride: number;
     /**
      * The format of the underlying buffer pixels.
      */
-    readonly format: HeightMapPixelFormat;
+    public readonly format: HeightMapPixelFormat;
     /**
      * The data type of the underlying buffer pixels.
      */
-    readonly type: HeightMapTextureDataType;
+    public readonly type: HeightMapTextureDataType;
 
     /**
      * The vertical precision of the height values to apply during decoding.
      */
-    readonly precision: number;
+    public readonly precision: number;
 
     /**
      * The offset to apply to height values during decoding.
      */
-    readonly offset: number;
+    public readonly offset: number;
 
     /**
      * The vertical scaling to apply in order to get values in meter.
      */
-    readonly verticalScaling: number;
+    public readonly verticalScaling: number;
 
-    constructor(
+    public constructor(
         buffer: TypedArray,
         width: number,
         height: number,
@@ -131,7 +134,7 @@ export default class HeightMap {
         return value;
     }
 
-    clone(): HeightMap {
+    public clone(): HeightMap {
         return new HeightMap(
             this.buffer,
             this.width,
@@ -153,7 +156,7 @@ export default class HeightMap {
      * @param ignoreTransparentPixels - If `true`, then transparent pixels are returned. Otherwise
      * values that match transparent pixels return `null`. Default is `false`.
      */
-    getValue(u: number, v: number, ignoreTransparentPixels = false): number | null {
+    public getValue(u: number, v: number, ignoreTransparentPixels = false): number | null {
         const ij = this.getPixelCoordinates(u, v, temp.ij);
 
         return this.getValueRaw(ij.x, ij.y, ignoreTransparentPixels);
@@ -164,7 +167,7 @@ export default class HeightMap {
      * @param uvRect - The normalized region to process.
      * @returns The min/max, if any, otherwise `null`.
      */
-    getMinMax(uvRect: Rect): ElevationRange | null {
+    public getMinMax(uvRect: Rect): ElevationRange | null {
         const left = uvRect.left;
         const top = uvRect.top;
         const bottom = uvRect.bottom;

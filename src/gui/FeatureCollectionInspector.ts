@@ -6,8 +6,10 @@
 
 import type GUI from 'lil-gui';
 import type { Color, Material, Object3D } from 'three';
+
 import type Instance from '../core/Instance';
 import type FeatureCollection from '../entities/FeatureCollection';
+
 import Helpers from '../helpers/Helpers';
 import EntityInspector from './EntityInspector';
 
@@ -30,7 +32,7 @@ function applyToMaterial(
     root: Object3D,
     entity: FeatureCollection,
     callback: (material: Material) => void,
-) {
+): void {
     root.traverse(object => {
         if (hasMaterial(object) && object.userData.parentEntity === entity) {
             callback(object.material);
@@ -40,12 +42,12 @@ function applyToMaterial(
 
 class FeatureCollectionInspector extends EntityInspector<FeatureCollection> {
     /** Toggle the wireframe rendering of the features. */
-    wireframe: boolean;
+    public wireframe: boolean;
     /** Toggle the frozen property of the features. */
-    frozen: boolean;
+    public frozen: boolean;
     /** Store the CRS code of this.featureCollection */
-    dataProjection: string;
-    showGrid: boolean;
+    public dataProjection: string;
+    public showGrid: boolean;
 
     /**
      * Creates an instance of FeatureCollectionInspector.
@@ -54,7 +56,7 @@ class FeatureCollectionInspector extends EntityInspector<FeatureCollection> {
      * @param instance - The Giro3D instance.
      * @param featureCollection - The inspected Features.
      */
-    constructor(parentGui: GUI, instance: Instance, featureCollection: FeatureCollection) {
+    public constructor(parentGui: GUI, instance: Instance, featureCollection: FeatureCollection) {
         super(parentGui, instance, featureCollection, {
             visibility: true,
             boundingBoxColor: true,
@@ -81,7 +83,7 @@ class FeatureCollectionInspector extends EntityInspector<FeatureCollection> {
      * @param color - The bounding box color.
      */
 
-    override addOrRemoveBoundingBox(tile: Object3D, add: boolean, color: Color) {
+    public override addOrRemoveBoundingBox(tile: Object3D, add: boolean, color: Color): void {
         if (add && 'boundingBox' in tile && tile.visible) {
             Helpers.addBoundingBox(tile, color);
         } else {
@@ -89,7 +91,7 @@ class FeatureCollectionInspector extends EntityInspector<FeatureCollection> {
         }
     }
 
-    toggleWireframe(value: boolean) {
+    public toggleWireframe(value: boolean): void {
         applyToMaterial(this.rootObject, this.entity, material => {
             if ('wireframe' in material) {
                 material.wireframe = value;

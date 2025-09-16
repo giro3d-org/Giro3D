@@ -5,10 +5,12 @@
  */
 
 import { type TypedArray } from 'three';
-import { defined } from '../../utils/tsutils';
-import { DEFAULT_VALUE_RANGES, type DimensionName } from '../las/dimension';
+
 import type { PointCloudAttribute } from '../PointCloudSource';
 import type BoundingBox from './BoundingBox';
+
+import { defined } from '../../utils/tsutils';
+import { DEFAULT_VALUE_RANGES, type DimensionName } from '../las/dimension';
 
 /**
  * The names of attributes for legacy Potree point clouds (the ones with .bin files in a hierarchy).
@@ -243,19 +245,19 @@ const readScalar: ReaderGen = (
 
     switch (attribute.type) {
         case PotreeDataType.Uint8:
-            readFn = (view, offset) => view.getUint8(offset);
+            readFn = (view, offset): number => view.getUint8(offset);
             break;
         case PotreeDataType.Uint16:
-            readFn = (view, offset) => view.getUint16(offset, true);
+            readFn = (view, offset): number => view.getUint16(offset, true);
             break;
         case PotreeDataType.Uint32:
-            readFn = (view, offset) => view.getUint32(offset, true);
+            readFn = (view, offset): number => view.getUint32(offset, true);
             break;
         case PotreeDataType.Float:
-            readFn = (view, offset) => view.getFloat32(offset, true);
+            readFn = (view, offset): number => view.getFloat32(offset, true);
             break;
         case PotreeDataType.Double:
-            readFn = (view, offset) => view.getFloat64(offset, true);
+            readFn = (view, offset): number => view.getFloat64(offset, true);
             break;
     }
 

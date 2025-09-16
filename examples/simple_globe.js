@@ -7,6 +7,7 @@
 import { OSM } from 'ol/source.js';
 
 import GlobeControls from '@giro3d/giro3d/controls/GlobeControls.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import Globe from '@giro3d/giro3d/entities/Globe.js';
@@ -15,7 +16,6 @@ import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
 import { bindToggle } from './widgets/bindToggle.js';
 import StatusBar from './widgets/StatusBar.js';
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 
 const instance = new Instance({
     target: 'view',

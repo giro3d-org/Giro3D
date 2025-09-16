@@ -5,9 +5,7 @@
  */
 
 import GUI from 'lil-gui';
-
 import StadiaMaps from 'ol/source/StadiaMaps.js';
-
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';

@@ -9,12 +9,13 @@ import { Box3, type Material, type Mesh, type Object3D, type Plane, type Vector2
 import type Context from '../core/Context';
 import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
 import type MemoryUsage from '../core/MemoryUsage';
-import { type GetMemoryUsageContext } from '../core/MemoryUsage';
 import type Pickable from '../core/picking/Pickable';
-import pickObjectsAt from '../core/picking/PickObjectsAt';
 import type PickOptions from '../core/picking/PickOptions';
 import type PickResult from '../core/picking/PickResult';
 import type RenderingContextHandler from '../renderer/RenderingContextHandler';
+
+import { type GetMemoryUsageContext } from '../core/MemoryUsage';
+import pickObjectsAt from '../core/picking/PickObjectsAt';
 import { isMaterial } from '../utils/predicates';
 import Entity, { type EntityEventMap, type EntityUserData } from './Entity';
 
@@ -51,16 +52,16 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
     extends Entity<TEventMap & Entity3DEventMap, TUserData>
     implements Pickable, MemoryUsage, RenderingContextHandler, HasDefaultPointOfView
 {
-    readonly isMemoryUsage = true as const;
-    readonly hasDefaultPointOfView = true as const;
+    public readonly isMemoryUsage = true as const;
+    public readonly hasDefaultPointOfView = true as const;
 
-    override readonly type: string = 'Entity3D' as const;
+    public override readonly type: string = 'Entity3D' as const;
 
-    readonly isPickable = true;
+    public readonly isPickable = true;
     /**
      * Read-only flag to check if a given object is of type Entity3D.
      */
-    readonly isEntity3D: boolean = true as const;
+    public readonly isEntity3D: boolean = true as const;
 
     private _visible: boolean;
     private _opacity: number;
@@ -77,7 +78,7 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
      *
      * @param object3d - the root Three.js of this entity
      */
-    constructor(object3d: Object3D) {
+    public constructor(object3d: Object3D) {
         super();
         if (object3d == null || !object3d.isObject3D) {
             throw new Error(
@@ -102,24 +103,24 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
         this.onObjectCreated(object3d);
     }
 
-    getMemoryUsage(_context: GetMemoryUsageContext) {
+    public getMemoryUsage(_context: GetMemoryUsageContext): void {
         // Do nothing
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    onRenderingContextLost(options: { canvas: HTMLCanvasElement }): void {
+    public onRenderingContextLost(options: { canvas: HTMLCanvasElement }): void {
         /* Do nothing */
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    onRenderingContextRestored(options: { canvas: HTMLCanvasElement }) {
+    public onRenderingContextRestored(options: { canvas: HTMLCanvasElement }): void {
         /* Do nothing */
     }
 
     /**
      * Returns the root object of this entity.
      */
-    get object3d() {
+    public get object3d(): Object3D {
         return this._object3d;
     }
 
@@ -127,11 +128,11 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
      * Gets or sets the visibility of this entity.
      * A non-visible entity will not be automatically updated.
      */
-    get visible() {
+    public get visible(): boolean {
         return this._visible;
     }
 
-    set visible(v) {
+    public set visible(v: boolean) {
         if (this._visible !== v) {
             this._visible = v;
             this.updateVisibility();
@@ -142,11 +143,11 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
     /**
      * Gets or sets the render order of this entity.
      */
-    get renderOrder() {
+    public get renderOrder(): number {
         return this._renderOrder;
     }
 
-    set renderOrder(v: number) {
+    public set renderOrder(v: number) {
         if (v !== this._renderOrder) {
             this._renderOrder = v;
             this.updateRenderOrder();
@@ -157,11 +158,11 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
     /**
      * Gets or sets the opacity of this entity.
      */
-    get opacity() {
+    public get opacity(): number {
         return this._opacity;
     }
 
-    set opacity(v) {
+    public set opacity(v) {
         if (this._opacity !== v) {
             this._opacity = v;
             this.updateOpacity();
@@ -176,11 +177,11 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
      * the [clipping plane feature](https://threejs.org/docs/index.html?q=materi#api/en/materials/Material.clippingPlanes) of three.js.
      * Refer to the three.js documentation for more information.
      */
-    get clippingPlanes() {
+    public get clippingPlanes(): Plane[] | null {
         return this._clippingPlanes;
     }
 
-    set clippingPlanes(planes: Plane[] | null) {
+    public set clippingPlanes(planes: Plane[] | null) {
         this._clippingPlanes = planes;
         this.updateClippingPlanes();
         this.dispatchEvent({ type: 'clippingPlanes-property-changed', clippingPlanes: planes });
@@ -191,7 +192,7 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
      * Note: this method can be overriden for custom implementations.
      *
      */
-    updateVisibility() {
+    public updateVisibility(): void {
         // Default implementation
         this.object3d.visible = this.visible;
     }
@@ -200,7 +201,7 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
      * Updates the opacity of the entity.
      * Note: this method can be overriden for custom implementations.
      */
-    updateOpacity() {
+    public updateOpacity(): void {
         // Default implementation
         this.traverseMaterials(material => {
             if (material.opacity != null) {
@@ -219,7 +220,7 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
      * Updates the render order of the entity.
      * Note: this method can be overriden for custom implementations.
      */
-    updateRenderOrder() {
+    public updateRenderOrder(): void {
         // Default implementation
         this.traverse(o => {
             o.renderOrder = this.renderOrder;
@@ -229,22 +230,22 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
     /**
      * Updates the clipping planes of all objects under this entity.
      */
-    updateClippingPlanes() {
+    public updateClippingPlanes(): void {
         this.traverseMaterials(mat => {
             mat.clippingPlanes = this._clippingPlanes;
             mat.clipShadows = true;
         });
     }
 
-    override shouldCheckForUpdate(): boolean {
+    public override shouldCheckForUpdate(): boolean {
         return super.shouldCheckForUpdate() && this._visible;
     }
 
-    override shouldFullUpdate(updateSource: unknown): boolean {
+    public override shouldFullUpdate(updateSource: unknown): boolean {
         return super.shouldFullUpdate(updateSource) || this.contains(updateSource);
     }
 
-    override shouldUpdate(updateSource: unknown): boolean {
+    public override shouldUpdate(updateSource: unknown): boolean {
         return super.shouldUpdate(updateSource) || this.isOwned(updateSource);
     }
 
@@ -253,7 +254,7 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
      *
      * @param obj - The object to test.
      */
-    protected isOwned(obj: unknown) {
+    protected isOwned(obj: unknown): boolean {
         if ((obj as Object3D).isObject3D) {
             const obj3d = obj as Object3D;
             if (obj3d.userData?.parentEntity === this) {
@@ -264,7 +265,7 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
         return false;
     }
 
-    override preUpdate(context: Context, changeSources: Set<unknown>): unknown[] | null {
+    public override preUpdate(context: Context, changeSources: Set<unknown>): unknown[] | null {
         if (changeSources.size > 0) {
             // if we don't have any element in srcs, it means we don't need to update
             // our layer to display it correctly.  but in this case we still need to
@@ -281,7 +282,7 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
      *
      * @returns the resulting bounding box, or `null` if it could not be computed.
      */
-    getBoundingBox(): Box3 | null {
+    public getBoundingBox(): Box3 | null {
         const box = new Box3().setFromObject(this.object3d);
         return box;
     }
@@ -294,7 +295,7 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
      *
      * @param material - the material of the newly created object
      */
-    protected setupMaterial(material: Material) {
+    protected setupMaterial(material: Material): void {
         material.clippingPlanes = this._clippingPlanes;
         material.clipShadows = true;
         material.opacity = this._opacity;
@@ -318,7 +319,7 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
      * this.onObjectCreated(obj);
      * @param obj - The object to prepare.
      */
-    protected onObjectCreated(obj: Object3D) {
+    protected onObjectCreated(obj: Object3D): void {
         // note: we use traverse() because the object might have its own sub-hierarchy as well.
 
         this.traverse(o => {
@@ -338,7 +339,7 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
      *
      * This may be overriden to perform custom logic.
      */
-    protected assignRenderOrder(obj: Object3D) {
+    protected assignRenderOrder(obj: Object3D): void {
         obj.renderOrder = this.renderOrder;
     }
 
@@ -351,7 +352,7 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
      * @returns true if the entity contains the object.
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    contains(obj: unknown): boolean {
+    public contains(obj: unknown): boolean {
         return false;
     }
 
@@ -362,7 +363,10 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
      * @param root - The traversal root. If undefined, the traversal starts at the root
      * object of this entity.
      */
-    traverseMaterials(callback: (arg0: Material) => void, root: Object3D | undefined = undefined) {
+    public traverseMaterials(
+        callback: (arg0: Material) => void,
+        root: Object3D | undefined = undefined,
+    ): void {
         this.traverse(o => {
             if ('material' in o) {
                 if (Array.isArray(o.material)) {
@@ -385,7 +389,10 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
      * @param root - The raversal root. If undefined, the traversal starts at the root
      * object of this entity.
      */
-    traverseMeshes(callback: (arg0: Mesh) => void, root: Object3D | undefined = undefined) {
+    public traverseMeshes(
+        callback: (arg0: Mesh) => void,
+        root: Object3D | undefined = undefined,
+    ): void {
         const origin = root ?? this.object3d;
 
         origin.traverse(o => {
@@ -402,20 +409,23 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
      * @param root - The traversal root. If undefined, the traversal starts at the root
      * object of this entity.
      */
-    traverse(callback: (arg0: Object3D) => void, root: Object3D | undefined = undefined) {
+    public traverse(
+        callback: (arg0: Object3D) => void,
+        root: Object3D | undefined = undefined,
+    ): void {
         const origin = root ?? this.object3d;
 
         origin.traverse(callback);
     }
 
-    pick(canvasCoords: Vector2, options?: PickOptions): PickResult[] {
+    public pick(canvasCoords: Vector2, options?: PickOptions): PickResult[] {
         return pickObjectsAt(this.instance, canvasCoords, this.object3d, options);
     }
 
     /**
      * Default implementation that computes a point of view from the bounding box of the entity, if any.
      */
-    getDefaultPointOfView(
+    public getDefaultPointOfView(
         params: Parameters<HasDefaultPointOfView['getDefaultPointOfView']>[0],
     ): ReturnType<HasDefaultPointOfView['getDefaultPointOfView']> {
         const box = this.getBoundingBox();

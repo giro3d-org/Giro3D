@@ -4,10 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-import Tiles3D from '@giro3d/giro3d/entities/Tiles3D';
 import type { BufferGeometry, Material } from 'three';
+
 import { Group, Mesh } from 'three';
 import { describe, expect, it } from 'vitest';
+
+import Tiles3D from '@giro3d/giro3d/entities/Tiles3D';
 
 describe('onObjectCreated', () => {
     it('should set the opacity of the created object and its descendants to the current opacity value when they have no original opacity', () => {

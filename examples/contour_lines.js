@@ -5,11 +5,9 @@
  */
 
 import colormap from 'colormap';
-
+import XYZ from 'ol/source/XYZ.js';
 import { Color, DoubleSide } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
-
-import XYZ from 'ol/source/XYZ.js';
 
 import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/ColorMap.js';
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';

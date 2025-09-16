@@ -5,9 +5,11 @@
  */
 
 import { MathUtils, Matrix4, Ray, Sphere, Vector2, Vector3 } from 'three';
-import Coordinates from './Coordinates';
+
 import type Extent from './Extent';
+
 import CoordinateSystem from './coordinate-system/CoordinateSystem';
+import Coordinates from './Coordinates';
 
 const tmpCoord = new Coordinates(CoordinateSystem.epsg4326, 0, 0);
 const tmpDims = new Vector2();
@@ -21,7 +23,7 @@ const tmpNorth = new Vector3();
 const ZERO = new Vector3(0, 0, 0);
 const tmpIntersection = new Vector3();
 
-let wgs84: unknown;
+let wgs84: Ellipsoid | undefined;
 
 const Z = new Vector3(0, 0, 1);
 
@@ -39,43 +41,43 @@ export default class Ellipsoid {
     private readonly _radii: Vector3;
     private readonly _flattening: number;
 
-    get semiMajorAxis() {
+    public get semiMajorAxis(): number {
         return this._semiMajor;
     }
 
-    get semiMinorAxis() {
+    public get semiMinorAxis(): number {
         return this._semiMinor;
     }
 
     /**
      * The [flattening](https://en.wikipedia.org/wiki/Flattening) of this ellipsoid.
      */
-    get flattening() {
+    public get flattening(): number {
         return this._flattening;
     }
 
     /**
      * The circumference at the equator.
      */
-    get equatorialCircumference() {
+    public get equatorialCircumference(): number {
         return this._equatorialCircumference;
     }
 
     /**
      * The [eccentricity](https://en.wikipedia.org/wiki/Eccentricity_(mathematics)) of this ellipsoid.
      */
-    get eccentricity() {
+    public get eccentricity(): number {
         return this._eccentricity;
     }
 
     /**
      * The ratio between the semi-minor axis and the semi-major axis.
      */
-    get compressionFactor() {
+    public get compressionFactor(): number {
         return this._semiMinor / this._semiMajor;
     }
 
-    constructor(params: { semiMajorAxis: number; semiMinorAxis: number }) {
+    public constructor(params: { semiMajorAxis: number; semiMinorAxis: number }) {
         this._semiMajor = params.semiMajorAxis; // Semi-major axis
         this._semiMinor = params.semiMinorAxis; // Semi-minor axis
         const flattening = (this._semiMajor - this._semiMinor) / this._semiMajor; // Flattening
@@ -98,20 +100,20 @@ export default class Ellipsoid {
     /**
      * The [WGS 84](https://en.wikipedia.org/wiki/World_Geodetic_System#WGS84) ellipsoid.
      */
-    static get WGS84(): Ellipsoid {
+    public static get WGS84(): Ellipsoid {
         if (wgs84 == null) {
             wgs84 = new Ellipsoid({
                 semiMajorAxis: 6_378_137.0,
                 semiMinorAxis: 6_356_752.314245,
             });
         }
-        return wgs84 as Ellipsoid;
+        return wgs84;
     }
 
     /**
      * A sphere.
      */
-    static sphere(radius: number): Ellipsoid {
+    public static sphere(radius: number): Ellipsoid {
         return new Ellipsoid({
             semiMinorAxis: radius,
             semiMajorAxis: radius,
@@ -121,7 +123,7 @@ export default class Ellipsoid {
     /**
      * Returns a new ellipsoid scaled by the specified factor.
      */
-    scale(factor: number): Ellipsoid {
+    public scale(factor: number): Ellipsoid {
         return new Ellipsoid({
             semiMajorAxis: this.semiMajorAxis * factor,
             semiMinorAxis: this.semiMinorAxis * factor,
@@ -131,7 +133,7 @@ export default class Ellipsoid {
     /**
      * Returns a new ellipsoid growed by the specified offset. The offset is added to the axes.
      */
-    grow(offset: number): Ellipsoid {
+    public grow(offset: number): Ellipsoid {
         return new Ellipsoid({
             semiMajorAxis: this.semiMajorAxis + offset,
             semiMinorAxis: this.semiMinorAxis + offset,
@@ -146,7 +148,7 @@ export default class Ellipsoid {
      * @param target - The target vector. If none, one will be created.
      * @returns The cartesian coordinates.
      */
-    toCartesian(lat: number, lon: number, alt: number, target?: Vector3): Vector3 {
+    public toCartesian(lat: number, lon: number, alt: number, target?: Vector3): Vector3 {
         target = target ?? new Vector3();
 
         const clat = Math.cos(lat * MathUtils.DEG2RAD);
@@ -173,7 +175,7 @@ export default class Ellipsoid {
      * @param target - The optional matrix to set with the ENU matrix.
      * @returns The ENU matrix.
      */
-    getEastNorthUpMatrix(lat: number, lon: number, target?: Matrix4): Matrix4 {
+    public getEastNorthUpMatrix(lat: number, lon: number, target?: Matrix4): Matrix4 {
         const position = this.toCartesian(lat, lon, 0, tmpVec3);
 
         return this.getEastNorthUpMatrixFromCartesian(position, target);
@@ -185,7 +187,7 @@ export default class Ellipsoid {
      * @param target - The optional matrix to set with the ENU matrix.
      * @returns The ENU matrix.
      */
-    getEastNorthUpMatrixFromCartesian(point: Readonly<Vector3>, target?: Matrix4): Matrix4 {
+    public getEastNorthUpMatrixFromCartesian(point: Readonly<Vector3>, target?: Matrix4): Matrix4 {
         const normal = this.getNormalFromCartesian(point, tmpNormal);
 
         // Compute the ENU matrix from the normal and the Z axis.
@@ -212,7 +214,7 @@ export default class Ellipsoid {
      * @param target - The optional vector to store the result.
      * @returns The intersection or null if not intersection was found.
      */
-    intersectRay(ray: Ray, target?: Vector3): Vector3 | null {
+    public intersectRay(ray: Ray, target?: Vector3): Vector3 | null {
         tmpMatrix4.makeScale(this._radii.x, this._radii.y, this._radii.z).invert();
         tmpSphere.center.set(0, 0, 0);
         tmpSphere.radius = 1;
@@ -237,7 +239,7 @@ export default class Ellipsoid {
      * @param target - The target vector to store the result. If none, one will be created.
      * @returns The normal vector.
      */
-    getNormal(lat: number, lon: number, target?: Vector3): Vector3 {
+    public getNormal(lat: number, lon: number, target?: Vector3): Vector3 {
         const cartesian = this.toCartesian(lat, lon, 0, target);
 
         return cartesian.multiply(this._invRadiiSquared).normalize();
@@ -249,7 +251,7 @@ export default class Ellipsoid {
      * @param target - The target vector to store the result. If none, one will be created.
      * @returns The normal vector.
      */
-    getNormalFromCartesian(cartesian: Readonly<Vector3>, target?: Vector3): Vector3 {
+    public getNormalFromCartesian(cartesian: Readonly<Vector3>, target?: Vector3): Vector3 {
         target = target ?? new Vector3();
         return target.copy(cartesian).multiply(this._invRadiiSquared).normalize();
     }
@@ -261,7 +263,7 @@ export default class Ellipsoid {
      * @param z - The cartesian Z coordinate.
      * @returns The geodetic coordinates.
      */
-    toGeodetic(x: number, y: number, z: number, target?: Coordinates): Coordinates {
+    public toGeodetic(x: number, y: number, z: number, target?: Coordinates): Coordinates {
         target = target ?? new Coordinates(CoordinateSystem.epsg4979, 0, 0, 0);
         const lon = Math.atan2(y, x);
         const p = Math.sqrt(x ** 2 + y ** 2);
@@ -295,7 +297,7 @@ export default class Ellipsoid {
      * @param latitude - The latitude of the parallel.
      * @param angle - The angle of the arc in degrees.
      */
-    getParallelArcLength(latitude: number, angle: number): number {
+    public getParallelArcLength(latitude: number, angle: number): number {
         // Let's compute the radius of the parallel at this latitude
         const parallelRadius = this._semiMajor * Math.cos(latitude * MathUtils.DEG2RAD);
         const paralellCircumference = 2 * Math.PI * parallelRadius;
@@ -312,7 +314,7 @@ export default class Ellipsoid {
      * @param latitude0 - The latitude of the start of the meridian arc
      * @param latitude1 - The latitude of the end of the meridian arc
      */
-    getMeridianArcLength(latitude0: number, latitude1: number): number {
+    public getMeridianArcLength(latitude0: number, latitude1: number): number {
         const angle = Math.abs(latitude0 - latitude1);
         return (angle / 360) * this._equatorialCircumference;
     }
@@ -327,7 +329,7 @@ export default class Ellipsoid {
      * @returns The extent dimensions.
      * @throws if the extent is not in the EPSG:4326 CRS.
      */
-    getExtentDimensions(extent: Extent, target?: Vector2): Vector2 {
+    public getExtentDimensions(extent: Extent, target?: Vector2): Vector2 {
         if (!extent.crs.isEpsg(4326)) {
             throw new Error('not a WGS 84 extent (EPSG:4326)');
         }
@@ -351,7 +353,7 @@ export default class Ellipsoid {
      * @param center - The center of the ellipsoid (by default (0, 0, 0)).
      * @returns The distance, in meters, from the camera to the horizon.
      */
-    getOpticalHorizon(cameraPosition: Vector3, center?: Vector3): number | null {
+    public getOpticalHorizon(cameraPosition: Vector3, center?: Vector3): number | null {
         center = center ?? ZERO;
         const ray = tmpRay.set(cameraPosition, center.clone().sub(cameraPosition));
         const intersection = this.intersectRay(ray, tmpIntersection);
@@ -374,7 +376,7 @@ export default class Ellipsoid {
      * @param radiusFactor - An optional factor to apply to ellipsoid radii to add a margin of error.
      * @returns `true` if the given point is above the horizon, `false` otherwise.
      */
-    isHorizonVisible(cameraPosition: Vector3, point: Vector3, radiusFactor = 1): boolean {
+    public isHorizonVisible(cameraPosition: Vector3, point: Vector3, radiusFactor = 1): boolean {
         // We use a slightly smaller ellipsoid because we want to avoid false negatives
         // for negative elevations (think very deep seafloors).
 

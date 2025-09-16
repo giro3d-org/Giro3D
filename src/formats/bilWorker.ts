@@ -5,6 +5,7 @@
  */
 
 import type { BaseMessageMap, Message, SuccessResponse } from '../utils/WorkerPool';
+
 import { createErrorResponse } from '../utils/WorkerPool';
 
 export type DecodeBilTerrainResult = { data: ArrayBuffer; min: number; max: number };
@@ -50,7 +51,7 @@ export interface MessageMap extends BaseMessageMap<MessageType> {
     };
 }
 
-onmessage = function onmessage(ev: MessageEvent<DecodeBilTerrainMessage>) {
+onmessage = function onmessage(ev: MessageEvent<DecodeBilTerrainMessage>): void {
     const message = ev.data;
 
     try {

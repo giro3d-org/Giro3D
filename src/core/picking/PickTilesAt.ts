@@ -5,15 +5,17 @@
  */
 
 import { Color, FloatType, Vector2, Vector3 } from 'three';
+
 import type Map from '../../entities/Map';
 import type TileMesh from '../../entities/tiles/TileMesh';
+import type Instance from '../Instance';
+import type PickOptions from './PickOptions';
+import type PickResult from './PickResult';
+
 import RenderingState from '../../renderer/RenderingState';
 import CoordinateSystem from '../geographic/coordinate-system/CoordinateSystem';
 import Coordinates from '../geographic/Coordinates';
-import type Instance from '../Instance';
 import traversePickingCircle from './PickingCircle';
-import type PickOptions from './PickOptions';
-import type PickResult from './PickResult';
 
 /** Pick result on tiles (e.g. map) */
 export interface MapPickResult<TFeature = unknown> extends PickResult<TFeature & unknown> {
@@ -42,7 +44,7 @@ function renderTileBuffer(
     map: Map,
     coords: Vector2 | undefined,
     radius: number,
-) {
+): { ids: number[]; uvs: Vector2[]; zs: number[] } {
     const dim = instance.engine.getWindowSize();
 
     coords = coords || new Vector2(Math.floor(dim.x / 2), Math.floor(dim.y / 2));
@@ -98,7 +100,7 @@ function pickTilesAt(
     canvasCoords: Vector2,
     map: Map,
     options: PickOptions = {},
-) {
+): MapPickResult[] {
     const radius = options.radius ?? 0;
     const limit = options.limit ?? Infinity;
     const filter = options.filter;

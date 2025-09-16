@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
+import XYZ from 'ol/source/XYZ.js';
 import {
     AmbientLight,
     ArrowHelper,
@@ -22,14 +23,12 @@ import {
 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
-import XYZ from 'ol/source/XYZ.js';
-
 import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
-import Instance from '@giro3d/giro3d/core/Instance.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Sun from '@giro3d/giro3d/core/geographic/Sun.js';
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
@@ -38,7 +37,6 @@ import MapboxTerrainFormat from '@giro3d/giro3d/formats/MapboxTerrainFormat.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
-import StatusBar from './widgets/StatusBar.js';
 import { bindButton } from './widgets/bindButton.js';
 import { bindColorPicker } from './widgets/bindColorPicker.js';
 import { bindDropDown } from './widgets/bindDropDown.js';
@@ -46,6 +44,7 @@ import { bindNumericalDropDown } from './widgets/bindNumericalDropDown.js';
 import { bindSlider } from './widgets/bindSlider.js';
 import { bindToggle } from './widgets/bindToggle.js';
 import { makeColorRamp } from './widgets/makeColorRamp.js';
+import StatusBar from './widgets/StatusBar.js';
 import { updateLabel } from './widgets/updateLabel.js';
 
 const EXTENT_SIZE = 20_000;

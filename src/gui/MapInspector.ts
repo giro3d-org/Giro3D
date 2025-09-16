@@ -6,12 +6,15 @@
 
 import type GUI from 'lil-gui';
 import type { AxesHelper, GridHelper, Side } from 'three';
+
 import { Color } from 'three';
+
 import type Instance from '../core/Instance';
-import { isGlobe } from '../entities/Globe';
 import type Map from '../entities/Map';
 import type TileMesh from '../entities/tiles/TileMesh';
 import type { BoundingBoxHelper } from '../helpers/Helpers';
+
+import { isGlobe } from '../entities/Globe';
 import Helpers from '../helpers/Helpers';
 import RenderingState from '../renderer/RenderingState';
 import { isMaterial } from '../utils/predicates';
@@ -30,32 +33,32 @@ const sides: Sidedness[] = ['Front', 'Back', 'DoubleSide'];
 
 class MapInspector extends EntityInspector<Map> {
     /** Toggle the frozen property of the map. */
-    frozen: boolean;
-    showGrid: boolean;
-    renderState: string;
-    layerCount: number;
-    background: Color;
-    backgroundOpacity: number;
-    extentColor: Color;
-    showExtent: boolean;
-    extentHelper: BoundingBoxHelper | null;
-    lightingPanel: MapLightingPanel;
-    tileInfoPanel: TileInfoPanel;
-    contourLinePanel: ContourLinePanel;
-    colorimetryPanel: ColorimetryPanel;
-    graticulePanel: GraticulePanel;
+    public frozen: boolean;
+    public showGrid: boolean;
+    public renderState: string;
+    public layerCount: number;
+    public background: Color;
+    public backgroundOpacity: number;
+    public extentColor: Color;
+    public showExtent: boolean;
+    public extentHelper: BoundingBoxHelper | null;
+    public lightingPanel: MapLightingPanel;
+    public tileInfoPanel: TileInfoPanel;
+    public contourLinePanel: ContourLinePanel;
+    public colorimetryPanel: ColorimetryPanel;
+    public graticulePanel: GraticulePanel;
     /** The layer folder. */
-    layerFolder: GUI;
-    layers: LayerInspector[];
+    public layerFolder: GUI;
+    public layers: LayerInspector[];
     private _fillLayersCb: () => void;
     private _paintCompleteCb: () => void;
-    grid?: GridHelper;
-    axes?: AxesHelper;
-    reachableTiles: number;
-    visibleTiles: number;
-    terrainPanel: MapTerrainPanel;
-    side: Sidedness = 'Front';
-    completePaints = 0;
+    public grid?: GridHelper;
+    public axes?: AxesHelper;
+    public reachableTiles: number;
+    public visibleTiles: number;
+    public terrainPanel: MapTerrainPanel;
+    public side: Sidedness = 'Front';
+    public completePaints = 0;
 
     /**
      * Creates an instance of MapInspector.
@@ -64,7 +67,7 @@ class MapInspector extends EntityInspector<Map> {
      * @param instance - The Giro3D instance.
      * @param map - The inspected Map.
      */
-    constructor(parentGui: GUI, instance: Instance, map: Map) {
+    public constructor(parentGui: GUI, instance: Instance, map: Map) {
         super(parentGui, instance, map, {
             visibility: true,
             boundingBoxColor: true,
@@ -170,8 +173,8 @@ class MapInspector extends EntityInspector<Map> {
 
         this.layers = [];
 
-        this._fillLayersCb = () => this.fillLayers();
-        this._paintCompleteCb = () => this.paintComplete();
+        this._fillLayersCb = (): void => this.fillLayers();
+        this._paintCompleteCb = (): void => this.paintComplete();
 
         this.entity.addEventListener('layer-added', this._fillLayersCb);
         this.entity.addEventListener('layer-removed', this._fillLayersCb);
@@ -181,12 +184,12 @@ class MapInspector extends EntityInspector<Map> {
         this.fillLayers();
     }
 
-    private paintComplete() {
+    private paintComplete(): void {
         this.completePaints++;
         this.updateControllers();
     }
 
-    disposeMapAndLayers() {
+    public disposeMapAndLayers(): void {
         const layers = this.entity.getLayers();
         for (const layer of layers) {
             this.entity.removeLayer(layer, { disposeLayer: true });
@@ -195,29 +198,29 @@ class MapInspector extends EntityInspector<Map> {
         this.notify();
     }
 
-    override toggleBoundingBoxes() {
+    public override toggleBoundingBoxes(): void {
         this.entity.showBoundingBoxes = this.boundingBoxes;
         this.entity.helperColor = this.boundingBoxColor;
     }
 
-    override updateControllers(): void {
+    public override updateControllers(): void {
         super.updateControllers();
         this.layers.forEach(insp => insp.updateControllers());
     }
 
-    updateBackgroundOpacity(a: number) {
+    public updateBackgroundOpacity(a: number): void {
         this.backgroundOpacity = a;
         this.entity.backgroundOpacity = a;
         this.notify(this.entity);
     }
 
-    updateBackgroundColor(srgb: Color) {
+    public updateBackgroundColor(srgb: Color): void {
         this.background.copy(srgb);
         this.entity.backgroundColor.copySRGBToLinear(srgb);
         this.notify(this.entity);
     }
 
-    updateExtentColor() {
+    public updateExtentColor(): void {
         if (this.extentHelper) {
             this.instance.threeObjects.remove(this.extentHelper);
             if (isMaterial(this.extentHelper.material)) {
@@ -229,7 +232,7 @@ class MapInspector extends EntityInspector<Map> {
         this.toggleExtent();
     }
 
-    toggleExtent() {
+    public toggleExtent(): void {
         if (!this.extentHelper && this.showExtent) {
             const { min, max } = this.entity.getElevationMinMax();
             const box = this.entity.extent.toBox3(min, max);
@@ -245,12 +248,12 @@ class MapInspector extends EntityInspector<Map> {
         this.notify(this.entity);
     }
 
-    setSidedness(side: Sidedness) {
+    public setSidedness(side: Sidedness): void {
         this.entity.side = sides.indexOf(side) as Side;
         this.notify(this.entity);
     }
 
-    setRenderState(state: string) {
+    public setRenderState(state: string): void {
         switch (state) {
             case 'Normal':
                 this.entity.setRenderState(RenderingState.FINAL);
@@ -265,25 +268,27 @@ class MapInspector extends EntityInspector<Map> {
         this.notify(this.entity);
     }
 
-    removeEventListeners() {
+    public removeEventListeners(): void {
         this.entity.removeEventListener('layer-added', this._fillLayersCb);
         this.entity.removeEventListener('layer-removed', this._fillLayersCb);
         this.entity.removeEventListener('layer-order-changed', this._fillLayersCb);
     }
 
-    override dispose() {
+    public override dispose(): void {
         super.dispose();
         this.removeEventListeners();
     }
 
-    dumpTiles() {
+    public dumpTiles(): void {
         const tiles: TileMesh[] = [];
-        const collect = (t: TileMesh) => tiles.push(t);
+        const collect = (t: TileMesh): void => {
+            tiles.push(t);
+        };
         this.entity.traverseTiles(collect);
         console.log(tiles);
     }
 
-    override updateValues() {
+    public override updateValues(): void {
         super.updateValues();
         this.tileInfoPanel.updateValues();
         this.toggleBoundingBoxes();
@@ -300,7 +305,7 @@ class MapInspector extends EntityInspector<Map> {
         });
     }
 
-    fillLayers() {
+    public fillLayers(): void {
         while (this.layers.length > 0) {
             this.layers.pop()?.dispose();
         }
@@ -315,7 +320,7 @@ class MapInspector extends EntityInspector<Map> {
             });
     }
 
-    toggleGrid(value: boolean) {
+    public toggleGrid(value: boolean): void {
         if (!value) {
             if (this.grid) {
                 this.grid.parent?.remove(this.grid);

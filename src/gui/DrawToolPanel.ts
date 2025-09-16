@@ -5,11 +5,14 @@
  */
 
 import type GUI from 'lil-gui';
+
 import { Color } from 'three';
-import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
-import Coordinates from '../core/geographic/Coordinates';
+
 import type Instance from '../core/Instance';
 import type Shape from '../entities/Shape';
+
+import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import Coordinates from '../core/geographic/Coordinates';
 import { DEFAULT_COLOR, type VertexLabelFormatter } from '../entities/Shape';
 import DrawTool from '../interactions/DrawTool';
 import Panel from './Panel';
@@ -28,13 +31,13 @@ export default class DrawToolPanel extends Panel {
     private readonly _shapes: Shape[] = [];
     private _drawTool?: DrawTool;
 
-    color: Color = new Color(DEFAULT_COLOR);
+    public color: Color = new Color(DEFAULT_COLOR);
 
-    get pendingColor() {
+    public get pendingColor(): Color {
         return new Color(this.color).offsetHSL(0, 0, -0.1);
     }
 
-    constructor(parent: GUI, instance: Instance) {
+    public constructor(parent: GUI, instance: Instance) {
         super(parent, instance, 'DrawTool');
 
         this.addColorController(this, 'color').onChange(c =>
@@ -46,14 +49,14 @@ export default class DrawToolPanel extends Panel {
         this.addController(this, 'clear').name('Clear');
     }
 
-    private onShapeFinished(shape: Shape | null) {
+    private onShapeFinished(shape: Shape | null): void {
         if (shape != null) {
             shape.color = this.color;
             this._shapes.push(shape);
         }
     }
 
-    private createDrawToolIfNecessary() {
+    private createDrawToolIfNecessary(): DrawTool {
         if (!this._drawTool) {
             this._drawTool = new DrawTool({
                 instance: this.instance,
@@ -64,7 +67,7 @@ export default class DrawToolPanel extends Panel {
         return this._drawTool;
     }
 
-    createSegment() {
+    public createSegment(): void {
         const tool = this.createDrawToolIfNecessary();
 
         tool.createSegment({
@@ -73,7 +76,7 @@ export default class DrawToolPanel extends Panel {
         }).then(shape => this.onShapeFinished(shape));
     }
 
-    createPoint() {
+    public createPoint(): void {
         const tool = this.createDrawToolIfNecessary();
 
         tool.createPoint({
@@ -83,7 +86,7 @@ export default class DrawToolPanel extends Panel {
         }).then(shape => this.onShapeFinished(shape));
     }
 
-    createPolygon() {
+    public createPolygon(): void {
         const tool = this.createDrawToolIfNecessary();
 
         tool.createPolygon({
@@ -92,7 +95,7 @@ export default class DrawToolPanel extends Panel {
         }).then(shape => this.onShapeFinished(shape));
     }
 
-    clear() {
+    public clear(): void {
         this._shapes.forEach(shape => this.instance.remove(shape));
         this._shapes.length = 0;
     }

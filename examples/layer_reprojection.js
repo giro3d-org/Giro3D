@@ -7,13 +7,12 @@
 import { GeoJSON } from 'ol/format.js';
 import XYZ from 'ol/source/XYZ.js';
 import { Stroke, Style } from 'ol/style.js';
-
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
-import Instance from '@giro3d/giro3d/core/Instance.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import { crsToUnit } from '@giro3d/giro3d/core/geographic/Coordinates.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
@@ -21,8 +20,8 @@ import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
 
-import StatusBar from './widgets/StatusBar.js';
 import { bindButton } from './widgets/bindButton.js';
+import StatusBar from './widgets/StatusBar.js';
 
 /** @type {Instance} */
 let instance;

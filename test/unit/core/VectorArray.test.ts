@@ -4,9 +4,10 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { Vector2Array, Vector3Array, Vector4Array } from '@giro3d/giro3d/core/VectorArray';
 import { Vector2, Vector3, Vector4 } from 'three';
 import { describe, expect, it } from 'vitest';
+
+import { Vector2Array, Vector3Array, Vector4Array } from '@giro3d/giro3d/core/VectorArray';
 
 const SIZEOF_Uint8 = 1;
 const SIZEOF_Uint16 = 2;

@@ -5,15 +5,17 @@
  */
 
 import { DataTexture, FloatType, LinearFilter, RGFormat } from 'three';
-import WorkerPool from '../utils/WorkerPool';
-import type { DecodeOptions } from './ImageFormat';
-import ImageFormat from './ImageFormat';
+
 import type { DecodeBilTerrainResult, MessageMap, MessageType } from './bilWorker';
+import type { DecodeOptions, DecodeResult } from './ImageFormat';
+
+import WorkerPool from '../utils/WorkerPool';
 import { decodeRaster } from './bilWorker';
+import ImageFormat from './ImageFormat';
 
 let workerPool: WorkerPool<MessageType, MessageMap> | null = null;
 
-function createWorker() {
+function createWorker(): Worker {
     return new Worker(new URL('./bilWorker.js', import.meta.url), {
         type: 'module',
         name: 'bil',
@@ -45,8 +47,8 @@ function createWorker() {
  *
  */
 class BilFormat extends ImageFormat {
-    readonly isBilFormat: boolean = true as const;
-    override readonly type = 'BilFormat' as const;
+    public readonly isBilFormat: boolean = true as const;
+    public override readonly type = 'BilFormat' as const;
 
     private _enableWorkers: boolean = true;
     private _workerConcurrency: number | undefined;
@@ -54,7 +56,7 @@ class BilFormat extends ImageFormat {
     /**
      * @param options - Decoder options.
      */
-    constructor(options?: {
+    public constructor(options?: {
         /**
          * Enables processing raster data in web workers.
          * @defaultValue true
@@ -82,7 +84,7 @@ class BilFormat extends ImageFormat {
      * @param options - the decoding options
      */
 
-    async decode(blob: Blob, options: DecodeOptions) {
+    public async decode(blob: Blob, options: DecodeOptions): Promise<DecodeResult> {
         const buffer = await blob.arrayBuffer();
         const floatArray = new Float32Array(buffer);
 

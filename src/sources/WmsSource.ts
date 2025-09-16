@@ -5,9 +5,11 @@
  */
 
 import TileWMS from 'ol/source/TileWMS';
+
 import type Extent from '../core/geographic/Extent';
 import type ImageFormat from '../formats/ImageFormat';
 import type { ImageSourceOptions } from './ImageSource';
+
 import TiledImageSource from './TiledImageSource';
 
 export interface WmsSourceOptions extends ImageSourceOptions {
@@ -63,7 +65,7 @@ export default class WmsSource extends TiledImageSource {
      *
      * @param options - The options.
      */
-    constructor(options: WmsSourceOptions) {
+    public constructor(options: WmsSourceOptions) {
         super({
             requestPriority: options.requestPriority,
             source: new TileWMS({
@@ -82,7 +84,7 @@ export default class WmsSource extends TiledImageSource {
      * Sets the `TIME` parameter of the tile requests, and refreshes the source.
      * If `date` is undefined, temporal requests are disabled.
      */
-    setTime(date?: Date) {
+    public setTime(date?: Date): void {
         (this.source as TileWMS).updateParams({ TIME: date?.toISOString() });
         this.update();
     }

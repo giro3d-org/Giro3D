@@ -5,14 +5,16 @@
  */
 
 import GUI from 'lil-gui';
-import { isDisposable } from '../core/Disposable';
+
 import type Instance from '../core/Instance';
+import type Panel from './Panel';
+
+import { isDisposable } from '../core/Disposable';
 import DrawToolPanel from './DrawToolPanel';
 import EntityPanel from './EntityPanel';
 import InstanceInspector from './InstanceInspector';
 import Outliner from './outliner/Outliner';
 import PackageInfoInspector from './PackageInfoInspector';
-import type Panel from './Panel';
 import ProcessingInspector from './ProcessingInspector';
 import ViewInspector from './ViewInspector';
 
@@ -26,7 +28,7 @@ const styles = `
 }
 `;
 
-function visit(root: Element, callbackFn: (element: Element) => void) {
+function visit(root: Element, callbackFn: (element: Element) => void): void {
     if (root != null) {
         callbackFn(root);
         if (root.childElementCount > 0) {
@@ -65,9 +67,9 @@ export interface InspectorOptions {
  *
  */
 class Inspector {
-    instance: Instance;
-    gui: GUI;
-    folders: Panel[];
+    public instance: Instance;
+    public gui: GUI;
+    public folders: Panel[];
 
     /**
      * Creates an instance of the inspector.
@@ -76,7 +78,11 @@ class Inspector {
      * @param instance - The Giro3D instance.
      * @param options - The options.
      */
-    constructor(parent: HTMLElement | string, instance: Instance, options: InspectorOptions = {}) {
+    public constructor(
+        parent: HTMLElement | string,
+        instance: Instance,
+        options: InspectorOptions = {},
+    ) {
         this.instance = instance;
         this.gui = new GUI({
             autoPlace: false,
@@ -105,7 +111,7 @@ class Inspector {
         this.addPanel(new Outliner(this.gui, instance));
     }
 
-    collapse() {
+    public collapse(): void {
         this.folders.forEach(f => f.collapse());
     }
 
@@ -113,7 +119,7 @@ class Inspector {
      * Removes all panel from the inspector.
      *
      */
-    clearPanels() {
+    public clearPanels(): void {
         while (this.folders.length > 0) {
             const gui = this.folders.pop();
             if (isDisposable(gui)) {
@@ -127,7 +133,7 @@ class Inspector {
      *
      * @param panel - The panel to add.
      */
-    addPanel(panel: Panel) {
+    public addPanel(panel: Panel): void {
         this.folders.push(panel);
     }
 
@@ -139,11 +145,11 @@ class Inspector {
      * @param options - The options.
      * @returns The created inspector.
      */
-    static attach(
+    public static attach(
         parent: HTMLElement | string,
         instance: Instance,
         options: InspectorOptions = {},
-    ) {
+    ): Inspector {
         const inspector = new Inspector(parent, instance, options);
         return inspector;
     }
@@ -152,13 +158,13 @@ class Inspector {
      * Detach this Inspector from its instance.
      *
      */
-    detach() {
+    public detach(): void {
         this.clearPanels();
         this.instance.removeEventListener('update-end', () => this.update());
         this.gui.domElement.remove();
     }
 
-    update() {
+    public update(): void {
         this.folders.forEach(f => f.update());
 
         // Remove autocomplete on all Input elements to avoid causing issues on some browsers

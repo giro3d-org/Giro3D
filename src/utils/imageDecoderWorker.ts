@@ -5,7 +5,9 @@
  */
 
 import type { TextureDataType, TypedArray } from 'three';
+
 import type { BaseMessageMap, Message, SuccessResponse } from './WorkerPool';
+
 import { createErrorResponse } from './WorkerPool';
 
 // Redeclare those constants to avoid importing them from three.js, since
@@ -300,7 +302,7 @@ export interface MessageMap extends BaseMessageMap<MessageType> {
 
 export type Messages = CreateImageBitmapMessage | CreatePixelBufferMessage;
 
-onmessage = async function onmessage(ev: MessageEvent<Messages>) {
+onmessage = async function onmessage(ev: MessageEvent<Messages>): Promise<void> {
     const message = ev.data;
 
     try {

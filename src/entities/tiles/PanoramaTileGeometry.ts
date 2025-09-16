@@ -5,13 +5,15 @@
  */
 
 import { Box3, BufferAttribute, BufferGeometry, MathUtils, Vector2, Vector3 } from 'three';
+
 import type Extent from '../../core/geographic/Extent';
 import type HeightMap from '../../core/HeightMap';
 import type MemoryUsage from '../../core/MemoryUsage';
 import type { GetMemoryUsageContext } from '../../core/MemoryUsage';
+import type TileGeometry from './TileGeometry';
+
 import { getGeometryMemoryUsage } from '../../core/MemoryUsage';
 import { getGridBuffers } from './GridBuilder';
-import type TileGeometry from './TileGeometry';
 
 const tmpVec2 = new Vector2();
 const tmpVec3 = new Vector3();
@@ -33,37 +35,37 @@ export default class PanoramaTileGeometry
     extends BufferGeometry
     implements MemoryUsage, TileGeometry
 {
-    readonly isMemoryUsage = true as const;
+    public readonly isMemoryUsage = true as const;
     private readonly _extent: Extent;
     private readonly _origin: Vector3;
     private readonly _radius: number;
 
     private _segments = 8;
 
-    get vertexCount() {
+    public get vertexCount(): number {
         return this.getAttribute('position').count;
     }
 
-    get segments(): number {
+    public get segments(): number {
         return this._segments;
     }
 
-    set segments(v: number) {
+    public set segments(v: number) {
         if (this._segments !== v) {
             this._segments = v;
             this.buildBuffers(this);
         }
     }
 
-    get origin(): Vector3 {
+    public get origin(): Vector3 {
         return this._origin;
     }
 
-    get raycastGeometry() {
+    public get raycastGeometry(): this {
         return this;
     }
 
-    constructor(params: { extent: Extent; segments: number; radius: number }) {
+    public constructor(params: { extent: Extent; segments: number; radius: number }) {
         super();
 
         this._segments = params.segments;
@@ -85,20 +87,20 @@ export default class PanoramaTileGeometry
         this.buildBuffers(this);
     }
 
-    resetHeights(): void {
+    public resetHeights(): void {
         // Nothing to do
     }
 
-    applyHeightMap(_heightMap: HeightMap): { min: number; max: number } {
+    public applyHeightMap(_heightMap: HeightMap): { min: number; max: number } {
         // Nothing to do
         return { min: 0, max: 0 };
     }
 
-    getMemoryUsage(context: GetMemoryUsageContext) {
+    public getMemoryUsage(context: GetMemoryUsageContext): void {
         getGeometryMemoryUsage(context, this);
     }
 
-    private buildBuffers(geometry: BufferGeometry) {
+    private buildBuffers(geometry: BufferGeometry): void {
         this.dispose();
 
         const rowVertices = this._segments + 1;

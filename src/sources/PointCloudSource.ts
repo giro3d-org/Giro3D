@@ -5,11 +5,12 @@
  */
 
 import { EventDispatcher, MathUtils, type Box3, type BufferAttribute, type Vector3 } from 'three';
+
 import type Disposable from '../core/Disposable';
+import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import type MemoryUsage from '../core/MemoryUsage';
 import type { GetMemoryUsageContext } from '../core/MemoryUsage';
 import type Progress from '../core/Progress';
-import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 
 export type PointCloudAttribute = {
     /**
@@ -274,19 +275,19 @@ export abstract class PointCloudSourceBase<
     extends EventDispatcher<TEventMap>
     implements Progress, Disposable, MemoryUsage
 {
-    abstract type: string;
+    public abstract type: string;
 
-    readonly isMemoryUsage = true as const;
+    public readonly isMemoryUsage = true as const;
     /** Read-only flag to indicate that this object is a PointCloudSource. */
-    readonly isPointCloudSource = true as const;
+    public readonly isPointCloudSource = true as const;
 
     /** An auto-generated UUID used internally to create unique keys for various purposes. */
-    readonly id = MathUtils.generateUUID();
+    public readonly id = MathUtils.generateUUID();
 
     private _initializePromise: Promise<this> | null = null;
     private _ready = false;
 
-    get ready() {
+    public get ready(): boolean {
         return this._ready;
     }
 
@@ -294,7 +295,7 @@ export abstract class PointCloudSourceBase<
      * Initialize this source.
      * As long as this source is not initialized, it cannot be used.
      */
-    initialize(): Promise<this> {
+    public initialize(): Promise<this> {
         if (!this._initializePromise) {
             this._initializePromise = this.initializeOnce();
             this._initializePromise.then(() => {
@@ -317,21 +318,21 @@ export abstract class PointCloudSourceBase<
      *
      * Note: this does not provide point cloud data itself.
      */
-    abstract getHierarchy(): Promise<PointCloudNode>;
+    public abstract getHierarchy(): Promise<PointCloudNode>;
 
     /**
      * Gets the metadata of this source.
      */
-    abstract getMetadata(): Promise<PointCloudMetadata>;
+    public abstract getMetadata(): Promise<PointCloudMetadata>;
 
     /**
      * Loads buffer data for the specific {@link PointCloudNode}.
      * @param params - Options.
      */
-    abstract getNodeData(params: GetNodeDataOptions): Promise<PointCloudNodeData>;
+    public abstract getNodeData(params: GetNodeDataOptions): Promise<PointCloudNodeData>;
 
-    abstract get progress(): number;
-    abstract get loading(): boolean;
-    abstract dispose(): void;
-    abstract getMemoryUsage(context: GetMemoryUsageContext): void;
+    public abstract get progress(): number;
+    public abstract get loading(): boolean;
+    public abstract dispose(): void;
+    public abstract getMemoryUsage(context: GetMemoryUsageContext): void;
 }

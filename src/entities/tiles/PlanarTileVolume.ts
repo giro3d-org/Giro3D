@@ -5,10 +5,12 @@
  */
 
 import type { Matrix4 } from 'three';
+
 import { Box3, Vector2, Vector3 } from 'three';
 
 import type ElevationRange from '../../core/ElevationRange';
 import type Extent from '../../core/geographic/Extent';
+
 import TileVolume from './TileVolume';
 
 const vec2 = new Vector2();
@@ -18,11 +20,11 @@ export default class PlanarTileVolume extends TileVolume {
     private readonly _extent: Extent;
     private _range: ElevationRange = { min: -1, max: +1 };
 
-    get extent(): Readonly<Extent> {
+    public get extent(): Readonly<Extent> {
         return this._extent;
     }
 
-    constructor(options: { extent: Extent; range: ElevationRange }) {
+    public constructor(options: { extent: Extent; range: ElevationRange }) {
         super();
         this._extent = options.extent;
         this._range = options.range;
@@ -37,7 +39,7 @@ export default class PlanarTileVolume extends TileVolume {
         return new Box3(min, max);
     }
 
-    getWorldSpaceCorners(matrix: Matrix4): Vector3[] {
+    public getWorldSpaceCorners(matrix: Matrix4): Vector3[] {
         const bbox = this.getWorldSpaceBoundingBox(box, matrix);
         const c0 = new Vector3(bbox.min.x, bbox.min.y, bbox.min.z);
         const c1 = new Vector3(bbox.min.x, bbox.min.y, bbox.max.z);
@@ -54,7 +56,7 @@ export default class PlanarTileVolume extends TileVolume {
         return [c0, c1, c2, c3, c4, c5, c6, c7];
     }
 
-    setElevationRange(range: ElevationRange) {
+    public setElevationRange(range: ElevationRange): void {
         this._range = range;
         this.localBox.min.setZ(range.min);
         this.localBox.max.setZ(range.max);

@@ -16,7 +16,7 @@ export default class TypedArrayVector<T extends TypedArray> {
     private _array: T;
     private _length = 0;
 
-    constructor(capacity: number, createNew: (capacity: number) => T) {
+    public constructor(capacity: number, createNew: (capacity: number) => T) {
         this._ctor = createNew;
         this._array = createNew(capacity);
     }
@@ -24,18 +24,18 @@ export default class TypedArrayVector<T extends TypedArray> {
     /**
      * The capacity of this vector.
      */
-    get capacity() {
+    public get capacity(): number {
         return this._array.length;
     }
 
-    get length() {
+    public get length(): number {
         return this._length;
     }
 
     /**
      * Pushes a value at the end of the vector.
      */
-    push(v: number): void {
+    public push(v: number): void {
         if (this.isFull) {
             this.expand();
         }
@@ -46,7 +46,7 @@ export default class TypedArrayVector<T extends TypedArray> {
     /**
      * Returns the underlying array, resized so that capacity = length.
      */
-    getArray(): T {
+    public getArray(): T {
         if (this.isFull) {
             return this._array;
         } else {
@@ -54,11 +54,11 @@ export default class TypedArrayVector<T extends TypedArray> {
         }
     }
 
-    private get isFull() {
+    private get isFull(): boolean {
         return this._length === this.capacity;
     }
 
-    private expand() {
+    private expand(): void {
         const newCap = Math.round(this.capacity * 1.5);
         const newArray = this._ctor(newCap);
         newArray.set(this._array);

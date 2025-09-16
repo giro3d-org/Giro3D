@@ -5,7 +5,6 @@
  */
 
 import * as FunctionCurveEditor from 'function-curve-editor';
-
 import { Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
@@ -17,13 +16,12 @@ import Tiles3D from '@giro3d/giro3d/entities/Tiles3D.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import { MODE } from '@giro3d/giro3d/renderer/PointCloudMaterial.js';
 
-import StatusBar from './widgets/StatusBar.js';
-
 import { bindButton } from './widgets/bindButton.js';
 import { bindColorMapBounds } from './widgets/bindColorMapBounds.js';
 import { bindDropDown } from './widgets/bindDropDown.js';
 import { bindToggle } from './widgets/bindToggle.js';
 import { makeColorRamp } from './widgets/makeColorRamp.js';
+import StatusBar from './widgets/StatusBar.js';
 
 Instance.registerCRS(
     'EPSG:3946',

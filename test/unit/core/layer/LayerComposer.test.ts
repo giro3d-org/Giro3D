@@ -4,10 +4,11 @@
  * SPDX-License-Identifier: MIT
  */
 
+import { describe, expect, it } from 'vitest';
+
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import LayerComposer from '@giro3d/giro3d/core/layer/LayerComposer';
-import { describe, expect, it } from 'vitest';
 
 describe('getMinMax', () => {
     it('should ignore images that do not have a valid min/max', () => {

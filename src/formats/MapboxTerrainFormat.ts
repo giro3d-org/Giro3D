@@ -5,15 +5,17 @@
  */
 
 import { DataTexture, FloatType, LinearFilter, RGFormat } from 'three';
-import WorkerPool from '../utils/WorkerPool';
-import type { DecodeOptions } from './ImageFormat';
-import ImageFormat from './ImageFormat';
+
+import type { DecodeOptions, DecodeResult } from './ImageFormat';
 import type { DecodeMapboxTerrainResult, MessageMap, MessageType } from './mapboxWorker';
+
+import WorkerPool from '../utils/WorkerPool';
+import ImageFormat from './ImageFormat';
 import { decodeMapboxTerrainImage } from './mapboxWorker';
 
 let workerPool: WorkerPool<MessageType, MessageMap> | null = null;
 
-function createWorker() {
+function createWorker(): Worker {
     return new Worker(new URL('./mapboxWorker.js', import.meta.url), {
         type: 'module',
         name: 'mapbox',
@@ -24,8 +26,8 @@ function createWorker() {
  * Decoder for [Mapbox Terrain](https://docs.mapbox.com/data/tilesets/reference/mapbox-terrain-dem-v1/) images.
  */
 class MapboxTerrainFormat extends ImageFormat {
-    readonly isMapboxTerrainFormat: boolean = true as const;
-    override readonly type = 'MapboxTerrainFormat' as const;
+    public readonly isMapboxTerrainFormat: boolean = true as const;
+    public override readonly type = 'MapboxTerrainFormat' as const;
 
     private readonly _enableWorkers: boolean = true;
     private readonly _workerConcurrency: number | undefined;
@@ -33,7 +35,7 @@ class MapboxTerrainFormat extends ImageFormat {
     /**
      * @param options - Decoder options.
      */
-    constructor(options?: {
+    public constructor(options?: {
         /**
          * Enables processing raster data in web workers.
          * @defaultValue true
@@ -60,7 +62,7 @@ class MapboxTerrainFormat extends ImageFormat {
      * @param blob - the data to decode
      * @param options - the decoding options
      */
-    async decode(blob: Blob, options?: DecodeOptions) {
+    public async decode(blob: Blob, options?: DecodeOptions): Promise<DecodeResult> {
         let result: DecodeMapboxTerrainResult;
 
         if (this._enableWorkers) {

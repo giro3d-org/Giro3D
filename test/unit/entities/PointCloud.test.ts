@@ -4,15 +4,17 @@
  * SPDX-License-Identifier: MIT
  */
 
-import PointCloud from '@giro3d/giro3d/entities/PointCloud';
+import { Box3, MathUtils } from 'three';
+import { describe, expect, it, vitest } from 'vitest';
+
 import type {
     PointCloudAttribute,
     PointCloudMetadata,
     PointCloudNode,
     PointCloudSource,
 } from '@giro3d/giro3d/sources/PointCloudSource';
-import { Box3, MathUtils } from 'three';
-import { describe, expect, it, vitest } from 'vitest';
+
+import PointCloud from '@giro3d/giro3d/entities/PointCloud';
 
 function mockSource(options?: {
     metadata?: PointCloudMetadata;

@@ -5,21 +5,20 @@
  */
 
 import colormap from 'colormap';
-
 import { Box3Helper, Color, DoubleSide } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/ColorMap.js';
-import Instance from '@giro3d/giro3d/core/Instance.js';
-import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
+import Instance from '@giro3d/giro3d/core/Instance.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer';
 import Map from '@giro3d/giro3d/entities/Map';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';
 
-import StatusBar from './widgets/StatusBar.js';
 import { bindToggle } from './widgets/bindToggle.js';
+import StatusBar from './widgets/StatusBar.js';
 
 Instance.registerCRS(
     'EPSG:32742',

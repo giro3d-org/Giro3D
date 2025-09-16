@@ -6,6 +6,7 @@
 
 import type GUI from 'lil-gui';
 import type { Controller } from 'lil-gui';
+
 import type Instance from '../core/Instance';
 
 export interface TypedController<T> extends Controller {
@@ -36,13 +37,13 @@ function parsePascalCase(text: string): string {
  * Base class for the panels in the inspector.
  */
 abstract class Panel {
-    gui: GUI;
-    instance: Instance;
+    public gui: GUI;
+    public instance: Instance;
     /** The controllers. */
     protected _controllers: Controller[];
 
-    isClosed() {
-        const isGuiClosed = (gui: GUI) => {
+    public isClosed(): boolean {
+        const isGuiClosed = (gui: GUI): boolean => {
             return gui._closed;
         };
 
@@ -64,18 +65,18 @@ abstract class Panel {
      * @param instance - The Giro3D instance.
      * @param name - The name of the panel.
      */
-    constructor(parentGui: GUI, instance: Instance, name: string) {
+    public constructor(parentGui: GUI, instance: Instance, name: string) {
         this.gui = parentGui.addFolder(name);
         this.gui.close();
         this.instance = instance;
         this._controllers = [];
     }
 
-    notify(source: unknown = undefined) {
+    public notify(source: unknown = undefined): void {
         this.instance.notifyChange(source);
     }
 
-    collapse() {
+    public collapse(): void {
         this.gui.close();
     }
 
@@ -86,7 +87,10 @@ abstract class Panel {
      * @param prop - The name of the property.
      * @returns The created controller.
      */
-    addColorController<T extends object, K extends keyof T & string>(obj: T, prop: K) {
+    public addColorController<T extends object, K extends keyof T & string>(
+        obj: T,
+        prop: K,
+    ): TypedController<T[K]> {
         const controller = this.gui.addColor(obj, prop) as TypedController<T[K]>;
         this._controllers.push(controller);
         return controller;
@@ -104,20 +108,20 @@ abstract class Panel {
      * @param step - Step value for number controllers.
      * @returns The created controller.
      */
-    addController<T extends object, K extends keyof T & string>(
+    public addController<T extends object, K extends keyof T & string>(
         obj: T,
         prop: K,
         $1?: object | number | unknown[],
         max?: number,
         step?: number,
-    ) {
+    ): TypedController<T[K]> {
         const controller = this.gui.add(obj, prop, $1, max, step) as TypedController<T[K]>;
         controller.name(parsePascalCase(prop));
         this._controllers.push(controller);
         return controller;
     }
 
-    removeController(controller: Controller) {
+    public removeController(controller: Controller): void {
         this._controllers.slice(this._controllers.indexOf(controller));
         controller.destroy();
         this.updateControllers();
@@ -128,7 +132,7 @@ abstract class Panel {
      * This is useful if the value changes from outside the GUI.
      *
      */
-    updateControllers() {
+    public updateControllers(): void {
         this.updateValues();
         this._controllers.forEach(c => c.updateDisplay());
     }
@@ -137,7 +141,7 @@ abstract class Panel {
      * Updates the values of the controller sources.
      *
      */
-    updateValues() {
+    public updateValues(): void {
         /** empty */
     }
 
@@ -146,7 +150,7 @@ abstract class Panel {
      * However, {@link updateControllers} should still be called to ensure they are up to date.
      *
      */
-    update() {
+    public update(): void {
         if (!this.isClosed()) {
             this.updateControllers();
         }
@@ -156,7 +160,7 @@ abstract class Panel {
      * Removes this panel from its parent GUI.
      *
      */
-    dispose() {
+    public dispose(): void {
         this.gui.destroy();
     }
 }

@@ -5,7 +5,6 @@
  */
 
 import type Feature from 'ol/Feature';
-import { VOID } from 'ol/functions';
 import type {
     Geometry,
     LineString,
@@ -17,11 +16,25 @@ import type {
 } from 'ol/geom';
 import type VectorSource from 'ol/source/Vector';
 import type { BufferGeometry, Camera, Object3D, Plane } from 'three';
+
+import { VOID } from 'ol/functions';
+import { Projection } from 'ol/proj';
 import { Box3, Group, MathUtils, Vector3 } from 'three';
 
-import { Projection } from 'ol/proj';
-import { GlobalCache } from '../core/Cache';
 import type Context from '../core/Context';
+import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import type Extent from '../core/geographic/Extent';
+import type { SSE } from '../core/ScreenSpaceError';
+import type { BaseOptions } from '../renderer/geometries/GeometryConverter';
+import type LineStringMesh from '../renderer/geometries/LineStringMesh';
+import type MultiLineStringMesh from '../renderer/geometries/MultiLineStringMesh';
+import type PointMesh from '../renderer/geometries/PointMesh';
+import type SimpleGeometryMesh from '../renderer/geometries/SimpleGeometryMesh';
+import type SurfaceMesh from '../renderer/geometries/SurfaceMesh';
+import type { EntityUserData } from './Entity';
+import type { Entity3DEventMap } from './Entity3D';
+
+import { GlobalCache } from '../core/Cache';
 import {
     type FeatureElevation,
     type FeatureElevationCallback,
@@ -33,31 +46,20 @@ import {
     type PointMaterialGenerator,
     type SurfaceMaterialGenerator,
 } from '../core/FeatureTypes';
-import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
-import type Extent from '../core/geographic/Extent';
 import LayerUpdateState from '../core/layer/LayerUpdateState';
 import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../core/MemoryUsage';
 import OperationCounter from '../core/OperationCounter';
 import { DefaultQueue } from '../core/RequestQueue';
-import type { SSE } from '../core/ScreenSpaceError';
 import ScreenSpaceError from '../core/ScreenSpaceError';
-import type { BaseOptions } from '../renderer/geometries/GeometryConverter';
 import GeometryConverter from '../renderer/geometries/GeometryConverter';
-import type LineStringMesh from '../renderer/geometries/LineStringMesh';
 import { isLineStringMesh } from '../renderer/geometries/LineStringMesh';
-import type MultiLineStringMesh from '../renderer/geometries/MultiLineStringMesh';
 import { isMultiPolygonMesh } from '../renderer/geometries/MultiPolygonMesh';
-import type PointMesh from '../renderer/geometries/PointMesh';
 import { isPointMesh } from '../renderer/geometries/PointMesh';
 import { isPolygonMesh } from '../renderer/geometries/PolygonMesh';
-import type SimpleGeometryMesh from '../renderer/geometries/SimpleGeometryMesh';
 import { isSimpleGeometryMesh } from '../renderer/geometries/SimpleGeometryMesh';
-import type SurfaceMesh from '../renderer/geometries/SurfaceMesh';
 import { isSurfaceMesh } from '../renderer/geometries/SurfaceMesh';
 import OLUtils from '../utils/OpenLayersUtils';
 import { nonNull } from '../utils/tsutils';
-import type { EntityUserData } from './Entity';
-import type { Entity3DEventMap } from './Entity3D';
 import Entity3D from './Entity3D';
 
 const CACHE_TTL = 30_000; // 30 seconds
@@ -89,7 +91,7 @@ function isThreeCamera(obj: unknown): obj is Camera {
     return typeof obj === 'object' && (obj as Camera)?.isCamera;
 }
 
-function setNodeContentVisible(node: Object3D, visible: boolean) {
+function setNodeContentVisible(node: Object3D, visible: boolean): void {
     for (const child of node.children) {
         // hide the content of the tile without hiding potential children tile's content
         if (!isFeatureTile(child)) {
@@ -98,7 +100,7 @@ function setNodeContentVisible(node: Object3D, visible: boolean) {
     }
 }
 
-function selectBestSubdivisions(extent: Extent) {
+function selectBestSubdivisions(extent: Extent): { x: number; y: number } {
     const dims = extent.dimensions();
     const ratio = dims.x / dims.y;
     let x = 1;
@@ -124,14 +126,14 @@ type FeatureTileUserData = {
 };
 
 class FeatureTile extends Group {
-    readonly isFeatureTile = true as const;
-    override readonly type = 'FeatureTile' as const;
-    readonly origin: Vector3;
-    readonly boundingBox: Box3;
+    public readonly isFeatureTile = true as const;
+    public override readonly type = 'FeatureTile' as const;
+    public readonly origin: Vector3;
+    public readonly boundingBox: Box3;
 
-    override readonly userData: FeatureTileUserData;
+    public override readonly userData: FeatureTileUserData;
 
-    constructor(options: {
+    public constructor(options: {
         name: string;
         origin: Vector3;
         userData: FeatureTileUserData;
@@ -144,7 +146,7 @@ class FeatureTile extends Group {
         this.boundingBox = options.boundingBox;
     }
 
-    dispose(set: Set<string | number>) {
+    public dispose(set: Set<string | number>): void {
         this.traverse(obj => {
             if (isSimpleGeometryMesh<MeshUserData>(obj)) {
                 obj.dispose();
@@ -260,27 +262,27 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
     /**
      * Read-only flag to check if a given object is of type FeatureCollection.
      */
-    readonly isFeatureCollection = true as const;
-    override readonly type = 'FeatureCollection' as const;
+    public readonly isFeatureCollection = true as const;
+    public override readonly type = 'FeatureCollection' as const;
 
     /**
      * The projection code of the data source.
      */
-    readonly dataProjection: CoordinateSystem | null;
+    public readonly dataProjection: CoordinateSystem | null;
 
     /**
      * The minimum LOD at which this entity is displayed.
      */
-    readonly minLevel: number = 0;
+    public readonly minLevel: number = 0;
     /**
      * The maximum LOD at which this entity is displayed.
      */
-    readonly maxLevel: number = 0;
+    public readonly maxLevel: number = 0;
 
     /**
      * The extent of this entity.
      */
-    readonly extent: Extent;
+    public readonly extent: Extent;
 
     private readonly _level0Nodes: FeatureTile[];
     private readonly _rootMeshes: SimpleGeometryMesh<MeshUserData>[] = [];
@@ -307,12 +309,12 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
     /**
      * The factor to drive the subdivision of feature nodes. The heigher, the bigger the nodes.
      */
-    sseScale = 1;
+    public sseScale = 1;
 
     /**
      * The number of materials managed by this entity.
      */
-    get materialCount() {
+    public get materialCount(): number {
         return this._geometryConverter.materialCount;
     }
 
@@ -321,7 +323,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
      *
      * @param options - Constructor options.
      */
-    constructor(options: {
+    public constructor(options: {
         /** The OpenLayers [VectorSource](https://openlayers.org/en/latest/apidoc/module-ol_source_Vector-VectorSource.html) providing features to this entity */
         source: VectorSource;
         /**
@@ -437,7 +439,10 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         this._tileIdSet = new Set();
     }
 
-    private updateObjectOption<K extends keyof ObjectOptions>(key: K, value: ObjectOptions[K]) {
+    private updateObjectOption<K extends keyof ObjectOptions>(
+        key: K,
+        value: ObjectOptions[K],
+    ): void {
         if (this._objectOptions[key] !== value) {
             this._objectOptions[key] = value;
             this.traverseGeometries(mesh => {
@@ -455,11 +460,11 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
      *
      * Note: shadow maps require normal attributes on objects.
      */
-    get castShadow() {
+    public get castShadow(): boolean {
         return this._objectOptions.castShadow;
     }
 
-    set castShadow(v: boolean) {
+    public set castShadow(v: boolean) {
         this.updateObjectOption('castShadow', v);
     }
 
@@ -468,15 +473,15 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
      *
      * Note: shadow maps require normal attributes on objects.
      */
-    get receiveShadow() {
+    public get receiveShadow(): boolean {
         return this._objectOptions.receiveShadow;
     }
 
-    set receiveShadow(v: boolean) {
+    public set receiveShadow(v: boolean) {
         this.updateObjectOption('receiveShadow', v);
     }
 
-    override getMemoryUsage(context: GetMemoryUsageContext) {
+    public override getMemoryUsage(context: GetMemoryUsageContext): void {
         this.traverse(obj => {
             if ('geometry' in obj) {
                 getGeometryMemoryUsage(context, obj.geometry as BufferGeometry);
@@ -484,7 +489,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         });
     }
 
-    override preprocess() {
+    public override preprocess(): Promise<void> {
         this._targetProjection = new Projection({ code: this.instance.coordinateSystem.id });
 
         // If the map is not square, we want to have more than a single
@@ -513,18 +518,18 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
     /**
      * Gets whether this entity is currently loading data.
      */
-    override get loading() {
+    public override get loading(): boolean {
         return this._opCounter.loading;
     }
 
     /**
      * Gets the progress value of the data loading.
      */
-    override get progress() {
+    public override get progress(): number {
         return this._opCounter.progress;
     }
 
-    private buildNewTile(extent: Extent, z: number, x = 0, y = 0) {
+    private buildNewTile(extent: Extent, z: number, x = 0, y = 0): FeatureTile {
         // create a simple square shape. We duplicate the top left and bottom right
         // vertices because each vertex needs to appear once per triangle.
         extent = extent.as(this.instance.coordinateSystem);
@@ -563,7 +568,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         return tile;
     }
 
-    override preUpdate(_: Context, changeSources: Set<unknown>) {
+    public override preUpdate(_: Context, changeSources: Set<unknown>): FeatureTile[] {
         if (changeSources.has(undefined) || changeSources.size === 0) {
             return this._level0Nodes;
         }
@@ -592,7 +597,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         return [];
     }
 
-    private getCachedList() {
+    private getCachedList(): SimpleGeometryMesh[] {
         if (this._rootMeshes.length === 0) {
             this.traverse(obj => {
                 const root = getRootMesh(obj);
@@ -609,7 +614,9 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
      * Updates the styles of the  given objects, or all objects if unspecified.
      * @param objects - The objects to update.
      */
-    updateStyles(objects?: (SimpleGeometryMesh<MeshUserData> | SurfaceMesh<MeshUserData>)[]) {
+    public updateStyles(
+        objects?: (SimpleGeometryMesh<MeshUserData> | SurfaceMesh<MeshUserData>)[],
+    ): void {
         if (objects != null) {
             objects.forEach(obj => {
                 if (obj.userData.parentEntity === this) {
@@ -628,7 +635,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         this.notifyChange(this);
     }
 
-    private updateStyle(obj: SimpleGeometryMesh<MeshUserData> | null) {
+    private updateStyle(obj: SimpleGeometryMesh<MeshUserData> | null): void {
         if (!obj) {
             return;
         }
@@ -698,7 +705,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
 
     // We override this because the render order of the features depends on their style,
     // so we have to cumulate that with the render order of the entity.
-    protected override assignRenderOrder(obj: Object3D) {
+    protected override assignRenderOrder(obj: Object3D): void {
         const renderOrder = this.renderOrder;
 
         // Note that the final render order of the mesh is the sum of
@@ -719,7 +726,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         mesh: SimpleGeometryMesh<MeshUserData>,
         feature: Feature,
         style: FeatureStyle | null,
-    ) {
+    ): void {
         mesh.traverse(obj => {
             obj.userData.feature = feature;
             obj.userData.style = style;
@@ -737,13 +744,13 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         return this._style;
     }
 
-    override updateRenderOrder(): void {
+    public override updateRenderOrder(): void {
         this.traverseMeshes(mesh => {
             this.assignRenderOrder(mesh);
         });
     }
 
-    override updateOpacity(): void {
+    public override updateOpacity(): void {
         // We have to overload the method because we don't want to replace
         // materials' opacity with feature opacity. Instead, we want to combine them.
         this.traverseGeometries(mesh => {
@@ -751,7 +758,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         });
     }
 
-    traverseGeometries(callback: (geom: SimpleGeometryMesh<MeshUserData>) => void) {
+    public traverseGeometries(callback: (geom: SimpleGeometryMesh<MeshUserData>) => void): void {
         this.traverse(obj => {
             if (isSimpleGeometryMesh<MeshUserData>(obj)) {
                 callback(obj);
@@ -872,7 +879,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         extent: Extent,
         resolve: (features: Feature[]) => void,
         reject: (error: Error) => void,
-    ) {
+    ): void {
         const olExtent = OLUtils.toOLExtent(extent);
         const resolution: number | undefined = undefined;
 
@@ -895,7 +902,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
             return Promise.resolve(cachedFeatures);
         }
 
-        const request = () =>
+        const request = (): Promise<Feature[]> =>
             new Promise<Feature[]>((resolve, reject) => {
                 let extent = node.userData.extent;
                 if (this.dataProjection != null) {
@@ -915,12 +922,12 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         return this.processFeatures(features, node);
     }
 
-    private disposeTile(tile: FeatureTile) {
+    private disposeTile(tile: FeatureTile): void {
         tile.dispose(this._tileIdSet);
         this._rootMeshes.length = 0;
     }
 
-    override update(ctx: Context, tile: FeatureTile) {
+    public override update(ctx: Context, tile: FeatureTile): FeatureTile[] | null | undefined {
         if (!tile.parent) {
             this.disposeTile(tile);
 
@@ -1048,7 +1055,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         return requestChildrenUpdate ? tile.children.filter(c => isFeatureTile(c)) : undefined;
     }
 
-    private subdivideNode(context: Context, node: FeatureTile) {
+    private subdivideNode(context: Context, node: FeatureTile): void {
         if (!node.children.some(n => n.userData.parentEntity === this)) {
             const extents = node.userData.extent.split(2, 2);
 
@@ -1074,7 +1081,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         }
     }
 
-    private testTileSSE(tile: Group, sse: SSE | null) {
+    private testTileSSE(tile: Group, sse: SSE | null): boolean {
         if (this.maxLevel >= 0 && this.maxLevel <= tile.userData.z) {
             return false;
         }
@@ -1106,14 +1113,14 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         return values.filter(v => v >= 384 * tile.userData.parentEntity.sseScale).length >= 2;
     }
 
-    override dispose(): void {
+    public override dispose(): void {
         this._geometryConverter.dispose({ disposeMaterials: true, disposeTextures: true });
         this.traverseMeshes(mesh => {
             mesh.geometry.dispose();
         });
     }
 
-    private updateMinMaxDistance(cameraPlane: Plane, node: FeatureTile) {
+    private updateMinMaxDistance(cameraPlane: Plane, node: FeatureTile): void {
         if (node.boundingBox != null) {
             const bbox = node.boundingBox.clone().applyMatrix4(node.matrixWorld);
             const distance = cameraPlane.distanceToPoint(bbox.getCenter(vector));

@@ -17,10 +17,10 @@ type ConstructorParams = ConstructorParameters<typeof LayeredMaterial>[0] & {
 export default class ShadowLayeredMaterial extends LayeredMaterial {
     private readonly _shadowMode: ShadowMode;
     private readonly _source: LayeredMaterial;
-    readonly isMeshDistanceMaterial: boolean;
-    readonly isMeshDepthMaterial: boolean;
+    public readonly isMeshDistanceMaterial: boolean;
+    public readonly isMeshDepthMaterial: boolean;
 
-    constructor(opts: ConstructorParams) {
+    public constructor(opts: ConstructorParams) {
         super(opts);
 
         this._source = opts.source;
@@ -43,7 +43,7 @@ export default class ShadowLayeredMaterial extends LayeredMaterial {
         }
     }
 
-    private copyElevationParameters() {
+    private copyElevationParameters(): void {
         const layer = this._source.getElevationLayer();
         if (layer) {
             const texture = this._source.getElevationTexture();
@@ -56,7 +56,7 @@ export default class ShadowLayeredMaterial extends LayeredMaterial {
         }
     }
 
-    override onBeforeRender(): void {
+    public override onBeforeRender(): void {
         this.copyElevationParameters();
     }
 }

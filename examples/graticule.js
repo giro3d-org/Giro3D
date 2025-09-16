@@ -5,11 +5,9 @@
  */
 
 import colormap from 'colormap';
-
+import XYZ from 'ol/source/XYZ.js';
 import { Color, DoubleSide } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
-
-import XYZ from 'ol/source/XYZ.js';
 
 import ColorMap, { ColorMapMode } from '@giro3d/giro3d/core/ColorMap.js';
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
@@ -22,11 +20,10 @@ import GeoTIFFFormat from '@giro3d/giro3d/formats/GeoTIFFFormat.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
-import StatusBar from './widgets/StatusBar.js';
-
 import { bindDropDown } from './widgets/bindDropDown.js';
 import { bindSlider } from './widgets/bindSlider.js';
 import { bindToggle } from './widgets/bindToggle.js';
+import StatusBar from './widgets/StatusBar.js';
 
 const x = -13602000;
 const y = 5812000;

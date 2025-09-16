@@ -5,26 +5,28 @@
  */
 
 import { Object3D } from 'three';
+
 import type PolygonMesh from './PolygonMesh';
-import { isPolygonMesh } from './PolygonMesh';
 import type SimpleGeometryMesh from './SimpleGeometryMesh';
 import type { DefaultUserData, SimpleGeometryMeshEventMap } from './SimpleGeometryMesh';
+
+import { isPolygonMesh } from './PolygonMesh';
 
 export default class MultiPolygonMesh<UserData extends DefaultUserData = DefaultUserData>
     extends Object3D<SimpleGeometryMeshEventMap>
     implements SimpleGeometryMesh<UserData>
 {
-    readonly isSimpleGeometryMesh = true as const;
-    readonly isMultiPolygonMesh = true as const;
-    override readonly type = 'MultiPolygonMesh' as const;
+    public readonly isSimpleGeometryMesh = true as const;
+    public readonly isMultiPolygonMesh = true as const;
+    public override readonly type = 'MultiPolygonMesh' as const;
 
-    override userData: Partial<UserData> = {};
+    public override userData: Partial<UserData> = {};
 
-    set opacity(opacity: number) {
+    public set opacity(opacity: number) {
         this.traversePolygons(p => (p.opacity = opacity));
     }
 
-    constructor(polygons: PolygonMesh[]) {
+    public constructor(polygons: PolygonMesh[]) {
         super();
         this.matrixAutoUpdate = false;
         this.add(...polygons);
@@ -34,7 +36,7 @@ export default class MultiPolygonMesh<UserData extends DefaultUserData = Default
      * Executes the callback on all the {@link PolygonMesh}es of this mesh.
      * @param callback - The callback to execute.
      */
-    traversePolygons(callback: (polygon: PolygonMesh) => void) {
+    public traversePolygons(callback: (polygon: PolygonMesh) => void): void {
         this.traverse(obj => {
             if (isPolygonMesh(obj)) {
                 callback(obj);
@@ -42,7 +44,7 @@ export default class MultiPolygonMesh<UserData extends DefaultUserData = Default
         });
     }
 
-    dispose() {
+    public dispose(): void {
         this.traversePolygons(p => p.dispose());
         this.dispatchEvent({ type: 'dispose' });
     }

@@ -5,11 +5,13 @@
  */
 
 import { Clock, MathUtils, Plane, Sphere, Vector3 } from 'three';
+
 import type Entity from '../entities/Entity';
 import type View from '../renderer/View';
-import { isBufferGeometry } from '../utils/predicates';
 import type Context from './Context';
 import type Instance from './Instance';
+
+import { isBufferGeometry } from '../utils/predicates';
 
 /** Rendering state */
 export enum RenderingState {
@@ -20,14 +22,14 @@ export enum RenderingState {
 }
 
 class ContextImpl implements Context {
-    readonly view: View;
-    readonly distance: {
+    public readonly view: View;
+    public readonly distance: {
         plane: Plane;
         min: number;
         max: number;
     };
 
-    constructor(view: View) {
+    public constructor(view: View) {
         this.view = view;
 
         this.distance = {
@@ -43,7 +45,7 @@ class ContextImpl implements Context {
 
 const tmpSphere = new Sphere();
 
-function updateElements(context: Context, entity: Entity, elements?: unknown[] | null) {
+function updateElements(context: Context, entity: Entity, elements?: unknown[] | null): void {
     if (!elements) {
         return;
     }
@@ -69,7 +71,7 @@ class MainLoop {
     /**
      * The number of frames processed.
      */
-    get frameCount() {
+    public get frameCount(): number {
         return this._frame;
     }
 
@@ -77,29 +79,29 @@ class MainLoop {
      * Toggles automatic camera clipping plane computation.
      * @defaultValue true
      */
-    get automaticCameraPlaneComputation() {
+    public get automaticCameraPlaneComputation(): boolean {
         return this._automaticCameraPlaneComputation;
     }
 
-    set automaticCameraPlaneComputation(v: boolean) {
+    public set automaticCameraPlaneComputation(v: boolean) {
         this._automaticCameraPlaneComputation = v;
     }
 
-    constructor() {
+    public constructor() {
         this._renderingState = RenderingState.RENDERING_PAUSED;
         this._needsRedraw = false;
         this._updateLoopRestarted = true;
         this._changeSources = new Set<unknown>();
     }
 
-    scheduleUpdate(
+    public scheduleUpdate(
         instance: Instance,
         changeSource: unknown | unknown[] = undefined,
         options?: {
             needsRedraw?: boolean;
             immediate?: boolean;
         },
-    ) {
+    ): void {
         if (changeSource != null) {
             if (Array.isArray(changeSource)) {
                 changeSource.forEach(s => this._changeSources.add(s));
@@ -124,7 +126,7 @@ class MainLoop {
         }
     }
 
-    private update(instance: Instance, updateSources: Set<unknown>, dt: number) {
+    private update(instance: Instance, updateSources: Set<unknown>, dt: number): void {
         const frame = this._frame;
 
         const context = new ContextImpl(instance.view);
@@ -182,7 +184,7 @@ class MainLoop {
         }
     }
 
-    private updateCameraPlanesFromObjects(context: Context, instance: Instance) {
+    private updateCameraPlanesFromObjects(context: Context, instance: Instance): void {
         instance.threeObjects.traverse(o => {
             if (!o.visible) {
                 return;
@@ -204,7 +206,7 @@ class MainLoop {
         });
     }
 
-    private step(instance: Instance) {
+    private step(instance: Instance): void {
         const dt = this._clock.getDelta() * 1000;
 
         const frame = this._frame++;

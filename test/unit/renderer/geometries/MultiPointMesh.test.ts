@@ -4,13 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
 
+import { SpriteMaterial } from 'three';
+import { describe, expect, it, vitest } from 'vitest';
+
 import MultiPointMesh, {
     isMultiPointMesh,
 } from '@giro3d/giro3d/renderer/geometries/MultiPointMesh';
 import PointMesh from '@giro3d/giro3d/renderer/geometries/PointMesh';
 import { isSimpleGeometryMesh } from '@giro3d/giro3d/renderer/geometries/SimpleGeometryMesh';
-import { SpriteMaterial } from 'three';
-import { describe, expect, it, vitest } from 'vitest';
 
 function makeDefaultObjects(options?: { material?: SpriteMaterial; opacity?: number }) {
     const material = options?.material ?? new SpriteMaterial();

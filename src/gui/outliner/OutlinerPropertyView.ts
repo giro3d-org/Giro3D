@@ -5,10 +5,14 @@
  */
 
 import type GUI from 'lil-gui';
+import type { Controller } from 'lil-gui';
 import type { Vector3 } from 'three';
+
 import { Object3D } from 'three';
+
 import type Instance from '../../core/Instance';
 import type PointOfView from '../../core/PointOfView';
+
 import { isBufferGeometry, isVector3 } from '../../utils/predicates';
 import Panel from '../Panel';
 
@@ -16,7 +20,7 @@ class OutlinerPropertyView extends Panel {
     protected _folders: GUI[];
     private _object: Object3D | null = null;
 
-    constructor(parentGui: GUI, instance: Instance) {
+    public constructor(parentGui: GUI, instance: Instance) {
         super(parentGui, instance, 'Properties');
 
         this._folders = [];
@@ -28,12 +32,12 @@ class OutlinerPropertyView extends Panel {
         this.populateProperties(new Object3D());
     }
 
-    createControllers(obj: object, gui: GUI) {
+    public createControllers(obj: object, gui: GUI): void {
         if (obj == null) {
             return;
         }
 
-        const notify = () => this.instance.notifyChange();
+        const notify = (): void => this.instance.notifyChange();
 
         const entries = Object.entries(obj);
 
@@ -56,27 +60,27 @@ class OutlinerPropertyView extends Panel {
     /**
      * @param obj - The object to update.
      */
-    updateObject(obj: Object3D) {
+    public updateObject(obj: Object3D): void {
         obj.updateMatrixWorld(true);
         obj.updateWorldMatrix(true, true);
         this.notify();
     }
 
-    goToObject() {
+    public goToObject(): void {
         if (this._object != null) {
             const pov = this.instance.view.goTo(this._object);
             this.updateControlsWithDefaultView(pov);
         }
     }
 
-    private updateControlsWithDefaultView(defaultView: PointOfView | null) {
+    private updateControlsWithDefaultView(defaultView: PointOfView | null): void {
         const controls = this.instance.view.controls;
         if (defaultView && controls && 'target' in controls && isVector3(controls.target)) {
             controls.target.copy(defaultView.target);
         }
     }
 
-    populateProperties(obj: Object3D) {
+    public populateProperties(obj: Object3D): void {
         while (this._controllers.length > 0) {
             this._controllers.pop()?.destroy();
         }
@@ -94,9 +98,13 @@ class OutlinerPropertyView extends Panel {
         position.close();
         this._folders.push(position);
 
-        const update = () => this.updateObject(obj);
+        const update = (): void => this.updateObject(obj);
 
-        function bindVector<K extends string & keyof Vector3>(gui: GUI, v: Vector3, key: K) {
+        function bindVector<K extends string & keyof Vector3>(
+            gui: GUI,
+            v: Vector3,
+            key: K,
+        ): Controller {
             return gui.add(v, key).step(0.01);
         }
 

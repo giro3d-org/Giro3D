@@ -39,9 +39,9 @@ export type NeighbourList<T extends Tile> = [
 export type Predicate<T extends Tile> = (tile: T) => boolean;
 
 class TileIndex<T extends Tile> {
-    tiles: Map<string, WeakRef<T>>;
-    tilesById: Map<number, WeakRef<T>>;
-    constructor() {
+    public tiles: Map<string, WeakRef<T>>;
+    public tilesById: Map<number, WeakRef<T>>;
+    public constructor() {
         this.tiles = new Map();
         this.tilesById = new Map();
     }
@@ -51,7 +51,7 @@ class TileIndex<T extends Tile> {
      *
      * @param tile - the tile to add.
      */
-    addTile(tile: T) {
+    public addTile(tile: T): void {
         const { x, y, z } = tile.coordinate;
         const key = TileIndex.getKey(x, y, z);
         const wr = new WeakRef(tile);
@@ -65,7 +65,7 @@ class TileIndex<T extends Tile> {
      * @param id - The ID.
      * @returns The found tile, otherwise undefined.
      */
-    getTile(id: number): T | undefined {
+    public getTile(id: number): T | undefined {
         const entry = this.tilesById.get(id);
         if (entry) {
             const value = entry.deref();
@@ -77,7 +77,7 @@ class TileIndex<T extends Tile> {
         return undefined;
     }
 
-    static getKey(x: number, y: number, z: number) {
+    public static getKey(x: number, y: number, z: number): string {
         return `${x},${y},${z}`;
     }
 
@@ -97,7 +97,11 @@ class TileIndex<T extends Tile> {
      * @param tile - the tile to query
      * @returns neighbors : Array of found neighbors
      */
-    getNeighbours(tile: T, result: NeighbourList<T>, predicate?: Predicate<T>): NeighbourList<T> {
+    public getNeighbours(
+        tile: T,
+        result: NeighbourList<T>,
+        predicate?: Predicate<T>,
+    ): NeighbourList<T> {
         const { x, y, z } = tile.coordinate;
 
         result[TOP] = this.searchTileOrAncestor(x, y + 1, z, predicate);
@@ -112,7 +116,7 @@ class TileIndex<T extends Tile> {
         return result;
     }
 
-    static getParent(x: number, y: number, z: number) {
+    public static getParent(x: number, y: number, z: number): TileCoordinate | null {
         if (z === 0) {
             return null;
         }
@@ -123,7 +127,7 @@ class TileIndex<T extends Tile> {
         return { x: newX, y: newY, z: newZ };
     }
 
-    update() {
+    public update(): void {
         // Remove obsolete entries
         const keys = [...this.tiles.keys()];
         for (const key of keys) {
@@ -149,7 +153,12 @@ class TileIndex<T extends Tile> {
      * @param z - The tile Z coordinate (zoom level).
      * @returns The matching tile if found, null otherwise.
      */
-    searchTileOrAncestor(x: number, y: number, z: number, predicate?: Predicate<T>): T | null {
+    public searchTileOrAncestor(
+        x: number,
+        y: number,
+        z: number,
+        predicate?: Predicate<T>,
+    ): T | null {
         const key = TileIndex.getKey(x, y, z);
         const entry = this.tiles.get(key);
 

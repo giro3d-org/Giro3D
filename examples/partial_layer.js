@@ -5,7 +5,6 @@
  */
 
 import TileWMS from 'ol/source/TileWMS.js';
-
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';

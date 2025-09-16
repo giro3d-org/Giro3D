@@ -4,15 +4,18 @@
  * SPDX-License-Identifier: MIT
  */
 
+import type { WebGLRenderer } from 'three';
+
+import { Color, DoubleSide, FrontSide, Texture, UnsignedByteType, Vector2 } from 'three';
+import { describe, expect, it } from 'vitest';
+
+import type { MaterialOptions } from '@giro3d/giro3d/renderer/LayeredMaterial';
+
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import OffsetScale from '@giro3d/giro3d/core/OffsetScale';
 import { MapLightingMode } from '@giro3d/giro3d/entities/MapLightingOptions';
-import type { MaterialOptions } from '@giro3d/giro3d/renderer/LayeredMaterial';
 import LayeredMaterial from '@giro3d/giro3d/renderer/LayeredMaterial';
-import type { WebGLRenderer } from 'three';
-import { Color, DoubleSide, FrontSide, Texture, UnsignedByteType, Vector2 } from 'three';
-import { describe, expect, it } from 'vitest';
 
 const defaultTextureSize: Vector2 = new Vector2(128, 128);
 const defaultTileDimensions: Vector2 = new Vector2(100, 100);

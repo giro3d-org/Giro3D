@@ -39,7 +39,7 @@ export interface Options {
     convertRGFloatToRGBAUnsignedByte: { precision: number; offset: number } | null;
 }
 
-function createGridTexture() {
+function createGridTexture(): CanvasTexture {
     const canvas = document.createElement('canvas');
     canvas.width = 512;
     canvas.height = 512;
@@ -127,23 +127,23 @@ type Uniforms = {
 } & Record<string, IUniform>;
 
 class ComposerTileMaterial extends ShaderMaterial {
-    readonly isComposerTileMaterial = true as const;
+    public readonly isComposerTileMaterial = true as const;
 
-    dataType?: TextureDataType;
-    pixelFormat?: AnyPixelFormat;
+    public dataType?: TextureDataType;
+    public pixelFormat?: AnyPixelFormat;
 
-    override get type() {
+    public override get type(): string {
         return 'ComposerTileMaterial';
     }
 
-    override readonly uniforms: Uniforms;
+    public override readonly uniforms: Uniforms;
 
     /**
      * Creates an instance of ComposerTileMaterial.
      *
      * @param options - The options
      */
-    constructor(options: Options) {
+    public constructor(options: Options) {
         super({ glslVersion: GLSL3 });
 
         this.fragmentShader = FragmentShader;
@@ -177,7 +177,7 @@ class ComposerTileMaterial extends ShaderMaterial {
         }
     }
 
-    private init(options: Options) {
+    private init(options: Options): void {
         const interp = options.interpretation ?? Interpretation.Raw;
 
         this.dataType = interp.mode !== Mode.Raw ? FloatType : options.texture.type;
@@ -219,7 +219,7 @@ class ComposerTileMaterial extends ShaderMaterial {
         }
     }
 
-    private reset() {
+    private reset(): void {
         this.uniforms.tex.value = null;
     }
 
@@ -228,7 +228,7 @@ class ComposerTileMaterial extends ShaderMaterial {
      *
      * @param opts - The options.
      */
-    static acquire(opts: Options) {
+    public static acquire(opts: Options): ComposerTileMaterial {
         if (POOL.length > 0) {
             const mat = POOL.pop() as ComposerTileMaterial;
             mat.init(opts);
@@ -242,7 +242,7 @@ class ComposerTileMaterial extends ShaderMaterial {
      *
      * @param material - The material.
      */
-    static release(material: ComposerTileMaterial) {
+    public static release(material: ComposerTileMaterial): void {
         material.reset();
         if (POOL.length < POOL_SIZE) {
             POOL.push(material);

@@ -5,9 +5,10 @@
  */
 
 import type { BaseMessageMap, Message, SuccessResponse } from '../../utils/WorkerPool';
-import { createErrorResponse } from '../../utils/WorkerPool';
 import type { PotreePointCloudAttribute } from './attributes';
 import type { BufferAttributeDescriptor } from './bin';
+
+import { createErrorResponse } from '../../utils/WorkerPool';
 import { readBinFile } from './bin';
 
 export type MessageType = 'ReadBinFile';
@@ -39,7 +40,7 @@ export interface MessageMap extends BaseMessageMap<MessageType> {
     };
 }
 
-function processReadBinMessage(msg: ReadBinFileMessage) {
+function processReadBinMessage(msg: ReadBinFileMessage): void {
     try {
         const { buffer, info } = msg.payload;
         const result = readBinFile(
@@ -70,7 +71,7 @@ function processReadBinMessage(msg: ReadBinFileMessage) {
     }
 }
 
-onmessage = (e: MessageEvent<Messages>) => {
+onmessage = (e: MessageEvent<Messages>): void => {
     const message = e.data;
 
     switch (message.type) {

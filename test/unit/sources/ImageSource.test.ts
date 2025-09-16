@@ -4,15 +4,17 @@
  * SPDX-License-Identifier: MIT
  */
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
-import Extent from '@giro3d/giro3d/core/geographic/Extent';
+import { describe, expect, it, vitest } from 'vitest';
+
 import type {
     CustomContainsFn,
     GetImageOptions,
     ImageResponse,
 } from '@giro3d/giro3d/sources/ImageSource';
+
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
+import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import ImageSource from '@giro3d/giro3d/sources/ImageSource';
-import { describe, expect, it, vitest } from 'vitest';
 
 class TestSource extends ImageSource {
     extent: Extent;

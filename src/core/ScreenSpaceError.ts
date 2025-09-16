@@ -5,9 +5,11 @@
  */
 
 import type { Sphere } from 'three';
+
 import { Box3, Matrix4, ShapeUtils, Vector3 } from 'three';
 
 import type View from '../renderer/View';
+
 import { isPerspectiveCamera } from '../utils/predicates';
 
 const m = new Matrix4();
@@ -35,7 +37,7 @@ export interface SSE {
     area: number;
 }
 
-function easeInOutQuad(t: number) {
+function easeInOutQuad(t: number): number {
     return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
 }
 
@@ -102,7 +104,7 @@ function computeSSE(
     return result;
 }
 
-function findBox3Distance(camera: View, box3: Box3, matrix: Matrix4, isMode3d: boolean) {
+function findBox3Distance(camera: View, box3: Box3, matrix: Matrix4, isMode3d: boolean): number {
     // TODO: can be cached
     // TODO: what about matrix scale component
     m.copy(matrix).invert();
@@ -122,7 +124,7 @@ function findBox3Distance(camera: View, box3: Box3, matrix: Matrix4, isMode3d: b
     return tmpBox3.distanceToPoint(pt);
 }
 
-function computeSizeFromGeometricError(box3: Box3, geometricError: number, _3d: boolean) {
+function computeSizeFromGeometricError(box3: Box3, geometricError: number, _3d: boolean): Vector3 {
     const size = box3.getSize(temp[5]);
     let maxComponent = Math.max(size.x, size.y);
     if (_3d) {
@@ -180,7 +182,7 @@ export default {
         return sse;
     },
 
-    computeFromSphere(view: View, sphere: Sphere, geometricError: number) {
+    computeFromSphere(view: View, sphere: Sphere, geometricError: number): number {
         if (sphere.containsPoint(view.camera.position)) {
             return +Infinity;
         }

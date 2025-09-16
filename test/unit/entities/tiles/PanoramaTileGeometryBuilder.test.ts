@@ -4,9 +4,10 @@
  * SPDX-License-Identifier: MIT
  */
 
-import PanoramaTileGeometryBuilder from '@giro3d/giro3d/entities/tiles/PanoramaTileGeometryBuilder';
 import { Vector2 } from 'three';
 import { describe, expect, it } from 'vitest';
+
+import PanoramaTileGeometryBuilder from '@giro3d/giro3d/entities/tiles/PanoramaTileGeometryBuilder';
 
 describe('rootTileMatrix', () => {
     it('should return 4x2', () => {

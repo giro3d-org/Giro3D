@@ -5,7 +5,9 @@
  */
 
 import { LRUCache } from 'lru-cache';
+
 import type MemoryUsage from './MemoryUsage';
+
 import { isMemoryUsage, type GetMemoryUsageContext } from './MemoryUsage';
 
 /**
@@ -66,7 +68,7 @@ interface CacheConfiguration {
  *
  */
 class Cache implements MemoryUsage {
-    readonly isMemoryUsage = true as const;
+    public readonly isMemoryUsage = true as const;
     private readonly _deleteHandlers: Map<string, (entry: object) => void>;
     private _lru: LRUCache<string, object>;
     private _enabled: boolean;
@@ -76,14 +78,14 @@ class Cache implements MemoryUsage {
      *
      * @param opts - The options.
      */
-    constructor(opts?: CacheConfiguration) {
+    public constructor(opts?: CacheConfiguration) {
         this._deleteHandlers = new Map();
 
         this._enabled = true;
         this._lru = this.createLRUCache(opts);
     }
 
-    private createLRUCache(opts?: CacheConfiguration) {
+    private createLRUCache(opts?: CacheConfiguration): LRUCache<string, object> {
         return new LRUCache<string, object>({
             ttl: opts?.ttl ?? DEFAULT_TTL,
             ttlResolution: 1000, // 1 second
@@ -91,7 +93,7 @@ class Cache implements MemoryUsage {
             maxSize: opts?.byteCapacity ?? DEFAULT_CAPACITY,
             max: opts?.maxNumberOfEntries ?? DEFAULT_MAX_ENTRIES,
             allowStale: false,
-            dispose: (value, key) => {
+            dispose: (value, key): void => {
                 this.onDisposed(key, value);
             },
         });
@@ -101,14 +103,14 @@ class Cache implements MemoryUsage {
      * Configure the cache with the specified configuration. The cache must be
      * empty otherwise this method will throw an error.
      */
-    configure(config: CacheConfiguration) {
+    public configure(config: CacheConfiguration): void {
         if (this.count > 0) {
             throw new Error('cannot configure the cache as it is not empty.');
         }
         this._lru = this.createLRUCache(config);
     }
 
-    getMemoryUsage(context: GetMemoryUsageContext) {
+    public getMemoryUsage(context: GetMemoryUsageContext): void {
         this._lru.forEach(e => {
             if (isMemoryUsage(e)) {
                 e.getMemoryUsage(context);
@@ -119,61 +121,61 @@ class Cache implements MemoryUsage {
     /**
      * Enables or disables the cache.
      */
-    get enabled() {
+    public get enabled(): boolean {
         return this._enabled;
     }
 
-    set enabled(v) {
+    public set enabled(v: boolean) {
         this._enabled = v;
     }
 
     /**
      * Gets or sets the default TTL (time to live) of the cache.
      */
-    get defaultTtl() {
+    public get defaultTtl(): number {
         return this._lru.ttl;
     }
 
-    set defaultTtl(v) {
+    public set defaultTtl(v: number) {
         this._lru.ttl = v;
     }
 
     /**
      * Gets the maximum size of the cache, in bytes.
      */
-    get maxSize() {
+    public get maxSize(): number {
         return this._lru.maxSize;
     }
 
     /**
      * Gets the maximum number of entries.
      */
-    get capacity() {
+    public get capacity(): number {
         return this._lru.max;
     }
 
     /**
      * Gets the number of entries.
      */
-    get count() {
+    public get count(): number {
         return this._lru.size;
     }
 
     /**
      * Gets the size of entries, in bytes
      */
-    get size() {
+    public get size(): number {
         return this._lru.calculatedSize;
     }
 
     /**
      * Returns an array of entries.
      */
-    entries(): Array<unknown> {
+    public entries(): Array<unknown> {
         return [...this._lru.entries()];
     }
 
-    private onDisposed(key: string, value: object) {
+    private onDisposed(key: string, value: object): void {
         const handler = this._deleteHandlers.get(key);
         if (handler) {
             this._deleteHandlers.delete(key);
@@ -184,7 +186,7 @@ class Cache implements MemoryUsage {
     /**
      * Removes stale entries.
      */
-    purge() {
+    public purge(): void {
         this._lru.purgeStale();
     }
 
@@ -194,7 +196,7 @@ class Cache implements MemoryUsage {
      * @param key - The entry key.
      * @returns The entry, or `undefined`.
      */
-    get(key: string): unknown | undefined {
+    public get(key: string): unknown | undefined {
         if (!this.enabled) {
             return undefined;
         }
@@ -209,7 +211,7 @@ class Cache implements MemoryUsage {
      * @param value - The value.
      * @param options - The options.
      */
-    set<T extends object>(key: string, value: T, options: CacheOptions = {}): T {
+    public set<T extends object>(key: string, value: T, options: CacheOptions = {}): T {
         if (!this.enabled) {
             return value;
         }
@@ -236,7 +238,7 @@ class Cache implements MemoryUsage {
      * @param key - The key.
      * @returns `true` if the entry was deleted, `false` otherwise.
      */
-    delete(key: string): boolean {
+    public delete(key: string): boolean {
         return this._lru.delete(key);
     }
 
@@ -244,7 +246,7 @@ class Cache implements MemoryUsage {
      * Clears the cache.
      *
      */
-    clear() {
+    public clear(): void {
         this._lru.clear();
     }
 }

@@ -24,34 +24,36 @@ import {
     type WebGLRenderTarget,
 } from 'three';
 
-import MemoryTracker from '../../renderer/MemoryTracker';
 import type RenderingContextHandler from '../../renderer/RenderingContextHandler';
-import { GlobalRenderTargetPool } from '../../renderer/RenderTargetPool';
 import type ImageSource from '../../sources/ImageSource';
-import { type ImageResult, isImageSource } from '../../sources/ImageSource';
-import PromiseUtils, { PromiseStatus } from '../../utils/PromiseUtils';
-import TextureGenerator from '../../utils/TextureGenerator';
-import { nonNull } from '../../utils/tsutils';
 import type ColorMap from '../ColorMap';
 import type Context from '../Context';
 import type Disposable from '../Disposable';
 import type ElevationRange from '../ElevationRange';
 import type CoordinateSystem from '../geographic/coordinate-system/CoordinateSystem';
 import type Coordinates from '../geographic/Coordinates';
-import Extent from '../geographic/Extent';
+import type { GridExtent } from '../geographic/Extent';
 import type Instance from '../Instance';
 import type MemoryUsage from '../MemoryUsage';
-import { type GetMemoryUsageContext } from '../MemoryUsage';
 import type OffsetScale from '../OffsetScale';
-import OperationCounter from '../OperationCounter';
 import type Progress from '../Progress';
 import type RequestQueue from '../RequestQueue';
+import type ColorLayer from './ColorLayer';
+import type NoDataOptions from './NoDataOptions';
+
+import MemoryTracker from '../../renderer/MemoryTracker';
+import { GlobalRenderTargetPool } from '../../renderer/RenderTargetPool';
+import { type ImageResult, isImageSource } from '../../sources/ImageSource';
+import PromiseUtils, { PromiseStatus } from '../../utils/PromiseUtils';
+import TextureGenerator from '../../utils/TextureGenerator';
+import { nonNull } from '../../utils/tsutils';
+import Extent from '../geographic/Extent';
+import { type GetMemoryUsageContext } from '../MemoryUsage';
+import OperationCounter from '../OperationCounter';
 import { DefaultQueue } from '../RequestQueue';
 import Shared from '../Shared';
-import type ColorLayer from './ColorLayer';
 import Interpretation from './Interpretation';
 import LayerComposer from './LayerComposer';
-import type NoDataOptions from './NoDataOptions';
 
 export interface TextureAndPitch {
     texture: Texture;
@@ -138,33 +140,33 @@ function shouldCancel(node: LayerNode): boolean {
 }
 
 export class Target implements MemoryUsage {
-    readonly isMemoryUsage = true as const;
-    node: LayerNode;
-    pitch: OffsetScale;
-    extent: Extent;
-    width: number;
-    height: number;
-    renderTarget: Shared<WebGLRenderTarget, this> | null = null;
-    imageIds: Set<string>;
-    controller: AbortController;
-    state: TargetState;
-    textureIsFinal: boolean;
-    geometryExtent: Extent;
-    paintCount = 0;
+    public readonly isMemoryUsage = true as const;
+    public node: LayerNode;
+    public pitch: OffsetScale;
+    public extent: Extent;
+    public width: number;
+    public height: number;
+    public renderTarget: Shared<WebGLRenderTarget, this> | null = null;
+    public imageIds: Set<string>;
+    public controller: AbortController;
+    public state: TargetState;
+    public textureIsFinal: boolean;
+    public geometryExtent: Extent;
+    public paintCount = 0;
     private _disposed = false;
     private _onVisibilityChanged: () => void;
 
-    isDisposed() {
+    public isDisposed(): boolean {
         return this.node.disposed || this._disposed;
     }
 
-    getMemoryUsage(context: GetMemoryUsageContext) {
+    public getMemoryUsage(context: GetMemoryUsageContext): void {
         if (this.renderTarget && this.renderTarget.owner === this) {
             return TextureGenerator.getMemoryUsage(context, this.renderTarget.object);
         }
     }
 
-    constructor(options: {
+    public constructor(options: {
         node: LayerNode;
         extent: Extent;
         geometryExtent: Extent;
@@ -188,13 +190,13 @@ export class Target implements MemoryUsage {
         this.node.addEventListener('visibility-changed', this._onVisibilityChanged);
     }
 
-    dispose() {
+    public dispose(): void {
         this._disposed = true;
         this.node.removeEventListener('visibility-changed', this._onVisibilityChanged);
         this.abort();
     }
 
-    private onVisibilityChanged() {
+    private onVisibilityChanged(): void {
         if (shouldCancel(this.node)) {
             // If the node became invisible before we could complete the processing, cancel it.
             if (this.state !== TargetState.Complete) {
@@ -204,18 +206,18 @@ export class Target implements MemoryUsage {
         }
     }
 
-    reset() {
+    public reset(): void {
         this.abort();
         this.state = TargetState.Pending;
         this.imageIds.clear();
     }
 
-    abort() {
+    public abort(): void {
         this.controller.abort(PromiseUtils.abortError());
         this.controller = new AbortController();
     }
 
-    abortAndThrow() {
+    public abortAndThrow(): void {
         const signal = this.controller.signal;
         this.abort();
         signal.throwIfAborted();
@@ -387,33 +389,33 @@ abstract class Layer<
     extends EventDispatcher<TEvents & LayerEvents>
     implements Progress, MemoryUsage, RenderingContextHandler, Disposable
 {
-    readonly isMemoryUsage = true as const;
+    public readonly isMemoryUsage = true as const;
 
     /**
      * Optional name of this layer.
      */
-    readonly name: string | undefined;
+    public readonly name: string | undefined;
     /**
      * The unique identifier of this layer.
      */
-    readonly id: string;
+    public readonly id: string;
     /**
      * Read-only flag to check if a given object is of type Layer.
      */
-    readonly isLayer: boolean = true;
-    type: string;
-    readonly interpretation: Interpretation;
-    readonly showTileBorders: boolean;
-    readonly showEmptyTextures: boolean;
-    readonly noDataOptions: NoDataOptions;
-    readonly computeMinMax: boolean;
+    public readonly isLayer: boolean = true;
+    public type: string;
+    public readonly interpretation: Interpretation;
+    public readonly showTileBorders: boolean;
+    public readonly showEmptyTextures: boolean;
+    public readonly noDataOptions: NoDataOptions;
+    public readonly computeMinMax: boolean;
     private _visible: boolean;
     /** The colormap of this layer */
-    readonly colorMap: ColorMap | null = null;
+    public readonly colorMap: ColorMap | null = null;
     /** The extent of this layer */
-    readonly extent: Extent | null = null;
+    public readonly extent: Extent | null = null;
     /** The source of this layer */
-    readonly source: ImageSource;
+    public readonly source: ImageSource;
     /** @internal */
     protected _composer: LayerComposer | null = null;
     private readonly _targets: Map<number, Target>;
@@ -431,28 +433,28 @@ abstract class Layer<
     private readonly _magFilter?: MagnificationTextureFilter;
     private _fallbackImagesPromise: Promise<void> | null;
     /** The resolution factor applied to the textures generated by this layer. */
-    readonly resolutionFactor: number;
+    public readonly resolutionFactor: number;
     private _preprocessOnce: Promise<this> | null = null;
     private _onNodeDisposed: (options: { target: LayerNode }) => void;
     private _ready = false;
 
-    backgroundColor: Color;
+    public backgroundColor: Color;
 
     /**
      * An object that can be used to store custom data about the {@link Layer}.
      */
-    readonly userData: TUserData;
+    public readonly userData: TUserData;
 
     /**
      * Disables automatic updates of this layer. Useful for debugging purposes.
      */
-    frozen = false;
+    public frozen = false;
 
-    get ready() {
+    public get ready(): boolean {
         return this._ready;
     }
 
-    getMemoryUsage(context: GetMemoryUsageContext) {
+    public getMemoryUsage(context: GetMemoryUsageContext): void {
         this._targets.forEach(target => target.getMemoryUsage(context));
 
         if (this.composer) {
@@ -467,7 +469,7 @@ abstract class Layer<
      *
      * @param options - The layer options.
      */
-    constructor(options: LayerOptions) {
+    public constructor(options: LayerOptions) {
         super();
         this.name = options.name;
 
@@ -477,7 +479,7 @@ abstract class Layer<
         // to assign to the empty object.
         this.userData = {};
 
-        this._onNodeDisposed = e => this.unregisterNode(e.target);
+        this._onNodeDisposed = (e): void => this.unregisterNode(e.target);
 
         // We need a globally unique ID for this layer, to avoid collisions in the request queue.
         this.id = MathUtils.generateUUID();
@@ -514,7 +516,7 @@ abstract class Layer<
         this._targets = new Map();
 
         // We only fetch images that we don't already have.
-        this._filter = (imageId: string) => !nonNull(this._composer).has(imageId);
+        this._filter = (imageId: string): boolean => !nonNull(this._composer).has(imageId);
 
         this._queue = DefaultQueue;
 
@@ -522,19 +524,19 @@ abstract class Layer<
         this._sortedTargets = null;
     }
 
-    private shouldCancelRequest(node: LayerNode) {
+    private shouldCancelRequest(node: LayerNode): boolean {
         return shouldCancel(node);
     }
 
-    private onSourceUpdated(extent?: Extent) {
+    private onSourceUpdated(extent?: Extent): void {
         this.clear(extent);
     }
 
-    onRenderingContextLost(): void {
+    public onRenderingContextLost(): void {
         /* Nothing to do */
     }
 
-    onRenderingContextRestored(): void {
+    public onRenderingContextRestored(): void {
         this.clear();
     }
 
@@ -542,7 +544,7 @@ abstract class Layer<
      * Resets all render targets to a blank state and repaint all the targets.
      * @param extent - An optional extent to limit the region to clear.
      */
-    clear(extent?: Extent) {
+    public clear(extent?: Extent): void {
         if (!this.ready) {
             return;
         }
@@ -551,7 +553,7 @@ abstract class Layer<
 
         this._fallbackImagesPromise = null;
 
-        const reset = () => {
+        const reset = (): void => {
             for (const target of this._targets.values()) {
                 if (!extent || extent.intersectsExtent(target.extent)) {
                     target.reset();
@@ -571,11 +573,11 @@ abstract class Layer<
     /**
      * Gets or sets the visibility of this layer.
      */
-    get visible() {
+    public get visible(): boolean {
         return this._visible;
     }
 
-    set visible(v) {
+    public set visible(v: boolean) {
         if (this._visible !== v) {
             this._visible = v;
             this.dispatchEvent({ type: 'visible-property-changed', visible: v });
@@ -583,11 +585,11 @@ abstract class Layer<
         }
     }
 
-    get loading() {
+    public get loading(): boolean {
         return this._opCounter.loading;
     }
 
-    get progress() {
+    public get progress(): number {
         return this._opCounter.progress;
     }
 
@@ -599,7 +601,7 @@ abstract class Layer<
      * @returns A promise that resolves when the initialization is complete.
      * @internal
      */
-    initialize(options: {
+    public initialize(options: {
         /**
          * The instance to associate this layer.
          * Once set, the layer cannot be used with any other instance.
@@ -638,7 +640,7 @@ abstract class Layer<
     /**
      * Perform the initialization. This should be called exactly once in the lifetime of the layer.
      */
-    private async initializeOnce() {
+    private async initializeOnce(): Promise<this> {
         this._opCounter.increment();
         const targetProjection = nonNull(this._composerProjection);
 
@@ -693,7 +695,7 @@ abstract class Layer<
         return this.extent ?? this.source.getExtent()?.clone()?.as(crs);
     }
 
-    async loadFallbackImagesInternal() {
+    public async loadFallbackImagesInternal(): Promise<void> {
         const extent = this.getExtent();
 
         // If neither the source nor the layer are able to provide an extent,
@@ -738,7 +740,7 @@ abstract class Layer<
         texture.colorSpace = this.interpretation.colorSpace ?? this.source.colorSpace;
     }
 
-    private addToComposer(image: ImageResult, alwaysVisible: boolean) {
+    private addToComposer(image: ImageResult, alwaysVisible: boolean): void {
         this.onTextureCreated(image.texture);
 
         nonNull(this._composer).add({
@@ -748,7 +750,7 @@ abstract class Layer<
         });
     }
 
-    async loadFallbackImages() {
+    public async loadFallbackImages(): Promise<void> {
         if (!this._preloadImages) {
             return;
         }
@@ -764,7 +766,7 @@ abstract class Layer<
     /**
      * Called when the layer has finished initializing.
      */
-    protected async onInitialized() {
+    protected async onInitialized(): Promise<void> {
         // Implemented in derived classes.
     }
 
@@ -870,7 +872,7 @@ abstract class Layer<
 
             // More recent requests should be served first.
             const priority = performance.now();
-            const shouldExecute = () => node.visible && this._filter(id);
+            const shouldExecute = (): boolean => node.visible && this._filter(id);
 
             this._opCounter.increment();
 
@@ -904,7 +906,7 @@ abstract class Layer<
         await Promise.allSettled(allImages);
     }
 
-    private destroyTarget(target: Target) {
+    private destroyTarget(target: Target): void {
         const node = target.node;
         target.renderTarget?.dispose();
         this._targets.delete(node.id);
@@ -918,7 +920,7 @@ abstract class Layer<
      *
      * @param node - The disposed node.
      */
-    unregisterNode(node: LayerNode, immediate = false) {
+    public unregisterNode(node: LayerNode, immediate = false): void {
         const id = node.id;
         const target = this._targets.get(id);
         node.removeEventListener('dispose', this._onNodeDisposed);
@@ -948,7 +950,7 @@ abstract class Layer<
         originalExtent: Extent,
         originalWidth: number,
         originalHeight: number,
-    ): { extent: Extent; width: number; height: number } {
+    ): GridExtent {
         // This feature only makes sense if both the source and composer
         //  have the same CRS, meaning that pixels can be aligned.
         if (this.source.getCrs() === this._composerProjection) {
@@ -1003,7 +1005,7 @@ abstract class Layer<
      * Note: only 8-bit layers are supported. If the layer has non 8-bit pixels, returns `undefined`.
      * @returns The colors
      */
-    getPixel(params: {
+    public getPixel(params: {
         /**
          * The coordinate to sample.
          */
@@ -1187,7 +1189,7 @@ abstract class Layer<
     private generateDefaultTextureFromExistingComposerImages(
         target: Target,
         onApplied: () => void,
-    ) {
+    ): void {
         this.createRenderTargetIfNecessary(target);
 
         const composer = nonNull(this._composer);
@@ -1216,12 +1218,12 @@ abstract class Layer<
      * the actual texture is being asynchronously processed, to
      * avoid displaying a black texture.
      */
-    protected applyInterimTexture(target: Target) {
+    protected applyInterimTexture(target: Target): void {
         if (target.isDisposed()) {
             return;
         }
 
-        const onApplied = () => {
+        const onApplied = (): void => {
             // Ensure that the material is up to date with the default texture
             this.updateMaterial(target.node.material);
             this.instance.notifyChange(this);
@@ -1250,7 +1252,7 @@ abstract class Layer<
     /**
      * @internal
      */
-    getInfo(node: LayerNode): { state: string; imageCount: number; paintCount: number } {
+    public getInfo(node: LayerNode): { state: string; imageCount: number; paintCount: number } {
         const target = this._targets.get(node.id);
         if (target) {
             return {
@@ -1269,7 +1271,7 @@ abstract class Layer<
      *
      * @param target - The target to paint.
      */
-    private processTarget(target: Target) {
+    private processTarget(target: Target): void {
         if (target.state !== TargetState.Pending) {
             return;
         }
@@ -1339,7 +1341,7 @@ abstract class Layer<
         }
     }
 
-    private createRenderTargetIfNecessary(target: Target) {
+    private createRenderTargetIfNecessary(target: Target): void {
         if (!target.renderTarget || target.renderTarget.owner !== target) {
             target.renderTarget?.dispose();
 
@@ -1351,7 +1353,7 @@ abstract class Layer<
         }
     }
 
-    private paintTarget(target: Target) {
+    private paintTarget(target: Target): void {
         if (target.isDisposed()) {
             return;
         }
@@ -1395,7 +1397,7 @@ abstract class Layer<
         this.instance.notifyChange(this);
     }
 
-    private setTargetState(target: Target, state: TargetState) {
+    private setTargetState(target: Target, state: TargetState): void {
         if (target.state === state) {
             return;
         }
@@ -1499,14 +1501,14 @@ abstract class Layer<
         return this.source.contains(extent);
     }
 
-    abstract getRenderTargetPixelFormat(): PixelFormat;
+    public abstract getRenderTargetPixelFormat(): PixelFormat;
 
-    abstract getRenderTargetDataType(): TextureDataType;
+    public abstract getRenderTargetDataType(): TextureDataType;
 
     /**
      * @param target - The render target to release.
      */
-    private releaseRenderTarget(target: WebGLRenderTarget | null) {
+    private releaseRenderTarget(target: WebGLRenderTarget | null): void {
         if (!target) {
             return;
         }
@@ -1554,7 +1556,7 @@ abstract class Layer<
         return result;
     }
 
-    postUpdate() {
+    public postUpdate(): void {
         if (this._targetsToDestroy.length > 0) {
             this._targetsToDestroy.forEach(t => this.destroyTarget(t));
             this._targetsToDestroy.length = 0;
@@ -1566,19 +1568,19 @@ abstract class Layer<
     /**
      * @internal
      */
-    get composer(): Readonly<LayerComposer | null> {
+    public get composer(): Readonly<LayerComposer | null> {
         return this._composer;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    protected updateMaterial(material: Material) {
+    protected updateMaterial(material: Material): void {
         // Implemented in derived classes
     }
 
     /**
      * Returns true if this layer has loaded data for this node.
      */
-    isLoaded(nodeId: LayerNode['id']) {
+    public isLoaded(nodeId: LayerNode['id']): boolean {
         const target = this._targets.get(nodeId);
         if (target) {
             return target.state === TargetState.Complete;

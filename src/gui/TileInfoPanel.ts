@@ -5,17 +5,20 @@
  */
 
 import type GUI from 'lil-gui';
+
 import { Color, Group, Vector2, Vector3 } from 'three';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
-import Ellipsoid from '../core/geographic/Ellipsoid';
+
 import type Instance from '../core/Instance';
 import type Map from '../entities/Map';
 import type TileMesh from '../entities/tiles/TileMesh';
+
+import Ellipsoid from '../core/geographic/Ellipsoid';
 import Panel from './Panel';
 
 const tmpVec2 = new Vector2();
 
-function createTileLabel() {
+function createTileLabel(): HTMLDivElement {
     const text = document.createElement('div');
 
     text.style.color = '#FFFFFF';
@@ -35,7 +38,7 @@ class TileInfoPanel extends Panel {
     private readonly _map: Map;
     private readonly _root = new Group();
 
-    readonly params: {
+    public readonly params: {
         enabled: boolean;
         nodeInfo: boolean;
         imageSize: boolean;
@@ -56,7 +59,7 @@ class TileInfoPanel extends Panel {
      * @param parentGui - Parent GUI
      * @param instance - The instance
      */
-    constructor(map: Map, parentGui: GUI, instance: Instance) {
+    public constructor(map: Map, parentGui: GUI, instance: Instance) {
         super(parentGui, instance, 'Tile info');
 
         this._map = map;
@@ -74,7 +77,7 @@ class TileInfoPanel extends Panel {
         this.addController(this.params, 'layerInfo').onChange(() => this.updateValues());
     }
 
-    getOrCreateLabel(obj: TileMesh) {
+    public getOrCreateLabel(obj: TileMesh): CSS2DObject {
         if (!this._labels.has(obj.id)) {
             const label = new CSS2DObject(createTileLabel());
             label.name = 'MapInspector label';
@@ -92,7 +95,7 @@ class TileInfoPanel extends Panel {
         return this._labels.get(obj.id) as CSS2DObject;
     }
 
-    getInfo(tile: TileMesh): string {
+    public getInfo(tile: TileMesh): string {
         tmpLines.length = 0;
 
         if (this.params.nodeInfo) {
@@ -145,13 +148,13 @@ class TileInfoPanel extends Panel {
         }
     }
 
-    private removeLabel(id: number, label: CSS2DObject) {
+    private removeLabel(id: number, label: CSS2DObject): void {
         label.element.remove();
         label.removeFromParent();
         this._labels.delete(id);
     }
 
-    updateLabel(tile: TileMesh) {
+    public updateLabel(tile: TileMesh): void {
         const color = this.params.color;
         const visible = tile.visible && tile.material.visible && this.params.enabled;
 
@@ -174,7 +177,7 @@ class TileInfoPanel extends Panel {
         }
     }
 
-    override updateValues(): void {
+    public override updateValues(): void {
         this._map.traverseTiles(tile => {
             this.updateLabel(tile);
         });

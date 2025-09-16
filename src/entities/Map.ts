@@ -24,38 +24,45 @@ import {
 } from 'three';
 
 import type ColorimetryOptions from '../core/ColorimetryOptions';
-import { defaultColorimetryOptions } from '../core/ColorimetryOptions';
 import type ColorMap from '../core/ColorMap';
 import type Context from '../core/Context';
 import type ContourLineOptions from '../core/ContourLineOptions';
 import type ElevationProvider from '../core/ElevationProvider';
 import type ElevationRange from '../core/ElevationRange';
-import Coordinates from '../core/geographic/Coordinates';
+import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import type Extent from '../core/geographic/Extent';
 import type GetElevationOptions from '../core/GetElevationOptions';
 import type GetElevationResult from '../core/GetElevationResult';
 import type GraticuleOptions from '../core/GraticuleOptions';
 import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
 import type ColorLayer from '../core/layer/ColorLayer';
-import { isColorLayer } from '../core/layer/ColorLayer';
 import type ElevationLayer from '../core/layer/ElevationLayer';
-import { isElevationLayer } from '../core/layer/ElevationLayer';
 import type HasLayers from '../core/layer/HasLayers';
 import type Layer from '../core/layer/Layer';
-import { isLayer } from '../core/layer/Layer';
 import type MemoryUsage from '../core/MemoryUsage';
-import { type GetMemoryUsageContext } from '../core/MemoryUsage';
 import type Pickable from '../core/picking/Pickable';
 import type PickableFeatures from '../core/picking/PickableFeatures';
-import { isPickableFeatures } from '../core/picking/PickableFeatures';
-import traversePickingCircle from '../core/picking/PickingCircle';
 import type PickOptions from '../core/picking/PickOptions';
-import pickTilesAt, { type MapPickResult } from '../core/picking/PickTilesAt';
 import type PointOfView from '../core/PointOfView';
 import type { SSE } from '../core/ScreenSpaceError';
+import type TerrainOptions from '../core/TerrainOptions';
+import type RenderingState from '../renderer/RenderingState';
+import type { EntityUserData } from './Entity';
+import type MapLightingOptions from './MapLightingOptions';
+import type { TileGeometryBuilder } from './tiles/TileGeometry';
+import type TileVolume from './tiles/TileVolume';
+
+import { defaultColorimetryOptions } from '../core/ColorimetryOptions';
+import Coordinates from '../core/geographic/Coordinates';
+import { isColorLayer } from '../core/layer/ColorLayer';
+import { isElevationLayer } from '../core/layer/ElevationLayer';
+import { isLayer } from '../core/layer/Layer';
+import { type GetMemoryUsageContext } from '../core/MemoryUsage';
+import { isPickableFeatures } from '../core/picking/PickableFeatures';
+import traversePickingCircle from '../core/picking/PickingCircle';
+import pickTilesAt, { type MapPickResult } from '../core/picking/PickTilesAt';
 import ScreenSpaceError from '../core/ScreenSpaceError';
 import Capabilities from '../core/system/Capabilities';
-import type TerrainOptions from '../core/TerrainOptions';
 import {
     DEFAULT_ENABLE_STITCHING,
     DEFAULT_ENABLE_TERRAIN,
@@ -72,23 +79,18 @@ import LayeredMaterial, {
     DEFAULT_ZENITH,
     type MaterialOptions,
 } from '../renderer/LayeredMaterial';
-import type RenderingState from '../renderer/RenderingState';
 import ShadowLayeredMaterial from '../renderer/ShadowLayeredMaterial';
 import { computeDistanceToFitSphere, computeZoomToFitSphere } from '../renderer/View';
 import { isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
 import TextureGenerator from '../utils/TextureGenerator';
 import { nonNull } from '../utils/tsutils';
-import type { EntityUserData } from './Entity';
 import Entity3D, { type Entity3DEventMap } from './Entity3D';
-import type MapLightingOptions from './MapLightingOptions';
 import { MapLightingMode } from './MapLightingOptions';
 import EllipsoidTileGeometryBuilder from './tiles/EllipsoidTileGeometryBuilder';
 import PlanarTileGeometryBuilder from './tiles/PlanarTileGeometryBuilder';
 import PlanarTileVolume from './tiles/PlanarTileVolume';
-import type { TileGeometryBuilder } from './tiles/TileGeometry';
 import TileIndex, { type NeighbourList } from './tiles/TileIndex';
 import TileMesh, { isTileMesh } from './tiles/TileMesh';
-import type TileVolume from './tiles/TileVolume';
 
 /**
  * A function that allows subdivision of the specified tile.
@@ -577,13 +579,13 @@ class Map<UserData extends EntityUserData = EntityUserData>
         HasLayers,
         MemoryUsage
 {
-    readonly isMap = true as const;
-    override readonly type: string = 'Map' as const;
-    readonly hasLayers = true as const;
-    readonly isPickableFeatures = true as const;
+    public readonly isMap = true as const;
+    public override readonly type: string = 'Map' as const;
+    public readonly hasLayers = true as const;
+    public readonly isPickableFeatures = true as const;
 
-    readonly extent: Extent;
-    readonly maxSubdivisionLevel: number;
+    public readonly extent: Extent;
+    public readonly maxSubdivisionLevel: number;
 
     private readonly _objectOptions: ObjectOptions = { castShadow: true, receiveShadow: true };
 
@@ -609,7 +611,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     private _wireframe = false;
     private _subdivisionThreshold;
 
-    override getMemoryUsage(context: GetMemoryUsageContext) {
+    public override getMemoryUsage(context: GetMemoryUsageContext): void {
         this._layers.forEach(layer => layer.getMemoryUsage(context));
         this._allTiles.forEach(tile => tile.getMemoryUsage(context));
     }
@@ -619,7 +621,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
      *
      * @param options - Constructor options.
      */
-    constructor(options: MapConstructorOptions) {
+    public constructor(options: MapConstructorOptions) {
         super(options.object3d || new Group());
 
         this._rootTiles = [];
@@ -668,25 +670,25 @@ class Map<UserData extends EntityUserData = EntityUserData>
         this._tileIndex = new TileIndex();
     }
 
-    get tileIndex(): Readonly<TileIndex<TileMesh>> {
+    public get tileIndex(): Readonly<TileIndex<TileMesh>> {
         return this._tileIndex;
     }
 
     /**
      * Gets the tiles at the root of the hierarchy (i.e LOD 0).
      */
-    get rootTiles(): Readonly<TileMesh[]> {
+    public get rootTiles(): Readonly<TileMesh[]> {
         return this._rootTiles;
     }
 
     /**
      * Returns `true` if this map is currently processing data.
      */
-    override get loading() {
+    public override get loading(): boolean {
         return this._layers.some(l => l.loading);
     }
 
-    private onNodeComplete() {
+    private onNodeComplete(): void {
         if (this._paintCompleteTimeout) {
             clearTimeout(this._paintCompleteTimeout);
         }
@@ -694,7 +696,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         this._paintCompleteTimeout = setTimeout(this.evaluatePaintComplete.bind(this), 500);
     }
 
-    private evaluatePaintComplete() {
+    private evaluatePaintComplete(): void {
         let complete = true;
         this.traverseTiles(tile => {
             if (tile.visible && tile.material.visible) {
@@ -719,7 +721,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
      * Note: if no layer is present, this will always be 1.
      * Note: This value is only meaningful is {@link loading} is `true`.
      */
-    override get progress() {
+    public override get progress(): number {
         if (this._layers.length === 0) {
             return 1;
         }
@@ -731,33 +733,33 @@ class Map<UserData extends EntityUserData = EntityUserData>
     /**
      * Gets or sets depth testing on materials.
      */
-    get depthTest() {
+    public get depthTest(): boolean {
         return this._materialOptions.depthTest;
     }
 
-    set depthTest(v: boolean) {
+    public set depthTest(v: boolean) {
         this._materialOptions.depthTest = v;
     }
 
     /**
      * Gets or sets the background opacity.
      */
-    get backgroundOpacity(): number {
+    public get backgroundOpacity(): number {
         return this._materialOptions.backgroundOpacity;
     }
 
-    set backgroundOpacity(opacity: number) {
+    public set backgroundOpacity(opacity: number) {
         this._materialOptions.backgroundOpacity = opacity;
     }
 
     /**
      * Gets or sets the terrain options.
      */
-    get terrain(): Required<TerrainOptions> {
+    public get terrain(): Required<TerrainOptions> {
         return this._materialOptions.terrain;
     }
 
-    set terrain(terrain: TerrainOptions) {
+    public set terrain(terrain: TerrainOptions) {
         this._materialOptions.terrain = getTerrainOptions(terrain, this.getDefaultTerrainOptions());
     }
 
@@ -768,11 +770,11 @@ class Map<UserData extends EntityUserData = EntityUserData>
      *
      * @defaultValue {@link DEFAULT_SUBDIVISION_THRESHOLD}
      */
-    get subdivisionThreshold(): number {
+    public get subdivisionThreshold(): number {
         return this._subdivisionThreshold;
     }
 
-    set subdivisionThreshold(v: number) {
+    public set subdivisionThreshold(v: number) {
         this._subdivisionThreshold = v;
     }
 
@@ -785,55 +787,58 @@ class Map<UserData extends EntityUserData = EntityUserData>
      * - `DoubleSide` will display both sides of the map.
      * @defaultValue `FrontSide`
      */
-    get side(): Side {
+    public get side(): Side {
         return this._materialOptions.side;
     }
 
-    set side(newSide: Side) {
+    public set side(newSide: Side) {
         this._materialOptions.side = newSide;
     }
 
     /**
      * Toggles discard no-data pixels.
      */
-    get discardNoData(): boolean {
+    public get discardNoData(): boolean {
         return this._materialOptions.discardNoData;
     }
 
-    set discardNoData(opacity: boolean) {
+    public set discardNoData(opacity: boolean) {
         this._materialOptions.discardNoData = opacity;
     }
 
     /**
      * Gets or sets the background color.
      */
-    get backgroundColor(): Color {
+    public get backgroundColor(): Color {
         return this._materialOptions.backgroundColor;
     }
 
-    set backgroundColor(c: ColorRepresentation) {
+    public set backgroundColor(c: ColorRepresentation) {
         this._materialOptions.backgroundColor = new Color(c);
     }
 
     /**
      * Gets or sets graticule options.
      */
-    get graticule(): Required<GraticuleOptions> {
+    public get graticule(): Required<GraticuleOptions> {
         return this._materialOptions.graticule;
     }
 
-    set graticule(opts: GraticuleOptions) {
+    public set graticule(opts: GraticuleOptions) {
         this._materialOptions.graticule = getGraticuleOptions(opts);
     }
 
-    private updateObject(obj: Object3D) {
+    private updateObject(obj: Object3D): void {
         const opts = this._objectOptions;
 
         obj.castShadow = opts.castShadow;
         obj.receiveShadow = opts.receiveShadow;
     }
 
-    private updateObjectOption<K extends keyof ObjectOptions>(key: K, value: ObjectOptions[K]) {
+    private updateObjectOption<K extends keyof ObjectOptions>(
+        key: K,
+        value: ObjectOptions[K],
+    ): void {
         if (this._objectOptions[key] !== value) {
             this._objectOptions[key] = value;
             this.traverse(o => this.updateObject(o));
@@ -844,11 +849,11 @@ class Map<UserData extends EntityUserData = EntityUserData>
     /**
      * Toggles the `.castShadow` property on objects generated by this entity.
      */
-    get castShadow() {
+    public get castShadow(): boolean {
         return this._objectOptions.castShadow;
     }
 
-    set castShadow(v: boolean) {
+    public set castShadow(v: boolean) {
         this.updateObjectOption('castShadow', v);
     }
 
@@ -857,88 +862,88 @@ class Map<UserData extends EntityUserData = EntityUserData>
      *
      * Note that map tiles will receive shadows only if {@link lighting} mode is set to {@link MapLightingMode.LightBased}.
      */
-    get receiveShadow() {
+    public get receiveShadow(): boolean {
         return this._objectOptions.receiveShadow;
     }
 
-    set receiveShadow(v: boolean) {
+    public set receiveShadow(v: boolean) {
         this.updateObjectOption('receiveShadow', v);
     }
 
     /**
      * Gets or sets lighting options.
      */
-    get lighting(): Required<MapLightingOptions> {
+    public get lighting(): Required<MapLightingOptions> {
         return this._materialOptions.lighting;
     }
 
-    set lighting(opts: MapLightingOptions) {
+    public set lighting(opts: MapLightingOptions) {
         this._materialOptions.lighting = getLightingOptions(opts, this.getDefaultLightingOptions());
     }
 
     /**
      * Gets or sets colorimetry options.
      */
-    get colorimetry(): Required<ColorimetryOptions> {
+    public get colorimetry(): Required<ColorimetryOptions> {
         return this._materialOptions.colorimetry;
     }
 
-    set colorimetry(opts: ColorimetryOptions) {
+    public set colorimetry(opts: ColorimetryOptions) {
         this._materialOptions.colorimetry = opts;
     }
 
     /**
      * Gets or sets elevation range.
      */
-    get elevationRange(): ElevationRange | null {
+    public get elevationRange(): ElevationRange | null {
         return this._materialOptions.elevationRange;
     }
 
-    set elevationRange(range: ElevationRange | null) {
+    public set elevationRange(range: ElevationRange | null) {
         this._materialOptions.elevationRange = range;
     }
 
     /**
      * Shows tile outlines.
      */
-    get showTileOutlines(): boolean {
+    public get showTileOutlines(): boolean {
         return this._materialOptions.showTileOutlines;
     }
 
-    set showTileOutlines(show: boolean) {
+    public set showTileOutlines(show: boolean) {
         this._materialOptions.showTileOutlines = show;
     }
 
     /**
      * Gets or sets tile outline color.
      */
-    get tileOutlineColor(): Color {
+    public get tileOutlineColor(): Color {
         return this._materialOptions.tileOutlineColor;
     }
 
-    set tileOutlineColor(color: ColorRepresentation) {
+    public set tileOutlineColor(color: ColorRepresentation) {
         this._materialOptions.tileOutlineColor = new Color(color);
     }
 
     /**
      * Gets or sets contour line options.
      */
-    get contourLines(): Required<ContourLineOptions> {
+    public get contourLines(): Required<ContourLineOptions> {
         return this._materialOptions.contourLines;
     }
 
-    set contourLines(opts: ContourLineOptions) {
+    public set contourLines(opts: ContourLineOptions) {
         this._materialOptions.contourLines = getContourLineOptions(opts);
     }
 
     /**
      * Shows volumes of tiles.
      */
-    get showBoundingBoxes(): boolean {
+    public get showBoundingBoxes(): boolean {
         return this._materialOptions.showBoundingBoxes;
     }
 
-    set showBoundingBoxes(show: boolean) {
+    public set showBoundingBoxes(show: boolean) {
         if (this._materialOptions.showBoundingBoxes !== show) {
             this._materialOptions.showBoundingBoxes = show;
             this.notifyChange(this);
@@ -948,11 +953,11 @@ class Map<UserData extends EntityUserData = EntityUserData>
     /**
      * Shows volumes of tiles.
      */
-    get showBoundingSpheres(): boolean {
+    public get showBoundingSpheres(): boolean {
         return this._materialOptions.showBoundingSpheres;
     }
 
-    set showBoundingSpheres(show: boolean) {
+    public set showBoundingSpheres(show: boolean) {
         if (this._materialOptions.showBoundingSpheres !== show) {
             this._materialOptions.showBoundingSpheres = show;
             this.notifyChange(this);
@@ -962,11 +967,11 @@ class Map<UserData extends EntityUserData = EntityUserData>
     /**
      * Shows volumes of tiles.
      */
-    get helperColor(): ColorRepresentation {
+    public get helperColor(): ColorRepresentation {
         return this._materialOptions.helperColor;
     }
 
-    set helperColor(color: ColorRepresentation) {
+    public set helperColor(color: ColorRepresentation) {
         if (this._materialOptions.helperColor !== color) {
             this._materialOptions.helperColor = color;
             this.notifyChange(this);
@@ -976,22 +981,22 @@ class Map<UserData extends EntityUserData = EntityUserData>
     /**
      * Shows meshes used for raycasting purposes.
      */
-    get showColliderMeshes(): boolean {
+    public get showColliderMeshes(): boolean {
         return this._materialOptions.showColliderMeshes;
     }
 
-    set showColliderMeshes(show: boolean) {
+    public set showColliderMeshes(show: boolean) {
         if (this._materialOptions.showColliderMeshes !== show) {
             this._materialOptions.showColliderMeshes = show;
             this.notifyChange(this);
         }
     }
 
-    get segments() {
+    public get segments(): number {
         return this._materialOptions.terrain.segments;
     }
 
-    set segments(v) {
+    public set segments(v: number) {
         if (this._materialOptions.terrain.segments !== v) {
             if (MathUtils.isPowerOfTwo(v) && v >= 1 && v <= 128) {
                 this._materialOptions.terrain.segments = v;
@@ -1016,11 +1021,11 @@ class Map<UserData extends EntityUserData = EntityUserData>
     /**
      * Displays the map tiles in wireframe.
      */
-    get wireframe(): boolean {
+    public get wireframe(): boolean {
         return this._wireframe;
     }
 
-    set wireframe(v: boolean) {
+    public set wireframe(v: boolean) {
         if (v !== this._wireframe) {
             this._wireframe = v;
             this.traverseTiles(tile => {
@@ -1029,7 +1034,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         }
     }
 
-    private subdivideNode(context: Context, node: TileMesh) {
+    private subdivideNode(context: Context, node: TileMesh): void {
         if (!node.children.some(n => isTileMesh(n))) {
             const extents = node.extent.split(2, 2);
 
@@ -1065,7 +1070,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         }
     }
 
-    private updateGeometries() {
+    private updateGeometries(): void {
         this.traverseTiles(tile => {
             tile.segments = this.segments;
         });
@@ -1078,7 +1083,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         return nonNull(this._geometryBuilder).rootTileMatrix;
     }
 
-    override preprocess() {
+    public override preprocess(): Promise<void> {
         if (!this.extent.crs.equals(this.getComposerProjection())) {
             throw new Error(
                 `The extent of this map is not in the correct CRS. Expected: ${this.getComposerProjection().id}, got: ${this.extent.crs.id}`,
@@ -1121,19 +1126,19 @@ class Map<UserData extends EntityUserData = EntityUserData>
      *
      * @param extent - The tile extent.
      */
-    protected getTextureSize(extent: Extent) {
+    protected getTextureSize(extent: Extent): Vector2 {
         return computeImageSize(extent);
     }
 
-    protected getTileDimensions(extent: Extent) {
+    protected getTileDimensions(extent: Extent): Vector2 {
         return extent.dimensions();
     }
 
-    protected get isEllipsoidal() {
+    protected get isEllipsoidal(): boolean {
         return false;
     }
 
-    protected getComposerProjection() {
+    protected getComposerProjection(): CoordinateSystem {
         return this.instance.coordinateSystem;
     }
 
@@ -1237,7 +1242,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         return new PlanarTileVolume({ extent, range: { min: -1, max: +1 } });
     }
 
-    private onTileElevationChanged(tile: TileMesh) {
+    private onTileElevationChanged(tile: TileMesh): void {
         this.dispatchEvent({ type: 'elevation-changed', extent: tile.extent });
     }
 
@@ -1248,7 +1253,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
      * @param state - The new state.
      * @returns The function to revert to the previous state.
      */
-    setRenderState(state: RenderingState) {
+    public setRenderState(state: RenderingState): () => void {
         const restores = this._rootTiles.map(n => n.pushRenderState(state));
 
         return () => {
@@ -1256,7 +1261,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         };
     }
 
-    override pick(coordinates: Vector2, options?: PickOptions): MapPickResult[] {
+    public override pick(coordinates: Vector2, options?: PickOptions): MapPickResult[] {
         if (options?.gpuPicking === true) {
             return pickTilesAt(this.instance, coordinates, this, options);
         } else {
@@ -1268,7 +1273,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         coordinates: Vector2,
         results: MapPickResult[],
         options?: PickOptions,
-    ) {
+    ): void {
         const normalized = this.instance.canvasToNormalizedCoords(coordinates, tempNDC);
 
         const raycaster = new Raycaster();
@@ -1278,7 +1283,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
         this.raycast(raycaster, tmpIntersectList);
 
-        const filter = options?.filter ?? (() => true);
+        const filter = options?.filter ?? ((): boolean => true);
 
         if (tmpIntersectList.length > 0) {
             tmpIntersectList.sort((a, b) => a.distance - b.distance);
@@ -1347,7 +1352,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
      * @param raycaster - The THREE raycaster.
      * @param intersects  - The intersections array to populate with intersections.
      */
-    raycast(raycaster: Raycaster, intersects: Intersection<TileMesh>[]): void {
+    public raycast(raycaster: Raycaster, intersects: Intersection<TileMesh>[]): void {
         this.traverseTiles(tile => {
             if (!tile.disposed && tile.visible && tile.material.visible) {
                 tile.raycast(raycaster, intersects);
@@ -1357,7 +1362,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         intersects.sort((a, b) => a.distance - b.distance);
     }
 
-    pickFeaturesFrom(pickedResult: MapPickResult, options?: PickOptions): unknown[] {
+    public pickFeaturesFrom(pickedResult: MapPickResult, options?: PickOptions): unknown[] {
         const result: unknown[] = [];
         for (const layer of this._layers) {
             if (isPickableFeatures(layer)) {
@@ -1370,7 +1375,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         return result;
     }
 
-    override preUpdate(context: Context, changeSources: Set<unknown>) {
+    public override preUpdate(context: Context, changeSources: Set<unknown>): TileMesh[] {
         super.preUpdate(context, changeSources);
 
         this._materialOptions.colorMapAtlas?.update();
@@ -1414,7 +1419,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
      *
      * @param compareFn - The comparator function.
      */
-    sortColorLayers(compareFn: LayerCompareFn) {
+    public sortColorLayers(compareFn: LayerCompareFn): void {
         if (compareFn == null) {
             throw new Error('missing comparator function');
         }
@@ -1455,7 +1460,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
      * map.moveLayerUp(foo);
      * // Layers (back to front) : bar, foo, baz
      */
-    moveLayerUp(layer: ColorLayer) {
+    public moveLayerUp(layer: ColorLayer): void {
         const position = this._layers.indexOf(layer);
 
         if (position === -1) {
@@ -1471,7 +1476,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         }
     }
 
-    override onRenderingContextRestored(): void {
+    public override onRenderingContextRestored(): void {
         this._materialOptions.colorMapAtlas?.forceUpdate();
         this.forEachLayer(layer => layer.onRenderingContextRestored());
         this.notifyChange(this);
@@ -1493,7 +1498,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
      * map.insertLayerAfter(foo, baz);
      * // Layers (back to front) : bar, baz, foo
      */
-    insertLayerAfter(layer: ColorLayer, target: ColorLayer | null) {
+    public insertLayerAfter(layer: ColorLayer, target: ColorLayer | null): void {
         const position = this._layers.indexOf(layer);
         let afterPosition = target == null ? -1 : this._layers.indexOf(target);
 
@@ -1528,7 +1533,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
      * map.moveLayerDown(baz);
      * // Layers (back to front) : foo, baz, bar
      */
-    moveLayerDown(layer: ColorLayer) {
+    public moveLayerDown(layer: ColorLayer): void {
         const position = this._layers.indexOf(layer);
 
         if (position === -1) {
@@ -1550,7 +1555,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
      * @param layer - The layer to search.
      * @returns The index of the layer.
      */
-    getIndex(layer: Layer): number {
+    public getIndex(layer: Layer): number {
         const value = this._layerIndices.get(layer.id);
         if (value == null) {
             return -1;
@@ -1559,7 +1564,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         return value;
     }
 
-    private reorderLayers() {
+    private reorderLayers(): void {
         const layers = this._layers;
 
         for (let i = 0; i < layers.length; i++) {
@@ -1574,7 +1579,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         this.notifyChange(this);
     }
 
-    override contains(obj: unknown) {
+    public override contains(obj: unknown): boolean {
         if ((obj as Layer).isLayer) {
             return this._layers.includes(obj as Layer);
         }
@@ -1582,7 +1587,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         return false;
     }
 
-    override update(context: Context, node: TileMesh): unknown[] | undefined {
+    public override update(context: Context, node: TileMesh): TileMesh[] | undefined {
         if (!node.parent) {
             this.disposeTile(node);
             return undefined;
@@ -1640,7 +1645,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         return context.view.isOBBVisible(obb);
     }
 
-    override postUpdate(context: Context) {
+    public override postUpdate(context: Context): void {
         this.traverseTiles(tile => {
             if (tile.visible && tile.material.visible) {
                 this._layers.forEach(layer => layer.update(context, tile));
@@ -1665,18 +1670,18 @@ class Map<UserData extends EntityUserData = EntityUserData>
         }
     }
 
-    private registerColorLayer() {
+    private registerColorLayer(): void {
         this._colorAtlasDataType = getWidestDataType(this.getColorLayers());
     }
 
-    private updateGlobalMinMax() {
+    private updateGlobalMinMax(): void {
         const minmax = this.getElevationMinMax();
         this.traverseTiles(tile => {
             tile.setBBoxZ(minmax.min, minmax.max);
         });
     }
 
-    private registerColorMap(colorMap: ColorMap) {
+    private registerColorMap(colorMap: ColorMap): void {
         if (!this._materialOptions.colorMapAtlas) {
             this._materialOptions.colorMapAtlas = new ColorMapAtlas(this.instance.renderer);
             this.traverseTiles(t => {
@@ -1695,7 +1700,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
      * @param layer - the layer to add
      * @returns a promise resolving when the layer is ready
      */
-    async addLayer<TLayer extends Layer>(layer: TLayer): Promise<TLayer> {
+    public async addLayer<TLayer extends Layer>(layer: TLayer): Promise<TLayer> {
         if (!isLayer(layer)) {
             throw new Error('layer is not an instance of Layer');
         }
@@ -1742,7 +1747,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         return layer;
     }
 
-    private onLayerVisibilityChanged(event: { target: Layer }) {
+    private onLayerVisibilityChanged(event: { target: Layer }): void {
         if (isElevationLayer(event.target)) {
             this.dispatchEvent({ type: 'elevation-changed', extent: this.extent });
             this.updateGlobalMinMax();
@@ -1760,7 +1765,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
      * @param options - The options.
      * @returns `true` if the layer was present, `false` otherwise.
      */
-    removeLayer(
+    public removeLayer(
         layer: Layer,
         options: {
             /** If `true`, the layer is also disposed. */
@@ -1798,11 +1803,11 @@ class Map<UserData extends EntityUserData = EntityUserData>
         return false;
     }
 
-    get layerCount() {
+    public get layerCount(): number {
         return this._layers.length;
     }
 
-    forEachLayer(callback: (layer: Layer) => void): void {
+    public forEachLayer(callback: (layer: Layer) => void): void {
         this._layers.forEach(l => callback(l));
     }
 
@@ -1812,7 +1817,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
      * @param predicate - the optional predicate.
      * @returns the layers that matched the predicate or all layers if no predicate was provided.
      */
-    getLayers(predicate?: (arg0: Layer) => boolean) {
+    public getLayers(predicate?: (arg0: Layer) => boolean): Layer[] {
         const result = [];
         for (const layer of this._layers) {
             if (!predicate || predicate(layer)) {
@@ -1827,7 +1832,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
      *
      * @returns the color layers
      */
-    getColorLayers(): ColorLayer[] {
+    public getColorLayers(): ColorLayer[] {
         return this.getLayers(l => (l as ColorLayer).isColorLayer) as ColorLayer[];
     }
 
@@ -1836,7 +1841,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
      *
      * @returns the elevation layers
      */
-    getElevationLayers(): ElevationLayer[] {
+    public getElevationLayers(): ElevationLayer[] {
         return this.getLayers(l => (l as ElevationLayer).isElevationLayer) as ElevationLayer[];
     }
 
@@ -1849,7 +1854,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
      * @param options - Options.
      * @param options -.disposeLayers If true, layers are also disposed.
      */
-    override dispose(options: { disposeLayers?: boolean } = { disposeLayers: false }) {
+    public override dispose(options: { disposeLayers?: boolean } = { disposeLayers: false }): void {
         // Dispose all tiles so that every layer will unload data relevant to those tiles.
         this.traverseTiles(t => this.disposeTile(t));
 
@@ -1860,7 +1865,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         this._materialOptions.colorMapAtlas?.dispose();
     }
 
-    private disposeTile(tile: TileMesh) {
+    private disposeTile(tile: TileMesh): void {
         tile.traverseTiles(desc => {
             desc.dispose();
             this._allTiles.delete(desc);
@@ -1872,7 +1877,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
      *
      * If there are no elevation layers on this map, returns `null` as well.
      */
-    getElevationMinMaxForVisibleTiles(): ElevationRange | null {
+    public getElevationMinMaxForVisibleTiles(): ElevationRange | null {
         if (!this._hasElevationLayer) {
             return null;
         }
@@ -1901,7 +1906,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
      *
      * @returns The min/max value.
      */
-    getElevationMinMax(): ElevationRange {
+    public getElevationMinMax(): ElevationRange {
         const elevationLayers = this.getElevationLayers();
 
         if (elevationLayers.length > 0) {
@@ -1944,7 +1949,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
      * @returns The {@link GetElevationResult} containing the updated sample array.
      * If the map has no elevation layer, this array is left untouched.
      */
-    getElevation(
+    public getElevation(
         options: GetElevationOptions,
         result: GetElevationResult = { samples: [], coordinates: options.coordinates },
     ): GetElevationResult {
@@ -1985,7 +1990,10 @@ class Map<UserData extends EntityUserData = EntityUserData>
      * @param root - The raversal root. If undefined, the traversal starts at the root
      * object of this entity.
      */
-    traverseTiles(callback: (arg0: TileMesh) => void, root: Object3D | undefined = undefined) {
+    public traverseTiles(
+        callback: (arg0: TileMesh) => void,
+        root: Object3D | undefined = undefined,
+    ): void {
         const origin = root ?? this.object3d;
 
         let cached = this._cachedTraversals.get(origin);
@@ -2006,7 +2014,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         }
     }
 
-    private testTileSSE(tile: TileMesh, sse: SSE | null) {
+    private testTileSSE(tile: TileMesh, sse: SSE | null): boolean {
         if (this.maxSubdivisionLevel <= tile.lod) {
             return false;
         }
@@ -2040,7 +2048,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         return this.testTileSSE(node, sse);
     }
 
-    private updateMinMaxDistance(context: Context, node: TileMesh) {
+    private updateMinMaxDistance(context: Context, node: TileMesh): void {
         const bbox = node.getWorldSpaceBoundingBox(tmpBox3);
         const distance = context.distance.plane.distanceToPoint(bbox.getCenter(tmpVector));
         const radius = bbox.getSize(tmpVector).length() * 0.5;
@@ -2051,7 +2059,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     /**
      * Returns a {@link PointOfView} that looks at the map from the top.
      */
-    override getDefaultPointOfView(
+    public override getDefaultPointOfView(
         params: Parameters<HasDefaultPointOfView['getDefaultPointOfView']>[0],
     ): ReturnType<HasDefaultPointOfView['getDefaultPointOfView']> {
         const target = this.extent.centerAsVector3();

@@ -10,7 +10,9 @@ import {
     type RenderTargetOptions,
     type WebGLRenderer,
 } from 'three';
+
 import type MemoryUsage from '../core/MemoryUsage';
+
 import { type GetMemoryUsageContext } from '../core/MemoryUsage';
 import NestedMap from '../utils/NestedMap';
 import TextureGenerator from '../utils/TextureGenerator';
@@ -19,7 +21,7 @@ export interface RenderTargetPoolEvents {
     cleanup: unknown;
 }
 
-const createPool = () => [];
+const createPool = <T>(): T[] => [];
 
 /**
  * A pool that manages {@link RenderTarget}s.
@@ -28,7 +30,7 @@ export default class RenderTargetPool
     extends EventDispatcher<RenderTargetPoolEvents>
     implements MemoryUsage
 {
-    readonly isMemoryUsage = true as const;
+    public readonly isMemoryUsage = true as const;
     // Note that we cannot share render targets between instances are they are tied to a single WebGLRenderer.
     private readonly _globalPool: NestedMap<
         WebGLRenderer,
@@ -40,13 +42,13 @@ export default class RenderTargetPool
     private _timeout: NodeJS.Timeout | null = null;
     private _maxPoolSize: number;
 
-    constructor(cleanupTimeoutMs: number, maxPoolSize: number) {
+    public constructor(cleanupTimeoutMs: number, maxPoolSize: number) {
         super();
         this._cleanupTimeoutMs = cleanupTimeoutMs;
         this._maxPoolSize = maxPoolSize;
     }
 
-    getMemoryUsage(context: GetMemoryUsageContext) {
+    public getMemoryUsage(context: GetMemoryUsageContext): void {
         if (this._globalPool.size === 0) {
             return;
         }
@@ -58,7 +60,12 @@ export default class RenderTargetPool
         });
     }
 
-    acquire(renderer: WebGLRenderer, width: number, height: number, options: RenderTargetOptions) {
+    public acquire(
+        renderer: WebGLRenderer,
+        width: number,
+        height: number,
+        options: RenderTargetOptions,
+    ): WebGLRenderTarget {
         const pool = this._globalPool.getOrCreate(renderer, options, createPool);
 
         if (pool.length > 0) {
@@ -72,11 +79,11 @@ export default class RenderTargetPool
         return result;
     }
 
-    get count(): number {
+    public get count(): number {
         return this._renderTargets.size;
     }
 
-    release(obj: WebGLRenderTarget, renderer: WebGLRenderer) {
+    public release(obj: WebGLRenderTarget, renderer: WebGLRenderer): void {
         const options = this._renderTargets.get(obj);
         if (options) {
             const pool = this._globalPool.getOrCreate(renderer, options, createPool);
@@ -95,7 +102,7 @@ export default class RenderTargetPool
         this._timeout = setTimeout(() => this.cleanup(), this._cleanupTimeoutMs);
     }
 
-    cleanup() {
+    public cleanup(): void {
         this._timeout = null;
 
         this._globalPool.forEach(list => {

@@ -25,8 +25,8 @@ import {
     type TextureDataType,
     type WebGLRenderer,
 } from 'three';
-import Interpretation from '../../core/layer/Interpretation';
 
+import Interpretation from '../../core/layer/Interpretation';
 import Rect from '../../core/Rect';
 import Capabilities from '../../core/system/Capabilities';
 import { isMesh, isTexture } from '../../utils/predicates';
@@ -44,7 +44,7 @@ const DEFAULT_CLEAR = new Color(0, 0, 0);
 
 export type DrawableImage = Texture | HTMLImageElement | HTMLCanvasElement;
 
-function processTextureDisposal(event: { target: Texture }) {
+function processTextureDisposal(event: { target: Texture }): void {
     const texture = event.target;
     texture.removeEventListener('dispose', processTextureDisposal);
     const owner = textureOwners.get(texture.uuid);
@@ -97,18 +97,18 @@ class WebGLComposer {
 
     private _renderTarget?: WebGLRenderTarget;
 
-    readonly dataType: TextureDataType;
-    readonly pixelFormat: PixelFormat;
+    public readonly dataType: TextureDataType;
+    public readonly pixelFormat: PixelFormat;
 
-    readonly width?: number;
-    readonly height?: number;
+    public readonly width?: number;
+    public readonly height?: number;
 
     /**
      * Creates an instance of WebGLComposer.
      *
      * @param options - The options.
      */
-    constructor(options: {
+    public constructor(options: {
         /** Optional extent of the canvas. If undefined, then the canvas is an infinite plane. */
         extent?: Rect;
         /** The canvas width, in pixels. Ignored if a canvas is provided. */
@@ -187,7 +187,7 @@ class WebGLComposer {
      *
      * @param rect - The rect.
      */
-    private setCameraRect(rect: Rect) {
+    private setCameraRect(rect: Rect): void {
         const halfWidth = rect.width / 2;
         const halfHeight = rect.height / 2;
 
@@ -206,7 +206,7 @@ class WebGLComposer {
         format: PixelFormat,
         width: number,
         height: number,
-    ) {
+    ): WebGLRenderTarget {
         const result = new WebGLRenderTarget(width, height, {
             format,
             anisotropy: Capabilities.getMaxAnisotropy(),
@@ -238,7 +238,7 @@ class WebGLComposer {
      * @param extent - The extent of this texture in the composition space.
      * @param options - The options.
      */
-    draw(image: DrawableImage, extent: Rect, options: DrawOptions = {}) {
+    public draw(image: DrawableImage, extent: Rect, options: DrawOptions = {}): Mesh {
         // @ts-expect-error the material is assigned just after
         const plane = new Mesh(SHARED_PLANE_GEOMETRY, null);
         MemoryTracker.track(plane, 'WebGLComposer - mesh');
@@ -260,7 +260,7 @@ class WebGLComposer {
      * @param mesh - The custom mesh.
      * @param options - Options.
      */
-    drawMesh(image: DrawableImage, mesh: Mesh, options: DrawOptions = {}): Mesh {
+    public drawMesh(image: DrawableImage, mesh: Mesh, options: DrawOptions = {}): Mesh {
         let texture: Texture;
         if (!isTexture(image)) {
             texture = new Texture(image as HTMLImageElement);
@@ -305,7 +305,7 @@ class WebGLComposer {
         return mesh;
     }
 
-    remove(mesh: Mesh) {
+    public remove(mesh: Mesh): void {
         ComposerTileMaterial.release(mesh.material as ComposerTileMaterial);
         this._scene.remove(mesh);
     }
@@ -313,12 +313,12 @@ class WebGLComposer {
     /**
      * Resets the composer to a blank state.
      */
-    clear() {
+    public clear(): void {
         this.removeTextures();
         this.removeObjects();
     }
 
-    private removeObjects() {
+    private removeObjects(): void {
         this._scene.traverse(obj => {
             if (isMesh(obj) && isComposerTileMaterial(obj.material)) {
                 ComposerTileMaterial.release(obj.material);
@@ -339,7 +339,7 @@ class WebGLComposer {
         };
     }
 
-    private restoreState(state: SaveState) {
+    private restoreState(state: SaveState): void {
         this._renderer.setClearAlpha(state.clearAlpha);
         this._renderer.setRenderTarget(state.renderTarget);
         this._renderer.setScissorTest(state.scissorTest);
@@ -354,7 +354,7 @@ class WebGLComposer {
      * @param opts - The options.
      * @returns The texture of the render target.
      */
-    render(
+    public render(
         opts: {
             /** A custom rect for the camera. */
             rect?: Rect;
@@ -450,7 +450,7 @@ class WebGLComposer {
         return target.texture;
     }
 
-    private removeTextures() {
+    private removeTextures(): void {
         this._ownedTextures.forEach(t => t.dispose());
         this._ownedTextures.length = 0;
     }
@@ -458,7 +458,7 @@ class WebGLComposer {
     /**
      * Disposes all unmanaged resources in this composer.
      */
-    dispose() {
+    public dispose(): void {
         this.removeTextures();
         this.removeObjects();
         if (this._renderTarget) {

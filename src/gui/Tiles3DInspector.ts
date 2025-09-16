@@ -5,19 +5,21 @@
  */
 
 import type GUI from 'lil-gui';
+
 import type Instance from '../core/Instance';
 import type Tiles3D from '../entities/Tiles3D';
+
 import ColorMapInspector from './ColorMapInspector';
 import EntityInspector from './EntityInspector';
 import LayerInspector from './LayerInspector';
 
 class Tiles3DInspector extends EntityInspector<Tiles3D> {
     /** The color map inspector */
-    colorMapInspector: ColorMapInspector;
+    public colorMapInspector: ColorMapInspector;
 
-    layers: LayerInspector[] = [];
+    public layers: LayerInspector[] = [];
     /** The layer folder. */
-    layerFolder: GUI;
+    public layerFolder: GUI;
 
     /**
      * Creates an instance of Tiles3DInspector.
@@ -26,7 +28,7 @@ class Tiles3DInspector extends EntityInspector<Tiles3D> {
      * @param instance - The Giro3D instance.
      * @param entity - The inspected 3D tileset.
      */
-    constructor(parentGui: GUI, instance: Instance, entity: Tiles3D) {
+    public constructor(parentGui: GUI, instance: Instance, entity: Tiles3D) {
         super(parentGui, instance, entity, {
             visibility: true,
             boundingBoxColor: false,
@@ -67,7 +69,7 @@ class Tiles3DInspector extends EntityInspector<Tiles3D> {
         this.entity.addEventListener('layer-removed', fillLayers);
     }
 
-    fillLayers() {
+    public fillLayers(): void {
         while (this.layers.length > 0) {
             this.layers.pop()?.dispose();
         }
@@ -82,12 +84,12 @@ class Tiles3DInspector extends EntityInspector<Tiles3D> {
             });
     }
 
-    override updateValues() {
+    public override updateValues(): void {
         super.updateValues();
         this.layers.forEach(l => l.updateValues());
     }
 
-    override toggleBoundingBoxes(visible: boolean): void {
+    public override toggleBoundingBoxes(visible: boolean): void {
         this.entity.displayBoxBounds = visible;
         this.entity.displayRegionBounds = visible;
         this.entity.displaySphereBounds = visible;

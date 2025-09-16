@@ -29,7 +29,7 @@ export default class StateMachine<S extends State, T extends { state: S }> {
     private readonly _postTransitionCallbacks: Map<S, TransitionCallback<S, T>> = new Map();
     private readonly _preTransitionCallbacks: Map<S, TransitionCallback<S, T>> = new Map();
 
-    constructor(params: {
+    public constructor(params: {
         /**
          * The list of legal transitions.
          */
@@ -49,7 +49,7 @@ export default class StateMachine<S extends State, T extends { state: S }> {
      * Registers a callback that will be called on each object
      * that makes a transition to {@link endState}.
      */
-    addPostTransitionCallback(endState: S, callback: TransitionCallback<S, T>) {
+    public addPostTransitionCallback(endState: S, callback: TransitionCallback<S, T>): void {
         this._postTransitionCallbacks.set(endState, callback);
     }
 
@@ -57,11 +57,11 @@ export default class StateMachine<S extends State, T extends { state: S }> {
      * Registers a callback that will be called on each object
      * that makes a transition from {@link fromState}.
      */
-    addPreTransitionCallback(fromState: S, callback: TransitionCallback<S, T>) {
+    public addPreTransitionCallback(fromState: S, callback: TransitionCallback<S, T>): void {
         this._preTransitionCallbacks.set(fromState, callback);
     }
 
-    isTransitionLegal(from: S, to: S): boolean {
+    public isTransitionLegal(from: S, to: S): boolean {
         const entry = this._legalTransitions.get(from);
         if (entry) {
             return entry.some(([, transitionTo]) => transitionTo === to);
@@ -81,7 +81,7 @@ export default class StateMachine<S extends State, T extends { state: S }> {
      *
      * @returns True if a transition happened, false otherwise.
      */
-    transition(
+    public transition(
         obj: T,
         to: S,
         options?: {

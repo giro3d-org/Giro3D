@@ -4,10 +4,11 @@
  * SPDX-License-Identifier: MIT
  */
 
-import Extent from '@giro3d/giro3d/core/geographic/Extent';
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
-import PlanarTileGeometryBuilder from '@giro3d/giro3d/entities/tiles/PlanarTileGeometryBuilder';
 import { describe, expect, it } from 'vitest';
+
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
+import Extent from '@giro3d/giro3d/core/geographic/Extent';
+import PlanarTileGeometryBuilder from '@giro3d/giro3d/entities/tiles/PlanarTileGeometryBuilder';
 
 describe('rootTileMatrix', () => {
     it('should produce multiple horizontal root tiles if needed', async () => {

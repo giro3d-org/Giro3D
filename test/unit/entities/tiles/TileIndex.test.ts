@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: MIT
  */
 
+import { describe, expect, it } from 'vitest';
+
 import TileIndex, {
     BOTTOM,
     BOTTOM_LEFT,
@@ -16,7 +18,6 @@ import TileIndex, {
     type NeighbourList,
     type Tile,
 } from '@giro3d/giro3d/entities/tiles/TileIndex';
-import { describe, expect, it } from 'vitest';
 
 class MockWeakRef<T extends WeakKey> implements WeakRef<T> {
     obj: T;

@@ -5,6 +5,7 @@
  */
 
 import type { Box3 } from 'three';
+
 import { createReader, getTypedArray, type PotreePointCloudAttribute } from './attributes';
 
 export type BufferAttributeDescriptor = {

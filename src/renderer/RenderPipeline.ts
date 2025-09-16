@@ -5,12 +5,15 @@
  */
 
 import type { Camera, Material, Object3D, WebGLRenderer } from 'three';
+
 import { Color, DepthTexture, FloatType, NearestFilter, WebGLRenderTarget } from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { TexturePass } from 'three/examples/jsm/postprocessing/TexturePass.js';
-import PointCloudRenderer from './PointCloudRenderer';
+
 import type RenderingOptions from './RenderingOptions';
+
+import PointCloudRenderer from './PointCloudRenderer';
 
 const BUCKETS = {
     OPAQUE: 0,
@@ -28,7 +31,7 @@ type RenderPipelineUserData = {
  * Patches the object so that it will be included in the point
  * cloud post-processing effects (i.e Eye dome lighting, etc)
  */
-export function enablePointCloudPostProcessing(obj: Object3D) {
+export function enablePointCloudPostProcessing(obj: Object3D): void {
     (obj.userData as RenderPipelineUserData) = {
         giro3dRenderPipeline: {
             usePointCloudPostProcessing: true,
@@ -50,13 +53,13 @@ const tmpColor = new Color();
  * @param meshes - The meshes to update.
  * @param visible - The new material visibility.
  */
-function setVisibility(meshes: Object3DWithMaterial[], visible: boolean) {
+function setVisibility(meshes: Object3DWithMaterial[], visible: boolean): void {
     for (let i = 0; i < meshes.length; i++) {
         meshes[i].material.visible = visible;
     }
 }
 
-function clear(renderer: WebGLRenderer) {
+function clear(renderer: WebGLRenderer): void {
     // Since our render target is in linear color space, we need to convert
     // the current clear color (that is expected to be in sRGB).
     const current = renderer.getClearColor(currentClearColor);
@@ -74,16 +77,16 @@ function clear(renderer: WebGLRenderer) {
  * A render pipeline that supports various effects.
  */
 export default class RenderPipeline {
-    renderer: WebGLRenderer;
-    buckets: Object3DWithMaterial[][];
-    sceneRenderTarget: WebGLRenderTarget | null;
-    effectComposer?: EffectComposer;
-    pointCloudRenderer?: PointCloudRenderer;
+    public renderer: WebGLRenderer;
+    public buckets: Object3DWithMaterial[][];
+    public sceneRenderTarget: WebGLRenderTarget | null;
+    public effectComposer?: EffectComposer;
+    public pointCloudRenderer?: PointCloudRenderer;
 
     /**
      * @param renderer - The WebGL renderer.
      */
-    constructor(renderer: WebGLRenderer) {
+    public constructor(renderer: WebGLRenderer) {
         this.renderer = renderer;
 
         this.buckets = [[], [], []];
@@ -91,7 +94,11 @@ export default class RenderPipeline {
         this.sceneRenderTarget = null;
     }
 
-    prepareRenderTargets(width: number, height: number, samples: number) {
+    public prepareRenderTargets(
+        width: number,
+        height: number,
+        samples: number,
+    ): { composer: EffectComposer; target: WebGLRenderTarget } {
         if (
             !this.sceneRenderTarget ||
             this.sceneRenderTarget.width !== width ||
@@ -137,13 +144,13 @@ export default class RenderPipeline {
      * @param height - The height in pixels of the render target.
      * @param options - The options.
      */
-    render(
+    public render(
         scene: Object3D,
         camera: Camera,
         width: number,
         height: number,
         options: RenderingOptions,
-    ) {
+    ): void {
         const renderer = this.renderer;
 
         const maxSamples = this.renderer.capabilities.maxSamples;
@@ -183,13 +190,13 @@ export default class RenderPipeline {
      * @param meshes - The meshes to render.
      * @param opts - The rendering options.
      */
-    renderPointClouds(
+    public renderPointClouds(
         scene: Object3D,
         camera: Camera,
         target: WebGLRenderTarget,
         meshes: Object3DWithMaterial[],
         opts: RenderingOptions,
-    ) {
+    ): void {
         if (meshes.length === 0) {
             return;
         }
@@ -220,7 +227,7 @@ export default class RenderPipeline {
      * @param camera - The camera.
      * @param meshes - The meshes to render.
      */
-    renderMeshes(scene: Object3D, camera: Camera, meshes: Object3DWithMaterial[]) {
+    public renderMeshes(scene: Object3D, camera: Camera, meshes: Object3DWithMaterial[]): void {
         if (meshes.length === 0) {
             return;
         }
@@ -234,7 +241,7 @@ export default class RenderPipeline {
         setVisibility(meshes, false);
     }
 
-    onAfterRender() {
+    public onAfterRender(): void {
         // Reset the visibility of all rendered objects
         for (const bucket of this.buckets) {
             setVisibility(bucket, true);
@@ -242,7 +249,7 @@ export default class RenderPipeline {
         }
     }
 
-    dispose() {
+    public dispose(): void {
         this.effectComposer?.dispose();
         this.sceneRenderTarget?.dispose();
         this.pointCloudRenderer?.dispose();
@@ -251,7 +258,7 @@ export default class RenderPipeline {
     /**
      * @param scene - The root scene.
      */
-    collectRenderBuckets(scene: Object3D) {
+    public collectRenderBuckets(scene: Object3D): void {
         const renderBuckets = this.buckets;
 
         scene.traverse(obj => {

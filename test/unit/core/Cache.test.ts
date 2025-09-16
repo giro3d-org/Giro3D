@@ -4,8 +4,9 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { Cache, DEFAULT_CAPACITY, DEFAULT_TTL } from '@giro3d/giro3d/core/Cache';
 import { beforeEach, describe, expect, it, vitest } from 'vitest';
+
+import { Cache, DEFAULT_CAPACITY, DEFAULT_TTL } from '@giro3d/giro3d/core/Cache';
 
 let now = 0;
 let cache: Cache;

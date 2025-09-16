@@ -5,7 +5,9 @@
  */
 
 import type GUI from 'lil-gui';
+
 import type Instance from '../core/Instance';
+
 import MemoryTracker from '../renderer/MemoryTracker';
 import CachePanel from './CachePanel';
 import FrameDuration from './charts/FrameDuration';
@@ -16,13 +18,13 @@ import FetcherPanel from './FetcherPanel';
 import Panel from './Panel';
 
 class ProcessingInspector extends Panel {
-    charts: Panel[];
+    public charts: Panel[];
 
     /**
      * @param gui - The GUI.
      * @param instance - The Giro3D instance.
      */
-    constructor(gui: GUI, instance: Instance) {
+    public constructor(gui: GUI, instance: Instance) {
         super(gui, instance, 'Processing');
 
         this.charts = [];
@@ -39,11 +41,11 @@ class ProcessingInspector extends Panel {
         this.addController(this, 'dumpTrackedTextures').name('Dump tracked textures to console');
     }
 
-    dumpTrackedObjects() {
+    public dumpTrackedObjects(): void {
         console.log(MemoryTracker.getTrackedObjects());
     }
 
-    dumpTrackedTextures() {
+    public dumpTrackedTextures(): void {
         const items = MemoryTracker.getTrackedTextures();
         console.log(
             items
@@ -52,7 +54,7 @@ class ProcessingInspector extends Panel {
         );
     }
 
-    override updateValues() {
+    public override updateValues(): void {
         this.charts.forEach(c => c.update());
     }
 }

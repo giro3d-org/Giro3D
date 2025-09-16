@@ -6,6 +6,7 @@
 
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
@@ -14,7 +15,6 @@ import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import AggregateImageSource from '@giro3d/giro3d/sources/AggregateImageSource.js';
 import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 
 import { bindToggle } from './widgets/bindToggle.js';
 import StatusBar from './widgets/StatusBar.js';

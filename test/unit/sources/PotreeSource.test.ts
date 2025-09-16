@@ -4,13 +4,16 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { setLazPerfPath } from '@giro3d/giro3d/sources/las/config';
+import { Vector3 } from 'three';
+import { beforeAll, describe, expect, it } from 'vitest';
+
 import type { PointCloudAttribute } from '@giro3d/giro3d/sources/PointCloudSource';
+
+import { setLazPerfPath } from '@giro3d/giro3d/sources/las/config';
 import { traverseNode } from '@giro3d/giro3d/sources/PointCloudSource';
 import PotreeSource from '@giro3d/giro3d/sources/PotreeSource';
 import Fetcher from '@giro3d/giro3d/utils/Fetcher';
-import { Vector3 } from 'three';
-import { beforeAll, describe, expect, it } from 'vitest';
+
 import { getDataFileUrl, readDataFileSync } from '../../data/utils';
 
 beforeAll(() => {

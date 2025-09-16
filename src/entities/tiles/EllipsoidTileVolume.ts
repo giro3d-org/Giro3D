@@ -6,11 +6,13 @@
 
 import { Box3, MathUtils, Matrix3, Matrix4, Plane, type Sphere, Vector2, Vector3 } from 'three';
 import { OBB } from 'three/examples/jsm/Addons.js';
+
 import type ElevationRange from '../../core/ElevationRange';
-import CoordinateSystem from '../../core/geographic/coordinate-system/CoordinateSystem';
-import Coordinates from '../../core/geographic/Coordinates';
 import type Ellipsoid from '../../core/geographic/Ellipsoid';
 import type Extent from '../../core/geographic/Extent';
+
+import CoordinateSystem from '../../core/geographic/coordinate-system/CoordinateSystem';
+import Coordinates from '../../core/geographic/Coordinates';
 import TileVolume from './TileVolume';
 
 const vec3 = new Vector3();
@@ -29,15 +31,15 @@ export default class EllipsoidTileVolume extends TileVolume {
     private _min = 0;
     private _origin: Vector3 | undefined = undefined;
 
-    get extent(): Readonly<Extent> {
+    public get extent(): Readonly<Extent> {
         return this._extent;
     }
 
-    get ellipsoid(): Readonly<Ellipsoid> {
+    public get ellipsoid(): Readonly<Ellipsoid> {
         return this._ellipsoid;
     }
 
-    get origin() {
+    public get origin(): Vector3 {
         if (this._origin == null) {
             const { x, y } = this.extent.centerAsVector2();
             this._origin = this.ellipsoid.toCartesian(x, y, 0, this._origin);
@@ -46,14 +48,14 @@ export default class EllipsoidTileVolume extends TileVolume {
         return this._origin;
     }
 
-    constructor(options: { extent: Extent; range: ElevationRange; ellipsoid: Ellipsoid }) {
+    public constructor(options: { extent: Extent; range: ElevationRange; ellipsoid: Ellipsoid }) {
         super();
         this._extent = options.extent;
         this._range = options.range;
         this._ellipsoid = options.ellipsoid;
     }
 
-    getWorldSpaceCorners(matrix?: Matrix4): Vector3[] {
+    public getWorldSpaceCorners(matrix?: Matrix4): Vector3[] {
         if (this._corners == null) {
             const dims = this._extent.dimensions(vec2);
 
@@ -89,7 +91,7 @@ export default class EllipsoidTileVolume extends TileVolume {
         return this._corners;
     }
 
-    override getOBB(): OBB {
+    public override getOBB(): OBB {
         if (this._obb == null) {
             const center = this._extent.center(coord);
 
@@ -229,7 +231,7 @@ export default class EllipsoidTileVolume extends TileVolume {
         );
     }
 
-    setElevationRange(range: ElevationRange) {
+    public setElevationRange(range: ElevationRange): void {
         let { min, max } = range;
 
         if (!Number.isFinite(min) || !Number.isFinite(max)) {
@@ -248,7 +250,7 @@ export default class EllipsoidTileVolume extends TileVolume {
         }
     }
 
-    override getWorldSpaceBoundingSphere(target: Sphere): Sphere {
+    public override getWorldSpaceBoundingSphere(target: Sphere): Sphere {
         const obb = this.getOBB();
         // Technically not a bounding sphere because we are selecting
         // the smallest side for the radius, but since this is used

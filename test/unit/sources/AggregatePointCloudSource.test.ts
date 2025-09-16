@@ -4,16 +4,18 @@
  * SPDX-License-Identifier: MIT
  */
 
-import AggregatePointCloudSource from '@giro3d/giro3d/sources/AggregatePointCloudSource';
+import { Box3, EventDispatcher, MathUtils } from 'three';
+import { describe, expect, it, vitest } from 'vitest';
+
 import type {
     PointCloudAttribute,
     PointCloudMetadata,
     PointCloudNode,
     PointCloudSource,
 } from '@giro3d/giro3d/sources/PointCloudSource';
+
+import AggregatePointCloudSource from '@giro3d/giro3d/sources/AggregatePointCloudSource';
 import { traverseNode } from '@giro3d/giro3d/sources/PointCloudSource';
-import { Box3, EventDispatcher, MathUtils } from 'three';
-import { describe, expect, it, vitest } from 'vitest';
 
 type AsyncFn<T> = () => Promise<T>;
 

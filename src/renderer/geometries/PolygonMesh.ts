@@ -5,7 +5,9 @@
  */
 
 import type { Polygon } from 'ol/geom';
+
 import { Object3D } from 'three';
+
 import type LineStringMesh from './LineStringMesh';
 import type SimpleGeometryMesh from './SimpleGeometryMesh';
 import type { DefaultUserData, SimpleGeometryMeshEventMap } from './SimpleGeometryMesh';
@@ -18,24 +20,24 @@ export default class PolygonMesh<UserData extends DefaultUserData = DefaultUserD
     extends Object3D<SimpleGeometryMeshEventMap>
     implements SimpleGeometryMesh
 {
-    readonly isSimpleGeometryMesh = true as const;
-    readonly isPolygonMesh = true as const;
-    override readonly type = 'PolygonMesh' as const;
+    public readonly isSimpleGeometryMesh = true as const;
+    public readonly isPolygonMesh = true as const;
+    public override readonly type = 'PolygonMesh' as const;
 
-    readonly isExtruded: boolean = false;
+    public readonly isExtruded: boolean = false;
 
     private _featureOpacity = 1;
     private _surface: SurfaceMesh | null = null;
     private _linearRings: LineStringMesh<UserData>[] | null = null;
-    readonly source: Polygon;
+    public readonly source: Polygon;
 
-    override userData: Partial<UserData> = {};
+    public override userData: Partial<UserData> = {};
 
-    get surface(): SurfaceMesh | null {
+    public get surface(): SurfaceMesh | null {
         return this._surface;
     }
 
-    set surface(newSurface: SurfaceMesh | null) {
+    public set surface(newSurface: SurfaceMesh | null) {
         this._surface?.dispose();
         this._surface?.removeFromParent();
         this._surface = newSurface;
@@ -47,11 +49,11 @@ export default class PolygonMesh<UserData extends DefaultUserData = DefaultUserD
         }
     }
 
-    get linearRings(): LineStringMesh<UserData>[] | null {
+    public get linearRings(): LineStringMesh<UserData>[] | null {
         return this._linearRings;
     }
 
-    set linearRings(newRings: LineStringMesh<UserData>[] | null) {
+    public set linearRings(newRings: LineStringMesh<UserData>[] | null) {
         this._linearRings?.forEach(ring => {
             ring.removeFromParent();
             ring.dispose();
@@ -64,7 +66,7 @@ export default class PolygonMesh<UserData extends DefaultUserData = DefaultUserD
         }
     }
 
-    set opacity(opacity: number) {
+    public set opacity(opacity: number) {
         this._featureOpacity = opacity;
         if (this._surface) {
             this._surface.opacity = opacity;
@@ -74,7 +76,7 @@ export default class PolygonMesh<UserData extends DefaultUserData = DefaultUserD
         }
     }
 
-    constructor(options: {
+    public constructor(options: {
         source: Polygon;
         surface?: SurfaceMesh;
         linearRings?: LineStringMesh<UserData>[];
@@ -97,7 +99,7 @@ export default class PolygonMesh<UserData extends DefaultUserData = DefaultUserD
         }
     }
 
-    dispose() {
+    public dispose(): void {
         this._surface?.dispose();
         this._linearRings?.forEach(ring => ring.dispose());
         this.dispatchEvent({ type: 'dispose' });

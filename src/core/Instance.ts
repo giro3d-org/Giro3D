@@ -4,9 +4,11 @@
  * SPDX-License-Identifier: MIT
  */
 
+import type { OrthographicCamera, PerspectiveCamera } from 'three';
+import type { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+
 import { register } from 'ol/proj/proj4.js';
 import proj4 from 'proj4';
-import type { OrthographicCamera, PerspectiveCamera } from 'three';
 import {
     Clock,
     EventDispatcher,
@@ -19,18 +21,22 @@ import {
     type WebGLRenderer,
     type WebGLRendererParameters,
 } from 'three';
-import type { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+
 import type Entity from '../entities/Entity';
-import { isEntity } from '../entities/Entity';
 import type Entity3D from '../entities/Entity3D';
+import type RenderingOptions from '../renderer/RenderingOptions';
+import type CoordinateSystem from './geographic/coordinate-system/CoordinateSystem';
+import type PickOptions from './picking/PickOptions';
+import type PickResult from './picking/PickResult';
+import type Progress from './Progress';
+
+import { isEntity } from '../entities/Entity';
 import { isEntity3D } from '../entities/Entity3D';
 import C3DEngine from '../renderer/c3DEngine';
-import type RenderingOptions from '../renderer/RenderingOptions';
 import { GlobalRenderTargetPool } from '../renderer/RenderTargetPool';
 import View from '../renderer/View';
 import { GlobalCache } from './Cache';
 import { isDisposable } from './Disposable';
-import type CoordinateSystem from './geographic/coordinate-system/CoordinateSystem';
 import MainLoop from './MainLoop';
 import {
     aggregateMemoryUsage,
@@ -41,9 +47,6 @@ import {
 import { isPickable } from './picking/Pickable';
 import { isPickableFeatures } from './picking/PickableFeatures';
 import pickObjectsAt from './picking/PickObjectsAt';
-import type PickOptions from './picking/PickOptions';
-import type PickResult from './picking/PickResult';
-import type Progress from './Progress';
 
 const vectors = {
     pos: new Vector3(),
@@ -267,7 +270,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * });
      * ```
      */
-    constructor(options: InstanceOptions) {
+    public constructor(options: InstanceOptions) {
         super();
         Object3D.DEFAULT_UP.set(0, 0, 1);
 
@@ -353,7 +356,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         this.domElement.addEventListener('webglcontextrestored', this._onContextRestored);
     }
 
-    private onContextLost() {
+    private onContextLost(): void {
         this.getEntities().forEach(entity => {
             if (isEntity3D(entity)) {
                 entity.onRenderingContextLost({ canvas: this.domElement });
@@ -361,7 +364,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         });
     }
 
-    private onContextRestored() {
+    private onContextRestored(): void {
         this.getEntities().forEach(entity => {
             if (isEntity3D(entity)) {
                 entity.onRenderingContextRestored({ canvas: this.domElement });
@@ -371,22 +374,22 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
     }
 
     /** Gets the canvas that this instance renders into. */
-    get domElement(): HTMLCanvasElement {
+    public get domElement(): HTMLCanvasElement {
         return this._engine.renderer.domElement;
     }
 
     /** Gets the DOM element that contains the Giro3D viewport. */
-    get viewport(): HTMLDivElement {
+    public get viewport(): HTMLDivElement {
         return this._viewport;
     }
 
     /** Gets the CRS used in this instance. */
-    get coordinateSystem(): CoordinateSystem {
+    public get coordinateSystem(): CoordinateSystem {
         return this._referenceCrs;
     }
 
     /** Gets whether at least one entity is currently loading data. */
-    get loading(): boolean {
+    public get loading(): boolean {
         const entities = this.getEntities();
         return entities.some(e => e.loading);
     }
@@ -397,7 +400,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * Note: This value is only meaningful is {@link loading} is `true`.
      * Note: if no entity is present in the instance, this will always return 1.
      */
-    get progress(): number {
+    public get progress(): number {
         const entities = this.getEntities();
         if (entities.length === 0) {
             return 1;
@@ -407,12 +410,12 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
     }
 
     /** Gets the main loop */
-    get mainLoop(): MainLoop {
+    public get mainLoop(): MainLoop {
         return this._mainLoop;
     }
 
     /** Gets the rendering engine */
-    get engine(): C3DEngine {
+    public get engine(): C3DEngine {
         return this._engine;
     }
 
@@ -422,36 +425,36 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * Note: you must call {@link notifyChange | notifyChange()} to take
      * the changes into account.
      */
-    get renderingOptions(): RenderingOptions {
+    public get renderingOptions(): RenderingOptions {
         return this._engine.renderingOptions;
     }
 
     /**
      * Gets the underlying WebGL renderer.
      */
-    get renderer(): WebGLRenderer {
+    public get renderer(): WebGLRenderer {
         return this._engine.renderer;
     }
 
     /**
      * Gets the underlying CSS2DRenderer.
      */
-    get css2DRenderer(): CSS2DRenderer {
+    public get css2DRenderer(): CSS2DRenderer {
         return this._engine.labelRenderer;
     }
 
     /** Gets the [3D Scene](https://threejs.org/docs/#api/en/scenes/Scene). */
-    get scene(): Scene {
+    public get scene(): Scene {
         return this._scene;
     }
 
     /** Gets the group containing native Three.js objects. */
-    get threeObjects(): Group {
+    public get threeObjects(): Group {
         return this._threeObjects;
     }
 
     /** Gets the view. */
-    get view(): View {
+    public get view(): View {
         return this._view;
     }
 
@@ -484,7 +487,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * - any openlayers objects, please see their individual documentation
      *
      */
-    dispose(): void {
+    public dispose(): void {
         if (this._disposed) {
             return;
         }
@@ -526,7 +529,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * @returns a promise resolved with the new layer object when it is fully initialized
      * or rejected if any error occurred.
      */
-    async add<T extends Object3D | Entity>(object: T): Promise<T> {
+    public async add<T extends Object3D | Entity>(object: T): Promise<T> {
         if (object == null) {
             throw new Error('object is undefined');
         }
@@ -580,7 +583,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      *
      * @param object - the object to remove.
      */
-    remove(object: Object3D | Entity): void {
+    public remove(object: Object3D | Entity): void {
         if (isDisposable(object)) {
             object.dispose();
         }
@@ -608,7 +611,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * @param changeSources - The source(s) of the change. Might be a single object or an array.
      * @param options - Notification options.
      */
-    notifyChange(
+    public notifyChange(
         changeSources: unknown | unknown[] = undefined,
         options?: {
             /**
@@ -644,7 +647,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * @param name - the short name, or EPSG code to identify this CRS.
      * @param value - the CRS definition, either in proj syntax, or in WKT syntax.
      */
-    static registerCRS(name: string, value: string): void {
+    public static registerCRS(name: string, value: string): void {
         if (!name || name === '') {
             throw new Error('missing CRS name');
         }
@@ -687,7 +690,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * @param filter - the optional filter predicate.
      * @returns an array containing the queried objects
      */
-    getObjects(filter?: (obj: Object3D | Entity) => boolean): (Object3D | Entity)[] {
+    public getObjects(filter?: (obj: Object3D | Entity) => boolean): (Object3D | Entity)[] {
         const result = [];
         for (const obj of this._entities) {
             if (!filter || filter(obj)) {
@@ -715,7 +718,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * @param filter - the optional filter predicate
      * @returns an array containing the queried entities
      */
-    getEntities(filter?: (obj: Entity) => boolean): Entity[] {
+    public getEntities(filter?: (obj: Entity) => boolean): Entity[] {
         const result = [];
 
         for (const obj of this._entities) {
@@ -733,7 +736,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      *
      * @internal
      */
-    render() {
+    public render(): void {
         this._engine.render(this._scene, this._view.camera);
     }
 
@@ -745,7 +748,11 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * @param touchIdx - Touch index when using a TouchEvent (default: 0)
      * @returns canvas coordinates (in pixels, 0-0 = top-left of the instance)
      */
-    eventToCanvasCoords(event: MouseEvent | TouchEvent, target: Vector2, touchIdx = 0): Vector2 {
+    public eventToCanvasCoords(
+        event: MouseEvent | TouchEvent,
+        target: Vector2,
+        touchIdx = 0,
+    ): Vector2 {
         if (window.TouchEvent != null && event instanceof TouchEvent) {
             const touchEvent = event as TouchEvent;
             const br = this.domElement.getBoundingClientRect();
@@ -774,7 +781,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * @param touchIdx - Touch index when using a TouchEvent (default: 0)
      * @returns NDC coordinates (x and y are [-1, 1])
      */
-    eventToNormalizedCoords(
+    public eventToNormalizedCoords(
         event: MouseEvent | TouchEvent,
         target: Vector2,
         touchIdx = 0,
@@ -792,7 +799,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * @param target - The target to set with the result.
      * @returns NDC coordinates (x and y are [-1, 1])
      */
-    canvasToNormalizedCoords(canvasCoords: Vector2, target: Vector2): Vector2 {
+    public canvasToNormalizedCoords(canvasCoords: Vector2, target: Vector2): Vector2 {
         target.x = 2 * (canvasCoords.x / this._view.width) - 1;
         target.y = -2 * (canvasCoords.y / this._view.height) + 1;
         return target;
@@ -805,7 +812,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * @param target - The target to set with the result.
      * @returns canvas coordinates (in pixels, 0-0 = top-left of the instance)
      */
-    normalizedToCanvasCoords(ndcCoords: Vector2, target: Vector2): Vector2 {
+    public normalizedToCanvasCoords(ndcCoords: Vector2, target: Vector2): Vector2 {
         target.x = (ndcCoords.x + 1) * 0.5 * this._view.width;
         target.y = (ndcCoords.y - 1) * -0.5 * this._view.height;
         return target;
@@ -844,7 +851,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * instance.pickObjectsAt(mouseEvent, { radius: 3, where: [entity0] })
      * ```
      */
-    pickObjectsAt(
+    public pickObjectsAt(
         mouseOrEvt: Vector2 | MouseEvent | TouchEvent,
         options: PickObjectsAtOptions = {},
     ): PickResult[] {
@@ -921,7 +928,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         return results;
     }
 
-    getMemoryUsage(): MemoryUsageReport {
+    public getMemoryUsage(): MemoryUsageReport {
         const context: GetMemoryUsageContext = {
             renderer: this.renderer,
             objects: new globalThis.Map(),

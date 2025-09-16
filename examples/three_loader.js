@@ -20,12 +20,12 @@ import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 
-import Instance from '@giro3d/giro3d/core/Instance.js';
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import Instance from '@giro3d/giro3d/core/Instance.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 
-import StatusBar from './widgets/StatusBar.js';
 import { bindNumericalDropDown } from './widgets/bindNumericalDropDown.js';
+import StatusBar from './widgets/StatusBar.js';
 
 const instance = new Instance({
     target: 'view',

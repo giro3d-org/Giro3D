@@ -4,8 +4,9 @@
  * SPDX-License-Identifier: MIT
  */
 
-import OperationCounter from '@giro3d/giro3d/core/OperationCounter';
 import { beforeEach, describe, expect, it, vitest } from 'vitest';
+
+import OperationCounter from '@giro3d/giro3d/core/OperationCounter';
 
 let counter: OperationCounter;
 

@@ -5,12 +5,14 @@
  */
 
 import type GUI from 'lil-gui';
+
 import type Instance from '../core/Instance';
 import type Entity3D from '../entities/Entity3D';
+import type EntityInspector from './EntityInspector';
+
 import { isEntity3D } from '../entities/Entity3D';
 import AtmosphereInspector from './AtmosphereInspector';
 import AxisGridInspector from './AxisGridInspector';
-import type EntityInspector from './EntityInspector';
 import FeatureCollectionInspector from './FeatureCollectionInspector';
 import GlowInspector from './GlowInspector';
 import MapInspector from './MapInspector';
@@ -44,20 +46,20 @@ const customInspectors: Record<string, typeof EntityInspector<Entity3D>> = {
  */
 class EntityPanel extends Panel {
     private _createInspectorsCb: () => void;
-    folders: GUI[];
-    inspectors: EntityInspector[];
+    public folders: GUI[];
+    public inspectors: EntityInspector[];
 
     /**
      * @param gui - The GUI.
      * @param instance - The Giro3D instance.
      */
-    constructor(gui: GUI, instance: Instance) {
+    public constructor(gui: GUI, instance: Instance) {
         super(gui, instance, 'Entities');
 
         this.instance.addEventListener('update-start', () => this.update());
 
         // rebuild the inspectors when the instance is updated
-        this._createInspectorsCb = () => this.createInspectors();
+        this._createInspectorsCb = (): void => this.createInspectors();
         this.instance.addEventListener('entity-added', this._createInspectorsCb);
         this.instance.addEventListener('entity-removed', this._createInspectorsCb);
 
@@ -66,7 +68,7 @@ class EntityPanel extends Panel {
         this.createInspectors();
     }
 
-    override dispose() {
+    public override dispose(): void {
         this.instance.removeEventListener('update-start', () => this.update());
         this.instance.removeEventListener('entity-added', this._createInspectorsCb);
         this.instance.removeEventListener('entity-removed', this._createInspectorsCb);
@@ -86,18 +88,18 @@ class EntityPanel extends Panel {
      * @example
      * EntityPanel.registerInspector('Map', MyCustomMapInspector);
      */
-    static registerInspector<T extends Entity3D = Entity3D>(
+    public static registerInspector<T extends Entity3D = Entity3D>(
         type: string,
         inspector: typeof EntityInspector<T>,
-    ) {
+    ): void {
         customInspectors[type] = inspector;
     }
 
-    override update() {
+    public override update(): void {
         this.inspectors.forEach(i => i.update());
     }
 
-    createInspectors() {
+    public createInspectors(): void {
         while (this.folders.length > 0) {
             this.folders.pop()?.destroy();
         }

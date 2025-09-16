@@ -32,12 +32,11 @@ import DrawTool, {
 import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 import Fetcher from '@giro3d/giro3d/utils/Fetcher.js';
 
-import StatusBar from './widgets/StatusBar.js';
-
 import { bindButton } from './widgets/bindButton.js';
 import { bindColorPicker } from './widgets/bindColorPicker.js';
 import { bindDropDown } from './widgets/bindDropDown.js';
 import { bindSlider } from './widgets/bindSlider.js';
+import StatusBar from './widgets/StatusBar.js';
 
 Instance.registerCRS(
     'EPSG:2154',

@@ -11,29 +11,29 @@ import { Vector2, Vector4 } from 'three';
  * Typically used for to transform texture coordinates.
  */
 export default class OffsetScale extends Vector4 {
-    readonly isOffsetScale = true;
+    public readonly isOffsetScale = true;
 
-    get offsetX() {
+    public get offsetX(): number {
         return this.x;
     }
 
-    get offsetY() {
+    public get offsetY(): number {
         return this.y;
     }
 
-    get scaleX() {
+    public get scaleX(): number {
         return this.z;
     }
 
-    get scaleY() {
+    public get scaleY(): number {
         return this.w;
     }
 
-    constructor(offsetX?: number, offsetY?: number, scaleX?: number, scaleY?: number) {
+    public constructor(offsetX?: number, offsetY?: number, scaleX?: number, scaleY?: number) {
         super(offsetX, offsetY, scaleX, scaleY);
     }
 
-    static identity(): OffsetScale {
+    public static identity(): OffsetScale {
         return new OffsetScale(0, 0, 1, 1);
     }
 
@@ -43,14 +43,14 @@ export default class OffsetScale extends Vector4 {
      * @param target - The target to fill with the transformed point.
      * @returns The transformed point.
      */
-    transform(point: Vector2, target = new Vector2()): Vector2 {
+    public transform(point: Vector2, target = new Vector2()): Vector2 {
         target.x = point.x * this.scaleX + this.offsetX;
         target.y = point.y * this.scaleY + this.offsetY;
 
         return target;
     }
 
-    combine(offsetScale: OffsetScale, target = new OffsetScale()): OffsetScale {
+    public combine(offsetScale: OffsetScale, target = new OffsetScale()): OffsetScale {
         target.copy(this);
 
         target.x += offsetScale.x * target.z;

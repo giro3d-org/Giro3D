@@ -5,13 +5,14 @@
  */
 
 import type { ShaderMaterial } from 'three';
+
 import PrecisionQualifier from './chunk/giro3d_precision_qualifiers.glsl';
 
 const rePosition = new RegExp('gl_Position.*(?![^]*gl_Position)');
 const reMain = new RegExp('[^\\w]*main[^\\w]*(void)?[^\\w]*{');
 
 export default {
-    patchMaterialForLogDepthSupport(material: ShaderMaterial) {
+    patchMaterialForLogDepthSupport(material: ShaderMaterial): void {
         // Check if the shader does not already use the log depth buffer
         if (
             material.vertexShader.indexOf('USE_LOGDEPTHBUF') !== -1 ||

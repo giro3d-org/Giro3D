@@ -5,6 +5,7 @@
  */
 
 import { EventDispatcher } from 'three';
+
 import type Progress from './Progress';
 
 export interface OperationCounterEvents {
@@ -26,7 +27,7 @@ class OperationCounter extends EventDispatcher<OperationCounterEvents> implement
     private _completed: number;
     private _total: number;
 
-    constructor() {
+    public constructor() {
         super();
 
         this._operations = 0;
@@ -37,21 +38,21 @@ class OperationCounter extends EventDispatcher<OperationCounterEvents> implement
     /**
      * Gets the number of pending operations.
      */
-    get operations() {
+    public get operations(): number {
         return this._operations;
     }
 
     /**
      * Gets the number of completed operations.
      */
-    get completed() {
+    public get completed(): number {
         return this._completed;
     }
 
     /**
      * Gets whether at least one operation is being executed.
      */
-    get loading() {
+    public get loading(): boolean {
         return this._operations > 0;
     }
 
@@ -59,7 +60,7 @@ class OperationCounter extends EventDispatcher<OperationCounterEvents> implement
      * Returns a number between 0 and 1 which represent the ratio between
      * completed operations and total operations.
      */
-    get progress() {
+    public get progress(): number {
         if (this._operations === 0) {
             return 1;
         }
@@ -70,7 +71,7 @@ class OperationCounter extends EventDispatcher<OperationCounterEvents> implement
     /**
      * Decrements the number of pending operations.
      */
-    decrement() {
+    public decrement(): void {
         if (this._operations === 0) {
             return;
         }
@@ -91,7 +92,7 @@ class OperationCounter extends EventDispatcher<OperationCounterEvents> implement
      * Increments the counter before starting the promise, then decrements it safely when the
      * promises resolves or fails.
      */
-    wrap<T>(promise: Promise<T>): Promise<T> {
+    public wrap<T>(promise: Promise<T>): Promise<T> {
         this.increment();
 
         return promise.finally(() => this.decrement());
@@ -101,7 +102,7 @@ class OperationCounter extends EventDispatcher<OperationCounterEvents> implement
      * Increment the number of pending operations.
      * @param count - How many increments to do. Default is 1.
      */
-    increment(count = 1) {
+    public increment(count = 1): void {
         this._operations += count;
         this._total += count;
         this.dispatchEvent({ type: 'changed' });

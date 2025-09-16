@@ -6,12 +6,15 @@
 
 import type GUI from 'lil-gui';
 import type TileSource from 'ol/source/Tile.js';
+
 import UrlTile from 'ol/source/UrlTile.js';
-import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+
 import type Instance from '../core/Instance';
+import type ImageSource from '../sources/ImageSource';
+
+import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import * as MemoryUsage from '../core/MemoryUsage';
 import { isGeoTIFFSource } from '../sources/GeoTIFFSource';
-import type ImageSource from '../sources/ImageSource';
 import { isTiledImageSource } from '../sources/TiledImageSource';
 import { isVectorSource } from '../sources/VectorSource';
 import Panel from './Panel';
@@ -21,22 +24,22 @@ import Panel from './Panel';
  *
  */
 class SourceInspector extends Panel {
-    source: ImageSource;
-    url?: string;
-    cogChannels = '[0]';
-    subtype?: string;
-    crs?: string;
-    resolutions?: number;
-    cpuMemoryUsage = 'unknown';
-    gpuMemoryUsage = 'unknown';
-    loadedPercent = '';
+    public source: ImageSource;
+    public url?: string;
+    public cogChannels = '[0]';
+    public subtype?: string;
+    public crs?: string;
+    public resolutions?: number;
+    public cpuMemoryUsage = 'unknown';
+    public gpuMemoryUsage = 'unknown';
+    public loadedPercent = '';
 
     /**
      * @param gui - The GUI.
      * @param instance - The Giro3D instance.
      * @param source - The source.
      */
-    constructor(gui: GUI, instance: Instance, source: ImageSource) {
+    public constructor(gui: GUI, instance: Instance, source: ImageSource) {
         super(gui, instance, 'Source');
 
         this.source = source;
@@ -44,7 +47,7 @@ class SourceInspector extends Panel {
         this.addControllers(source);
     }
 
-    private addControllers(source: ImageSource) {
+    private addControllers(source: ImageSource): void {
         const obj = { crs: source.getCrs() ?? CoordinateSystem.unknown };
 
         this.addController(source, 'type').name('Type');
@@ -79,7 +82,7 @@ class SourceInspector extends Panel {
         }
     }
 
-    override updateValues(): void {
+    public override updateValues(): void {
         const ctx: MemoryUsage.GetMemoryUsageContext = {
             renderer: this.instance.renderer,
             objects: new Map(),
@@ -99,7 +102,7 @@ class SourceInspector extends Panel {
         this._controllers.forEach(c => c.updateDisplay());
     }
 
-    processOpenLayersSource(source: TileSource) {
+    public processOpenLayersSource(source: TileSource): void {
         const proj = source.getProjection();
 
         // default value in case we can't process the constructor name

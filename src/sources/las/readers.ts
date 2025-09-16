@@ -6,6 +6,7 @@
 
 import type { View } from 'copc';
 import type { BufferAttribute, TypedArray } from 'three';
+
 import {
     Box3,
     Float32BufferAttribute,
@@ -18,12 +19,14 @@ import {
     Uint8BufferAttribute,
     Vector3,
 } from 'three';
-import TypedArrayVector from '../../core/TypedArrayVector';
-import { Vector3Array } from '../../core/VectorArray';
-import { UnsupportedAttributeError } from '../../entities/PointCloud';
+
 import type { PointCloudAttribute } from '../PointCloudSource';
 import type { DimensionName } from './dimension';
 import type { FilterByIndex } from './filter';
+
+import TypedArrayVector from '../../core/TypedArrayVector';
+import { Vector3Array } from '../../core/VectorArray';
+import { UnsupportedAttributeError } from '../../entities/PointCloud';
 import { evaluateFilters } from './filter';
 
 /**
@@ -133,7 +136,7 @@ function fillBuffer<T extends TypedArray>(
     stride: number,
     buffer: TypedArrayVector<T>,
     filters: FilterByIndex[] | null,
-) {
+): void {
     for (let i = 0; i < pointCount; i += stride) {
         if (evaluateFilters(filters, i)) {
             buffer.push(get(i));
@@ -269,7 +272,7 @@ export function createBufferAttribute(
  * Reads an attribute from the view.
  */
 function read<T extends TypedArray>(ctor: new (capacity: number) => T): ReadFn {
-    return (dimension, view, stride, filters) => {
+    return (dimension, view, stride, filters): ArrayBuffer => {
         const pointCount = view.pointCount;
 
         const array = new TypedArrayVector(pointCount, cap => new ctor(cap));

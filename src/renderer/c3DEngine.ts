@@ -12,6 +12,7 @@ import type {
     TextureDataType,
     WebGLRendererParameters,
 } from 'three';
+
 import {
     DepthTexture,
     LinearFilter,
@@ -24,11 +25,11 @@ import {
     WebGLRenderTarget,
 } from 'three';
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+
 import Capabilities from '../core/system/Capabilities';
+import TextureGenerator from '../utils/TextureGenerator';
 import RenderingOptions from './RenderingOptions';
 import RenderPipeline from './RenderPipeline';
-
-import TextureGenerator from '../utils/TextureGenerator';
 import registerChunks from './shader/chunk/registerChunks';
 
 const tmpVec2 = new Vector2();
@@ -38,7 +39,7 @@ function createRenderTarget(
     height: number,
     type: TextureDataType,
     renderer: WebGLRenderer,
-) {
+): WebGLRenderTarget {
     const result = new WebGLRenderTarget(width, height, {
         type,
         format: RGBAFormat,
@@ -60,11 +61,11 @@ function createRenderTarget(
  * @param options - The options.
  * @returns True if the options requires a custom pipeline.
  */
-function requiresCustomPipeline(options: RenderingOptions) {
+function requiresCustomPipeline(options: RenderingOptions): boolean {
     return options.enableEDL || options.enableInpainting || options.enablePointCloudOcclusion;
 }
 
-function createErrorMessage() {
+function createErrorMessage(): HTMLDivElement {
     // from Detector.js
     const element = document.createElement('div');
     element.id = 'webgl-error-message';
@@ -157,22 +158,22 @@ type EngineOptions = {
 class C3DEngine {
     private readonly _renderTargets: Map<number, WebGLRenderTarget> = new Map();
 
-    readonly renderer: WebGLRenderer;
-    readonly labelRenderer: CSS2DRenderer;
+    public readonly renderer: WebGLRenderer;
+    public readonly labelRenderer: CSS2DRenderer;
     private _renderPipeline: RenderPipeline | null;
 
-    width: number;
-    height: number;
-    renderingOptions: RenderingOptions;
+    public width: number;
+    public height: number;
+    public renderingOptions: RenderingOptions;
 
-    clearAlpha = 1;
-    clearColor: ColorRepresentation = 0x030508;
+    public clearAlpha = 1;
+    public clearColor: ColorRepresentation = 0x030508;
 
     /**
      * @param target - The parent div that will contain the canvas.
      * @param options - The options.
      */
-    constructor(target: HTMLDivElement, options?: EngineOptions) {
+    public constructor(target: HTMLDivElement, options?: EngineOptions) {
         registerChunks();
 
         this.width = target.clientWidth;
@@ -244,7 +245,7 @@ class C3DEngine {
         this.renderingOptions = new RenderingOptions();
     }
 
-    dispose() {
+    public dispose(): void {
         for (const rt of this._renderTargets.values()) {
             rt.dispose();
         }
@@ -254,7 +255,7 @@ class C3DEngine {
         this.renderer.dispose();
     }
 
-    onWindowResize(w: number, h: number) {
+    public onWindowResize(w: number, h: number): void {
         this.width = w;
         this.height = h;
         for (const rt of this._renderTargets.values()) {
@@ -269,7 +270,7 @@ class C3DEngine {
      *
      * @returns The viewport size, in pixels.
      */
-    getWindowSize(target?: Vector2) {
+    public getWindowSize(target?: Vector2): Vector2 {
         target = target ?? new Vector2();
         return target.set(this.width, this.height);
     }
@@ -280,7 +281,7 @@ class C3DEngine {
      * @param scene - The scene to render.
      * @param camera - The camera.
      */
-    render(scene: Scene, camera: Camera) {
+    public render(scene: Scene, camera: Camera): void {
         this.renderer.setRenderTarget(null);
         const size = this.renderer.getDrawingBufferSize(tmpVec2);
 
@@ -308,7 +309,7 @@ class C3DEngine {
      * @param scene - The scene to render.
      * @param camera - The camera.
      */
-    renderUsingCustomPipeline(scene: Object3D, camera: Camera) {
+    public renderUsingCustomPipeline(scene: Object3D, camera: Camera): void {
         if (!this._renderPipeline) {
             this._renderPipeline = new RenderPipeline(this.renderer);
         }
@@ -316,7 +317,7 @@ class C3DEngine {
         this._renderPipeline.render(scene, camera, this.width, this.height, this.renderingOptions);
     }
 
-    private acquireRenderTarget(datatype: TextureDataType) {
+    private acquireRenderTarget(datatype: TextureDataType): WebGLRenderTarget {
         let renderTarget = this._renderTargets.get(datatype);
 
         if (!renderTarget) {
@@ -339,7 +340,7 @@ class C3DEngine {
      * @param options - Options.
      * @returns The buffer. The first pixel in the buffer is the bottom-left pixel.
      */
-    renderToBuffer(options: RenderToBufferOptions): Uint8Array | Float32Array {
+    public renderToBuffer(options: RenderToBufferOptions): Uint8Array | Float32Array {
         const zone = options.zone || {
             x: 0,
             y: 0,
@@ -432,7 +433,7 @@ class C3DEngine {
      * @param height - The height of the buffer, in pixels.
      * @returns The image.
      */
-    static bufferToImage(
+    public static bufferToImage(
         pixelBuffer: ArrayLike<number>,
         width: number,
         height: number,

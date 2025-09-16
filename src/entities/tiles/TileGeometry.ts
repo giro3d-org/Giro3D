@@ -5,6 +5,7 @@
  */
 
 import type { BufferGeometry, Vector2, Vector3 } from 'three';
+
 import type Extent from '../../core/geographic/Extent';
 import type HeightMap from '../../core/HeightMap';
 import type MemoryUsage from '../../core/MemoryUsage';

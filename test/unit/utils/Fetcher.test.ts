@@ -4,11 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
+import type { Mock } from 'vitest';
+
+import { afterEach, beforeAll, beforeEach, describe, expect, it, test, vitest } from 'vitest';
+
 import Fetcher from '@giro3d/giro3d/utils/Fetcher';
 import HttpConfiguration from '@giro3d/giro3d/utils/HttpConfiguration';
 import TextureGenerator from '@giro3d/giro3d/utils/TextureGenerator';
-import type { Mock } from 'vitest';
-import { afterEach, beforeAll, beforeEach, describe, expect, it, test, vitest } from 'vitest';
 
 beforeAll(() => {
     // @ts-expect-error property does not exist

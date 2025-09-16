@@ -11,6 +11,7 @@ import type {
     IUniform,
     Texture,
 } from 'three';
+
 import {
     Color,
     GLSL3,
@@ -23,10 +24,12 @@ import {
     Vector3,
     Vector4,
 } from 'three';
-import ColorMap from '../core/ColorMap';
+
 import type Extent from '../core/geographic/Extent';
 import type ColorLayer from '../core/layer/ColorLayer';
 import type { TextureAndPitch } from '../core/layer/Layer';
+
+import ColorMap from '../core/ColorMap';
 import OffsetScale from '../core/OffsetScale';
 import MaterialUtils, { type VertexAttributeType } from './MaterialUtils';
 import PointsFS from './shader/PointsFS.glsl';
@@ -63,13 +66,13 @@ export class Classification {
     /**
      * The color of this classification.
      */
-    color: Color;
+    public color: Color;
     /**
      * Toggles the visibility of points with this classification.
      */
-    visible: boolean;
+    public visible: boolean;
 
-    constructor(color: ColorRepresentation, visible = true) {
+    public constructor(color: ColorRepresentation, visible = true) {
         this.color = new Color(color);
         this.visible = visible;
     }
@@ -78,7 +81,7 @@ export class Classification {
      * Clones this classification.
      * @returns The cloned object.
      */
-    clone() {
+    public clone(): Classification {
         return new Classification(this.color.clone(), this.visible);
     }
 }
@@ -207,31 +210,31 @@ function createDefaultColorMap(): ColorMap {
  * Material used for point clouds.
  */
 class PointCloudMaterial extends ShaderMaterial {
-    readonly isPointCloudMaterial = true;
+    public readonly isPointCloudMaterial = true;
 
-    colorLayer: ColorLayer | null;
-    disposed = false;
+    public colorLayer: ColorLayer | null;
+    public disposed = false;
 
     private _colorMap: ColorMap = createDefaultColorMap();
 
     /**
      * @internal
      */
-    override readonly uniforms: Uniforms;
+    public override readonly uniforms: Uniforms;
 
     /**
      * @internal
      */
-    override readonly defines: Defines;
+    public override readonly defines: Defines;
 
     /**
      * Gets or sets the point size.
      */
-    get size() {
+    public get size(): number {
         return this.uniforms.size.value;
     }
 
-    set size(value: number) {
+    public set size(value: number) {
         this.uniforms.size.value = value;
     }
 
@@ -239,29 +242,29 @@ class PointCloudMaterial extends ShaderMaterial {
      * Gets or sets the point decimation value.
      * A decimation value of N means that we take every Nth point and discard the rest.
      */
-    get decimation() {
+    public get decimation(): number {
         return this.uniforms.decimation.value;
     }
 
-    set decimation(value: number) {
+    public set decimation(value: number) {
         this.uniforms.decimation.value = value;
     }
 
     /**
      * Gets or sets the display mode (color, classification...)
      */
-    get mode(): Mode {
+    public get mode(): Mode {
         return this.uniforms.mode.value;
     }
 
-    set mode(mode: Mode) {
+    public set mode(mode: Mode) {
         this.uniforms.mode.value = mode;
     }
 
     /**
      * Update material uniforms related to intensity and classification attributes.
      */
-    setupFromGeometry(geometry: BufferGeometry) {
+    public setupFromGeometry(geometry: BufferGeometry): void {
         this.enableClassification = geometry.hasAttribute('classification');
 
         if (geometry.hasAttribute('intensity')) {
@@ -277,58 +280,58 @@ class PointCloudMaterial extends ShaderMaterial {
     /**
      * @internal
      */
-    get pickingId(): number {
+    public get pickingId(): number {
         return this.uniforms.pickingId.value;
     }
 
     /**
      * @internal
      */
-    set pickingId(id: number) {
+    public set pickingId(id: number) {
         this.uniforms.pickingId.value = id;
     }
 
     /**
      * Gets or sets the overlay color (default color).
      */
-    get overlayColor(): Vector4 {
+    public get overlayColor(): Vector4 {
         return this.uniforms.overlayColor.value;
     }
 
-    set overlayColor(color: Vector4) {
+    public set overlayColor(color: Vector4) {
         this.uniforms.overlayColor.value = color;
     }
 
     /**
      * Gets or sets the brightness of the points.
      */
-    get brightness(): number {
+    public get brightness(): number {
         return this.uniforms.brightnessContrastSaturation.value.x;
     }
 
-    set brightness(v) {
+    public set brightness(v: number) {
         this.uniforms.brightnessContrastSaturation.value.setX(v);
     }
 
     /**
      * Gets or sets the contrast of the points.
      */
-    get contrast() {
+    public get contrast(): number {
         return this.uniforms.brightnessContrastSaturation.value.y;
     }
 
-    set contrast(v) {
+    public set contrast(v: number) {
         this.uniforms.brightnessContrastSaturation.value.setY(v);
     }
 
     /**
      * Gets or sets the saturation of the points.
      */
-    get saturation() {
+    public get saturation(): number {
         return this.uniforms.brightnessContrastSaturation.value.z;
     }
 
-    set saturation(v) {
+    public set saturation(v: number) {
         this.uniforms.brightnessContrastSaturation.value.setZ(v);
     }
 
@@ -337,7 +340,7 @@ class PointCloudMaterial extends ShaderMaterial {
      * Up to 256 values are supported (i.e classifications in the range 0-255).
      * @defaultValue {@link ASPRS_CLASSIFICATIONS} (see https://www.asprs.org/wp-content/uploads/2010/12/LAS_Specification.pdf)
      */
-    get classifications(): Classification[] {
+    public get classifications(): Classification[] {
         if (this.uniforms.classifications == null) {
             // Initialize with default values
             this.uniforms.classifications = new Uniform(ASPRS_CLASSIFICATIONS);
@@ -345,7 +348,7 @@ class PointCloudMaterial extends ShaderMaterial {
         return this.uniforms.classifications.value;
     }
 
-    set classifications(classifications: Classification[]) {
+    public set classifications(classifications: Classification[]) {
         let actual: Classification[] = classifications;
 
         if (classifications.length > 256) {
@@ -373,14 +376,14 @@ class PointCloudMaterial extends ShaderMaterial {
     /**
      * @internal
      */
-    get enableClassification() {
+    public get enableClassification(): boolean {
         return this.defines.CLASSIFICATION !== undefined;
     }
 
     /**
      * @internal
      */
-    set enableClassification(enable: boolean) {
+    public set enableClassification(enable: boolean) {
         MaterialUtils.setDefine(this, 'CLASSIFICATION', enable);
 
         if (enable && this.uniforms.classifications == null) {
@@ -389,11 +392,11 @@ class PointCloudMaterial extends ShaderMaterial {
         }
     }
 
-    get colorMap(): ColorMap {
+    public get colorMap(): ColorMap {
         return this._colorMap;
     }
 
-    set colorMap(colorMap: ColorMap) {
+    public set colorMap(colorMap: ColorMap) {
         this._colorMap = colorMap;
     }
 
@@ -402,7 +405,7 @@ class PointCloudMaterial extends ShaderMaterial {
      *
      * @param options - The options.
      */
-    constructor(options: PointCloudMaterialOptions = {}) {
+    public constructor(options: PointCloudMaterialOptions = {}) {
         super({ clipping: true, glslVersion: GLSL3 });
         this.vertexShader = PointsVS;
         this.fragmentShader = PointsFS;
@@ -465,7 +468,7 @@ class PointCloudMaterial extends ShaderMaterial {
         }
     }
 
-    override dispose() {
+    public override dispose(): void {
         if (this.disposed) {
             return;
         }
@@ -479,16 +482,16 @@ class PointCloudMaterial extends ShaderMaterial {
      * Internally used for picking.
      * @internal
      */
-    enablePicking(picking: number) {
+    public enablePicking(picking: number): void {
         this.pickingId = picking;
         this.blending = picking ? NoBlending : NormalBlending;
     }
 
-    hasColorLayer(layer: ColorLayer) {
+    public hasColorLayer(layer: ColorLayer): boolean {
         return this.colorLayer === layer;
     }
 
-    updateUniforms() {
+    public updateUniforms(): void {
         this.uniforms.opacity.value = this.opacity;
 
         const colorMapUniform = this.uniforms.colorMap.value;
@@ -497,13 +500,13 @@ class PointCloudMaterial extends ShaderMaterial {
         colorMapUniform.lut = this.colorMap.getTexture();
     }
 
-    override onBeforeRender() {
+    public override onBeforeRender(): void {
         this.uniforms.opacity.value = this.opacity;
 
         this.transparent = this.opacity < 1 || this.colorMap.opacity != null;
     }
 
-    override copy(source: PointCloudMaterial) {
+    public override copy(source: PointCloudMaterial): this {
         super.copy(source);
 
         this.needsUpdate = true;
@@ -523,7 +526,7 @@ class PointCloudMaterial extends ShaderMaterial {
         return this;
     }
 
-    removeColorLayer() {
+    public removeColorLayer(): void {
         this.mode = MODE.COLOR;
         this.colorLayer = null;
         this.uniforms.overlayTexture.value = null;
@@ -531,7 +534,7 @@ class PointCloudMaterial extends ShaderMaterial {
         this.uniforms.hasOverlayTexture.value = 0;
     }
 
-    pushColorLayer(layer: ColorLayer, extent: Extent) {
+    public pushColorLayer(layer: ColorLayer, extent: Extent): void {
         this.mode = MODE.TEXTURE;
 
         this.colorLayer = layer;
@@ -541,7 +544,7 @@ class PointCloudMaterial extends ShaderMaterial {
         this.needsUpdate = true;
     }
 
-    indexOfColorLayer(layer: ColorLayer) {
+    public indexOfColorLayer(layer: ColorLayer): number {
         if (layer === this.colorLayer) {
             return 0;
         }
@@ -549,32 +552,32 @@ class PointCloudMaterial extends ShaderMaterial {
         return -1;
     }
 
-    getColorTexture(layer: ColorLayer) {
+    public getColorTexture(layer: ColorLayer): Texture | null {
         if (layer !== this.colorLayer) {
             return null;
         }
         return this.uniforms.overlayTexture?.value;
     }
 
-    setColorTextures(layer: ColorLayer, textureAndPitch: TextureAndPitch) {
+    public setColorTextures(layer: ColorLayer, textureAndPitch: TextureAndPitch): void {
         const { texture } = textureAndPitch;
         this.uniforms.overlayTexture.value = texture;
         this.uniforms.hasOverlayTexture.value = 1;
     }
 
-    setLayerVisibility() {
+    public setLayerVisibility(): void {
         // no-op
     }
 
-    setLayerOpacity() {
+    public setLayerOpacity(): void {
         // no-op
     }
 
-    setLayerElevationRange() {
+    public setLayerElevationRange(): void {
         // no-op
     }
 
-    setColorimetry(
+    public setColorimetry(
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         layer: ColorLayer,
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -583,7 +586,7 @@ class PointCloudMaterial extends ShaderMaterial {
         contrast: number,
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         saturation: number,
-    ) {
+    ): void {
         // Not implemented because the points have their own BCS controls
     }
 
@@ -591,7 +594,7 @@ class PointCloudMaterial extends ShaderMaterial {
      * Unused for now.
      * @internal
      */
-    enableTransfo(v: boolean) {
+    public enableTransfo(v: boolean): void {
         if (v) {
             this.defines.DEFORMATION_SUPPORT = 1;
             this.defines.NUM_TRANSFO = NUM_TRANSFO;
@@ -602,7 +605,7 @@ class PointCloudMaterial extends ShaderMaterial {
         this.needsUpdate = true;
     }
 
-    static isPointCloudMaterial = (obj: unknown): obj is PointCloudMaterial =>
+    public static isPointCloudMaterial = (obj: unknown): obj is PointCloudMaterial =>
         (obj as PointCloudMaterial)?.isPointCloudMaterial;
 }
 

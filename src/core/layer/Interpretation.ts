@@ -62,7 +62,7 @@ class Interpretation {
     private readonly _mode: Mode;
     private readonly _opts: InterpretationOptions;
 
-    get options() {
+    public get options(): InterpretationOptions {
         return this._opts;
     }
 
@@ -72,7 +72,7 @@ class Interpretation {
      * @param mode - The mode.
      * @param opts - The options.
      */
-    constructor(mode: Mode, opts: InterpretationOptions = {}) {
+    public constructor(mode: Mode, opts: InterpretationOptions = {}) {
         this._mode = mode;
         this._opts = opts;
     }
@@ -80,21 +80,21 @@ class Interpretation {
     /**
      * Gets the interpretation mode.
      */
-    get mode() {
+    public get mode(): Mode {
         return this._mode;
     }
 
     /**
      * The min value (only for `MinMax` mode).
      */
-    get min() {
+    public get min(): number | undefined {
         return this._opts.min;
     }
 
     /**
      * The max value (only for `MinMax` mode).
      */
-    get max() {
+    public get max(): number | undefined {
         return this._opts.max;
     }
 
@@ -103,18 +103,18 @@ class Interpretation {
      * values, such that positive values are going downward, rather than updwards.
      * In other words, interpret values as depths rather than heights.
      */
-    get negateValues() {
+    public get negateValues(): boolean | undefined {
         return this._opts.negateValues;
     }
 
-    set negateValues(v) {
+    public set negateValues(v: boolean | undefined) {
         this._opts.negateValues = v;
     }
 
     /**
      * Returns `true` if this interpretation does not perform any transformation to source pixels.
      */
-    isDefault() {
+    public isDefault(): boolean {
         return this.mode === Mode.Raw && this.negateValues !== true;
     }
 
@@ -122,7 +122,7 @@ class Interpretation {
      * Reverses the sign of elevation values, such that positive values are going downward, rather
      * than updwards. In other words, interpret values as depths rather than heights.
      */
-    withNegatedValues(): this {
+    public withNegatedValues(): this {
         this.negateValues = true;
         return this;
     }
@@ -131,7 +131,7 @@ class Interpretation {
      * Preset for raw. The pixel is used as is, without transformation.
      * Compatible with both grayscale and color images. This is the default.
      */
-    static get Raw(): Interpretation {
+    public static get Raw(): Interpretation {
         return new Interpretation(Mode.Raw);
     }
 
@@ -139,7 +139,7 @@ class Interpretation {
      * Gets the color space required for a correct decoding of textures in this interpretation.
      * If color space cannot be determined, returns `undefined`.
      */
-    get colorSpace(): ColorSpace | undefined {
+    public get colorSpace(): ColorSpace | undefined {
         switch (this._mode) {
             case Mode.ScaleToMinMax:
                 return NoColorSpace;
@@ -168,7 +168,7 @@ class Interpretation {
      * @param max - The maximum value of the dataset, that maps to 255.
      * @returns The scaling values.
      */
-    static ScaleToMinMax(min: number, max: number): Interpretation {
+    public static ScaleToMinMax(min: number, max: number): Interpretation {
         if (typeof min === 'number' && typeof max === 'number') {
             return new Interpretation(Mode.ScaleToMinMax, { min, max });
         }
@@ -193,7 +193,7 @@ class Interpretation {
      * @param max - The maximum value of the dataset.
      * @returns The interpretation.
      */
-    static CompressTo8Bit(min: number, max: number): Interpretation {
+    public static CompressTo8Bit(min: number, max: number): Interpretation {
         if (typeof min === 'number' && typeof max === 'number') {
             return new Interpretation(Mode.CompressTo8Bit, { min, max });
         }
@@ -204,7 +204,7 @@ class Interpretation {
     /**
      * Returns a user-friendly string representation of this interpretation.
      */
-    toString(): string {
+    public toString(): string {
         switch (this.mode) {
             case Mode.Raw:
                 return 'Raw';
@@ -220,7 +220,7 @@ class Interpretation {
     /**
      * @internal
      */
-    setUniform(uniform: InterpretationUniform) {
+    public setUniform(uniform: InterpretationUniform): InterpretationUniform {
         const mode = this.mode;
 
         uniform.mode = mode;

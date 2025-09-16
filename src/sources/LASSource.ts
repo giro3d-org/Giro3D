@@ -5,25 +5,16 @@
  */
 
 import type { Binary, View } from 'copc';
+import type { BufferAttribute } from 'three';
+
 import { Las } from 'copc';
 import { Header } from 'copc/lib/las';
 import { Binary as BinaryUtils } from 'copc/lib/utils/binary';
-import type { BufferAttribute } from 'three';
 import { Box3, Float32BufferAttribute, Vector3 } from 'three';
-import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+
 import type { GetMemoryUsageContext } from '../core/MemoryUsage';
-import OperationCounter from '../core/OperationCounter';
-import { defer } from '../core/RequestQueue';
-import Fetcher from '../utils/Fetcher';
-import { nonNull } from '../utils/tsutils';
-import WorkerPool from '../utils/WorkerPool';
 import type { CommonOptions } from './las/CommonOptions';
-import { getLazPerf } from './las/config';
-import createWorker from './las/createWorker';
 import type { DimensionName } from './las/dimension';
-import { extractAttributes, getDimensionsToRead } from './las/dimension';
-import { getPerPointFilters, type DimensionFilter } from './las/filter';
-import { createBufferAttribute, readColor, readPosition, readScalarAttribute } from './las/readers';
 import type { MessageMap, MessageType } from './las/worker';
 import type {
     GetNodeDataOptions,
@@ -31,6 +22,18 @@ import type {
     PointCloudNode,
     PointCloudNodeData,
 } from './PointCloudSource';
+
+import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import OperationCounter from '../core/OperationCounter';
+import { defer } from '../core/RequestQueue';
+import Fetcher from '../utils/Fetcher';
+import { nonNull } from '../utils/tsutils';
+import WorkerPool from '../utils/WorkerPool';
+import { getLazPerf } from './las/config';
+import createWorker from './las/createWorker';
+import { extractAttributes, getDimensionsToRead } from './las/dimension';
+import { getPerPointFilters, type DimensionFilter } from './las/filter';
+import { createBufferAttribute, readColor, readPosition, readScalarAttribute } from './las/readers';
 import { PointCloudSourceBase } from './PointCloudSource';
 
 export type Getter = () => Promise<Uint8Array>;
@@ -129,8 +132,8 @@ type PerfOptions = {
  * ```
  */
 export default class LASSource extends PointCloudSourceBase {
-    readonly isLASSource = true as const;
-    readonly type = 'LASSource' as const;
+    public readonly isLASSource = true as const;
+    public readonly type = 'LASSource' as const;
 
     private readonly _getter: Getter;
     private readonly _opCounter = new OperationCounter();
@@ -147,11 +150,11 @@ export default class LASSource extends PointCloudSourceBase {
     /** The buffer that stores the entire LAS/LAZ file (in compressed form for LAZ files). */
     private _buffer: ArrayBuffer | null = null;
 
-    get loading(): boolean {
+    public get loading(): boolean {
         return this._opCounter.loading;
     }
 
-    get progress() {
+    public get progress(): number {
         return this._opCounter.progress;
     }
 
@@ -159,17 +162,17 @@ export default class LASSource extends PointCloudSourceBase {
      * Gets or sets the dimension filters.
      * @defaultValue `[]`
      */
-    get filters(): Readonly<DimensionFilter[]> {
+    public get filters(): Readonly<DimensionFilter[]> {
         return this._filters;
     }
 
-    set filters(v: Readonly<DimensionFilter[]>) {
+    public set filters(v: Readonly<DimensionFilter[]>) {
         this._filters.length = 0;
         this._filters.push(...v);
         this.dispatchEvent({ type: 'updated' });
     }
 
-    constructor(options: LASSourceOptions) {
+    public constructor(options: LASSourceOptions) {
         super();
 
         this._opCounter.addEventListener('changed', () => this.dispatchEvent({ type: 'progress' }));
@@ -231,7 +234,7 @@ export default class LASSource extends PointCloudSourceBase {
         return view;
     }
 
-    async getMetadata(): Promise<PointCloudMetadata> {
+    public async getMetadata(): Promise<PointCloudMetadata> {
         const header = nonNull(this._header, 'not initialized');
 
         const view = await this.getView();
@@ -249,13 +252,13 @@ export default class LASSource extends PointCloudSourceBase {
 
         const buffer = nonNull(this._buffer, 'not initialized');
 
-        const getBufferChunk = (begin: number, end: number) => {
+        const getBufferChunk = (begin: number, end: number): Uint8Array => {
             if (end >= buffer.byteLength) {
                 throw new Error();
             }
             return new Uint8Array(buffer.slice(begin, end));
         };
-        const getBufferChunkAsync = (begin: number, end: number) => {
+        const getBufferChunkAsync = (begin: number, end: number): Promise<Uint8Array> => {
             return Promise.resolve(getBufferChunk(begin, end));
         };
 
@@ -282,7 +285,7 @@ export default class LASSource extends PointCloudSourceBase {
         return Promise.resolve(result);
     }
 
-    async getHierarchy(): Promise<PointCloudNode> {
+    public async getHierarchy(): Promise<PointCloudNode> {
         const { min, max, pointCount } = nonNull(this._header, 'not initialized');
 
         const volume = new Box3().set(
@@ -304,7 +307,7 @@ export default class LASSource extends PointCloudSourceBase {
         return uniqueNode;
     }
 
-    async getNodeData(params: GetNodeDataOptions): Promise<PointCloudNodeData> {
+    public async getNodeData(params: GetNodeDataOptions): Promise<PointCloudNodeData> {
         const dimensions = getDimensionsToRead(params.attribute, params.position, this._filters);
 
         const view = await this.getView(dimensions);
@@ -345,10 +348,11 @@ export default class LASSource extends PointCloudSourceBase {
 
             switch (requestedAttribute.interpretation) {
                 case 'color':
-                    action = () => readColor(view, stride, compressColors, filters);
+                    action = (): ArrayBuffer => readColor(view, stride, compressColors, filters);
                     break;
                 default:
-                    action = () => readScalarAttribute(view, requestedAttribute, stride, filters);
+                    action = (): ArrayBuffer =>
+                        readScalarAttribute(view, requestedAttribute, stride, filters);
                     break;
             }
 
@@ -366,7 +370,7 @@ export default class LASSource extends PointCloudSourceBase {
         });
     }
 
-    getMemoryUsage(context: GetMemoryUsageContext): void {
+    public getMemoryUsage(context: GetMemoryUsageContext): void {
         // We have to store the whole file in memory, since there is no guarantee that the
         // remote server supports range requests (which is a requirement for COPC files for example)
         if (this._buffer != null) {
@@ -374,7 +378,7 @@ export default class LASSource extends PointCloudSourceBase {
         }
     }
 
-    dispose(): void {
+    public dispose(): void {
         // Nothing to do
     }
 }

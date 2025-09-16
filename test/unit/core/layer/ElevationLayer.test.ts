@@ -4,10 +4,11 @@
  * SPDX-License-Identifier: MIT
  */
 
+import { describe, expect, it } from 'vitest';
+
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer';
 import Interpretation from '@giro3d/giro3d/core/layer/Interpretation';
 import NullSource from '@giro3d/giro3d/sources/NullSource';
-import { describe, expect, it } from 'vitest';
 
 describe('constructor', () => {
     it('should auto-generate an id if no id is specified', () => {

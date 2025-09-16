@@ -4,9 +4,10 @@
  * SPDX-License-Identifier: MIT
  */
 
-import OperationCounter from '../../core/OperationCounter';
 import type Progress from '../../core/Progress';
 import type { FetchOptions } from '../../utils/Fetcher';
+
+import OperationCounter from '../../core/OperationCounter';
 import Fetcher from '../../utils/Fetcher';
 
 /**
@@ -15,15 +16,15 @@ import Fetcher from '../../utils/Fetcher';
 export default class FetchPlugin implements Progress {
     private readonly _opCounter = new OperationCounter();
 
-    get loading(): boolean {
+    public get loading(): boolean {
         return this._opCounter.loading;
     }
 
-    get progress(): number {
+    public get progress(): number {
         return this._opCounter.progress;
     }
 
-    fetchData(url: RequestInfo | URL, options: FetchOptions) {
+    public fetchData(url: RequestInfo | URL, options: FetchOptions): Promise<Response> {
         this._opCounter.increment();
         return Fetcher.fetch(url, options).finally(() => this._opCounter.decrement());
     }

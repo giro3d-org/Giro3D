@@ -5,11 +5,14 @@
  */
 
 import { CanvasTexture, MathUtils, Texture } from 'three';
+
 import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import type Extent from '../core/geographic/Extent';
+import type { GridExtent } from '../core/geographic/Extent';
+import type { GetImageOptions, ImageResponse, ImageSourceEvents } from './ImageSource';
+
 import EmptyTexture from '../renderer/EmptyTexture';
 import Fetcher from '../utils/Fetcher';
-import type { GetImageOptions, ImageResponse, ImageSourceEvents } from './ImageSource';
 import ImageSource, { ImageResult } from './ImageSource';
 
 /**
@@ -54,8 +57,8 @@ export interface StaticImageSourceEvents extends ImageSourceEvents {
  * than the maximal texture size allowed by WebGL on this browser.
  */
 export default class StaticImageSource extends ImageSource<StaticImageSourceEvents> {
-    readonly isStaticImageSource = true as const;
-    override readonly type = 'StaticImageSource' as const;
+    public readonly isStaticImageSource = true as const;
+    public override readonly type = 'StaticImageSource' as const;
 
     private readonly _extent: Extent;
     private readonly _source: string | HTMLImageElement | HTMLCanvasElement | Texture;
@@ -67,7 +70,7 @@ export default class StaticImageSource extends ImageSource<StaticImageSourceEven
      * Create a {@link StaticImageSource}.
      * @param options - The options.
      */
-    constructor(options: StaticImageSourceOptions) {
+    public constructor(options: StaticImageSourceOptions) {
         super({
             colorSpace: 'srgb',
             flipY: typeof options.source === 'string' ? false : (options.flipY ?? true),
@@ -85,11 +88,11 @@ export default class StaticImageSource extends ImageSource<StaticImageSourceEven
         this._source = options.source;
     }
 
-    getExtent(): Extent {
+    public getExtent(): Extent {
         return this._extent;
     }
 
-    getCrs(): CoordinateSystem {
+    public getCrs(): CoordinateSystem {
         return this._extent.crs;
     }
 
@@ -127,15 +130,15 @@ export default class StaticImageSource extends ImageSource<StaticImageSourceEven
         });
     }
 
-    override adjustExtentAndPixelSize(
+    public override adjustExtentAndPixelSize(
         requestExtent: Extent,
         requestWidth: number,
         requestHeight: number,
-    ): { extent: Extent; width: number; height: number } | null {
+    ): GridExtent | null {
         return { extent: requestExtent, width: requestWidth, height: requestHeight };
     }
 
-    override update(): void {
+    public override update(): void {
         this._promise = undefined;
         super.update();
     }
@@ -148,7 +151,7 @@ export default class StaticImageSource extends ImageSource<StaticImageSourceEven
         return this._promise;
     }
 
-    getImages(_options: GetImageOptions): Array<ImageResponse> {
+    public getImages(_options: GetImageOptions): ImageResponse[] {
         const response: ImageResponse = {
             id: this._id,
             request: this.loadImage.bind(this),

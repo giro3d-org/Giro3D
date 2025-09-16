@@ -5,32 +5,35 @@
  */
 
 import type { WebGLRenderer } from 'three';
-import { Line2 } from 'three/examples/jsm/lines/Line2.js';
 import type { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
 import type { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
+
+import { Line2 } from 'three/examples/jsm/lines/Line2.js';
+
 import type SimpleGeometryMesh from './SimpleGeometryMesh';
+
 import { type DefaultUserData } from './SimpleGeometryMesh';
 
 export default class LineStringMesh<UserData extends DefaultUserData = DefaultUserData>
     extends Line2
     implements SimpleGeometryMesh<UserData>
 {
-    readonly isSimpleGeometryMesh = true as const;
-    readonly isLineStringMesh = true as const;
-    override readonly type = 'LineStringMesh' as const;
+    public readonly isSimpleGeometryMesh = true as const;
+    public readonly isLineStringMesh = true as const;
+    public override readonly type = 'LineStringMesh' as const;
 
     private _featureOpacity = 1;
     private _styleOpacity = 1;
 
-    override userData: Partial<UserData> = {};
+    public override userData: Partial<UserData> = {};
 
-    constructor(geometry: LineGeometry, material: LineMaterial, opacity: number) {
+    public constructor(geometry: LineGeometry, material: LineMaterial, opacity: number) {
         super(geometry, material);
         this.matrixAutoUpdate = false;
         this._styleOpacity = opacity;
     }
 
-    dispose() {
+    public dispose(): void {
         this.geometry.dispose();
         // Don't dispose the material as it is not owned by this mesh.
 
@@ -39,7 +42,11 @@ export default class LineStringMesh<UserData extends DefaultUserData = DefaultUs
         this.dispatchEvent({ type: 'dispose' });
     }
 
-    update(options: { material: LineMaterial | null; opacity: number; renderOrder: number }) {
+    public update(options: {
+        material: LineMaterial | null;
+        opacity: number;
+        renderOrder: number;
+    }): void {
         if (options.material) {
             this.material = options.material;
             this._styleOpacity = options.opacity;
@@ -51,12 +58,12 @@ export default class LineStringMesh<UserData extends DefaultUserData = DefaultUs
         this.renderOrder = options.renderOrder;
     }
 
-    private updateOpacity() {
+    private updateOpacity(): void {
         this.material.opacity = this._styleOpacity * this._featureOpacity;
         this.material.transparent = this.material.opacity < 1;
     }
 
-    override onBeforeRender(renderer: WebGLRenderer): void {
+    public override onBeforeRender(renderer: WebGLRenderer): void {
         // We have to specify the screen size to be able to properly render
         // lines that have a width in pixels. Note that this should be automatically done
         // by three.js in the future, but for now we have to do it manually.
@@ -64,7 +71,7 @@ export default class LineStringMesh<UserData extends DefaultUserData = DefaultUs
         this.material.resolution.set(width, height);
     }
 
-    set opacity(opacity: number) {
+    public set opacity(opacity: number) {
         this._featureOpacity = opacity;
         this.updateOpacity();
     }

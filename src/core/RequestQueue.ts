@@ -6,25 +6,27 @@
 
 import PriorityQueue from 'ol/structs/PriorityQueue';
 import { EventDispatcher, MathUtils } from 'three';
-import PromiseUtils from '../utils/PromiseUtils';
-import OperationCounter from './OperationCounter';
+
 import type Progress from './Progress';
 
-function defaultShouldExecute() {
+import PromiseUtils from '../utils/PromiseUtils';
+import OperationCounter from './OperationCounter';
+
+function defaultShouldExecute(): boolean {
     return true;
 }
 
 class Task {
-    readonly id: string;
+    public readonly id: string;
     private readonly _priority: number;
     private readonly _signal?: AbortSignal;
     private readonly _resolve: (arg: unknown) => void;
     private readonly _request: () => Promise<unknown>;
 
-    readonly reject: (reason?: Error | string) => void;
-    readonly shouldExecute: () => boolean;
+    public readonly reject: (reason?: Error | string) => void;
+    public readonly shouldExecute: () => boolean;
 
-    constructor(
+    public constructor(
         id: string,
         priority: number,
         request: () => Promise<unknown>,
@@ -42,11 +44,11 @@ class Task {
         this.shouldExecute = shouldExecute ?? defaultShouldExecute;
     }
 
-    getKey() {
+    public getKey(): string {
         return this.id;
     }
 
-    getPriority() {
+    public getPriority(): number {
         if (this._signal?.aborted === true) {
             // means "drop the request"
             return Infinity;
@@ -55,7 +57,7 @@ class Task {
         return this._priority;
     }
 
-    execute() {
+    public execute(): Promise<unknown> {
         if (this._signal?.aborted === true) {
             this.reject(PromiseUtils.abortError());
             return Promise.reject();
@@ -67,11 +69,11 @@ class Task {
     }
 }
 
-function priorityFn(task: Task) {
+function priorityFn(task: Task): number {
     return task.getPriority();
 }
 
-function keyFn(task: Task) {
+function keyFn(task: Task): string {
     return task.getKey();
 }
 
@@ -102,7 +104,7 @@ class RequestQueue extends EventDispatcher<RequestQueueEvents> implements Progre
     /**
      * @param options - Options.
      */
-    constructor(
+    public constructor(
         options: {
             /** The maximum number of concurrent requests. */
             maxConcurrentRequests?: number;
@@ -116,27 +118,27 @@ class RequestQueue extends EventDispatcher<RequestQueueEvents> implements Progre
         this._maxConcurrentRequests = options.maxConcurrentRequests ?? MAX_CONCURRENT_REQUESTS;
     }
 
-    get length() {
+    public get length(): number {
         return this._queue.getCount();
     }
 
-    get progress() {
+    public get progress(): number {
         return this._opCounter.progress;
     }
 
-    get loading() {
+    public get loading(): boolean {
         return this._opCounter.loading;
     }
 
-    get pendingRequests() {
+    public get pendingRequests(): number {
         return this._pendingIds.size;
     }
 
-    get concurrentRequests() {
+    public get concurrentRequests(): number {
         return this._concurrentRequests;
     }
 
-    onQueueAvailable() {
+    public onQueueAvailable(): void {
         if (this._queue.isEmpty()) {
             return;
         }
@@ -175,7 +177,7 @@ class RequestQueue extends EventDispatcher<RequestQueueEvents> implements Progre
      * @param options - Options.
      * @returns A promise that resolves when the requested is completed.
      */
-    enqueue<T>(options: {
+    public enqueue<T>(options: {
         /** The unique identifier of this request. */
         id: string;
         /** The request. */

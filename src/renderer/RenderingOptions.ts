@@ -14,52 +14,52 @@ class RenderingOptions {
      *
      * @defaultValue false
      */
-    enableEDL: boolean;
+    public enableEDL: boolean;
     /**
      * The intensity of the EDL effect.
      *
      * @defaultValue 0.7
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    EDLStrength: number;
+    public EDLStrength: number;
     /**
      * The radius of the EDL effect.
      *
      * @defaultValue 1.5
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    EDLRadius = 1.5;
+    public EDLRadius = 1.5;
     /**
      * Enables inpainting (hole filling) effect for point clouds.
      *
      * @defaultValue false
      */
-    enableInpainting = false;
+    public enableInpainting = false;
     /**
      * The number of inpainting steps.
      *
      * @defaultValue 2
      */
-    inpaintingSteps: number;
+    public inpaintingSteps: number;
     /**
      * How much the difference of depth between two pixels contribute to the inpainting weight.
      *
      * @defaultValue 0.5
      */
-    inpaintingDepthContribution: number;
+    public inpaintingDepthContribution: number;
     /**
      * Enables point cloud occlusion effect.
      *
      * @defaultValue false
      */
-    enablePointCloudOcclusion: boolean;
+    public enablePointCloudOcclusion: boolean;
     /**
      * Enables Multisampling Antialiasing (MSAA) on post-processing.
      * @defaultValue true
      */
-    enableMSAA: boolean;
+    public enableMSAA: boolean;
 
-    constructor() {
+    public constructor() {
         this.enableEDL = false;
         this.EDLStrength = 0.7;
         this.EDLRadius = 1.5;

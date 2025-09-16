@@ -5,28 +5,30 @@
  */
 
 import { Box3, Sphere, Vector2, Vector3, type Camera } from 'three';
+
 import type Context from '../core/Context';
+import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
+import type PointOfView from '../core/PointOfView';
+import type TerrainOptions from '../core/TerrainOptions';
+import type { MapSubdivisionStrategy } from './Map';
+import type MapLightingOptions from './MapLightingOptions';
+import type { TileGeometryBuilder } from './tiles/TileGeometry';
+import type TileMesh from './tiles/TileMesh';
+import type TileVolume from './tiles/TileVolume';
+
 import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import Coordinates from '../core/geographic/Coordinates';
 import Ellipsoid from '../core/geographic/Ellipsoid';
 import Extent from '../core/geographic/Extent';
-import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
 import { isColorLayer } from '../core/layer/ColorLayer';
 import { isElevationLayer } from '../core/layer/ElevationLayer';
-import type PointOfView from '../core/PointOfView';
 import ScreenSpaceError from '../core/ScreenSpaceError';
-import type TerrainOptions from '../core/TerrainOptions';
 import { computeDistanceToFitSphere, computeZoomToFitSphere } from '../renderer/View';
 import { isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
-import type { MapSubdivisionStrategy } from './Map';
 import Map, { defaultMapSubdivisionStrategy, type MapConstructorOptions } from './Map';
-import type MapLightingOptions from './MapLightingOptions';
 import { MapLightingMode } from './MapLightingOptions';
 import EllipsoidTileGeometryBuilder from './tiles/EllipsoidTileGeometryBuilder';
 import EllipsoidTileVolume from './tiles/EllipsoidTileVolume';
-import type { TileGeometryBuilder } from './tiles/TileGeometry';
-import type TileMesh from './tiles/TileMesh';
-import type TileVolume from './tiles/TileVolume';
 
 const tempDims = new Vector2();
 const tempWorldPosition = new Vector3();
@@ -117,8 +119,8 @@ export interface GlobeConstructorOptions extends Omit<MapConstructorOptions, 'ex
  * - Z-axis: The rotation axis of the earth (south/north axis).
  */
 export default class Globe extends Map {
-    readonly isGlobe = true as const;
-    override readonly type: string = 'Globe' as const;
+    public readonly isGlobe = true as const;
+    public override readonly type: string = 'Globe' as const;
 
     private readonly _ellipsoid: Ellipsoid;
 
@@ -128,7 +130,7 @@ export default class Globe extends Map {
     /**
      * The ellipsoid used to draw this globe.
      */
-    get ellipsoid(): Ellipsoid {
+    public get ellipsoid(): Ellipsoid {
         return this._ellipsoid;
     }
 
@@ -136,15 +138,15 @@ export default class Globe extends Map {
      * Enables or disable horizon culling.
      * @defaultValue true
      */
-    get horizonCulling() {
+    public get horizonCulling(): boolean {
         return this._enableHorizonCulling;
     }
 
-    set horizonCulling(v: boolean) {
+    public set horizonCulling(v: boolean) {
         this._enableHorizonCulling = v;
     }
 
-    constructor(options?: GlobeConstructorOptions) {
+    public constructor(options?: GlobeConstructorOptions) {
         super({
             subdivisionStrategy: defaultGlobeSubdivisionStrategy,
             ...options,
@@ -168,7 +170,7 @@ export default class Globe extends Map {
         return frustumVisible && horizonVisible;
     }
 
-    private computeHorizonDistance(camera: Camera) {
+    private computeHorizonDistance(camera: Camera): void {
         if (this._enableHorizonCulling) {
             const cameraPosition = camera.getWorldPosition(tempCameraPosition);
             const horizonDistance = this.ellipsoid.getOpticalHorizon(
@@ -180,7 +182,7 @@ export default class Globe extends Map {
         }
     }
 
-    override preUpdate(context: Context, changeSources: Set<unknown>): TileMesh[] {
+    public override preUpdate(context: Context, changeSources: Set<unknown>): TileMesh[] {
         this.computeHorizonDistance(context.view.camera);
 
         return super.preUpdate(context, changeSources);
@@ -287,7 +289,7 @@ export default class Globe extends Map {
     /**
      * Looks at the center of the globe from the [0°, 0°] geographic coordinate.
      */
-    override getDefaultPointOfView(
+    public override getDefaultPointOfView(
         params: Parameters<HasDefaultPointOfView['getDefaultPointOfView']>[0],
     ): ReturnType<HasDefaultPointOfView['getDefaultPointOfView']> {
         const target = new Vector3(0, 0, 0);

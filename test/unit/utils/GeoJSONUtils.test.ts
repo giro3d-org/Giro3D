@@ -4,8 +4,9 @@
  * SPDX-License-Identifier: MIT
  */
 
-import GeoJSONUtils from '@giro3d/giro3d/utils/GeoJSONUtils';
 import { describe, expect, it } from 'vitest';
+
+import GeoJSONUtils from '@giro3d/giro3d/utils/GeoJSONUtils';
 
 const dataSet = [
     { type: 'Point', flat3Coordinates: [[1, 2, 3]], geojsonCoordinates: [1, 2, 3] },

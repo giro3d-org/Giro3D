@@ -31,11 +31,14 @@ export default interface ElevationProvider {
 class AggregateProvider implements ElevationProvider {
     private readonly _providers: Readonly<ElevationProvider[]>;
 
-    constructor(providers: Readonly<ElevationProvider[]>) {
+    public constructor(providers: Readonly<ElevationProvider[]>) {
         this._providers = providers;
     }
 
-    getElevation(options: GetElevationOptions, result?: GetElevationResult): GetElevationResult {
+    public getElevation(
+        options: GetElevationOptions,
+        result?: GetElevationResult,
+    ): GetElevationResult {
         result = result ?? {
             coordinates: options.coordinates,
             samples: [],

@@ -4,10 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-import type { ChildrenList, Octree } from '@giro3d/giro3d/core/Octree';
-import { create, populate, traverse } from '@giro3d/giro3d/core/Octree';
 import { Box3 } from 'three';
 import { describe, expect, it } from 'vitest';
+
+import type { ChildrenList, Octree } from '@giro3d/giro3d/core/Octree';
+
+import { create, populate, traverse } from '@giro3d/giro3d/core/Octree';
 
 type Payload = { value?: number };
 

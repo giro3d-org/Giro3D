@@ -5,11 +5,14 @@
  */
 
 import type { Matrix4 } from 'three';
+
 import { Box3, MathUtils, Sphere, Vector2, Vector3 } from 'three';
+
 import type ElevationRange from '../../core/ElevationRange';
+import type Extent from '../../core/geographic/Extent';
+
 import CoordinateSystem from '../../core/geographic/coordinate-system/CoordinateSystem';
 import Coordinates from '../../core/geographic/Coordinates';
-import type Extent from '../../core/geographic/Extent';
 import { toCartesian } from './PanoramaTileGeometry';
 import TileVolume from './TileVolume';
 
@@ -24,21 +27,21 @@ export default class PanoramaTileVolume extends TileVolume {
 
     private _corners: Vector3[] | null = null;
 
-    get extent(): Readonly<Extent> {
+    public get extent(): Readonly<Extent> {
         return this._extent;
     }
 
-    get radius(): Readonly<number> {
+    public get radius(): Readonly<number> {
         return this._radius;
     }
 
-    constructor(options: { extent: Extent; radius: number }) {
+    public constructor(options: { extent: Extent; radius: number }) {
         super();
         this._extent = options.extent;
         this._radius = options.radius;
     }
 
-    getWorldSpaceCorners(matrix: Matrix4, target?: Vector3[]): Vector3[] {
+    public getWorldSpaceCorners(matrix: Matrix4, target?: Vector3[]): Vector3[] {
         if (this._corners == null) {
             const dims = this._extent.dimensions(vec2);
 
@@ -100,11 +103,11 @@ export default class PanoramaTileVolume extends TileVolume {
         );
     }
 
-    setElevationRange(_range: ElevationRange) {
+    public setElevationRange(_range: ElevationRange): void {
         // Nothing to do
     }
 
-    override getWorldSpaceBoundingSphere(target: Sphere, matrix: Matrix4): Sphere {
+    public override getWorldSpaceBoundingSphere(target: Sphere, matrix: Matrix4): Sphere {
         target = target ?? new Sphere();
         return target.setFromPoints(this.getWorldSpaceCorners(matrix, tmpCorners));
     }

@@ -5,8 +5,10 @@
  */
 
 import type GUI from 'lil-gui';
+
 import type ContourLineOptions from '../core/ContourLineOptions';
 import type Instance from '../core/Instance';
+
 import Panel from './Panel';
 
 class ContourLinePanel extends Panel {
@@ -15,7 +17,7 @@ class ContourLinePanel extends Panel {
      * @param parentGui - Parent GUI
      * @param instance - The instance
      */
-    constructor(options: ContourLineOptions, parentGui: GUI, instance: Instance) {
+    public constructor(options: ContourLineOptions, parentGui: GUI, instance: Instance) {
         super(parentGui, instance, 'Contour lines');
 
         this.addController(options, 'enabled')

@@ -19,18 +19,18 @@ const PAUSE_BETWEEN_ERRORS = [1.0, 3.0, 7.0, 60.0] as const;
  * error handling.
  */
 class LayerUpdateState {
-    state: UpdateState;
-    lastErrorTimestamp: number;
-    errorCount: number;
-    failureParams?: unknown;
+    public state: UpdateState;
+    public lastErrorTimestamp: number;
+    public errorCount: number;
+    public failureParams?: unknown;
 
-    constructor() {
+    public constructor() {
         this.state = UpdateState.IDLE;
         this.lastErrorTimestamp = 0;
         this.errorCount = 0;
     }
 
-    canTryUpdate(timestamp: number) {
+    public canTryUpdate(timestamp: number): boolean {
         switch (this.state) {
             case UpdateState.IDLE: {
                 return true;
@@ -48,7 +48,7 @@ class LayerUpdateState {
         }
     }
 
-    secondsUntilNextTry() {
+    public secondsUntilNextTry(): number {
         if (this.state !== UpdateState.ERROR) {
             return 0;
         }
@@ -57,29 +57,29 @@ class LayerUpdateState {
         return PAUSE_BETWEEN_ERRORS[idx];
     }
 
-    newTry() {
+    public newTry(): void {
         this.state = UpdateState.PENDING;
     }
 
-    success() {
+    public success(): void {
         this.failureParams = undefined;
         this.lastErrorTimestamp = 0;
         this.state = UpdateState.IDLE;
     }
 
-    noMoreUpdatePossible() {
+    public noMoreUpdatePossible(): void {
         this.failureParams = undefined;
         this.state = UpdateState.FINISHED;
     }
 
-    failure(timestamp: number, definitive: boolean, failureParams?: unknown) {
+    public failure(timestamp: number, definitive: boolean, failureParams?: unknown): void {
         this.failureParams = failureParams;
         this.lastErrorTimestamp = timestamp;
         this.state = definitive ? UpdateState.DEFINITIVE_ERROR : UpdateState.ERROR;
         this.errorCount++;
     }
 
-    inError() {
+    public inError(): boolean {
         return this.state === UpdateState.DEFINITIVE_ERROR || this.state === UpdateState.ERROR;
     }
 }

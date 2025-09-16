@@ -12,13 +12,10 @@ import type Context from './Context';
 import type ContourLineOptions from './ContourLineOptions';
 import type Disposable from './Disposable';
 import type ElevationProvider from './ElevationProvider';
-import { type aggregateElevationProviders } from './ElevationProvider';
 import type ElevationRange from './ElevationRange';
 import type ElevationSample from './ElevationSample';
 import type * as features from './FeatureTypes';
 import type * as geographic from './geographic/api';
-import GetElevationOptions from './GetElevationOptions';
-import GetElevationResult from './GetElevationResult';
 import type GraticuleOptions from './GraticuleOptions';
 import type Instance from './Instance';
 import type {
@@ -42,12 +39,16 @@ import type { PointCloudEventMap, PointCloudOptions } from './PointCloud';
 import type Progress from './Progress';
 import type Rect from './Rect';
 import type TerrainOptions from './TerrainOptions';
+import type { Vector2Array, Vector3Array, Vector4Array, VectorArray } from './VectorArray';
+
+import { type aggregateElevationProviders } from './ElevationProvider';
+import GetElevationOptions from './GetElevationOptions';
+import GetElevationResult from './GetElevationResult';
 import {
     DEFAULT_ENABLE_STITCHING,
     DEFAULT_ENABLE_TERRAIN,
     DEFAULT_MAP_SEGMENTS,
 } from './TerrainOptions';
-import type { Vector2Array, Vector3Array, Vector4Array, VectorArray } from './VectorArray';
 
 export {
     aggregateElevationProviders,

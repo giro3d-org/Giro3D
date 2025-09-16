@@ -4,19 +4,21 @@
  * SPDX-License-Identifier: MIT
  */
 
-import Instance from '@giro3d/giro3d/core/Instance';
-import Extent from '@giro3d/giro3d/core/geographic/Extent';
+import { Color, DoubleSide, Group } from 'three';
+import { beforeEach, describe, expect, it, vitest } from 'vitest';
+
+import type { LayerUserData } from '@giro3d/giro3d/core/layer/Layer';
+import type TileMesh from '@giro3d/giro3d/entities/tiles/TileMesh';
+
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
+import Extent from '@giro3d/giro3d/core/geographic/Extent';
+import Instance from '@giro3d/giro3d/core/Instance';
 import ColorLayer, { isColorLayer } from '@giro3d/giro3d/core/layer/ColorLayer';
 import ElevationLayer, { isElevationLayer } from '@giro3d/giro3d/core/layer/ElevationLayer';
-import type { LayerUserData } from '@giro3d/giro3d/core/layer/Layer';
 import Map from '@giro3d/giro3d/entities/Map';
-import type TileMesh from '@giro3d/giro3d/entities/tiles/TileMesh';
 import { DEFAULT_AZIMUTH, DEFAULT_ZENITH } from '@giro3d/giro3d/renderer/LayeredMaterial';
 import RenderingState from '@giro3d/giro3d/renderer/RenderingState';
 import NullSource from '@giro3d/giro3d/sources/NullSource';
-import { Color, DoubleSide, Group } from 'three';
-import { beforeEach, describe, expect, it, vitest } from 'vitest';
 
 const nullSource = new NullSource({
     extent: new Extent(CoordinateSystem.epsg3857, -10, 10, -10, 10),

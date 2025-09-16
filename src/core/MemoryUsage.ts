@@ -5,6 +5,7 @@
  */
 
 import type { BufferGeometry, IUniform, Material, Object3D, WebGLRenderer } from 'three';
+
 import {
     isBufferGeometry,
     isMaterial,
@@ -88,7 +89,7 @@ export function format(bytes: number, locale: string | undefined = undefined): s
     return `${numberFormat.format(value)} ${unit}`;
 }
 
-function iterateMaterials(obj: unknown, callback: (material: Material) => void) {
+function iterateMaterials(obj: unknown, callback: (material: Material) => void): void {
     const withMaterials = obj as { material: Material | Material[] };
 
     if (withMaterials.material == null) {
@@ -106,7 +107,7 @@ function iterateMaterials(obj: unknown, callback: (material: Material) => void) 
     }
 }
 
-export function getObject3DMemoryUsage(context: GetMemoryUsageContext, object3d: Object3D) {
+export function getObject3DMemoryUsage(context: GetMemoryUsageContext, object3d: Object3D): void {
     if ('geometry' in object3d && isBufferGeometry(object3d.geometry)) {
         getGeometryMemoryUsage(context, object3d.geometry);
     }
@@ -116,7 +117,7 @@ export function getObject3DMemoryUsage(context: GetMemoryUsageContext, object3d:
     });
 }
 
-export function getUniformMemoryUsage(context: GetMemoryUsageContext, uniform: IUniform) {
+export function getUniformMemoryUsage(context: GetMemoryUsageContext, uniform: IUniform): void {
     const value = uniform.value;
 
     if (isTexture(value)) {
@@ -124,7 +125,7 @@ export function getUniformMemoryUsage(context: GetMemoryUsageContext, uniform: I
     }
 }
 
-export function getMaterialMemoryUsage(context: GetMemoryUsageContext, material: Material) {
+export function getMaterialMemoryUsage(context: GetMemoryUsageContext, material: Material): void {
     if (isShaderMaterial(material)) {
         for (const uniform of Object.values(material.uniforms)) {
             getUniformMemoryUsage(context, uniform);
@@ -138,7 +139,10 @@ export function getMaterialMemoryUsage(context: GetMemoryUsageContext, material:
     // TODO other kinds of materials
 }
 
-export function getGeometryMemoryUsage(context: GetMemoryUsageContext, geometry: BufferGeometry) {
+export function getGeometryMemoryUsage(
+    context: GetMemoryUsageContext,
+    geometry: BufferGeometry,
+): void {
     let bytes = 0;
 
     for (const attributeName of Object.keys(geometry.attributes)) {

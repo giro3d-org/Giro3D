@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
+import CameraControls from 'camera-controls';
 import {
     Box3,
     Clock,
@@ -17,8 +18,6 @@ import {
     Vector3,
     Vector4,
 } from 'three';
-
-import CameraControls from 'camera-controls';
 
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';

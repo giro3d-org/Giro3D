@@ -8,11 +8,14 @@ import type { Feature } from 'ol';
 import type { Color as OLColor } from 'ol/color';
 import type { ColorLike } from 'ol/colorlike';
 import type { Extent as OLExtent } from 'ol/extent';
+
 import { Color } from 'three';
-import Extent from '../core/geographic/Extent';
+
 import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 
-function fromOLExtent(extent: OLExtent, coordinateSystem: CoordinateSystem) {
+import Extent from '../core/geographic/Extent';
+
+function fromOLExtent(extent: OLExtent, coordinateSystem: CoordinateSystem): Extent {
     return new Extent(coordinateSystem, extent[0], extent[2], extent[1], extent[3]);
 }
 
@@ -28,7 +31,7 @@ function toOLExtent(extent: Extent, margin = 0): OLExtent {
 function parseAlpha(css: string): number {
     let color: RegExpExecArray | null;
 
-    const parse = (s: string) => {
+    const parse = (s: string): number => {
         if (!s) {
             return 1;
         }

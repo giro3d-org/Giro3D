@@ -4,8 +4,9 @@
  * SPDX-License-Identifier: MIT
  */
 
-import Sun from '@giro3d/giro3d/core/geographic/Sun';
 import { describe, expect, it } from 'vitest';
+
+import Sun from '@giro3d/giro3d/core/geographic/Sun';
 
 describe('getGeographicPosition', () => {
     it('should return the correct geodetic coordinates for 2025 northern summer solstice UTC', () => {

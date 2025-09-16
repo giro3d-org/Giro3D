@@ -10,51 +10,51 @@ import type Extent from './geographic/Extent';
  * A rectangle.
  */
 class Rect {
-    xMin: number;
-    xMax: number;
-    yMin: number;
-    yMax: number;
+    public xMin: number;
+    public xMax: number;
+    public yMin: number;
+    public yMax: number;
 
-    constructor(xMin: number, xMax: number, yMin: number, yMax: number) {
+    public constructor(xMin: number, xMax: number, yMin: number, yMax: number) {
         this.xMin = xMin;
         this.xMax = xMax;
         this.yMin = yMin;
         this.yMax = yMax;
     }
 
-    get left() {
+    public get left(): number {
         return this.xMin;
     }
 
-    get right() {
+    public get right(): number {
         return this.xMax;
     }
 
-    get top() {
+    public get top(): number {
         return this.yMax;
     }
 
-    get bottom() {
+    public get bottom(): number {
         return this.yMin;
     }
 
-    get width() {
+    public get width(): number {
         return this.xMax - this.xMin;
     }
 
-    get height() {
+    public get height(): number {
         return this.yMax - this.yMin;
     }
 
-    get centerX() {
+    public get centerX(): number {
         return this.xMin + (this.xMax - this.xMin) * 0.5;
     }
 
-    get centerY() {
+    public get centerY(): number {
         return this.yMin + (this.yMax - this.yMin) * 0.5;
     }
 
-    static fromExtent(extent: Extent) {
+    public static fromExtent(extent: Extent): Rect {
         return new Rect(extent.west, extent.east, extent.south, extent.north);
     }
 
@@ -63,7 +63,7 @@ class Rect {
      * @param epsilon - The comparison epsilon.
      * @returns True if they are equal.
      */
-    equals(other: Rect, epsilon = 0.0001) {
+    public equals(other: Rect, epsilon = 0.0001): boolean {
         return (
             Math.abs(other.xMin - this.xMin) <= epsilon &&
             Math.abs(other.xMax - this.xMax) <= epsilon &&
@@ -72,7 +72,7 @@ class Rect {
         );
     }
 
-    getIntersection(other: Rect) {
+    public getIntersection(other: Rect): Rect {
         const xMin = Math.max(this.xMin, other.xMin);
         const xMax = Math.min(this.xMax, other.xMax);
         const yMin = Math.max(this.yMin, other.yMin);
@@ -87,7 +87,10 @@ class Rect {
      * @param source - The source rect.
      * @param dest - The destination rect.
      */
-    static getNormalizedRect(source: Rect, dest: Rect) {
+    public static getNormalizedRect(
+        source: Rect,
+        dest: Rect,
+    ): { x: number; y: number; w: number; h: number } {
         const dstDim = { x: dest.width, y: dest.height };
         const srcDim = { x: source.width, y: source.height };
         let x = (source.left - dest.left) / dstDim.x;

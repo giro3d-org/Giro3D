@@ -4,16 +4,8 @@
  * SPDX-License-Identifier: MIT
  */
 
-import Interpretation from '@giro3d/giro3d/core/layer/Interpretation';
-import type { GetMemoryUsageContext } from '@giro3d/giro3d/core/MemoryUsage';
-import { aggregateMemoryUsage } from '@giro3d/giro3d/core/MemoryUsage';
-import TextureGenerator, {
-    DEFAULT_NODATA,
-    OPAQUE_BYTE,
-    OPAQUE_FLOAT,
-    TRANSPARENT,
-} from '@giro3d/giro3d/utils/TextureGenerator';
 import type { WebGLRenderer } from 'three';
+
 import {
     CanvasTexture,
     Color,
@@ -25,6 +17,17 @@ import {
     UnsignedByteType,
 } from 'three';
 import { beforeEach, describe, expect, it } from 'vitest';
+
+import type { GetMemoryUsageContext } from '@giro3d/giro3d/core/MemoryUsage';
+
+import Interpretation from '@giro3d/giro3d/core/layer/Interpretation';
+import { aggregateMemoryUsage } from '@giro3d/giro3d/core/MemoryUsage';
+import TextureGenerator, {
+    DEFAULT_NODATA,
+    OPAQUE_BYTE,
+    OPAQUE_FLOAT,
+    TRANSPARENT,
+} from '@giro3d/giro3d/utils/TextureGenerator';
 
 describe('createDataTexture', () => {
     describe('given unsigned 8-bit data', () => {

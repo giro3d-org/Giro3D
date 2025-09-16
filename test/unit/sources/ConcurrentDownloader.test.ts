@@ -4,10 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
+import { describe, expect, it } from 'vitest';
+
 import type { FetchCallback } from '@giro3d/giro3d/sources/ConcurrentDownloader';
+
 import ConcurrentDownloader from '@giro3d/giro3d/sources/ConcurrentDownloader';
 import PromiseUtils from '@giro3d/giro3d/utils/PromiseUtils';
-import { describe, expect, it } from 'vitest';
 
 const URL = 'http://example.com/foo';
 

@@ -5,6 +5,7 @@
  */
 
 import type { Camera } from 'three';
+
 import type PointOfView from './PointOfView';
 
 /**

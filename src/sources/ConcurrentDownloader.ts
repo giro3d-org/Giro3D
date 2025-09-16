@@ -5,6 +5,7 @@
  */
 
 import type { FetchOptions } from '../utils/Fetcher';
+
 import Fetcher from '../utils/Fetcher';
 import PromiseUtils from '../utils/PromiseUtils';
 
@@ -80,7 +81,7 @@ export default class ConcurrentDownloader {
     private readonly _retry: number;
     private readonly _fetch: FetchCallback;
 
-    constructor(options: {
+    public constructor(options: {
         /**
          * The timeout, in milliseconds, before a running request is aborted.
          * @defaultValue 5000
@@ -110,7 +111,7 @@ export default class ConcurrentDownloader {
      * Only when _all_ signals attached to this request are aborted, is the request aborted.
      * @returns A response that can be safely reused across multiple calls.
      */
-    async fetch(url: string, options?: FetchOptions): Promise<Response> {
+    public async fetch(url: string, options?: FetchOptions): Promise<Response> {
         const key = getUniqueKey(url, options);
 
         const existing = this._requests.get(key);

@@ -4,11 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
 
-import proj from 'proj4';
 import type { Vector3 } from 'three';
+
+import proj from 'proj4';
 import { MathUtils, Vector2, type TypedArray } from 'three';
-import { getConverter } from '../core/geographic/ProjectionCache';
+
 import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+
+import { getConverter } from '../core/geographic/ProjectionCache';
 
 const ZERO = new Vector2(0, 0);
 
@@ -33,7 +36,7 @@ function transformBufferInPlace(
         /** The offset to apply after transforming the coordinate. */
         offset?: Vector2;
     },
-) {
+): void {
     const srcCrsId = params.srcCrs.id;
     const dstCrsId = params.dstCrs.id;
     if (srcCrsId === dstCrsId) {

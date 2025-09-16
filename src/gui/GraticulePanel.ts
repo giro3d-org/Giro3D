@@ -5,8 +5,10 @@
  */
 
 import type GUI from 'lil-gui';
+
 import type GraticuleOptions from '../core/GraticuleOptions';
 import type Instance from '../core/Instance';
+
 import Panel from './Panel';
 
 class GraticulePanel extends Panel {
@@ -15,7 +17,7 @@ class GraticulePanel extends Panel {
      * @param parentGui - Parent GUI
      * @param instance - The instance
      */
-    constructor(graticule: GraticuleOptions, parentGui: GUI, instance: Instance) {
+    public constructor(graticule: GraticuleOptions, parentGui: GUI, instance: Instance) {
         super(parentGui, instance, 'Graticule');
 
         this.addController(graticule, 'enabled')

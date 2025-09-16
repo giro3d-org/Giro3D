@@ -4,14 +4,15 @@
  * SPDX-License-Identifier: MIT
  */
 
-import LineStringMesh, {
-    isLineStringMesh,
-} from '@giro3d/giro3d/renderer/geometries/LineStringMesh';
-import { isSimpleGeometryMesh } from '@giro3d/giro3d/renderer/geometries/SimpleGeometryMesh';
 import { Vector2, type WebGLRenderer } from 'three';
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { describe, expect, it, vitest } from 'vitest';
+
+import LineStringMesh, {
+    isLineStringMesh,
+} from '@giro3d/giro3d/renderer/geometries/LineStringMesh';
+import { isSimpleGeometryMesh } from '@giro3d/giro3d/renderer/geometries/SimpleGeometryMesh';
 
 describe('constructor', () => {
     it('should assign properties', () => {

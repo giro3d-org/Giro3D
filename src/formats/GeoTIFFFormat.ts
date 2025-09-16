@@ -4,11 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { fromBlob, Pool } from 'geotiff';
 import type { TypedArray } from 'three';
+
+import { fromBlob, Pool } from 'geotiff';
 import { FloatType, UnsignedByteType } from 'three';
+
+import type { DecodeOptions, DecodeResult } from './ImageFormat';
+
 import TextureGenerator from '../utils/TextureGenerator';
-import type { DecodeOptions } from './ImageFormat';
 import ImageFormat from './ImageFormat';
 
 let geotiffWorkerPool: Pool;
@@ -18,15 +21,15 @@ let geotiffWorkerPool: Pool;
  *
  */
 class GeoTIFFFormat extends ImageFormat {
-    readonly isGeoTIFFFormat: boolean = true as const;
-    override readonly type = 'GeoTIFFFormat';
+    public readonly isGeoTIFFFormat: boolean = true as const;
+    public override readonly type = 'GeoTIFFFormat';
 
     private readonly _enableWorkers: boolean;
 
     /**
      * @param options - Decoder options.
      */
-    constructor(options?: {
+    public constructor(options?: {
         /**
          * Enables processing raster data in web workers.
          * @defaultValue true
@@ -47,7 +50,7 @@ class GeoTIFFFormat extends ImageFormat {
      * @param options - the decoding options
      */
 
-    async decode(blob: Blob, options?: DecodeOptions) {
+    public async decode(blob: Blob, options?: DecodeOptions): Promise<DecodeResult> {
         const tiff = await fromBlob(blob);
         const image = await tiff.getImage();
 

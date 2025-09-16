@@ -13,13 +13,15 @@ import {
     Vector2,
     Vector3,
 } from 'three';
+
 import type Extent from '../../core/geographic/Extent';
 import type HeightMap from '../../core/HeightMap';
 import type MemoryUsage from '../../core/MemoryUsage';
-import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../../core/MemoryUsage';
 import type { SkirtSide } from './GridBuilder';
-import { getGridBuffers, iterateBottomVertices, iterateSkirtVertices } from './GridBuilder';
 import type TileGeometry from './TileGeometry';
+
+import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../../core/MemoryUsage';
+import { getGridBuffers, iterateBottomVertices, iterateSkirtVertices } from './GridBuilder';
 
 const tmpVec3 = new Vector3();
 const tmpVec2 = new Vector2();
@@ -34,7 +36,7 @@ export interface TileGeometryOptions {
  * Geometry for map tiles in a planar coordinate system (where the up axis is the same everywhere).
  */
 class PlanarTileGeometry extends BufferGeometry implements MemoryUsage, TileGeometry {
-    readonly isMemoryUsage = true as const;
+    public readonly isMemoryUsage = true as const;
     private readonly _dimensions: Vector2;
     private _segments: number;
     private _extent: Extent;
@@ -42,19 +44,19 @@ class PlanarTileGeometry extends BufferGeometry implements MemoryUsage, TileGeom
     private _origin: Vector3;
     private _skirtDepth: number | null = null;
 
-    getMemoryUsage(context: GetMemoryUsageContext) {
+    public getMemoryUsage(context: GetMemoryUsageContext): void {
         getGeometryMemoryUsage(context, this);
     }
 
-    get vertexCount() {
+    public get vertexCount(): number {
         return this.getAttribute('position').count;
     }
 
-    get origin() {
+    public get origin(): Vector3 {
         return this._origin;
     }
 
-    get raycastGeometry() {
+    public get raycastGeometry(): this {
         // No distinction between the raycast geometry and the rendered geometry.
         return this;
     }
@@ -63,7 +65,7 @@ class PlanarTileGeometry extends BufferGeometry implements MemoryUsage, TileGeom
      * @param params - Parameters to construct the grid. Should contain an extent
      *  and a size, either a number of segment or a width and an height in pixels.
      */
-    constructor(params: TileGeometryOptions) {
+    public constructor(params: TileGeometryOptions) {
         super();
         this._extent = params.extent;
         this._origin = this._extent.center().toVector3();
@@ -73,18 +75,18 @@ class PlanarTileGeometry extends BufferGeometry implements MemoryUsage, TileGeom
         this.buildBuffers(this);
     }
 
-    get segments() {
+    public get segments(): number {
         return this._segments;
     }
 
-    set segments(v) {
+    public set segments(v: number) {
         if (this._segments !== v) {
             this._segments = v;
             this.buildBuffers(this);
         }
     }
 
-    resetHeights() {
+    public resetHeights(): void {
         const positions = this.getAttribute('position');
 
         let end = positions.count;
@@ -105,12 +107,12 @@ class PlanarTileGeometry extends BufferGeometry implements MemoryUsage, TileGeom
         this.computeBoundingBox();
     }
 
-    applyHeightMap(heightMap: HeightMap): { min: number; max: number } {
+    public applyHeightMap(heightMap: HeightMap): { min: number; max: number } {
         this._heightMap = heightMap;
         return this.buildBuffers(this);
     }
 
-    private buildBuffers(geometry: BufferGeometry) {
+    private buildBuffers(geometry: BufferGeometry): { min: number; max: number } {
         this.dispose();
 
         const rowVertices = this._segments + 1;
@@ -196,7 +198,7 @@ class PlanarTileGeometry extends BufferGeometry implements MemoryUsage, TileGeom
                 top: number,
                 skirtTop: number,
                 skirtBottom: number,
-            ) => {
+            ): void => {
                 const x = positionBuffer.getX(top);
                 const y = positionBuffer.getY(top);
                 const z = positionBuffer.getZ(top);
@@ -215,7 +217,7 @@ class PlanarTileGeometry extends BufferGeometry implements MemoryUsage, TileGeom
                 top: number,
                 skirtTop: number,
                 skirtBottom: number,
-            ) => {
+            ): void => {
                 const normal = normals[side];
 
                 normalBuffer.setVector(skirtTop, normal);
@@ -235,7 +237,7 @@ class PlanarTileGeometry extends BufferGeometry implements MemoryUsage, TileGeom
                 top: number,
                 skirtTop: number,
                 skirtBottom: number,
-            ) => {
+            ): void => {
                 const uv = uvBuffer.get(top, tmpVec2);
 
                 uvBuffer.setVector(skirtTop, uv);

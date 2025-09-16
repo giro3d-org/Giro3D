@@ -4,14 +4,17 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { setLazPerfPath } from '@giro3d/giro3d/sources/las/config';
-import type { DimensionFilter } from '@giro3d/giro3d/sources/las/filter';
-import type { Getter } from '@giro3d/giro3d/sources/LASSource';
-import LASSource from '@giro3d/giro3d/sources/LASSource';
-import type { PointCloudAttribute } from '@giro3d/giro3d/sources/PointCloudSource';
 import * as process from 'process';
 import { IntType } from 'three';
 import { beforeAll, beforeEach, describe, expect, it, vitest } from 'vitest';
+
+import type { DimensionFilter } from '@giro3d/giro3d/sources/las/filter';
+import type { Getter } from '@giro3d/giro3d/sources/LASSource';
+import type { PointCloudAttribute } from '@giro3d/giro3d/sources/PointCloudSource';
+
+import { setLazPerfPath } from '@giro3d/giro3d/sources/las/config';
+import LASSource from '@giro3d/giro3d/sources/LASSource';
+
 import { readDataFileSync } from '../../data/utils';
 
 const get: (filename: string) => Getter = filename => {

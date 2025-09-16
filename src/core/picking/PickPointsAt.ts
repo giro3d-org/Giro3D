@@ -5,12 +5,14 @@
  */
 
 import { Color, FloatType, Vector3, type Points, type Vector2 } from 'three';
+
 import type Entity3D from '../../entities/Entity3D';
-import PointCloudMaterial from '../../renderer/PointCloudMaterial';
 import type Instance from '../Instance';
-import traversePickingCircle from './PickingCircle';
 import type PickOptions from './PickOptions';
 import type PickResult from './PickResult';
+
+import PointCloudMaterial from '../../renderer/PointCloudMaterial';
+import traversePickingCircle from './PickingCircle';
 
 /** Pick result on PointCloud-like objects */
 export interface PointsPickResult<TFeature = unknown> extends PickResult<TFeature & unknown> {
@@ -54,7 +56,7 @@ function pickPointsAt(
     canvasCoords: Vector2,
     entity: Entity3D,
     options: PickOptions = {},
-) {
+): PointsPickResult[] {
     const radius = Math.floor(options.radius ?? 0);
     const limit = options.limit ?? Infinity;
     const filter = options.filter;

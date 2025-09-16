@@ -4,10 +4,9 @@
  * SPDX-License-Identifier: MIT
  */
 
+import OSM from 'ol/source/OSM.js';
 import { AdditiveBlending, Mesh, MeshBasicMaterial, PlaneGeometry, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
-
-import OSM from 'ol/source/OSM.js';
 
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';

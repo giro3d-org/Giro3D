@@ -28,8 +28,9 @@ import type {
     Vector3,
     Vector4,
 } from 'three';
-import { Color } from 'three';
 import type { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+
+import { Color } from 'three';
 
 export function has<T>(obj: unknown, prop: keyof T): obj is T {
     if (obj == null) {

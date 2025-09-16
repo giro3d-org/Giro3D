@@ -6,20 +6,22 @@
 
 import type GUI from 'lil-gui';
 import type { Controller } from 'lil-gui';
+
 import type GlobeControls from '../controls/GlobeControls';
 import type Instance from '../core/Instance';
+
 import Panel from './Panel';
 
 class GlobeControlsInspector extends Panel {
     private readonly _dampingControllers: Controller[] = [];
 
-    readonly controls: GlobeControls;
+    public readonly controls: GlobeControls;
 
     /**
      * @param parentGui - The parent GUI.
      * @param instance - The Giro3D instance.
      */
-    constructor(parentGui: GUI, instance: Instance, controls: GlobeControls) {
+    public constructor(parentGui: GUI, instance: Instance, controls: GlobeControls) {
         super(parentGui, instance, 'Globe controls');
 
         this.controls = controls;
@@ -54,15 +56,15 @@ class GlobeControlsInspector extends Panel {
         this.updateControllerVisibility();
     }
 
-    private updateControllerVisibility() {
+    private updateControllerVisibility(): void {
         this._dampingControllers.forEach(c => c.show(this.controls.enableDamping));
     }
 
-    attach() {
+    public attach(): void {
         this.controls.attach();
     }
 
-    detach() {
+    public detach(): void {
         this.controls.detach();
     }
 }

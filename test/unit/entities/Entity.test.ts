@@ -4,8 +4,9 @@
  * SPDX-License-Identifier: MIT
  */
 
-import Entity from '@giro3d/giro3d/entities/Entity';
 import { beforeEach, describe, expect, it, vitest } from 'vitest';
+
+import Entity from '@giro3d/giro3d/entities/Entity';
 
 let entity: Entity;
 

@@ -4,15 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
 
+import XYZ from 'ol/source/XYZ.js';
 import { AmbientLight, Color, DirectionalLight } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
-import XYZ from 'ol/source/XYZ.js';
-
-import Instance from '@giro3d/giro3d/core/Instance.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
@@ -21,9 +20,9 @@ import MapboxTerrainFormat from '@giro3d/giro3d/formats/MapboxTerrainFormat.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
-import StatusBar from './widgets/StatusBar.js';
-import { bindNumberInput } from './widgets/bindNumberInput.js';
 import { bindColorPicker } from './widgets/bindColorPicker.js';
+import { bindNumberInput } from './widgets/bindNumberInput.js';
+import StatusBar from './widgets/StatusBar.js';
 
 // Chamonix Mont-Blanc coordinates
 const poi = new Coordinates(CoordinateSystem.epsg4326, 6.8697, 45.9231)

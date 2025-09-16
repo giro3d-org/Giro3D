@@ -5,8 +5,10 @@
  */
 
 import type GUI from 'lil-gui';
+
 import type Instance from '../core/Instance';
 import type MapLightingOptions from '../entities/MapLightingOptions';
+
 import Panel from './Panel';
 
 type ShadingMode = 'Hillshade' | 'LightBased';
@@ -14,14 +16,14 @@ type ShadingMode = 'Hillshade' | 'LightBased';
 const modes: ShadingMode[] = ['Hillshade', 'LightBased'];
 
 class MapLightingPanel extends Panel {
-    mode: ShadingMode = 'Hillshade';
+    public mode: ShadingMode = 'Hillshade';
 
     /**
      * @param options - The options.
      * @param parentGui - Parent GUI
      * @param instance - The instance
      */
-    constructor(options: Required<MapLightingOptions>, parentGui: GUI, instance: Instance) {
+    public constructor(options: Required<MapLightingOptions>, parentGui: GUI, instance: Instance) {
         super(parentGui, instance, 'Lighting');
 
         this.mode = modes[options.mode];

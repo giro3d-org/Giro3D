@@ -24,7 +24,7 @@ export default class Shared<T extends object, Owner = unknown> implements Dispos
     /**
      * The underlying shared object.
      */
-    get object(): T {
+    public get object(): T {
         this.checkDisposed();
         return this._object;
     }
@@ -32,7 +32,7 @@ export default class Shared<T extends object, Owner = unknown> implements Dispos
     /**
      * Gets the original (first) owner of the shared object.
      */
-    get owner(): Owner {
+    public get owner(): Owner {
         this.checkDisposed();
         return this._owner;
     }
@@ -56,13 +56,13 @@ export default class Shared<T extends object, Owner = unknown> implements Dispos
      * Clones the reference to the shared object, incrementing the ref count.
      * Note: this does _not_ clone the shared object itself.
      */
-    clone() {
+    public clone(): Shared<T, Owner> {
         this.checkDisposed();
         this._refCount.count++;
         return new Shared(this._object, this.owner, this._refCount, this._onDispose);
     }
 
-    private checkDisposed() {
+    private checkDisposed(): void {
         if (this._refCount.count === 0) {
             throw new Error('cannot use disposed Shared object');
         }
@@ -71,7 +71,7 @@ export default class Shared<T extends object, Owner = unknown> implements Dispos
     /**
      * Decrement the ref count of this object. If the count becomes zero, the underlying object is also disposed.
      */
-    dispose(): void {
+    public dispose(): void {
         // Idempotence of dispose()
         if (this._disposed) {
             return;

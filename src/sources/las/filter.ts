@@ -5,6 +5,7 @@
  */
 
 import type { View } from 'copc';
+
 import type { DimensionName } from './dimension';
 
 // A dimension filter wrapped into an index accessor.
@@ -80,7 +81,7 @@ export function getPerPointFilters(filters: DimensionFilter[], view: View): Filt
         const predicate = createPredicateFromFilter(filter.operator, filter.value);
         if (view.dimensions[filter.dimension] != null) {
             const getter = view.getter(filter.dimension);
-            const filterFn = (i: number) => predicate(getter(i));
+            const filterFn = (i: number): boolean => predicate(getter(i));
             result.push(filterFn);
         }
     }

@@ -4,11 +4,10 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { AxesHelper, Group, PolarGridHelper, Vector3 } from 'three';
-
 import { Feature } from 'ol';
 import { LineString, Point } from 'ol/geom.js';
 import { Circle, Fill, Stroke, Style } from 'ol/style.js';
+import { AxesHelper, Group, PolarGridHelper, Vector3 } from 'three';
 
 import FirstPersonControls from '@giro3d/giro3d/controls/FirstPersonControls.js';
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';

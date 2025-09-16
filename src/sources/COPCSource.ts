@@ -5,8 +5,20 @@
  */
 
 import type { Dimension, Getter, Hierarchy, View } from 'copc';
+
 import { Copc, Las } from 'copc';
 import { Box3, BufferAttribute, Vector3 } from 'three';
+
+import type { CommonOptions } from './las/CommonOptions';
+import type { DimensionName } from './las/dimension';
+import type { MessageMap, MessageType, ReadViewResult } from './las/worker';
+import type {
+    GetNodeDataOptions,
+    PointCloudMetadata,
+    PointCloudNode,
+    PointCloudNodeData,
+} from './PointCloudSource';
+
 import { GlobalCache } from '../core/Cache';
 import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import * as octree from '../core/Octree';
@@ -15,21 +27,12 @@ import RequestQueue from '../core/RequestQueue';
 import Fetcher from '../utils/Fetcher';
 import { nonNull } from '../utils/tsutils';
 import WorkerPool from '../utils/WorkerPool';
-import type { CommonOptions } from './las/CommonOptions';
 import { getLazPerf } from './las/config';
 import createWorker from './las/createWorker';
-import type { DimensionName } from './las/dimension';
 import { extractAttributes, getDimensionsToRead } from './las/dimension';
 import { type DimensionFilter } from './las/filter';
 import { createBufferAttribute } from './las/readers';
-import type { MessageMap, MessageType, ReadViewResult } from './las/worker';
 import { readView, type Metadata } from './las/worker';
-import type {
-    GetNodeDataOptions,
-    PointCloudMetadata,
-    PointCloudNode,
-    PointCloudNodeData,
-} from './PointCloudSource';
 import { PointCloudSourceBase } from './PointCloudSource';
 
 const deduplicatedQueue = new RequestQueue();
@@ -132,7 +135,7 @@ function createChild(
     const parentCenter = node.volume.getCenter(tmpCenter);
     const halfSize = node.volume.getSize(tmpSize).divideScalar(2);
 
-    const sign = (v: number) => (v === 0 ? -1 : 0);
+    const sign = (v: number): number => (v === 0 ? -1 : 0);
 
     const minx = parentCenter.x + halfSize.x * sign(qx);
     const miny = parentCenter.y + halfSize.y * sign(qy);
@@ -169,7 +172,7 @@ async function loadSubtree(
     getter: Getter,
     root: Hierarchy.Page,
     nodeMap: Map<string, Hierarchy.Node | undefined>,
-) {
+): Promise<void> {
     const { nodes, pages } = await Copc.loadHierarchyPage(getter, root);
 
     for (const [id, node] of Object.entries(nodes)) {
@@ -226,8 +229,8 @@ async function loadSubtree(
  */
 export default class COPCSource extends PointCloudSourceBase {
     /** Readonly flag to indicate that this object is a COPCSource. */
-    readonly isCOPCSource = true as const;
-    readonly type = 'COPCSource';
+    public readonly isCOPCSource = true as const;
+    public readonly type = 'COPCSource';
 
     private readonly _getter: Getter;
     private readonly _opCounter = new OperationCounter();
@@ -242,11 +245,11 @@ export default class COPCSource extends PointCloudSourceBase {
     // Available after initialization
     private _data?: RemoteData;
 
-    get loading() {
+    public get loading(): boolean {
         return this._opCounter.loading;
     }
 
-    get progress() {
+    public get progress(): number {
         return this._opCounter.progress;
     }
 
@@ -254,11 +257,11 @@ export default class COPCSource extends PointCloudSourceBase {
      * Gets or sets the dimension filters.
      * @defaultValue `[]`
      */
-    get filters(): Readonly<DimensionFilter[]> {
+    public get filters(): Readonly<DimensionFilter[]> {
         return this._filters;
     }
 
-    set filters(v: Readonly<DimensionFilter[]> | null | undefined) {
+    public set filters(v: Readonly<DimensionFilter[]> | null | undefined) {
         this._filters.length = 0;
         if (v != null) {
             this._filters.push(...v);
@@ -266,7 +269,7 @@ export default class COPCSource extends PointCloudSourceBase {
         this.dispatchEvent({ type: 'updated' });
     }
 
-    constructor(options: COPCSourceOptions) {
+    public constructor(options: COPCSourceOptions) {
         super();
 
         this._opCounter.addEventListener('changed', () => this.dispatchEvent({ type: 'progress' }));
@@ -324,7 +327,7 @@ export default class COPCSource extends PointCloudSourceBase {
         return this;
     }
 
-    getMetadata(): Promise<PointCloudMetadata> {
+    public getMetadata(): Promise<PointCloudMetadata> {
         const remoteData = this.ensureInitialized();
 
         let crs = CoordinateSystem.unknown;
@@ -351,7 +354,7 @@ export default class COPCSource extends PointCloudSourceBase {
         return Promise.resolve(result);
     }
 
-    getHierarchy(): Promise<PointCloudNode> {
+    public getHierarchy(): Promise<PointCloudNode> {
         const { copc, nodes } = this.ensureInitialized();
 
         const [xmin, ymin, zmin, xmax, ymax, zmax] = copc.info.cube;
@@ -408,7 +411,7 @@ export default class COPCSource extends PointCloudSourceBase {
         return Promise.resolve(root);
     }
 
-    async getNodeData(params: GetNodeDataOptions): Promise<PointCloudNodeData> {
+    public async getNodeData(params: GetNodeDataOptions): Promise<PointCloudNodeData> {
         const { nodes, copc } = this.ensureInitialized();
 
         const id = params.node.id;
@@ -525,7 +528,7 @@ export default class COPCSource extends PointCloudSourceBase {
         z: number,
         stride: number,
         params: GetNodeDataOptions,
-    ) {
+    ): Promise<ReadViewResult> {
         const view = await this._opCounter.wrap(
             this.loadPointDataView(this._getter, copc, node, dimensions, priority, signal),
         );
@@ -561,7 +564,7 @@ export default class COPCSource extends PointCloudSourceBase {
         z: number,
         dimensions: DimensionName[],
         stride: number,
-    ) {
+    ): Promise<ReadViewResult> {
         const buffer = await this._opCounter.wrap(
             this.loadPointDataViewBuffer(this._getter, node, priority),
         );
@@ -686,11 +689,11 @@ export default class COPCSource extends PointCloudSourceBase {
         return Las.View.create(decoded, copc.header, copc.eb, include);
     }
 
-    getMemoryUsage(): void {
+    public getMemoryUsage(): void {
         // No memory usage.
     }
 
-    dispose(): void {
+    public dispose(): void {
         // Nothing to dispose.
     }
 }

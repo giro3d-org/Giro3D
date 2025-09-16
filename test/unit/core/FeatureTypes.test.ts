@@ -4,6 +4,9 @@
  * SPDX-License-Identifier: MIT
  */
 
+import { Color } from 'three';
+import { describe, expect, it } from 'vitest';
+
 import {
     DEFAULT_LINE_COLOR,
     DEFAULT_LINE_WIDTH,
@@ -17,8 +20,6 @@ import {
     type PointStyle,
     type StrokeStyle,
 } from '@giro3d/giro3d/core/FeatureTypes';
-import { Color } from 'three';
-import { describe, expect, it } from 'vitest';
 
 describe('getFullStrokeStyle', () => {
     it('should return a completely defined style', () => {

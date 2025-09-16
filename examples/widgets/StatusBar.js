@@ -4,11 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
+import proj4 from 'proj4';
 import { Vector3 } from 'three';
+
+import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import * as MemoryUsage from '@giro3d/giro3d/core/MemoryUsage.js';
-import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
-import proj4 from 'proj4';
 
 const VIEW_PARAM = 'view';
 let currentURL = '';

@@ -4,10 +4,11 @@
  * SPDX-License-Identifier: MIT
  */
 
-import VectorSource from '@giro3d/giro3d/sources/VectorSource';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import { Style } from 'ol/style.js';
 import { beforeEach, describe, expect, it, vitest } from 'vitest';
+
+import VectorSource from '@giro3d/giro3d/sources/VectorSource';
 
 describe('setStyle', () => {
     let source: VectorSource;

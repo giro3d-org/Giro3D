@@ -5,21 +5,23 @@
  */
 
 import type GUI from 'lil-gui';
+
 import type Instance from '../core/Instance';
 import type PointCloud from '../entities/PointCloud';
+
 import ColorMapInspector from './ColorMapInspector';
 import EntityInspector from './EntityInspector';
 import PointCloudSourceInspector from './PointCloudSourceInspector';
 
 export default class PointCloudInspector extends EntityInspector<PointCloud> {
-    colorMapInspector: ColorMapInspector | null = null;
-    sourceInspector: PointCloudSourceInspector | null = null;
+    public colorMapInspector: ColorMapInspector | null = null;
+    public sourceInspector: PointCloudSourceInspector | null = null;
 
-    get pointBudget() {
+    public get pointBudget(): number {
         return this.entity.pointBudget ?? -1;
     }
 
-    set pointBudget(v: number) {
+    public set pointBudget(v: number) {
         if (v === -1) {
             this.entity.pointBudget = null;
         } else {
@@ -27,7 +29,7 @@ export default class PointCloudInspector extends EntityInspector<PointCloud> {
         }
     }
 
-    constructor(parent: GUI, instance: Instance, entity: PointCloud) {
+    public constructor(parent: GUI, instance: Instance, entity: PointCloud) {
         super(parent, instance, entity, {
             visibility: true,
             opacity: true,
@@ -42,7 +44,7 @@ export default class PointCloudInspector extends EntityInspector<PointCloud> {
         }
     }
 
-    private populate(entity: PointCloud) {
+    private populate(entity: PointCloud): void {
         this.addController(entity, 'showPoints');
         this.addController(entity, 'showVolume');
         this.addController(entity, 'cleanupDelay');
@@ -76,7 +78,7 @@ export default class PointCloudInspector extends EntityInspector<PointCloud> {
         );
     }
 
-    override updateControllers(): void {
+    public override updateControllers(): void {
         if (!this.entity.ready) {
             return;
         }

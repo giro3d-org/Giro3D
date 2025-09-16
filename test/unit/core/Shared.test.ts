@@ -4,8 +4,9 @@
  * SPDX-License-Identifier: MIT
  */
 
-import Shared from '@giro3d/giro3d/core/Shared';
 import { describe, expect, it, vitest } from 'vitest';
+
+import Shared from '@giro3d/giro3d/core/Shared';
 
 type Payload = { value: string };
 

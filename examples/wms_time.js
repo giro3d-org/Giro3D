@@ -5,7 +5,6 @@
  */
 
 import { OSM } from 'ol/source';
-
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
@@ -16,9 +15,9 @@ import Map from '@giro3d/giro3d/entities/Map';
 import Inspector from '@giro3d/giro3d/gui/Inspector';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource';
 import WmsSource from '@giro3d/giro3d/sources/WmsSource';
-import StatusBar from './widgets/StatusBar';
 
 import { bindButton } from './widgets/bindButton';
+import StatusBar from './widgets/StatusBar';
 
 const instance = new Instance({
     target: 'view',

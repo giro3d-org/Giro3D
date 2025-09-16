@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-import * as p from '@giro3d/giro3d/utils/predicates';
 import {
     AmbientLight,
     Box2,
@@ -32,6 +31,8 @@ import {
 } from 'three';
 import { CSS2DObject } from 'three/examples/jsm/Addons.js';
 import { expect, it, vitest } from 'vitest';
+
+import * as p from '@giro3d/giro3d/utils/predicates';
 
 it('isObject3D', () => {
     expect(p.isObject3D(null)).toEqual(false);

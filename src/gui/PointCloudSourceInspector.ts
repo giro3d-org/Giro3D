@@ -5,18 +5,20 @@
  */
 
 import type GUI from 'lil-gui';
+
 import type Instance from '../core/Instance';
+import type { PointCloudSource } from '../sources/PointCloudSource';
+
 import { aggregateMemoryUsage, format, type GetMemoryUsageContext } from '../core/MemoryUsage';
 import { isAggregatePointCloudSource } from '../sources/AggregatePointCloudSource';
 import { isCOPCSource } from '../sources/COPCSource';
-import type { PointCloudSource } from '../sources/PointCloudSource';
 import Panel from './Panel';
 
 export default class PointCloudSourceInspector extends Panel {
-    readonly source: PointCloudSource;
-    readonly memoryUsage = { cpuMemory: '', gpuMemory: '' };
+    public readonly source: PointCloudSource;
+    public readonly memoryUsage = { cpuMemory: '', gpuMemory: '' };
 
-    constructor(parent: GUI, instance: Instance, source: PointCloudSource) {
+    public constructor(parent: GUI, instance: Instance, source: PointCloudSource) {
         super(parent, instance, 'Source');
 
         this.source = source;
@@ -24,7 +26,7 @@ export default class PointCloudSourceInspector extends Panel {
         source.initialize().then(s => this.populate(s));
     }
 
-    private populate(source: PointCloudSource) {
+    private populate(source: PointCloudSource): void {
         this.addController(source, 'id');
         this.addController(source, 'type');
         this.addController(source, 'progress').decimals(2);
@@ -43,7 +45,7 @@ export default class PointCloudSourceInspector extends Panel {
         }
     }
 
-    override updateValues(): void {
+    public override updateValues(): void {
         if (!this.source.ready) {
             return;
         }

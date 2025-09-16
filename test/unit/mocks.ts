@@ -5,6 +5,7 @@
  */
 
 import type { Mock } from 'vitest';
+
 import { vitest } from 'vitest';
 
 export const resizeObservers: ResizeObserver[] = [];

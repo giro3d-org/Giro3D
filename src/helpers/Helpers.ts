@@ -11,6 +11,8 @@ import type {
     MeshBasicMaterial,
     Object3D,
 } from 'three';
+import type { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
+
 import {
     ArrowHelper,
     AxesHelper,
@@ -22,17 +24,17 @@ import {
     Vector3,
     type Material,
 } from 'three';
-import type { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
+
 import { isMaterial, isObject } from '../utils/predicates';
 import { nonNull } from '../utils/tsutils';
 
 export class SphereHelper extends Mesh<BufferGeometry, MeshBasicMaterial> {
-    readonly isHelper = true;
+    public readonly isHelper = true;
 }
 
 export class BoundingBoxHelper extends Box3Helper {
-    readonly isHelper = true;
-    readonly isvolumeHelper = true;
+    public readonly isHelper = true;
+    public readonly isvolumeHelper = true;
 }
 
 interface HasBoundingBox extends Object3D {
@@ -76,7 +78,7 @@ let _axisSize = 500;
  * @param colorDesc - A THREE color or hex string.
  * @returns The THREE color.
  */
-function getColor(colorDesc: Color | string) {
+function getColor(colorDesc: Color | string): Color {
     if (typeof colorDesc === 'string' || colorDesc instanceof String) {
         return new Color(colorDesc);
     }
@@ -140,7 +142,7 @@ class Helpers {
      * // add a bounding box to 'obj'
      * Helpers.addBoundingBox(obj, 'green');
      */
-    static addBoundingBox(obj: Object3D, color: Color | string) {
+    public static addBoundingBox(obj: Object3D, color: Color | string): void {
         // Don't add a bounding box helper to a bounding box helper !
         if ((obj as BoundingBoxHelper).isvolumeHelper) {
             return;
@@ -152,7 +154,7 @@ class Helpers {
         helper.updateMatrixWorld(true);
     }
 
-    static createBoxHelper(box: Box3, color: Color) {
+    public static createBoxHelper(box: Box3, color: Color): BoundingBoxHelper {
         const helper = new BoundingBoxHelper(box, color);
         helper.name = 'bounding box';
         if (isMaterial(helper.material)) {
@@ -162,11 +164,11 @@ class Helpers {
         return helper;
     }
 
-    static set axisSize(v) {
+    public static set axisSize(v: number) {
         _axisSize = v;
     }
 
-    static get axisSize() {
+    public static get axisSize(): number {
         return _axisSize;
     }
 
@@ -180,7 +182,7 @@ class Helpers {
      * // add a bounding box to 'obj'
      * Helpers.createSelectionBox(obj, 'green');
      */
-    static createSelectionBox(obj: Object3D, color: Color) {
+    public static createSelectionBox(obj: Object3D, color: Color): BoundingBoxHelper {
         const helper = Helpers.createBoxHelper(makeLocalBbox(obj), getColor(color));
         (obj as HasSelectionHelper).selectionHelper = helper;
         obj.add(helper);
@@ -195,7 +197,7 @@ class Helpers {
      * @param size - The size of the grid.
      * @param subdivs - The number of grid subdivisions.
      */
-    static createGrid(origin: Vector3, size: number, subdivs: number) {
+    public static createGrid(origin: Vector3, size: number, subdivs: number): GridHelper {
         const grid = new GridHelper(size, subdivs);
         grid.name = 'grid';
 
@@ -212,7 +214,7 @@ class Helpers {
      *
      * @param size - The size of the helper.
      */
-    static createAxes(size: number) {
+    public static createAxes(size: number): AxesHelper {
         const axes = new AxesHelper(size);
         // We want the axes to be always visible,
         // and rendered on top of any other object in the scene.
@@ -227,7 +229,7 @@ class Helpers {
      * @param start - The starting point.
      * @param end - The end point.
      */
-    static createArrow(start: Vector3, end: Vector3) {
+    public static createArrow(start: Vector3, end: Vector3): ArrowHelper {
         const length = start.distanceTo(end);
         const dir = end.sub(start).normalize();
         const arrow = new ArrowHelper(dir, start, length);
@@ -241,7 +243,7 @@ class Helpers {
      * @example
      * Helpers.removeBoundingBox(obj);
      */
-    static removeBoundingBox(obj: Object3D) {
+    public static removeBoundingBox(obj: Object3D): void {
         if (hasBoundingBoxHelper(obj)) {
             const volumeHelper = (obj as HasBoundingBoxHelper).volumeHelper;
             obj.remove(volumeHelper);

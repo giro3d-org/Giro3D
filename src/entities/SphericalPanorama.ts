@@ -5,22 +5,25 @@
  */
 
 import type { Euler, Matrix4, Vector2 } from 'three';
+
 import { FrontSide, MathUtils, Quaternion, Vector3 } from 'three';
+
+import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
+import type Layer from '../core/layer/Layer';
+import type PointOfView from '../core/PointOfView';
+import type { MapConstructorOptions } from './Map';
+import type { TileGeometryBuilder } from './tiles/TileGeometry';
+import type TileVolume from './tiles/TileVolume';
+
 import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import Ellipsoid from '../core/geographic/Ellipsoid';
 import Extent from '../core/geographic/Extent';
-import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
 import { isColorLayer } from '../core/layer/ColorLayer';
-import type Layer from '../core/layer/Layer';
-import type PointOfView from '../core/PointOfView';
 import { isEuler, isMatrix4, isPerspectiveCamera, isQuaternion } from '../utils/predicates';
 import { computeEllipsoidalImageSize } from './Globe';
-import type { MapConstructorOptions } from './Map';
 import Map from './Map';
 import PanoramaTileGeometryBuilder from './tiles/PanoramaTileGeometryBuilder';
 import PanoramaTileVolume from './tiles/PanoramaTileVolume';
-import type { TileGeometryBuilder } from './tiles/TileGeometry';
-import type TileVolume from './tiles/TileVolume';
 
 const FORWARD = new Vector3(0, 1, 0);
 const ORIGIN = new Vector3(0, 0, 0);
@@ -119,13 +122,13 @@ export interface SphericalPanoramaOptions extends Omit<MapConstructorOptions, 'e
  * at the coordinate of the center of the sphere, then the angles are applied.
  */
 export default class SphericalPanorama extends Map {
-    readonly isSphericalPanorama = true as const;
-    override readonly type = 'SphericalPanorama' as const;
+    public readonly isSphericalPanorama = true as const;
+    public override readonly type = 'SphericalPanorama' as const;
 
     private readonly _sphere: Ellipsoid;
     private readonly _radius: number;
 
-    constructor(params?: SphericalPanoramaOptions) {
+    public constructor(params?: SphericalPanoramaOptions) {
         super({
             ...params,
             extent: Extent.fullEquirectangularProjection,
@@ -165,7 +168,7 @@ export default class SphericalPanorama extends Map {
         return new PanoramaTileVolume({ extent, radius: this._radius });
     }
 
-    override addLayer<TLayer extends Layer>(layer: TLayer): Promise<TLayer> {
+    public override addLayer<TLayer extends Layer>(layer: TLayer): Promise<TLayer> {
         if (isColorLayer(layer)) {
             return super.addLayer(layer);
         }
@@ -178,7 +181,7 @@ export default class SphericalPanorama extends Map {
      *
      * Note: only perspective cameras are supported. Any other camera type will return `null`.
      */
-    override getDefaultPointOfView(
+    public override getDefaultPointOfView(
         params: Parameters<HasDefaultPointOfView['getDefaultPointOfView']>[0],
     ): ReturnType<HasDefaultPointOfView['getDefaultPointOfView']> {
         if (isPerspectiveCamera(params.camera)) {
@@ -205,7 +208,7 @@ export default class SphericalPanorama extends Map {
      *
      * @param params - The parameters. If undefined, the orientation is reset to the default orientation.
      */
-    setOrientation(params?: {
+    public setOrientation(params?: {
         /**
          * The heading (azimuth), in degrees. Zero is north, 90 is east, and so on.
          * @defaultValue 0
@@ -219,7 +222,7 @@ export default class SphericalPanorama extends Map {
          * The roll, in degrees. Positives values tilt the image on the right.
          */
         roll?: number;
-    }) {
+    }): void {
         let baseOrientation: Quaternion | Matrix4 = IDENTITY_QUATERNION;
 
         if (this.instance.coordinateSystem.isEpsg(4978)) {

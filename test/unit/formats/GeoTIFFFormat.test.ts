@@ -4,9 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-import GeoTIFFFormat from '@giro3d/giro3d/formats/GeoTIFFFormat';
 import type { Texture } from 'three';
+
 import { describe, expect, it } from 'vitest';
+
+import GeoTIFFFormat from '@giro3d/giro3d/formats/GeoTIFFFormat';
+
 import { readDataFileSync } from '../../data/utils';
 
 const decoder = new GeoTIFFFormat();

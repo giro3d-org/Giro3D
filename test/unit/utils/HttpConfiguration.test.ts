@@ -4,8 +4,9 @@
  * SPDX-License-Identifier: MIT
  */
 
-import HttpConfiguration from '@giro3d/giro3d/utils/HttpConfiguration';
 import { beforeEach, describe, expect, it } from 'vitest';
+
+import HttpConfiguration from '@giro3d/giro3d/utils/HttpConfiguration';
 
 beforeEach(() => {
     HttpConfiguration.clear();
