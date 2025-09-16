@@ -10,6 +10,7 @@ import typescriptEslint from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 import vitest from '@vitest/eslint-plugin';
 import licenseHeader from 'eslint-plugin-license-header';
+import perfectionist from 'eslint-plugin-perfectionist';
 import prettier from 'eslint-plugin-prettier';
 import tsdoc from 'eslint-plugin-tsdoc';
 import globals from 'globals';
@@ -45,6 +46,7 @@ export default [
             '@typescript-eslint': typescriptEslint,
             tsdoc,
             prettier,
+            perfectionist,
             'license-header': licenseHeader,
         },
 
@@ -151,6 +153,13 @@ export default [
             'prefer-destructuring': 'off',
             'no-bitwise': 'off',
             'max-classes-per-file': 'off',
+
+            'perfectionist/sort-imports': [
+                'error',
+                {
+                    internalPattern: ['^~/.+', '^@/.+', '^@giro3d/.*'],
+                },
+            ],
         },
     },
     {

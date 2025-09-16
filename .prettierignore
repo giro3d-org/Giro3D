@@ -3,3 +3,6 @@ test/data
 
 # prettier-plugin-ejs correctly works only for html
 site/templates/tutorial.ejs
+
+# outputs
+tasks/giro3d-website
