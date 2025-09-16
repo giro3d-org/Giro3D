@@ -937,6 +937,7 @@ export default class DrapedFeatureCollection extends Entity3D {
     }
 
     override dispose() {
+        this.detach();
         this._geometryConverter.dispose({ disposeMaterials: true, disposeTextures: true });
         this.traverseMeshes(mesh => {
             mesh.geometry.dispose();
