@@ -187,6 +187,8 @@ export default [
         files: ['**/*.ts'],
 
         rules: {
+            '@typescript-eslint/explicit-member-accessibility': 'error',
+            '@typescript-eslint/explicit-function-return-type': 'error',
             '@typescript-eslint/no-non-null-assertion': 'error',
             '@typescript-eslint/consistent-type-imports': 'error',
             '@typescript-eslint/strict-boolean-expressions': 'error',
@@ -208,6 +210,8 @@ export default [
         },
         rules: {
             ...vitest.configs.recommended.rules,
+            '@typescript-eslint/explicit-member-accessibility': 'off',
+            '@typescript-eslint/explicit-function-return-type': 'off',
             '@typescript-eslint/no-non-null-assertion': 'off',
             'vitest/max-nested-describe': ['error', { max: 3 }],
         },
