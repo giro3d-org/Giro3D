@@ -634,6 +634,15 @@ export default class DrapedFeatureCollection extends Entity3D {
         return this;
     }
 
+    override updateVisibility() {
+        super.updateVisibility();
+        if (this.visible && this._map) {
+            this._map.traverseTiles(tile => {
+                this.registerTile(tile);
+            });
+        }
+    }
+
     private onTileCreated({ tile }: MapEventMap['tile-created']) {
         this.registerTile(tile);
     }
@@ -647,6 +656,9 @@ export default class DrapedFeatureCollection extends Entity3D {
     }
 
     private registerTile(tile: Tile, forceRecreateMeshes = false) {
+        if (!this.visible) {
+            return;
+        }
         if (!this._activeTiles.has(tile.id) || forceRecreateMeshes) {
             this._activeTiles.set(tile.id, tile);
             this._sortedTiles = null;
