@@ -346,6 +346,14 @@ type ObjectOptions = {
     receiveShadow: boolean;
 };
 
+type FeaturesEntry = {
+    feature: Feature;
+    originalZ: number;
+    extent: Extent;
+    mesh: SimpleGeometryMesh | undefined;
+    sampledLod: number;
+}
+
 export default class DrapedFeatureCollection extends Entity3D {
     override type = 'DrapedFeatureCollection' as const;
     readonly isDrapedFeatureCollection = true as const;
@@ -365,15 +373,7 @@ export default class DrapedFeatureCollection extends Entity3D {
         | FeatureExtrusionOffset
         | FeatureExtrusionOffsetCallback
         | undefined;
-    private readonly _features: Map<
-        string,
-        {
-            feature: Feature;
-            originalZ: number;
-            extent: Extent;
-            mesh: SimpleGeometryMesh | undefined;
-        }
-    > = new Map();
+    private readonly _features: Map<string, FeaturesEntry> = new Map();
     private readonly _source: FeatureSource;
     private readonly _eventHandlers: {
         onTileCreated: EventHandler<MapEventMap['tile-created']>;
@@ -653,29 +653,33 @@ export default class DrapedFeatureCollection extends Entity3D {
 
             if (tile.lod >= this._minLod) {
                 this.loadFeaturesOnExtent(tile.extent).then(features => {
-                    this.loadMeshes(features);
+                    this.loadMeshes(features, tile.lod);
                 });
             }
         }
     }
 
-    private loadMeshes(features: Readonly<Feature[]>) {
+    private loadMeshes(features: Readonly<Feature[]>, lod: number) {
         for (const feature of features) {
-            const id = getStableFeatureId(feature);
 
             const geometry = feature.getGeometry();
 
             if (geometry) {
+                const id = getStableFeatureId(feature);
                 if (!this._features.has(id)) {
                     const extent = OLUtils.fromOLExtent(
                         geometry.getExtent(),
                         this.instance.coordinateSystem,
                     );
 
-                    this._features.set(id, { feature, mesh: undefined, originalZ: 0, extent });
+                    this._features.set(id, { feature, mesh: undefined, originalZ: 0, extent, sampledLod: lod });
                 }
+                const existing = nonNull(this._features.get(id));
 
-                this.loadFeatureMesh(feature, id);
+                if (!existing.mesh || existing.sampledLod < lod) {
+                    this.loadFeatureMesh(id, existing);
+                    existing.sampledLod = lod;
+                }
             }
         }
 
@@ -793,68 +797,62 @@ export default class DrapedFeatureCollection extends Entity3D {
         return this._drapingMode;
     }
 
-    private loadFeatureMesh(feature: Feature, id: string) {
+    private loadFeatureMesh(id: string, existing: FeaturesEntry) {
         // TODO filter non compatible geometries
-        const geometry = feature.getGeometry() as SimpleGeometry | undefined;
+        const geometry = existing.feature.getGeometry() as SimpleGeometry;
 
-        if (geometry) {
-            const drapingMode = this.getDrapingMode(feature);
+        const drapingMode = this.getDrapingMode(existing.feature);
 
-            let actualGeometry: SimpleGeometry = geometry;
-            let shouldReplaceMesh = false;
-            let verticalOffset = 0;
+        let actualGeometry: SimpleGeometry = geometry;
+        let shouldReplaceMesh = false;
+        let verticalOffset = 0;
 
-            if (
-                drapingMode === 'per-feature' ||
-                (drapingMode === 'per-vertex' && geometry.getType() === 'Point')
-            ) {
-                // Note that point is necessarily per feature, since there is only one vertex
-                actualGeometry = geometry;
-                verticalOffset = getFeatureElevation(feature, geometry, nonNull(this._map));
-            } else if (drapingMode === 'per-vertex') {
-                shouldReplaceMesh = true;
-                // TODO support multipoint ?
-                // @ts-expect-error cast
-                actualGeometry = applyPerVertexDraping(geometry, this._map);
-            }
+        if (
+            drapingMode === 'per-feature' ||
+            (drapingMode === 'per-vertex' && geometry.getType() === 'Point')
+        ) {
+            // Note that point is necessarily per feature, since there is only one vertex
+            actualGeometry = geometry;
+            verticalOffset = getFeatureElevation(existing.feature, geometry, nonNull(this._map));
+        } else if (drapingMode === 'per-vertex') {
+            shouldReplaceMesh = true;
+            // TODO support multipoint ?
+            // @ts-expect-error cast
+            actualGeometry = applyPerVertexDraping(geometry, this._map);
+        }
 
-            // // TODO doit-on supporter plusieurs maps ?
-            // // TODO Callback de récupération de l'élévation
-            // const processed = this._elevationCallback(feature, this._maps[0]);
+        // // TODO doit-on supporter plusieurs maps ?
+        // // TODO Callback de récupération de l'élévation
+        // const processed = this._elevationCallback(feature, this._maps[0]);
 
-            const existing = nonNull(this._features.get(id));
+        // We have to entirely recreate the mesh because
+        // the vertices will have different elevations
+        if (shouldReplaceMesh && existing.mesh) {
+            existing.mesh.dispose();
+            existing.mesh.removeFromParent();
+            existing.mesh = undefined;
+        }
 
-            // We have to entirely recreate the mesh because
-            // the vertices will have different elevations
-            if (shouldReplaceMesh && existing.mesh) {
-                existing.mesh.dispose();
-                existing.mesh.removeFromParent();
-                existing.mesh = undefined;
-            }
-
-            // The mesh needs to be (re)created
-            if (existing.mesh == null) {
-                const newMesh = this.createMesh(feature, actualGeometry);
-                existing.originalZ = newMesh?.position.z ?? 0;
+        // The mesh needs to be (re)created
+        if (existing.mesh == undefined) {
+            const newMesh = this.createMesh(existing.feature, actualGeometry);
+            existing.originalZ = newMesh?.position.z ?? 0;
+            if (newMesh) {
                 existing.mesh = newMesh;
+                existing.mesh.name = id;
+                this.object3d.add(existing.mesh);
+            }
+        }
+
+        if (existing.mesh) {
+            // When a single elevation value is applied to the entire mesh,
+            // then we can simply translate the Mesh itself, rather than recreate it.
+            if (verticalOffset !== 0) {
+                existing.mesh.position.setZ(existing.originalZ + verticalOffset);
             }
 
-            const mesh = existing.mesh;
-
-            if (mesh) {
-                mesh.name = id;
-
-                this.object3d.add(mesh);
-
-                // When a single elevation value is applied to the entire mesh,
-                // then we can simply translate the Mesh itself, rather than recreate it.
-                if (verticalOffset !== 0) {
-                    mesh.position.setZ(existing.originalZ + verticalOffset);
-                }
-
-                mesh.updateMatrix();
-                mesh.updateMatrixWorld(true);
-            }
+            existing.mesh.updateMatrix();
+            existing.mesh.updateMatrixWorld(true);
         }
     }
 
