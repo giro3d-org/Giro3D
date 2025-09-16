@@ -601,9 +601,9 @@ export default class DrapedFeatureCollection extends Entity3D {
         map.addEventListener('elevation-loaded', this._eventHandlers.onElevationLoaded);
 
         // TODO register trop tôt avant que l'élévation soit prête
-        // map.traverseTiles(tile => {
-        //     this.registerTile(tile);
-        // });
+        map.traverseTiles(tile => {
+            this.registerTile(tile);
+        });
 
         return this;
     }
