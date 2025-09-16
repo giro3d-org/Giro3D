@@ -3,7 +3,7 @@ import type FeatureFormat from 'ol/format/Feature';
 import type { Type } from 'ol/format/Feature';
 import GeoJSON from 'ol/format/GeoJSON';
 import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
-import type Extent from '../core/geographic/Extent';
+import Extent from '../core/geographic/Extent';
 import Fetcher from '../utils/Fetcher';
 import { nonNull } from '../utils/tsutils';
 import { processFeatures } from './features/processor';
@@ -131,6 +131,11 @@ export interface StreamableFeatureSourceOptions {
     format?: FeatureFormat;
     getter?: Getter;
     sourceCoordinateSystem?: CoordinateSystem;
+    /**
+     * The cache tile size.
+     * @defaultValue 1000
+     */
+    cacheTileSize: number;
 }
 
 /**
@@ -144,52 +149,88 @@ export default class StreamableFeatureSource extends FeatureSourceBase {
     private readonly _format: FeatureFormat;
     private readonly _getter: Getter;
     private readonly _sourceProjection: CoordinateSystem;
+    private readonly _cacheTileSize: number;
+    private readonly _featureTileCache: Record<string, Feature[]>;
 
     constructor(params: StreamableFeatureSourceOptions) {
         super();
         this._queryBuilder = params.queryBuilder;
         this._format = params.format ?? new GeoJSON();
         this._getter = params.getter ?? defaultGetter;
+        this._cacheTileSize = params.cacheTileSize ?? 1000;
         // TODO assume EPSG:4326 ?
         this._sourceProjection = params.sourceCoordinateSystem ?? CoordinateSystem.epsg4326;
+
+        this._featureTileCache = {};
     }
 
     async getFeatures(request: GetFeatureRequest): Promise<GetFeatureResult> {
         this.throwIfNotInitialized();
 
-        const url = this._queryBuilder({
-            extent: request.extent,
-            sourceCoordinateSystem: this._sourceProjection,
-        });
+        // Get tiles which need to be fetched
+        let west = request.extent.west;
+        let east = request.extent.east;
+        let south = request.extent.south;
+        let north = request.extent.north;
 
-        if (!url) {
-            return {
-                features: [],
-            };
+        const xmin = Math.floor(west / this._cacheTileSize);
+        const xmax = Math.ceil((east + 1) / this._cacheTileSize);
+        const ymin = Math.floor(south / this._cacheTileSize);
+        const ymax = Math.ceil((north + 1) / this._cacheTileSize);
+
+        const features = [];
+
+        for (let x = xmin; x < xmax; ++x) {
+            for (let y = ymin; y < ymax; ++y) {
+
+                const key = `${x}/${y}`;
+
+                if (!(key in this._featureTileCache)) {
+
+                    const tileExtent = new Extent(request.extent.crs,
+                        x * this._cacheTileSize, (x + 1) * this._cacheTileSize,
+                        y * this._cacheTileSize, (y + 1) * this._cacheTileSize,
+                    );
+                    const url = this._queryBuilder({
+                        extent: tileExtent,
+                        sourceCoordinateSystem: this._sourceProjection,
+                    });
+
+                    if (!url) {
+                        this._featureTileCache[key] = [];
+                        continue;
+                    }
+
+                    const data = await this._getter(url.toString(), this._format.getType());
+
+                    const features = this._format.readFeatures(data) as Feature[];
+
+                    const targetProjection = nonNull(
+                        this._targetCoordinateSystem,
+                        'this source is not initialized',
+                    );
+                    const sourceProjection = nonNull(this._sourceProjection);
+
+                    const getFeatureId = (feature: Feature) => {
+                        return (
+                            feature.getId() ?? feature.get('id') ?? feature.get('fid') ?? feature.get('ogc_fid')
+                        );
+                    };
+
+                    const actualFeatures = await processFeatures(features, sourceProjection, targetProjection, {
+                        getFeatureId,
+                    });
+
+                    this._featureTileCache[key] = actualFeatures;
+
+                }
+
+                features.push(...this._featureTileCache[key]);
+            }
         }
 
-        const data = await this._getter(url.toString(), this._format.getType());
-
-        const features = this._format.readFeatures(data) as Feature[];
-
-        const targetProjection = nonNull(
-            this._targetCoordinateSystem,
-            'this source is not initialized',
-        );
-        const sourceProjection = nonNull(this._sourceProjection);
-
-        const getFeatureId = (feature: Feature) => {
-            return (
-                feature.getId() ?? feature.get('id') ?? feature.get('fid') ?? feature.get('ogc_fid')
-            );
-        };
-
-        const actualFeatures = await processFeatures(features, sourceProjection, targetProjection, {
-            getFeatureId,
-        });
-
         return {
-            features: actualFeatures,
+            features: features,
         };
     }
 }
