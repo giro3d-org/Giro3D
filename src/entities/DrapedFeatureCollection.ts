@@ -665,7 +665,9 @@ export default class DrapedFeatureCollection extends Entity3D {
 
             if (tile.lod >= this._minLod) {
                 this.loadFeaturesOnExtent(tile.extent).then(features => {
-                    this.loadMeshes(features, tile.lod);
+                    if (this._activeTiles.has(tile.id)) {
+                        this.loadMeshes(features, tile.lod);
+                    }
                 });
             }
         }
