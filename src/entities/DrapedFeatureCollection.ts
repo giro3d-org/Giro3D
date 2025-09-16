@@ -617,11 +617,20 @@ export default class DrapedFeatureCollection extends Entity3D {
         return this._sortedTiles;
     }
 
-    detach(map: MapEntity): this {
-        map.traverseTiles(tile => {
+    detach(): this {
+        if (this._map == null) {
+            throw new Error('no map is attached to this entity');
+        }
+
+        this._map.removeEventListener('tile-created', this._eventHandlers.onTileCreated);
+        this._map.removeEventListener('tile-deleted', this._eventHandlers.onTileDeleted);
+        this._map.removeEventListener('elevation-loaded', this._eventHandlers.onElevationLoaded);
+
+        this._map.traverseTiles(tile => {
             this.unregisterTile(tile);
         });
 
+        this._map = null;
         return this;
     }
 
