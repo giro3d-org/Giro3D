@@ -136,6 +136,7 @@ export interface StreamableFeatureSourceOptions {
      * @defaultValue 1000
      */
     cacheTileSize: number;
+    maxExtent?: Extent;
 }
 
 /**
@@ -151,12 +152,14 @@ export default class StreamableFeatureSource extends FeatureSourceBase {
     private readonly _sourceProjection: CoordinateSystem;
     private readonly _cacheTileSize: number;
     private readonly _featureTileCache: Record<string, Feature[]>;
+    private readonly _maxExtent: Extent|null;
 
     constructor(params: StreamableFeatureSourceOptions) {
         super();
         this._queryBuilder = params.queryBuilder;
         this._format = params.format ?? new GeoJSON();
         this._getter = params.getter ?? defaultGetter;
+        this._maxExtent = params.maxExtent ?? null;
         this._cacheTileSize = params.cacheTileSize ?? 1000;
         // TODO assume EPSG:4326 ?
         this._sourceProjection = params.sourceCoordinateSystem ?? CoordinateSystem.epsg4326;
@@ -172,6 +175,12 @@ export default class StreamableFeatureSource extends FeatureSourceBase {
         let east = request.extent.east;
         let south = request.extent.south;
         let north = request.extent.north;
+        if (this._maxExtent) {
+            west = Math.max(west, this._maxExtent.west);
+            east = Math.min(east, this._maxExtent.east);
+            south = Math.max(south, this._maxExtent.south);
+            north = Math.min(north, this._maxExtent.north);
+        }
 
         const xmin = Math.floor(west / this._cacheTileSize);
         const xmax = Math.ceil((east + 1) / this._cacheTileSize);
