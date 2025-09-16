@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import GeoTIFFFormat from '@giro3d/giro3d/formats/GeoTIFFFormat';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource';
 import StadiaMaps from 'ol/source/StadiaMaps.js';

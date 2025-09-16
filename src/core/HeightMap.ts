@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import type { FloatType, RedFormat, RGFormat, TypedArray, UnsignedShortType } from 'three';
 import { MathUtils, RGBAFormat, UnsignedByteType, Vector2 } from 'three';
 import TextureGenerator from '../utils/TextureGenerator';

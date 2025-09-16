@@ -1,8 +1,15 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import { FlatCompat } from '@eslint/eslintrc';
 import js from '@eslint/js';
 import typescriptEslint from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 import vitest from '@vitest/eslint-plugin';
+import licenseHeader from 'eslint-plugin-license-header';
 import prettier from 'eslint-plugin-prettier';
 import tsdoc from 'eslint-plugin-tsdoc';
 import globals from 'globals';
@@ -19,7 +26,14 @@ const compat = new FlatCompat({
 
 export default [
     {
-        ignores: ['node_modules', 'build/**/*.js', '**/public/', 'examples/data', 'test/data'],
+        ignores: [
+            'node_modules',
+            'build/**/*.js',
+            '**/public/',
+            'examples/data',
+            'test/data',
+            './license-header.js',
+        ],
     },
     ...compat.extends(
         'eslint:recommended',
@@ -31,6 +45,7 @@ export default [
             '@typescript-eslint': typescriptEslint,
             tsdoc,
             prettier,
+            'license-header': licenseHeader,
         },
 
         languageOptions: {
@@ -58,6 +73,8 @@ export default [
         },
 
         rules: {
+            'license-header/header': ['error', './license-header.js'],
+
             curly: 'error',
             'tsdoc/syntax': 'warn',
             'no-console': 'off',

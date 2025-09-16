@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import Extent from '../core/geographic/Extent';
 import type { ImageResponse } from './ImageSource';

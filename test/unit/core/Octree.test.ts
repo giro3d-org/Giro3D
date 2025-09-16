@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import type { ChildrenList, Octree } from '@giro3d/giro3d/core/Octree';
 import { create, populate, traverse } from '@giro3d/giro3d/core/Octree';
 import { Box3 } from 'three';

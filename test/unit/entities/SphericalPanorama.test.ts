@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import SphericalPanorama from '@giro3d/giro3d/entities/SphericalPanorama';
 import { Euler, MathUtils, Quaternion, Vector3 } from 'three';

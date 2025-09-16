@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import { Box3, Sphere, Vector2, Vector3, type Camera } from 'three';
 import type Context from '../core/Context';
 import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';

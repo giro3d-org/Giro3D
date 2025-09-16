@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import { Clock, MathUtils, Plane, Sphere, Vector3 } from 'three';
 import type Entity from '../entities/Entity';
 import type View from '../renderer/View';

@@ -1,4 +1,10 @@
 /**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
+/**
  * Binds a button.
  * @param {string} id The id of the <button> element.
  * @param {(button: HTMLButtonElement) => void} onClick The click handler.

@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import { type Feature } from 'ol';
 import { type Geometry } from 'ol/geom';
 import { Texture, UnsignedByteType, type TextureDataType } from 'three';

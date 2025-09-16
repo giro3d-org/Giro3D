@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import { ShaderChunk } from 'three';
 
 // We use non camel-case file names to be as consistent as possible with three.js naming scheme

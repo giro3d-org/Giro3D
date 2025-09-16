@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import type { WebGLRenderer } from 'three';
 import { Line2 } from 'three/examples/jsm/lines/Line2.js';
 import type { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';

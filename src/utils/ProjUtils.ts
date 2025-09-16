@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import proj from 'proj4';
 import type { Vector3 } from 'three';
 import { MathUtils, Vector2, type TypedArray } from 'three';

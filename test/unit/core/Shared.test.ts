@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import Shared from '@giro3d/giro3d/core/Shared';
 import { describe, expect, it, vitest } from 'vitest';
 

@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import { DataTexture, FloatType, LinearFilter, RGFormat } from 'three';
 import WorkerPool from '../utils/WorkerPool';
 import type { DecodeOptions } from './ImageFormat';

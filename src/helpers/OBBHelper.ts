@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import type { ColorRepresentation } from 'three';
 import { Box3, Box3Helper, Color, Matrix4, Object3D, Vector3 } from 'three';
 import type { OBB } from 'three/examples/jsm/Addons.js';

@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import type HasDefaultPointOfView from '@giro3d/giro3d/core/HasDefaultPointOfView';
 import type PointOfView from '@giro3d/giro3d/core/PointOfView';

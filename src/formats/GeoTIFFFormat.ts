@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import { fromBlob, Pool } from 'geotiff';
 import type { TypedArray } from 'three';
 import { FloatType, UnsignedByteType } from 'three';

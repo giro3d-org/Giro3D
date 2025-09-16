@@ -3,11 +3,3 @@
  * Copyright (c) 2018-2025, Giro3D team.
  * SPDX-License-Identifier: MIT
  */
-
-type TileCoordinate = {
-    z: number;
-    x: number;
-    y: number;
-};
-
-export default TileCoordinate;
