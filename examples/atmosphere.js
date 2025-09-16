@@ -14,6 +14,8 @@ import {
     SphereGeometry,
     Vector3,
 } from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';
@@ -24,8 +26,6 @@ import SkyDome from '@giro3d/giro3d/entities/SkyDome';
 import Inspector from '@giro3d/giro3d/gui/Inspector';
 import EllipsoidHelper from '@giro3d/giro3d/helpers/EllipsoidHelper';
 import DrawTool from '@giro3d/giro3d/interactions/DrawTool';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
 import { bindButton } from './widgets/bindButton';
 import { bindColorPicker } from './widgets/bindColorPicker';

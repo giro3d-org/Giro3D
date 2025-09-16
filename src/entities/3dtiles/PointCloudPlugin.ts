@@ -6,6 +6,7 @@
 
 import type { BatchTable, PNTSScene, Tile } from '3d-tiles-renderer';
 import type { BufferAttribute, BufferGeometry, TypedArray } from 'three';
+
 import {
     Float32BufferAttribute,
     FloatType,
@@ -20,12 +21,14 @@ import {
     Vector2,
     Vector4,
 } from 'three';
+
 import type Extent from '../../core/geographic/Extent';
 import type { LayerNode } from '../../core/layer/Layer';
-import PointCloudMaterial from '../../renderer/PointCloudMaterial';
-import { enablePointCloudPostProcessing } from '../../renderer/RenderPipeline';
 import type PointCloudParameters from './PointCloudParameters';
 import type { WellKnown3DTilesPointCloudAttributes } from './PointCloudParameters';
+
+import PointCloudMaterial from '../../renderer/PointCloudMaterial';
+import { enablePointCloudPostProcessing } from '../../renderer/RenderPipeline';
 
 export function isPNTSScene(obj: object): obj is PNTSScene {
     return (obj as PNTSScene).isPoints && 'batchTable' in obj;

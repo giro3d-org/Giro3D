@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-import Entity3D from '@giro3d/giro3d/entities/Entity3D';
 import {
     Box3,
     BoxGeometry,
@@ -19,6 +18,8 @@ import {
     type Material,
 } from 'three';
 import { describe, expect, it, vitest } from 'vitest';
+
+import Entity3D from '@giro3d/giro3d/entities/Entity3D';
 
 /**
  * Creates a valid {@link Entity3D} for unit testing.

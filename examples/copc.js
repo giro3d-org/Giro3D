@@ -4,24 +4,23 @@
  * SPDX-License-Identifier: MIT
  */
 
+import XYZ from 'ol/source/XYZ.js';
 import { Color } from 'three';
 
-import XYZ from 'ol/source/XYZ.js';
-
-import Instance from '@giro3d/giro3d/core/Instance.js';
-import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
-import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
+import Instance from '@giro3d/giro3d/core/Instance.js';
+import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import PointCloud from '@giro3d/giro3d/entities/PointCloud.js';
 import MapboxTerrainFormat from '@giro3d/giro3d/formats/MapboxTerrainFormat.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import COPCSource from '@giro3d/giro3d/sources/COPCSource.js';
-import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import { setLazPerfPath } from '@giro3d/giro3d/sources/las/config.js';
+import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
-import StatusBar from './widgets/StatusBar.js';
 import { bindColorPicker } from './widgets/bindColorPicker.js';
 import { bindDropDown } from './widgets/bindDropDown.js';
 import { bindNumberInput } from './widgets/bindNumberInput.js';
@@ -31,7 +30,7 @@ import { bindToggle } from './widgets/bindToggle.js';
 import { formatPointCount } from './widgets/formatPointCount.js';
 import { makeColorRamp } from './widgets/makeColorRamp.js';
 import { placeCameraOnTop } from './widgets/placeCameraOnTop.js';
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import StatusBar from './widgets/StatusBar.js';
 
 // LAS processing requires the WebAssembly laz-perf library
 // This path is specific to your project, and must be set accordingly.

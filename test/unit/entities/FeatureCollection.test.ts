@@ -4,11 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-import Extent from '@giro3d/giro3d/core/geographic/Extent';
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
-import FeatureCollection from '@giro3d/giro3d/entities/FeatureCollection';
 import VectorSource from 'ol/source/Vector';
 import { describe, expect, it } from 'vitest';
+
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
+import Extent from '@giro3d/giro3d/core/geographic/Extent';
+import FeatureCollection from '@giro3d/giro3d/entities/FeatureCollection';
 
 describe('constructor', () => {
     const source = new VectorSource();

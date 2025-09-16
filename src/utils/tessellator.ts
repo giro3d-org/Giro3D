@@ -5,7 +5,6 @@
  */
 
 import Earcut from 'earcut';
-
 import { Matrix4, Plane, Vector3 } from 'three';
 
 const X = 0;

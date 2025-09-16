@@ -5,12 +5,14 @@
  */
 
 import type { TypedArray } from 'three';
+
 import { Box3, Vector2, Vector3 } from 'three';
+
 import ProjUtils from '../../utils/ProjUtils';
 import { nonNull } from '../../utils/tsutils';
 import OffsetScale from '../OffsetScale';
-import Coordinates, { assertCrsIsValid, crsIsGeocentric, crsIsGeographic } from './Coordinates';
 import CoordinateSystem from './coordinate-system/CoordinateSystem';
+import Coordinates, { assertCrsIsValid, crsIsGeocentric, crsIsGeographic } from './Coordinates';
 
 const tmpXY = new Vector2();
 

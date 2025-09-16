@@ -5,10 +5,12 @@
  */
 
 import type { Matrix4 } from 'three';
+
 import { Box3, Vector2, Vector3 } from 'three';
 
 import type ElevationRange from '../../core/ElevationRange';
 import type Extent from '../../core/geographic/Extent';
+
 import TileVolume from './TileVolume';
 
 const vec2 = new Vector2();

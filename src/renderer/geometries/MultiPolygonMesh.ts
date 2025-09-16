@@ -5,10 +5,12 @@
  */
 
 import { Object3D } from 'three';
+
 import type PolygonMesh from './PolygonMesh';
-import { isPolygonMesh } from './PolygonMesh';
 import type SimpleGeometryMesh from './SimpleGeometryMesh';
 import type { DefaultUserData, SimpleGeometryMeshEventMap } from './SimpleGeometryMesh';
+
+import { isPolygonMesh } from './PolygonMesh';
 
 export default class MultiPolygonMesh<UserData extends DefaultUserData = DefaultUserData>
     extends Object3D<SimpleGeometryMeshEventMap>

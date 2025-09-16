@@ -4,8 +4,9 @@
  * SPDX-License-Identifier: MIT
  */
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
-import Extent from '@giro3d/giro3d/core/geographic/Extent';
+import { RGBAFormat, UnsignedByteType } from 'three';
+import { beforeEach, describe, expect, it, vitest } from 'vitest';
+
 import type Instance from '@giro3d/giro3d/core/Instance';
 import type {
     LayerEvents,
@@ -13,11 +14,13 @@ import type {
     LayerUserData,
     TextureAndPitch,
 } from '@giro3d/giro3d/core/layer/Layer';
-import Layer from '@giro3d/giro3d/core/layer/Layer';
 import type RequestQueue from '@giro3d/giro3d/core/RequestQueue';
+
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
+import Extent from '@giro3d/giro3d/core/geographic/Extent';
+import Layer from '@giro3d/giro3d/core/layer/Layer';
 import NullSource from '@giro3d/giro3d/sources/NullSource';
-import { RGBAFormat, UnsignedByteType } from 'three';
-import { beforeEach, describe, expect, it, vitest } from 'vitest';
+
 import { setupGlobalMocks } from '../../mocks';
 
 // @ts-expect-error missing implementations of abstract superclass

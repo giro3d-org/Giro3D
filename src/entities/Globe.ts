@@ -5,28 +5,30 @@
  */
 
 import { Box3, Sphere, Vector2, Vector3, type Camera } from 'three';
+
 import type Context from '../core/Context';
+import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
+import type PointOfView from '../core/PointOfView';
+import type TerrainOptions from '../core/TerrainOptions';
+import type { MapSubdivisionStrategy } from './Map';
+import type MapLightingOptions from './MapLightingOptions';
+import type { TileGeometryBuilder } from './tiles/TileGeometry';
+import type TileMesh from './tiles/TileMesh';
+import type TileVolume from './tiles/TileVolume';
+
 import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import Coordinates from '../core/geographic/Coordinates';
 import Ellipsoid from '../core/geographic/Ellipsoid';
 import Extent from '../core/geographic/Extent';
-import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
 import { isColorLayer } from '../core/layer/ColorLayer';
 import { isElevationLayer } from '../core/layer/ElevationLayer';
-import type PointOfView from '../core/PointOfView';
 import ScreenSpaceError from '../core/ScreenSpaceError';
-import type TerrainOptions from '../core/TerrainOptions';
 import { computeDistanceToFitSphere, computeZoomToFitSphere } from '../renderer/View';
 import { isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
-import type { MapSubdivisionStrategy } from './Map';
 import Map, { defaultMapSubdivisionStrategy, type MapConstructorOptions } from './Map';
-import type MapLightingOptions from './MapLightingOptions';
 import { MapLightingMode } from './MapLightingOptions';
 import EllipsoidTileGeometryBuilder from './tiles/EllipsoidTileGeometryBuilder';
 import EllipsoidTileVolume from './tiles/EllipsoidTileVolume';
-import type { TileGeometryBuilder } from './tiles/TileGeometry';
-import type TileMesh from './tiles/TileMesh';
-import type TileVolume from './tiles/TileVolume';
 
 const tempDims = new Vector2();
 const tempWorldPosition = new Vector3();

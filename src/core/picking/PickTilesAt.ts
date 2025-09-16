@@ -5,15 +5,17 @@
  */
 
 import { Color, FloatType, Vector2, Vector3 } from 'three';
+
 import type Map from '../../entities/Map';
 import type TileMesh from '../../entities/tiles/TileMesh';
+import type Instance from '../Instance';
+import type PickOptions from './PickOptions';
+import type PickResult from './PickResult';
+
 import RenderingState from '../../renderer/RenderingState';
 import CoordinateSystem from '../geographic/coordinate-system/CoordinateSystem';
 import Coordinates from '../geographic/Coordinates';
-import type Instance from '../Instance';
 import traversePickingCircle from './PickingCircle';
-import type PickOptions from './PickOptions';
-import type PickResult from './PickResult';
 
 /** Pick result on tiles (e.g. map) */
 export interface MapPickResult<TFeature = unknown> extends PickResult<TFeature & unknown> {

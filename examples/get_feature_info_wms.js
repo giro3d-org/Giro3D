@@ -4,21 +4,21 @@
  * SPDX-License-Identifier: MIT
  */
 
+import { get as getProjection } from 'ol/proj.js';
+import { TileWMS } from 'ol/source.js';
 import { Vector2, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
-import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
+import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 
-import { get as getProjection } from 'ol/proj.js';
-import { TileWMS } from 'ol/source.js';
 import { bindColorPicker } from './widgets/bindColorPicker.js';
 import StatusBar from './widgets/StatusBar.js';
 

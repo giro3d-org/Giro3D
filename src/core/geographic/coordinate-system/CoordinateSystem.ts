@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT
  */
 
-import Authority from './Authority';
-import LinearUnit from './LinearUnit';
-
 // @ts-expect-error no types
 import parseCode from 'proj4/lib/parseCode';
+
+import Authority from './Authority';
+import LinearUnit from './LinearUnit';
 
 type ID = Record<string, number>;
 

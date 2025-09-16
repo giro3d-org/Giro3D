@@ -12,6 +12,7 @@ import {
     type Color,
     type DataTexture,
 } from 'three';
+
 import TextureGenerator from '../utils/TextureGenerator';
 import { nonNull } from '../utils/tsutils';
 import ColorMapMode from './ColorMapMode';

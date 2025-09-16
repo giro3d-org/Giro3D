@@ -5,7 +5,6 @@
  */
 
 import { AxesHelper, Matrix4, Raycaster, Vector2, Vector3 } from 'three';
-
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';

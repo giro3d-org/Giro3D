@@ -14,6 +14,7 @@ import type {
     WebGLProgramParametersWithUniforms,
     WebGLRenderer,
 } from 'three';
+
 import {
     Color,
     GLSL3,
@@ -28,13 +29,13 @@ import {
     Vector3,
     Vector4,
 } from 'three';
+
 import type ColorimetryOptions from '../core/ColorimetryOptions';
 import type ColorMapMode from '../core/ColorMapMode';
 import type ContourLineOptions from '../core/ContourLineOptions';
 import type ElevationRange from '../core/ElevationRange';
 import type Extent from '../core/geographic/Extent';
 import type GraticuleOptions from '../core/GraticuleOptions';
-import BlendingMode from '../core/layer/BlendingMode';
 import type ColorLayer from '../core/layer/ColorLayer';
 import type ElevationLayer from '../core/layer/ElevationLayer';
 import type Layer from '../core/layer/Layer';
@@ -42,19 +43,21 @@ import type { TextureAndPitch } from '../core/layer/Layer';
 import type MaskLayer from '../core/layer/MaskLayer';
 import type { MaskMode } from '../core/layer/MaskLayer';
 import type MemoryUsage from '../core/MemoryUsage';
+import type TerrainOptions from '../core/TerrainOptions';
+import type MapLightingOptions from '../entities/MapLightingOptions';
+import type { AtlasInfo, LayerAtlasInfo } from './AtlasBuilder';
+import type ColorMapAtlas from './ColorMapAtlas';
+
+import BlendingMode from '../core/layer/BlendingMode';
 import { type GetMemoryUsageContext } from '../core/MemoryUsage';
 import OffsetScale from '../core/OffsetScale';
 import Rect from '../core/Rect';
 import Capabilities from '../core/system/Capabilities';
-import type TerrainOptions from '../core/TerrainOptions';
-import type MapLightingOptions from '../entities/MapLightingOptions';
 import { MapLightingMode } from '../entities/MapLightingOptions';
 import { getColor } from '../utils/predicates';
 import TextureGenerator from '../utils/TextureGenerator';
 import { nonNull } from '../utils/tsutils';
-import type { AtlasInfo, LayerAtlasInfo } from './AtlasBuilder';
 import AtlasBuilder from './AtlasBuilder';
-import type ColorMapAtlas from './ColorMapAtlas';
 import WebGLComposer from './composition/WebGLComposer';
 import EmptyTexture from './EmptyTexture';
 import MaterialUtils from './MaterialUtils';

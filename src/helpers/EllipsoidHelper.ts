@@ -17,7 +17,9 @@ import {
     type ColorRepresentation,
 } from 'three';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+
 import type Disposable from '../core/Disposable';
+
 import Ellipsoid from '../core/geographic/Ellipsoid';
 import { Vector3Array } from '../core/VectorArray';
 

@@ -8,22 +8,21 @@ import { DoubleSide, MathUtils, Mesh, MeshBasicMaterial, SphereGeometry, Vector3
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
-import Instance from '@giro3d/giro3d/core/Instance.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import Instance from '@giro3d/giro3d/core/Instance.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import AxisGrid from '@giro3d/giro3d/entities/AxisGrid.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';
 
-import StatusBar from './widgets/StatusBar.js';
-
 import { bindButton } from './widgets/bindButton.js';
 import { bindSlider } from './widgets/bindSlider.js';
 import { bindToggle } from './widgets/bindToggle.js';
 import { makeColorRamp } from './widgets/makeColorRamp.js';
+import StatusBar from './widgets/StatusBar.js';
 
 const instance = new Instance({
     target: 'view',

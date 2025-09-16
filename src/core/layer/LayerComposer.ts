@@ -19,6 +19,10 @@ import {
     type WebGLRenderer,
     type WebGLRenderTarget,
 } from 'three';
+
+import type Extent from '../geographic/Extent';
+import type MemoryUsage from '../MemoryUsage';
+
 import WebGLComposer, { type DrawOptions } from '../../renderer/composition/WebGLComposer';
 import { isEmptyTexture } from '../../renderer/EmptyTexture';
 import MemoryTracker from '../../renderer/MemoryTracker';
@@ -28,8 +32,6 @@ import TextureGenerator from '../../utils/TextureGenerator';
 import { nonNull } from '../../utils/tsutils';
 import CoordinateSystem from '../geographic/coordinate-system/CoordinateSystem';
 import Coordinates from '../geographic/Coordinates';
-import type Extent from '../geographic/Extent';
-import type MemoryUsage from '../MemoryUsage';
 import { type GetMemoryUsageContext, type MemoryUsageReport } from '../MemoryUsage';
 import Rect from '../Rect';
 import Interpretation from './Interpretation';

@@ -5,8 +5,10 @@
  */
 
 import type GUI from 'lil-gui';
+
 import type Instance from '../core/Instance';
 import type PointCloud from '../entities/PointCloud';
+
 import ColorMapInspector from './ColorMapInspector';
 import EntityInspector from './EntityInspector';
 import PointCloudSourceInspector from './PointCloudSourceInspector';

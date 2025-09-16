@@ -28,39 +28,39 @@ import {
     type WebGLRenderer,
     type WebGLRenderTarget,
 } from 'three';
-
 import { type OBB } from 'three/examples/jsm/Addons.js';
 
 import type Disposable from '../../core/Disposable';
 import type Ellipsoid from '../../core/geographic/Ellipsoid';
 import type Extent from '../../core/geographic/Extent';
 import type GetElevationOptions from '../../core/GetElevationOptions';
-import HeightMap from '../../core/HeightMap';
 import type ElevationLayer from '../../core/layer/ElevationLayer';
-import { isElevationLayer } from '../../core/layer/ElevationLayer';
 import type Layer from '../../core/layer/Layer';
 import type MemoryUsage from '../../core/MemoryUsage';
 import type { GetMemoryUsageContext } from '../../core/MemoryUsage';
-import OffsetScale from '../../core/OffsetScale';
-import Rect from '../../core/Rect';
 import type UniqueOwner from '../../core/UniqueOwner';
-import { intoUniqueOwner } from '../../core/UniqueOwner';
-import OBBHelper from '../../helpers/OBBHelper';
-import { readRGRenderTargetIntoRGBAU8Buffer } from '../../renderer/composition/WebGLComposer';
 import type LayeredMaterial from '../../renderer/LayeredMaterial';
 import type { MaterialOptions } from '../../renderer/LayeredMaterial';
-import MaterialUtils from '../../renderer/MaterialUtils';
-import MemoryTracker from '../../renderer/MemoryTracker';
 import type RenderingState from '../../renderer/RenderingState';
 import type ShadowLayeredMaterial from '../../renderer/ShadowLayeredMaterial';
 import type View from '../../renderer/View';
-import { isPerspectiveCamera } from '../../utils/predicates';
-import { nonNull } from '../../utils/tsutils';
 import type TileCoordinate from './TileCoordinate';
 import type TileGeometry from './TileGeometry';
 import type { TileGeometryBuilder } from './TileGeometry';
 import type { NeighbourList } from './TileIndex';
 import type TileVolume from './TileVolume';
+
+import HeightMap from '../../core/HeightMap';
+import { isElevationLayer } from '../../core/layer/ElevationLayer';
+import OffsetScale from '../../core/OffsetScale';
+import Rect from '../../core/Rect';
+import { intoUniqueOwner } from '../../core/UniqueOwner';
+import OBBHelper from '../../helpers/OBBHelper';
+import { readRGRenderTargetIntoRGBAU8Buffer } from '../../renderer/composition/WebGLComposer';
+import MaterialUtils from '../../renderer/MaterialUtils';
+import MemoryTracker from '../../renderer/MemoryTracker';
+import { isPerspectiveCamera } from '../../utils/predicates';
+import { nonNull } from '../../utils/tsutils';
 
 const ray = new Ray();
 const inverseMatrix = new Matrix4();

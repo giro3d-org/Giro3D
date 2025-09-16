@@ -5,6 +5,7 @@
  */
 
 import { EventDispatcher } from 'three';
+
 import type Progress from './Progress';
 
 export interface OperationCounterEvents {

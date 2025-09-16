@@ -5,13 +5,15 @@
  */
 
 import { Box3, BufferAttribute, BufferGeometry, MathUtils, Vector2, Vector3 } from 'three';
+
 import type Extent from '../../core/geographic/Extent';
 import type HeightMap from '../../core/HeightMap';
 import type MemoryUsage from '../../core/MemoryUsage';
 import type { GetMemoryUsageContext } from '../../core/MemoryUsage';
+import type TileGeometry from './TileGeometry';
+
 import { getGeometryMemoryUsage } from '../../core/MemoryUsage';
 import { getGridBuffers } from './GridBuilder';
-import type TileGeometry from './TileGeometry';
 
 const tmpVec2 = new Vector2();
 const tmpVec3 = new Vector3();

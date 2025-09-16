@@ -5,8 +5,20 @@
  */
 
 import type { Dimension, Getter, Hierarchy, View } from 'copc';
+
 import { Copc, Las } from 'copc';
 import { Box3, BufferAttribute, Vector3 } from 'three';
+
+import type { CommonOptions } from './las/CommonOptions';
+import type { DimensionName } from './las/dimension';
+import type { MessageMap, MessageType, ReadViewResult } from './las/worker';
+import type {
+    GetNodeDataOptions,
+    PointCloudMetadata,
+    PointCloudNode,
+    PointCloudNodeData,
+} from './PointCloudSource';
+
 import { GlobalCache } from '../core/Cache';
 import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import * as octree from '../core/Octree';
@@ -15,21 +27,12 @@ import RequestQueue from '../core/RequestQueue';
 import Fetcher from '../utils/Fetcher';
 import { nonNull } from '../utils/tsutils';
 import WorkerPool from '../utils/WorkerPool';
-import type { CommonOptions } from './las/CommonOptions';
 import { getLazPerf } from './las/config';
 import createWorker from './las/createWorker';
-import type { DimensionName } from './las/dimension';
 import { extractAttributes, getDimensionsToRead } from './las/dimension';
 import { type DimensionFilter } from './las/filter';
 import { createBufferAttribute } from './las/readers';
-import type { MessageMap, MessageType, ReadViewResult } from './las/worker';
 import { readView, type Metadata } from './las/worker';
-import type {
-    GetNodeDataOptions,
-    PointCloudMetadata,
-    PointCloudNode,
-    PointCloudNodeData,
-} from './PointCloudSource';
 import { PointCloudSourceBase } from './PointCloudSource';
 
 const deduplicatedQueue = new RequestQueue();

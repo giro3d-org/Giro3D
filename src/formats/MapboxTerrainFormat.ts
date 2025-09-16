@@ -5,10 +5,12 @@
  */
 
 import { DataTexture, FloatType, LinearFilter, RGFormat } from 'three';
-import WorkerPool from '../utils/WorkerPool';
+
 import type { DecodeOptions } from './ImageFormat';
-import ImageFormat from './ImageFormat';
 import type { DecodeMapboxTerrainResult, MessageMap, MessageType } from './mapboxWorker';
+
+import WorkerPool from '../utils/WorkerPool';
+import ImageFormat from './ImageFormat';
 import { decodeMapboxTerrainImage } from './mapboxWorker';
 
 let workerPool: WorkerPool<MessageType, MessageMap> | null = null;

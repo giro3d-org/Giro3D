@@ -5,6 +5,7 @@
  */
 
 import { EventDispatcher, MathUtils, type Camera } from 'three';
+
 import type Context from '../core/Context';
 import type Disposable from '../core/Disposable';
 import type Instance from '../core/Instance';

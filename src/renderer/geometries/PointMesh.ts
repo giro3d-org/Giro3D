@@ -5,10 +5,13 @@
  */
 
 import type { Camera, PerspectiveCamera, Scene, SpriteMaterial, WebGLRenderer } from 'three';
+
 import { MathUtils, Sprite } from 'three';
-import { DEFAULT_POINT_SIZE } from '../../core/FeatureTypes';
+
 import type SimpleGeometryMesh from './SimpleGeometryMesh';
 import type { DefaultUserData } from './SimpleGeometryMesh';
+
+import { DEFAULT_POINT_SIZE } from '../../core/FeatureTypes';
 
 export type ConstructorParams = { material: SpriteMaterial; opacity?: number; pointSize?: number };
 

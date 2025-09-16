@@ -4,15 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { Color, CubeTextureLoader } from 'three';
-import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
-import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
-import { MathUtils } from 'three/src/math/MathUtils.js';
-
 import GeoJSON from 'ol/format/GeoJSON.js';
 import { tile } from 'ol/loadingstrategy.js';
 import VectorSource from 'ol/source/Vector.js';
 import { createXYZ } from 'ol/tilegrid.js';
+import { Color, CubeTextureLoader } from 'three';
+import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
+import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+import { MathUtils } from 'three/src/math/MathUtils.js';
 
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';

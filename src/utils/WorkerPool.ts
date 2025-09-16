@@ -5,8 +5,9 @@
  */
 
 import type Disposable from '../core/Disposable';
-import OperationCounter from '../core/OperationCounter';
 import type Progress from '../core/Progress';
+
+import OperationCounter from '../core/OperationCounter';
 
 /**
  * A message to send to the worker.

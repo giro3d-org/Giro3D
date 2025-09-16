@@ -5,6 +5,7 @@
  */
 
 import type { BaseMessageMap, SuccessResponse } from '../utils/WorkerPool';
+
 import { createErrorResponse, type Message } from '../utils/WorkerPool';
 
 /**

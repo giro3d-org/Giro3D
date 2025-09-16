@@ -10,7 +10,6 @@ import type { ColorLayerEvents, ColorLayerOptions } from './ColorLayer';
 import type ElevationLayer from './ElevationLayer';
 import type { ElevationLayerOptions } from './ElevationLayer';
 import type HasLayers from './HasLayers';
-import { hasLayers } from './HasLayers';
 import type Interpretation from './Interpretation';
 import type { Mode as InterpretationMode, InterpretationOptions } from './Interpretation';
 import type Layer from './Layer';
@@ -25,6 +24,8 @@ import type {
 import type MaskLayer from './MaskLayer';
 import type { MaskLayerOptions, MaskMode } from './MaskLayer';
 import type NoDataOptions from './NoDataOptions';
+
+import { hasLayers } from './HasLayers';
 
 export {
     BlendingMode,

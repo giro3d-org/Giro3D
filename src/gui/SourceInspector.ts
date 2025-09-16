@@ -6,12 +6,15 @@
 
 import type GUI from 'lil-gui';
 import type TileSource from 'ol/source/Tile.js';
+
 import UrlTile from 'ol/source/UrlTile.js';
-import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+
 import type Instance from '../core/Instance';
+import type ImageSource from '../sources/ImageSource';
+
+import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import * as MemoryUsage from '../core/MemoryUsage';
 import { isGeoTIFFSource } from '../sources/GeoTIFFSource';
-import type ImageSource from '../sources/ImageSource';
 import { isTiledImageSource } from '../sources/TiledImageSource';
 import { isVectorSource } from '../sources/VectorSource';
 import Panel from './Panel';

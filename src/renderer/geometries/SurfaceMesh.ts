@@ -5,9 +5,12 @@
  */
 
 import type { BufferGeometry, Material } from 'three';
+
 import { Mesh } from 'three';
-import { type FeatureElevation, type FeatureExtrusionOffset } from '../../core/FeatureTypes';
+
 import type PolygonMesh from './PolygonMesh';
+
+import { type FeatureElevation, type FeatureExtrusionOffset } from '../../core/FeatureTypes';
 import { type DefaultUserData, type SimpleGeometryMeshEventMap } from './SimpleGeometryMesh';
 
 export default class SurfaceMesh<UserData extends DefaultUserData = DefaultUserData> extends Mesh<

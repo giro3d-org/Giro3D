@@ -5,7 +5,9 @@
  */
 
 import type { Camera } from 'three';
+
 import { Vector3 } from 'three';
+
 import { isOrthographicCamera, isVector3 } from '../utils/predicates';
 
 /**

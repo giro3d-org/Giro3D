@@ -5,6 +5,7 @@
  */
 
 import { EventDispatcher, type EventListener, type Texture } from 'three';
+
 import RequestQueue from '../core/RequestQueue';
 import HttpConfiguration from './HttpConfiguration';
 import PromiseUtils from './PromiseUtils';

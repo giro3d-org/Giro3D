@@ -6,13 +6,15 @@
 
 import WMTSCapabilities from 'ol/format/WMTSCapabilities';
 import WMTS, { optionsFromCapabilities } from 'ol/source/WMTS.js';
-import { GlobalCache } from '../core/Cache';
+
 import type Extent from '../core/geographic/Extent';
-import { DefaultQueue } from '../core/RequestQueue';
 import type ImageFormat from '../formats/ImageFormat';
-import Fetcher from '../utils/Fetcher';
 import type { ImageSourceOptions } from './ImageSource';
 import type { TiledImageSourceOptions } from './TiledImageSource';
+
+import { GlobalCache } from '../core/Cache';
+import { DefaultQueue } from '../core/RequestQueue';
+import Fetcher from '../utils/Fetcher';
 import TiledImageSource from './TiledImageSource';
 
 export interface WmtsSourceOptions extends ImageSourceOptions {

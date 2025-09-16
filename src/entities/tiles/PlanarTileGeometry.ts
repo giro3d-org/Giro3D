@@ -13,13 +13,15 @@ import {
     Vector2,
     Vector3,
 } from 'three';
+
 import type Extent from '../../core/geographic/Extent';
 import type HeightMap from '../../core/HeightMap';
 import type MemoryUsage from '../../core/MemoryUsage';
-import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../../core/MemoryUsage';
 import type { SkirtSide } from './GridBuilder';
-import { getGridBuffers, iterateBottomVertices, iterateSkirtVertices } from './GridBuilder';
 import type TileGeometry from './TileGeometry';
+
+import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../../core/MemoryUsage';
+import { getGridBuffers, iterateBottomVertices, iterateSkirtVertices } from './GridBuilder';
 
 const tmpVec3 = new Vector3();
 const tmpVec2 = new Vector2();

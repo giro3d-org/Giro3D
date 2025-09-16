@@ -4,9 +4,10 @@
  * SPDX-License-Identifier: MIT
  */
 
+import { describe, expect, it } from 'vitest';
+
 import RequestQueue from '@giro3d/giro3d/core/RequestQueue';
 import { AbortError } from '@giro3d/giro3d/utils/PromiseUtils';
-import { describe, expect, it } from 'vitest';
 
 describe('progress & loading', () => {
     it('progress should return the ratio between enqueued tasks and executed tasks', async () => {

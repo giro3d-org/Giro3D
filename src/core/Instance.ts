@@ -4,9 +4,11 @@
  * SPDX-License-Identifier: MIT
  */
 
+import type { OrthographicCamera, PerspectiveCamera } from 'three';
+import type { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+
 import { register } from 'ol/proj/proj4.js';
 import proj4 from 'proj4';
-import type { OrthographicCamera, PerspectiveCamera } from 'three';
 import {
     Clock,
     EventDispatcher,
@@ -19,18 +21,22 @@ import {
     type WebGLRenderer,
     type WebGLRendererParameters,
 } from 'three';
-import type { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+
 import type Entity from '../entities/Entity';
-import { isEntity } from '../entities/Entity';
 import type Entity3D from '../entities/Entity3D';
+import type RenderingOptions from '../renderer/RenderingOptions';
+import type CoordinateSystem from './geographic/coordinate-system/CoordinateSystem';
+import type PickOptions from './picking/PickOptions';
+import type PickResult from './picking/PickResult';
+import type Progress from './Progress';
+
+import { isEntity } from '../entities/Entity';
 import { isEntity3D } from '../entities/Entity3D';
 import C3DEngine from '../renderer/c3DEngine';
-import type RenderingOptions from '../renderer/RenderingOptions';
 import { GlobalRenderTargetPool } from '../renderer/RenderTargetPool';
 import View from '../renderer/View';
 import { GlobalCache } from './Cache';
 import { isDisposable } from './Disposable';
-import type CoordinateSystem from './geographic/coordinate-system/CoordinateSystem';
 import MainLoop from './MainLoop';
 import {
     aggregateMemoryUsage,
@@ -41,9 +47,6 @@ import {
 import { isPickable } from './picking/Pickable';
 import { isPickableFeatures } from './picking/PickableFeatures';
 import pickObjectsAt from './picking/PickObjectsAt';
-import type PickOptions from './picking/PickOptions';
-import type PickResult from './picking/PickResult';
-import type Progress from './Progress';
 
 const vectors = {
     pos: new Vector3(),

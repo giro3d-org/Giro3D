@@ -6,6 +6,7 @@
 
 import { Box3, type Matrix4, type Sphere, type Vector3 } from 'three';
 import { OBB } from 'three/examples/jsm/Addons.js';
+
 import type ElevationRange from '../../core/ElevationRange';
 
 const tmpBox = new Box3();

@@ -5,9 +5,11 @@
  */
 
 import type { Sphere } from 'three';
+
 import { Box3, Matrix4, ShapeUtils, Vector3 } from 'three';
 
 import type View from '../renderer/View';
+
 import { isPerspectiveCamera } from '../utils/predicates';
 
 const m = new Matrix4();

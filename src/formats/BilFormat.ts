@@ -5,11 +5,13 @@
  */
 
 import { DataTexture, FloatType, LinearFilter, RGFormat } from 'three';
-import WorkerPool from '../utils/WorkerPool';
-import type { DecodeOptions } from './ImageFormat';
-import ImageFormat from './ImageFormat';
+
 import type { DecodeBilTerrainResult, MessageMap, MessageType } from './bilWorker';
+import type { DecodeOptions } from './ImageFormat';
+
+import WorkerPool from '../utils/WorkerPool';
 import { decodeRaster } from './bilWorker';
+import ImageFormat from './ImageFormat';
 
 let workerPool: WorkerPool<MessageType, MessageMap> | null = null;
 

@@ -6,8 +6,10 @@
 
 import type GUI from 'lil-gui';
 import type { Color, Material, Object3D } from 'three';
+
 import type Instance from '../core/Instance';
 import type FeatureCollection from '../entities/FeatureCollection';
+
 import Helpers from '../helpers/Helpers';
 import EntityInspector from './EntityInspector';
 

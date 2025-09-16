@@ -4,8 +4,9 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { getLazPerfPath } from './config';
 import type { LazWorker } from './worker';
+
+import { getLazPerfPath } from './config';
 
 // Note: this function has to be in its own file to avoid circular dependencies
 // when using webpack (and possibly other bundlers)

@@ -5,11 +5,13 @@
  */
 
 import { Clock, MathUtils, Plane, Sphere, Vector3 } from 'three';
+
 import type Entity from '../entities/Entity';
 import type View from '../renderer/View';
-import { isBufferGeometry } from '../utils/predicates';
 import type Context from './Context';
 import type Instance from './Instance';
+
+import { isBufferGeometry } from '../utils/predicates';
 
 /** Rendering state */
 export enum RenderingState {

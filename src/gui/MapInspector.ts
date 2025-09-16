@@ -6,12 +6,15 @@
 
 import type GUI from 'lil-gui';
 import type { AxesHelper, GridHelper, Side } from 'three';
+
 import { Color } from 'three';
+
 import type Instance from '../core/Instance';
-import { isGlobe } from '../entities/Globe';
 import type Map from '../entities/Map';
 import type TileMesh from '../entities/tiles/TileMesh';
 import type { BoundingBoxHelper } from '../helpers/Helpers';
+
+import { isGlobe } from '../entities/Globe';
 import Helpers from '../helpers/Helpers';
 import RenderingState from '../renderer/RenderingState';
 import { isMaterial } from '../utils/predicates';

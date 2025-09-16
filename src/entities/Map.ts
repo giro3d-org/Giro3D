@@ -24,38 +24,44 @@ import {
 } from 'three';
 
 import type ColorimetryOptions from '../core/ColorimetryOptions';
-import { defaultColorimetryOptions } from '../core/ColorimetryOptions';
 import type ColorMap from '../core/ColorMap';
 import type Context from '../core/Context';
 import type ContourLineOptions from '../core/ContourLineOptions';
 import type ElevationProvider from '../core/ElevationProvider';
 import type ElevationRange from '../core/ElevationRange';
-import Coordinates from '../core/geographic/Coordinates';
 import type Extent from '../core/geographic/Extent';
 import type GetElevationOptions from '../core/GetElevationOptions';
 import type GetElevationResult from '../core/GetElevationResult';
 import type GraticuleOptions from '../core/GraticuleOptions';
 import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
 import type ColorLayer from '../core/layer/ColorLayer';
-import { isColorLayer } from '../core/layer/ColorLayer';
 import type ElevationLayer from '../core/layer/ElevationLayer';
-import { isElevationLayer } from '../core/layer/ElevationLayer';
 import type HasLayers from '../core/layer/HasLayers';
 import type Layer from '../core/layer/Layer';
-import { isLayer } from '../core/layer/Layer';
 import type MemoryUsage from '../core/MemoryUsage';
-import { type GetMemoryUsageContext } from '../core/MemoryUsage';
 import type Pickable from '../core/picking/Pickable';
 import type PickableFeatures from '../core/picking/PickableFeatures';
-import { isPickableFeatures } from '../core/picking/PickableFeatures';
-import traversePickingCircle from '../core/picking/PickingCircle';
 import type PickOptions from '../core/picking/PickOptions';
-import pickTilesAt, { type MapPickResult } from '../core/picking/PickTilesAt';
 import type PointOfView from '../core/PointOfView';
 import type { SSE } from '../core/ScreenSpaceError';
+import type TerrainOptions from '../core/TerrainOptions';
+import type RenderingState from '../renderer/RenderingState';
+import type { EntityUserData } from './Entity';
+import type MapLightingOptions from './MapLightingOptions';
+import type { TileGeometryBuilder } from './tiles/TileGeometry';
+import type TileVolume from './tiles/TileVolume';
+
+import { defaultColorimetryOptions } from '../core/ColorimetryOptions';
+import Coordinates from '../core/geographic/Coordinates';
+import { isColorLayer } from '../core/layer/ColorLayer';
+import { isElevationLayer } from '../core/layer/ElevationLayer';
+import { isLayer } from '../core/layer/Layer';
+import { type GetMemoryUsageContext } from '../core/MemoryUsage';
+import { isPickableFeatures } from '../core/picking/PickableFeatures';
+import traversePickingCircle from '../core/picking/PickingCircle';
+import pickTilesAt, { type MapPickResult } from '../core/picking/PickTilesAt';
 import ScreenSpaceError from '../core/ScreenSpaceError';
 import Capabilities from '../core/system/Capabilities';
-import type TerrainOptions from '../core/TerrainOptions';
 import {
     DEFAULT_ENABLE_STITCHING,
     DEFAULT_ENABLE_TERRAIN,
@@ -72,23 +78,18 @@ import LayeredMaterial, {
     DEFAULT_ZENITH,
     type MaterialOptions,
 } from '../renderer/LayeredMaterial';
-import type RenderingState from '../renderer/RenderingState';
 import ShadowLayeredMaterial from '../renderer/ShadowLayeredMaterial';
 import { computeDistanceToFitSphere, computeZoomToFitSphere } from '../renderer/View';
 import { isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
 import TextureGenerator from '../utils/TextureGenerator';
 import { nonNull } from '../utils/tsutils';
-import type { EntityUserData } from './Entity';
 import Entity3D, { type Entity3DEventMap } from './Entity3D';
-import type MapLightingOptions from './MapLightingOptions';
 import { MapLightingMode } from './MapLightingOptions';
 import EllipsoidTileGeometryBuilder from './tiles/EllipsoidTileGeometryBuilder';
 import PlanarTileGeometryBuilder from './tiles/PlanarTileGeometryBuilder';
 import PlanarTileVolume from './tiles/PlanarTileVolume';
-import type { TileGeometryBuilder } from './tiles/TileGeometry';
 import TileIndex, { type NeighbourList } from './tiles/TileIndex';
 import TileMesh, { isTileMesh } from './tiles/TileMesh';
-import type TileVolume from './tiles/TileVolume';
 
 /**
  * A function that allows subdivision of the specified tile.

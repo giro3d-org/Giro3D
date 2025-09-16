@@ -5,6 +5,7 @@
  */
 
 import type { Camera, Object3D, PerspectiveCamera, WebGLRenderer } from 'three';
+
 import {
     BufferGeometry,
     DepthTexture,
@@ -21,6 +22,7 @@ import {
     Vector2,
     WebGLRenderTarget,
 } from 'three';
+
 import { isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
 import BasicVS from './shader/BasicVS.glsl';
 import EDLPassOneFS from './shader/pointcloud/EDLPassOneFS.glsl';

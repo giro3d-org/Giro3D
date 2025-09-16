@@ -5,7 +5,9 @@
  */
 
 import type { ColorRepresentation } from 'three';
+
 import { Color } from 'three';
+
 import { isColor } from './predicates';
 
 // See https://www.codeproject.com/Articles/16565/Determining-Ideal-Text-Color-Based-on-Specified-Ba

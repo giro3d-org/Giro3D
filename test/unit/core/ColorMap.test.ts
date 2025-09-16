@@ -4,10 +4,11 @@
  * SPDX-License-Identifier: MIT
  */
 
-import ColorMap from '@giro3d/giro3d/core/ColorMap';
-import ColorMapMode from '@giro3d/giro3d/core/ColorMapMode';
 import { ClampToEdgeWrapping, Color, NearestFilter, RGBAFormat, UnsignedByteType } from 'three';
 import { describe, expect, it, vitest } from 'vitest';
+
+import ColorMap from '@giro3d/giro3d/core/ColorMap';
+import ColorMapMode from '@giro3d/giro3d/core/ColorMapMode';
 
 describe('constructor', () => {
     it('should set default properties', () => {

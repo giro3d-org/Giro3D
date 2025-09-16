@@ -5,11 +5,13 @@
  */
 
 import * as copc from 'copc';
+
 import type { BaseMessageMap, Message, SuccessResponse } from '../../utils/WorkerPool';
-import { createErrorResponse } from '../../utils/WorkerPool';
 import type { PointCloudAttribute } from '../PointCloudSource';
-import { getLazPerf, setLazPerfPath } from './config';
 import type { DimensionFilter } from './filter';
+
+import { createErrorResponse } from '../../utils/WorkerPool';
+import { getLazPerf, setLazPerfPath } from './config';
 import { getPerPointFilters } from './filter';
 import { readColor, readPosition, readScalarAttribute } from './readers';
 

@@ -7,7 +7,6 @@
 import GeoJSON from 'ol/format/GeoJSON.js';
 import { Fill, Stroke, Style } from 'ol/style.js';
 import { Color } from 'three';
-
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 

@@ -4,8 +4,9 @@
  * SPDX-License-Identifier: MIT
  */
 
-import NestedMap from '@giro3d/giro3d/utils/NestedMap';
 import { describe, expect, it } from 'vitest';
+
+import NestedMap from '@giro3d/giro3d/utils/NestedMap';
 
 type Value = {
     payload: number;

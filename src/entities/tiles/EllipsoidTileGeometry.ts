@@ -5,15 +5,17 @@
  */
 
 import { Box3, BufferAttribute, BufferGeometry, Vector2, Vector3 } from 'three';
+
 import type Ellipsoid from '../../core/geographic/Ellipsoid';
 import type Extent from '../../core/geographic/Extent';
 import type HeightMap from '../../core/HeightMap';
 import type MemoryUsage from '../../core/MemoryUsage';
 import type { GetMemoryUsageContext } from '../../core/MemoryUsage';
-import { getGeometryMemoryUsage } from '../../core/MemoryUsage';
 import type { VectorArray } from '../../core/VectorArray';
-import { getGridBuffers } from './GridBuilder';
 import type TileGeometry from './TileGeometry';
+
+import { getGeometryMemoryUsage } from '../../core/MemoryUsage';
+import { getGridBuffers } from './GridBuilder';
 
 const tmpVec2 = new Vector2();
 const tmpVec3 = new Vector3();

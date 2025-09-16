@@ -5,10 +5,13 @@
  */
 
 import type { ChartData, ChartDataset, ScatterDataPoint } from 'chart.js';
-import { Chart } from 'chart.js';
 import type GUI from 'lil-gui';
 import type { WebGLInfo } from 'three';
+
+import { Chart } from 'chart.js';
+
 import type Instance from '../../core/Instance';
+
 import { GlobalRenderTargetPool } from '../../renderer/RenderTargetPool';
 import ChartPanel, { pushTrim } from './ChartPanel';
 

@@ -5,8 +5,10 @@
  */
 
 import type GUI from 'lil-gui';
+
 import type Instance from '../core/Instance';
 import type Atmosphere from '../entities/Atmosphere';
+
 import EntityInspector from './EntityInspector';
 
 export default class AtmosphereInspector extends EntityInspector<Atmosphere> {

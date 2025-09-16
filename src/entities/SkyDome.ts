@@ -5,6 +5,7 @@
  */
 
 import { MathUtils, type Vector3 } from 'three';
+
 import SkyDomeObject from '../renderer/SkyDome';
 import Entity3D from './Entity3D';
 

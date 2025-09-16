@@ -5,6 +5,7 @@
  */
 
 import type { Raycaster } from 'three';
+
 import type PickResult from './PickResult';
 
 /**

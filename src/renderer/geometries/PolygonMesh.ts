@@ -5,7 +5,9 @@
  */
 
 import type { Polygon } from 'ol/geom';
+
 import { Object3D } from 'three';
+
 import type LineStringMesh from './LineStringMesh';
 import type SimpleGeometryMesh from './SimpleGeometryMesh';
 import type { DefaultUserData, SimpleGeometryMeshEventMap } from './SimpleGeometryMesh';

@@ -31,13 +31,12 @@ import DrawTool from '@giro3d/giro3d/interactions/DrawTool.js';
 import { MODE } from '@giro3d/giro3d/renderer/PointCloudMaterial.js';
 import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 
-import StatusBar from './widgets/StatusBar.js';
-
 import { bindButton } from './widgets/bindButton.js';
 import { bindDropDown } from './widgets/bindDropDown.js';
 import { bindSlider } from './widgets/bindSlider.js';
 import { bindToggle } from './widgets/bindToggle.js';
 import { makeColorRamp } from './widgets/makeColorRamp.js';
+import StatusBar from './widgets/StatusBar.js';
 
 Instance.registerCRS(
     'EPSG:2154',

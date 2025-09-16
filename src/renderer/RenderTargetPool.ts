@@ -10,7 +10,9 @@ import {
     type RenderTargetOptions,
     type WebGLRenderer,
 } from 'three';
+
 import type MemoryUsage from '../core/MemoryUsage';
+
 import { type GetMemoryUsageContext } from '../core/MemoryUsage';
 import NestedMap from '../utils/NestedMap';
 import TextureGenerator from '../utils/TextureGenerator';

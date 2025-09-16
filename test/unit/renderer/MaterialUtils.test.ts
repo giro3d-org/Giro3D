@@ -4,8 +4,9 @@
  * SPDX-License-Identifier: MIT
  */
 
-import MaterialUtils from '@giro3d/giro3d/renderer/MaterialUtils';
 import { beforeEach, describe, expect, it } from 'vitest';
+
+import MaterialUtils from '@giro3d/giro3d/renderer/MaterialUtils';
 
 type MockMaterial = { defines: { FOO?: 1 }; needsUpdate: boolean };
 

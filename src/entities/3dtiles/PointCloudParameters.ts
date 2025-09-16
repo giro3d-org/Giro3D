@@ -5,6 +5,7 @@
  */
 
 import type { Color } from 'three';
+
 import type ColorimetryOptions from '../../core/ColorimetryOptions';
 import type ColorMap from '../../core/ColorMap';
 import type { Classification, Mode } from '../../renderer/PointCloudMaterial';

@@ -7,9 +7,11 @@
 import { type Feature } from 'ol';
 import { type Geometry } from 'ol/geom';
 import { Texture, UnsignedByteType, type TextureDataType } from 'three';
+
+import type { LayerOptions, LayerUserData, Target } from './Layer';
+
 import OffsetScale from '../OffsetScale';
 import ColorLayer from './ColorLayer';
-import type { LayerOptions, LayerUserData, Target } from './Layer';
 
 /**
  * Modes of the mask layer.

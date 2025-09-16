@@ -5,7 +5,6 @@
  */
 
 import type Feature from 'ol/Feature';
-import { VOID } from 'ol/functions';
 import type {
     Geometry,
     LineString,
@@ -17,11 +16,25 @@ import type {
 } from 'ol/geom';
 import type VectorSource from 'ol/source/Vector';
 import type { BufferGeometry, Camera, Object3D, Plane } from 'three';
+
+import { VOID } from 'ol/functions';
+import { Projection } from 'ol/proj';
 import { Box3, Group, MathUtils, Vector3 } from 'three';
 
-import { Projection } from 'ol/proj';
-import { GlobalCache } from '../core/Cache';
 import type Context from '../core/Context';
+import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import type Extent from '../core/geographic/Extent';
+import type { SSE } from '../core/ScreenSpaceError';
+import type { BaseOptions } from '../renderer/geometries/GeometryConverter';
+import type LineStringMesh from '../renderer/geometries/LineStringMesh';
+import type MultiLineStringMesh from '../renderer/geometries/MultiLineStringMesh';
+import type PointMesh from '../renderer/geometries/PointMesh';
+import type SimpleGeometryMesh from '../renderer/geometries/SimpleGeometryMesh';
+import type SurfaceMesh from '../renderer/geometries/SurfaceMesh';
+import type { EntityUserData } from './Entity';
+import type { Entity3DEventMap } from './Entity3D';
+
+import { GlobalCache } from '../core/Cache';
 import {
     type FeatureElevation,
     type FeatureElevationCallback,
@@ -33,31 +46,20 @@ import {
     type PointMaterialGenerator,
     type SurfaceMaterialGenerator,
 } from '../core/FeatureTypes';
-import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
-import type Extent from '../core/geographic/Extent';
 import LayerUpdateState from '../core/layer/LayerUpdateState';
 import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../core/MemoryUsage';
 import OperationCounter from '../core/OperationCounter';
 import { DefaultQueue } from '../core/RequestQueue';
-import type { SSE } from '../core/ScreenSpaceError';
 import ScreenSpaceError from '../core/ScreenSpaceError';
-import type { BaseOptions } from '../renderer/geometries/GeometryConverter';
 import GeometryConverter from '../renderer/geometries/GeometryConverter';
-import type LineStringMesh from '../renderer/geometries/LineStringMesh';
 import { isLineStringMesh } from '../renderer/geometries/LineStringMesh';
-import type MultiLineStringMesh from '../renderer/geometries/MultiLineStringMesh';
 import { isMultiPolygonMesh } from '../renderer/geometries/MultiPolygonMesh';
-import type PointMesh from '../renderer/geometries/PointMesh';
 import { isPointMesh } from '../renderer/geometries/PointMesh';
 import { isPolygonMesh } from '../renderer/geometries/PolygonMesh';
-import type SimpleGeometryMesh from '../renderer/geometries/SimpleGeometryMesh';
 import { isSimpleGeometryMesh } from '../renderer/geometries/SimpleGeometryMesh';
-import type SurfaceMesh from '../renderer/geometries/SurfaceMesh';
 import { isSurfaceMesh } from '../renderer/geometries/SurfaceMesh';
 import OLUtils from '../utils/OpenLayersUtils';
 import { nonNull } from '../utils/tsutils';
-import type { EntityUserData } from './Entity';
-import type { Entity3DEventMap } from './Entity3D';
 import Entity3D from './Entity3D';
 
 const CACHE_TTL = 30_000; // 30 seconds

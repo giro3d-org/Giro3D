@@ -7,7 +7,6 @@
 import TopoJSON from 'ol/format/TopoJSON.js';
 import OSM from 'ol/source/OSM.js';
 import { Fill, Stroke, Style } from 'ol/style.js';
-
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 

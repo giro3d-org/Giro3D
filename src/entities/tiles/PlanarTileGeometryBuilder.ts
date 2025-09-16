@@ -5,10 +5,12 @@
  */
 
 import { Vector2 } from 'three';
+
 import type Extent from '../../core/geographic/Extent';
-import PlanarTileGeometry from './PlanarTileGeometry';
 import type TileCoordinate from './TileCoordinate';
 import type { TileGeometryBuilder } from './TileGeometry';
+
+import PlanarTileGeometry from './PlanarTileGeometry';
 
 export function selectBestSubdivisions(extent: Extent, maxAspectRatio: number): Vector2 {
     const dims = extent.dimensions();

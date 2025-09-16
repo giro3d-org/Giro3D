@@ -4,9 +4,11 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { GlobeControls as WrappedControls, Ellipsoid as WrappedEllipsoid } from '3d-tiles-renderer';
 import type { Object3D, OrthographicCamera, PerspectiveCamera } from 'three';
+
+import { GlobeControls as WrappedControls, Ellipsoid as WrappedEllipsoid } from '3d-tiles-renderer';
 import { EventDispatcher, Matrix4 } from 'three';
+
 import Ellipsoid from '../core/geographic/Ellipsoid';
 
 class PseudoTileGroup {

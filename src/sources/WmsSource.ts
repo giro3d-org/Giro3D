@@ -5,9 +5,11 @@
  */
 
 import TileWMS from 'ol/source/TileWMS';
+
 import type Extent from '../core/geographic/Extent';
 import type ImageFormat from '../formats/ImageFormat';
 import type { ImageSourceOptions } from './ImageSource';
+
 import TiledImageSource from './TiledImageSource';
 
 export interface WmsSourceOptions extends ImageSourceOptions {

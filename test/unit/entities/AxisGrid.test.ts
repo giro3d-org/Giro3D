@@ -4,14 +4,16 @@
  * SPDX-License-Identifier: MIT
  */
 
-import type Context from '@giro3d/giro3d/core/Context';
-import Extent from '@giro3d/giro3d/core/geographic/Extent';
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
-import type { Volume } from '@giro3d/giro3d/entities/AxisGrid';
-import AxisGrid, { DEFAULT_STYLE } from '@giro3d/giro3d/entities/AxisGrid';
-import View from '@giro3d/giro3d/renderer/View';
 import * as THREE from 'three';
 import { beforeEach, describe, expect, it } from 'vitest';
+
+import type Context from '@giro3d/giro3d/core/Context';
+import type { Volume } from '@giro3d/giro3d/entities/AxisGrid';
+
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
+import Extent from '@giro3d/giro3d/core/geographic/Extent';
+import AxisGrid, { DEFAULT_STYLE } from '@giro3d/giro3d/entities/AxisGrid';
+import View from '@giro3d/giro3d/renderer/View';
 
 const DEFAULT_EXTENT = new Extent(CoordinateSystem.epsg3857, -10, 10, -10, 10);
 const defaultVolume: Volume = {

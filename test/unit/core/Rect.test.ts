@@ -4,8 +4,9 @@
  * SPDX-License-Identifier: MIT
  */
 
-import Rect from '@giro3d/giro3d/core/Rect';
 import { describe, expect, it } from 'vitest';
+
+import Rect from '@giro3d/giro3d/core/Rect';
 
 describe('constructor', () => {
     it('should assign all properties', () => {

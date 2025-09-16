@@ -12,10 +12,12 @@ import {
     Vector2,
     Vector3,
 } from 'three';
+
 import type Disposable from '../core/Disposable';
 import type Instance from '../core/Instance';
 import type PickResult from '../core/picking/PickResult';
 import type { ShapePickResult, VerticalLineLabelFormatter } from '../entities/Shape';
+
 import Shape, {
     angleFormatter,
     isShape,
@@ -24,8 +26,8 @@ import Shape, {
     type ShapeConstructorOptions,
 } from '../entities/Shape';
 import ConstantSizeSphere from '../renderer/ConstantSizeSphere';
-import { AbortError } from '../utils/PromiseUtils';
 import { isVector2 } from '../utils/predicates';
+import { AbortError } from '../utils/PromiseUtils';
 
 const DEFAULT_MARKER_RADIUS = 5;
 const MIN_MARKER_RADIUS = 4;

@@ -5,9 +5,12 @@
  */
 
 import type GUI from 'lil-gui';
+
 import { MathUtils } from 'three';
+
 import type Instance from '../core/Instance';
 import type Map from '../entities/Map';
+
 import Panel from './Panel';
 
 class MapTerrainPanel extends Panel {

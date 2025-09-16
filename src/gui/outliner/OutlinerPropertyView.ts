@@ -6,9 +6,12 @@
 
 import type GUI from 'lil-gui';
 import type { Vector3 } from 'three';
+
 import { Object3D } from 'three';
+
 import type Instance from '../../core/Instance';
 import type PointOfView from '../../core/PointOfView';
+
 import { isBufferGeometry, isVector3 } from '../../utils/predicates';
 import Panel from '../Panel';
 

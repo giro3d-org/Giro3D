@@ -5,8 +5,9 @@
  */
 
 import type { Binary } from 'copc';
-import { Las } from 'copc';
 import type { BufferAttribute } from 'three';
+
+import { Las } from 'copc';
 import {
     Box3,
     Float32BufferAttribute,
@@ -20,17 +21,8 @@ import {
     Uint8ClampedBufferAttribute,
     Vector3,
 } from 'three';
-import { GlobalCache } from '../core/Cache';
-import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+
 import type * as octree from '../core/Octree';
-import OperationCounter from '../core/OperationCounter';
-import { DefaultQueue } from '../core/RequestQueue';
-import Fetcher from '../utils/Fetcher';
-import { defined, nonNull } from '../utils/tsutils';
-import WorkerPool from '../utils/WorkerPool';
-import { getLazPerf } from './las/config';
-import createWorker from './las/createWorker';
-import { readColor, readPosition, readScalarAttribute } from './las/readers';
 import type * as lazWorker from './las/worker';
 import type {
     GetNodeDataOptions,
@@ -39,19 +31,30 @@ import type {
     PointCloudNode,
     PointCloudNodeData,
 } from './PointCloudSource';
-import { PointCloudSourceBase } from './PointCloudSource';
 import type { LazPointCloudAttribute } from './potree/attributes';
+import type { ParseResult } from './potree/bin';
+import type { Metadata } from './potree/Metadata';
+import type * as potreeWorker from './potree/worker';
+
+import { GlobalCache } from '../core/Cache';
+import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import OperationCounter from '../core/OperationCounter';
+import { DefaultQueue } from '../core/RequestQueue';
+import Fetcher from '../utils/Fetcher';
+import { defined, nonNull } from '../utils/tsutils';
+import WorkerPool from '../utils/WorkerPool';
+import { getLazPerf } from './las/config';
+import createWorker from './las/createWorker';
+import { readColor, readPosition, readScalarAttribute } from './las/readers';
+import { PointCloudSourceBase } from './PointCloudSource';
 import {
     EXPOSED_ATTRIBUTES,
     processAttributes,
     processLazAttributes,
     type PotreePointCloudAttribute,
 } from './potree/attributes';
-import type { ParseResult } from './potree/bin';
 import { readBinFile } from './potree/bin';
 import { toBox3 } from './potree/BoundingBox';
-import type { Metadata } from './potree/Metadata';
-import type * as potreeWorker from './potree/worker';
 
 type NodeInternalData = PointCloudNode & {
     childrenBitField: number;

@@ -5,10 +5,13 @@
  */
 
 import type { WebGLRenderer } from 'three';
-import { Line2 } from 'three/examples/jsm/lines/Line2.js';
 import type { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
 import type { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
+
+import { Line2 } from 'three/examples/jsm/lines/Line2.js';
+
 import type SimpleGeometryMesh from './SimpleGeometryMesh';
+
 import { type DefaultUserData } from './SimpleGeometryMesh';
 
 export default class LineStringMesh<UserData extends DefaultUserData = DefaultUserData>

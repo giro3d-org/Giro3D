@@ -4,12 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-import BilFormat from '@giro3d/giro3d/formats/BilFormat';
 import { Blob } from 'node:buffer';
 import fs from 'node:fs';
 import path from 'node:path';
 import { cwd } from 'process';
 import { describe, expect, it } from 'vitest';
+
+import BilFormat from '@giro3d/giro3d/formats/BilFormat';
 
 // Workers do not exist in Node.js
 const format = new BilFormat({ enableWorkers: false });

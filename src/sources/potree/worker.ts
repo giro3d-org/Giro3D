@@ -5,9 +5,10 @@
  */
 
 import type { BaseMessageMap, Message, SuccessResponse } from '../../utils/WorkerPool';
-import { createErrorResponse } from '../../utils/WorkerPool';
 import type { PotreePointCloudAttribute } from './attributes';
 import type { BufferAttributeDescriptor } from './bin';
+
+import { createErrorResponse } from '../../utils/WorkerPool';
 import { readBinFile } from './bin';
 
 export type MessageType = 'ReadBinFile';

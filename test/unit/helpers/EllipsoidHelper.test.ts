@@ -4,9 +4,10 @@
  * SPDX-License-Identifier: MIT
  */
 
+import { describe, expect, it } from 'vitest';
+
 import Ellipsoid from '@giro3d/giro3d/core/geographic/Ellipsoid';
 import EllipsoidHelper from '@giro3d/giro3d/helpers/EllipsoidHelper';
-import { describe, expect, it } from 'vitest';
 describe('constructor', () => {
     it('should default to WGS 84 ellipsoid', () => {
         const helper = new EllipsoidHelper();

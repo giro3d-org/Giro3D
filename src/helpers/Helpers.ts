@@ -11,6 +11,8 @@ import type {
     MeshBasicMaterial,
     Object3D,
 } from 'three';
+import type { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
+
 import {
     ArrowHelper,
     AxesHelper,
@@ -22,7 +24,7 @@ import {
     Vector3,
     type Material,
 } from 'three';
-import type { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
+
 import { isMaterial, isObject } from '../utils/predicates';
 import { nonNull } from '../utils/tsutils';
 

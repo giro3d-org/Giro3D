@@ -5,7 +5,9 @@
  */
 
 import type { TypedArray } from 'three';
+
 import { MathUtils, Vector2, Vector3, Vector4 } from 'three';
+
 import { nonNull } from '../utils/tsutils';
 
 export type Dimension = 2 | 3 | 4;

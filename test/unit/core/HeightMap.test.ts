@@ -4,9 +4,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-import HeightMap from '@giro3d/giro3d/core/HeightMap';
-import OffsetScale from '@giro3d/giro3d/core/OffsetScale';
-import Rect from '@giro3d/giro3d/core/Rect';
 import {
     FloatType,
     MathUtils,
@@ -17,6 +14,10 @@ import {
     UnsignedShortType,
 } from 'three';
 import { describe, expect, it } from 'vitest';
+
+import HeightMap from '@giro3d/giro3d/core/HeightMap';
+import OffsetScale from '@giro3d/giro3d/core/OffsetScale';
+import Rect from '@giro3d/giro3d/core/Rect';
 
 const NO_OFFSET_SCALE = new OffsetScale(0, 0, 1, 1);
 

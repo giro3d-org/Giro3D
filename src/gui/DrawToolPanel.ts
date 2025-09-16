@@ -5,11 +5,14 @@
  */
 
 import type GUI from 'lil-gui';
+
 import { Color } from 'three';
-import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
-import Coordinates from '../core/geographic/Coordinates';
+
 import type Instance from '../core/Instance';
 import type Shape from '../entities/Shape';
+
+import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import Coordinates from '../core/geographic/Coordinates';
 import { DEFAULT_COLOR, type VertexLabelFormatter } from '../entities/Shape';
 import DrawTool from '../interactions/DrawTool';
 import Panel from './Panel';

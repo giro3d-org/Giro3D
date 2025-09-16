@@ -4,12 +4,11 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { AmbientLight, DirectionalLight, MathUtils, Vector3 } from 'three';
-
 import { TopoJSON } from 'ol/format.js';
 import OSM from 'ol/source/OSM.js';
 import XYZ from 'ol/source/XYZ.js';
 import { Fill, Style } from 'ol/style.js';
+import { AmbientLight, DirectionalLight, MathUtils, Vector3 } from 'three';
 
 import GlobeControls from '@giro3d/giro3d/controls/GlobeControls.js';
 import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
@@ -26,14 +25,12 @@ import Globe from '@giro3d/giro3d/entities/Globe.js';
 import Glow from '@giro3d/giro3d/entities/Glow.js';
 import SphericalPanorama from '@giro3d/giro3d/entities/SphericalPanorama.js';
 import MapboxTerrainFormat from '@giro3d/giro3d/formats/MapboxTerrainFormat.js';
+import GlobeControlsInspector from '@giro3d/giro3d/gui/GlobeControlsInspector.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';
 import StaticImageSource from '@giro3d/giro3d/sources/StaticImageSource.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
-import GlobeControlsInspector from '@giro3d/giro3d/gui/GlobeControlsInspector.js';
-
-import StatusBar from './widgets/StatusBar.js';
 
 import { bindButton } from './widgets/bindButton.js';
 import { bindColorPicker } from './widgets/bindColorPicker.js';
@@ -42,6 +39,7 @@ import { bindDropDown } from './widgets/bindDropDown.js';
 import { bindSlider } from './widgets/bindSlider.js';
 import { bindToggle } from './widgets/bindToggle.js';
 import { makeColorRamp } from './widgets/makeColorRamp.js';
+import StatusBar from './widgets/StatusBar.js';
 import { updateLabel } from './widgets/updateLabel.js';
 
 const instance = new Instance({

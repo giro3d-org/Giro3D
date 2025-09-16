@@ -5,25 +5,16 @@
  */
 
 import type { Binary, View } from 'copc';
+import type { BufferAttribute } from 'three';
+
 import { Las } from 'copc';
 import { Header } from 'copc/lib/las';
 import { Binary as BinaryUtils } from 'copc/lib/utils/binary';
-import type { BufferAttribute } from 'three';
 import { Box3, Float32BufferAttribute, Vector3 } from 'three';
-import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+
 import type { GetMemoryUsageContext } from '../core/MemoryUsage';
-import OperationCounter from '../core/OperationCounter';
-import { defer } from '../core/RequestQueue';
-import Fetcher from '../utils/Fetcher';
-import { nonNull } from '../utils/tsutils';
-import WorkerPool from '../utils/WorkerPool';
 import type { CommonOptions } from './las/CommonOptions';
-import { getLazPerf } from './las/config';
-import createWorker from './las/createWorker';
 import type { DimensionName } from './las/dimension';
-import { extractAttributes, getDimensionsToRead } from './las/dimension';
-import { getPerPointFilters, type DimensionFilter } from './las/filter';
-import { createBufferAttribute, readColor, readPosition, readScalarAttribute } from './las/readers';
 import type { MessageMap, MessageType } from './las/worker';
 import type {
     GetNodeDataOptions,
@@ -31,6 +22,18 @@ import type {
     PointCloudNode,
     PointCloudNodeData,
 } from './PointCloudSource';
+
+import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import OperationCounter from '../core/OperationCounter';
+import { defer } from '../core/RequestQueue';
+import Fetcher from '../utils/Fetcher';
+import { nonNull } from '../utils/tsutils';
+import WorkerPool from '../utils/WorkerPool';
+import { getLazPerf } from './las/config';
+import createWorker from './las/createWorker';
+import { extractAttributes, getDimensionsToRead } from './las/dimension';
+import { getPerPointFilters, type DimensionFilter } from './las/filter';
+import { createBufferAttribute, readColor, readPosition, readScalarAttribute } from './las/readers';
 import { PointCloudSourceBase } from './PointCloudSource';
 
 export type Getter = () => Promise<Uint8Array>;

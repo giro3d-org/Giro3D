@@ -5,7 +5,9 @@
  */
 
 import type GUI from 'lil-gui';
+
 import type Instance from '../core/Instance';
+
 import MemoryTracker from '../renderer/MemoryTracker';
 import CachePanel from './CachePanel';
 import FrameDuration from './charts/FrameDuration';

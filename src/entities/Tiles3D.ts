@@ -5,6 +5,8 @@
  */
 
 import type { LRUCache, PriorityQueue, Tile } from '3d-tiles-renderer';
+import type { ColorRepresentation, Material, Object3D } from 'three';
+
 import { TilesRenderer } from '3d-tiles-renderer';
 import {
     DebugTilesPlugin,
@@ -12,21 +14,17 @@ import {
     ImplicitTilingPlugin,
     UnloadTilesPlugin,
 } from '3d-tiles-renderer/plugins';
-import type { ColorRepresentation, Material, Object3D } from 'three';
 import { Box3, Color, Group, REVISION, Vector3 } from 'three';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
+
 import type ColorimetryOptions from '../core/ColorimetryOptions';
-import { defaultColorimetryOptions } from '../core/ColorimetryOptions';
-import ColorMap from '../core/ColorMap';
 import type Context from '../core/Context';
-import Extent from '../core/geographic/Extent';
 import type Instance from '../core/Instance';
 import type ColorLayer from '../core/layer/ColorLayer';
 import type HasLayers from '../core/layer/HasLayers';
 import type Layer from '../core/layer/Layer';
 import type { LayerNode } from '../core/layer/Layer';
-import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../core/MemoryUsage';
 import type Pickable from '../core/picking/Pickable';
 import type { PointsPickResult } from '../core/picking/PickPointsAt';
 import type PickResult from '../core/picking/PickResult';
@@ -35,19 +33,24 @@ import type {
     Mode,
     Mode as PointCloudMaterialMode,
 } from '../renderer/PointCloudMaterial';
+import type PointCloudParameters from './3dtiles/PointCloudParameters';
+import type { EntityPreprocessOptions, EntityUserData } from './Entity';
+import type { Entity3DEventMap } from './Entity3D';
+
+import { defaultColorimetryOptions } from '../core/ColorimetryOptions';
+import ColorMap from '../core/ColorMap';
+import Extent from '../core/geographic/Extent';
+import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../core/MemoryUsage';
 import PointCloudMaterial, { ASPRS_CLASSIFICATIONS, MODE } from '../renderer/PointCloudMaterial';
 import { isBufferGeometry, isObject3D } from '../utils/predicates';
 import { nonNull } from '../utils/tsutils';
 import FetchPlugin from './3dtiles/FetchPlugin';
-import type PointCloudParameters from './3dtiles/PointCloudParameters';
 import {
     DEFAULT_TILES3D_POINTCLOUD_ATTRIBUTE_MAPPING,
     type PointCloudBatchTableAttributeMapping,
     type WellKnown3DTilesPointCloudAttributes,
 } from './3dtiles/PointCloudParameters';
 import PointCloudPlugin, { isPNTSScene } from './3dtiles/PointCloudPlugin';
-import type { EntityPreprocessOptions, EntityUserData } from './Entity';
-import type { Entity3DEventMap } from './Entity3D';
 import Entity3D from './Entity3D';
 
 export {

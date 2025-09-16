@@ -4,9 +4,10 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { format, getGeometryMemoryUsage, isMemoryUsage } from '@giro3d/giro3d/core/MemoryUsage';
 import { BufferAttribute, BufferGeometry } from 'three';
 import { describe, expect, it } from 'vitest';
+
+import { format, getGeometryMemoryUsage, isMemoryUsage } from '@giro3d/giro3d/core/MemoryUsage';
 
 describe('isMemoryUsage', () => {
     it('should return correct value', () => {

@@ -25,8 +25,8 @@ import {
     type TextureDataType,
     type WebGLRenderer,
 } from 'three';
-import Interpretation from '../../core/layer/Interpretation';
 
+import Interpretation from '../../core/layer/Interpretation';
 import Rect from '../../core/Rect';
 import Capabilities from '../../core/system/Capabilities';
 import { isMesh, isTexture } from '../../utils/predicates';

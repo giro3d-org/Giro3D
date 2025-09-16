@@ -5,11 +5,13 @@
  */
 
 import { MathUtils } from 'three';
+
 import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
-import Extent from '../core/geographic/Extent';
 import type { GetMemoryUsageContext } from '../core/MemoryUsage';
-import { nonEmpty, nonNull } from '../utils/tsutils';
 import type { GetImageOptions, ImageResponse } from './ImageSource';
+
+import Extent from '../core/geographic/Extent';
+import { nonEmpty, nonNull } from '../utils/tsutils';
 import ImageSource from './ImageSource';
 
 type SourceProperties = {

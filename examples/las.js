@@ -4,15 +4,15 @@
  * SPDX-License-Identifier: MIT
  */
 
-import Instance from '@giro3d/giro3d/core/Instance.js';
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import Instance from '@giro3d/giro3d/core/Instance.js';
 import PointCloud from '@giro3d/giro3d/entities/PointCloud.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import LASSource from '@giro3d/giro3d/sources/LASSource.js';
 import { setLazPerfPath } from '@giro3d/giro3d/sources/las/config.js';
+import LASSource from '@giro3d/giro3d/sources/LASSource.js';
 
-import StatusBar from './widgets/StatusBar.js';
 import { placeCameraOnTop } from './widgets/placeCameraOnTop.js';
+import StatusBar from './widgets/StatusBar.js';
 
 // LAS processing requires the WebAssembly laz-perf library
 // This path is specific to your project, and must be set accordingly.

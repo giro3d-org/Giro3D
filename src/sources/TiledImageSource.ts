@@ -4,15 +4,18 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { TileRange } from 'ol';
 import type Projection from 'ol/proj/Projection';
 import type UrlTile from 'ol/source/UrlTile';
 import type { UrlFunction } from 'ol/Tile';
 import type TileGrid from 'ol/tilegrid/TileGrid.js';
+
+import { TileRange } from 'ol';
 import { UnsignedByteType, Vector2, type Texture } from 'three';
-import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+
 import type Extent from '../core/geographic/Extent';
 import type ImageFormat from '../formats/ImageFormat';
+
+import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import EmptyTexture from '../renderer/EmptyTexture';
 import MemoryTracker from '../renderer/MemoryTracker';
 import { isHttpError } from '../utils/Fetcher';

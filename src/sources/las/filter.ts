@@ -5,6 +5,7 @@
  */
 
 import type { View } from 'copc';
+
 import type { DimensionName } from './dimension';
 
 // A dimension filter wrapped into an index accessor.

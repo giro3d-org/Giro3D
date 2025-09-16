@@ -4,12 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
 
-import type { DMS } from '@giro3d/giro3d/core/geographic/Coordinates';
-import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import * as proj4 from 'proj4';
 import { Vector2, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
+
+import type { DMS } from '@giro3d/giro3d/core/geographic/Coordinates';
+
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
+import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';
 
 // Define projection that we will use (taken from https://epsg.io/3946, Proj4js section)
 proj4.defs(

@@ -18,13 +18,15 @@ import {
     Vector3,
 } from 'three';
 import { type OBB } from 'three/examples/jsm/Addons.js';
+
 import type Disposable from '../core/Disposable';
 import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
+import type PointOfView from '../core/PointOfView';
+
 import Coordinates from '../core/geographic/Coordinates';
 import Ellipsoid from '../core/geographic/Ellipsoid';
-import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
 import { hasDefaultPointOfView } from '../core/HasDefaultPointOfView';
-import type PointOfView from '../core/PointOfView';
 import { isPointOfView } from '../core/PointOfView';
 import { isBox3, isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
 

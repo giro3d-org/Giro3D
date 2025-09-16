@@ -4,9 +4,11 @@
  * SPDX-License-Identifier: MIT
  */
 
-import SurfaceMesh, { isSurfaceMesh } from '@giro3d/giro3d/renderer/geometries/SurfaceMesh';
 import { MeshLambertMaterial } from 'three';
 import { describe, expect, it } from 'vitest';
+
+import SurfaceMesh, { isSurfaceMesh } from '@giro3d/giro3d/renderer/geometries/SurfaceMesh';
+
 import { makeSurfaceGeometry } from './PolygonMesh.test';
 
 const DEFAULT_GEOMETRY = makeSurfaceGeometry();

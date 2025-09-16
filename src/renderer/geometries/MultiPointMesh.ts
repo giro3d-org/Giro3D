@@ -5,10 +5,12 @@
  */
 
 import { Object3D } from 'three';
+
 import type PointMesh from './PointMesh';
-import { isPointMesh } from './PointMesh';
 import type SimpleGeometryMesh from './SimpleGeometryMesh';
 import type { DefaultUserData, SimpleGeometryMeshEventMap } from './SimpleGeometryMesh';
+
+import { isPointMesh } from './PointMesh';
 
 export default class MultiPointMesh<UserData extends DefaultUserData = DefaultUserData>
     extends Object3D<SimpleGeometryMeshEventMap>

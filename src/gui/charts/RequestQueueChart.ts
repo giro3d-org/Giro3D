@@ -5,10 +5,13 @@
  */
 
 import type { ChartData, ChartDataset, ScatterDataPoint } from 'chart.js';
-import { Chart } from 'chart.js';
 import type GUI from 'lil-gui';
+
+import { Chart } from 'chart.js';
+
 import type Instance from '../../core/Instance';
 import type RequestQueue from '../../core/RequestQueue';
+
 import { DefaultQueue } from '../../core/RequestQueue';
 import ChartPanel, { pushTrim } from './ChartPanel';
 

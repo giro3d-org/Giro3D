@@ -5,17 +5,19 @@
  */
 
 import type GUI from 'lil-gui';
+
 import { Color } from 'three';
 
 import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import type Instance from '../core/Instance';
+import type Layer from '../core/layer/Layer';
+import type Entity3D from '../entities/Entity3D';
+import type { BoundingBoxHelper } from '../helpers/Helpers';
+
 import { isColorLayer } from '../core/layer/ColorLayer';
 import { isElevationLayer } from '../core/layer/ElevationLayer';
-import type Layer from '../core/layer/Layer';
 import * as MemoryUsage from '../core/MemoryUsage';
-import type Entity3D from '../entities/Entity3D';
 import { isMap } from '../entities/Map';
-import type { BoundingBoxHelper } from '../helpers/Helpers';
 import Helpers from '../helpers/Helpers';
 import { isMaterial } from '../utils/predicates';
 import ColorimetryPanel from './ColorimetryPanel';

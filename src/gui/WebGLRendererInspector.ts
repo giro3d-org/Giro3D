@@ -6,7 +6,9 @@
 
 import type GUI from 'lil-gui';
 import type { WebGLRenderer } from 'three';
+
 import type Instance from '../core/Instance';
+
 import Panel from './Panel';
 
 class WebGLRendererInspector extends Panel {

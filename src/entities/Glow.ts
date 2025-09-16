@@ -5,6 +5,7 @@
  */
 
 import type { ColorRepresentation, IUniform, Side } from 'three';
+
 import {
     AdditiveBlending,
     BackSide,
@@ -19,13 +20,14 @@ import {
     Vector2,
     Vector3,
 } from 'three';
-import Ellipsoid from '../core/geographic/Ellipsoid';
-import Entity3D from './Entity3D';
 
 import type Context from '../core/Context';
 import type PickResult from '../core/picking/PickResult';
+
+import Ellipsoid from '../core/geographic/Ellipsoid';
 import GlowFS from '../renderer/shader/GlowFS.glsl';
 import GlowVS from '../renderer/shader/GlowVS.glsl';
+import Entity3D from './Entity3D';
 
 const tmpVec2 = new Vector2();
 

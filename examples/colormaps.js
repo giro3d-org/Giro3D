@@ -4,12 +4,10 @@
  * SPDX-License-Identifier: MIT
  */
 
+import * as FunctionCurveEditor from 'function-curve-editor';
+import XYZ from 'ol/source/XYZ.js';
 import { DoubleSide, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
-
-import XYZ from 'ol/source/XYZ.js';
-
-import * as FunctionCurveEditor from 'function-curve-editor';
 
 import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
 import ColorMapMode from '@giro3d/giro3d/core/ColorMapMode.js';
@@ -23,14 +21,13 @@ import MapboxTerrainFormat from '@giro3d/giro3d/formats/MapboxTerrainFormat.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
-import StatusBar from './widgets/StatusBar.js';
-
 import { bindButton } from './widgets/bindButton.js';
 import { bindColorMapBounds } from './widgets/bindColorMapBounds.js';
 import { bindDropDown } from './widgets/bindDropDown.js';
 import { bindSlider } from './widgets/bindSlider.js';
 import { bindToggle } from './widgets/bindToggle.js';
 import { makeColorRamp } from './widgets/makeColorRamp.js';
+import StatusBar from './widgets/StatusBar.js';
 
 const extent = Extent.fromCenterAndSize(
     CoordinateSystem.epsg3857,

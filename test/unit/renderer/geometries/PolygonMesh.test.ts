@@ -4,14 +4,15 @@
  * SPDX-License-Identifier: MIT
  */
 
-import LineStringMesh from '@giro3d/giro3d/renderer/geometries/LineStringMesh';
-import PolygonMesh, { isPolygonMesh } from '@giro3d/giro3d/renderer/geometries/PolygonMesh';
-import { isSimpleGeometryMesh } from '@giro3d/giro3d/renderer/geometries/SimpleGeometryMesh';
-import SurfaceMesh from '@giro3d/giro3d/renderer/geometries/SurfaceMesh';
 import { Polygon } from 'ol/geom';
 import { BufferGeometry, MeshBasicMaterial, Vector3 } from 'three';
 import { LineGeometry, LineMaterial } from 'three/examples/jsm/Addons.js';
 import { beforeEach, describe, expect, it, vitest } from 'vitest';
+
+import LineStringMesh from '@giro3d/giro3d/renderer/geometries/LineStringMesh';
+import PolygonMesh, { isPolygonMesh } from '@giro3d/giro3d/renderer/geometries/PolygonMesh';
+import { isSimpleGeometryMesh } from '@giro3d/giro3d/renderer/geometries/SimpleGeometryMesh';
+import SurfaceMesh from '@giro3d/giro3d/renderer/geometries/SurfaceMesh';
 
 const DEFAULT_POLYGON = new Polygon([]);
 

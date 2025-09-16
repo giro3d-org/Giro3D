@@ -4,9 +4,10 @@
  * SPDX-License-Identifier: MIT
  */
 
+import type { ImageResponse } from './ImageSource';
+
 import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import Extent from '../core/geographic/Extent';
-import type { ImageResponse } from './ImageSource';
 import ImageSource from './ImageSource';
 
 /**

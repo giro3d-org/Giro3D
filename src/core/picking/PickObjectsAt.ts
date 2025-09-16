@@ -5,11 +5,13 @@
  */
 
 import { Color, Raycaster, Vector2, type Object3D, type TypedArray } from 'three';
+
 import type Entity3D from '../../entities/Entity3D';
 import type Instance from '../Instance';
-import traversePickingCircle from './PickingCircle';
 import type PickOptions from './PickOptions';
 import type PickResult from './PickResult';
+
+import traversePickingCircle from './PickingCircle';
 
 const BLACK = new Color(0, 0, 0);
 const defaultRaycaster = new Raycaster();

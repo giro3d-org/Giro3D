@@ -5,10 +5,12 @@
  */
 
 import { type TypedArray } from 'three';
-import { defined } from '../../utils/tsutils';
-import { DEFAULT_VALUE_RANGES, type DimensionName } from '../las/dimension';
+
 import type { PointCloudAttribute } from '../PointCloudSource';
 import type BoundingBox from './BoundingBox';
+
+import { defined } from '../../utils/tsutils';
+import { DEFAULT_VALUE_RANGES, type DimensionName } from '../las/dimension';
 
 /**
  * The names of attributes for legacy Potree point clouds (the ones with .bin files in a hierarchy).

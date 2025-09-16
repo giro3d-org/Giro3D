@@ -4,9 +4,10 @@
  * SPDX-License-Identifier: MIT
  */
 
-import OffsetScale from '@giro3d/giro3d/core/OffsetScale';
 import { Vector2 } from 'three';
 import { describe, expect, it } from 'vitest';
+
+import OffsetScale from '@giro3d/giro3d/core/OffsetScale';
 
 describe('constructor', () => {
     it('should assign the properties', () => {

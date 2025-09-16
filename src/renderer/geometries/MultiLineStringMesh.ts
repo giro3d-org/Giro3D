@@ -5,10 +5,12 @@
  */
 
 import { Object3D } from 'three';
+
 import type LineStringMesh from './LineStringMesh';
-import { isLineStringMesh } from './LineStringMesh';
 import type SimpleGeometryMesh from './SimpleGeometryMesh';
 import type { DefaultUserData, SimpleGeometryMeshEventMap } from './SimpleGeometryMesh';
+
+import { isLineStringMesh } from './LineStringMesh';
 
 export default class MultiLineStringMesh<UserData extends DefaultUserData = DefaultUserData>
     extends Object3D<SimpleGeometryMeshEventMap>

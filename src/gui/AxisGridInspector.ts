@@ -6,8 +6,10 @@
 
 import type GUI from 'lil-gui';
 import type { ColorRepresentation } from 'three';
+
 import type Instance from '../core/Instance';
 import type AxisGrid from '../entities/AxisGrid';
+
 import { TickOrigin } from '../entities/AxisGrid';
 import EntityInspector from './EntityInspector';
 

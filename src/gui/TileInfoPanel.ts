@@ -5,12 +5,15 @@
  */
 
 import type GUI from 'lil-gui';
+
 import { Color, Group, Vector2, Vector3 } from 'three';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
-import Ellipsoid from '../core/geographic/Ellipsoid';
+
 import type Instance from '../core/Instance';
 import type Map from '../entities/Map';
 import type TileMesh from '../entities/tiles/TileMesh';
+
+import Ellipsoid from '../core/geographic/Ellipsoid';
 import Panel from './Panel';
 
 const tmpVec2 = new Vector2();

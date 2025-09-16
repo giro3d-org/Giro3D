@@ -21,6 +21,7 @@
  */
 
 import type { Camera, IUniform, Scene, WebGLRenderer } from 'three';
+
 import {
     BackSide,
     MathUtils,
@@ -31,6 +32,7 @@ import {
     UniformsUtils,
     Vector3,
 } from 'three';
+
 import SkyDomeFS from './shader/SkyDomeFS.glsl';
 import SkyDomeVS from './shader/SkyDomeVS.glsl';
 

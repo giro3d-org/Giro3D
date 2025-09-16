@@ -5,6 +5,7 @@
  */
 
 import type { Vector2 } from 'three';
+
 import type PickOptions from './PickOptions';
 import type PickResult from './PickResult';
 

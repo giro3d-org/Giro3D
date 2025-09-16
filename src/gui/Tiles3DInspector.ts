@@ -5,8 +5,10 @@
  */
 
 import type GUI from 'lil-gui';
+
 import type Instance from '../core/Instance';
 import type Tiles3D from '../entities/Tiles3D';
+
 import ColorMapInspector from './ColorMapInspector';
 import EntityInspector from './EntityInspector';
 import LayerInspector from './LayerInspector';

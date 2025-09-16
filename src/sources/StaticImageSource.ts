@@ -5,11 +5,13 @@
  */
 
 import { CanvasTexture, MathUtils, Texture } from 'three';
+
 import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import type Extent from '../core/geographic/Extent';
+import type { GetImageOptions, ImageResponse, ImageSourceEvents } from './ImageSource';
+
 import EmptyTexture from '../renderer/EmptyTexture';
 import Fetcher from '../utils/Fetcher';
-import type { GetImageOptions, ImageResponse, ImageSourceEvents } from './ImageSource';
 import ImageSource, { ImageResult } from './ImageSource';
 
 /**

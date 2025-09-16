@@ -12,11 +12,13 @@ import {
     type Object3DEventMap,
     type Vector2,
 } from 'three';
+
 import type PointCloudMaterial from '../renderer/PointCloudMaterial';
-import { enablePointCloudPostProcessing } from '../renderer/RenderPipeline';
-import { nonNull } from '../utils/tsutils';
 import type Disposable from './Disposable';
 import type Extent from './geographic/Extent';
+
+import { enablePointCloudPostProcessing } from '../renderer/RenderPipeline';
+import { nonNull } from '../utils/tsutils';
 
 export interface PointCloudEventMap extends Object3DEventMap {
     'visibility-changed': unknown;

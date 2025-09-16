@@ -6,8 +6,10 @@
 
 import type GUI from 'lil-gui';
 import type { Controller } from 'lil-gui';
+
 import type GlobeControls from '../controls/GlobeControls';
 import type Instance from '../core/Instance';
+
 import Panel from './Panel';
 
 class GlobeControlsInspector extends Panel {

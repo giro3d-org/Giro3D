@@ -14,9 +14,11 @@ import {
     type Texture,
     type TextureDataType,
 } from 'three';
+
 import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import type Extent from '../core/geographic/Extent';
 import type MemoryUsage from '../core/MemoryUsage';
+
 import { type GetMemoryUsageContext } from '../core/MemoryUsage';
 
 class ImageResult {

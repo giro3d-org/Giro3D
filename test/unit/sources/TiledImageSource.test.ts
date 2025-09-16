@@ -4,11 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-import GeoTIFFFormat from '@giro3d/giro3d/formats/GeoTIFFFormat';
-import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource';
 import StadiaMaps from 'ol/source/StadiaMaps.js';
 import { UnsignedByteType } from 'three';
 import { describe, expect, it, test, vitest } from 'vitest';
+
+import GeoTIFFFormat from '@giro3d/giro3d/formats/GeoTIFFFormat';
+import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource';
 
 const source = new StadiaMaps({ layer: 'stamen_watercolor', apiKey: 'foo', retina: false });
 

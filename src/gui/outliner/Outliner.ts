@@ -6,10 +6,13 @@
 
 import type GUI from 'lil-gui';
 import type { BufferGeometry, Material, Mesh, Object3D, Scene } from 'three';
+
 import { Color } from 'three';
+
 import type Instance from '../../core/Instance';
 import type Entity3D from '../../entities/Entity3D';
 import type { BoundingBoxHelper } from '../../helpers/Helpers';
+
 import Helpers from '../../helpers/Helpers';
 import { isLight } from '../../utils/predicates';
 import Panel from '../Panel';

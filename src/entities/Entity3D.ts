@@ -9,12 +9,13 @@ import { Box3, type Material, type Mesh, type Object3D, type Plane, type Vector2
 import type Context from '../core/Context';
 import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
 import type MemoryUsage from '../core/MemoryUsage';
-import { type GetMemoryUsageContext } from '../core/MemoryUsage';
 import type Pickable from '../core/picking/Pickable';
-import pickObjectsAt from '../core/picking/PickObjectsAt';
 import type PickOptions from '../core/picking/PickOptions';
 import type PickResult from '../core/picking/PickResult';
 import type RenderingContextHandler from '../renderer/RenderingContextHandler';
+
+import { type GetMemoryUsageContext } from '../core/MemoryUsage';
+import pickObjectsAt from '../core/picking/PickObjectsAt';
 import { isMaterial } from '../utils/predicates';
 import Entity, { type EntityEventMap, type EntityUserData } from './Entity';
 

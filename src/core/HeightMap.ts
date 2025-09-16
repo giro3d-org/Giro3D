@@ -5,11 +5,14 @@
  */
 
 import type { FloatType, RedFormat, RGFormat, TypedArray, UnsignedShortType } from 'three';
+
 import { MathUtils, RGBAFormat, UnsignedByteType, Vector2 } from 'three';
-import TextureGenerator from '../utils/TextureGenerator';
+
 import type ElevationRange from './ElevationRange';
 import type OffsetScale from './OffsetScale';
 import type Rect from './Rect';
+
+import TextureGenerator from '../utils/TextureGenerator';
 
 const RGBA_OFFSET = 20000;
 

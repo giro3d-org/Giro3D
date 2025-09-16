@@ -5,22 +5,25 @@
  */
 
 import type { Euler, Matrix4, Vector2 } from 'three';
+
 import { FrontSide, MathUtils, Quaternion, Vector3 } from 'three';
+
+import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
+import type Layer from '../core/layer/Layer';
+import type PointOfView from '../core/PointOfView';
+import type { MapConstructorOptions } from './Map';
+import type { TileGeometryBuilder } from './tiles/TileGeometry';
+import type TileVolume from './tiles/TileVolume';
+
 import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import Ellipsoid from '../core/geographic/Ellipsoid';
 import Extent from '../core/geographic/Extent';
-import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
 import { isColorLayer } from '../core/layer/ColorLayer';
-import type Layer from '../core/layer/Layer';
-import type PointOfView from '../core/PointOfView';
 import { isEuler, isMatrix4, isPerspectiveCamera, isQuaternion } from '../utils/predicates';
 import { computeEllipsoidalImageSize } from './Globe';
-import type { MapConstructorOptions } from './Map';
 import Map from './Map';
 import PanoramaTileGeometryBuilder from './tiles/PanoramaTileGeometryBuilder';
 import PanoramaTileVolume from './tiles/PanoramaTileVolume';
-import type { TileGeometryBuilder } from './tiles/TileGeometry';
-import type TileVolume from './tiles/TileVolume';
 
 const FORWARD = new Vector3(0, 1, 0);
 const ORIGIN = new Vector3(0, 0, 0);

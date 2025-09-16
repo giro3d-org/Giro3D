@@ -4,10 +4,9 @@
  * SPDX-License-Identifier: MIT
  */
 
-import proj from 'proj4';
-
 import type { Feature, Geometry, LineString, MultiPoint, Point, Polygon, Position } from 'geojson';
 
+import proj from 'proj4';
 import {
     BufferGeometry,
     Color,
@@ -32,15 +31,15 @@ import {
     type Object3D,
     type WebGLRenderer,
 } from 'three';
-
 import { Line2 } from 'three/examples/jsm/lines/Line2.js';
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
-import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../core/MemoryUsage';
 import type PickOptions from '../core/picking/PickOptions';
 import type PickResult from '../core/picking/PickResult';
+
+import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../core/MemoryUsage';
 import ConstantSizeSphere, { getWorldSpaceRadius } from '../renderer/ConstantSizeSphere';
 import { getContrastColor } from '../utils/ColorUtils';
 import GeoJSONUtils from '../utils/GeoJSONUtils';

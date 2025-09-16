@@ -5,6 +5,7 @@
  */
 
 import type { Box3, ColorRepresentation } from 'three';
+
 import {
     Box3Helper,
     BufferGeometry,
@@ -16,23 +17,27 @@ import {
     Vector3,
     type Material,
 } from 'three';
+
 import type ColorimetryOptions from '../core/ColorimetryOptions';
-import { defaultColorimetryOptions } from '../core/ColorimetryOptions';
-import ColorMap from '../core/ColorMap';
 import type Context from '../core/Context';
-import Extent from '../core/geographic/Extent';
 import type ColorLayer from '../core/layer/ColorLayer';
 import type HasLayers from '../core/layer/HasLayers';
 import type Layer from '../core/layer/Layer';
 import type { GetMemoryUsageContext } from '../core/MemoryUsage';
-import { getGeometryMemoryUsage } from '../core/MemoryUsage';
 import type PickOptions from '../core/picking/PickOptions';
-import pickPointsAt from '../core/picking/PickPointsAt';
 import type PickResult from '../core/picking/PickResult';
-import PointCloudMesh from '../core/PointCloud';
 import type { Classification } from '../renderer/PointCloudMaterial';
-import PointCloudMaterial, { ASPRS_CLASSIFICATIONS, MODE } from '../renderer/PointCloudMaterial';
 import type View from '../renderer/View';
+import type { EntityPreprocessOptions, EntityUserData } from './Entity';
+import type { Entity3DEventMap } from './Entity3D';
+
+import { defaultColorimetryOptions } from '../core/ColorimetryOptions';
+import ColorMap from '../core/ColorMap';
+import Extent from '../core/geographic/Extent';
+import { getGeometryMemoryUsage } from '../core/MemoryUsage';
+import pickPointsAt from '../core/picking/PickPointsAt';
+import PointCloudMesh from '../core/PointCloud';
+import PointCloudMaterial, { ASPRS_CLASSIFICATIONS, MODE } from '../renderer/PointCloudMaterial';
 import {
     traverseNode,
     type PointCloudAttribute,
@@ -44,8 +49,6 @@ import {
 import { isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
 import StateMachine from '../utils/StateMachine';
 import { nonNull } from '../utils/tsutils';
-import type { EntityPreprocessOptions, EntityUserData } from './Entity';
-import type { Entity3DEventMap } from './Entity3D';
 import Entity3D from './Entity3D';
 
 /**

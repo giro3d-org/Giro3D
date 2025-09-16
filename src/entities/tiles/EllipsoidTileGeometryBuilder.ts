@@ -5,11 +5,13 @@
  */
 
 import { Vector2 } from 'three';
+
 import type Ellipsoid from '../../core/geographic/Ellipsoid';
 import type Extent from '../../core/geographic/Extent';
-import EllipsoidTileGeometry from './EllipsoidTileGeometry';
 import type TileCoordinate from './TileCoordinate';
 import type { TileGeometryBuilder } from './TileGeometry';
+
+import EllipsoidTileGeometry from './EllipsoidTileGeometry';
 
 export default class EllipsoidTileGeometryBuilder
     implements TileGeometryBuilder<EllipsoidTileGeometry>

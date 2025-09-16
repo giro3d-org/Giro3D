@@ -11,6 +11,7 @@ import type {
     IUniform,
     Texture,
 } from 'three';
+
 import {
     Color,
     GLSL3,
@@ -23,10 +24,12 @@ import {
     Vector3,
     Vector4,
 } from 'three';
-import ColorMap from '../core/ColorMap';
+
 import type Extent from '../core/geographic/Extent';
 import type ColorLayer from '../core/layer/ColorLayer';
 import type { TextureAndPitch } from '../core/layer/Layer';
+
+import ColorMap from '../core/ColorMap';
 import OffsetScale from '../core/OffsetScale';
 import MaterialUtils, { type VertexAttributeType } from './MaterialUtils';
 import PointsFS from './shader/PointsFS.glsl';

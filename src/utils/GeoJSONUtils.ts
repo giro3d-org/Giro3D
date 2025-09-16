@@ -4,8 +4,9 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { Feature } from 'ol';
 import type { Geometry } from 'ol/geom';
+
+import { Feature } from 'ol';
 import {
     GeometryCollection,
     LineString,

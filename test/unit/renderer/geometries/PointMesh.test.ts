@@ -4,10 +4,11 @@
  * SPDX-License-Identifier: MIT
  */
 
-import PointMesh, { isPointMesh } from '@giro3d/giro3d/renderer/geometries/PointMesh';
-import { isSimpleGeometryMesh } from '@giro3d/giro3d/renderer/geometries/SimpleGeometryMesh';
 import { SpriteMaterial } from 'three';
 import { describe, expect, it } from 'vitest';
+
+import PointMesh, { isPointMesh } from '@giro3d/giro3d/renderer/geometries/PointMesh';
+import { isSimpleGeometryMesh } from '@giro3d/giro3d/renderer/geometries/SimpleGeometryMesh';
 
 describe('constructor', () => {
     it('should assign properties', () => {

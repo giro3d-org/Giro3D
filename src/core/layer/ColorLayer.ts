@@ -6,16 +6,18 @@
 
 import { type Feature } from 'ol';
 import { FloatType, RGBAFormat, type PixelFormat, type TextureDataType } from 'three';
+
 import type VectorSource from '../../sources/VectorSource';
-import OpenLayersUtils from '../../utils/OpenLayersUtils';
-import { isFiniteNumber } from '../../utils/predicates';
 import type ColorimetryOptions from '../ColorimetryOptions';
-import { defaultColorimetryOptions } from '../ColorimetryOptions';
 import type ElevationRange from '../ElevationRange';
 import type Coordinates from '../geographic/Coordinates';
-import Extent from '../geographic/Extent';
 import type PickableFeatures from '../picking/PickableFeatures';
 import type PickOptions from '../picking/PickOptions';
+
+import OpenLayersUtils from '../../utils/OpenLayersUtils';
+import { isFiniteNumber } from '../../utils/predicates';
+import { defaultColorimetryOptions } from '../ColorimetryOptions';
+import Extent from '../geographic/Extent';
 import { type VectorPickFeature } from '../picking/PickResult';
 import { type MapPickResult } from '../picking/PickTilesAt';
 import BlendingMode from './BlendingMode';

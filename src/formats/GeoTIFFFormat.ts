@@ -4,11 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { fromBlob, Pool } from 'geotiff';
 import type { TypedArray } from 'three';
+
+import { fromBlob, Pool } from 'geotiff';
 import { FloatType, UnsignedByteType } from 'three';
-import TextureGenerator from '../utils/TextureGenerator';
+
 import type { DecodeOptions } from './ImageFormat';
+
+import TextureGenerator from '../utils/TextureGenerator';
 import ImageFormat from './ImageFormat';
 
 let geotiffWorkerPool: Pool;

@@ -4,12 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
+import { Box3, Vector2, Vector3 } from 'three';
+import { describe, expect, it } from 'vitest';
+
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import OffsetScale from '@giro3d/giro3d/core/OffsetScale';
-import { Box3, Vector2, Vector3 } from 'three';
-import { describe, expect, it } from 'vitest';
 
 const BOUNDS_EPSG4326 = new Extent(CoordinateSystem.epsg4326, {
     south: -90,

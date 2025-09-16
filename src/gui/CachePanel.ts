@@ -5,8 +5,10 @@
  */
 
 import type GUI from 'lil-gui';
-import { GlobalCache } from '../core/Cache';
+
 import type Instance from '../core/Instance';
+
+import { GlobalCache } from '../core/Cache';
 import Panel from './Panel';
 
 class CachePanel extends Panel {

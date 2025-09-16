@@ -4,14 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
+import { Circle, Fill, Stroke, Style } from 'ol/style.js';
 import { Color, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
-import { Circle, Fill, Stroke, Style } from 'ol/style.js';
-
-import Instance from '@giro3d/giro3d/core/Instance.js';
-import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
+import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
@@ -21,9 +20,8 @@ import DrawTool from '@giro3d/giro3d/interactions/DrawTool.js';
 import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
 import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 
-import StatusBar from './widgets/StatusBar.js';
-
 import { bindButton } from './widgets/bindButton.js';
+import StatusBar from './widgets/StatusBar.js';
 
 Instance.registerCRS(
     'EPSG:2154',

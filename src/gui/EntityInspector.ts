@@ -5,13 +5,16 @@
  */
 
 import type GUI from 'lil-gui';
+
 import { Color, Object3D, Plane, PlaneHelper, Vector3, type ColorRepresentation } from 'three';
+
 import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
-import { hasDefaultPointOfView } from '../core/HasDefaultPointOfView';
 import type Instance from '../core/Instance';
-import * as MemoryUsage from '../core/MemoryUsage';
 import type PointOfView from '../core/PointOfView';
 import type Entity3D from '../entities/Entity3D';
+
+import { hasDefaultPointOfView } from '../core/HasDefaultPointOfView';
+import * as MemoryUsage from '../core/MemoryUsage';
 import Helpers, { hasBoundingVolumeHelper } from '../helpers/Helpers';
 import { isMaterial, isVector3 } from '../utils/predicates';
 import Panel from './Panel';

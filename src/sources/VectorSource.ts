@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { CanvasTexture, Vector2 } from 'three';
 // Even if it's not explicited in the changelog
 // https://github.com/openlayers/openlayers/blob/main/changelog/upgrade-notes.md
 // Around OL6 the replay group mechanism was split into BuilderGroup to create the
@@ -16,6 +15,10 @@ import type BaseEvent from 'ol/events/Event';
 import type Feature from 'ol/Feature.js';
 import type FeatureFormat from 'ol/format/Feature.js';
 import type { Geometry } from 'ol/geom';
+import type { Style } from 'ol/style.js';
+import type { StyleFunction } from 'ol/style/Style';
+import type { Transform } from 'ol/transform.js';
+
 import CanvasBuilderGroup from 'ol/render/canvas/BuilderGroup.js';
 import ExecutorGroup from 'ol/render/canvas/ExecutorGroup.js';
 import {
@@ -23,22 +26,22 @@ import {
     renderFeature as renderVectorFeature,
 } from 'ol/renderer/vector.js';
 import Vector from 'ol/source/Vector.js';
-import type { Style } from 'ol/style.js';
-import type { StyleFunction } from 'ol/style/Style';
-import type { Transform } from 'ol/transform.js';
 import {
     create as createTransform,
     reset as resetTransform,
     scale as scaleTransform,
     translate as translateTransform,
 } from 'ol/transform.js';
+import { CanvasTexture, Vector2 } from 'three';
+
+import type { GetImageOptions, ImageSourceOptions } from './ImageSource';
+
 import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import Extent from '../core/geographic/Extent';
 import EmptyTexture from '../renderer/EmptyTexture';
 import Fetcher from '../utils/Fetcher';
 import OpenLayersUtils from '../utils/OpenLayersUtils';
 import { nonNull } from '../utils/tsutils';
-import type { GetImageOptions, ImageSourceOptions } from './ImageSource';
 import ImageSource, { ImageResult } from './ImageSource';
 
 const tmpExtent = new Array(4);

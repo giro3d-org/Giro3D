@@ -6,9 +6,11 @@
 
 import PriorityQueue from 'ol/structs/PriorityQueue';
 import { EventDispatcher, MathUtils } from 'three';
+
+import type Progress from './Progress';
+
 import PromiseUtils from '../utils/PromiseUtils';
 import OperationCounter from './OperationCounter';
-import type Progress from './Progress';
 
 function defaultShouldExecute() {
     return true;

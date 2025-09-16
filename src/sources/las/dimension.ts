@@ -6,6 +6,7 @@
 
 import type { Dimension } from 'copc';
 import type { Box3 } from 'three';
+
 import type { PointCloudAttribute } from '../PointCloudSource';
 import type { DimensionFilter } from './filter';
 

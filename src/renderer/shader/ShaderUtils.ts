@@ -5,6 +5,7 @@
  */
 
 import type { ShaderMaterial } from 'three';
+
 import PrecisionQualifier from './chunk/giro3d_precision_qualifiers.glsl';
 
 const rePosition = new RegExp('gl_Position.*(?![^]*gl_Position)');

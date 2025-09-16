@@ -7,10 +7,10 @@
 import { Feature } from 'ol';
 import { fromExtent } from 'ol/geom/Polygon.js';
 import { Stroke, Style } from 'ol/style.js';
-
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
@@ -20,11 +20,10 @@ import AggregateImageSource from '@giro3d/giro3d/sources/AggregateImageSource.js
 import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';
 import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
 import OpenLayersUtils from '@giro3d/giro3d/utils/OpenLayersUtils.js';
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 
-import StatusBar from './widgets/StatusBar.js';
 import { bindToggle } from './widgets/bindToggle.js';
 import { makeColorRamp } from './widgets/makeColorRamp.js';
+import StatusBar from './widgets/StatusBar.js';
 
 const CRS = CoordinateSystem.epsg3857;
 

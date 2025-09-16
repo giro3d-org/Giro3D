@@ -4,9 +4,10 @@
  * SPDX-License-Identifier: MIT
  */
 
-import Shape from '@giro3d/giro3d/entities/Shape';
 import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
+
+import Shape from '@giro3d/giro3d/entities/Shape';
 
 describe('constructor', () => {
     it('should assign id and object3d', () => {

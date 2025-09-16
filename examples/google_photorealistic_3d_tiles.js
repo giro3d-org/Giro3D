@@ -4,10 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { Vector3 } from 'three';
-
 import { GlobeControls } from '3d-tiles-renderer';
-
 import {
     GoogleCloudAuthPlugin,
     TileCompressionPlugin,
@@ -15,6 +12,7 @@ import {
     UnloadTilesPlugin,
     UpdateOnChangePlugin,
 } from '3d-tiles-renderer/plugins';
+import { Vector3 } from 'three';
 
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';

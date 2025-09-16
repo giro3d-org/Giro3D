@@ -5,6 +5,7 @@
  */
 
 import type { BufferGeometry, IUniform, Material, Object3D, WebGLRenderer } from 'three';
+
 import {
     isBufferGeometry,
     isMaterial,

@@ -5,8 +5,11 @@
  */
 
 import type GUI from 'lil-gui';
+
 import { VERSION as olversion } from 'ol/util.js';
+
 import type Instance from '../core/Instance';
+
 import VERSION from '../version';
 import Panel from './Panel';
 

@@ -4,9 +4,10 @@
  * SPDX-License-Identifier: MIT
  */
 
-import TileMesh from '@giro3d/giro3d/entities/tiles/TileMesh';
 import { MathUtils } from 'three';
 import { beforeAll, describe, expect, it } from 'vitest';
+
+import TileMesh from '@giro3d/giro3d/entities/tiles/TileMesh';
 
 // It is relatively long to create TileMesh on the go (in term of code), so we
 // emulate a fake one with the necessary informations in it.

@@ -4,12 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
 
+import { describe, expect, it, vitest } from 'vitest';
+
+import type { GetImageOptions, ImageResponse } from '@giro3d/giro3d/sources/ImageSource';
+
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import AggregateImageSource from '@giro3d/giro3d/sources/AggregateImageSource';
-import type { GetImageOptions, ImageResponse } from '@giro3d/giro3d/sources/ImageSource';
 import ImageSource from '@giro3d/giro3d/sources/ImageSource';
-import { describe, expect, it, vitest } from 'vitest';
 
 class SubSource extends ImageSource {
     private readonly _extent: Extent;

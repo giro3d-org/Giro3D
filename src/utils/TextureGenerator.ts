@@ -5,6 +5,7 @@
  */
 
 import type { WebGLRenderTarget } from 'three';
+
 import {
     AlphaFormat,
     ByteType,
@@ -45,11 +46,13 @@ import {
     type TypedArray,
     type WebGLRenderer,
 } from 'three';
+
+import type * as decoder from './imageDecoderWorker';
+
 import Interpretation, { Mode } from '../core/layer/Interpretation';
 import { type GetMemoryUsageContext, type MemoryUsageReport } from '../core/MemoryUsage';
 import Capabilities from '../core/system/Capabilities';
 import EmptyTexture from '../renderer/EmptyTexture';
-import type * as decoder from './imageDecoderWorker';
 import {
     createPixelBuffer,
     createTypedArrayFromBuffer,

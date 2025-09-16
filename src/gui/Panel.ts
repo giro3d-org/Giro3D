@@ -6,6 +6,7 @@
 
 import type GUI from 'lil-gui';
 import type { Controller } from 'lil-gui';
+
 import type Instance from '../core/Instance';
 
 export interface TypedController<T> extends Controller {

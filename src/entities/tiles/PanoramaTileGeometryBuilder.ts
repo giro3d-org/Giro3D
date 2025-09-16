@@ -5,10 +5,12 @@
  */
 
 import { Vector2 } from 'three';
+
 import type Extent from '../../core/geographic/Extent';
-import PanoramaTileGeometry from './PanoramaTileGeometry';
 import type TileCoordinate from './TileCoordinate';
 import type { TileGeometryBuilder } from './TileGeometry';
+
+import PanoramaTileGeometry from './PanoramaTileGeometry';
 
 export default class PanoramaTileGeometryBuilder
     implements TileGeometryBuilder<PanoramaTileGeometry>

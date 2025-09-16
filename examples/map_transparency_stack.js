@@ -5,13 +5,11 @@
  */
 
 import colormap from 'colormap';
-
-import { Color, DoubleSide } from 'three';
-import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
-
 import GeoJSON from 'ol/format/GeoJSON.js';
 import TileWMS from 'ol/source/TileWMS.js';
 import { Fill, Stroke, Style } from 'ol/style.js';
+import { Color, DoubleSide } from 'three';
+import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
@@ -25,10 +23,9 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
 
-import StatusBar from './widgets/StatusBar.js';
-
 import { bindSlider } from './widgets/bindSlider.js';
 import { bindToggle } from './widgets/bindToggle.js';
+import StatusBar from './widgets/StatusBar.js';
 
 Instance.registerCRS(
     'EPSG:3946',

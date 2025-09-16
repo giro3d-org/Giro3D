@@ -5,8 +5,9 @@
  */
 
 import type { ColorRepresentation } from 'three';
-import { Box3, Box3Helper, Color, Matrix4, Object3D, Vector3 } from 'three';
 import type { OBB } from 'three/examples/jsm/Addons.js';
+
+import { Box3, Box3Helper, Color, Matrix4, Object3D, Vector3 } from 'three';
 
 /**
  * Helper object to visualize an {@link OBB | Oriented Bounding Box}.

@@ -4,14 +4,16 @@
  * SPDX-License-Identifier: MIT
  */
 
+import proj4 from 'proj4';
+import { Group, Object3D, Vector2, WebGLRenderer } from 'three';
+import { beforeEach, describe, expect, it, vitest } from 'vitest';
+
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Instance from '@giro3d/giro3d/core/Instance';
 import Entity from '@giro3d/giro3d/entities/Entity';
 import Entity3D from '@giro3d/giro3d/entities/Entity3D';
 import Fetcher from '@giro3d/giro3d/utils/Fetcher';
-import proj4 from 'proj4';
-import { Group, Object3D, Vector2, WebGLRenderer } from 'three';
-import { beforeEach, describe, expect, it, vitest } from 'vitest';
+
 import { resizeObservers, setupGlobalMocks } from '../mocks';
 
 const renderer = new WebGLRenderer();

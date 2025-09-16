@@ -5,6 +5,7 @@
  */
 
 import type { FetchOptions } from '../utils/Fetcher';
+
 import Fetcher from '../utils/Fetcher';
 import PromiseUtils from '../utils/PromiseUtils';
 

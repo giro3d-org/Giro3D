@@ -17,14 +17,13 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import { MODE } from '@giro3d/giro3d/renderer/PointCloudMaterial.js';
 import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 
-import StatusBar from './widgets/StatusBar.js';
-
 import { bindColorMapBounds } from './widgets/bindColorMapBounds.js';
 import { bindDropDown } from './widgets/bindDropDown.js';
 import { bindNumericalDropDown } from './widgets/bindNumericalDropDown.js';
 import { bindSlider } from './widgets/bindSlider.js';
 import { bindToggle } from './widgets/bindToggle.js';
 import { makeColorRamp } from './widgets/makeColorRamp.js';
+import StatusBar from './widgets/StatusBar.js';
 
 const colorRamps = {};
 

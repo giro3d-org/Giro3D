@@ -4,8 +4,9 @@
  * SPDX-License-Identifier: MIT
  */
 
-import TypedArrayVector from '@giro3d/giro3d/core/TypedArrayVector';
 import { describe, expect, it } from 'vitest';
+
+import TypedArrayVector from '@giro3d/giro3d/core/TypedArrayVector';
 
 describe('constructor', () => {
     it('should honor capacity and have a default length of zero', () => {

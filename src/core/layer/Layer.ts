@@ -24,34 +24,35 @@ import {
     type WebGLRenderTarget,
 } from 'three';
 
-import MemoryTracker from '../../renderer/MemoryTracker';
 import type RenderingContextHandler from '../../renderer/RenderingContextHandler';
-import { GlobalRenderTargetPool } from '../../renderer/RenderTargetPool';
 import type ImageSource from '../../sources/ImageSource';
-import { type ImageResult, isImageSource } from '../../sources/ImageSource';
-import PromiseUtils, { PromiseStatus } from '../../utils/PromiseUtils';
-import TextureGenerator from '../../utils/TextureGenerator';
-import { nonNull } from '../../utils/tsutils';
 import type ColorMap from '../ColorMap';
 import type Context from '../Context';
 import type Disposable from '../Disposable';
 import type ElevationRange from '../ElevationRange';
 import type CoordinateSystem from '../geographic/coordinate-system/CoordinateSystem';
 import type Coordinates from '../geographic/Coordinates';
-import Extent from '../geographic/Extent';
 import type Instance from '../Instance';
 import type MemoryUsage from '../MemoryUsage';
-import { type GetMemoryUsageContext } from '../MemoryUsage';
 import type OffsetScale from '../OffsetScale';
-import OperationCounter from '../OperationCounter';
 import type Progress from '../Progress';
 import type RequestQueue from '../RequestQueue';
+import type ColorLayer from './ColorLayer';
+import type NoDataOptions from './NoDataOptions';
+
+import MemoryTracker from '../../renderer/MemoryTracker';
+import { GlobalRenderTargetPool } from '../../renderer/RenderTargetPool';
+import { type ImageResult, isImageSource } from '../../sources/ImageSource';
+import PromiseUtils, { PromiseStatus } from '../../utils/PromiseUtils';
+import TextureGenerator from '../../utils/TextureGenerator';
+import { nonNull } from '../../utils/tsutils';
+import Extent from '../geographic/Extent';
+import { type GetMemoryUsageContext } from '../MemoryUsage';
+import OperationCounter from '../OperationCounter';
 import { DefaultQueue } from '../RequestQueue';
 import Shared from '../Shared';
-import type ColorLayer from './ColorLayer';
 import Interpretation from './Interpretation';
 import LayerComposer from './LayerComposer';
-import type NoDataOptions from './NoDataOptions';
 
 export interface TextureAndPitch {
     texture: Texture;

@@ -4,10 +4,11 @@
  * SPDX-License-Identifier: MIT
  */
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
-import SphericalPanorama from '@giro3d/giro3d/entities/SphericalPanorama';
 import { Euler, MathUtils, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
+
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
+import SphericalPanorama from '@giro3d/giro3d/entities/SphericalPanorama';
 
 describe('setOrientation', () => {
     it('should reset orientation if no parameters are provided', () => {

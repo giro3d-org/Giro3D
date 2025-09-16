@@ -5,14 +5,16 @@
  */
 
 import GUI from 'lil-gui';
-import { isDisposable } from '../core/Disposable';
+
 import type Instance from '../core/Instance';
+import type Panel from './Panel';
+
+import { isDisposable } from '../core/Disposable';
 import DrawToolPanel from './DrawToolPanel';
 import EntityPanel from './EntityPanel';
 import InstanceInspector from './InstanceInspector';
 import Outliner from './outliner/Outliner';
 import PackageInfoInspector from './PackageInfoInspector';
-import type Panel from './Panel';
 import ProcessingInspector from './ProcessingInspector';
 import ViewInspector from './ViewInspector';
 

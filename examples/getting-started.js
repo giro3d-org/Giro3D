@@ -16,14 +16,13 @@
 // This walkthrough is based on the [2.5D Map example](../examples/getting-started.html).
 // Feel free to visit this example to see the final result of this tutorial.
 
+import TileWMS from 'ol/source/TileWMS.js';
 import { Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
-import TileWMS from 'ol/source/TileWMS.js';
-
-import Instance from '@giro3d/giro3d/core/Instance.js';
-import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
+import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';

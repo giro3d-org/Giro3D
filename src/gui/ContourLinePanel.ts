@@ -5,8 +5,10 @@
  */
 
 import type GUI from 'lil-gui';
+
 import type ContourLineOptions from '../core/ContourLineOptions';
 import type Instance from '../core/Instance';
+
 import Panel from './Panel';
 
 class ContourLinePanel extends Panel {

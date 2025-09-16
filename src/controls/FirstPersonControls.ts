@@ -5,8 +5,11 @@
  */
 
 import type { PerspectiveCamera } from 'three';
+
 import { Euler, MathUtils, Quaternion, Vector2, Vector3 } from 'three';
+
 import type Instance from '../core/Instance';
+
 import { type InstanceEvents } from '../core/Instance';
 import { isPerspectiveCamera } from '../utils/predicates';
 

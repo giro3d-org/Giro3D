@@ -11,7 +11,9 @@ import {
     type Texture,
     type WebGLRenderer,
 } from 'three';
+
 import type ColorMap from '../core/ColorMap';
+
 import Rect from '../core/Rect';
 import WebGLComposer from './composition/WebGLComposer';
 

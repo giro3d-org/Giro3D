@@ -4,10 +4,11 @@
  * SPDX-License-Identifier: MIT
  */
 
-import Extent from '@giro3d/giro3d/core/geographic/Extent';
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
-import OpenLayersUtils from '@giro3d/giro3d/utils/OpenLayersUtils';
 import { describe, expect, it } from 'vitest';
+
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
+import Extent from '@giro3d/giro3d/core/geographic/Extent';
+import OpenLayersUtils from '@giro3d/giro3d/utils/OpenLayersUtils';
 
 describe('toOLExtent/fromOLExtent', () => {
     it('should round trip', () => {

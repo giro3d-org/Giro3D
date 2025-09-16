@@ -5,6 +5,7 @@
  */
 
 import type { Coordinate } from 'ol/coordinate';
+
 import {
     LineString,
     type Geometry,
@@ -29,9 +30,12 @@ import {
     type Object3D,
     type Texture,
 } from 'three';
-
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
+
+import type SimpleGeometryMesh from './SimpleGeometryMesh';
+import type { DefaultUserData } from './SimpleGeometryMesh';
+
 import {
     getFullFillStyle,
     getFullPointStyle,
@@ -56,8 +60,6 @@ import MultiPointMesh from './MultiPointMesh';
 import MultiPolygonMesh from './MultiPolygonMesh';
 import PointMesh from './PointMesh';
 import PolygonMesh from './PolygonMesh';
-import type SimpleGeometryMesh from './SimpleGeometryMesh';
-import type { DefaultUserData } from './SimpleGeometryMesh';
 import SurfaceMesh from './SurfaceMesh';
 
 const VERT_STRIDE = 3; // 3 elements per vertex position (X, Y, Z)

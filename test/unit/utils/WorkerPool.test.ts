@@ -4,9 +4,11 @@
  * SPDX-License-Identifier: MIT
  */
 
-import type { BaseMessageMap, PoolWorker } from '@giro3d/giro3d/utils/WorkerPool';
-import WorkerPool from '@giro3d/giro3d/utils/WorkerPool';
 import { describe, expect, it, vitest } from 'vitest';
+
+import type { BaseMessageMap, PoolWorker } from '@giro3d/giro3d/utils/WorkerPool';
+
+import WorkerPool from '@giro3d/giro3d/utils/WorkerPool';
 
 type TestWorker = PoolWorker;
 

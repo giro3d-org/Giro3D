@@ -5,12 +5,14 @@
  */
 
 import type GUI from 'lil-gui';
+
 import type Instance from '../core/Instance';
 import type Entity3D from '../entities/Entity3D';
+import type EntityInspector from './EntityInspector';
+
 import { isEntity3D } from '../entities/Entity3D';
 import AtmosphereInspector from './AtmosphereInspector';
 import AxisGridInspector from './AxisGridInspector';
-import type EntityInspector from './EntityInspector';
 import FeatureCollectionInspector from './FeatureCollectionInspector';
 import GlowInspector from './GlowInspector';
 import MapInspector from './MapInspector';

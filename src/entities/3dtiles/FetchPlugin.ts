@@ -4,9 +4,10 @@
  * SPDX-License-Identifier: MIT
  */
 
-import OperationCounter from '../../core/OperationCounter';
 import type Progress from '../../core/Progress';
 import type { FetchOptions } from '../../utils/Fetcher';
+
+import OperationCounter from '../../core/OperationCounter';
 import Fetcher from '../../utils/Fetcher';
 
 /**

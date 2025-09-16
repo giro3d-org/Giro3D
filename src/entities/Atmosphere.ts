@@ -5,6 +5,7 @@
  */
 
 import type { IUniform } from 'three';
+
 import {
     AdditiveBlending,
     BackSide,
@@ -17,6 +18,7 @@ import {
     Uniform,
     Vector3,
 } from 'three';
+
 import type Context from '../core/Context';
 import type PickResult from '../core/picking/PickResult';
 

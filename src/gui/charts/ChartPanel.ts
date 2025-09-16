@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: MIT
  */
 
+import type GUI from 'lil-gui';
+
 import {
     BarController,
     BarElement,
@@ -16,8 +18,9 @@ import {
     PointElement,
     Title,
 } from 'chart.js';
-import type GUI from 'lil-gui';
+
 import type Instance from '../../core/Instance';
+
 import Panel from '../Panel';
 
 /**

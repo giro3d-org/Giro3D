@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
+import TileWMS from 'ol/source/TileWMS.js';
 import {
     AxesHelper,
     BoxGeometry,
@@ -16,8 +17,6 @@ import {
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
-import TileWMS from 'ol/source/TileWMS.js';
-
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
@@ -27,8 +26,8 @@ import Interpretation from '@giro3d/giro3d/core/layer/Interpretation.js';
 import Map, { isMap } from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
-
 import WmsSource from '@giro3d/giro3d/sources/WmsSource.js';
+
 import StatusBar from './widgets/StatusBar.js';
 
 const wmsLayers = [

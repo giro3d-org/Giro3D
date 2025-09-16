@@ -4,8 +4,9 @@
  * SPDX-License-Identifier: MIT
  */
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import { describe, expect, it } from 'vitest';
+
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 
 describe('fromWkt', () => {
     it('should handle correctly equirectangular', () => {

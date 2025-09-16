@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: MIT
  */
 
+import type QuickLRU from 'quick-lru';
 import type { TypedArray } from 'three';
-import { FloatType, MathUtils, Texture, UnsignedByteType, Vector2 } from 'three';
 
 import {
     BaseClient,
@@ -17,10 +17,11 @@ import {
     type GeoTIFFImage,
     type ReadRasterResult,
 } from 'geotiff';
-import type QuickLRU from 'quick-lru';
+import { FloatType, MathUtils, Texture, UnsignedByteType, Vector2 } from 'three';
+
+import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 
 import { GlobalCache, type Cache } from '../core/Cache';
-import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import Extent from '../core/geographic/Extent';
 import { type GetMemoryUsageContext } from '../core/MemoryUsage';
 import Fetcher from '../utils/Fetcher';

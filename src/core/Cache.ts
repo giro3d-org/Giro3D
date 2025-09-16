@@ -5,7 +5,9 @@
  */
 
 import { LRUCache } from 'lru-cache';
+
 import type MemoryUsage from './MemoryUsage';
+
 import { isMemoryUsage, type GetMemoryUsageContext } from './MemoryUsage';
 
 /**

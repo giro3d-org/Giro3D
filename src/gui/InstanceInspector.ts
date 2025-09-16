@@ -5,8 +5,11 @@
  */
 
 import type GUI from 'lil-gui';
+
 import { Color } from 'three';
+
 import type Instance from '../core/Instance';
+
 import * as MemoryUsage from '../core/MemoryUsage';
 import Panel from './Panel';
 import RenderingInspector from './RenderingInspector';

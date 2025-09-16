@@ -12,6 +12,7 @@ import type {
     TextureDataType,
     WebGLRendererParameters,
 } from 'three';
+
 import {
     DepthTexture,
     LinearFilter,
@@ -24,11 +25,11 @@ import {
     WebGLRenderTarget,
 } from 'three';
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+
 import Capabilities from '../core/system/Capabilities';
+import TextureGenerator from '../utils/TextureGenerator';
 import RenderingOptions from './RenderingOptions';
 import RenderPipeline from './RenderPipeline';
-
-import TextureGenerator from '../utils/TextureGenerator';
 import registerChunks from './shader/chunk/registerChunks';
 
 const tmpVec2 = new Vector2();

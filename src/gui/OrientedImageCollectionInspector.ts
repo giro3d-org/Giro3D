@@ -5,8 +5,10 @@
  */
 
 import type GUI from 'lil-gui';
+
 import type Instance from '../core/Instance';
 import type OrientedImageCollection from '../entities/OrientedImageCollection';
+
 import EntityInspector from './EntityInspector';
 
 export default class OrientedImageCollectionInspector extends EntityInspector<OrientedImageCollection> {

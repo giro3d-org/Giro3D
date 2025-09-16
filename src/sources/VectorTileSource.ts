@@ -4,12 +4,22 @@
  * SPDX-License-Identifier: MIT
  */
 
-import OLVectorTileSourcce from 'ol/source/VectorTile.js';
+import type { Tile, VectorRenderTile } from 'ol';
+import type Feature from 'ol/Feature.js';
+import type FeatureFormat from 'ol/format/Feature.js';
+import type { Projection } from 'ol/proj';
+import type RenderFeature from 'ol/render/Feature';
 import type { Style } from 'ol/style.js';
-import VectorTile from 'ol/VectorTile.js';
-import { CanvasTexture, MathUtils, Vector2, type Texture } from 'three';
-
-import TileState from 'ol/TileState.js';
+import type { StyleFunction } from 'ol/style/Style';
+// Even if it's not explicited in the changelog
+// https://github.com/openlayers/openlayers/blob/main/changelog/upgrade-notes.md
+// Around OL6 the replay group mechanism was split into BuilderGroup to create the
+// instructions and ExecutorGroup to run them.
+// The mechanism was altered following
+// https://github.com/openlayers/openlayers/issues/9215
+// to make it work
+import type TileGrid from 'ol/tilegrid/TileGrid.js';
+import type { Transform } from 'ol/transform.js';
 
 import { listen, unlistenByKey } from 'ol/events.js';
 import {
@@ -19,44 +29,31 @@ import {
     getIntersection,
     intersects,
 } from 'ol/extent.js';
-
-// Even if it's not explicited in the changelog
-// https://github.com/openlayers/openlayers/blob/main/changelog/upgrade-notes.md
-// Around OL6 the replay group mechanism was split into BuilderGroup to create the
-// instructions and ExecutorGroup to run them.
-// The mechanism was altered following
-// https://github.com/openlayers/openlayers/issues/9215
-// to make it work
-
+import MVT from 'ol/format/MVT.js';
 import CanvasBuilderGroup from 'ol/render/canvas/BuilderGroup.js';
 import CanvasExecutorGroup from 'ol/render/canvas/ExecutorGroup.js';
-
-import type { Tile, VectorRenderTile } from 'ol';
-import type Feature from 'ol/Feature.js';
 import {
     getSquaredTolerance as getSquaredRenderTolerance,
     renderFeature as renderVectorFeature,
 } from 'ol/renderer/vector.js';
-import type TileGrid from 'ol/tilegrid/TileGrid.js';
-import type { Transform } from 'ol/transform.js';
+import OLVectorTileSourcce from 'ol/source/VectorTile.js';
+import TileState from 'ol/TileState.js';
 import {
     create as createTransform,
     reset as resetTransform,
     scale as scaleTransform,
     translate as translateTransform,
 } from 'ol/transform.js';
+import VectorTile from 'ol/VectorTile.js';
+import { CanvasTexture, MathUtils, Vector2, type Texture } from 'three';
 
-import type FeatureFormat from 'ol/format/Feature.js';
-import MVT from 'ol/format/MVT.js';
-import type { Projection } from 'ol/proj';
-import type RenderFeature from 'ol/render/Feature';
-import type { StyleFunction } from 'ol/style/Style';
-import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import type Extent from '../core/geographic/Extent';
+import type { GetImageOptions, ImageResponse, ImageSourceOptions } from './ImageSource';
+
+import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import Fetcher, { isHttpError } from '../utils/Fetcher';
 import OpenLayersUtils from '../utils/OpenLayersUtils';
 import { nonNull } from '../utils/tsutils';
-import type { GetImageOptions, ImageResponse, ImageSourceOptions } from './ImageSource';
 import ImageSource, { ImageResult } from './ImageSource';
 
 const tmpTransform: Transform = createTransform();

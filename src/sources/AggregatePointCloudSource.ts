@@ -5,7 +5,9 @@
  */
 
 import { Box3, Vector3 } from 'three';
+
 import type { GetMemoryUsageContext } from '../core/MemoryUsage';
+
 import { nonEmpty, nonNull } from '../utils/tsutils';
 import {
     PointCloudSourceBase,

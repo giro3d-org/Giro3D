@@ -5,8 +5,11 @@
  */
 
 import type { TypedArray } from 'three';
+
 import { PlaneGeometry } from 'three';
+
 import type { VectorArray } from '../../core/VectorArray';
+
 import { Vector2Array, Vector3Array } from '../../core/VectorArray';
 import { nonNull } from '../../utils/tsutils';
 

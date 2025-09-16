@@ -5,11 +5,13 @@
  */
 
 import type GUI from 'lil-gui';
+
 import type Instance from '../core/Instance';
+import type { PointCloudSource } from '../sources/PointCloudSource';
+
 import { aggregateMemoryUsage, format, type GetMemoryUsageContext } from '../core/MemoryUsage';
 import { isAggregatePointCloudSource } from '../sources/AggregatePointCloudSource';
 import { isCOPCSource } from '../sources/COPCSource';
-import type { PointCloudSource } from '../sources/PointCloudSource';
 import Panel from './Panel';
 
 export default class PointCloudSourceInspector extends Panel {

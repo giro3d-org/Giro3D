@@ -4,11 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-import Ellipsoid from '@giro3d/giro3d/core/geographic/Ellipsoid';
-import Extent from '@giro3d/giro3d/core/geographic/Extent';
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import { MathUtils } from 'three';
 import { describe, expect, it } from 'vitest';
+
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
+import Ellipsoid from '@giro3d/giro3d/core/geographic/Ellipsoid';
+import Extent from '@giro3d/giro3d/core/geographic/Extent';
 
 const PRECISION = 8;
 

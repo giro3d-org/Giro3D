@@ -7,9 +7,10 @@
 import { register } from 'ol/proj/proj4';
 import proj4 from 'proj4';
 import { MathUtils, Vector2, Vector3 } from 'three';
+
 import { isVector3 } from '../../utils/predicates';
-import { getConverter } from './ProjectionCache';
 import CoordinateSystem from './coordinate-system/CoordinateSystem';
+import { getConverter } from './ProjectionCache';
 
 proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs +type=crs');
 proj4.defs('EPSG:4979', '+proj=longlat +datum=WGS84 +no_defs +type=crs');

@@ -5,6 +5,7 @@
  */
 
 import type GUI from 'lil-gui';
+
 import {
     CameraHelper,
     Mesh,
@@ -14,9 +15,11 @@ import {
     type PerspectiveCamera,
     type Vector3,
 } from 'three';
-import Ellipsoid from '../core/geographic/Ellipsoid';
+
 import type Instance from '../core/Instance';
 import type View from '../renderer/View';
+
+import Ellipsoid from '../core/geographic/Ellipsoid';
 import { isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
 import Panel from './Panel';
 

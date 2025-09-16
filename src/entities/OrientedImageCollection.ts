@@ -25,8 +25,15 @@ import {
     type Vector2,
     type Vector3Like,
 } from 'three';
+
 import type Context from '../core/Context';
 import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
+import type PickOptions from '../core/picking/PickOptions';
+import type PickResult from '../core/picking/PickResult';
+import type PointOfView from '../core/PointOfView';
+import type { EntityUserData } from './Entity';
+import type { Entity3DEventMap } from './Entity3D';
+
 import {
     getGeometryMemoryUsage,
     getMaterialMemoryUsage,
@@ -34,12 +41,7 @@ import {
     type GetMemoryUsageContext,
 } from '../core/MemoryUsage';
 import pickObjectsAt from '../core/picking/PickObjectsAt';
-import type PickOptions from '../core/picking/PickOptions';
-import type PickResult from '../core/picking/PickResult';
-import type PointOfView from '../core/PointOfView';
 import Fetcher from '../utils/Fetcher';
-import type { EntityUserData } from './Entity';
-import type { Entity3DEventMap } from './Entity3D';
 import Entity3D from './Entity3D';
 
 /** All angles are expected to be in degrees. */

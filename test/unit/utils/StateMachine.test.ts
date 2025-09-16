@@ -4,8 +4,9 @@
  * SPDX-License-Identifier: MIT
  */
 
-import StateMachine from '@giro3d/giro3d/utils/StateMachine';
 import { beforeEach, describe, expect, it, vitest } from 'vitest';
+
+import StateMachine from '@giro3d/giro3d/utils/StateMachine';
 
 type State = 'start' | 'nope' | 'end';
 type Obj = { state: State };

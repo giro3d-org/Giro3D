@@ -17,9 +17,8 @@ import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';
 
-import StatusBar from './widgets/StatusBar.js';
-
 import { makeColorRamp } from './widgets/makeColorRamp.js';
+import StatusBar from './widgets/StatusBar.js';
 
 const extent = new Extent(CoordinateSystem.epsg3857, 2285900, 2444000, 4230900, 4386100);
 

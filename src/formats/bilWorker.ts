@@ -5,6 +5,7 @@
  */
 
 import type { BaseMessageMap, Message, SuccessResponse } from '../utils/WorkerPool';
+
 import { createErrorResponse } from '../utils/WorkerPool';
 
 export type DecodeBilTerrainResult = { data: ArrayBuffer; min: number; max: number };

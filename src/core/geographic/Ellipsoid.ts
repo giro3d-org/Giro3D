@@ -5,9 +5,11 @@
  */
 
 import { MathUtils, Matrix4, Ray, Sphere, Vector2, Vector3 } from 'three';
-import Coordinates from './Coordinates';
+
 import type Extent from './Extent';
+
 import CoordinateSystem from './coordinate-system/CoordinateSystem';
+import Coordinates from './Coordinates';
 
 const tmpCoord = new Coordinates(CoordinateSystem.epsg4326, 0, 0);
 const tmpDims = new Vector2();

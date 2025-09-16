@@ -5,12 +5,15 @@
  */
 
 import type { Camera, Material, Object3D, WebGLRenderer } from 'three';
+
 import { Color, DepthTexture, FloatType, NearestFilter, WebGLRenderTarget } from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { TexturePass } from 'three/examples/jsm/postprocessing/TexturePass.js';
-import PointCloudRenderer from './PointCloudRenderer';
+
 import type RenderingOptions from './RenderingOptions';
+
+import PointCloudRenderer from './PointCloudRenderer';
 
 const BUCKETS = {
     OPAQUE: 0,

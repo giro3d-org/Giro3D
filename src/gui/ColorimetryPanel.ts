@@ -5,8 +5,10 @@
  */
 
 import type GUI from 'lil-gui';
+
 import type ColorimetryOptions from '../core/ColorimetryOptions';
 import type Instance from '../core/Instance';
+
 import Panel from './Panel';
 
 class ColorimetryPanel extends Panel {
