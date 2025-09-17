@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.43.5 (2025-09-17)
+
+### Fix
+
+- **COPCSource**: fix issue where the entire file is queried (#636)
+
 ## v0.43.4 (2025-08-22)
 
 ### Fix
