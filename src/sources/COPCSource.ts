@@ -128,7 +128,8 @@ function createChild(
 
     const id = `${depth}-${x}-${y}-${z}`;
 
-    if (!nodes.get(id)) {
+    const childNode = nodes.get(id);
+    if (!childNode) {
         return undefined;
     }
 
@@ -156,8 +157,9 @@ function createChild(
             z,
             id,
             center,
+            pointCount: childNode.pointCount,
             geometricError,
-            hasData: true,
+            hasData: childNode.pointCount > 0,
             sourceId,
             volume,
         },
@@ -376,7 +378,7 @@ export default class COPCSource extends PointCloudSourceBase {
                 center: volume.getCenter(new Vector3()),
                 pointCount: rootNode.pointCount,
                 geometricError: rootGeometricError,
-                hasData: true,
+                hasData: rootNode.pointCount > 0,
                 sourceId: this.id,
             },
             volume,
