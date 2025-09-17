@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.43.4 (2025-08-22)
+
+### Fix
+
+- **Tiles3D**: also dispose inner TilesRenderer when disposing Tiles3D entity
+
 ## v0.43.3 (2025-08-11)
 
 ### Fix
