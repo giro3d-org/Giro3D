@@ -5,6 +5,7 @@
  */
 
 import type { Polygon } from 'ol/geom';
+import type { Vector3 } from 'three';
 
 import { Object3D } from 'three';
 
@@ -23,6 +24,7 @@ export default class PolygonMesh<UserData extends DefaultUserData = DefaultUserD
     public readonly isSimpleGeometryMesh = true as const;
     public readonly isPolygonMesh = true as const;
     public override readonly type = 'PolygonMesh' as const;
+    public geometryOrigin: Vector3 | undefined;
 
     public readonly isExtruded: boolean = false;
 

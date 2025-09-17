@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-import type { Object3D, Object3DEventMap } from 'three';
+import type { Object3D, Object3DEventMap, Vector3 } from 'three';
 
 export type DefaultUserData = Record<string, unknown>;
 
@@ -29,6 +29,7 @@ interface SimpleGeometryMesh<
 > extends Object3D<TEvents> {
     isSimpleGeometryMesh: true;
     type: SimpleGeometryMeshTypes;
+    geometryOrigin: Vector3 | undefined;
     /**
      * Disposes the resources owned by this mesh.
      */

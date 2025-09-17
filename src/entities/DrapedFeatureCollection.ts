@@ -475,9 +475,7 @@ export default class DrapedFeatureCollection extends Entity3D {
         const style = this.getStyle(feature);
 
         const commonOptions: BaseOptions = {
-            origin: obj.position,
-            // TODO
-            // ignoreZ: draping === 'none',
+            origin: obj.geometryOrigin
         };
 
         switch (obj.type) {

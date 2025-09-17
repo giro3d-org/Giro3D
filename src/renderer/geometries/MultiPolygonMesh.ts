@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: MIT
  */
 
+import type { Vector3 } from 'three';
+
 import { Object3D } from 'three';
 
 import type PolygonMesh from './PolygonMesh';
@@ -19,6 +21,8 @@ export default class MultiPolygonMesh<UserData extends DefaultUserData = Default
     public readonly isSimpleGeometryMesh = true as const;
     public readonly isMultiPolygonMesh = true as const;
     public override readonly type = 'MultiPolygonMesh' as const;
+
+    public geometryOrigin: Vector3 | undefined;
 
     public override userData: Partial<UserData> = {};
 

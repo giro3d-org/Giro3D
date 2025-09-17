@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-import type { WebGLRenderer } from 'three';
+import type { WebGLRenderer, Vector3 } from 'three';
 import type { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
 import type { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 
@@ -21,6 +21,8 @@ export default class LineStringMesh<UserData extends DefaultUserData = DefaultUs
     public readonly isSimpleGeometryMesh = true as const;
     public readonly isLineStringMesh = true as const;
     public override readonly type = 'LineStringMesh' as const;
+
+    public geometryOrigin: Vector3 | undefined;
 
     private _featureOpacity = 1;
     private _styleOpacity = 1;
