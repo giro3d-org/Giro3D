@@ -1,5 +1,6 @@
 #include <giro3d_precision_qualifiers>
 #include <giro3d_common>
+#include <giro3d_intersecting_volume_pars>
 
 #include <common>
 #include <logdepthbuf_pars_vertex>
@@ -212,6 +213,15 @@ void main() {
     } else {
         gl_PointSize = clamp(-size / gl_Position.w, 3.0, 10.0);
     }
+
+    #ifdef INTERSECTING_VOLUMES_SUPPORT
+    // don't break picking mode
+    if (pickingId == 0u) {
+        vec4 viewPosition = mvMatrix * vec4(position, 1);
+        viewPosition.xyz / viewPosition.w;
+        applyIntersectingVolumes(viewPosition, vColor);
+    }
+    #endif
 
     #include <fog_vertex>
     #include <logdepthbuf_vertex>

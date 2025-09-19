@@ -5,6 +5,11 @@
  */
 
 import type * as SimpleGeometry from './geometries/api';
+import type {
+    IntersectingVolume,
+    IntersectingVolumeUniform,
+    IntersectingVolumesUniform,
+} from './IntersectingVolume';
 import type PointCloudMaterial from './PointCloudMaterial';
 import type { Mode as PointCloudMode, MODE as PointCloudModes } from './PointCloudMaterial';
 import type RenderingContextHandler from './RenderingContextHandler';
@@ -25,6 +30,9 @@ export {
     Classification,
     ConstantSizeSphere,
     ExternalControls,
+    IntersectingVolume,
+    IntersectingVolumeUniform,
+    IntersectingVolumesUniform,
     MemoryTracker,
     PointCloudMaterial,
     PointCloudMaterialOptions,

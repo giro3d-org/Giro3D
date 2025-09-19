@@ -26,6 +26,7 @@ import type Layer from '../core/layer/Layer';
 import type { GetMemoryUsageContext } from '../core/MemoryUsage';
 import type PickOptions from '../core/picking/PickOptions';
 import type PickResult from '../core/picking/PickResult';
+import type { IntersectingVolume } from '../renderer/IntersectingVolume';
 import type { Classification } from '../renderer/PointCloudMaterial';
 import type View from '../renderer/View';
 import type { EntityPreprocessOptions, EntityUserData } from './Entity';
@@ -243,6 +244,8 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
 
     /** The source of this entity. */
     public readonly source: PointCloudSource;
+
+    public readonly intersectingVolumes: IntersectingVolume[] = [];
 
     private _colorLayer: ColorLayer | null = null;
     private _depthTest = true;
@@ -1140,10 +1143,8 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
     }
 
     private createMaterial(): PointCloudMaterial {
-        const result = new PointCloudMaterial({
-            mode: this._shaderMode,
-            size: this.pointSize,
-        });
+        const result = new PointCloudMaterial({ mode: this._shaderMode, size: this.pointSize });
+        result.intersectingVolumes = this.intersectingVolumes;
 
         return result;
     }

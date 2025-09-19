@@ -7,9 +7,12 @@
 import type {
     BufferAttribute,
     BufferGeometry,
+    Camera,
     ColorRepresentation,
     IUniform,
+    Scene,
     Texture,
+    WebGLRenderer,
 } from 'three';
 
 import {
@@ -28,6 +31,7 @@ import {
 import type Extent from '../core/geographic/Extent';
 import type ColorLayer from '../core/layer/ColorLayer';
 import type { TextureAndPitch } from '../core/layer/Layer';
+import type { IntersectingVolume, IntersectingVolumesUniform } from './IntersectingVolume';
 
 import ColorMap from '../core/ColorMap';
 import OffsetScale from '../core/OffsetScale';
@@ -155,11 +159,7 @@ type Deformation = {
     vec: Vector3;
 };
 
-type ColorMapUniform = {
-    min: number;
-    max: number;
-    lut: Texture;
-};
+type ColorMapUniform = { min: number; max: number; lut: Texture };
 
 type Uniforms = {
     opacity: IUniform<number>;
@@ -182,6 +182,8 @@ type Uniforms = {
     enableDeformations: IUniform<boolean>;
     deformations: IUniform<Deformation[]>;
 
+    intersectingVolumes: IUniform<IntersectingVolumesUniform>;
+
     fogDensity: IUniform<number>;
     fogNear: IUniform<number>;
     fogFar: IUniform<number>;
@@ -196,6 +198,8 @@ export type Defines = {
     USE_LOGDEPTHBUF?: 1;
     NORMAL_OCT16?: 1;
     NORMAL_SPHEREMAPPED?: 1;
+    INTERSECTING_VOLUMES_SUPPORT?: 1;
+    MAX_INTERSECTING_VOLUMES_COUNT?: number;
 
     INTENSITY?: 1;
     INTENSITY_TYPE: VertexAttributeType;
@@ -210,10 +214,15 @@ function createDefaultColorMap(): ColorMap {
  * Material used for point clouds.
  */
 class PointCloudMaterial extends ShaderMaterial {
+    // This is an arbitrary limit, only there to prevent running out of uniform slots.
+    public static readonly maxIntersectingVolumesCount: number = 8;
+
     public readonly isPointCloudMaterial = true;
 
     public colorLayer: ColorLayer | null;
     public disposed = false;
+
+    public intersectingVolumes: IntersectingVolume[] = [];
 
     private _colorMap: ColorMap = createDefaultColorMap();
 
@@ -413,6 +422,7 @@ class PointCloudMaterial extends ShaderMaterial {
         // Default
         this.defines = {
             INTENSITY_TYPE: 'uint',
+            MAX_INTERSECTING_VOLUMES_COUNT: PointCloudMaterial.maxIntersectingVolumesCount,
         };
 
         for (const key of Object.keys(MODE)) {
@@ -455,6 +465,8 @@ class PointCloudMaterial extends ShaderMaterial {
 
             enableDeformations: new Uniform(false),
             deformations: new Uniform([]),
+
+            intersectingVolumes: new Uniform({ count: 0, volumes: [] }),
         };
 
         for (let i = 0; i < NUM_TRANSFO; i++) {
@@ -466,15 +478,20 @@ class PointCloudMaterial extends ShaderMaterial {
                 color: new Color(),
             });
         }
+
+        for (let i = 0; i < PointCloudMaterial.maxIntersectingVolumesCount; i++) {
+            this.uniforms.intersectingVolumes.value.volumes.push({
+                viewToBoxNc: new Matrix4(),
+                color: new Color(),
+            });
+        }
     }
 
     public override dispose(): void {
         if (this.disposed) {
             return;
         }
-        this.dispatchEvent({
-            type: 'dispose',
-        });
+        this.dispatchEvent({ type: 'dispose' });
         this.disposed = true;
     }
 
@@ -500,10 +517,12 @@ class PointCloudMaterial extends ShaderMaterial {
         colorMapUniform.lut = this.colorMap.getTexture();
     }
 
-    public override onBeforeRender(): void {
+    public override onBeforeRender(_renderer: WebGLRenderer, _scene: Scene, camera: Camera): void {
         this.uniforms.opacity.value = this.opacity;
 
         this.transparent = this.opacity < 1 || this.colorMap.opacity != null;
+
+        this.updateIntersectingVolumes(camera);
     }
 
     public override copy(source: PointCloudMaterial): this {
@@ -603,6 +622,31 @@ class PointCloudMaterial extends ShaderMaterial {
             delete this.defines.NUM_TRANSFO;
         }
         this.needsUpdate = true;
+    }
+
+    private updateIntersectingVolumes(camera: Camera): void {
+        const hasIntersectingVolumes = this.intersectingVolumes.length > 0;
+        MaterialUtils.setDefine(this, 'INTERSECTING_VOLUMES_SUPPORT', hasIntersectingVolumes);
+        if (hasIntersectingVolumes) {
+            if (this.intersectingVolumes.length > PointCloudMaterial.maxIntersectingVolumesCount) {
+                throw new Error(
+                    `Too many intersecting volumes (${this.intersectingVolumes.length}, max is ${PointCloudMaterial.maxIntersectingVolumesCount}).`,
+                );
+            }
+
+            const invViewMatrix = camera.matrixWorld;
+            for (let i = 0; i < this.intersectingVolumes.length; i++) {
+                const volumeUniform = this.uniforms.intersectingVolumes.value.volumes[i];
+                const volumeDefinition = this.intersectingVolumes[i];
+
+                volumeUniform.viewToBoxNc.multiplyMatrices(
+                    volumeDefinition.worldToBoxNdc,
+                    invViewMatrix,
+                );
+                volumeUniform.color.copy(volumeDefinition.color);
+            }
+            this.uniforms.intersectingVolumes.value.count = this.intersectingVolumes.length;
+        }
     }
 
     public static isPointCloudMaterial = (obj: unknown): obj is PointCloudMaterial =>
