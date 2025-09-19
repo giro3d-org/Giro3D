@@ -16,6 +16,7 @@ import giro3d_fragment_shader_header from './giro3d_fragment_shader_header.glsl'
 import giro3d_graticule_fragment from './giro3d_graticule_fragment.glsl';
 import giro3d_graticule_pars_fragment from './giro3d_graticule_pars_fragment.glsl';
 import giro3d_hillshading_pars_fragment from './giro3d_hillshading_pars_fragment.glsl';
+import giro3d_intersecting_volume_pars from './giro3d_intersecting_volume_pars.glsl';
 import giro3d_outline_fragment from './giro3d_outline_fragment.glsl';
 import giro3d_outline_pars_fragment from './giro3d_outline_pars_fragment.glsl';
 import giro3d_precision_qualifiers from './giro3d_precision_qualifiers.glsl';
@@ -36,6 +37,7 @@ type Giro3DShaderChunk = typeof ShaderChunk & {
     giro3d_graticule_pars_fragment: string;
     giro3d_hillshading_pars_fragment: string;
     giro3d_hillshading_begin_fragment: string;
+    giro3d_intersecting_volume_pars: string;
     giro3d_terrain_pars_vertex: string;
     giro3d_terrain_vertex: string;
 };
@@ -54,6 +56,7 @@ export default function registerChunks(): void {
     Giro3dShaderChunk.giro3d_graticule_fragment = giro3d_graticule_fragment;
     Giro3dShaderChunk.giro3d_graticule_pars_fragment = giro3d_graticule_pars_fragment;
     Giro3dShaderChunk.giro3d_hillshading_pars_fragment = giro3d_hillshading_pars_fragment;
+    Giro3dShaderChunk.giro3d_intersecting_volume_pars = giro3d_intersecting_volume_pars;
     Giro3dShaderChunk.giro3d_terrain_pars_vertex = giro3d_terrain_pars_vertex;
     Giro3dShaderChunk.giro3d_terrain_vertex = giro3d_terrain_vertex;
 }

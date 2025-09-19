@@ -1,0 +1,177 @@
+---
+title: Pointcloud Intersecting Volumes
+shortdesc: Demonstrates the Intersecting Volumes feature for point clouds
+tags: ['point cloud', 'las', 'copc']
+attribution: Autzen stadium dataset provided by <a href="https://www.usgs.gov" target="_blank">United States Geological Survey</a> and <a href="https://hobu.co/" target="_blank">Hobu, Inc.</a>
+---
+
+<div class="side-pane-with-status-bar" style="width: 20rem">
+    <div class="progress" role="progressbar">
+        <div
+            class="progress-bar bg-info progress-bar-striped progress-bar-animated text-dark"
+            id="progress"
+            style="width: 0%"
+        >
+            Loading metadata...
+        </div>
+    </div>
+
+    <!-- Error message -->
+    <div class="alert alert-danger mt-0 mb-0" id="message" style="display: none" role="alert">
+        A simple primary alert—check it out!
+    </div>
+
+    <!--Parameters -->
+    <div class="card-body">
+        <!-- Accordion -->
+        <div class="accordion" style="display: none" id="accordion">
+            <!-- Section: info -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button
+                        class="accordion-button collapsed"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#section-info"
+                        aria-controls="section-info"
+                    >
+                        Info
+                    </button>
+                </h2>
+                <div
+                    id="section-info"
+                    class="accordion-collapse collapse"
+                    data-bs-parent="#accordion"
+                >
+                    <ul
+                        class="list-group list-group-flush"
+                        id="table"
+                        style="display: none; font-size: 0.875rem"
+                    >
+                        <li class="list-group-item">
+                            Filename
+                            <b
+                                id="filename"
+                                class="d-float float-end text-truncate"
+                                style="max-width: 70%"
+                            ></b>
+                        </li>
+                        <li
+                            class="list-group-item"
+                            title="The total number of points in the dataset"
+                        >
+                            Total points <b id="point-count" class="d-float float-end"></b>
+                        </li>
+                        <li
+                            class="list-group-item"
+                            title="The number of points currently displayed"
+                        >
+                            Displayed points
+                            <b id="displayed-point-count" class="d-float float-end"></b>
+                        </li>
+                        <li
+                            class="list-group-item"
+                            title="The coordinate reference system of this dataset"
+                        >
+                            CRS
+                            <a
+                                target="_blank"
+                                href="foo"
+                                id="projection"
+                                class="d-float float-end"
+                            ></a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Section: options -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button
+                        class="accordion-button"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#section-options"
+                        aria-expanded="false"
+                        aria-controls="section-options"
+                    >
+                        Options
+                    </button>
+                </h2>
+
+                <div
+                    id="section-options"
+                    class="accordion-collapse collapse show p-2"
+                    data-bs-parent="#accordion"
+                >
+                    <!-- Eye Dome Lighting -->
+                    <div class="form-check form-switch">
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            checked
+                            id="edl"
+                            autocomplete="off"
+                        />
+                        <label
+                            title="Toggles Eye Dome Lighting post-processing effect"
+                            class="form-check-label"
+                            for="edl"
+                            >Eye Dome Lighting</label
+                        >
+                    </div>
+
+                    <!-- Inpainting -->
+                    <div class="form-check form-switch">
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id="inpainting"
+                            autocomplete="off"
+                        />
+                        <label title="Toggles inpainting" class="form-check-label" for="inpainting"
+                            >Inpainting</label
+                        >
+                    </div>
+
+                    <!-- Intersecting volumes -->
+                    <div class="form-check form-switch">
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id="intersecting-volumes"
+                            autocomplete="off"
+                            checked
+                        />
+                        <label
+                            title="Toggles intersecting volumes"
+                            class="form-check-label"
+                            for="intersecting-volumes"
+                            >Intersecting volumes</label
+                        >
+                    </div>
+
+                    <!-- Point size slider -->
+                    <label for="point-size" class="form-label mt-2" id="point-size-label"
+                        >Point size: <b>auto</b></label
+                    >
+                    <input
+                        type="range"
+                        min="0"
+                        max="50"
+                        step="1"
+                        value="0"
+                        title="The point size, in pixels"
+                        class="form-range"
+                        id="point-size"
+                        autocomplete="off"
+                    />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
