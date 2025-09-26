@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-import type { LRUCache, PriorityQueue, Tile } from '3d-tiles-renderer';
+import type { LRUCache, PriorityQueue, Tile, TilesRendererEventMap } from '3d-tiles-renderer';
 import type { ColorRepresentation, Material, Object3D } from 'three';
 
 import { TilesRenderer } from '3d-tiles-renderer';
@@ -455,7 +455,7 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
     }
 
     protected override preprocess(opts: EntityPreprocessOptions): Promise<void> {
-        return new Promise(resolve => {
+        return new Promise((resolve, reject) => {
             const instance = opts.instance;
 
             // Share resources between instances
@@ -475,16 +475,24 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
                 setSharedResources(instance, toShare);
             }
 
-            // Preprocessing is done when the root tileset is loaded
-            const listener = (): void => {
-                this._tiles.removeEventListener('load-content', listener);
-                // The two next lines became necessary starting with
-                // 3d-tile-renderer v0.4.8 but the actual reason is unclear.
-                this._tiles.update();
-                this.notifyChange(this);
-                resolve();
+            const handlers = {
+                success: (): void => {
+                    this._tiles.removeEventListener('load-content', handlers.success);
+                    this._tiles.removeEventListener('load-error', handlers.error);
+                    // The two next lines became necessary starting with
+                    // 3d-tile-renderer v0.4.8 but the actual reason is unclear.
+                    this._tiles.update();
+                    this.notifyChange(this);
+                    resolve();
+                },
+                error: (error: TilesRendererEventMap['load-error']): void => {
+                    this._tiles.removeEventListener('load-content', handlers.success);
+                    this._tiles.removeEventListener('load-error', handlers.error);
+                    reject(error);
+                },
             };
-            this._tiles.addEventListener('load-content', listener);
+            this._tiles.addEventListener('load-content', handlers.success);
+            this._tiles.addEventListener('load-error', handlers.error);
 
             const camera = instance.view.camera;
             if (this._tiles.hasCamera(camera) === false) {
