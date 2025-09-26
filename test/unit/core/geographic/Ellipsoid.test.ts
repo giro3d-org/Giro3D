@@ -34,8 +34,6 @@ describe('constructor', () => {
 
 describe('WGS84', () => {
     it('should return the correct semi-axes', () => {
-        const wgs84 = Ellipsoid.WGS84;
-
         expect(wgs84.semiMajorAxis).toBeCloseTo(6_378_137, PRECISION);
         expect(wgs84.semiMinorAxis).toBeCloseTo(6_356_752.314245, PRECISION);
     });

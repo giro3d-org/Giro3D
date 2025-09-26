@@ -475,8 +475,8 @@ function setSunPosition(date) {
 
 let date = new Date();
 
-const [setDate] = bindDatePicker('date', date => {
-    setSunPosition(date);
+const [setDate] = bindDatePicker('date', newDate => {
+    setSunPosition(newDate);
 });
 
 const [setTime] = bindSlider('time', seconds => {
@@ -494,10 +494,10 @@ const [setTime] = bindSlider('time', seconds => {
         `${wholeH.toString().padStart(2, '0')}:${wholeM.toString().padStart(2, '0')} UTC`;
 });
 
-const setCurrentDate = date => {
-    setSunPosition(date);
-    setDate(date);
-    setTime(date.getUTCHours() * 3600 + date.getUTCMinutes() * 60 + date.getUTCSeconds());
+const setCurrentDate = newDate => {
+    setSunPosition(newDate);
+    setDate(newDate);
+    setTime(newDate.getUTCHours() * 3600 + newDate.getUTCMinutes() * 60 + newDate.getUTCSeconds());
 };
 
 bindButton('now', () => {

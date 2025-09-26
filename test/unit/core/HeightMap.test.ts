@@ -218,12 +218,12 @@ describe('getValue', () => {
                 let min = +Infinity;
                 let max = -Infinity;
 
-                for (let i = 0; i < buffer.length; i += 2) {
+                for (let j = 0; j < buffer.length; j += 2) {
                     const z = MathUtils.randInt(0, 10_000);
                     min = Math.min(z, min);
                     max = Math.max(z, max);
-                    buffer[i + 0] = z;
-                    buffer[i + 1] = 1;
+                    buffer[j + 0] = z;
+                    buffer[j + 1] = 1;
                 }
 
                 const heightMap = new HeightMap(

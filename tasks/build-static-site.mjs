@@ -49,7 +49,7 @@ function readTemplate(template) {
     });
 }
 
-function copyWasmFiles(nodeModulesDir, outputDir) {
+function copyWasmFiles(outputDir) {
     log('static-site', 'copying library files...');
 
     const copy = (...src) => {
@@ -86,11 +86,11 @@ export async function copyAssets(parameters) {
     fse.mkdirpSync(imagesDir);
     fse.mkdirpSync(wasmDir);
 
-    copyWasmFiles(nodeModulesDir, wasmDir);
+    copyWasmFiles(wasmDir);
 
-    const scss = ['bootstrap-custom', 'index'];
+    const scssList = ['bootstrap-custom', 'index'];
 
-    scss.forEach(scss => {
+    scssList.forEach(scss => {
         execSync(
             `npx sass ${path.join(siteDir, `${scss}.scss`)}:${path.join(assetsDir, `${scss}.css`)} --style=compressed`,
         );

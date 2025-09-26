@@ -21,7 +21,7 @@ import type {
 
 import { GlobalCache } from '../core/Cache';
 import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
-import * as octree from '../core/Octree';
+import * as Octree from '../core/Octree';
 import OperationCounter from '../core/OperationCounter';
 import RequestQueue from '../core/RequestQueue';
 import Fetcher from '../utils/Fetcher';
@@ -40,7 +40,7 @@ const deduplicatedQueue = new RequestQueue();
 /**
  * Inject Fetcher into copc.js to perform range requests.
  */
-const getter: (url: string) => Getter = url => {
+const createGetter: (url: string) => Getter = url => {
     return async (begin, end) => {
         const blob = await Fetcher.blob(url, {
             headers: {
@@ -115,12 +115,12 @@ const tmpSize = new Vector3();
 function createChild(
     sourceId: string,
     nodes: Map<string, Hierarchy.Node>,
-    node: octree.Octree<NodeInternalData>,
+    node: Octree.Octree<NodeInternalData>,
     geometricError: number,
     qx: 0 | 1,
     qy: 0 | 1,
     qz: 0 | 1,
-): octree.Octree<NodeInternalData> | undefined {
+): Octree.Octree<NodeInternalData> | undefined {
     const depth = node.depth + 1;
     const x = node.x * 2 + qx;
     const y = node.y * 2 + qy;
@@ -149,7 +149,7 @@ function createChild(
 
     const center = volume.getCenter(new Vector3());
 
-    const child = octree.create<NodeInternalData>(
+    const child = Octree.create<NodeInternalData>(
         {
             depth,
             x,
@@ -236,7 +236,7 @@ export default class COPCSource extends PointCloudSourceBase {
 
     private readonly _getter: Getter;
     private readonly _opCounter = new OperationCounter();
-    private readonly _nodeMap: Map<string, octree.Octree<NodeInternalData>> = new Map();
+    private readonly _nodeMap: Map<string, Octree.Octree<NodeInternalData>> = new Map();
     private readonly _filters: DimensionFilter[] = [];
     private readonly _options: PerfOptions = {
         decimate: 1,
@@ -291,7 +291,7 @@ export default class COPCSource extends PointCloudSourceBase {
             this._filters.push(...options.filters);
         }
 
-        this._getter = typeof options.url === 'string' ? getter(options.url) : options.url;
+        this._getter = typeof options.url === 'string' ? createGetter(options.url) : options.url;
     }
 
     protected async initializeOnce(): Promise<this> {
@@ -367,7 +367,7 @@ export default class COPCSource extends PointCloudSourceBase {
 
         const rootGeometricError = copc.info.spacing;
 
-        const root = octree.create<NodeInternalData>(
+        const root = Octree.create<NodeInternalData>(
             {
                 depth: 0,
                 x: 0,
@@ -385,8 +385,8 @@ export default class COPCSource extends PointCloudSourceBase {
         );
 
         const createChildren: (
-            node: octree.Octree<NodeInternalData>,
-        ) => octree.ChildrenList<octree.Octree<NodeInternalData>> | undefined = node => {
+            node: Octree.Octree<NodeInternalData>,
+        ) => Octree.ChildrenList<Octree.Octree<NodeInternalData>> | undefined = node => {
             const geometricError = rootGeometricError / 2 ** (node.depth + 1);
             return [
                 // bottom nodes
@@ -403,9 +403,9 @@ export default class COPCSource extends PointCloudSourceBase {
             ];
         };
 
-        octree.populate(root, createChildren);
+        Octree.populate(root, createChildren);
 
-        octree.traverse(root, n => {
+        Octree.traverse(root, n => {
             this._nodeMap.set(n.id, n);
             return true;
         });

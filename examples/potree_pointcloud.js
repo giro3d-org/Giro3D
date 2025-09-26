@@ -163,7 +163,7 @@ bindSlider('subdivision-threshold', threshold => {
     }
 });
 
-function populateGUI(entity) {
+function populateGUI() {
     document.getElementById('accordion').style.display = 'block';
 
     const tableElement = document.getElementById('table');
@@ -279,7 +279,7 @@ async function load(url) {
         instance.notifyChange(entity);
     });
 
-    populateGUI(entity);
+    populateGUI();
 
     updateActiveAttribute();
 

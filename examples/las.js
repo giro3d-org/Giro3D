@@ -31,7 +31,7 @@ const instance = new Instance({
     backgroundColor: null,
 });
 
-async function load(url) {
+async function load() {
     const source = new LASSource({ url });
 
     const entity = new PointCloud({ source });
@@ -43,7 +43,7 @@ async function load(url) {
     placeCameraOnTop(entity.getBoundingBox(), instance);
 }
 
-load(url).catch(console.error);
+load().catch(console.error);
 
 Inspector.attach('inspector', instance);
 StatusBar.bind(instance);

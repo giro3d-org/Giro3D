@@ -21,7 +21,7 @@ import { bindButton } from './widgets/bindButton.js';
 import { bindTextInput } from './widgets/bindTextInput.js';
 import StatusBar from './widgets/StatusBar.js';
 
-const extent = new Extent(
+const defaultExtent = new Extent(
     CoordinateSystem.epsg3857,
     -20037508.342789244,
     20037508.342789244,
@@ -31,11 +31,11 @@ const extent = new Extent(
 
 const instance = new Instance({
     target: 'view',
-    crs: extent.crs,
+    crs: defaultExtent.crs,
     backgroundColor: 0x0a3b59,
 });
 
-const map = new Map({ extent, backgroundColor: 'white' });
+const map = new Map({ extent: defaultExtent, backgroundColor: 'white' });
 
 instance.add(map);
 

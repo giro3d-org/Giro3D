@@ -141,7 +141,7 @@ async function watchTutorials(parameters) {
             ),
             ...Object.keys(TUTORIALS)
                 .map(jsFileName => path.join(examplesDir, jsFileName.replace('.js', '.css')))
-                .filter(path => fse.existsSync(path)),
+                .filter(cssFilePath => fse.existsSync(cssFilePath)),
         ])
         .on('change', p => handleModification(parameters, p));
 }

@@ -185,7 +185,7 @@ function updateColorMap() {
     }
 }
 
-function loadMap(instance, extent) {
+function loadMap(extent) {
     const map = new Map({ extent, depthTest: false });
 
     instance.add(map);
@@ -287,10 +287,9 @@ function bindFilter(index, attributes, onChange) {
 }
 
 /**
- * @param {PointCloud} entity
  * @param {COPCSource} source
  */
-function populateGUI(entity, source) {
+function populateGUI(source) {
     document.getElementById('accordion').style.display = 'block';
 
     const tableElement = document.getElementById('table');
@@ -425,7 +424,7 @@ async function load(url) {
 
             // We create the extent from the volume of the point cloud.
             const extent = Extent.fromBox3(CoordinateSystem.fromEpsg(epsgCode), volume);
-            const map = loadMap(instance, extent.withRelativeMargin(1.2));
+            const map = loadMap(extent.withRelativeMargin(1.2));
 
             document.getElementById('basemap-group').style.display = 'block';
             bindToggle('show-basemap', show => {
@@ -458,7 +457,7 @@ async function load(url) {
     addClassification(17, 'Bridge deck', entity.classifications);
     addClassification(18, 'High noise', entity.classifications);
 
-    populateGUI(entity, source);
+    populateGUI(source);
 
     Inspector.attach('inspector', instance);
 

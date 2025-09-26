@@ -80,6 +80,7 @@ export default [
             curly: 'error',
             'tsdoc/syntax': 'warn',
             'no-console': 'off',
+            'no-shadow': 'error',
             eqeqeq: ['error', 'smart'],
             'no-plusplus': 'off',
             'arrow-parens': ['error', 'as-needed'],
