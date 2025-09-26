@@ -1,0 +1,53 @@
+---
+title: 3D Tiles Simple Viewer
+shortdesc: Display any 3D Tiles from a url.
+tags: ['3d tiles', 'building', 'pointcloud']
+---
+
+<div class="toast-container position-fixed top-0 end-0 p-3">
+    <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto">Error loading tileset</strong>
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="toast"
+                aria-label="Close"
+            ></button>
+        </div>
+        <div class="toast-body">Tileset loading failed: <span id="error"></span></div>
+    </div>
+</div>
+
+<div class="side-pane-with-status-bar">
+    <div class="input-group">
+        <input
+            type="text"
+            class="form-control"
+            id="tileset_url"
+            placeholder="http://domain.tld/path/tileset.json"
+        />
+        <button class="btn btn-primary" id="start">Reload</button>
+    </div>
+    <div class="card">
+        <h5 class="card-header">Element informations</h5>
+        <div class="card-body" style="max-width: 30vw">
+            <!-- Result table -->
+            <table class="table table-sm table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Value</th>
+                    </tr>
+                </thead>
+                <tbody id="results-body">
+                    <tr>
+                        <th scope="row" colspan="4">
+                            Click on the scene to inspect object properties
+                        </th>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
