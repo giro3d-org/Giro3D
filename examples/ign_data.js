@@ -118,7 +118,7 @@ WmtsSource.fromCapabilities(url, {
 
 const buildingSource = new VectorSource({
     format: new GeoJSON(),
-    url: function url(bbox) {
+    url: bbox => {
         return `${
             'https://data.geopf.fr/wfs/ows' +
             '?SERVICE=WFS' +

@@ -23,13 +23,12 @@ const clonedResponse = {
     clone: failClone,
 } as Response;
 
-const response = {
-    status: 200,
-    statusText: 'ok',
-    clone: () => clonedResponse,
-} as Response;
-
-const defaultFetch: FetchCallback = () => Promise.resolve(response);
+const defaultFetch: FetchCallback = () =>
+    Promise.resolve({
+        status: 200,
+        statusText: 'ok',
+        clone: () => clonedResponse,
+    } as Response);
 
 describe('fetch', () => {
     it('should return a cloned response', async () => {

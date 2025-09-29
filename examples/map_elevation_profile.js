@@ -356,18 +356,18 @@ hoveredPoint.object3d.add(hoveredLabel);
 instance.add(hoveredPoint);
 
 function pick(ev) {
-    const picked = instance.pickObjectsAt(ev);
+    const pickedList = instance.pickObjectsAt(ev);
     hoveredPoint.visible = false;
     hoveredLabel.visible = false;
 
     measure.showLineLabel = parameters.showLineLabel;
 
-    if (picked && picked.length > 0) {
-        for (const pick of picked) {
-            if (pick.entity === measure) {
+    if (pickedList && pickedList.length > 0) {
+        for (const picked of pickedList) {
+            if (picked.entity === measure) {
                 measure.showLineLabel = false;
 
-                const { point } = measure.getClosestPointOnLine(pick.point);
+                const { point } = measure.getClosestPointOnLine(picked.point);
 
                 hoveredPoint.updatePoint(0, point);
 

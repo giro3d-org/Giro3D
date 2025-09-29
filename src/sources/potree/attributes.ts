@@ -93,7 +93,7 @@ function getDefaultMin(type: PotreeDataType): number | undefined {
     }
 }
 
-function attribute(
+function createAttribute(
     type: PotreeDataType,
     dimension: PotreeAttribute['dimension'],
     normalized?: boolean,
@@ -112,30 +112,30 @@ function attribute(
 }
 
 const POTREE_ATTRIBUTES: Record<AttributeName, PotreeAttribute> = {
-    POSITION_CARTESIAN: attribute(PotreeDataType.Float, 3),
+    POSITION_CARTESIAN: createAttribute(PotreeDataType.Float, 3),
 
     // Color attributes. We don't support the alpha component.
-    COLOR_PACKED: attribute(PotreeDataType.Uint8, 4, true, 'color'),
-    RGBA_PACKED: attribute(PotreeDataType.Uint8, 4, true, 'color'),
-    RGB_PACKED: attribute(PotreeDataType.Uint8, 3, true, 'color'),
+    COLOR_PACKED: createAttribute(PotreeDataType.Uint8, 4, true, 'color'),
+    RGBA_PACKED: createAttribute(PotreeDataType.Uint8, 4, true, 'color'),
+    RGB_PACKED: createAttribute(PotreeDataType.Uint8, 3, true, 'color'),
 
     // Normal attributes (unsupported)
-    NORMAL_FLOATS: attribute(PotreeDataType.Float, 3),
-    NORMAL: attribute(PotreeDataType.Float, 3),
-    NORMAL_SPHEREMAPPED: attribute(PotreeDataType.Uint8, 2),
-    NORMAL_OCT16: attribute(PotreeDataType.Uint8, 2),
+    NORMAL_FLOATS: createAttribute(PotreeDataType.Float, 3),
+    NORMAL: createAttribute(PotreeDataType.Float, 3),
+    NORMAL_SPHEREMAPPED: createAttribute(PotreeDataType.Uint8, 2),
+    NORMAL_OCT16: createAttribute(PotreeDataType.Uint8, 2),
 
     // LAS-like attributes
-    INTENSITY: attribute(PotreeDataType.Uint16, 1),
-    CLASSIFICATION: attribute(PotreeDataType.Uint8, 1, false, 'classification'),
-    RETURN_NUMBER: attribute(PotreeDataType.Uint8, 1),
-    NUMBER_OF_RETURNS: attribute(PotreeDataType.Uint8, 1),
-    SOURCE_ID: attribute(PotreeDataType.Uint16, 1),
-    GPS_TIME: attribute(PotreeDataType.Double, 1),
+    INTENSITY: createAttribute(PotreeDataType.Uint16, 1),
+    CLASSIFICATION: createAttribute(PotreeDataType.Uint8, 1, false, 'classification'),
+    RETURN_NUMBER: createAttribute(PotreeDataType.Uint8, 1),
+    NUMBER_OF_RETURNS: createAttribute(PotreeDataType.Uint8, 1),
+    SOURCE_ID: createAttribute(PotreeDataType.Uint16, 1),
+    GPS_TIME: createAttribute(PotreeDataType.Double, 1),
 
     // Misc
-    SPACING: attribute(PotreeDataType.Float, 1),
-    INDICES: attribute(PotreeDataType.Uint32, 1),
+    SPACING: createAttribute(PotreeDataType.Float, 1),
+    INDICES: createAttribute(PotreeDataType.Uint32, 1),
 };
 
 /** The list of attributes that we expose to the API. */
@@ -323,7 +323,7 @@ export function processLazAttributes(boundingBox: BoundingBox): LazPointCloudAtt
         type: PointCloudAttribute['type'],
         interp?: PointCloudAttribute['interpretation'],
     ): LazPointCloudAttribute {
-        const result: LazPointCloudAttribute = {
+        const attribute: LazPointCloudAttribute = {
             name,
             dimension,
             size,
@@ -332,18 +332,18 @@ export function processLazAttributes(boundingBox: BoundingBox): LazPointCloudAtt
         };
 
         if (name === 'Color') {
-            result.min = 0;
-            result.max = 255;
+            attribute.min = 0;
+            attribute.max = 255;
         } else if (name === 'Z') {
-            result.min = boundingBox.lz;
-            result.max = boundingBox.uz;
+            attribute.min = boundingBox.lz;
+            attribute.max = boundingBox.uz;
         } else if (DEFAULT_VALUE_RANGES[name] != null) {
             const { min, max } = DEFAULT_VALUE_RANGES[name];
-            result.min = min;
-            result.max = max;
+            attribute.min = min;
+            attribute.max = max;
         }
 
-        return result;
+        return attribute;
     }
 
     result.push(attr('Z', 1, 4, 'float'));

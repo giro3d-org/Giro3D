@@ -63,13 +63,13 @@ export function bindColorMapBounds(callback) {
         updateLabels();
     };
 
-    const externalInput = (min, max) => {
-        lower.min = min;
-        lower.max = max;
-        upper.min = min;
-        upper.max = max;
-        lower.valueAsNumber = min;
-        upper.valueAsNumber = max;
+    const externalInput = (newMin, newMax) => {
+        lower.min = newMin;
+        lower.max = newMax;
+        upper.min = newMin;
+        upper.max = newMax;
+        lower.valueAsNumber = newMin;
+        upper.valueAsNumber = newMax;
         callback(lower.valueAsNumber, upper.valueAsNumber);
         updateLabels();
     };

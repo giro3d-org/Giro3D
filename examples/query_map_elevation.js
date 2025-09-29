@@ -121,13 +121,13 @@ function updateMarker(marker) {
     }
 }
 
-function updateMarkers(extent) {
+function updateMarkers(newExtent) {
     for (const marker of summitMarkers) {
         const { x, y } = marker.position;
         const coordinates = new Coordinates(instance.coordinateSystem, x, y);
 
         // Only update markers that are inside the updated area
-        if (extent.isPointInside(coordinates)) {
+        if (newExtent.isPointInside(coordinates)) {
             updateMarker(marker);
         }
     }
@@ -165,7 +165,7 @@ for (const summit of summits) {
 }
 
 // Let's update the markers' elevations whenever there is some new elevation data loaded on the map
-map.addEventListener('elevation-changed', ({ extent }) => updateMarkers(extent));
+map.addEventListener('elevation-changed', event => updateMarkers(event.extent));
 
 const fog = new Fog(new Color(SKY_COLOR), 1000, 200_000);
 instance.scene.fog = fog;

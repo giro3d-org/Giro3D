@@ -17,12 +17,12 @@ import Fetcher from '@giro3d/giro3d/utils/Fetcher';
 import { getDataFileUrl, readDataFileSync } from '../../data/utils';
 
 beforeAll(() => {
-    Fetcher.json = function json(url) {
+    Fetcher.json = url => {
         const result = readDataFileSync(url.toString());
         const json = JSON.parse(result.toString('utf-8'));
         return Promise.resolve(json);
     };
-    Fetcher.arrayBuffer = function json(url) {
+    Fetcher.arrayBuffer = url => {
         const result = readDataFileSync(url.toString());
         const arrayBuffer = result.buffer;
         return Promise.resolve(arrayBuffer);

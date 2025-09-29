@@ -64,7 +64,7 @@ function pickPointsAt(
 
     // Enable picking mode for points material, by assigning
     // a unique id to each Points instance.
-    let objectId = 1;
+    let maxObjectId = 0;
     entity.object3d.traverse(o => {
         if (!('isPoints' in o) || o.isPoints !== true || !o.visible) {
             return;
@@ -76,7 +76,8 @@ function pickPointsAt(
 
         const mat = pts.material;
         if (mat.visible && typeof mat.enablePicking === 'function') {
-            mat.enablePicking(objectId++);
+            maxObjectId++;
+            mat.enablePicking(maxObjectId);
         }
     });
 
@@ -117,8 +118,8 @@ function pickPointsAt(
         const pointIndex = Math.round(buffer[idx * 4 + RED]);
         const objectId = Math.round(buffer[idx * 4 + GREEN]);
 
-        if (objectId > objectId) {
-            console.warn(`weird: pickingId (${objectId}) > visibleId (${objectId})`);
+        if (objectId >= maxObjectId) {
+            console.warn(`weird: objectId (${objectId}) > maxObjectId (${maxObjectId})`);
         }
 
         const r: PickPointsCandidate = {

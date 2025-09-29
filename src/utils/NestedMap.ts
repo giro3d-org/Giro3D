@@ -35,8 +35,8 @@ export default class NestedMap<K0, K1, V> {
             return;
         }
 
-        this._rootMap.forEach((m, k0, _) => {
-            m.forEach((v, k1, _) => callbackfn(v, k0, k1, this));
+        this._rootMap.forEach((m, k0) => {
+            m.forEach((v, k1) => callbackfn(v, k0, k1, this));
         });
     }
 

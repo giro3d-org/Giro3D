@@ -538,11 +538,11 @@ describe('sortColorLayers', () => {
     });
 
     it('should signal the order change to tiles', () => {
-        const tile = makeTile(tile => (tile.reorderLayers = vitest.fn()));
+        const newTile = makeTile(tile => (tile.reorderLayers = vitest.fn()));
 
-        map.object3d.add(tile);
+        map.object3d.add(newTile);
         // @ts-expect-error readonly object
-        map.rootTiles.push(tile);
+        map.rootTiles.push(newTile);
 
         const a = mkColorLayer(2);
         const b = mkColorLayer(10);
@@ -557,12 +557,12 @@ describe('sortColorLayers', () => {
         layers.push(c);
         layers.push(d);
 
-        expect(tile.reorderLayers).not.toHaveBeenCalled();
+        expect(newTile.reorderLayers).not.toHaveBeenCalled();
 
         // @ts-expect-error untyped userData
         map.sortColorLayers((l1, l2) => (l1.userData.key < l2.userData.key ? -1 : 1));
 
-        expect(tile.reorderLayers).toHaveBeenCalled();
+        expect(newTile.reorderLayers).toHaveBeenCalled();
     });
 });
 
@@ -572,11 +572,11 @@ describe('moveLayerUp', () => {
     });
 
     it('should signal the order change to tiles', () => {
-        const tile = makeTile(tile => (tile.reorderLayers = vitest.fn()));
+        const newTile = makeTile(tile => (tile.reorderLayers = vitest.fn()));
 
-        map.object3d.add(tile);
+        map.object3d.add(newTile);
         // @ts-expect-error readonly object
-        map.rootTiles.push(tile);
+        map.rootTiles.push(newTile);
 
         const a = { id: 'a' } as ColorLayer;
         const b = { id: 'b' } as ColorLayer;
@@ -591,11 +591,11 @@ describe('moveLayerUp', () => {
         layers.push(c);
         layers.push(d);
 
-        expect(tile.reorderLayers).not.toHaveBeenCalled();
+        expect(newTile.reorderLayers).not.toHaveBeenCalled();
 
         map.moveLayerDown(b);
 
-        expect(tile.reorderLayers).toHaveBeenCalled();
+        expect(newTile.reorderLayers).toHaveBeenCalled();
     });
 
     it('should move the layer one step to the foreground/top', () => {
@@ -636,11 +636,11 @@ describe('moveLayerDown', () => {
     });
 
     it('should signal the order change to tiles', () => {
-        const tile = makeTile(tile => (tile.reorderLayers = vitest.fn()));
+        const newTile = makeTile(tile => (tile.reorderLayers = vitest.fn()));
 
-        map.object3d.add(tile);
+        map.object3d.add(newTile);
         // @ts-expect-error readonly object
-        map.rootTiles.push(tile);
+        map.rootTiles.push(newTile);
 
         const a = { id: 'a' } as ColorLayer;
         const b = { id: 'b' } as ColorLayer;
@@ -655,11 +655,11 @@ describe('moveLayerDown', () => {
         layers.push(c);
         layers.push(d);
 
-        expect(tile.reorderLayers).not.toHaveBeenCalled();
+        expect(newTile.reorderLayers).not.toHaveBeenCalled();
 
         map.moveLayerUp(b);
 
-        expect(tile.reorderLayers).toHaveBeenCalled();
+        expect(newTile.reorderLayers).toHaveBeenCalled();
     });
 
     it('should move the layer one step to the foreground/top', () => {

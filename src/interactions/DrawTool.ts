@@ -789,15 +789,15 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
 
             let removeListeners: (() => void) | undefined = undefined;
 
-            const finalize = (shape: Shape | null): void => {
-                if (shape) {
-                    shape.pickableLabels = pickableLabels;
+            const finalize = (shapeToFinalize: Shape | null): void => {
+                if (shapeToFinalize) {
+                    shapeToFinalize.pickableLabels = pickableLabels;
                 }
                 if (removeListeners) {
                     removeListeners();
                 }
                 this.exitCreateMode();
-                resolve(shape);
+                resolve(shapeToFinalize);
             };
 
             const onAbort = (): void => {
@@ -1000,12 +1000,12 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
 
     /**
      * Creates a LineString {@link Shape}.
-     * @param options - The options.
+     * @param creationOptions - The options.
      * @returns A promise that eventually returns the {@link Shape} or `null` if creation was cancelled.
      */
-    public createLineString(options?: CreationOptions): Promise<Shape | null> {
+    public createLineString(creationOptions?: CreationOptions): Promise<Shape | null> {
         return this.createShape({
-            ...options,
+            ...creationOptions,
             beforeRemovePoint: limitRemovePointHook(2),
             minPoints: 2,
             maxPoints: +Infinity,
@@ -1061,12 +1061,12 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
             updateDashSize(shape);
         };
 
-        const afterUpdatePoint = (options: {
+        const afterUpdatePoint = (updateOptions: {
             shape: Shape;
             index: number;
             newPosition: Vector3;
         }): void => {
-            const { index, shape, newPosition } = options;
+            const { index, shape, newPosition } = updateOptions;
 
             if (index === 0) {
                 updateFloor(shape, newPosition);

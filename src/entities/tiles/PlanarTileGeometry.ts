@@ -247,13 +247,13 @@ class PlanarTileGeometry extends BufferGeometry implements MemoryUsage, TileGeom
 
             // Let's set the vertex positions for the bottom side
             const last = positionBuffer.length;
-            const min = boundingBox.min;
-            const max = boundingBox.max;
+            const bboxMin = boundingBox.min;
+            const bboxMax = boundingBox.max;
 
-            positionBuffer.set(last - 4, min.x, max.y, skirtDepth);
-            positionBuffer.set(last - 3, max.x, max.y, skirtDepth);
-            positionBuffer.set(last - 2, max.x, min.y, skirtDepth);
-            positionBuffer.set(last - 1, min.x, min.y, skirtDepth);
+            positionBuffer.set(last - 4, bboxMin.x, bboxMax.y, skirtDepth);
+            positionBuffer.set(last - 3, bboxMax.x, bboxMax.y, skirtDepth);
+            positionBuffer.set(last - 2, bboxMax.x, bboxMin.y, skirtDepth);
+            positionBuffer.set(last - 1, bboxMin.x, bboxMin.y, skirtDepth);
 
             iterateBottomVertices(uvBuffer, idx => {
                 uvBuffer.setVector(idx, bottomUv);

@@ -101,8 +101,7 @@ function run(apiKey) {
     StatusBar.bind(instance);
 }
 
-const url = new URL(document.URL);
-let key = url.searchParams.get('key');
+let key = new URL(document.URL).searchParams.get('key');
 
 if (key != null) {
     run(key);

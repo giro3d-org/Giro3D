@@ -312,10 +312,10 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
                 }
             } else if (isOrthographicCamera(this.camera)) {
                 const orthographic = this.camera;
-                const width = orthographic.right - orthographic.left;
-                const height = width / ratio;
-                orthographic.top = height / 2;
-                orthographic.bottom = -height / 2;
+                const orthoWidth = orthographic.right - orthographic.left;
+                const orthoHeight = orthoWidth / ratio;
+                orthographic.top = orthoHeight / 2;
+                orthographic.bottom = -orthoHeight / 2;
             }
         }
 
