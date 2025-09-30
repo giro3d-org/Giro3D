@@ -9,10 +9,11 @@ import type FeatureFormat from 'ol/format/Feature';
 import type { Type } from 'ol/format/Feature';
 
 import GeoJSON from 'ol/format/GeoJSON';
+import { MathUtils } from 'three';
 
-import type { CacheConfiguration } from '../core/Cache';
+import type { Cache } from '../core/Cache';
 
-import { Cache } from '../core/Cache';
+import { GlobalCache } from '../core/Cache';
 import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import Extent from '../core/geographic/Extent';
 import Fetcher from '../utils/Fetcher';
@@ -141,6 +142,11 @@ export interface StreamableFeatureSourceOptions {
      */
     format?: FeatureFormat;
     getter?: Getter;
+    featureGetter?: FeatureGetter;
+    /**
+     * The source coordinate system.
+     * @defaultValue EPSG:4326
+     */
     sourceCoordinateSystem?: CoordinateSystem;
     maxExtent?: Extent;
 }
@@ -217,12 +223,13 @@ export class DefaultFeatureGetter extends FeatureGetterBase {
  */
 export class CachedTiledFeatureGetter extends FeatureGetterBase {
     private readonly _tileSize: number;
+    private readonly _cacheKey = MathUtils.generateUUID();
     private readonly _cache: Cache;
 
-    public constructor(tileSize: number = 1000, cacheConfig?: CacheConfiguration) {
+    public constructor(params?: { tileSize?: number; cache?: Cache }) {
         super();
-        this._tileSize = tileSize;
-        this._cache = new Cache(cacheConfig ?? { ttl: 600 });
+        this._tileSize = params?.tileSize ?? 1000;
+        this._cache = params?.cache ?? GlobalCache;
     }
     public async getFeatures(
         extent: Extent,
@@ -238,7 +245,7 @@ export class CachedTiledFeatureGetter extends FeatureGetterBase {
 
         for (let x = xmin; x < xmax; ++x) {
             for (let y = ymin; y < ymax; ++y) {
-                const key = `${x}/${y}`;
+                const key = `${this._cacheKey}-${x}/${y}`;
 
                 let tileFeatures = this._cache.get(key) as Feature[];
                 if (tileFeatures === undefined) {
@@ -255,6 +262,7 @@ export class CachedTiledFeatureGetter extends FeatureGetterBase {
                         options,
                         targetCoordinateSystem,
                     );
+
                     this._cache.set(key, features);
                 }
                 features.push(...tileFeatures);
@@ -272,22 +280,17 @@ export default class StreamableFeatureSource extends FeatureSourceBase {
     public readonly type = 'StreamableFeatureSource' as const;
 
     private readonly _options: StreamableFeatureSourceOptions;
-    private readonly _featureGetter: FeatureGetter;
 
-    public constructor(
-        params: StreamableFeatureSourceOptions,
-        featureGetter: FeatureGetter | null = null,
-    ) {
+    public constructor(params: StreamableFeatureSourceOptions) {
         super();
         this._options = {
             queryBuilder: params.queryBuilder,
             format: params.format ?? new GeoJSON(),
             getter: params.getter ?? defaultGetter,
+            featureGetter: params.featureGetter ?? new DefaultFeatureGetter(),
             maxExtent: params.maxExtent,
-            // TODO assume EPSG:4326 ?
             sourceCoordinateSystem: params.sourceCoordinateSystem ?? CoordinateSystem.epsg4326,
         };
-        this._featureGetter = featureGetter ?? new DefaultFeatureGetter();
     }
 
     public async getFeatures(request: GetFeatureRequest): Promise<GetFeatureResult> {
@@ -308,7 +311,7 @@ export default class StreamableFeatureSource extends FeatureSourceBase {
             return { features: [] };
         }
 
-        const features = await this._featureGetter.getFeatures(
+        const features = await nonNull(this._options.featureGetter).getFeatures(
             new Extent(request.extent.crs, { east, north, south, west }),
             this._options,
             nonNull(this._targetCoordinateSystem),
