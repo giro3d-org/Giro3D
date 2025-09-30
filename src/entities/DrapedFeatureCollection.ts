@@ -6,8 +6,8 @@
 
 import type GUI from 'lil-gui';
 import type Feature from 'ol/Feature';
-import type { Circle, Point, SimpleGeometry } from 'ol/geom';
-import type { Object3D } from 'three';
+import type { Circle, Geometry, MultiPoint, Point, SimpleGeometry } from 'ol/geom';
+import type { EventDispatcher, Object3D } from 'three';
 
 import { type Coordinate } from 'ol/coordinate';
 import { getCenter } from 'ol/extent';
@@ -33,8 +33,7 @@ import type SimpleGeometryMesh from '../renderer/geometries/SimpleGeometryMesh';
 import type SurfaceMesh from '../renderer/geometries/SurfaceMesh';
 import type { FeatureSource, FeatureSourceEventMap } from '../sources/FeatureSource';
 import type { MeshUserData } from './FeatureCollection';
-import type MapEntity from './Map';
-import type { MapEventMap, Tile } from './Map';
+import type { Tile } from './Map';
 
 import {
     mapGeometry,
@@ -61,6 +60,19 @@ import Entity3D from './Entity3D';
 
 const tmpSphere = new Sphere();
 
+interface MapLikeEventMap {
+    'elevation-loaded': { tile: Tile };
+    'tile-created': { tile: Tile };
+    'tile-deleted': { tile: Tile };
+}
+
+/**
+ * Map-like object to drape features onto.
+ */
+export interface MapLike extends ElevationProvider, EventDispatcher<MapLikeEventMap> {
+    traverseTiles(callback: (tile: Tile) => void): void;
+}
+
 /**
  * How the geometry should be draped on the terrain:
  * - `per-feature`: the same elevation offset is applied to the entire feature.
@@ -68,7 +80,8 @@ const tmpSphere = new Sphere();
  * - `per-vertex`: the elevation is applied to each vertex independently. Suitable for
  * lines that must follow the terrain, such as roads.
  * - `none`: no draping is done, the elevation of the feature is used as is. Suitable for
- * geometries that should not be draped on the terrain, such as flight paths or flying objects.
+ * geometries that should not be draped on the terrain, such as flight paths or flying objects,
+ * or for 3D geometries that already have a vertical elevation.
  *
  * Note: that `Point` geometries, having only one coordinate, will automatically use the `per-feature` mode.
  */
@@ -95,9 +108,9 @@ export type DrapedFeatureElevationCallback = (
 /**
  * Either returns the same geometry if it already has a XYZ layout, or create an equivalent geometry in the XYZ layout.
  */
-function cloneAsXYZIfRequired<G extends Polygon | LineString | MultiLineString | MultiPolygon>(
-    geometry: G,
-): G {
+function cloneAsXYZIfRequired<
+    G extends Polygon | LineString | MultiPoint | MultiLineString | MultiPolygon,
+>(geometry: G): G {
     if (geometry.getLayout() === 'XYZ') {
         // No need to clone.
         return geometry;
@@ -143,11 +156,7 @@ function getRootMesh(obj: Object3D): SimpleGeometryMesh<MeshUserData> | null {
     return null;
 }
 
-function getFeatureElevation(
-    feature: Feature,
-    geometry: SimpleGeometry,
-    provider: ElevationProvider,
-): number {
+function getFeatureElevation(geometry: SimpleGeometry, provider: ElevationProvider): number {
     let center: Coordinate;
 
     if (geometry.getType() === 'Point') {
@@ -165,10 +174,25 @@ function getFeatureElevation(
     return sample?.elevation ?? 0;
 }
 
-function applyPerVertexDraping<G extends Polygon | LineString | MultiLineString | MultiPolygon>(
-    geometry: G,
-    provider: ElevationProvider,
-): G {
+type SupportedGeometry = Point | Polygon | LineString | MultiLineString | MultiPolygon;
+
+function isGeometrySupported(g: Geometry): g is SupportedGeometry {
+    switch (g.getType()) {
+        case 'Point':
+        case 'LineString':
+        case 'Polygon':
+        case 'MultiPoint':
+        case 'MultiLineString':
+        case 'MultiPolygon':
+            return true;
+        default:
+            return false;
+    }
+}
+
+function applyPerVertexDraping<
+    G extends Polygon | LineString | MultiPoint | MultiLineString | MultiPolygon,
+>(geometry: G, provider: ElevationProvider): G {
     const coordinates = geometry.getFlatCoordinates();
     const stride = geometry.getStride();
 
@@ -201,7 +225,7 @@ function applyPerVertexDraping<G extends Polygon | LineString | MultiLineString 
 }
 
 export const defaultElevationCallback: DrapedFeatureElevationCallback = (feature, provider) => {
-    let result: ReturnType<DrapedFeatureElevationCallback>;
+    let result: ReturnType<DrapedFeatureElevationCallback> | null = null;
 
     const perFeature: (geometry: SimpleGeometry) => void = geometry => {
         let center: Coordinate;
@@ -275,8 +299,11 @@ export const defaultElevationCallback: DrapedFeatureElevationCallback = (feature
         processMultiPolygon: perVertex,
     });
 
-    // TODO
-    // @ts-expect-error TODO
+    if (result == null) {
+        // Just to please the typechecker
+        throw new Error();
+    }
+
     return result;
 };
 
@@ -360,11 +387,15 @@ type FeaturesEntry = {
     sampledLod: number;
 };
 
+/**
+ * Loads 3D features from a {@link FeatureSource} and displays them on top
+ * of a map, by taking terrain into account.
+ */
 export default class DrapedFeatureCollection extends Entity3D {
     public override type = 'DrapedFeatureCollection' as const;
     public readonly isDrapedFeatureCollection = true as const;
 
-    private _map: MapEntity | null = null;
+    private _map: MapLike | null = null;
 
     private readonly _drapingMode: DrapingMode | DrapingModeFunction;
     private readonly _elevationCallback: DrapedFeatureElevationCallback;
@@ -382,9 +413,9 @@ export default class DrapedFeatureCollection extends Entity3D {
     private readonly _features: Map<string, FeaturesEntry> = new Map();
     private readonly _source: FeatureSource;
     private readonly _eventHandlers: {
-        onTileCreated: EventHandler<MapEventMap['tile-created']>;
-        onTileDeleted: EventHandler<MapEventMap['tile-deleted']>;
-        onElevationLoaded: EventHandler<MapEventMap['tile-deleted']>;
+        onTileCreated: EventHandler<MapLikeEventMap['tile-created']>;
+        onTileDeleted: EventHandler<MapLikeEventMap['tile-deleted']>;
+        onElevationLoaded: EventHandler<MapLikeEventMap['tile-deleted']>;
         onSourceUpdated: EventHandler<FeatureSourceEventMap['updated']>;
         onTextureLoaded: () => void;
     };
@@ -598,7 +629,10 @@ export default class DrapedFeatureCollection extends Entity3D {
         await this._source.initialize({ targetCoordinateSystem: this.instance.coordinateSystem });
     }
 
-    public attach(map: MapEntity): this {
+    /**
+     * Sets the draping target.
+     */
+    public attach(map: MapLike): this {
         if (this._map != null) {
             throw new Error('a map is already attached to this entity');
         }
@@ -609,7 +643,6 @@ export default class DrapedFeatureCollection extends Entity3D {
         map.addEventListener('tile-deleted', this._eventHandlers.onTileDeleted);
         map.addEventListener('elevation-loaded', this._eventHandlers.onElevationLoaded);
 
-        // TODO register trop tôt avant que l'élévation soit prête
         map.traverseTiles(tile => {
             this.registerTile(tile);
         });
@@ -652,15 +685,15 @@ export default class DrapedFeatureCollection extends Entity3D {
         }
     }
 
-    private onTileCreated({ tile }: MapEventMap['tile-created']): void {
+    private onTileCreated({ tile }: MapLikeEventMap['tile-created']): void {
         this.registerTile(tile);
     }
 
-    private onTileDeleted({ tile }: MapEventMap['tile-deleted']): void {
+    private onTileDeleted({ tile }: MapLikeEventMap['tile-deleted']): void {
         this.unregisterTile(tile);
     }
 
-    private onElevationLoaded({ tile }: MapEventMap['elevation-loaded']): void {
+    private onElevationLoaded({ tile }: MapLikeEventMap['elevation-loaded']): void {
         this.registerTile(tile, true);
     }
 
@@ -826,12 +859,21 @@ export default class DrapedFeatureCollection extends Entity3D {
     }
 
     private loadFeatureMesh(id: string, existing: FeaturesEntry): void {
-        // TODO filter non compatible geometries
-        const geometry = existing.feature.getGeometry() as SimpleGeometry;
+        const geometry = existing.feature.getGeometry();
+
+        if (geometry == null) {
+            console.warn(`No geometry for feature ${id}`);
+            return;
+        }
+
+        if (!isGeometrySupported(geometry)) {
+            console.warn(`Unsupported geometry type for feature ${id} (${geometry.getType()})`);
+            return;
+        }
 
         const drapingMode = this.getDrapingMode(existing.feature);
 
-        let actualGeometry: SimpleGeometry = geometry;
+        let actualGeometry = geometry;
         let shouldReplaceMesh = false;
         let verticalOffset = 0;
 
@@ -841,7 +883,7 @@ export default class DrapedFeatureCollection extends Entity3D {
         ) {
             // Note that point is necessarily per feature, since there is only one vertex
             actualGeometry = geometry;
-            verticalOffset = getFeatureElevation(existing.feature, geometry, nonNull(this._map));
+            verticalOffset = getFeatureElevation(geometry, nonNull(this._map));
         } else if (drapingMode === 'per-vertex') {
             shouldReplaceMesh = true;
             // TODO support multipoint ?
