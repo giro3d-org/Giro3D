@@ -15,6 +15,9 @@ export interface AggregateFeatureSourceOptions {
     sources: FeatureSource[];
 }
 
+/**
+ * A {@link FeatureSource} that aggregates multiple sub-sources behind a single interface.
+ */
 export default class AggregateFeatureSource extends FeatureSourceBase {
     public override readonly type = 'AggregateFeatureSource' as const;
     public readonly isAggregateFeatureSource = true as const;
