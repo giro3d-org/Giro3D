@@ -4,14 +4,11 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { Feature } from 'ol';
-import GeoJSON from 'ol/format/GeoJSON.js';
-import { Point } from 'ol/geom.js';
-import VectorSource from 'ol/source/Vector.js';
-import { AmbientLight, Color, DirectionalLight, DoubleSide, MathUtils, Vector3 } from 'three';
+import { AmbientLight, DirectionalLight, DoubleSide, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
@@ -21,12 +18,9 @@ import Giro3dMap from '@giro3d/giro3d/entities/Map.js';
 import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import FileFeatureSource from '@giro3d/giro3d/sources/FileFeatureSource.js';
-import StaticFeatureSource from '@giro3d/giro3d/sources/StaticFeatureSource.js';
-import StreamableFeatureSource, {
-    ogcApiFeaturesBuilder,
-} from '@giro3d/giro3d/sources/StreamableFeatureSource.js';
 import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 
+import { bindDropDown } from './widgets/bindDropDown.js';
 import StatusBar from './widgets/StatusBar.js';
 
 Instance.registerCRS(
@@ -38,21 +32,17 @@ Instance.registerCRS(
     'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]',
 );
 
-const SKY_COLOR = new Color(0xf1e9c6);
+const coordinateSystem = CoordinateSystem.fromEpsg(2154);
 
 const instance = new Instance({
     target: 'view',
-    crs: CoordinateSystem.fromEpsg(2154),
-    backgroundColor: SKY_COLOR,
+    crs: coordinateSystem,
+    backgroundColor: null,
 });
 
-const extent = new Extent(
-    CoordinateSystem.fromEpsg(2154),
-    -111629.52,
-    1275028.84,
-    5976033.79,
-    7230161.64,
-);
+const mapCenter = new Coordinates(coordinateSystem, 870_623, 6_396_742);
+
+const extent = Extent.fromCenterAndSize(coordinateSystem, mapCenter, 20_000, 10_000);
 
 // create a map
 const map = new Giro3dMap({
@@ -70,6 +60,70 @@ instance.add(map);
 const noDataValue = -1000;
 
 const url = 'https://data.geopf.fr/wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetCapabilities';
+
+const featureSource = new FileFeatureSource({
+    url: 'https://3d.oslandia.com/giro3d/vectors/Saou-syncline.geojson',
+});
+
+const style = {
+    stroke: {
+        color: 'yellow',
+        depthTest: false,
+        renderOrder: 999,
+        lineWidth: 3,
+    },
+};
+
+const entities = {
+    'per-vertex': new DrapedFeatureCollection({
+        source: featureSource,
+        minLod: 0,
+        drapingMode: 'per-vertex',
+        style,
+    }),
+    'per-feature': new DrapedFeatureCollection({
+        source: featureSource,
+        minLod: 0,
+        drapingMode: 'per-feature',
+        style,
+    }),
+    none: new DrapedFeatureCollection({
+        source: featureSource,
+        minLod: 0,
+        drapingMode: 'none',
+        style,
+    }),
+};
+
+function updateEntities(newMode) {
+    for (const key of Object.keys(entities)) {
+        entities[key].visible = newMode === key;
+    }
+
+    instance.notifyChange();
+}
+
+const [_, currentMode] = bindDropDown('mode', updateEntities);
+
+function loadDrapedFeatures() {
+    entities['per-feature'].visible = false;
+    entities['per-vertex'].visible = false;
+    entities['none'].visible = false;
+
+    instance.add(entities['per-vertex']).then(() => {
+        entities['per-vertex'].attach(map);
+    });
+    instance.add(entities['none']).then(() => {
+        entities['none'].attach(map);
+    });
+    instance.add(entities['per-feature']).then(() => {
+        entities['per-feature'].attach(map);
+    });
+
+    updateEntities(currentMode);
+}
+
+loadDrapedFeatures();
 
 // Let's build the elevation layer from the WMTS capabilities
 WmtsSource.fromCapabilities(url, {
@@ -98,7 +152,7 @@ WmtsSource.fromCapabilities(url, {
 
 // Let's build the color layer from the WMTS capabilities
 WmtsSource.fromCapabilities(url, {
-    layer: 'GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2',
+    layer: 'HR.ORTHOIMAGERY.ORTHOPHOTOS',
 })
     .then(orthophotoWmts => {
         map.addLayer(
@@ -111,202 +165,6 @@ WmtsSource.fromCapabilities(url, {
         );
     })
     .catch(console.error);
-
-const geojson = new FileFeatureSource({
-    format: new GeoJSON(),
-    // url: 'http://localhost:14000/vectors/geojson/points.geojson',
-    // url: 'http://localhost:14000/vectors/geojson/grenoble_linestring.geojson',
-    // url: 'http://localhost:14000/vectors/geojson/grenoble_polygon.geojson',
-    // url: 'http://localhost:14000/vectors/geojson/grenoble_batiments.geojson',
-    // url: 'http://localhost:14002/collections/public.cadastre/items.json',
-    url: 'http://localhost:14002/collections/public.cadastre/items.json?limit=500',
-    sourceCoordinateSystem: CoordinateSystem.epsg4326,
-});
-
-const communes = new StreamableFeatureSource({
-    queryBuilder: ogcApiFeaturesBuilder('http://localhost:14002/', 'public.cadastre'),
-    sourceCoordinateSystem: CoordinateSystem.epsg4326,
-});
-
-const hydrants = new StreamableFeatureSource({
-    queryBuilder: ogcApiFeaturesBuilder('http://localhost:14002/', 'public.hydrants_sdis_64'),
-    sourceCoordinateSystem: CoordinateSystem.epsg4326,
-});
-
-const bdTopoIgn = new StreamableFeatureSource({
-    sourceCoordinateSystem: CoordinateSystem.fromEpsg(2154),
-    queryBuilder: params => {
-        const queryUrl = new URL('https://data.geopf.fr/wfs/ows');
-
-        queryUrl.searchParams.append('SERVICE', 'WFS');
-        queryUrl.searchParams.append('VERSION', '2.0.0');
-        queryUrl.searchParams.append('request', 'GetFeature');
-        queryUrl.searchParams.append('typename', 'BDTOPO_V3:batiment');
-        queryUrl.searchParams.append('outputFormat', 'application/json');
-        queryUrl.searchParams.append('SRSNAME', 'EPSG:2154');
-        queryUrl.searchParams.append('startIndex', '0');
-
-        const queryExtent = params.extent.as(CoordinateSystem.fromEpsg(2154));
-
-        queryUrl.searchParams.append(
-            'bbox',
-            `${queryExtent.west},${queryExtent.south},${queryExtent.east},${queryExtent.north},EPSG:2154`,
-        );
-
-        return queryUrl;
-    },
-});
-
-const hoverColor = new Color('yellow');
-
-const bdTopoStyle = feature => {
-    const properties = feature.getProperties();
-    let fillColor = '#FFFFFF';
-
-    const hovered = properties.hovered ?? false;
-    const clicked = properties.clicked ?? false;
-
-    switch (properties.usage1) {
-        case 'Industriel':
-            fillColor = '#f0bb41';
-            break;
-        case 'Agricole':
-            fillColor = '#96ff0d';
-            break;
-        case 'Religieux':
-            fillColor = '#41b5f0';
-            break;
-        case 'Sportif':
-            fillColor = '#ff0d45';
-            break;
-        case 'Résidentiel':
-            fillColor = '#cec8be';
-            break;
-        case 'Commercial et services':
-            fillColor = '#d8ffd4';
-            break;
-    }
-
-    const fill = clicked
-        ? 'yellow'
-        : hovered
-          ? new Color(fillColor).lerp(hoverColor, 0.2) // Let's use a slightly brighter color for hover
-          : fillColor;
-
-    return {
-        fill: {
-            color: fill,
-            shading: true,
-        },
-        stroke: {
-            color: clicked ? 'yellow' : hovered ? 'white' : 'black',
-            lineWidth: clicked ? 5 : undefined,
-        },
-    };
-};
-
-// Let's compute the extrusion offset of building polygons to give them walls.
-const bdTopoExtrusionOffset = feature => {
-    const properties = feature.getProperties();
-    const buildingHeight = properties['hauteur'];
-    const extrusionOffset = buildingHeight;
-
-    if (Number.isNaN(extrusionOffset)) {
-        return null;
-    }
-    return extrusionOffset;
-};
-
-const pointStyle = {
-    point: {
-        pointSize: 96,
-        depthTest: true,
-        image: 'http://localhost:14000/images/pin.png',
-    },
-};
-
-/**
- * @type {Record<string, {
- *  minLod: number;
- *  source: import('@giro3d/giro3d/sources/FeatureSource.js').FeatureSource;
- *  style: import('@giro3d/giro3d/core/FeatureTypes.js').FeatureStyle | import('@giro3d/giro3d/core/FeatureTypes.js').FeatureStyleCallback;
- * extrusionOffset?: import('@giro3d/giro3d/core/FeatureTypes.js').FeatureExtrusionOffset | import('@giro3d/giro3d/core/FeatureTypes.js').FeatureExtrusionOffsetCallback | undefined;
- *  drapingMode: import('@giro3d/giro3d/entities/DrapedFeatureCollection.js').DrapingMode
- * }>}
- */
-const sources = {
-    static: {
-        minLod: 0,
-        drapingMode: 'per-feature',
-        style: pointStyle,
-        source: new StaticFeatureSource({
-            coordinateSystem: CoordinateSystem.fromEpsg(2154),
-        }),
-    },
-    hydrants: {
-        source: hydrants,
-        style: pointStyle,
-        drapingMode: 'per-feature',
-        minLod: 2,
-    },
-    communes: {
-        source: communes,
-        minLod: 5,
-        drapingMode: 'per-vertex',
-        style: {
-            stroke: {
-                color: 'black',
-                lineWidth: 4,
-                depthTest: false,
-                renderOrder: 2,
-            },
-        },
-    },
-    batiment: {
-        minLod: 12,
-        drapingMode: 'per-feature',
-        extrusionOffset: bdTopoExtrusionOffset,
-        source: new StreamableFeatureSource({
-            sourceCoordinateSystem: CoordinateSystem.epsg4326,
-            queryBuilder: ogcApiFeaturesBuilder(
-                'http://localhost:14002/',
-                'public.batiment_038_isere',
-            ),
-        }),
-        style: bdTopoStyle,
-    },
-};
-
-const data = sources.hydrants;
-
-const entity = new DrapedFeatureCollection({
-    source: data.source,
-    minLod: data.minLod,
-    drapingMode: data.drapingMode,
-    extrusionOffset: data.extrusionOffset,
-    style: data.style,
-});
-
-instance.add(entity).then(() => {
-    entity.attach(map);
-
-    if (data === sources.static) {
-        setInterval(() => {
-            const x = MathUtils.lerp(
-                map.extent.west,
-                map.extent.east,
-                MathUtils.randFloat(0.3, 0.7),
-            );
-            const y = MathUtils.lerp(
-                map.extent.south,
-                map.extent.north,
-                MathUtils.randFloat(0.3, 0.7),
-            );
-            // @ts-expect-error casting issue
-            sources['static'].source.addFeature(new Feature(new Point([x, y])));
-        }, 500);
-    }
-});
 
 // Add a sunlight
 const sun = new DirectionalLight('#ffffff', 2);
@@ -324,9 +182,9 @@ instance.scene.add(sun2);
 const ambientLight = new AmbientLight(0xffffff, 0.2);
 instance.scene.add(ambientLight);
 
-instance.view.camera.position.set(913349.2364044407, 6456426.459171033, 1706.0108044011636);
+instance.view.camera.position.set(mapCenter.x - 10000, mapCenter.y - 4000, 2000);
 
-const lookAt = new Vector3(913896, 6459191, 200);
+const lookAt = new Vector3(mapCenter.x, mapCenter.y, 100);
 instance.view.camera.lookAt(lookAt);
 
 const controls = new MapControls(instance.view.camera, instance.domElement);
