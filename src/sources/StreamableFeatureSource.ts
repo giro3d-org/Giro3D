@@ -148,6 +148,10 @@ export interface StreamableFeatureSourceOptions {
      * @defaultValue EPSG:4326
      */
     sourceCoordinateSystem?: CoordinateSystem;
+    /**
+     * Limits the extent in which features are queried. If a feature requests is
+     * outside this extent, no query happens.
+     */
     maxExtent?: Extent;
 }
 
@@ -169,7 +173,7 @@ export abstract class FeatureGetterBase implements FeatureGetter {
         targetCoordinateSystem: CoordinateSystem,
     ): Promise<Feature[]>;
 
-    protected async _fetchFeatures(
+    protected async fetchFeatures(
         extent: Extent,
         options: StreamableFeatureSourceOptions,
         targetCoordinateSystem: CoordinateSystem,
@@ -213,7 +217,7 @@ export class DefaultFeatureGetter extends FeatureGetterBase {
         options: StreamableFeatureSourceOptions,
         targetCoordinateSystem: CoordinateSystem,
     ): Promise<Feature[]> {
-        return await this._fetchFeatures(extent, options, targetCoordinateSystem);
+        return await this.fetchFeatures(extent, options, targetCoordinateSystem);
     }
 }
 
@@ -231,6 +235,7 @@ export class CachedTiledFeatureGetter extends FeatureGetterBase {
         this._tileSize = params?.tileSize ?? 1000;
         this._cache = params?.cache ?? GlobalCache;
     }
+
     public async getFeatures(
         extent: Extent,
         options: StreamableFeatureSourceOptions,
@@ -257,7 +262,7 @@ export class CachedTiledFeatureGetter extends FeatureGetterBase {
                         (y + 1) * this._tileSize,
                     );
 
-                    tileFeatures = await super._fetchFeatures(
+                    tileFeatures = await super.fetchFeatures(
                         tileExtent,
                         options,
                         targetCoordinateSystem,
@@ -273,7 +278,8 @@ export class CachedTiledFeatureGetter extends FeatureGetterBase {
 }
 
 /**
- * A feature source that supports streaming features (e.g OGC API Features, etc)
+ * A feature source that supports streaming features from a
+ * remote server (e.g OGC API Features, etc)
  */
 export default class StreamableFeatureSource extends FeatureSourceBase {
     public readonly isStreamableFeatureSource = true as const;
@@ -300,12 +306,14 @@ export default class StreamableFeatureSource extends FeatureSourceBase {
         let east = request.extent.east;
         let south = request.extent.south;
         let north = request.extent.north;
+
         if (this._options.maxExtent) {
             west = Math.max(west, this._options.maxExtent.west);
             east = Math.min(east, this._options.maxExtent.east);
             south = Math.max(south, this._options.maxExtent.south);
             north = Math.min(north, this._options.maxExtent.north);
         }
+
         if (west >= east || south >= north) {
             // Empty extent
             return { features: [] };
