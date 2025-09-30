@@ -1,8 +1,15 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
+import { Feature } from 'ol';
+import { Point } from 'ol/geom';
+
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import StaticFeatureSource from '@giro3d/giro3d/sources/StaticFeatureSource';
-import { Feature } from 'ol';
-import { Point } from 'ol/geom';
 
 describe('StaticFeatureSource', () => {
     let sourceWithTransformation: StaticFeatureSource;

@@ -26,7 +26,6 @@ import {
     SRGBColorSpace,
     Vector3,
     type Material,
-    type Object3D,
     type Texture,
 } from 'three';
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';

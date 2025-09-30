@@ -1,12 +1,21 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import type { Feature } from 'ol';
+
 import { MathUtils } from 'three';
+
+import type { GetFeatureRequest, GetFeatureResult } from './FeatureSource';
+
 import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import { nonNull } from '../utils/tsutils';
-import type { GetFeatureRequest, GetFeatureResult } from './FeatureSource';
-import { FeatureSourceBase } from './FeatureSource';
 import { filterByExtent } from './features/processor';
+import { FeatureSourceBase } from './FeatureSource';
 
-function preprocess(feature: Feature, src: CoordinateSystem, dst: CoordinateSystem) {
+function preprocess(feature: Feature, src: CoordinateSystem, dst: CoordinateSystem): Feature {
     if (feature.getId() == null) {
         feature.setId(MathUtils.generateUUID());
     }
@@ -38,8 +47,8 @@ export interface StaticFeaturesSourceOptions {
  * coordinate system, as well as assigning them unique IDs.
  */
 export default class StaticFeatureSource extends FeatureSourceBase {
-    readonly isStaticFeatureSource = true as const;
-    override readonly type = 'StaticFeatureSource' as const;
+    public readonly isStaticFeatureSource = true as const;
+    public override readonly type = 'StaticFeatureSource' as const;
 
     private readonly _initialFeatures: Feature[] | undefined = undefined;
     private readonly _features: Set<Feature> = new Set();
@@ -50,11 +59,11 @@ export default class StaticFeatureSource extends FeatureSourceBase {
      *
      * Note: this property returns an empty array if the source is not yet initialized.
      */
-    get features(): Readonly<Feature[]> {
+    public get features(): Readonly<Feature[]> {
         return [...this._features];
     }
 
-    constructor(options?: StaticFeaturesSourceOptions) {
+    public constructor(options?: StaticFeaturesSourceOptions) {
         super();
 
         this._coordinateSystem = options?.coordinateSystem ?? CoordinateSystem.epsg4326;
@@ -69,7 +78,7 @@ export default class StaticFeatureSource extends FeatureSourceBase {
      *
      * Note: if you want to add multiple features at once, use {@link addFeatures} for better performance.
      */
-    addFeature(feature: Feature) {
+    public addFeature(feature: Feature): void {
         this.throwIfNotInitialized();
 
         this.doAddFeatures(feature);
@@ -84,7 +93,7 @@ export default class StaticFeatureSource extends FeatureSourceBase {
      *
      * @returns `true` if the feature feature was actually removed, `false` otherwise.
      */
-    removeFeature(feature: Feature): boolean {
+    public removeFeature(feature: Feature): boolean {
         if (this._features.delete(feature)) {
             this.update();
             return true;
@@ -96,7 +105,7 @@ export default class StaticFeatureSource extends FeatureSourceBase {
     /**
      * Adds multiple features.
      */
-    addFeatures(features: Iterable<Feature>) {
+    public addFeatures(features: Iterable<Feature>): void {
         this.throwIfNotInitialized();
 
         this.doAddFeatures([...features]);
@@ -109,7 +118,7 @@ export default class StaticFeatureSource extends FeatureSourceBase {
      *
      * @returns `true` if at least one feature was actually removed, `false` otherwise.
      */
-    removeFeatures(features: Iterable<Feature>): boolean {
+    public removeFeatures(features: Iterable<Feature>): boolean {
         let actuallyRemoved = false;
 
         for (const feature of features) {
@@ -129,14 +138,14 @@ export default class StaticFeatureSource extends FeatureSourceBase {
     /**
      * Removes all features.
      */
-    clear() {
+    public clear(): void {
         if (this._features.size > 0) {
             this._features.clear();
             this.update();
         }
     }
 
-    private doAddFeatures(features: Feature | Feature[]) {
+    private doAddFeatures(features: Feature | Feature[]): void {
         if (Array.isArray(features)) {
             features.forEach(f => {
                 preprocess(f, this._coordinateSystem, nonNull(this._targetCoordinateSystem));
@@ -148,7 +157,7 @@ export default class StaticFeatureSource extends FeatureSourceBase {
         }
     }
 
-    override async initialize(options: {
+    public override async initialize(options: {
         targetCoordinateSystem: CoordinateSystem;
     }): Promise<void> {
         await super.initialize(options);
@@ -161,7 +170,7 @@ export default class StaticFeatureSource extends FeatureSourceBase {
         }
     }
 
-    override async getFeatures(request: GetFeatureRequest): Promise<GetFeatureResult> {
+    public override async getFeatures(request: GetFeatureRequest): Promise<GetFeatureResult> {
         const filtered = await filterByExtent([...this._features], request.extent, {
             signal: request.signal,
         });

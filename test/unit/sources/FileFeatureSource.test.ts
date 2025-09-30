@@ -1,9 +1,16 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import type FeatureFormat from 'ol/format/Feature';
+
+import { Projection } from 'ol/proj';
 
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import FileFeatureSource from '@giro3d/giro3d/sources/FileFeatureSource';
-import { Projection } from 'ol/proj';
 
 describe('FileFeatureSource', () => {
     describe('reload', () => {

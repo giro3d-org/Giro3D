@@ -52,7 +52,7 @@ function batch<I, O>(
 ): Promise<O[]> {
     const result: O[] = options?.outputItems ?? [];
 
-    const processSlice = (start: number) => {
+    const processSlice = (start: number): Promise<number | undefined> => {
         const begin = performance.now();
 
         for (let i = start; i < items.length; i++) {

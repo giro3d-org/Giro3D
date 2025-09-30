@@ -530,7 +530,7 @@ class Extent {
         return result;
     }
 
-    getQuadrant(x: number, y: number): 0 | 1 | 2 | 3 {
+    public getQuadrant(x: number, y: number): 0 | 1 | 2 | 3 {
         const dims = this.dimensions(tmpXY);
         const midX = this.west + dims.width / 2;
         const midY = this.south + dims.height / 2;
@@ -584,7 +584,7 @@ class Extent {
         return this.isXYInside(c.x, c.y, epsilon);
     }
 
-    isXYInside(x: number, y: number, epsilon = 0): boolean {
+    public isXYInside(x: number, y: number, epsilon = 0): boolean {
         return (
             x <= this.maxX + epsilon &&
             x >= this.minX - epsilon &&

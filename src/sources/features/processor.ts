@@ -1,8 +1,16 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import type { Feature } from 'ol';
 import type { Extent as OLExtent } from 'ol/extent';
 import type { Geometry } from 'ol/geom';
+
 import type CoordinateSystem from '../../core/geographic/coordinate-system/CoordinateSystem';
 import type Extent from '../../core/geographic/Extent';
+
 import OpenLayersUtils from '../../utils/OpenLayersUtils';
 import PromiseUtils from '../../utils/PromiseUtils';
 
@@ -23,7 +31,7 @@ export async function processFeatures(
 
     const tmpExtent = [0, 0, 0, 0];
 
-    const transformer = (feature: Feature, index: number) => {
+    const transformer = (feature: Feature, index: number): Feature | null => {
         const id =
             optionalProcessings?.getFeatureId != null
                 ? optionalProcessings.getFeatureId(feature)
@@ -80,7 +88,7 @@ export async function filterByExtent(
 ): Promise<Feature[]> {
     const olExtent = OpenLayersUtils.toOLExtent(extent);
 
-    const filter = (feature: Feature) => {
+    const filter = (feature: Feature): Feature | null => {
         if (intersects(feature, olExtent)) {
             return feature;
         }

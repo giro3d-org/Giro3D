@@ -1,7 +1,15 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import type { Feature } from 'ol';
+
 import { EventDispatcher } from 'three';
-import type Extent from '../core/geographic/Extent';
+
 import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import type Extent from '../core/geographic/Extent';
 
 export type GetFeatureResult = {
     /**
@@ -57,16 +65,16 @@ export abstract class FeatureSourceBase
     extends EventDispatcher<FeatureSourceEventMap>
     implements FeatureSource
 {
-    abstract readonly type: string;
+    public abstract readonly type: string;
 
     protected _targetCoordinateSystem: CoordinateSystem | null = null;
     protected _initialized = false;
 
-    constructor() {
+    public constructor() {
         super();
     }
 
-    initialize(options: { targetCoordinateSystem: CoordinateSystem }): Promise<void> {
+    public initialize(options: { targetCoordinateSystem: CoordinateSystem }): Promise<void> {
         this._targetCoordinateSystem = options.targetCoordinateSystem;
 
         this._initialized = true;
@@ -77,15 +85,15 @@ export abstract class FeatureSourceBase
     /**
      * Raises an event to reload the source.
      */
-    update() {
+    public update(): void {
         this.dispatchEvent({ type: 'updated' });
     }
 
-    protected throwIfNotInitialized() {
+    protected throwIfNotInitialized(): void {
         if (!this._initialized) {
             throw new Error('this source has not been initialized');
         }
     }
 
-    abstract getFeatures(request: GetFeatureRequest): Promise<GetFeatureResult>;
+    public abstract getFeatures(request: GetFeatureRequest): Promise<GetFeatureResult>;
 }

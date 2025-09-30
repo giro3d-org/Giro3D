@@ -247,7 +247,7 @@ export interface LayerEvents {
     /**
      * Fires when a node has been completed.
      */
-    // eslint-disable-next-line no-use-before-define
+
     'node-complete': { node: LayerNode; layer: Layer };
 }
 

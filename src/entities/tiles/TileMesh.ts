@@ -121,7 +121,7 @@ class TileMesh
     private _skirtDepth: number | undefined;
     private _minmax: { min: number; max: number } = { min: -Infinity, max: +Infinity };
     private _shouldUpdateHeightMap = false;
-    // eslint-disable-next-line no-use-before-define
+
     private _childTiles: [TileMesh | null, TileMesh | null, TileMesh | null, TileMesh | null] = [
         null,
         null,

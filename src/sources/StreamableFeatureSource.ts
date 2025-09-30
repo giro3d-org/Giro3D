@@ -1,8 +1,18 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import type { Feature } from 'ol';
 import type FeatureFormat from 'ol/format/Feature';
 import type { Type } from 'ol/format/Feature';
+
 import GeoJSON from 'ol/format/GeoJSON';
-import {Cache, CacheConfiguration} from '../core/Cache';
+
+import type { CacheConfiguration } from '../core/Cache';
+
+import { Cache } from '../core/Cache';
 import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import Extent from '../core/geographic/Extent';
 import Fetcher from '../utils/Fetcher';
@@ -139,21 +149,32 @@ export interface StreamableFeatureSourceOptions {
  * Interface for StreamableFeatureSource feature getter.
  */
 export interface FeatureGetter {
-    getFeatures(extent: Extent, options: StreamableFeatureSourceOptions, targetCoordinateSystem: CoordinateSystem): Promise<Feature[]>;
-};
+    getFeatures(
+        extent: Extent,
+        options: StreamableFeatureSourceOptions,
+        targetCoordinateSystem: CoordinateSystem,
+    ): Promise<Feature[]>;
+}
 
 export abstract class FeatureGetterBase implements FeatureGetter {
-    abstract getFeatures(extent: Extent, options: StreamableFeatureSourceOptions, targetCoordinateSystem: CoordinateSystem): Promise<Feature[]>;
+    public abstract getFeatures(
+        extent: Extent,
+        options: StreamableFeatureSourceOptions,
+        targetCoordinateSystem: CoordinateSystem,
+    ): Promise<Feature[]>;
 
-    protected async _fetchFeatures(extent: Extent, options: StreamableFeatureSourceOptions, targetCoordinateSystem: CoordinateSystem): Promise<Feature[]>
-    {
+    protected async _fetchFeatures(
+        extent: Extent,
+        options: StreamableFeatureSourceOptions,
+        targetCoordinateSystem: CoordinateSystem,
+    ): Promise<Feature[]> {
         const sourceCoordinateSystem = nonNull(options.sourceCoordinateSystem);
         const getter = nonNull(options.getter);
         const format = nonNull(options.format);
 
         const url = options.queryBuilder({
             extent: extent,
-            sourceCoordinateSystem: sourceCoordinateSystem
+            sourceCoordinateSystem: sourceCoordinateSystem,
         });
 
         if (!url) {
@@ -164,7 +185,7 @@ export abstract class FeatureGetterBase implements FeatureGetter {
 
         const features = format.readFeatures(data) as Feature[];
 
-        const getFeatureId = (feature: Feature) => {
+        const getFeatureId = (feature: Feature): number | string => {
             return (
                 feature.getId() ?? feature.get('id') ?? feature.get('fid') ?? feature.get('ogc_fid')
             );
@@ -181,7 +202,11 @@ export abstract class FeatureGetterBase implements FeatureGetter {
  * Directly queries the features from the datasource.
  */
 export class DefaultFeatureGetter extends FeatureGetterBase {
-    async getFeatures(extent: Extent, options: StreamableFeatureSourceOptions, targetCoordinateSystem: CoordinateSystem): Promise<Feature[]> {
+    public async getFeatures(
+        extent: Extent,
+        options: StreamableFeatureSourceOptions,
+        targetCoordinateSystem: CoordinateSystem,
+    ): Promise<Feature[]> {
         return await this._fetchFeatures(extent, options, targetCoordinateSystem);
     }
 }
@@ -191,16 +216,19 @@ export class DefaultFeatureGetter extends FeatureGetterBase {
  * Queries the features from the datasource in tiles and caches the tiles.
  */
 export class CachedTiledFeatureGetter extends FeatureGetterBase {
-
     private readonly _tileSize: number;
     private readonly _cache: Cache;
 
-    constructor(tileSize: number = 1000, cacheConfig?: CacheConfiguration) {
+    public constructor(tileSize: number = 1000, cacheConfig?: CacheConfiguration) {
         super();
         this._tileSize = tileSize;
-        this._cache = new Cache(cacheConfig ?? {ttl: 600});
+        this._cache = new Cache(cacheConfig ?? { ttl: 600 });
     }
-    async getFeatures(extent: Extent, options: StreamableFeatureSourceOptions, targetCoordinateSystem: CoordinateSystem): Promise<Feature[]> {
+    public async getFeatures(
+        extent: Extent,
+        options: StreamableFeatureSourceOptions,
+        targetCoordinateSystem: CoordinateSystem,
+    ): Promise<Feature[]> {
         const xmin = Math.floor(extent.west / this._tileSize);
         const xmax = Math.ceil((extent.east + 1) / this._tileSize);
         const ymin = Math.floor(extent.south / this._tileSize);
@@ -210,20 +238,24 @@ export class CachedTiledFeatureGetter extends FeatureGetterBase {
 
         for (let x = xmin; x < xmax; ++x) {
             for (let y = ymin; y < ymax; ++y) {
-
                 const key = `${x}/${y}`;
 
                 let tileFeatures = this._cache.get(key) as Feature[];
                 if (tileFeatures === undefined) {
-
-                    const tileExtent = new Extent(extent.crs,
-                        x * this._tileSize, (x + 1) * this._tileSize,
-                        y * this._tileSize, (y + 1) * this._tileSize,
+                    const tileExtent = new Extent(
+                        extent.crs,
+                        x * this._tileSize,
+                        (x + 1) * this._tileSize,
+                        y * this._tileSize,
+                        (y + 1) * this._tileSize,
                     );
 
-                    tileFeatures = await super._fetchFeatures(tileExtent, options, targetCoordinateSystem);
+                    tileFeatures = await super._fetchFeatures(
+                        tileExtent,
+                        options,
+                        targetCoordinateSystem,
+                    );
                     this._cache.set(key, features);
-
                 }
                 features.push(...tileFeatures);
             }
@@ -236,13 +268,16 @@ export class CachedTiledFeatureGetter extends FeatureGetterBase {
  * A feature source that supports streaming features (e.g OGC API Features, etc)
  */
 export default class StreamableFeatureSource extends FeatureSourceBase {
-    readonly isStreamableFeatureSource = true as const;
-    readonly type = 'StreamableFeatureSource' as const;
+    public readonly isStreamableFeatureSource = true as const;
+    public readonly type = 'StreamableFeatureSource' as const;
 
     private readonly _options: StreamableFeatureSourceOptions;
     private readonly _featureGetter: FeatureGetter;
 
-    constructor(params: StreamableFeatureSourceOptions, featureGetter: FeatureGetter|null = null) {
+    public constructor(
+        params: StreamableFeatureSourceOptions,
+        featureGetter: FeatureGetter | null = null,
+    ) {
         super();
         this._options = {
             queryBuilder: params.queryBuilder,
@@ -250,12 +285,12 @@ export default class StreamableFeatureSource extends FeatureSourceBase {
             getter: params.getter ?? defaultGetter,
             maxExtent: params.maxExtent,
             // TODO assume EPSG:4326 ?
-            sourceCoordinateSystem: params.sourceCoordinateSystem ?? CoordinateSystem.epsg4326
+            sourceCoordinateSystem: params.sourceCoordinateSystem ?? CoordinateSystem.epsg4326,
         };
         this._featureGetter = featureGetter ?? new DefaultFeatureGetter();
     }
 
-    async getFeatures(request: GetFeatureRequest): Promise<GetFeatureResult> {
+    public async getFeatures(request: GetFeatureRequest): Promise<GetFeatureResult> {
         this.throwIfNotInitialized();
 
         let west = request.extent.west;
@@ -270,15 +305,15 @@ export default class StreamableFeatureSource extends FeatureSourceBase {
         }
         if (west >= east || south >= north) {
             // Empty extent
-            return {features: []};
+            return { features: [] };
         }
 
         const features = await this._featureGetter.getFeatures(
-            new Extent(request.extent.crs, {east, north, south, west}),
+            new Extent(request.extent.crs, { east, north, south, west }),
             this._options,
-            nonNull(this._targetCoordinateSystem)
+            nonNull(this._targetCoordinateSystem),
         );
 
-        return {features: features,};
+        return { features: features };
     }
 }

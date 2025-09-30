@@ -1,13 +1,21 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import type { Feature } from 'ol';
 import type FeatureFormat from 'ol/format/Feature';
 import type { Type } from 'ol/format/Feature';
-import GeoJSON from 'ol/format/GeoJSON';
 import type { Geometry } from 'ol/geom';
+
+import GeoJSON from 'ol/format/GeoJSON';
+
 import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import Fetcher from '../utils/Fetcher';
 import { nonNull } from '../utils/tsutils';
-import { FeatureSourceBase, type GetFeatureRequest, type GetFeatureResult } from './FeatureSource';
 import { filterByExtent, processFeatures } from './features/processor';
+import { FeatureSourceBase, type GetFeatureRequest, type GetFeatureResult } from './FeatureSource';
 
 export type Getter = (url: string, type: Type) => Promise<unknown>;
 
@@ -52,8 +60,8 @@ export interface FileFeatureSourceOptions {
  * Loads features from a remote file (such as GeoJSON, GPX, etc.)
  */
 export default class FileFeatureSource extends FeatureSourceBase {
-    readonly isFileFeatureSource = true as const;
-    readonly type = 'FileFeatureSource' as const;
+    public readonly isFileFeatureSource = true as const;
+    public readonly type = 'FileFeatureSource' as const;
 
     private readonly _format: FeatureFormat;
     private _features: Feature<Geometry>[] | null = null;
@@ -62,7 +70,7 @@ export default class FileFeatureSource extends FeatureSourceBase {
     private _url: string;
     private _sourceCoordinateSystem?: CoordinateSystem;
 
-    constructor(params: FileFeatureSourceOptions) {
+    public constructor(params: FileFeatureSourceOptions) {
         super();
 
         this._format = params.format ?? new GeoJSON();
@@ -71,11 +79,11 @@ export default class FileFeatureSource extends FeatureSourceBase {
         this._getter = params.getter ?? defaultGetter;
     }
 
-    private loadFeatures() {
+    private loadFeatures(): Promise<Feature[]> {
         this.throwIfNotInitialized();
 
         if (this._features != null) {
-            return this._features;
+            return Promise.resolve(this._features);
         }
 
         if (this._loadFeaturePromise != null) {
@@ -114,7 +122,7 @@ export default class FileFeatureSource extends FeatureSourceBase {
         return actualFeatures;
     }
 
-    async getFeatures(request: GetFeatureRequest): Promise<GetFeatureResult> {
+    public async getFeatures(request: GetFeatureRequest): Promise<GetFeatureResult> {
         request.signal?.throwIfAborted();
 
         const features = await this.loadFeatures();
@@ -131,7 +139,7 @@ export default class FileFeatureSource extends FeatureSourceBase {
     /**
      * Deletes the already loaded features, and dispatch an event to reload the features.
      */
-    reload() {
+    public reload(): void {
         this._features = null;
         this._loadFeaturePromise = null;
 

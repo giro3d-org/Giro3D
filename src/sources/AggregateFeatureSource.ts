@@ -1,6 +1,14 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import type { Feature } from 'ol';
+
 import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import type { FeatureSource, GetFeatureRequest, GetFeatureResult } from './FeatureSource';
+
 import { FeatureSourceBase } from './FeatureSource';
 
 export interface AggregateFeatureSourceOptions {
@@ -8,12 +16,12 @@ export interface AggregateFeatureSourceOptions {
 }
 
 export default class AggregateFeatureSource extends FeatureSourceBase {
-    override readonly type = 'AggregateFeatureSource' as const;
-    readonly isAggregateFeatureSource = true as const;
+    public override readonly type = 'AggregateFeatureSource' as const;
+    public readonly isAggregateFeatureSource = true as const;
 
     private readonly _sources: FeatureSource[];
 
-    constructor(params: AggregateFeatureSourceOptions) {
+    public constructor(params: AggregateFeatureSourceOptions) {
         super();
 
         this._sources = [...params.sources];
@@ -22,11 +30,11 @@ export default class AggregateFeatureSource extends FeatureSourceBase {
     /**
      * The sources in this source.
      */
-    get sources(): Readonly<FeatureSource[]> {
+    public get sources(): Readonly<FeatureSource[]> {
         return [...this._sources];
     }
 
-    override async getFeatures(request: GetFeatureRequest): Promise<GetFeatureResult> {
+    public override async getFeatures(request: GetFeatureRequest): Promise<GetFeatureResult> {
         const result: Feature[] = [];
 
         const promises: Promise<GetFeatureResult>[] = [];
@@ -43,7 +51,7 @@ export default class AggregateFeatureSource extends FeatureSourceBase {
         return { features: result } satisfies GetFeatureResult;
     }
 
-    override async initialize(options: {
+    public override async initialize(options: {
         targetCoordinateSystem: CoordinateSystem;
     }): Promise<void> {
         await super.initialize(options);

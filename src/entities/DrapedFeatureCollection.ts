@@ -1,16 +1,41 @@
-import type Feature from 'ol/Feature';
-
-import type { Object3D } from 'three';
-
-import { Box3, Group, Sphere, Vector3 } from 'three';
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
 
 import type GUI from 'lil-gui';
+import type Feature from 'ol/Feature';
+import type { Circle, Point, SimpleGeometry } from 'ol/geom';
+import type { Object3D } from 'three';
+
 import { type Coordinate } from 'ol/coordinate';
 import { getCenter } from 'ol/extent';
-import type { Circle, Point, SimpleGeometry } from 'ol/geom';
 import { LineString, MultiLineString, MultiPolygon, Polygon } from 'ol/geom';
+import { Box3, Group, Sphere, Vector3 } from 'three';
+
 import type ElevationProvider from '../core/ElevationProvider';
 import type { FeatureExtrusionOffset, FeatureExtrusionOffsetCallback } from '../core/FeatureTypes';
+import type Extent from '../core/geographic/Extent';
+import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
+import type Instance from '../core/Instance';
+import type PointOfView from '../core/PointOfView';
+import type {
+    BaseOptions,
+    LineOptions,
+    PointOptions,
+    PolygonOptions,
+} from '../renderer/geometries/GeometryConverter';
+import type LineStringMesh from '../renderer/geometries/LineStringMesh';
+import type MultiLineStringMesh from '../renderer/geometries/MultiLineStringMesh';
+import type PointMesh from '../renderer/geometries/PointMesh';
+import type SimpleGeometryMesh from '../renderer/geometries/SimpleGeometryMesh';
+import type SurfaceMesh from '../renderer/geometries/SurfaceMesh';
+import type { FeatureSource, FeatureSourceEventMap } from '../sources/FeatureSource';
+import type { MeshUserData } from './FeatureCollection';
+import type MapEntity from './Map';
+import type { MapEventMap, Tile } from './Map';
+
 import {
     mapGeometry,
     type FeatureStyle,
@@ -19,39 +44,20 @@ import {
     type PointMaterialGenerator,
     type SurfaceMaterialGenerator,
 } from '../core/FeatureTypes';
-import type Extent from '../core/geographic/Extent';
-import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
-import type Instance from '../core/Instance';
-import type PointOfView from '../core/PointOfView';
 import EntityInspector from '../gui/EntityInspector';
 import EntityPanel from '../gui/EntityPanel';
-import type {
-    BaseOptions,
-    LineOptions,
-    PointOptions,
-    PolygonOptions,
-} from '../renderer/geometries/GeometryConverter';
 import GeometryConverter from '../renderer/geometries/GeometryConverter';
-import type LineStringMesh from '../renderer/geometries/LineStringMesh';
 import { isLineStringMesh } from '../renderer/geometries/LineStringMesh';
-import type MultiLineStringMesh from '../renderer/geometries/MultiLineStringMesh';
 import { isMultiPolygonMesh } from '../renderer/geometries/MultiPolygonMesh';
-import type PointMesh from '../renderer/geometries/PointMesh';
 import { isPointMesh } from '../renderer/geometries/PointMesh';
 import { isPolygonMesh } from '../renderer/geometries/PolygonMesh';
-import type SimpleGeometryMesh from '../renderer/geometries/SimpleGeometryMesh';
 import { isSimpleGeometryMesh } from '../renderer/geometries/SimpleGeometryMesh';
-import type SurfaceMesh from '../renderer/geometries/SurfaceMesh';
 import { isSurfaceMesh } from '../renderer/geometries/SurfaceMesh';
 import { computeDistanceToFitSphere, computeZoomToFitSphere } from '../renderer/View';
-import type { FeatureSource, FeatureSourceEventMap } from '../sources/FeatureSource';
 import OLUtils from '../utils/OpenLayersUtils';
 import { isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
 import { nonNull } from '../utils/tsutils';
 import Entity3D from './Entity3D';
-import type { MeshUserData } from './FeatureCollection';
-import type MapEntity from './Map';
-import type { MapEventMap, Tile } from './Map';
 
 const tmpSphere = new Sphere();
 
@@ -141,7 +147,7 @@ function getFeatureElevation(
     feature: Feature,
     geometry: SimpleGeometry,
     provider: ElevationProvider,
-) {
+): number {
     let center: Coordinate;
 
     if (geometry.getType() === 'Point') {
@@ -159,10 +165,10 @@ function getFeatureElevation(
     return sample?.elevation ?? 0;
 }
 
-function applyPerVertexDraping(
-    geometry: Polygon | LineString | MultiLineString | MultiPolygon,
+function applyPerVertexDraping<G extends Polygon | LineString | MultiLineString | MultiPolygon>(
+    geometry: G,
     provider: ElevationProvider,
-) {
+): G {
     const coordinates = geometry.getFlatCoordinates();
     const stride = geometry.getStride();
 
@@ -191,7 +197,7 @@ function applyPerVertexDraping(
 
     clone.setFlatCoordinates('XYZ', xyz);
 
-    return clone;
+    return clone as G;
 }
 
 export const defaultElevationCallback: DrapedFeatureElevationCallback = (feature, provider) => {
@@ -352,11 +358,11 @@ type FeaturesEntry = {
     extent: Extent;
     mesh: SimpleGeometryMesh | undefined;
     sampledLod: number;
-}
+};
 
 export default class DrapedFeatureCollection extends Entity3D {
-    override type = 'DrapedFeatureCollection' as const;
-    readonly isDrapedFeatureCollection = true as const;
+    public override type = 'DrapedFeatureCollection' as const;
+    public readonly isDrapedFeatureCollection = true as const;
 
     private _map: MapEntity | null = null;
 
@@ -384,7 +390,7 @@ export default class DrapedFeatureCollection extends Entity3D {
     };
     private readonly _style: FeatureStyle | FeatureStyleCallback | undefined;
 
-    get loadedFeatures() {
+    public get loadedFeatures(): number {
         return this._features.size;
     }
 
@@ -392,15 +398,15 @@ export default class DrapedFeatureCollection extends Entity3D {
     private _sortedTiles: Tile[] | null = null;
     private _minLod = 0;
 
-    get minLod() {
+    public get minLod(): number {
         return this._minLod;
     }
 
-    set minLod(v: number) {
+    public set minLod(v: number) {
         this._minLod = v >= 0 ? v : 0;
     }
 
-    constructor(options: DrapedFeatureCollectionOptions) {
+    public constructor(options: DrapedFeatureCollectionOptions) {
         super(new Group());
 
         this._drapingMode = options.drapingMode ?? 'per-vertex';
@@ -433,7 +439,7 @@ export default class DrapedFeatureCollection extends Entity3D {
         this._source.addEventListener('updated', this._eventHandlers.onSourceUpdated);
     }
 
-    traverseGeometries(callback: (geom: SimpleGeometryMesh<MeshUserData>) => void) {
+    public traverseGeometries(callback: (geom: SimpleGeometryMesh<MeshUserData>) => void): void {
         this.traverse(obj => {
             if (isSimpleGeometryMesh<MeshUserData>(obj)) {
                 callback(obj);
@@ -445,7 +451,9 @@ export default class DrapedFeatureCollection extends Entity3D {
      * Updates the styles of the  given objects, or all objects if unspecified.
      * @param objects - The objects to update.
      */
-    updateStyles(objects?: (SimpleGeometryMesh<MeshUserData> | SurfaceMesh<MeshUserData>)[]) {
+    public updateStyles(
+        objects?: (SimpleGeometryMesh<MeshUserData> | SurfaceMesh<MeshUserData>)[],
+    ): void {
         if (objects != null) {
             objects.forEach(obj => {
                 if (obj.userData.parentEntity === this) {
@@ -466,7 +474,7 @@ export default class DrapedFeatureCollection extends Entity3D {
         this.notifyChange(this);
     }
 
-    private updateStyle(obj: SimpleGeometryMesh<MeshUserData> | null) {
+    private updateStyle(obj: SimpleGeometryMesh<MeshUserData> | null): void {
         if (!obj) {
             return;
         }
@@ -475,7 +483,7 @@ export default class DrapedFeatureCollection extends Entity3D {
         const style = this.getStyle(feature);
 
         const commonOptions: BaseOptions = {
-            origin: obj.geometryOrigin
+            origin: obj.geometryOrigin,
         };
 
         switch (obj.type) {
@@ -531,7 +539,10 @@ export default class DrapedFeatureCollection extends Entity3D {
         this.prepare(obj, feature, style);
     }
 
-    private updateObjectOption<K extends keyof ObjectOptions>(key: K, value: ObjectOptions[K]) {
+    private updateObjectOption<K extends keyof ObjectOptions>(
+        key: K,
+        value: ObjectOptions[K],
+    ): void {
         if (this._objectOptions[key] !== value) {
             this._objectOptions[key] = value;
             this.traverseGeometries(mesh => {
@@ -549,11 +560,11 @@ export default class DrapedFeatureCollection extends Entity3D {
      *
      * Note: shadow maps require normal attributes on objects.
      */
-    get castShadow() {
+    public get castShadow(): boolean {
         return this._objectOptions.castShadow;
     }
 
-    set castShadow(v: boolean) {
+    public set castShadow(v: boolean) {
         this.updateObjectOption('castShadow', v);
     }
 
@@ -562,15 +573,15 @@ export default class DrapedFeatureCollection extends Entity3D {
      *
      * Note: shadow maps require normal attributes on objects.
      */
-    get receiveShadow() {
+    public get receiveShadow(): boolean {
         return this._objectOptions.receiveShadow;
     }
 
-    set receiveShadow(v: boolean) {
+    public set receiveShadow(v: boolean) {
         this.updateObjectOption('receiveShadow', v);
     }
 
-    private onSourceUpdated() {
+    private onSourceUpdated(): void {
         this._features.forEach(v => {
             v.mesh?.dispose();
             v.mesh?.removeFromParent();
@@ -583,11 +594,11 @@ export default class DrapedFeatureCollection extends Entity3D {
         }
     }
 
-    override async preprocess() {
+    public override async preprocess(): Promise<void> {
         await this._source.initialize({ targetCoordinateSystem: this.instance.coordinateSystem });
     }
 
-    attach(map: MapEntity): this {
+    public attach(map: MapEntity): this {
         if (this._map != null) {
             throw new Error('a map is already attached to this entity');
         }
@@ -606,7 +617,7 @@ export default class DrapedFeatureCollection extends Entity3D {
         return this;
     }
 
-    private getSortedTiles() {
+    private getSortedTiles(): Tile[] {
         if (this._sortedTiles == null) {
             this._sortedTiles = [...this._activeTiles.values()];
             this._sortedTiles.sort((t0, t1) => t0.lod - t1.lod);
@@ -615,7 +626,7 @@ export default class DrapedFeatureCollection extends Entity3D {
         return this._sortedTiles;
     }
 
-    detach(): this {
+    public detach(): this {
         if (this._map == null) {
             throw new Error('no map is attached to this entity');
         }
@@ -632,7 +643,7 @@ export default class DrapedFeatureCollection extends Entity3D {
         return this;
     }
 
-    override updateVisibility() {
+    public override updateVisibility(): void {
         super.updateVisibility();
         if (this.visible && this._map) {
             this._map.traverseTiles(tile => {
@@ -641,19 +652,19 @@ export default class DrapedFeatureCollection extends Entity3D {
         }
     }
 
-    private onTileCreated({ tile }: MapEventMap['tile-created']) {
+    private onTileCreated({ tile }: MapEventMap['tile-created']): void {
         this.registerTile(tile);
     }
 
-    private onTileDeleted({ tile }: MapEventMap['tile-deleted']) {
+    private onTileDeleted({ tile }: MapEventMap['tile-deleted']): void {
         this.unregisterTile(tile);
     }
 
-    private onElevationLoaded({ tile }: MapEventMap['elevation-loaded']) {
+    private onElevationLoaded({ tile }: MapEventMap['elevation-loaded']): void {
         this.registerTile(tile, true);
     }
 
-    private registerTile(tile: Tile, forceRecreateMeshes = false) {
+    private registerTile(tile: Tile, forceRecreateMeshes = false): void {
         if (!this.visible) {
             return;
         }
@@ -671,9 +682,8 @@ export default class DrapedFeatureCollection extends Entity3D {
         }
     }
 
-    private loadMeshes(features: Readonly<Feature[]>, lod: number) {
+    private loadMeshes(features: Readonly<Feature[]>, lod: number): void {
         for (const feature of features) {
-
             const geometry = feature.getGeometry();
 
             if (geometry) {
@@ -684,7 +694,13 @@ export default class DrapedFeatureCollection extends Entity3D {
                         this.instance.coordinateSystem,
                     );
 
-                    this._features.set(id, { feature, mesh: undefined, originalZ: 0, extent, sampledLod: lod });
+                    this._features.set(id, {
+                        feature,
+                        mesh: undefined,
+                        originalZ: 0,
+                        extent,
+                        sampledLod: lod,
+                    });
                 }
                 const existing = nonNull(this._features.get(id));
 
@@ -702,7 +718,7 @@ export default class DrapedFeatureCollection extends Entity3D {
         mesh: SimpleGeometryMesh<MeshUserData>,
         feature: Feature,
         style: FeatureStyle | undefined,
-    ) {
+    ): void {
         mesh.traverse(obj => {
             obj.userData.feature = feature;
             obj.userData.style = style;
@@ -727,7 +743,7 @@ export default class DrapedFeatureCollection extends Entity3D {
         };
     }
 
-    private getExtrusionOffset(feature: Feature) {
+    private getExtrusionOffset(feature: Feature): FeatureExtrusionOffset | undefined {
         let extrusionOffset: FeatureExtrusionOffset | undefined = undefined;
         if (this._extrusionCallback != null) {
             extrusionOffset =
@@ -784,7 +800,7 @@ export default class DrapedFeatureCollection extends Entity3D {
 
     // We override this because the render order of the features depends on their style,
     // so we have to cumulate that with the render order of the entity.
-    protected override assignRenderOrder(obj: Object3D) {
+    protected override assignRenderOrder(obj: Object3D): void {
         const renderOrder = this.renderOrder;
 
         // Note that the final render order of the mesh is the sum of
@@ -809,7 +825,7 @@ export default class DrapedFeatureCollection extends Entity3D {
         return this._drapingMode;
     }
 
-    private loadFeatureMesh(id: string, existing: FeaturesEntry) {
+    private loadFeatureMesh(id: string, existing: FeaturesEntry): void {
         // TODO filter non compatible geometries
         const geometry = existing.feature.getGeometry() as SimpleGeometry;
 
@@ -846,7 +862,7 @@ export default class DrapedFeatureCollection extends Entity3D {
         }
 
         // The mesh needs to be (re)created
-        if (existing.mesh == undefined) {
+        if (existing.mesh === undefined) {
             const newMesh = this.createMesh(existing.feature, actualGeometry);
             existing.originalZ = newMesh?.position.z ?? 0;
             if (newMesh) {
@@ -868,7 +884,7 @@ export default class DrapedFeatureCollection extends Entity3D {
         }
     }
 
-    private unregisterTile(tile: Tile) {
+    private unregisterTile(tile: Tile): void {
         const actuallyDeleted = this._activeTiles.delete(tile.id);
 
         if (actuallyDeleted) {
@@ -884,7 +900,7 @@ export default class DrapedFeatureCollection extends Entity3D {
         return result.features;
     }
 
-    override postUpdate(): void {
+    public override postUpdate(): void {
         if (this._shouldCleanup) {
             this._shouldCleanup = false;
 
@@ -892,7 +908,7 @@ export default class DrapedFeatureCollection extends Entity3D {
         }
     }
 
-    cleanup() {
+    public cleanup(): void {
         const sorted = this.getSortedTiles();
         const features = [...this._features.values()];
 
@@ -913,7 +929,7 @@ export default class DrapedFeatureCollection extends Entity3D {
         }
     }
 
-    override getDefaultPointOfView({
+    public override getDefaultPointOfView({
         camera,
     }: Parameters<HasDefaultPointOfView['getDefaultPointOfView']>[0]): ReturnType<
         HasDefaultPointOfView['getDefaultPointOfView']
@@ -946,7 +962,7 @@ export default class DrapedFeatureCollection extends Entity3D {
         return Object.freeze(result);
     }
 
-    override dispose() {
+    public override dispose(): void {
         this.detach();
         this._geometryConverter.dispose({ disposeMaterials: true, disposeTextures: true });
         this.traverseMeshes(mesh => {
@@ -956,7 +972,7 @@ export default class DrapedFeatureCollection extends Entity3D {
 }
 
 class DrapedFeatureCollectionInspector extends EntityInspector<DrapedFeatureCollection> {
-    constructor(gui: GUI, instance: Instance, entity: DrapedFeatureCollection) {
+    public constructor(gui: GUI, instance: Instance, entity: DrapedFeatureCollection) {
         super(gui, instance, entity);
 
         this.addController(entity, 'loadedFeatures');

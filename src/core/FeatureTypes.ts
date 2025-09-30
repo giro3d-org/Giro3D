@@ -58,7 +58,7 @@ export function mapGeometry<O>(
         processCircle?: GeometryFn<Circle, O>;
         fallback?: GeometryFn<Geometry, void>;
     },
-) {
+): O | undefined {
     switch (geom.getType()) {
         case 'Point':
             return callbacks.processPoint?.(geom as Point);

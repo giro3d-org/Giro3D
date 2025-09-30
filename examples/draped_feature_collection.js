@@ -1,28 +1,33 @@
+/**
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2025, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
+import { Feature } from 'ol';
+import GeoJSON from 'ol/format/GeoJSON.js';
+import { Point } from 'ol/geom.js';
+import VectorSource from 'ol/source/Vector.js';
 import { AmbientLight, Color, DirectionalLight, DoubleSide, MathUtils, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
-import GeoJSON from 'ol/format/GeoJSON.js';
-import VectorSource from 'ol/source/Vector.js';
-
-import Instance from '@giro3d/giro3d/core/Instance.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
+import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
-import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import DrapedFeatureCollection from '@giro3d/giro3d/entities/DrapedFeatureCollection.js';
 import Giro3dMap from '@giro3d/giro3d/entities/Map.js';
 import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import StaticFeatureSource from '@giro3d/giro3d/sources/StaticFeatureSource.js';
 import FileFeatureSource from '@giro3d/giro3d/sources/FileFeatureSource.js';
+import StaticFeatureSource from '@giro3d/giro3d/sources/StaticFeatureSource.js';
 import StreamableFeatureSource, {
     ogcApiFeaturesBuilder,
 } from '@giro3d/giro3d/sources/StreamableFeatureSource.js';
+import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
-import { Feature } from 'ol';
-import { Point } from 'ol/geom.js';
 
 Instance.registerCRS(
     'EPSG:2154',
@@ -131,24 +136,24 @@ const hydrants = new StreamableFeatureSource({
 const bdTopoIgn = new StreamableFeatureSource({
     sourceCoordinateSystem: CoordinateSystem.fromEpsg(2154),
     queryBuilder: params => {
-        const url = new URL('https://data.geopf.fr/wfs/ows');
+        const queryUrl = new URL('https://data.geopf.fr/wfs/ows');
 
-        url.searchParams.append('SERVICE', 'WFS');
-        url.searchParams.append('VERSION', '2.0.0');
-        url.searchParams.append('request', 'GetFeature');
-        url.searchParams.append('typename', 'BDTOPO_V3:batiment');
-        url.searchParams.append('outputFormat', 'application/json');
-        url.searchParams.append('SRSNAME', 'EPSG:2154');
-        url.searchParams.append('startIndex', '0');
+        queryUrl.searchParams.append('SERVICE', 'WFS');
+        queryUrl.searchParams.append('VERSION', '2.0.0');
+        queryUrl.searchParams.append('request', 'GetFeature');
+        queryUrl.searchParams.append('typename', 'BDTOPO_V3:batiment');
+        queryUrl.searchParams.append('outputFormat', 'application/json');
+        queryUrl.searchParams.append('SRSNAME', 'EPSG:2154');
+        queryUrl.searchParams.append('startIndex', '0');
 
-        const extent = params.extent.as(CoordinateSystem.fromEpsg(2154));
+        const queryExtent = params.extent.as(CoordinateSystem.fromEpsg(2154));
 
-        url.searchParams.append(
+        queryUrl.searchParams.append(
             'bbox',
-            `${extent.west},${extent.south},${extent.east},${extent.north},EPSG:2154`,
+            `${queryExtent.west},${queryExtent.south},${queryExtent.east},${queryExtent.north},EPSG:2154`,
         );
 
-        return url;
+        return queryUrl;
     },
 });
 
@@ -297,7 +302,7 @@ instance.add(entity).then(() => {
                 map.extent.north,
                 MathUtils.randFloat(0.3, 0.7),
             );
-            // @ts-expect-error casting
+            // @ts-expect-error casting issue
             sources['static'].source.addFeature(new Feature(new Point([x, y])));
         }, 500);
     }
