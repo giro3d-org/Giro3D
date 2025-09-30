@@ -4,12 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
 
+import { beforeEach, describe, expect, it, vitest } from 'vitest';
+
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import StreamableFeatureSource from '@giro3d/giro3d/sources/StreamableFeatureSource';
 
-const queryBuilder = jest.fn();
-const getter = jest.fn();
+const queryBuilder = vitest.fn();
+const getter = vitest.fn();
 
 let source: StreamableFeatureSource;
 
