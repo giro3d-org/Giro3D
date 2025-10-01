@@ -9,7 +9,6 @@ import type FeatureFormat from 'ol/format/Feature';
 import type { Type } from 'ol/format/Feature';
 
 import GeoJSON from 'ol/format/GeoJSON';
-import { MathUtils } from 'three';
 
 import type { Cache } from '../core/Cache';
 
@@ -116,12 +115,12 @@ export const wfsBuilder: (
     };
 };
 
-export type Getter = (url: string, type: Type) => Promise<unknown>;
+export type StreamableFeatureSourceGetter = (url: string, type: Type) => Promise<unknown>;
 
 /**
  * Getter for JSON, text, XML and ArrayBuffer data.
  */
-export const defaultGetter: Getter = (url, type) => {
+export const defaultGetter: StreamableFeatureSourceGetter = (url, type) => {
     switch (type) {
         case 'arraybuffer':
             return Fetcher.arrayBuffer(url);
@@ -148,141 +147,85 @@ export interface StreamableFeatureSourceOptions {
      * The function to download and process the data.
      * @defaultValue {@link defaultGetter}
      */
-    getter?: Getter;
-    featureGetter?: FeatureGetter;
+    getter?: StreamableFeatureSourceGetter;
+    /**
+     * Enable caching of downloaded features.
+     * @defaultValue true
+     */
+    enableCaching?: boolean;
+    /**
+     * The cache to use.
+     * @defaultValue {@link GlobalCache}
+     */
+    cache?: Cache;
+    /**
+     * The loading strategy.
+     * @defaultValue {@link defaultLoadingStrategy}
+     */
+    loadingStrategy?: StreamableFeatureSourceLoadingStrategy;
     /**
      * The source coordinate system.
      * @defaultValue EPSG:4326
      */
     sourceCoordinateSystem?: CoordinateSystem;
     /**
-     * Limits the extent in which features are queried. If a feature requests is
+     * Limits the extent in which features are queried. If a feature request is
      * outside this extent, no query happens.
+     * @defaultValue `null`
      */
-    maxExtent?: Extent;
+    extent?: Extent | null;
 }
+
+export type StreamableFeatureSourceLoadingStrategy = (request: GetFeatureRequest) => {
+    requests: GetFeatureRequest[];
+};
 
 /**
- * Interface for StreamableFeatureSource feature getter.
+ * A loading strategy that process the entire input request without any filtering or splitting.
  */
-export interface FeatureGetter {
-    getFeatures(
-        extent: Extent,
-        options: StreamableFeatureSourceOptions,
-        targetCoordinateSystem: CoordinateSystem,
-    ): Promise<Feature[]>;
-}
-
-export abstract class FeatureGetterBase implements FeatureGetter {
-    public abstract getFeatures(
-        extent: Extent,
-        options: StreamableFeatureSourceOptions,
-        targetCoordinateSystem: CoordinateSystem,
-    ): Promise<Feature[]>;
-
-    protected async fetchFeatures(
-        extent: Extent,
-        options: StreamableFeatureSourceOptions,
-        targetCoordinateSystem: CoordinateSystem,
-    ): Promise<Feature[]> {
-        const sourceCoordinateSystem = nonNull(options.sourceCoordinateSystem);
-        const getter = nonNull(options.getter);
-        const format = nonNull(options.format);
-
-        const url = options.queryBuilder({
-            extent: extent,
-            sourceCoordinateSystem: sourceCoordinateSystem,
-        });
-
-        if (!url) {
-            return [];
-        }
-
-        const data = await getter(url.toString(), format.getType());
-
-        const features = format.readFeatures(data) as Feature[];
-
-        const getFeatureId = (feature: Feature): number | string => {
-            return (
-                feature.getId() ?? feature.get('id') ?? feature.get('fid') ?? feature.get('ogc_fid')
-            );
-        };
-
-        return await processFeatures(features, sourceCoordinateSystem, targetCoordinateSystem, {
-            getFeatureId,
-        });
-    }
-}
+export const defaultLoadingStrategy: StreamableFeatureSourceLoadingStrategy = request => ({
+    requests: [request],
+});
 
 /**
- * The default StreamableFeatureSource feature getter.
- * Directly queries the features from the datasource.
+ * Splits the input request into a regular grid of requests to improves caching.
  */
-export class DefaultFeatureGetter extends FeatureGetterBase {
-    public async getFeatures(
-        extent: Extent,
-        options: StreamableFeatureSourceOptions,
-        targetCoordinateSystem: CoordinateSystem,
-    ): Promise<Feature[]> {
-        return await this.fetchFeatures(extent, options, targetCoordinateSystem);
-    }
-}
+export const tiledLoadingStrategy: (params?: {
+    /**
+     * The size of the tiles in the grid. Expressed in CRS units (typically meters).
+     * @defaultValue 1000
+     */
+    tileSize?: number;
+}) => StreamableFeatureSourceLoadingStrategy = params => {
+    const tileSize = params?.tileSize ?? 1000;
+    return request => {
+        const extent = request.extent;
+        const xmin = Math.floor(extent.west / tileSize);
+        const xmax = Math.ceil(extent.east / tileSize);
+        const ymin = Math.floor(extent.south / tileSize);
+        const ymax = Math.ceil(extent.north / tileSize);
 
-/**
- * Cached/tiled StreamableFeatureSource feature getter.
- * Queries the features from the datasource in tiles and caches the tiles.
- */
-export class CachedTiledFeatureGetter extends FeatureGetterBase {
-    private readonly _tileSize: number;
-    private readonly _cacheKey = MathUtils.generateUUID();
-    private readonly _cache: Cache;
-
-    public constructor(params?: { tileSize?: number; cache?: Cache }) {
-        super();
-        this._tileSize = params?.tileSize ?? 1000;
-        this._cache = params?.cache ?? GlobalCache;
-    }
-
-    public async getFeatures(
-        extent: Extent,
-        options: StreamableFeatureSourceOptions,
-        targetCoordinateSystem: CoordinateSystem,
-    ): Promise<Feature[]> {
-        const xmin = Math.floor(extent.west / this._tileSize);
-        const xmax = Math.ceil((extent.east + 1) / this._tileSize);
-        const ymin = Math.floor(extent.south / this._tileSize);
-        const ymax = Math.ceil((extent.north + 1) / this._tileSize);
-
-        const features = [];
+        const tileRequests: GetFeatureRequest[] = [];
 
         for (let x = xmin; x < xmax; ++x) {
             for (let y = ymin; y < ymax; ++y) {
-                const key = `${this._cacheKey}-${x}/${y}`;
+                const tileExtent = new Extent(
+                    extent.crs,
+                    x * tileSize,
+                    (x + 1) * tileSize,
+                    y * tileSize,
+                    (y + 1) * tileSize,
+                );
 
-                let tileFeatures = this._cache.get(key) as Feature[];
-                if (tileFeatures === undefined) {
-                    const tileExtent = new Extent(
-                        extent.crs,
-                        x * this._tileSize,
-                        (x + 1) * this._tileSize,
-                        y * this._tileSize,
-                        (y + 1) * this._tileSize,
-                    );
-
-                    tileFeatures = await super.fetchFeatures(
-                        tileExtent,
-                        options,
-                        targetCoordinateSystem,
-                    );
-
-                    this._cache.set(key, features);
-                }
-                features.push(...tileFeatures);
+                tileRequests.push({
+                    extent: tileExtent,
+                    signal: request.signal,
+                });
             }
         }
-        return features;
-    }
-}
+        return { requests: tileRequests };
+    };
+};
 
 /**
  * A feature source that supports streaming features from a
@@ -292,7 +235,7 @@ export default class StreamableFeatureSource extends FeatureSourceBase {
     public readonly isStreamableFeatureSource = true as const;
     public readonly type = 'StreamableFeatureSource' as const;
 
-    private readonly _options: StreamableFeatureSourceOptions;
+    private readonly _options: Required<StreamableFeatureSourceOptions>;
 
     public constructor(params: StreamableFeatureSourceOptions) {
         super();
@@ -300,10 +243,62 @@ export default class StreamableFeatureSource extends FeatureSourceBase {
             queryBuilder: params.queryBuilder,
             format: params.format ?? new GeoJSON(),
             getter: params.getter ?? defaultGetter,
-            featureGetter: params.featureGetter ?? new DefaultFeatureGetter(),
-            maxExtent: params.maxExtent,
+            loadingStrategy: params.loadingStrategy ?? defaultLoadingStrategy,
+            extent: params.extent ?? null,
+            cache: params.cache ?? GlobalCache,
+            enableCaching: params.enableCaching ?? true,
             sourceCoordinateSystem: params.sourceCoordinateSystem ?? CoordinateSystem.epsg4326,
         };
+    }
+
+    private async processRequest(request: GetFeatureRequest): Promise<GetFeatureResult> {
+        const url = this._options.queryBuilder({
+            extent: request.extent,
+            sourceCoordinateSystem: this._options.sourceCoordinateSystem,
+        });
+
+        if (!url) {
+            return { features: [] };
+        }
+
+        const urlString = url.toString();
+
+        if (this._options.enableCaching) {
+            const cached = this._options.cache.get(urlString);
+            if (cached != null) {
+                return cached as GetFeatureResult;
+            }
+        }
+
+        const { getter, format, sourceCoordinateSystem } = this._options;
+        const targetCoordinateSystem = nonNull(this._targetCoordinateSystem);
+
+        const data = await getter(urlString, format.getType());
+
+        const features = format.readFeatures(data) as Feature[];
+
+        const getFeatureId = (feature: Feature): number | string => {
+            return (
+                feature.getId() ?? feature.get('id') ?? feature.get('fid') ?? feature.get('ogc_fid')
+            );
+        };
+
+        const processedFeatures = await processFeatures(
+            features,
+            sourceCoordinateSystem,
+            targetCoordinateSystem,
+            {
+                getFeatureId,
+            },
+        );
+
+        const result: GetFeatureResult = { features: processedFeatures };
+
+        if (this._options.enableCaching) {
+            this._options.cache.set(urlString, result);
+        }
+
+        return result;
     }
 
     public async getFeatures(request: GetFeatureRequest): Promise<GetFeatureResult> {
@@ -314,11 +309,11 @@ export default class StreamableFeatureSource extends FeatureSourceBase {
         let south = request.extent.south;
         let north = request.extent.north;
 
-        if (this._options.maxExtent) {
-            west = Math.max(west, this._options.maxExtent.west);
-            east = Math.min(east, this._options.maxExtent.east);
-            south = Math.max(south, this._options.maxExtent.south);
-            north = Math.min(north, this._options.maxExtent.north);
+        if (this._options.extent) {
+            west = Math.max(west, this._options.extent.west);
+            east = Math.min(east, this._options.extent.east);
+            south = Math.max(south, this._options.extent.south);
+            north = Math.min(north, this._options.extent.north);
         }
 
         if (west >= east || south >= north) {
@@ -326,12 +321,27 @@ export default class StreamableFeatureSource extends FeatureSourceBase {
             return { features: [] };
         }
 
-        const features = await nonNull(this._options.featureGetter).getFeatures(
-            new Extent(request.extent.crs, { east, north, south, west }),
-            this._options,
-            nonNull(this._targetCoordinateSystem),
-        );
+        const adjustedExtent = new Extent(request.extent.crs, { east, north, south, west });
 
-        return { features: features };
+        const strategy = nonNull(this._options.loadingStrategy);
+
+        const { requests } = strategy({
+            extent: adjustedExtent,
+            signal: request.signal,
+        });
+
+        if (requests.length === 0) {
+            return { features: [] };
+        }
+
+        const promises: Promise<GetFeatureResult>[] = [];
+
+        for (const subRequest of requests) {
+            promises.push(this.processRequest(subRequest));
+        }
+
+        const results = await Promise.all(promises);
+
+        return { features: results.flatMap(item => item.features) };
     }
 }

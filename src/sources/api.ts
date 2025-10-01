@@ -52,6 +52,11 @@ import StaticImageSource, {
 import StreamableFeatureSource, {
     StreamableFeatureSourceOptions,
     StreamableFeatureSourceQueryBuilder,
+    StreamableFeatureSourceGetter,
+    StreamableFeatureSourceLoadingStrategy,
+    defaultLoadingStrategy,
+    tiledLoadingStrategy,
+    wfsBuilder,
     ogcApiFeaturesBuilder,
 } from './StreamableFeatureSource';
 import TiledImageSource, { type TiledImageSourceOptions } from './TiledImageSource';
@@ -71,6 +76,12 @@ export {
     AggregateFeatureSourceOptions,
     AggregatePointCloudSource,
     AggregatePointCloudSourceOptions,
+    StreamableFeatureSourceGetter,
+    StreamableFeatureSourceLoadingStrategy,
+    ogcApiFeaturesBuilder,
+    defaultLoadingStrategy,
+    tiledLoadingStrategy,
+    wfsBuilder,
     COPCSource,
     COPCSourceOptions,
     ChannelMapping,
@@ -128,5 +139,4 @@ export {
     WmtsSource,
     WmtsSourceOptions,
     las,
-    ogcApiFeaturesBuilder,
 };
