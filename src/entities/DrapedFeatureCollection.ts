@@ -93,19 +93,6 @@ export type DrapingMode = 'per-feature' | 'per-vertex' | 'none';
 export type DrapingModeFunction = (feature: Feature) => DrapingMode;
 
 /**
- * This callback can be used to generate elevation for a given OpenLayer
- * [Feature](https://openlayers.org/en/latest/apidoc/module-ol_Feature-Feature.html) (typically from its properties).
- *
- * - If a single number is returned, it will be used for all vertices in the geometry.
- * - If an array is returned, each value will be used to determine the height of the corresponding vertex in the geometry.
- * Note that the cardinality of the array must be the same as the number of vertices in the geometry.
- */
-export type DrapedFeatureElevationCallback = (
-    feature: Feature,
-    elevationProvider: ElevationProvider,
-) => { geometry: SimpleGeometry; verticalOffset: number; mustReplace: boolean };
-
-/**
  * Either returns the same geometry if it already has a XYZ layout, or create an equivalent geometry in the XYZ layout.
  */
 function cloneAsXYZIfRequired<
@@ -174,7 +161,13 @@ function getFeatureElevation(geometry: SimpleGeometry, provider: ElevationProvid
     return sample?.elevation ?? 0;
 }
 
-type SupportedGeometry = Point | Polygon | LineString | MultiLineString | MultiPolygon;
+type SupportedPerVertexGeometry =
+    | Polygon
+    | LineString
+    | MultiLineString
+    | MultiPoint
+    | MultiPolygon;
+type SupportedGeometry = Point | SupportedPerVertexGeometry;
 
 function isGeometrySupported(g: Geometry): g is SupportedGeometry {
     switch (g.getType()) {
@@ -190,9 +183,10 @@ function isGeometrySupported(g: Geometry): g is SupportedGeometry {
     }
 }
 
-function applyPerVertexDraping<
-    G extends Polygon | LineString | MultiPoint | MultiLineString | MultiPolygon,
->(geometry: G, provider: ElevationProvider): G {
+function applyPerVertexDraping<G extends SupportedPerVertexGeometry>(
+    geometry: G,
+    provider: ElevationProvider,
+): G {
     const coordinates = geometry.getFlatCoordinates();
     const stride = geometry.getStride();
 
@@ -224,89 +218,6 @@ function applyPerVertexDraping<
     return clone as G;
 }
 
-export const defaultElevationCallback: DrapedFeatureElevationCallback = (feature, provider) => {
-    let result: ReturnType<DrapedFeatureElevationCallback> | null = null;
-
-    const perFeature: (geometry: SimpleGeometry) => void = geometry => {
-        let center: Coordinate;
-
-        if (geometry.getType() === 'Point') {
-            center = (geometry as Point).getCoordinates();
-        } else if (geometry.getType() === 'Circle') {
-            center = (geometry as Circle).getCenter();
-        } else {
-            center = getCenter(geometry.getExtent());
-        }
-
-        const [x, y] = center;
-
-        const sample = provider.getElevationFast(x, y);
-
-        result = {
-            verticalOffset: sample?.elevation ?? 0,
-            geometry,
-            mustReplace: false,
-        };
-    };
-
-    const perVertex: (
-        geometry: Polygon | LineString | MultiLineString | MultiPolygon,
-    ) => void = geometry => {
-        const coordinates = geometry.getFlatCoordinates();
-        const stride = geometry.getStride();
-
-        // We have to possibly clone the geometry because OpenLayers does
-        // not allow changing the layout of an existing geometry, leading to issues.
-        const clone = cloneAsXYZIfRequired(geometry.clone());
-        const coordinateCount = coordinates.length / stride;
-        const xyz = new Array<number>(coordinateCount * 3);
-
-        let k = 0;
-
-        for (let i = 0; i < coordinates.length; i += stride) {
-            const x = coordinates[i + 0];
-            const y = coordinates[i + 1];
-
-            const sample = provider.getElevationFast(x, y);
-
-            const z = sample?.elevation ?? 0;
-
-            xyz[k + 0] = x;
-            xyz[k + 1] = y;
-            xyz[k + 2] = z;
-
-            k += 3;
-        }
-
-        clone.setFlatCoordinates('XYZ', xyz);
-
-        // TODO nous avons besoin d'une méthode pour savoir s'il faut remplacer le mesh ou non
-        result = {
-            verticalOffset: 0,
-            geometry: clone,
-            mustReplace: true,
-        };
-    };
-
-    const geometry = nonNull(feature.getGeometry(), 'feature has no geometry') as SimpleGeometry;
-
-    mapGeometry(geometry, {
-        processPoint: perFeature,
-        processCircle: perFeature,
-        processPolygon: perVertex,
-        processLineString: perVertex,
-        processMultiLineString: perVertex,
-        processMultiPolygon: perVertex,
-    });
-
-    if (result == null) {
-        // Just to please the typechecker
-        throw new Error();
-    }
-
-    return result;
-};
-
 export type DrapedFeatureCollectionOptions = {
     /**
      * The data source.
@@ -336,11 +247,6 @@ export type DrapedFeatureCollectionOptions = {
      * If a callback is given, it allows to extrude each feature individually.
      */
     extrusionOffset?: FeatureExtrusionOffset | FeatureExtrusionOffsetCallback;
-    /**
-     * The elevation callback to compute elevations for a feature.
-     * @defaultValue {@link defaultElevationCallback}
-     */
-    elevationCallback?: DrapedFeatureElevationCallback;
     /**
      * An optional material generator for shaded surfaces.
      */
@@ -389,7 +295,9 @@ type FeaturesEntry = {
 
 /**
  * Loads 3D features from a {@link FeatureSource} and displays them on top
- * of a map, by taking terrain into account.
+ * of a map or map-like entity, by taking terrain into account.
+ *
+ * To drape features on custom entities, they must implement the {@link MapLike} interface.
  */
 export default class DrapedFeatureCollection extends Entity3D {
     public override type = 'DrapedFeatureCollection' as const;
@@ -398,7 +306,6 @@ export default class DrapedFeatureCollection extends Entity3D {
     private _map: MapLike | null = null;
 
     private readonly _drapingMode: DrapingMode | DrapingModeFunction;
-    private readonly _elevationCallback: DrapedFeatureElevationCallback;
     private readonly _geometryConverter: GeometryConverter<MeshUserData>;
     private readonly _activeTiles = new Map<Tile['id'], Tile>();
     private readonly _objectOptions: ObjectOptions = {
@@ -445,7 +352,6 @@ export default class DrapedFeatureCollection extends Entity3D {
         this._source = options.source;
         this._style = options.style;
         this._minLod = options.minLod ?? this._minLod;
-        this._elevationCallback = options.elevationCallback ?? defaultElevationCallback;
 
         this._eventHandlers = {
             onTileCreated: this.onTileCreated.bind(this),
@@ -527,19 +433,12 @@ export default class DrapedFeatureCollection extends Entity3D {
             case 'PolygonMesh':
             case 'MultiPolygonMesh':
                 {
-                    // TODO
-                    // const elevation =
-                    //     typeof this._elevation === 'function'
-                    //         ? this._elevation(feature)
-                    //         : this._elevation;
-
                     const extrusionOffset = this.getExtrusionOffset(feature);
 
                     const options = {
                         ...commonOptions,
                         ...style,
                         extrusionOffset,
-                        // elevation, // TODO
                     };
                     if (isPolygonMesh(obj)) {
                         this._geometryConverter.updatePolygonMesh(obj, options);
@@ -796,7 +695,6 @@ export default class DrapedFeatureCollection extends Entity3D {
         };
     }
 
-    // TODO gérer l'élévation sur les lignes
     private getLineOptions(style?: FeatureStyle): LineOptions {
         return {
             ...style?.stroke,
@@ -821,7 +719,9 @@ export default class DrapedFeatureCollection extends Entity3D {
             processLineString: p => converter.build(p, this.getLineOptions(style)),
             processMultiPolygon: p => converter.build(p, this.getPolygonOptions(feature, style)),
             processMultiLineString: p => converter.build(p, this.getLineOptions(style)),
-            // TODO faire le reste:
+            fallback: g => {
+                throw new Error(`unsupported geometry type: ${g.getType()}`);
+            },
         });
 
         if (result) {
@@ -877,23 +777,19 @@ export default class DrapedFeatureCollection extends Entity3D {
         let shouldReplaceMesh = false;
         let verticalOffset = 0;
 
+        const map = nonNull(this._map);
+
         if (
             drapingMode === 'per-feature' ||
             (drapingMode === 'per-vertex' && geometry.getType() === 'Point')
         ) {
             // Note that point is necessarily per feature, since there is only one vertex
             actualGeometry = geometry;
-            verticalOffset = getFeatureElevation(geometry, nonNull(this._map));
+            verticalOffset = getFeatureElevation(geometry, map);
         } else if (drapingMode === 'per-vertex') {
             shouldReplaceMesh = true;
-            // TODO support multipoint ?
-            // @ts-expect-error cast
-            actualGeometry = applyPerVertexDraping(geometry, this._map);
+            actualGeometry = applyPerVertexDraping(geometry as SupportedPerVertexGeometry, map);
         }
-
-        // // TODO doit-on supporter plusieurs maps ?
-        // // TODO Callback de récupération de l'élévation
-        // const processed = this._elevationCallback(feature, this._maps[0]);
 
         // We have to entirely recreate the mesh because
         // the vertices will have different elevations
