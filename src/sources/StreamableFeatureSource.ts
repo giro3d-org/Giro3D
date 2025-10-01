@@ -118,6 +118,9 @@ export const wfsBuilder: (
 
 export type Getter = (url: string, type: Type) => Promise<unknown>;
 
+/**
+ * Getter for JSON, text, XML and ArrayBuffer data.
+ */
 export const defaultGetter: Getter = (url, type) => {
     switch (type) {
         case 'arraybuffer':
@@ -141,6 +144,10 @@ export interface StreamableFeatureSourceOptions {
      * @defaultValue {@link GeoJSON}
      */
     format?: FeatureFormat;
+    /**
+     * The function to download and process the data.
+     * @defaultValue {@link defaultGetter}
+     */
     getter?: Getter;
     featureGetter?: FeatureGetter;
     /**
