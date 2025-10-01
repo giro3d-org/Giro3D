@@ -1964,7 +1964,12 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     public getElevationFast(x: number, y: number): ElevationSample | undefined {
-        const elevationLayer = this.getElevationLayers()[0];
+        if (!this._hasElevationLayer) {
+            return undefined;
+        }
+
+        const elevationLayers = this.getElevationLayers();
+        const elevationLayer = elevationLayers[0];
 
         if (!elevationLayer.visible) {
             return undefined;
