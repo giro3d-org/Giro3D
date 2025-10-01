@@ -322,7 +322,7 @@ export default class DrapedFeatureCollection extends Entity3D {
     private readonly _eventHandlers: {
         onTileCreated: EventHandler<MapLikeEventMap['tile-created']>;
         onTileDeleted: EventHandler<MapLikeEventMap['tile-deleted']>;
-        onElevationLoaded: EventHandler<MapLikeEventMap['tile-deleted']>;
+        onElevationLoaded: EventHandler<MapLikeEventMap['elevation-loaded']>;
         onSourceUpdated: EventHandler<FeatureSourceEventMap['updated']>;
         onTextureLoaded: () => void;
     };
