@@ -1,43 +1,7 @@
-import { GlobeControls as WrappedControls, Ellipsoid as WrappedEllipsoid } from '3d-tiles-renderer';
+import { GlobeControls as WrappedControls } from '3d-tiles-renderer';
 import type { Object3D, OrthographicCamera, PerspectiveCamera } from 'three';
-import { EventDispatcher, Matrix4 } from 'three';
-import Ellipsoid from '../core/geographic/Ellipsoid';
-
-class PseudoTileGroup {
-    private _obj: Object3D;
-    private _matrixWorldInverse: Matrix4;
-
-    constructor(obj: Object3D) {
-        this._obj = obj;
-
-        this._matrixWorldInverse = new Matrix4();
-    }
-
-    get matrix() {
-        return this._obj.matrix;
-    }
-
-    get matrixWorld() {
-        return this._obj.matrixWorld;
-    }
-
-    get matrixWorldInverse() {
-        this._matrixWorldInverse.copy(this.matrixWorld).invert();
-        return this._matrixWorldInverse;
-    }
-}
-
-class PseudoTileRenderer extends EventDispatcher {
-    readonly ellipsoid: WrappedEllipsoid;
-    readonly group: PseudoTileGroup;
-
-    constructor(root: Object3D, ellipsoid: WrappedEllipsoid) {
-        super();
-
-        this.group = new PseudoTileGroup(root);
-        this.ellipsoid = ellipsoid;
-    }
-}
+import { EventDispatcher } from 'three';
+import type Ellipsoid from '../core/geographic/Ellipsoid';
 
 export interface GlobeControlsEvents {
     start: unknown;
@@ -120,22 +84,7 @@ export default class GlobeControls extends EventDispatcher<GlobeControlsEvents> 
             end: () => this.dispatchEvent({ type: 'end' }),
         };
 
-        const ellipsoid = params.ellipsoid ?? Ellipsoid.WGS84;
-
-        this._controls = new WrappedControls(
-            scene,
-            camera,
-            domElement,
-            // @ts-expect-error incomplete implementation
-            new PseudoTileRenderer(
-                scene,
-                new WrappedEllipsoid(
-                    ellipsoid.semiMajorAxis,
-                    ellipsoid.semiMajorAxis,
-                    ellipsoid.semiMinorAxis,
-                ),
-            ),
-        );
+        this._controls = new WrappedControls(scene, camera, domElement);
 
         this._controls.minDistance = params.minDistance ?? this._controls.minDistance;
         this._controls.maxDistance = params.maxDistance ?? this._controls.maxDistance;
