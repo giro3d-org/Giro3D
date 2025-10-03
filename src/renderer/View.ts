@@ -200,6 +200,10 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
      * the bounds defined by {@link minNearPlane} and {@link maxFarPlane}.
      */
     public set near(distance: number) {
+        if (!Number.isFinite(distance) || distance < 0) {
+            console.warn(`Invalid near plane distance: ${distance}`);
+            return;
+        }
         this.camera.near = MathUtils.clamp(distance, this.minNearPlane, this.maxFarPlane);
     }
 
@@ -212,6 +216,11 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
      * the bounds defined by {@link minNearPlane} and {@link maxFarPlane}.
      */
     public set far(distance: number) {
+        if (!Number.isFinite(distance) || distance < 0) {
+            console.warn(`Invalid far plane distance: ${distance}`);
+            return;
+        }
+
         this.camera.far = MathUtils.clamp(distance, this.minNearPlane, this.maxFarPlane);
     }
 
