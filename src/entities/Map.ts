@@ -387,6 +387,8 @@ export interface MapEventMap extends Entity3DEventMap {
     'layer-added': { layer: Layer };
     /** Fires when a layer is removed from the map. */
     'layer-removed': { layer: Layer };
+    /** Fires when the visibility of a layer present on this map changes. */
+    'layer-visibility-changed': { layer: Layer };
     /** Fires when elevation data has changed on a specific extent of the map. */
     'elevation-changed': { extent: Extent };
     /** Fires when (final, non-interim) elevation data has been loaded for a specific tile */
@@ -1770,6 +1772,8 @@ class Map<UserData extends EntityUserData = EntityUserData>
             this.dispatchEvent({ type: 'elevation-changed', extent: this.extent });
             this.updateGlobalMinMax();
         }
+
+        this.dispatchEvent({ type: 'layer-visibility-changed', layer: event.target });
 
         this.traverseTiles(tile => {
             tile.onLayerVisibilityChanged(event.target);
