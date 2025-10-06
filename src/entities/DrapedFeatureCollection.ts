@@ -912,7 +912,12 @@ export default class DrapedFeatureCollection extends Entity3D {
 
 class DrapedFeatureCollectionInspector extends EntityInspector<DrapedFeatureCollection> {
     public constructor(gui: GUI, instance: Instance, entity: DrapedFeatureCollection) {
-        super(gui, instance, entity);
+        super(gui, instance, entity, {
+            visibility: true,
+            opacity: true,
+            boundingBoxColor: true,
+            boundingBoxes: true,
+        });
 
         this.addController(entity, 'loadedFeatures');
     }
