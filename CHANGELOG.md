@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.43.6 (2025-10-06)
+
+### Fix
+
+- **GlobeControls**: fix broken zoom (#640)
+
 ## v0.43.5 (2025-09-17)
 
 ### Fix
