@@ -19,6 +19,7 @@ import type { FeatureExtrusionOffset, FeatureExtrusionOffsetCallback } from '../
 import type Extent from '../core/geographic/Extent';
 import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
 import type Instance from '../core/Instance';
+import type Layer from '../core/layer/Layer';
 import type PointOfView from '../core/PointOfView';
 import type {
     BaseOptions,
@@ -43,6 +44,7 @@ import {
     type PointMaterialGenerator,
     type SurfaceMaterialGenerator,
 } from '../core/FeatureTypes';
+import { isElevationLayer } from '../core/layer/ElevationLayer';
 import EntityInspector from '../gui/EntityInspector';
 import EntityPanel from '../gui/EntityPanel';
 import GeometryConverter from '../renderer/geometries/GeometryConverter';
@@ -62,6 +64,8 @@ const tmpSphere = new Sphere();
 
 interface MapLikeEventMap {
     'elevation-loaded': { tile: Tile };
+    'layer-added': { layer: Layer };
+    'layer-removed': { layer: Layer };
     'tile-created': { tile: Tile };
     'tile-deleted': { tile: Tile };
 }
@@ -322,6 +326,8 @@ export default class DrapedFeatureCollection extends Entity3D {
     private readonly _eventHandlers: {
         onTileCreated: EventHandler<MapLikeEventMap['tile-created']>;
         onTileDeleted: EventHandler<MapLikeEventMap['tile-deleted']>;
+        onLayerAdded: EventHandler<MapLikeEventMap['layer-added']>;
+        onLayerRemoved: EventHandler<MapLikeEventMap['layer-removed']>;
         onElevationLoaded: EventHandler<MapLikeEventMap['elevation-loaded']>;
         onSourceUpdated: EventHandler<FeatureSourceEventMap['updated']>;
         onTextureLoaded: () => void;
@@ -359,6 +365,8 @@ export default class DrapedFeatureCollection extends Entity3D {
             onElevationLoaded: this.onElevationLoaded.bind(this),
             onTextureLoaded: this.notifyChange.bind(this),
             onSourceUpdated: this.onSourceUpdated.bind(this),
+            onLayerAdded: this.onLayerAdded.bind(this),
+            onLayerRemoved: this.onLayerRemoved.bind(this),
         };
 
         this._geometryConverter = new GeometryConverter<MeshUserData>({
@@ -577,10 +585,20 @@ export default class DrapedFeatureCollection extends Entity3D {
 
     public override updateVisibility(): void {
         super.updateVisibility();
-        if (this.visible && this._map) {
-            this._map.traverseTiles(tile => {
-                this.registerTile(tile);
-            });
+        if (this.visible) {
+            this.registerAllTiles();
+        }
+    }
+
+    private onLayerAdded({ layer }: MapLikeEventMap['layer-added']): void {
+        if (isElevationLayer(layer)) {
+            this.registerAllTiles(true);
+        }
+    }
+
+    private onLayerRemoved({ layer }: MapLikeEventMap['layer-removed']): void {
+        if (isElevationLayer(layer)) {
+            this.registerAllTiles(true);
         }
     }
 
@@ -596,6 +614,14 @@ export default class DrapedFeatureCollection extends Entity3D {
         this.registerTile(tile, true);
     }
 
+    private registerAllTiles(forceRecreateMeshes = false): void {
+        if (this._map) {
+            this._map.traverseTiles(tile => {
+                this.registerTile(tile, forceRecreateMeshes);
+            });
+        }
+    }
+
     private registerTile(tile: Tile, forceRecreateMeshes = false): void {
         if (!this.visible || this.frozen) {
             return;
@@ -608,14 +634,18 @@ export default class DrapedFeatureCollection extends Entity3D {
             if (tile.lod >= this._minLod) {
                 this.loadFeaturesOnExtent(tile.extent).then(features => {
                     if (this._activeTiles.has(tile.id)) {
-                        this.loadMeshes(features, tile.lod);
+                        this.loadMeshes(features, tile.lod, forceRecreateMeshes);
                     }
                 });
             }
         }
     }
 
-    private loadMeshes(features: Readonly<Feature[]>, lod: number): void {
+    private loadMeshes(
+        features: Readonly<Feature[]>,
+        lod: number,
+        forceRecreateMeshes = false,
+    ): void {
         for (const feature of features) {
             const geometry = feature.getGeometry();
 
@@ -637,7 +667,7 @@ export default class DrapedFeatureCollection extends Entity3D {
                 }
                 const existing = nonNull(this._features.get(id));
 
-                if (!existing.mesh || existing.sampledLod < lod) {
+                if (forceRecreateMeshes || !existing.mesh || existing.sampledLod < lod) {
                     this.loadFeatureMesh(id, existing);
                     existing.sampledLod = lod;
                 }
