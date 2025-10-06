@@ -66,6 +66,7 @@ interface MapLikeEventMap {
     'elevation-loaded': { tile: Tile };
     'layer-added': { layer: Layer };
     'layer-removed': { layer: Layer };
+    'layer-visibility-changed': { layer: Layer };
     'tile-created': { tile: Tile };
     'tile-deleted': { tile: Tile };
 }
@@ -328,6 +329,7 @@ export default class DrapedFeatureCollection extends Entity3D {
         onTileDeleted: EventHandler<MapLikeEventMap['tile-deleted']>;
         onLayerAdded: EventHandler<MapLikeEventMap['layer-added']>;
         onLayerRemoved: EventHandler<MapLikeEventMap['layer-removed']>;
+        onLayerVisibilityChanged: EventHandler<MapLikeEventMap['layer-visibility-changed']>;
         onElevationLoaded: EventHandler<MapLikeEventMap['elevation-loaded']>;
         onSourceUpdated: EventHandler<FeatureSourceEventMap['updated']>;
         onTextureLoaded: () => void;
@@ -367,6 +369,7 @@ export default class DrapedFeatureCollection extends Entity3D {
             onSourceUpdated: this.onSourceUpdated.bind(this),
             onLayerAdded: this.onLayerAdded.bind(this),
             onLayerRemoved: this.onLayerRemoved.bind(this),
+            onLayerVisibilityChanged: this.onLayerVisibilityChanged.bind(this),
         };
 
         this._geometryConverter = new GeometryConverter<MeshUserData>({
@@ -549,6 +552,12 @@ export default class DrapedFeatureCollection extends Entity3D {
         map.addEventListener('tile-created', this._eventHandlers.onTileCreated);
         map.addEventListener('tile-deleted', this._eventHandlers.onTileDeleted);
         map.addEventListener('elevation-loaded', this._eventHandlers.onElevationLoaded);
+        map.addEventListener('layer-added', this._eventHandlers.onLayerAdded);
+        map.addEventListener('layer-removed', this._eventHandlers.onLayerRemoved);
+        map.addEventListener(
+            'layer-visibility-changed',
+            this._eventHandlers.onLayerVisibilityChanged,
+        );
 
         map.traverseTiles(tile => {
             this.registerTile(tile);
@@ -597,6 +606,12 @@ export default class DrapedFeatureCollection extends Entity3D {
     }
 
     private onLayerRemoved({ layer }: MapLikeEventMap['layer-removed']): void {
+        if (isElevationLayer(layer)) {
+            this.registerAllTiles(true);
+        }
+    }
+
+    private onLayerVisibilityChanged({ layer }: MapLikeEventMap['layer-visibility-changed']): void {
         if (isElevationLayer(layer)) {
             this.registerAllTiles(true);
         }

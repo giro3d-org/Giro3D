@@ -125,6 +125,9 @@ function loadDrapedFeatures() {
 
 loadDrapedFeatures();
 
+/** @type {ElevationLayer | null} */
+let elevationLayer = null;
+
 // Let's build the elevation layer from the WMTS capabilities
 WmtsSource.fromCapabilities(url, {
     layer: 'ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES',
@@ -132,21 +135,21 @@ WmtsSource.fromCapabilities(url, {
     noDataValue,
 })
     .then(elevationWmts => {
-        map.addLayer(
-            new ElevationLayer({
-                name: 'elevation',
-                extent: map.extent,
-                // We don't need the full resolution of terrain
-                // because we are not using any shading. This will save a lot of memory
-                // and make the terrain faster to load.
-                resolutionFactor: 1 / 2,
-                minmax: { min: 0, max: 5000 },
-                noDataOptions: {
-                    replaceNoData: false,
-                },
-                source: elevationWmts,
-            }),
-        );
+        elevationLayer = new ElevationLayer({
+            name: 'elevation',
+            extent: map.extent,
+            // We don't need the full resolution of terrain
+            // because we are not using any shading. This will save a lot of memory
+            // and make the terrain faster to load.
+            resolutionFactor: 1 / 2,
+            minmax: { min: 0, max: 5000 },
+            noDataOptions: {
+                replaceNoData: false,
+            },
+            source: elevationWmts,
+        });
+
+        map.addLayer(elevationLayer);
     })
     .catch(console.error);
 
@@ -195,5 +198,35 @@ controls.saveState();
 instance.view.setControls(controls);
 
 Inspector.attach('inspector', instance);
+
+bindDropDown('elevationMode', newMode => {
+    if (elevationLayer == null) {
+        return;
+    }
+
+    const currentLayers = map.getElevationLayers();
+
+    switch (newMode) {
+        case 'enabled':
+            if (!currentLayers.includes(elevationLayer)) {
+                map.addLayer(elevationLayer);
+            }
+            elevationLayer.visible = true;
+            break;
+        case 'hidden':
+            if (!currentLayers.includes(elevationLayer)) {
+                map.addLayer(elevationLayer);
+            }
+            elevationLayer.visible = false;
+            break;
+        case 'disabled':
+            if (currentLayers.includes(elevationLayer)) {
+                map.removeLayer(elevationLayer);
+            }
+            break;
+    }
+
+    instance.notifyChange(map);
+});
 
 StatusBar.bind(instance);

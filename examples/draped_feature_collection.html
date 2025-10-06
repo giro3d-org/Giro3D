@@ -12,6 +12,16 @@ tags: [features, draping, ign, map]
         <div class="card-header">Parameters</div>
         <div class="card-body">
             <fieldset id="options">
+                <!-- Elevation layer -->
+                <div class="input-group mb-2">
+                    <label class="input-group-text" for="elevationMode">Elevation layer</label>
+                    <select class="form-select" id="elevationMode" autocomplete="off">
+                        <option value="enabled" selected>Present</option>
+                        <option value="hidden">Present, but not active</option>
+                        <option value="disabled">Absent</option>
+                    </select>
+                </div>
+
                 <!-- Draping mode -->
                 <div class="input-group mb-2">
                     <label class="input-group-text" for="mode">Draping mode</label>
