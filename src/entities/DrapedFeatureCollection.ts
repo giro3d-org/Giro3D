@@ -597,9 +597,10 @@ export default class DrapedFeatureCollection extends Entity3D {
     }
 
     private registerTile(tile: Tile, forceRecreateMeshes = false): void {
-        if (!this.visible) {
+        if (!this.visible || this.frozen) {
             return;
         }
+
         if (!this._activeTiles.has(tile.id) || forceRecreateMeshes) {
             this._activeTiles.set(tile.id, tile);
             this._sortedTiles = null;
