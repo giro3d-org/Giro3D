@@ -211,4 +211,4 @@ function bind(instance, options = {}) {
     }
 }
 
-export default { bind, setAttributionHtml };
+export default { updateUrl, bind, setAttributionHtml };
