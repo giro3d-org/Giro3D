@@ -64,6 +64,7 @@ We welcome merge requests (MRs) with great interest. We try to promptly review t
 - If you plan to make a major change, please open an issue first.
 - If this is your first contribution to Giro3D, add your name to [CONTRIBUTORS.md](CONTRIBUTORS.md)
 - If your merge request fixes an existing issue, include a link to the issue in the description.
+- Use the default template for merge requests.
 - If your merge request needs additional work, include a task list, or better, split it in several MRs
 - Ping `@giro3d` in the comments to get your code reviewed, and also when you are done making new commits to address feedback
 - Verify your code passes the linter and tests (`npm test`).
