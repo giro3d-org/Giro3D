@@ -284,8 +284,8 @@ attribution: Autzen stadium dataset provided by <a href="https://www.usgs.gov" t
                                     title="The attribute to filter"
                                 ></select>
                                 <select
-                                    class="form-control"
-                                    style="max-width: 3rem"
+                                    class="form-select"
+                                    style="max-width: 4.5rem"
                                     id="filter-1-operator"
                                     autocomplete="off"
                                     title="The comparison operator"
@@ -318,8 +318,8 @@ attribution: Autzen stadium dataset provided by <a href="https://www.usgs.gov" t
                                     title="The attribute to filter"
                                 ></select>
                                 <select
-                                    class="form-control"
-                                    style="max-width: 3rem"
+                                    class="form-select"
+                                    style="max-width: 4.5rem"
                                     id="filter-2-operator"
                                     autocomplete="off"
                                     title="The comparison operator"
@@ -352,8 +352,8 @@ attribution: Autzen stadium dataset provided by <a href="https://www.usgs.gov" t
                                     title="The attribute to filter"
                                 ></select>
                                 <select
-                                    class="form-control"
-                                    style="max-width: 3rem"
+                                    class="form-select"
+                                    style="max-width: 4.5rem"
                                     id="filter-3-operator"
                                     autocomplete="off"
                                     title="The comparison operator"
@@ -372,6 +372,22 @@ attribution: Autzen stadium dataset provided by <a href="https://www.usgs.gov" t
                                     placeholder="Value"
                                     aria-label="Value"
                                 />
+                            </div>
+                        </li>
+
+                        <li class="list-group-item p-1">
+                            <div class="input-group">
+                                <div class="form-control">Classification</div>
+                                <select
+                                    class="form-select"
+                                    id="filter-classifications-operator"
+                                    autocomplete="off"
+                                    title="The comparison operator"
+                                >
+                                    <option value="in" selected>in</option>
+                                    <option value="not_in">not in</option>
+                                </select>
+                                <div id="filter-classifications" class="p-1"></div>
                             </div>
                         </li>
                     </ul>
