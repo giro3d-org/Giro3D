@@ -28,7 +28,7 @@ let map;
 
 function addMapboxLayer(extent) {
     const apiKey =
-        'pk.eyJ1IjoidG11Z3VldCIsImEiOiJjbGJ4dTNkOW0wYWx4M25ybWZ5YnpicHV6In0.KhDJ7W5N3d1z3ArrsDjX_A';
+        'pk.eyJ1IjoiZ2lybzNkIiwiYSI6ImNtZ3Q0NDNlNTAwY2oybHI3Ym1kcW03YmoifQ.Zl7_KZiAhqWSPjlkKDKYnQ';
 
     // Adds a satellite basemap
     const tiledLayer = new ColorLayer({
