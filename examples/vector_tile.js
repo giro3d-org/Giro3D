@@ -38,7 +38,7 @@ instance.view.setControls(controls);
 
 // Adds a color layer from a VectorTile source
 const key =
-    'pk.eyJ1IjoibWljaGFlbG51bm4iLCJhIjoiY2pudTk4czFuMDJ6NDNrcG56bG5xeWk4byJ9.R5dzdzAM5kaxa1gXjOQQrw';
+    'pk.eyJ1IjoiZ2lybzNkIiwiYSI6ImNtZ3Q0NDNlNTAwY2oybHI3Ym1kcW03YmoifQ.Zl7_KZiAhqWSPjlkKDKYnQ';
 
 const vectorTileSource = new VectorTileSource({
     url: `${
