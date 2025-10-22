@@ -28,6 +28,7 @@
     ],
     "scripts": {
         "check-circular-dependencies": "madge -c --extensions ts ./src",
+        "check-hyperlinks": "node tasks/validate-hyperlinks.mjs -i build/site",
         "typecheck": "tsc --noEmit",
         "typecheck-examples": "tsc --noEmit --project examples/tsconfig.json",
         "_check-folders": "node tasks/check-folders.mjs src test examples",
@@ -39,7 +40,7 @@
         "build-examples": "npm run build && npm run typecheck-examples && node tasks/build-examples.mjs",
         "build-tutorials": "npm run build-examples && node tasks/build-tutorials.mjs",
         "build-static-site": "node tasks/build-static-site.mjs",
-        "build-site": "npm run build && node tasks/build-site.mjs --build-latest",
+        "build-site": "npm run build && node tasks/build-site.mjs --build-latest && npm run check-hyperlinks",
         "build": "npm run _transpile && npm run _generate-type-definitions",
         "build-package": "npm run build && npm run _inline-workers && node tasks/prepare-package.mjs",
         "commit": "npx git-cz",
