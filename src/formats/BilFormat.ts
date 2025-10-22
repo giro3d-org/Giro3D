@@ -43,7 +43,7 @@ function createWorker(): Worker {
  * map.addLayer(elevationLayer);
  *
  * ```
- * [See it in action](/examples/ign_ortho_elevation.html).
+ * [See it in action](/examples/ign_data.html).
  *
  */
 class BilFormat extends ImageFormat {
