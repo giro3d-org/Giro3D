@@ -844,7 +844,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
                 // we have to reload the position here, since the number of points per node might
                 // have changed (happens when we set new filters for example).
                 info.positionDirty = true;
-                this._stateMachine.transition(info, 'loading');
+                this._stateMachine.transition(info, 'loading', { allowSelfTransition: true });
             } else {
                 // Invalidate non-visible nodes
                 this._stateMachine.transition(info, 'empty');
