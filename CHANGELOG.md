@@ -1,5 +1,77 @@
 # Changelog
 
+## v0.44.0 (2025-10-27)
+
+### Changes in coordinate system handling
+
+This version brings a major change in the handling of coordinate systems. Previously, coordinate systems were simply identified by their name (a simple string). Now, they are encapsulated in the `CoordinateSystem` class, that also contains useful metadata about the coordinate system, such as the horizontal and vertical units, etc.
+
+The recommended way to create coordinate systems is by providing a WKT definition to the `CoordinateSystem.fromWkt()` method. This ensures that all the metadata about units is known by Giro3D.
+
+### New entity: `OrientedImageCollection`
+
+This entity displays a series of oriented images in 3D space. This is suitable to represent the point of view of cameras (drones, car-mounted cameras, etc)
+
+👉 [See the example](https://giro3d.org/examples/oriented_image_collection.html)
+
+### Colorize point clouds with intersecting volumes
+
+The `PointCloud` entity now supports coloring the intersection between box-like volumes (represented by the `IntersectingVolume` type) and the point cloud. This is useful to emulate Potree's features that colorize a point cloud with boxes.
+
+👉 [See the example](https://giro3d.org/examples/pointcloud_intersecting_volumes.html)
+
+### BREAKING CHANGE
+
+All classes that expected a coordinate system name in their constructor or interfaces now expect an instance of the `CoordinateSystem` class. The interface of many classes changed, for example `Instance`, `Extent`, `Coordinate`.
+
+For example, the `Instance` constructor was:
+
+```ts
+const instance = new Instance({
+    target: 'view',
+    crs: 'EPSG:3857',
+});
+```
+
+It is now:
+
+```ts
+const instance = new Instance({
+    target: 'view',
+    crs: CoordinateSystem.epsg3857,
+});
+```
+
+> [!note]
+> Most common coordinate systems are already pre-defined as static properties of the `CoordinateSystem` class, for example:
+>
+> - `CoordinateSystem.epsg3857`
+> - `CoordinateSystem.epsg4326`
+> - `CoordinateSystem.epsg4978`
+
+### Feat
+
+- introduce the `CoordinateSystem` class
+- **entities**: introduce new entity `OrientedImageCollection`
+- **crs**: add support for CRS with non-meter vertical unit
+- **Layer**: getPixel of a layer at coordinates
+- **LASSource/COPCSource**: introduce new FilterOperator `in` and `not_in`
+- **Pointcloud**: ability to color points by intersecting volumes
+- **AggregateImageSource**: combine several sources (#581)
+
+### Fix
+
+- **PointCloud**: fix filters not being applied
+- **Tiles3D**: correctly handle load-error from 3DtilesRenderer
+- **ConstantSizeSphere**: take into account camera.zoom in constant size sphere calculations
+- **AggregatePointCloudSource**: prevent mutation of source array
+- **ComposerTileFS.glsl**: support non-standard alpha channels (i.e RG texture format)
+- **Entity3D**: don't cancel material update by mistake
+
+### Refactor
+
+- enforce 'no-shadow' eslint rule
+
 ## v0.43.6 (2025-10-06)
 
 ### Fix
