@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.43.7 (2025-10-27)
+
+### Fix
+
+- **PointCloud**: fix filters not being applied in some cases (#642)
+
 ## v0.43.6 (2025-10-06)
 
 ### Fix
