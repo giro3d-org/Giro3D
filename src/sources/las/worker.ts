@@ -21,12 +21,12 @@ export type Metadata = {
     pointDataRecordLength: number;
 };
 
-async function decompressChunk(chunk: ArrayBuffer, metadata: Metadata): Promise<copc.Binary> {
+async function decompressChunk(chunk: ArrayBufferLike, metadata: Metadata): Promise<copc.Binary> {
     const lazPerf = await getLazPerf();
     return copc.Las.PointData.decompressChunk(new Uint8Array(chunk), metadata, lazPerf);
 }
 
-async function decompressFile(chunk: ArrayBuffer): Promise<copc.Binary> {
+async function decompressFile(chunk: ArrayBufferLike): Promise<copc.Binary> {
     const lazPerf = await getLazPerf();
     return copc.Las.PointData.decompressFile(new Uint8Array(chunk), lazPerf);
 }
@@ -39,7 +39,7 @@ type TypedMessage<K extends MessageType, T> = Message<T> & { type: K };
 
 type DecodeLazChunkMessage = TypedMessage<
     'DecodeLazChunk',
-    { buffer: ArrayBuffer; metadata: Metadata }
+    { buffer: ArrayBufferLike; metadata: Metadata }
 >;
 export type ReadViewResult = {
     position?: {
@@ -51,7 +51,7 @@ export type ReadViewResult = {
 type ReadViewMessage = TypedMessage<
     'ReadView',
     {
-        buffer: ArrayBuffer;
+        buffer: ArrayBufferLike;
         metadata: Metadata;
         header: copc.Las.Extractor.PartialHeader;
         origin: { x: number; y: number; z: number };
@@ -64,9 +64,9 @@ type ReadViewMessage = TypedMessage<
         compressColors: boolean;
     }
 >;
-type DecodeLazFileMessage = TypedMessage<'DecodeLazFile', { buffer: ArrayBuffer }>;
-type DecodeLazChunkResponse = SuccessResponse<ArrayBuffer>;
-type DecodeLazFileResponse = SuccessResponse<ArrayBuffer>;
+type DecodeLazFileMessage = TypedMessage<'DecodeLazFile', { buffer: ArrayBufferLike }>;
+type DecodeLazChunkResponse = SuccessResponse<ArrayBufferLike>;
+type DecodeLazFileResponse = SuccessResponse<ArrayBufferLike>;
 type ReadViewResponse = SuccessResponse<ReadViewResult>;
 
 export type SetWasmPathMessage = { type: 'SetWasmPath'; path: string };

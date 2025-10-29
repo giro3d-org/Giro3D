@@ -623,7 +623,7 @@ export default class COPCSource extends PointCloudSourceBase {
         getter: Getter,
         node: Hierarchy.Node,
         priority?: number,
-    ): Promise<ArrayBuffer> {
+    ): Promise<ArrayBufferLike> {
         const { pointDataOffset, pointDataLength } = node;
 
         const cacheKey = `${this.id}-${pointDataOffset}-${pointDataLength}`;

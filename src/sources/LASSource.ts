@@ -148,7 +148,7 @@ export default class LASSource extends PointCloudSourceBase {
     private _header: Header | null = null;
     private _volume: Box3 | null = null;
     /** The buffer that stores the entire LAS/LAZ file (in compressed form for LAZ files). */
-    private _buffer: ArrayBuffer | null = null;
+    private _buffer: Uint8Array | null = null;
 
     public get loading(): boolean {
         return this._opCounter.loading;
