@@ -6,9 +6,12 @@
 
 import { LazPerf } from 'laz-perf';
 
+import Fetcher from '../../utils/Fetcher';
+
 export const DEFAULT_LAZPERF_PATH = 'https://cdn.jsdelivr.net/npm/laz-perf@0.0.7/lib';
 
 let lazPerfPath = DEFAULT_LAZPERF_PATH;
+let lazPerfWasmBinary: ArrayBuffer | null = null;
 
 /**
  * Sets the path to the directory that contains the laz-perf library files.
@@ -27,6 +30,10 @@ export function setLazPerfPath(path: string): void {
     lazPerfPath = path;
 }
 
+export function setLazPerfWasmBinary(wasmBinary: ArrayBuffer): void {
+    lazPerfWasmBinary = wasmBinary;
+}
+
 /**
  * @internal
  */
@@ -35,6 +42,16 @@ export function getLazPerfPath(): string {
 }
 
 let lazPerf: Promise<LazPerf> | undefined = undefined;
+
+export function loadWasmBinary(): Promise<ArrayBuffer> {
+    return Fetcher.arrayBuffer(lazPerfPath + '/laz-perf.wasm');
+}
+
+async function loadLazPerfFromWasmBinary(binary: ArrayBuffer): Promise<LazPerf> {
+    return LazPerf.create({
+        wasmBinary: binary,
+    });
+}
 
 /**
  * Loads one instance of the LazPerf library.
@@ -51,7 +68,11 @@ async function loadLazPerf(wasmPath: string): Promise<LazPerf> {
  */
 export function getLazPerf(): Promise<LazPerf> {
     if (!lazPerf) {
-        lazPerf = loadLazPerf(lazPerfPath);
+        if (lazPerfWasmBinary != null) {
+            lazPerf = loadLazPerfFromWasmBinary(lazPerfWasmBinary);
+        } else {
+            lazPerf = loadLazPerf(lazPerfPath);
+        }
     }
 
     return lazPerf;

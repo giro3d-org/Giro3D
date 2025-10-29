@@ -23,7 +23,6 @@ import {
 } from 'three';
 
 import type * as octree from '../core/Octree';
-import type * as lazWorker from './las/worker';
 import type {
     GetNodeDataOptions,
     PointCloudAttribute,
@@ -34,7 +33,6 @@ import type {
 import type { LazPointCloudAttribute } from './potree/attributes';
 import type { ParseResult } from './potree/bin';
 import type { Metadata } from './potree/Metadata';
-import type * as potreeWorker from './potree/worker';
 
 import { GlobalCache } from '../core/Cache';
 import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
@@ -42,9 +40,8 @@ import OperationCounter from '../core/OperationCounter';
 import { DefaultQueue } from '../core/RequestQueue';
 import Fetcher from '../utils/Fetcher';
 import { defined, nonNull } from '../utils/tsutils';
-import WorkerPool from '../utils/WorkerPool';
 import { getLazPerf } from './las/config';
-import createWorker from './las/createWorker';
+import LASWorkerPool from './las/LASWorkerPool';
 import { readColor, readPosition, readScalarAttribute } from './las/readers';
 import { PointCloudSourceBase } from './PointCloudSource';
 import {
@@ -55,14 +52,12 @@ import {
 } from './potree/attributes';
 import { readBinFile } from './potree/bin';
 import { toBox3 } from './potree/BoundingBox';
+import PotreeWorkerPool from './potree/PotreeWorkerPool';
 
 type NodeInternalData = PointCloudNode & {
     childrenBitField: number;
     baseUrl: string;
 };
-
-let potreePool: WorkerPool<potreeWorker.MessageType, potreeWorker.MessageMap> | null = null;
-let lazPool: WorkerPool<lazWorker.MessageType, lazWorker.MessageMap> | null = null;
 
 type PotreeNode = octree.Octree<NodeInternalData>;
 
@@ -76,12 +71,6 @@ export type PotreeSourceOptions = {
      * @defaultValue true
      */
     enableWorkers?: boolean;
-    /**
-     * The maximum number of workers created by the worker pool.
-     * If `undefined`, the maximum number of workers will be allowed.
-     * @defaultValue undefined
-     */
-    workerConcurrency?: number;
 };
 
 // Create an A(xis)A(ligned)B(ounding)B(ox) for the child `childIndex` of one aabb.
@@ -289,14 +278,6 @@ async function parseIndexFile(
     return node as PotreeNode;
 }
 
-function createPotreeWorker(): Worker {
-    const worker = new Worker(new URL('./potree/worker.js', import.meta.url), {
-        type: 'module',
-    });
-
-    return worker;
-}
-
 /**
  * Reads Potree datasets.
  *
@@ -345,7 +326,6 @@ export default class PotreeSource extends PointCloudSourceBase {
         const opts = nonNull(options, 'options is undefined');
         this._options = {
             enableWorkers: opts.enableWorkers ?? true,
-            workerConcurrency: options.workerConcurrency ?? WorkerPool.defaultConcurrency,
             url: defined(opts, 'url'),
         };
     }
@@ -407,12 +387,7 @@ export default class PotreeSource extends PointCloudSourceBase {
             const lp = await getLazPerf();
             decompressed = await Las.PointData.decompressFile(compressed, lp);
         } else {
-            if (lazPool == null) {
-                lazPool = new WorkerPool({
-                    createWorker,
-                    concurrency: this._options.workerConcurrency,
-                });
-            }
+            const lazPool = await LASWorkerPool.get();
 
             const response = await lazPool.queue('DecodeLazFile', { buffer: compressed.buffer }, [
                 compressed.buffer,
@@ -476,12 +451,7 @@ export default class PotreeSource extends PointCloudSourceBase {
                 optionalAttribute,
             );
         } else {
-            if (potreePool == null) {
-                potreePool = new WorkerPool({
-                    createWorker: createPotreeWorker,
-                    concurrency: this._options.workerConcurrency,
-                });
-            }
+            const potreePool = await PotreeWorkerPool.get();
 
             return potreePool
                 .queue(

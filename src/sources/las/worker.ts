@@ -11,7 +11,7 @@ import type { PointCloudAttribute } from '../PointCloudSource';
 import type { DimensionFilter } from './filter';
 
 import { createErrorResponse } from '../../utils/WorkerPool';
-import { getLazPerf, setLazPerfPath } from './config';
+import { getLazPerf, setLazPerfWasmBinary } from './config';
 import { getPerPointFilters } from './filter';
 import { readColor, readPosition, readScalarAttribute } from './readers';
 
@@ -33,7 +33,7 @@ async function decompressFile(chunk: ArrayBufferLike): Promise<copc.Binary> {
 
 export type BoundingBox = [number, number, number, number, number, number];
 
-export type MessageType = 'DecodeLazChunk' | 'DecodeLazFile' | 'ReadView';
+export type MessageType = 'DecodeLazChunk' | 'DecodeLazFile' | 'ReadView' | 'SetWasmBinary';
 
 type TypedMessage<K extends MessageType, T> = Message<T> & { type: K };
 
@@ -69,9 +69,13 @@ type DecodeLazChunkResponse = SuccessResponse<ArrayBufferLike>;
 type DecodeLazFileResponse = SuccessResponse<ArrayBufferLike>;
 type ReadViewResponse = SuccessResponse<ReadViewResult>;
 
-export type SetWasmPathMessage = { type: 'SetWasmPath'; path: string };
+export type SetWasmBinaryMessage = { type: 'SetWasmBinary'; buffer: ArrayBuffer };
 
-type Messages = DecodeLazFileMessage | DecodeLazChunkMessage | SetWasmPathMessage | ReadViewMessage;
+type Messages =
+    | DecodeLazFileMessage
+    | DecodeLazChunkMessage
+    | SetWasmBinaryMessage
+    | ReadViewMessage;
 
 export interface MessageMap extends BaseMessageMap<MessageType> {
     DecodeLazChunk: {
@@ -89,8 +93,8 @@ export interface MessageMap extends BaseMessageMap<MessageType> {
 }
 
 export interface LazWorker extends Worker {
-    postMessage(message: SetWasmPathMessage, options?: StructuredSerializeOptions): void;
-    postMessage(message: SetWasmPathMessage, transfer: Transferable[]): void;
+    postMessage(message: SetWasmBinaryMessage, options?: StructuredSerializeOptions): void;
+    postMessage(message: SetWasmBinaryMessage, transfer: Transferable[]): void;
 }
 
 function processDecodeChunkMessage(msg: DecodeLazChunkMessage): void {
@@ -215,8 +219,8 @@ onmessage = (event: MessageEvent<Messages>): void => {
         case 'ReadView':
             processReadViewMessage(message);
             break;
-        case 'SetWasmPath':
-            setLazPerfPath(message.path);
+        case 'SetWasmBinary':
+            setLazPerfWasmBinary(message.buffer);
             break;
     }
 };

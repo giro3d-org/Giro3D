@@ -22,6 +22,8 @@ The `PointCloud` entity now supports coloring the intersection between box-like 
 
 ### BREAKING CHANGE
 
+#### Coordinate system handling
+
 All classes that expected a coordinate system name in their constructor or interfaces now expect an instance of the `CoordinateSystem` class. The interface of many classes changed, for example `Instance`, `Extent`, `Coordinate`.
 
 For example, the `Instance` constructor was:
@@ -49,6 +51,13 @@ const instance = new Instance({
 > - `CoordinateSystem.epsg4326`
 > - `CoordinateSystem.epsg4978`
 
+#### Other breaking changes
+
+- Due to worker pool sharing, the `workerConcurrency` option is removed from the constructors of:
+    - `COPCsource`
+    - `LASSource`
+    - `PotreeSource`
+
 ### Feat
 
 - introduce the `CoordinateSystem` class
@@ -67,6 +76,10 @@ const instance = new Instance({
 - **AggregatePointCloudSource**: prevent mutation of source array
 - **ComposerTileFS.glsl**: support non-standard alpha channels (i.e RG texture format)
 - **Entity3D**: don't cancel material update by mistake
+
+### Perf
+
+- reuse `laz-perf.wasm` accross workers (#621)
 
 ### Refactor
 
