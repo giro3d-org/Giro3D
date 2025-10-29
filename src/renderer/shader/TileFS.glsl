@@ -225,6 +225,12 @@ void main() {
 
     vec3 outgoingLight = vec3(1, 1, 1);
 
+// Apply shading but only if we are not performing shadow mapping
+// Since this shader is used to render both the "normal" aspect of the map
+// as well as shadow mapping, we have to be careful to exclude irrelevant
+// code from the shadow map code paths, both for performance and to avoid
+// nasty issue such as https://gitlab.com/giro3d/giro3d/-/issues/579
+#if defined(COLOR_RENDER)
     if (hillshading.mode == HILLSHADE_SIMPLE) {
         #if defined(ELEVATION_LAYER)
         outgoingLight = hillshade(df, hillshading.zenith, hillshading.azimuth, hillshading.intensity);
@@ -248,6 +254,7 @@ void main() {
 
         outgoingLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + totalEmissiveRadiance;
     }
+#endif
 
 // Shading can be applied either:
 // - before the color layers (i.e only the background pixels will be shaded)
