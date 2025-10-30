@@ -68,6 +68,7 @@ const instance = new Instance({
 
 ### Fix
 
+- **TileFS.glsl**: fix non working shadow maps on MacOS (#579)
 - **PointCloud**: fix filters not being applied
 - **Tiles3D**: correctly handle load-error from 3DtilesRenderer
 - **ConstantSizeSphere**: take into account camera.zoom in constant size sphere calculations
