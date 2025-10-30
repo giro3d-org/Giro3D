@@ -176,6 +176,8 @@ class RequestQueue extends EventDispatcher<RequestQueueEvents> implements Progre
      *
      * @param options - Options.
      * @returns A promise that resolves when the requested is completed.
+     * @throws `AbortError` if the request is aborted before being started (either because
+     * the `AbortSignal` became aborted, or if the `shouldExecute()` function returned `true`.
      */
     public enqueue<T>(options: {
         /** The unique identifier of this request. */

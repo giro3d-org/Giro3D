@@ -109,7 +109,7 @@ export type PointCloudNode = {
      */
     volume: Box3;
     /**
-     * The center of the volume.
+     * The center of the volume, in world space coordinates.
      */
     center: Vector3;
     /**
