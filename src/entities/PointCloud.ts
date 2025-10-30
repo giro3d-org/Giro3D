@@ -38,6 +38,7 @@ import Extent from '../core/geographic/Extent';
 import { getGeometryMemoryUsage } from '../core/MemoryUsage';
 import pickPointsAt from '../core/picking/PickPointsAt';
 import PointCloudMesh from '../core/PointCloud';
+import { DefaultQueue } from '../core/RequestQueue';
 import PointCloudMaterial, { ASPRS_CLASSIFICATIONS, MODE } from '../renderer/PointCloudMaterial';
 import {
     traverseNode,
@@ -48,6 +49,7 @@ import {
     type PointCloudSource,
 } from '../sources/PointCloudSource';
 import { isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
+import { AbortError } from '../utils/PromiseUtils';
 import StateMachine from '../utils/StateMachine';
 import { nonNull } from '../utils/tsutils';
 import Entity3D from './Entity3D';
@@ -377,11 +379,33 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
                 // Create a new abort controller that will control the cancellation
                 // of the loading, in case the state changes before the loading is finished.
                 value.controller = new AbortController();
-                this.loadNodeData(value, value.controller.signal, this._activeAttribute);
+                const signal = value.controller.signal;
+                const activeAttribute = this._activeAttribute;
+
+                const priority = this.getNodeLoadingPriority(value);
+
+                DefaultQueue.enqueue({
+                    id: MathUtils.generateUUID(),
+                    priority,
+                    signal,
+                    shouldExecute: () => value.state === 'loading',
+                    request: () => this.loadNodeData(value, signal, activeAttribute),
+                }).catch(e => {
+                    if (e instanceof AbortError) {
+                        // Do nothing
+                    } else {
+                        console.error(e);
+                    }
+                });
             }
 
             onStateChanged(value);
         });
+    }
+
+    private getNodeLoadingPriority(nodeInfo: NodeInfo): number {
+        // We want to load big, low resolution nodes first, since point clouds are additive.
+        return nodeInfo.node.depth;
     }
 
     /**

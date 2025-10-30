@@ -66,6 +66,10 @@ const instance = new Instance({
 - **Pointcloud**: ability to color points by intersecting volumes
 - **AggregateImageSource**: combine several sources (#581)
 
+### Perf
+
+- **PointCloud**: prioritize loading nodes by octree depth (#646)
+
 ### Fix
 
 - **TileFS.glsl**: fix non working shadow maps on MacOS (#579)
