@@ -18,11 +18,6 @@ export type CommonOptions = {
      */
     enableWorkers?: boolean;
     /**
-     * The maximum number of workers created by the worker pool. If `undefined`, the maximum number of workers will be allowed.
-     * @defaultValue undefined
-     */
-    workerConcurrency?: number;
-    /**
      * If specified, will keep every Nth point. For example, a decimation value of 10 will keep
      * one point out of ten, and discard the 9 other points. Useful to reduce memory usage.
      * @defaultValue 1

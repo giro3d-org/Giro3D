@@ -11,7 +11,7 @@ import { Box3, BufferAttribute, Vector3 } from 'three';
 
 import type { CommonOptions } from './las/CommonOptions';
 import type { DimensionName } from './las/dimension';
-import type { MessageMap, MessageType, ReadViewResult } from './las/worker';
+import type { ReadViewResult } from './las/worker';
 import type {
     GetNodeDataOptions,
     PointCloudMetadata,
@@ -26,11 +26,10 @@ import OperationCounter from '../core/OperationCounter';
 import RequestQueue from '../core/RequestQueue';
 import Fetcher from '../utils/Fetcher';
 import { nonNull } from '../utils/tsutils';
-import WorkerPool from '../utils/WorkerPool';
 import { getLazPerf } from './las/config';
-import createWorker from './las/createWorker';
 import { extractAttributes, getDimensionsToRead } from './las/dimension';
 import { type DimensionFilter } from './las/filter';
+import LASWorkerPool from './las/LASWorkerPool';
 import { createBufferAttribute } from './las/readers';
 import { readView, type Metadata } from './las/worker';
 import { PointCloudSourceBase } from './PointCloudSource';
@@ -57,25 +56,19 @@ const createGetter: (url: string) => Getter = url => {
 type PerfOptions = {
     decimate: number;
     enableWorkers: boolean;
-    workerConcurrency?: number;
     compressColorsToUint8: boolean;
 };
-
-let pool: WorkerPool<MessageType, MessageMap> | null = null;
 
 async function decodeLazChunkSync(chunk: Uint8Array, metadata: Metadata): Promise<Uint8Array> {
     const lp = await getLazPerf();
     return Las.PointData.decompressChunk(chunk, metadata, lp);
 }
 
-function decodeLazChunkUsingWorker(
+async function decodeLazChunkUsingWorker(
     chunk: Uint8Array,
     metadata: Metadata,
-    concurrency?: number,
 ): Promise<Uint8Array> {
-    if (pool == null) {
-        pool = new WorkerPool({ createWorker, concurrency });
-    }
+    const pool = await LASWorkerPool.get();
 
     return pool
         .queue('DecodeLazChunk', { buffer: chunk.buffer, metadata }, [chunk.buffer])
@@ -285,7 +278,6 @@ export default class COPCSource extends PointCloudSourceBase {
         }
 
         this._options.enableWorkers = options.enableWorkers ?? true;
-        this._options.workerConcurrency = options.workerConcurrency ?? undefined;
 
         if (options.filters != null && options.filters.length > 0) {
             this._filters.push(...options.filters);
@@ -579,12 +571,7 @@ export default class COPCSource extends PointCloudSourceBase {
         try {
             this._opCounter.increment();
 
-            if (!pool) {
-                pool = new WorkerPool({
-                    createWorker,
-                    concurrency: this._options.workerConcurrency,
-                });
-            }
+            const pool = await LASWorkerPool.get();
 
             return await pool.queue(
                 'ReadView',
@@ -623,7 +610,7 @@ export default class COPCSource extends PointCloudSourceBase {
         getter: Getter,
         node: Hierarchy.Node,
         priority?: number,
-    ): Promise<ArrayBuffer> {
+    ): Promise<ArrayBufferLike> {
         const { pointDataOffset, pointDataLength } = node;
 
         const cacheKey = `${this.id}-${pointDataOffset}-${pointDataLength}`;
@@ -668,15 +655,11 @@ export default class COPCSource extends PointCloudSourceBase {
             // Note that we have to clone the buffer since we send it to the worker
             // and we want this buffer to be reusable for subsequent requests if necessary
             const chunk = new Uint8Array(buffer.slice(0));
-            decoded = await decodeLazChunkUsingWorker(
-                chunk,
-                {
-                    pointCount: node.pointCount,
-                    pointDataRecordFormat: copc.header.pointDataRecordFormat,
-                    pointDataRecordLength: copc.header.pointDataRecordLength,
-                },
-                this._options.workerConcurrency,
-            );
+            decoded = await decodeLazChunkUsingWorker(chunk, {
+                pointCount: node.pointCount,
+                pointDataRecordFormat: copc.header.pointDataRecordFormat,
+                pointDataRecordLength: copc.header.pointDataRecordLength,
+            });
         } else {
             const chunk = new Uint8Array(buffer);
             decoded = await decodeLazChunkSync(chunk, {

@@ -11,7 +11,7 @@ import type { PointCloudAttribute } from '../PointCloudSource';
 import type { DimensionFilter } from './filter';
 
 import { createErrorResponse } from '../../utils/WorkerPool';
-import { getLazPerf, setLazPerfPath } from './config';
+import { getLazPerf, setLazPerfWasmBinary } from './config';
 import { getPerPointFilters } from './filter';
 import { readColor, readPosition, readScalarAttribute } from './readers';
 
@@ -21,25 +21,25 @@ export type Metadata = {
     pointDataRecordLength: number;
 };
 
-async function decompressChunk(chunk: ArrayBuffer, metadata: Metadata): Promise<copc.Binary> {
+async function decompressChunk(chunk: ArrayBufferLike, metadata: Metadata): Promise<copc.Binary> {
     const lazPerf = await getLazPerf();
     return copc.Las.PointData.decompressChunk(new Uint8Array(chunk), metadata, lazPerf);
 }
 
-async function decompressFile(chunk: ArrayBuffer): Promise<copc.Binary> {
+async function decompressFile(chunk: ArrayBufferLike): Promise<copc.Binary> {
     const lazPerf = await getLazPerf();
     return copc.Las.PointData.decompressFile(new Uint8Array(chunk), lazPerf);
 }
 
 export type BoundingBox = [number, number, number, number, number, number];
 
-export type MessageType = 'DecodeLazChunk' | 'DecodeLazFile' | 'ReadView';
+export type MessageType = 'DecodeLazChunk' | 'DecodeLazFile' | 'ReadView' | 'SetWasmBinary';
 
 type TypedMessage<K extends MessageType, T> = Message<T> & { type: K };
 
 type DecodeLazChunkMessage = TypedMessage<
     'DecodeLazChunk',
-    { buffer: ArrayBuffer; metadata: Metadata }
+    { buffer: ArrayBufferLike; metadata: Metadata }
 >;
 export type ReadViewResult = {
     position?: {
@@ -51,7 +51,7 @@ export type ReadViewResult = {
 type ReadViewMessage = TypedMessage<
     'ReadView',
     {
-        buffer: ArrayBuffer;
+        buffer: ArrayBufferLike;
         metadata: Metadata;
         header: copc.Las.Extractor.PartialHeader;
         origin: { x: number; y: number; z: number };
@@ -64,14 +64,18 @@ type ReadViewMessage = TypedMessage<
         compressColors: boolean;
     }
 >;
-type DecodeLazFileMessage = TypedMessage<'DecodeLazFile', { buffer: ArrayBuffer }>;
-type DecodeLazChunkResponse = SuccessResponse<ArrayBuffer>;
-type DecodeLazFileResponse = SuccessResponse<ArrayBuffer>;
+type DecodeLazFileMessage = TypedMessage<'DecodeLazFile', { buffer: ArrayBufferLike }>;
+type DecodeLazChunkResponse = SuccessResponse<ArrayBufferLike>;
+type DecodeLazFileResponse = SuccessResponse<ArrayBufferLike>;
 type ReadViewResponse = SuccessResponse<ReadViewResult>;
 
-export type SetWasmPathMessage = { type: 'SetWasmPath'; path: string };
+export type SetWasmBinaryMessage = { type: 'SetWasmBinary'; buffer: ArrayBuffer };
 
-type Messages = DecodeLazFileMessage | DecodeLazChunkMessage | SetWasmPathMessage | ReadViewMessage;
+type Messages =
+    | DecodeLazFileMessage
+    | DecodeLazChunkMessage
+    | SetWasmBinaryMessage
+    | ReadViewMessage;
 
 export interface MessageMap extends BaseMessageMap<MessageType> {
     DecodeLazChunk: {
@@ -89,8 +93,8 @@ export interface MessageMap extends BaseMessageMap<MessageType> {
 }
 
 export interface LazWorker extends Worker {
-    postMessage(message: SetWasmPathMessage, options?: StructuredSerializeOptions): void;
-    postMessage(message: SetWasmPathMessage, transfer: Transferable[]): void;
+    postMessage(message: SetWasmBinaryMessage, options?: StructuredSerializeOptions): void;
+    postMessage(message: SetWasmBinaryMessage, transfer: Transferable[]): void;
 }
 
 function processDecodeChunkMessage(msg: DecodeLazChunkMessage): void {
@@ -215,8 +219,8 @@ onmessage = (event: MessageEvent<Messages>): void => {
         case 'ReadView':
             processReadViewMessage(message);
             break;
-        case 'SetWasmPath':
-            setLazPerfPath(message.path);
+        case 'SetWasmBinary':
+            setLazPerfWasmBinary(message.buffer);
             break;
     }
 };

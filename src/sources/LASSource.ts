@@ -15,7 +15,6 @@ import { Box3, Float32BufferAttribute, Vector3 } from 'three';
 import type { GetMemoryUsageContext } from '../core/MemoryUsage';
 import type { CommonOptions } from './las/CommonOptions';
 import type { DimensionName } from './las/dimension';
-import type { MessageMap, MessageType } from './las/worker';
 import type {
     GetNodeDataOptions,
     PointCloudMetadata,
@@ -28,11 +27,10 @@ import OperationCounter from '../core/OperationCounter';
 import { defer } from '../core/RequestQueue';
 import Fetcher from '../utils/Fetcher';
 import { nonNull } from '../utils/tsutils';
-import WorkerPool from '../utils/WorkerPool';
 import { getLazPerf } from './las/config';
-import createWorker from './las/createWorker';
 import { extractAttributes, getDimensionsToRead } from './las/dimension';
 import { getPerPointFilters, type DimensionFilter } from './las/filter';
+import LASWorkerPool from './las/LASWorkerPool';
 import { createBufferAttribute, readColor, readPosition, readScalarAttribute } from './las/readers';
 import { PointCloudSourceBase } from './PointCloudSource';
 
@@ -51,17 +49,13 @@ const getter: (url: string) => Getter = url => {
     };
 };
 
-let pool: WorkerPool<MessageType, MessageMap> | null = null;
-
 async function decodeLazFileSync(data: Uint8Array): Promise<Uint8Array> {
     const lazPerf = await getLazPerf();
     return Las.PointData.decompressFile(data, lazPerf);
 }
 
-function decodeLazFileUsingWorker(data: Uint8Array, concurrency?: number): Promise<Uint8Array> {
-    if (pool == null) {
-        pool = new WorkerPool({ createWorker, concurrency });
-    }
+async function decodeLazFileUsingWorker(data: Uint8Array): Promise<Uint8Array> {
+    const pool = await LASWorkerPool.get();
 
     return pool
         .queue('DecodeLazFile', { buffer: data.buffer }, [data.buffer])
@@ -78,7 +72,6 @@ export type LASSourceOptions = CommonOptions & {
 type PerfOptions = {
     decimate: number;
     enableWorkers: boolean;
-    workerConcurrency?: number;
     compressColorsToUint8: boolean;
 };
 
@@ -148,7 +141,7 @@ export default class LASSource extends PointCloudSourceBase {
     private _header: Header | null = null;
     private _volume: Box3 | null = null;
     /** The buffer that stores the entire LAS/LAZ file (in compressed form for LAZ files). */
-    private _buffer: ArrayBuffer | null = null;
+    private _buffer: Uint8Array | null = null;
 
     public get loading(): boolean {
         return this._opCounter.loading;
@@ -186,7 +179,6 @@ export default class LASSource extends PointCloudSourceBase {
         }
 
         this._options.enableWorkers = options.enableWorkers ?? true;
-        this._options.workerConcurrency = options.workerConcurrency ?? undefined;
 
         if (options.filters != null && options.filters.length > 0) {
             this._filters.push(...options.filters);
@@ -223,10 +215,9 @@ export default class LASSource extends PointCloudSourceBase {
         if (this._options.enableWorkers === false) {
             decompressed = await decodeLazFileSync(data).finally(() => this._opCounter.decrement());
         } else {
-            decompressed = await decodeLazFileUsingWorker(
-                data,
-                this._options.workerConcurrency,
-            ).finally(() => this._opCounter.decrement());
+            decompressed = await decodeLazFileUsingWorker(data).finally(() =>
+                this._opCounter.decrement(),
+            );
         }
 
         const view = Las.View.create(decompressed, header, undefined, include);
