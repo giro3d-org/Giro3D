@@ -78,6 +78,7 @@ const instance = new Instance({
 ### Perf
 
 - **PointCloud**: prioritize loading nodes by octree depth (#646)
+- reuse `laz-perf.wasm` accross workers (#621)
 
 ### Fix
 
@@ -88,10 +89,6 @@ const instance = new Instance({
 - **AggregatePointCloudSource**: prevent mutation of source array
 - **ComposerTileFS.glsl**: support non-standard alpha channels (i.e RG texture format)
 - **Entity3D**: don't cancel material update by mistake
-
-### Perf
-
-- reuse `laz-perf.wasm` accross workers (#621)
 
 ### Refactor
 
