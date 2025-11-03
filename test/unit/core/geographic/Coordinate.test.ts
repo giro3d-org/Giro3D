@@ -306,15 +306,3 @@ describe('as()', () => {
         expect(coord3.latitude).toBeCloseTo(latIn, 5);
     });
 });
-
-describe('geodesicNormal', () => {
-    it('should correctly return the default up vector for planar mode', () => {
-        const coord0 = new Coordinates(CoordinateSystem.fromEpsg(3946), 15.0, 12.0);
-
-        const normal0 = coord0.geodesicNormal;
-
-        expect(normal0.x).toEqual(0);
-        expect(normal0.y).toEqual(0);
-        expect(normal0.z).toEqual(1);
-    });
-});

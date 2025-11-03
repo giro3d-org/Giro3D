@@ -137,8 +137,6 @@ function assertIsGeocentric(crs: CoordinateSystem): void {
     }
 }
 
-const planarNormal = new Vector3(0, 0, 1);
-
 /**
  * Possible values to set a `Coordinates` object.
  *
@@ -181,16 +179,6 @@ class Coordinates {
 
     public get values(): Float64Array {
         return this._values;
-    }
-
-    /**
-     * Returns the normal vector associated with this coordinate.
-     *
-     * @returns The normal vector.
-     */
-
-    public get geodesicNormal(): Vector3 {
-        return planarNormal;
     }
 
     public set(crs: CoordinateSystem, ...coordinates: CoordinateParameters): this {
