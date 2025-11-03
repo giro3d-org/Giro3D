@@ -29,7 +29,7 @@ let camera: THREE.PerspectiveCamera;
 beforeEach(() => {
     camera = new THREE.PerspectiveCamera(45);
     view = new View({
-        crs: CoordinateSystem.fromSrid('foo'),
+        crs: CoordinateSystem.epsg3857,
         width: 1,
         height: 1,
         camera,

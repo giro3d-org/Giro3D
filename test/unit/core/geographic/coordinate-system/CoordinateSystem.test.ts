@@ -254,7 +254,6 @@ describe('fromWkt', () => {
 
         const coordinateSystem = CoordinateSystem.fromWkt(wkt);
         expect(coordinateSystem).toBeDefined();
-        expect(coordinateSystem.isEpsg()).toEqual(true);
         expect(coordinateSystem.isEpsg(2992)).toEqual(true);
         expect(coordinateSystem.name).toEqual('NAD83 / Oregon GIC Lambert (ft)');
         expect(coordinateSystem.srid).toBeDefined();

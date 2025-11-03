@@ -21,7 +21,7 @@ proj4.defs(
 
 describe('constructor', () => {
     it('should throw on unrecognized CRS', () => {
-        expect(() => new Coordinates(CoordinateSystem.fromSrid('foo'), 0, 1, 2)).toThrow();
+        expect(() => new Coordinates(CoordinateSystem.fromEpsg(99999), 0, 1, 2)).toThrow();
     });
 
     it('should assign property crs', () => {
@@ -71,7 +71,7 @@ describe('set()', () => {
     it('should throw on unrecognized CRS', () => {
         const c = new Coordinates(CoordinateSystem.epsg4326, 0, 1, 2);
 
-        expect(() => c.set(CoordinateSystem.fromSrid('foo'), 0, 1, 2)).toThrow();
+        expect(() => c.set(CoordinateSystem.fromEpsg(99999), 0, 1, 2)).toThrow();
     });
 
     it('should assign property crs', () => {

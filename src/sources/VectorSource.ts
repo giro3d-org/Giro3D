@@ -265,8 +265,8 @@ class VectorSource extends ImageSource {
         feature
             .getGeometry()
             ?.transform(
-                this.dataProjection?.srid?.asString,
-                this._targetProjection?.srid?.asString,
+                this.dataProjection?.srid?.toString(),
+                this._targetProjection?.srid?.toString(),
             );
     }
 

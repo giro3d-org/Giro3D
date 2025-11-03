@@ -7,8 +7,8 @@
 // @ts-expect-error no types
 import parseCode from 'proj4/lib/parseCode';
 
-import Authority from './Authority';
 import LinearUnit from './LinearUnit';
+import SRID from './SRID';
 
 type ID = Record<string, number>;
 
@@ -25,9 +25,9 @@ function parseLinearUnit(unit: Unit): LinearUnit {
     return new LinearUnit(unit.name, unit.convert);
 }
 
-function parseAuthority(authority: object): Authority {
+function parseSRID(authority: object): SRID {
     const [name, code] = Object.entries(authority)[0];
-    return new Authority(`${name}:${code}`);
+    return new SRID(name, Number.parseInt(code));
 }
 
 function getNicename(obj: object): string {
@@ -37,13 +37,13 @@ function getNicename(obj: object): string {
     return '<unknown>';
 }
 
-type ProjCSInfos = { name: string; srid?: Authority; unit: LinearUnit };
+type ProjCSInfos = { name: string; srid?: SRID; unit: LinearUnit };
 function getProjCsInfos(projCs: ProjCS): ProjCSInfos {
     const name = getNicename(projCs);
     const unit = parseLinearUnit(projCs.UNIT);
 
     if (projCs.AUTHORITY) {
-        const authority = parseAuthority(projCs.AUTHORITY);
+        const authority = parseSRID(projCs.AUTHORITY);
         return { name, srid: authority, unit };
     }
     return { name, unit };
@@ -51,7 +51,7 @@ function getProjCsInfos(projCs: ProjCS): ProjCSInfos {
 
 type Parameters = {
     name: string;
-    srid?: Authority;
+    srid?: SRID;
     horizontal?: { unit: LinearUnit };
     vertical?: { unit: LinearUnit };
     definition?: string;
@@ -66,7 +66,7 @@ export default class CoordinateSystem {
                 // WKT 2 / PROJCRS
                 return new CoordinateSystem({
                     name: getNicename(parsed),
-                    srid: parseAuthority(parsed.ID),
+                    srid: parseSRID(parsed.ID),
                     definition: wkt,
                 });
             } else if ('PROJCS' in parsed) {
@@ -98,11 +98,11 @@ export default class CoordinateSystem {
                     typeof parsed.AUTHORITY === 'object' &&
                     parsed.AUTHORITY
                 ) {
-                    return new CoordinateSystem({ name, srid: parseAuthority(parsed.AUTHORITY) });
+                    return new CoordinateSystem({ name, srid: parseSRID(parsed.AUTHORITY) });
                 }
 
                 if ('title' in parsed && typeof parsed.title === 'string') {
-                    return new CoordinateSystem({ name, srid: new Authority(parsed.title) });
+                    return new CoordinateSystem({ name, srid: SRID.parse(parsed.title) });
                 }
 
                 return new CoordinateSystem({ name });
@@ -114,13 +114,13 @@ export default class CoordinateSystem {
     }
 
     public static fromEpsg(code: number): CoordinateSystem {
-        const authority = new Authority(`EPSG:${code}`);
-        return new CoordinateSystem({ name: authority.asString, srid: authority });
+        const srid = new SRID('EPSG', code);
+        return new CoordinateSystem({ name: srid.toString(), srid: srid });
     }
 
     public static fromSrid(code: string): CoordinateSystem {
-        const authority = new Authority(code);
-        return new CoordinateSystem({ name: authority.asString, srid: authority });
+        const authority = SRID.parse(code);
+        return new CoordinateSystem({ name: authority.toString(), srid: authority });
     }
 
     public static readonly equirectangular = new CoordinateSystem({ name: 'equirectangular' });
@@ -133,14 +133,14 @@ export default class CoordinateSystem {
     public static readonly epsg4979 = CoordinateSystem.fromEpsg(4979);
 
     public readonly name: string;
-    public readonly srid?: Authority;
+    public readonly srid?: SRID;
     public readonly horizontal?: { readonly unit: LinearUnit };
     public readonly vertical?: { readonly unit: LinearUnit };
     public readonly definition?: string;
 
     public get id(): string {
         if (typeof this.srid !== 'undefined') {
-            return this.srid.asString;
+            return this.srid.toString();
         }
         return this.name;
     }
@@ -175,7 +175,7 @@ export default class CoordinateSystem {
         return this.metersPerHorizontalUnit;
     }
 
-    public isEpsg(code?: number): boolean {
+    public isEpsg(code: number): boolean {
         if (typeof this.srid !== 'undefined') {
             return this.srid.isEpsg(code);
         }

@@ -112,7 +112,7 @@ describe('readCrsFromWkt', () => {
         const parsedCrs = CoordinateSystem.fromWkt(wkt);
         expect(parsedCrs).toBeDefined();
         expect(parsedCrs!.name).toEqual('RGF93 v1 / Lambert-93');
-        expect(parsedCrs!.srid?.asString).toEqual('EPSG:2154');
+        expect(parsedCrs!.srid?.toString()).toEqual('EPSG:2154');
         expect(parsedCrs!.srid?.isEpsg(2154)).toEqual(true);
     });
 
@@ -201,7 +201,7 @@ describe('readCrsFromWkt', () => {
         const parsedCrs = CoordinateSystem.fromWkt(wkt);
         expect(parsedCrs).toBeDefined();
         expect(parsedCrs!.name).toEqual('WGS 84');
-        expect(parsedCrs!.srid?.asString).toEqual('EPSG:4978');
+        expect(parsedCrs!.srid?.toString()).toEqual('EPSG:4978');
         expect(parsedCrs!.srid?.isEpsg(4978)).toEqual(true);
     });
 
@@ -257,7 +257,7 @@ describe('readCrsFromWkt', () => {
             const parsedCrs = CoordinateSystem.fromWkt(wkt);
             expect(parsedCrs).toBeDefined();
             expect(parsedCrs!.name).toEqual('WGS 84 / Pseudo-Mercator');
-            expect(parsedCrs!.srid?.asString).toEqual('EPSG:3857');
+            expect(parsedCrs!.srid?.toString()).toEqual('EPSG:3857');
             expect(parsedCrs!.srid?.isEpsg(3857)).toEqual(true);
         });
 
@@ -309,7 +309,7 @@ describe('readCrsFromWkt', () => {
             const parsedCrs = CoordinateSystem.fromWkt(wkt);
             expect(parsedCrs).toBeDefined();
             expect(parsedCrs!.name).toEqual('RGF93 v1 / Lambert-93');
-            expect(parsedCrs!.srid?.asString).toEqual('EPSG:2154');
+            expect(parsedCrs!.srid?.toString()).toEqual('EPSG:2154');
             expect(parsedCrs!.srid?.isEpsg(2154)).toEqual(true);
         });
     });

@@ -207,7 +207,7 @@ describe('as', () => {
             west: -5,
         });
 
-        expect(() => original.as(CoordinateSystem.fromSrid('foo'))).toThrow();
+        expect(() => original.as(CoordinateSystem.fromEpsg(99999))).toThrow();
     });
 
     it('should return the original object if target CRS is same as source CRS', () => {
@@ -415,7 +415,7 @@ describe('intersectExtent', () => {
 
 describe('toBox3', () => {
     it('should return the correct value', () => {
-        const extent = new Extent(CoordinateSystem.fromSrid('foo'), 0, 100, 54, 233);
+        const extent = new Extent(CoordinateSystem.epsg3857, 0, 100, 54, 233);
         const minHeight = 23.3;
         const maxHeight = 400.3;
         const box = extent.toBox3(minHeight, maxHeight);
@@ -492,8 +492,8 @@ describe('offsetToParent', () => {
         const minY = -3.54;
         const maxY = 150.4;
 
-        const a = new Extent(CoordinateSystem.fromSrid('foo'), minX, maxX, minY, maxY);
-        const b = new Extent(CoordinateSystem.fromSrid('foo'), minX, maxX, minY, maxY);
+        const a = new Extent(CoordinateSystem.epsg3857, minX, maxX, minY, maxY);
+        const b = new Extent(CoordinateSystem.epsg3857, minX, maxX, minY, maxY);
 
         const expected = OffsetScale.identity();
 
@@ -507,14 +507,8 @@ describe('offsetToParent', () => {
         const minY = -3.54;
         const maxY = 150.4;
 
-        const top = new Extent(
-            CoordinateSystem.fromSrid('foo'),
-            minX,
-            maxX,
-            maxY,
-            maxY + (maxY - minY),
-        );
-        const bottom = new Extent(CoordinateSystem.fromSrid('foo'), minX, maxX, minY, maxY);
+        const top = new Extent(CoordinateSystem.epsg3857, minX, maxX, maxY, maxY + (maxY - minY));
+        const bottom = new Extent(CoordinateSystem.epsg3857, minX, maxX, minY, maxY);
 
         const bt = bottom.offsetToParent(top);
         const tb = top.offsetToParent(bottom);
@@ -548,8 +542,8 @@ describe('offsetToParent', () => {
         // |            |  R   |
         // +------------+------+ y0
 
-        const L = new Extent(CoordinateSystem.fromSrid('foo'), x0, x1, y0, y2);
-        const R = new Extent(CoordinateSystem.fromSrid('foo'), x1, x2, y0, y1);
+        const L = new Extent(CoordinateSystem.epsg3857, x0, x1, y0, y2);
+        const R = new Extent(CoordinateSystem.epsg3857, x1, x2, y0, y1);
 
         const LR = R.offsetToParent(L);
 
@@ -600,8 +594,8 @@ describe('equals', () => {
     });
 
     it('should return false if both extent have different CRSes', () => {
-        const a = new Extent(CoordinateSystem.fromSrid('EPSG:foo'), 1, 9, 1, 22);
-        const b = new Extent(CoordinateSystem.fromSrid('EPSG:bar'), 1, 9, 1, 22);
+        const a = new Extent(CoordinateSystem.fromSrid('EPSG:1234'), 1, 9, 1, 22);
+        const b = new Extent(CoordinateSystem.fromSrid('EPSG:5678'), 1, 9, 1, 22);
         expect(a.equals(b)).toBeFalsy();
     });
 
@@ -724,7 +718,7 @@ describe('split', () => {
     });
 
     it('should return the correct value', () => {
-        const extent = new Extent(CoordinateSystem.fromSrid('foo'), 0, 100, 0, 100);
+        const extent = new Extent(CoordinateSystem.epsg3857, 0, 100, 0, 100);
 
         const splitHorizontally = extent.split(4, 1);
         const splitVertically = extent.split(1, 4);
@@ -732,31 +726,17 @@ describe('split', () => {
         expect(splitHorizontally).toHaveLength(4);
         expect(splitVertically).toHaveLength(4);
 
-        expect(splitHorizontally[0]).toEqual(
-            new Extent(CoordinateSystem.fromSrid('foo'), 0, 25, 0, 100),
-        );
-        expect(splitHorizontally[1]).toEqual(
-            new Extent(CoordinateSystem.fromSrid('foo'), 25, 50, 0, 100),
-        );
-        expect(splitHorizontally[2]).toEqual(
-            new Extent(CoordinateSystem.fromSrid('foo'), 50, 75, 0, 100),
-        );
+        expect(splitHorizontally[0]).toEqual(new Extent(CoordinateSystem.epsg3857, 0, 25, 0, 100));
+        expect(splitHorizontally[1]).toEqual(new Extent(CoordinateSystem.epsg3857, 25, 50, 0, 100));
+        expect(splitHorizontally[2]).toEqual(new Extent(CoordinateSystem.epsg3857, 50, 75, 0, 100));
         expect(splitHorizontally[3]).toEqual(
-            new Extent(CoordinateSystem.fromSrid('foo'), 75, 100, 0, 100),
+            new Extent(CoordinateSystem.epsg3857, 75, 100, 0, 100),
         );
 
-        expect(splitVertically[0]).toEqual(
-            new Extent(CoordinateSystem.fromSrid('foo'), 0, 100, 0, 25),
-        );
-        expect(splitVertically[1]).toEqual(
-            new Extent(CoordinateSystem.fromSrid('foo'), 0, 100, 25, 50),
-        );
-        expect(splitVertically[2]).toEqual(
-            new Extent(CoordinateSystem.fromSrid('foo'), 0, 100, 50, 75),
-        );
-        expect(splitVertically[3]).toEqual(
-            new Extent(CoordinateSystem.fromSrid('foo'), 0, 100, 75, 100),
-        );
+        expect(splitVertically[0]).toEqual(new Extent(CoordinateSystem.epsg3857, 0, 100, 0, 25));
+        expect(splitVertically[1]).toEqual(new Extent(CoordinateSystem.epsg3857, 0, 100, 25, 50));
+        expect(splitVertically[2]).toEqual(new Extent(CoordinateSystem.epsg3857, 0, 100, 50, 75));
+        expect(splitVertically[3]).toEqual(new Extent(CoordinateSystem.epsg3857, 0, 100, 75, 100));
     });
 });
 
