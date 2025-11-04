@@ -22,11 +22,6 @@ import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
 import { bindButton } from './widgets/bindButton.js';
 import StatusBar from './widgets/StatusBar.js';
 
-const epsg2154 = CoordinateSystem.register(
-    'EPSG:2154',
-    '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
-);
-
 /** @type {Instance} */
 let instance;
 /** @type {Inspector} */
@@ -135,8 +130,7 @@ function createScene(/** @type CoordinateSystem */ crs, extent) {
     StatusBar.bind(instance, { disableUrlUpdate: true });
 }
 
-async function fetchCrs(/** @type CoordinateSystem */ crs) {
-    const code = crs.srid.tryGetEpsgCode();
+async function fetchCrs(code) {
     const res = await fetch(`https://epsg.io/${code}.wkt2`, { mode: 'cors' });
     const wkt2 = await res.text();
 
@@ -148,7 +142,8 @@ async function fetchCrs(/** @type CoordinateSystem */ crs) {
 
     const proj = await (await fetch(`https://epsg.io/${code}.proj4`, { mode: 'cors' })).text();
 
-    CoordinateSystem.register(crs.id, proj, { throwIfFailedToRegisterWithProj: true });
+    const id = `EPSG:${code}`;
+    const crs = CoordinateSystem.register(id, proj, { throwIfFailedToRegisterWithProj: true });
 
     const extent = new Extent(CoordinateSystem.epsg4326, {
         west: Number.parseFloat(minLon),
@@ -157,24 +152,23 @@ async function fetchCrs(/** @type CoordinateSystem */ crs) {
         south: Number.parseFloat(minLat),
     });
 
-    document.getElementById('srid').innerText = crs.id;
+    document.getElementById('srid').innerText = id;
     document.getElementById('name').innerText = name;
     document.getElementById('description').innerText = area;
     // @ts-expect-error typing
     document.getElementById('link').href = `https://epsg.io/${code}`;
 
-    return { def: wkt2, extent: extent.as(crs) };
+    return { def: wkt2, crs, extent: extent.as(crs) };
 }
 
-async function initialize(/** @type CoordinateSystem */ crs) {
+async function initialize(epsgCode) {
     const error = document.getElementById('message');
 
     try {
-        const { extent } = await fetchCrs(crs);
-        const proj = crs;
+        const { extent, crs } = await fetchCrs(epsgCode);
         error.style.display = 'none';
 
-        createScene(proj, extent);
+        createScene(crs, extent);
     } catch (e) {
         error.style.display = 'block';
 
@@ -191,11 +185,11 @@ bindButton('create', () => {
     // @ts-expect-error conversion
     const epsgCodeElt = document.getElementById('code');
 
-    const content = epsgCodeElt.value;
+    const epsgCode = Number.parseInt(epsgCodeElt.value);
 
-    if (content) {
-        initialize(CoordinateSystem.get(content));
+    if (epsgCode) {
+        initialize(epsgCode);
     }
 });
 
-initialize(epsg2154);
+initialize(2154);
