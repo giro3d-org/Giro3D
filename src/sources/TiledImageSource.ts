@@ -159,7 +159,7 @@ export default class TiledImageSource extends ImageSource {
             options.extent ??
             OpenLayersUtils.fromOLExtent(
                 tileGrid.getExtent(),
-                CoordinateSystem.fromSrid(projection.getCode()),
+                CoordinateSystem.get(projection.getCode()),
             );
     }
 
@@ -168,7 +168,7 @@ export default class TiledImageSource extends ImageSource {
     }
 
     public getCrs(): CoordinateSystem {
-        return CoordinateSystem.fromSrid(this.olprojection.getCode());
+        return CoordinateSystem.get(this.olprojection.getCode());
     }
 
     public override adjustExtentAndPixelSize(

@@ -24,18 +24,18 @@ import { bindSlider } from './widgets/bindSlider.js';
 import { bindToggle } from './widgets/bindToggle.js';
 import StatusBar from './widgets/StatusBar.js';
 
-Instance.registerCRS(
+const crs = CoordinateSystem.register(
     'EPSG:26910',
     '+proj=utm +zone=10 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
 );
 
-const extent = new Extent(CoordinateSystem.fromEpsg(26910), 532622, 569790, 5114416, 5137240);
+const extent = new Extent(crs, 532622, 569790, 5114416, 5137240);
 
 const center = extent.centerAsVector3();
 
 const instance = new Instance({
     target: 'view',
-    crs: extent.crs,
+    crs,
     backgroundColor: null,
 });
 
@@ -51,7 +51,7 @@ instance.view.setControls(controls);
 const source = new GeoTIFFSource({
     // https://pubs.er.usgs.gov/publication/ds904
     url: 'https://3d.oslandia.com/dem/msh2009dem.tif',
-    crs: extent.crs,
+    crs,
 });
 
 const values = colormap({ colormap: 'viridis', nshades: 256 });

@@ -21,18 +21,12 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-Instance.registerCRS(
+const crs = CoordinateSystem.register(
     'EPSG:2154',
     '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
 );
 
-const extent = new Extent(
-    CoordinateSystem.fromEpsg(2154),
-    -111629.52,
-    1275028.84,
-    5976033.79,
-    7230161.64,
-);
+const extent = new Extent(crs, -111629.52, 1275028.84, 5976033.79, 7230161.64);
 
 const instance = new Instance({
     target: 'view',
@@ -180,8 +174,8 @@ const buildings = new FeatureCollection({
 buildings.name = 'buildings';
 instance.add(buildings);
 
-const position = new Coordinates(CoordinateSystem.fromEpsg(2154), 652212.5, 6860754.1, 27717.3);
-const lookAtCoords = new Coordinates(CoordinateSystem.fromEpsg(2154), 652338.3, 6862087.1, 200);
+const position = new Coordinates(crs, 652212.5, 6860754.1, 27717.3);
+const lookAtCoords = new Coordinates(crs, 652338.3, 6862087.1, 200);
 const lookAt = new Vector3(lookAtCoords.x, lookAtCoords.y, lookAtCoords.z);
 instance.view.camera.position.set(position.x, position.y, position.z);
 instance.view.camera.lookAt(lookAt);

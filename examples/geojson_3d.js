@@ -21,31 +21,26 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import { bindToggle } from './widgets/bindToggle.js';
 import StatusBar from './widgets/StatusBar.js';
 
-Instance.registerCRS(
+const epsg2154 = CoordinateSystem.register(
     'EPSG:2154',
     '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
 );
 
-Instance.registerCRS(
+CoordinateSystem.register(
     'urn:ogc:def:crs:OGC:1.3:CRS84',
     '+proj=longlat +datum=WGS84 +no_defs +type=crs',
 );
 
 const instance = new Instance({
     target: 'view',
-    crs: CoordinateSystem.fromEpsg(2154),
+    crs: epsg2154,
     backgroundColor: null,
 });
 
 const center = new Coordinates(CoordinateSystem.epsg4326, 6.63125, 45.93506).as(
     instance.coordinateSystem,
 );
-const extent = Extent.fromCenterAndSize(
-    CoordinateSystem.fromEpsg(2154),
-    { x: center.x, y: center.y },
-    1_000,
-    1_000,
-);
+const extent = Extent.fromCenterAndSize(epsg2154, { x: center.x, y: center.y }, 1_000, 1_000);
 
 const buildingSource = new VectorSource({
     format: new GeoJSON(),

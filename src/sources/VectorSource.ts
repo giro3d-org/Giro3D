@@ -262,12 +262,7 @@ class VectorSource extends ImageSource {
      * @param feature - The feature to reproject.
      */
     public reproject(feature: Feature): void {
-        feature
-            .getGeometry()
-            ?.transform(
-                this.dataProjection?.srid?.toString(),
-                this._targetProjection?.srid?.toString(),
-            );
+        feature.getGeometry()?.transform(this.dataProjection?.id, this._targetProjection?.id);
     }
 
     public override async initialize(opts: { targetProjection: CoordinateSystem }): Promise<void> {

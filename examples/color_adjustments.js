@@ -23,15 +23,18 @@ import { bindDropDown } from './widgets/bindDropDown.js';
 import { bindSlider } from './widgets/bindSlider.js';
 import StatusBar from './widgets/StatusBar.js';
 
-Instance.registerCRS(
+const epsg3946 = CoordinateSystem.register(
     'EPSG:3946',
     '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
 );
-Instance.registerCRS('EPSG:4171', '+proj=longlat +ellps=GRS80 +no_defs +type=crs');
+const epsg4171 = CoordinateSystem.register(
+    'EPSG:4171',
+    '+proj=longlat +ellps=GRS80 +no_defs +type=crs',
+);
 
 const instance = new Instance({
     target: 'view',
-    crs: CoordinateSystem.fromEpsg(3946),
+    crs: epsg3946,
 });
 
 const xmin = 1837816.94334;
@@ -39,7 +42,7 @@ const xmax = 1847692.32501;
 const ymin = 5170036.4587;
 const ymax = 5178412.82698;
 
-const extent = new Extent(CoordinateSystem.fromEpsg(3946), xmin, xmax, ymin, ymax);
+const extent = new Extent(epsg3946, xmin, xmax, ymin, ymax);
 
 const map = new Map({ extent });
 instance.add(map);
@@ -70,7 +73,7 @@ const geoJsonLayer = new ColorLayer({
         // Defines the dataProjection to reproject the data,
         // GeoJSON specifications say that the crs should be EPSG:4326 but
         // here we are using a different one.
-        dataProjection: CoordinateSystem.fromEpsg(4171),
+        dataProjection: epsg4171,
         style: feature =>
             new Style({
                 fill: new Fill({

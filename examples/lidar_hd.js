@@ -18,7 +18,7 @@ import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-Instance.registerCRS(
+const crs = CoordinateSystem.register(
     'EPSG:2154',
     '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
 );
@@ -27,7 +27,7 @@ const tmpVec3 = new Vector3();
 
 const instance = new Instance({
     target: 'view',
-    crs: CoordinateSystem.fromEpsg(2154),
+    crs,
 });
 
 const controls = new MapControls(instance.view.camera, instance.domElement);
@@ -71,7 +71,7 @@ function initializeCameraPosition(entity) {
             pointcloud.setColorLayer(
                 new ColorLayer({
                     name: 'color',
-                    extent: Extent.fromBox3(CoordinateSystem.fromEpsg(2154), bbox),
+                    extent: Extent.fromBox3(crs, bbox),
                     source: orthophotoWmts,
                 }),
             );

@@ -43,7 +43,7 @@ makeColorRamps();
 
 const tmpVec3 = new Vector3();
 
-Instance.registerCRS(
+const crs = CoordinateSystem.register(
     'EPSG:3946',
     '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 ' +
         '+y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
@@ -51,7 +51,7 @@ Instance.registerCRS(
 
 const instance = new Instance({
     target: 'view',
-    crs: CoordinateSystem.fromEpsg(3946),
+    crs,
     backgroundColor: 0xcccccc,
 });
 
@@ -91,7 +91,7 @@ function initializeCamera() {
     const lookAt = bbox.getCenter(tmpVec3);
     lookAt.z = bbox.min.z;
 
-    const extent = Extent.fromBox3(CoordinateSystem.fromEpsg(3946), bbox);
+    const extent = Extent.fromBox3(crs, bbox);
 
     placeCamera(position, lookAt);
 

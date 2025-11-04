@@ -21,12 +21,6 @@ proj4.defs('EPSG:4979', '+proj=longlat +datum=WGS84 +no_defs +type=crs');
 proj4.defs('equirectangular', '+proj=longlat +datum=WGS84 +no_defs +type=crs');
 register(proj4);
 
-export const UNIT = {
-    DEGREE: 1,
-    METER: 2,
-    FOOT: 3,
-};
-
 /**
  * A geographic coordinate expressed in degrees, minutes, seconds.
  */
@@ -44,96 +38,15 @@ export function parseDMS(dms: DMS): number {
     return result;
 }
 
-/**
- * Returns the enum value of the specified unit of measure
- *
- * @param projunit - - the proj4 UoM string
- * @returns the unit of measure (see `UNIT`)
- */
-function unitFromProj4Unit(projunit: string | undefined): number | undefined {
-    switch (projunit) {
-        case 'deg':
-        case 'degrees':
-        case 'degree':
-            return UNIT.DEGREE;
-        case 'm':
-        case 'meter':
-        case 'meters':
-            return UNIT.METER;
-        case 'ft':
-        case 'foot':
-        case 'feet':
-            return UNIT.FOOT;
-        default:
-            return undefined;
-    }
-}
-
-/**
- * Returns the horizontal unit of measure (UoM) of the specified CRS
- *
- * @param crs - the CRS to test
- * @returns the unit of measure (see `UNIT`)
- */
-export function crsToUnit(crs: CoordinateSystem): number | undefined {
-    if (crs.isEpsg(4326) || crs.isEpsg(4979) || crs.isEquirectangular()) {
-        return UNIT.DEGREE;
-    }
-
-    if (crs.isEpsg(4978)) {
-        return UNIT.METER;
-    }
-
-    const p = proj4.defs(crs.id);
-    if (p == null) {
-        return undefined;
-    }
-    return unitFromProj4Unit(p.units);
-}
-
-function crsToUnitWithError(crs: CoordinateSystem): number {
-    const u = crsToUnit(crs);
-    if (crs === undefined || u === undefined) {
-        throw new Error(`Invalid crs parameter value '${crs.id}'`);
-    }
-    return u;
-}
-
-export function assertCrsIsValid(crs: CoordinateSystem): void {
-    if (proj4.defs(crs.id) == null) {
-        throw new Error(`Invalid crs parameter value '${crs.id}'. Did you define it with proj4?`);
-    }
-}
-
-/**
- * Tests whether the CRS is in geographic coordinates.
- *
- * @param crs - the CRS to test
- * @returns `true` if the CRS is in geographic coordinates.
- */
-export function crsIsGeographic(crs: CoordinateSystem): boolean {
-    return crsToUnitWithError(crs) !== UNIT.METER;
-}
-
-/**
- * Tests whether the CRS is in geocentric coordinates.
- *
- * @param crs - the CRS to test
- * @returns `true` if the CRS is in geocentric coordinates.
- */
-export function crsIsGeocentric(crs: CoordinateSystem): boolean {
-    return crsToUnitWithError(crs) === UNIT.METER;
-}
-
 function assertIsGeographic(crs: CoordinateSystem): void {
-    if (!crsIsGeographic(crs)) {
-        throw new Error(`Can't query crs ${crs.id} long/lat`);
+    if (!crs.isGeographic()) {
+        throw new Error('This operation is only permitted on geographic coordinates.');
     }
 }
 
-function assertIsGeocentric(crs: CoordinateSystem): void {
-    if (!crsIsGeocentric(crs)) {
-        throw new Error(`Can't query crs ${crs.id} x/y/z`);
+function assertIsNotGeographic(crs: CoordinateSystem): void {
+    if (crs.isGeographic()) {
+        throw new Error('This operation is only permitted on non-geographic coordinates.');
     }
 }
 
@@ -182,7 +95,6 @@ class Coordinates {
     }
 
     public set(crs: CoordinateSystem, ...coordinates: CoordinateParameters): this {
-        crsToUnitWithError(crs);
         this.crs = crs;
 
         if (coordinates.length === 1 && isVector3(coordinates[0])) {
@@ -374,7 +286,7 @@ class Coordinates {
      * @returns The `x` component of the position.
      */
     public get x(): number {
-        assertIsGeocentric(this.crs);
+        assertIsNotGeographic(this.crs);
         return this._values[0];
     }
 
@@ -392,7 +304,7 @@ class Coordinates {
      * @returns The `y` component of the position.
      */
     public get y(): number {
-        assertIsGeocentric(this.crs);
+        assertIsNotGeographic(this.crs);
         return this._values[1];
     }
 
@@ -410,7 +322,7 @@ class Coordinates {
      * @returns The `z` component of the position.
      */
     public get z(): number {
-        assertIsGeocentric(this.crs);
+        assertIsNotGeographic(this.crs);
         return this._values[2];
     }
 
@@ -499,9 +411,6 @@ class Coordinates {
      * @returns the converted coordinate
      */
     public as(crs: CoordinateSystem, target?: Coordinates): Coordinates {
-        if (crsToUnit(crs) === undefined) {
-            throw new Error(`Invalid crs paramater value '${crs.id}'`);
-        }
         return this.convert(crs, target);
     }
 
@@ -545,7 +454,7 @@ class Coordinates {
      * @returns `true` if the coordinate is geographic.
      */
     public isGeographic(): boolean {
-        return crsIsGeographic(this.crs);
+        return this.crs.isGeographic();
     }
 
     /**

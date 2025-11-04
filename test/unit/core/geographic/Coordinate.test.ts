@@ -11,6 +11,7 @@ import { describe, expect, it } from 'vitest';
 import type { DMS } from '@giro3d/giro3d/core/geographic/Coordinates';
 
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
+import SRID from '@giro3d/giro3d/core/geographic/coordinate-system/SRID';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';
 
 // Define projection that we will use (taken from https://epsg.io/3946, Proj4js section)
@@ -20,10 +21,6 @@ proj4.defs(
 );
 
 describe('constructor', () => {
-    it('should throw on unrecognized CRS', () => {
-        expect(() => new Coordinates(CoordinateSystem.fromEpsg(99999), 0, 1, 2)).toThrow();
-    });
-
     it('should assign property crs', () => {
         const c = new Coordinates(CoordinateSystem.epsg3857, 0, 1, 2);
 
@@ -68,12 +65,6 @@ describe('copy()', () => {
 });
 
 describe('set()', () => {
-    it('should throw on unrecognized CRS', () => {
-        const c = new Coordinates(CoordinateSystem.epsg4326, 0, 1, 2);
-
-        expect(() => c.set(CoordinateSystem.fromEpsg(99999), 0, 1, 2)).toThrow();
-    });
-
     it('should assign property crs', () => {
         const c = new Coordinates(CoordinateSystem.epsg4326, 0, 1, 2);
 
@@ -295,7 +286,12 @@ describe('as()', () => {
         // let's define an input coordinate EPSG:4326.
         const coord1 = new Coordinates(CoordinateSystem.epsg4326, longIn, latIn);
         // convert coordinate in EPSG:3946
-        const coord2 = coord1.as(CoordinateSystem.fromEpsg(3946));
+        const epsg3946 = new CoordinateSystem({
+            name: 'test',
+            id: 'EPSG:3946',
+            srid: new SRID('EPSG', 3946),
+        });
+        const coord2 = coord1.as(epsg3946);
         // verify intermediate values
         expect(coord2.x).toBeCloseTo(1841825.45, 2);
         expect(coord2.y).toBeCloseTo(5170916.93, 2);

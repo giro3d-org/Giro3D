@@ -12,7 +12,7 @@ import ProjUtils from '../../utils/ProjUtils';
 import { nonNull } from '../../utils/tsutils';
 import OffsetScale from '../OffsetScale';
 import CoordinateSystem from './coordinate-system/CoordinateSystem';
-import Coordinates, { assertCrsIsValid, crsIsGeocentric, crsIsGeographic } from './Coordinates';
+import Coordinates from './Coordinates';
 
 const tmpXY = new Vector2();
 
@@ -194,7 +194,7 @@ class Extent {
 
         // Geographic coordinate systems may allow a greater "west" than "east"
         // to account for the wrap around the 180° longitude line.
-        if (!crsIsGeographic(this.crs)) {
+        if (!this.crs.isGeographic()) {
             if (this.west > this.east) {
                 return false;
             }
@@ -267,8 +267,6 @@ class Extent {
      * @returns the converted extent.
      */
     public as(crs: CoordinateSystem): this | Extent {
-        assertCrsIsValid(crs);
-
         if (!this._crs.equals(crs) && !(this._crs.isEpsg(4326) && crs.isEpsg(4326))) {
             // Compute min/max in x/y by projecting 8 cardinal points,
             // and then taking the min/max of each coordinates.
@@ -490,7 +488,7 @@ class Extent {
     public isPointInside(coord: Coordinates, epsilon = 0): boolean {
         const c = this.crs.equals(coord.crs) ? coord : coord.as(this.crs);
         // TODO this ignores altitude
-        if (crsIsGeographic(this.crs)) {
+        if (this.crs.isGeographic()) {
             return (
                 c.longitude <= this.east + epsilon &&
                 c.longitude >= this.west - epsilon &&
@@ -843,8 +841,9 @@ class Extent {
         const dimX = Math.abs(this.east - this.west);
         const dimY = Math.abs(this.north - this.south);
 
-        const x = crsIsGeocentric(coordinate.crs) ? coordinate.x : coordinate.longitude;
-        const y = crsIsGeocentric(coordinate.crs) ? coordinate.y : coordinate.latitude;
+        const isGeographic = coordinate.crs.isGeographic();
+        const x = isGeographic ? coordinate.longitude : coordinate.x;
+        const y = isGeographic ? coordinate.latitude : coordinate.y;
 
         const originX = (x - this.west) / dimX;
         const originY = (y - this.south) / dimY;

@@ -238,7 +238,7 @@ class VectorTileSource extends ImageSource {
             'could not get projection from source',
         );
 
-        this._crs = CoordinateSystem.fromSrid(projection.getCode());
+        this._crs = CoordinateSystem.get(projection.getCode());
         const tileGrid = this.source.getTileGridForProjection(projection);
         this._tileGrid = tileGrid;
         this._sourceProjection = projection;

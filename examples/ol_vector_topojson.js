@@ -22,13 +22,13 @@ import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-Instance.registerCRS(
+const crs = CoordinateSystem.register(
     'EPSG:30174',
     '+proj=tmerc +lat_0=26 +lon_0=142 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=-146.414,507.337,680.507,0,0,0,0 +units=m +no_defs +type=crs',
 );
 
 const extent = new Extent(
-    CoordinateSystem.fromEpsg(30174),
+    crs,
     -201012.900985493,
     -198191.63799031873,
     1066954.2964232096,

@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: MIT
  */
 
-import type Authority from './Authority';
 import type CoordinateSystem from './CoordinateSystem';
-import type LinearUnit from './LinearUnit';
+import type SRID from './SRID';
+import type { LinearUnit, AngularUnit, Unit } from './Unit';
 
-export { Authority, CoordinateSystem, LinearUnit };
+export { SRID, CoordinateSystem, LinearUnit, AngularUnit, Unit };

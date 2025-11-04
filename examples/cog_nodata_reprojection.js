@@ -20,7 +20,7 @@ import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';
 import { bindToggle } from './widgets/bindToggle.js';
 import StatusBar from './widgets/StatusBar.js';
 
-Instance.registerCRS(
+const crs = CoordinateSystem.register(
     'EPSG:32742',
     '+proj=utm +zone=42 +south +datum=WGS84 +units=m +no_defs +type=crs',
 );
@@ -33,11 +33,11 @@ const datasetExtent = new Extent(
     5942165.048,
 );
 
-const extent = datasetExtent.clone().as(CoordinateSystem.fromEpsg(32742));
+const extent = datasetExtent.clone().as(crs);
 
 const instance = new Instance({
     target: 'view',
-    crs: extent.crs,
+    crs,
 });
 
 instance.view.camera.position.set(1305865, 24791965, 243407);

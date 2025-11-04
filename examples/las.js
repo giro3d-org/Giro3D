@@ -20,13 +20,13 @@ setLazPerfPath('/assets/wasm');
 
 const url = 'https://3d.oslandia.com/giro3d/pointclouds/autzen-simplified.laz';
 
-Instance.registerCRS(
+const crs = CoordinateSystem.register(
     'EPSG:2992',
     '+proj=lcc +lat_0=41.75 +lon_0=-120.5 +lat_1=43 +lat_2=45.5 +x_0=399999.9999984 +y_0=0 +ellps=GRS80 +nadgrids=us_noaa_WO.tif +units=ft +no_defs +type=crs',
 );
 
 const instance = new Instance({
-    crs: CoordinateSystem.fromEpsg(2992),
+    crs,
     target: 'view',
     backgroundColor: null,
 });

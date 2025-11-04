@@ -26,18 +26,12 @@ import StatusBar from './widgets/StatusBar.js';
 // You can directly jump to `geoJsonLayer.source.addEventListener('featuresloadend', ...)`,
 // as the rest is similar.
 
-Instance.registerCRS(
+const crs = CoordinateSystem.register(
     'EPSG:3946',
     '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
 );
 
-const extent = new Extent(
-    CoordinateSystem.fromEpsg(3946),
-    1837816.94334,
-    1847692.32501,
-    5170036.4587,
-    5178412.82698,
-);
+const extent = new Extent(crs, 1837816.94334, 1847692.32501, 5170036.4587, 5178412.82698);
 
 const instance = new Instance({
     target: 'view',
@@ -155,13 +149,7 @@ map.addLayer(geoJsonLayer).then(() => {
         // Adding the label requires a Vector3 position, let's compute that
         // We'll position the label at the center of the geometry extent
         const olExtent = feature.getGeometry().getExtent();
-        const giro3dExtent = new Extent(
-            CoordinateSystem.fromEpsg(3946),
-            olExtent[0],
-            olExtent[2],
-            olExtent[1],
-            olExtent[3],
-        );
+        const giro3dExtent = new Extent(crs, olExtent[0], olExtent[2], olExtent[1], olExtent[3]);
         if (!giro3dExtent.isInside(extent)) {
             // The extent of the feature is not fully inside the map extent,
             // let's crop it to make sure the label will be inside the map

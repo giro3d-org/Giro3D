@@ -10,7 +10,6 @@ import { Stroke, Style } from 'ol/style.js';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
-import { crsToUnit } from '@giro3d/giro3d/core/geographic/Coordinates.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
@@ -22,6 +21,11 @@ import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
 
 import { bindButton } from './widgets/bindButton.js';
 import StatusBar from './widgets/StatusBar.js';
+
+const epsg2154 = CoordinateSystem.register(
+    'EPSG:2154',
+    '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
+);
 
 /** @type {Instance} */
 let instance;
@@ -144,7 +148,7 @@ async function fetchCrs(/** @type CoordinateSystem */ crs) {
 
     const proj = await (await fetch(`https://epsg.io/${code}.proj4`, { mode: 'cors' })).text();
 
-    Instance.registerCRS(crs.id, proj);
+    CoordinateSystem.register(crs.id, proj, { throwIfFailedToRegisterWithProj: true });
 
     const extent = new Extent(CoordinateSystem.epsg4326, {
         west: Number.parseFloat(minLon),
@@ -158,11 +162,6 @@ async function fetchCrs(/** @type CoordinateSystem */ crs) {
     document.getElementById('description').innerText = area;
     // @ts-expect-error typing
     document.getElementById('link').href = `https://epsg.io/${code}`;
-
-    if (crsToUnit(crs) === undefined) {
-        // Unsupported projection
-        throw new Error('unsupported projection (invalid units)');
-    }
 
     return { def: wkt2, extent: extent.as(crs) };
 }
@@ -195,8 +194,8 @@ bindButton('create', () => {
     const content = epsgCodeElt.value;
 
     if (content) {
-        initialize(CoordinateSystem.fromSrid(content));
+        initialize(CoordinateSystem.get(content));
     }
 });
 
-initialize(CoordinateSystem.fromEpsg(2154));
+initialize(epsg2154);

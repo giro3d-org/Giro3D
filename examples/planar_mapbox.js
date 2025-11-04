@@ -19,11 +19,6 @@ import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-Instance.registerCRS(
-    'EPSG:3857',
-    '+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs +type=crs',
-);
-
 const extent = new Extent(CoordinateSystem.epsg3857, 659030, 735596, 5535152, 5647497);
 
 const instance = new Instance({

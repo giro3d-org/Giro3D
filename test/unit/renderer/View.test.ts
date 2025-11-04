@@ -23,13 +23,13 @@ import type { ExternalControls } from '@giro3d/giro3d/renderer/View';
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import View from '@giro3d/giro3d/renderer/View';
 
-const DEFAULT_CRS = CoordinateSystem.fromEpsg(1234);
+const DEFAULT_CRS = CoordinateSystem.epsg3857;
 
 describe('constructor', () => {
     it('should assign properties', () => {
         const width = 123;
         const height = 456;
-        const crs = CoordinateSystem.fromEpsg(1234);
+        const crs = CoordinateSystem.epsg3857;
         const view = new View({ crs: DEFAULT_CRS, width, height });
 
         expect(view.crs.equals(crs)).toEqual(true);
