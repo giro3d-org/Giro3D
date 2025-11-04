@@ -207,7 +207,7 @@ describe('as', () => {
             west: -5,
         });
 
-        expect(() => original.as(CoordinateSystem.fromEpsg(99999))).toThrow();
+        expect(() => original.as(CoordinateSystem.unknown)).toThrow();
     });
 
     it('should return the original object if target CRS is same as source CRS', () => {
@@ -594,8 +594,8 @@ describe('equals', () => {
     });
 
     it('should return false if both extent have different CRSes', () => {
-        const a = new Extent(CoordinateSystem.fromSrid('EPSG:1234'), 1, 9, 1, 22);
-        const b = new Extent(CoordinateSystem.fromSrid('EPSG:5678'), 1, 9, 1, 22);
+        const a = new Extent(CoordinateSystem.epsg3857, 1, 9, 1, 22);
+        const b = new Extent(CoordinateSystem.epsg4326, 1, 9, 1, 22);
         expect(a.equals(b)).toBeFalsy();
     });
 

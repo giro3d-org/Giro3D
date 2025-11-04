@@ -14,8 +14,8 @@ describe('transformBufferInPlace', () => {
     it('should do nothing if both CRSes are equal', () => {
         const buffer = new Float64Array([0, 1, 2]);
         ProjUtils.transformBufferInPlace(buffer, {
-            srcCrs: CoordinateSystem.fromEpsg(1234),
-            dstCrs: CoordinateSystem.fromEpsg(1234),
+            srcCrs: CoordinateSystem.epsg3857,
+            dstCrs: CoordinateSystem.epsg3857,
             stride: 3,
         });
 
