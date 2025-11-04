@@ -4,16 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-import {
-    AmbientLight,
-    Color,
-    CubeTextureLoader,
-    DirectionalLight,
-    Euler,
-    MathUtils,
-    Quaternion,
-    Vector3,
-} from 'three';
+import { AmbientLight, Color, CubeTextureLoader, DirectionalLight, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
