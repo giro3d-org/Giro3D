@@ -50,7 +50,7 @@ import { CanvasTexture, MathUtils, Vector2, type Texture } from 'three';
 import type Extent from '../core/geographic/Extent';
 import type { GetImageOptions, ImageResponse, ImageSourceOptions } from './ImageSource';
 
-import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import CoordinateSystem from '../core/geographic/CoordinateSystem';
 import Fetcher, { isHttpError } from '../utils/Fetcher';
 import OpenLayersUtils from '../utils/OpenLayersUtils';
 import { nonNull } from '../utils/tsutils';

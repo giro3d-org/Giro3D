@@ -10,9 +10,9 @@ import { describe, expect, it } from 'vitest';
 
 import type { DMS } from '@giro3d/giro3d/core/geographic/Coordinates';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
-import SRID from '@giro3d/giro3d/core/geographic/coordinate-system/SRID';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem';
+import SRID from '@giro3d/giro3d/core/geographic/SRID';
 
 // Define projection that we will use (taken from https://epsg.io/3946, Proj4js section)
 proj4.defs(

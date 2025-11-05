@@ -11,7 +11,7 @@ import type Instance from '@giro3d/giro3d/core/Instance';
 import type { LayerUserData } from '@giro3d/giro3d/core/layer/Layer';
 import type TileMesh from '@giro3d/giro3d/entities/tiles/TileMesh';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import ColorLayer, { isColorLayer } from '@giro3d/giro3d/core/layer/ColorLayer';
 import ElevationLayer, { isElevationLayer } from '@giro3d/giro3d/core/layer/ElevationLayer';

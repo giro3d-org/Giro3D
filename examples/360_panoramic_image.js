@@ -10,7 +10,7 @@ import { Circle, Fill, Stroke, Style } from 'ol/style.js';
 import { AxesHelper, Group, PolarGridHelper, Vector3 } from 'three';
 
 import FirstPersonControls from '@giro3d/giro3d/controls/FirstPersonControls.js';
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem.js';
 import Ellipsoid from '@giro3d/giro3d/core/geographic/Ellipsoid.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';

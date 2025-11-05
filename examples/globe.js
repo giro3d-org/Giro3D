@@ -12,7 +12,7 @@ import { AmbientLight, DirectionalLight, MathUtils, Vector3 } from 'three';
 
 import GlobeControls from '@giro3d/giro3d/controls/GlobeControls.js';
 import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem.js';
 import Ellipsoid from '@giro3d/giro3d/core/geographic/Ellipsoid.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Sun from '@giro3d/giro3d/core/geographic/Sun.js';

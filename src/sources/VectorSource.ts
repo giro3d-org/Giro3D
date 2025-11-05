@@ -36,7 +36,7 @@ import { CanvasTexture, Vector2 } from 'three';
 
 import type { GetImageOptions, ImageResponse, ImageSourceOptions } from './ImageSource';
 
-import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import CoordinateSystem from '../core/geographic/CoordinateSystem';
 import Extent from '../core/geographic/Extent';
 import EmptyTexture from '../renderer/EmptyTexture';
 import Fetcher from '../utils/Fetcher';

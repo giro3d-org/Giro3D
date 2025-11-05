@@ -7,8 +7,8 @@
 import { Box3, Vector2, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import OffsetScale from '@giro3d/giro3d/core/OffsetScale';
 

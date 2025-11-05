@@ -20,7 +20,7 @@ import type HasDefaultPointOfView from '@giro3d/giro3d/core/HasDefaultPointOfVie
 import type PointOfView from '@giro3d/giro3d/core/PointOfView';
 import type { ExternalControls } from '@giro3d/giro3d/renderer/View';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem';
 import View from '@giro3d/giro3d/renderer/View';
 
 const DEFAULT_CRS = CoordinateSystem.epsg3857;

@@ -20,7 +20,7 @@ import {
 import { type OBB } from 'three/examples/jsm/Addons.js';
 
 import type Disposable from '../core/Disposable';
-import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import type CoordinateSystem from '../core/geographic/CoordinateSystem';
 import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
 import type PointOfView from '../core/PointOfView';
 

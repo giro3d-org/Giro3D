@@ -51,14 +51,6 @@ function getProjCsInfos(projCs: ProjCS): ProjCSInfos {
     return { name, unit };
 }
 
-type Parameters = {
-    name: string;
-    srid?: SRID;
-    horizontal?: { unit: Unit };
-    vertical?: { unit: LinearUnit };
-    definition?: string;
-};
-
 /**
  * Contains information about coordinate systems, as well as methods to register new coordinate systems.
  */
@@ -188,7 +180,7 @@ export default class CoordinateSystem {
                 console.warn(error);
             }
         }
-        const crs = CoordinateSystem.fromWkt(definition, id);
+        const crs = CoordinateSystem.fromWkt(definition, { id });
         this._registry.set(id, crs);
         return crs;
     }
@@ -209,19 +201,6 @@ export default class CoordinateSystem {
     }
 
     /**
-     * Registers a new coordinate reference system.
-     * This should be done before creating the instance.
-     * This method can be called several times to add multiple CRS.
-     *
-     * ```js
-     *  // register the CRS first...
-     *  Instance.registerCRS(
-     *  'EPSG:102115',
-     *  '+proj=utm +zone=5 +ellps=clrk66 +units=m +no_defs +type=crs');
-     *
-     *  // ...then create the instance
-     *  const instance = new Instance({ crs: 'EPSG:102115' });
-     * ```
      * @param name - the short name, or EPSG code to identify this CRS.
      * @param value - the CRS definition, either in proj syntax, or in WKT syntax.
      */
@@ -272,22 +251,24 @@ export default class CoordinateSystem {
      * @param wkt - The WKT 1 or WKT 2 definition.
      * @returns The created coordinate system, or throws an error if the definition could not be parsed.
      */
-    public static fromWkt(wkt: string, name?: string): CoordinateSystem {
+    public static fromWkt(wkt: string, overrides?: { id?: string }): CoordinateSystem {
         try {
             const parsed = parseCode(wkt) as ProjCRS | ProjCS | CompoundCS | object;
 
             if ('ID' in parsed) {
                 // WKT 2 / PROJCRS
                 return new CoordinateSystem({
-                    name: name ?? getNicename(parsed),
+                    id: overrides?.id,
+                    name: getNicename(parsed),
                     srid: parseSRID(parsed.ID),
                     definition: wkt,
                 });
             } else if ('PROJCS' in parsed) {
                 // WKT 1 / COMPD_CS
                 const projCsInfos = getProjCsInfos(parsed['PROJCS']);
-                const parameters: Parameters = {
-                    name: name ?? projCsInfos.name,
+                const parameters: ConstructorParameters<typeof CoordinateSystem>[0] = {
+                    id: overrides?.id,
+                    name: projCsInfos.name,
                     srid: projCsInfos.srid,
                     definition: wkt,
                     horizontal: { unit: projCsInfos.unit },
@@ -300,7 +281,8 @@ export default class CoordinateSystem {
                 // WKT 1 / PROJCS
                 const projCsInfos = getProjCsInfos(parsed);
                 return new CoordinateSystem({
-                    name: name ?? projCsInfos.name,
+                    id: overrides?.id,
+                    name: projCsInfos.name,
                     srid: projCsInfos.srid,
                     definition: wkt,
                     horizontal: { unit: projCsInfos.unit },
@@ -326,8 +308,9 @@ export default class CoordinateSystem {
                 }
 
                 return new CoordinateSystem({
-                    name: name ?? getNicename(parsed),
-                    srid,
+                    id: overrides?.id,
+                    name: getNicename(parsed),
+                    srid: srid,
                     horizontal: unit != null ? { unit } : undefined,
                 });
             }
@@ -337,20 +320,73 @@ export default class CoordinateSystem {
         }
     }
 
+    private readonly _customId?: string;
+
+    /**
+     * The readable name of this coordinate system.
+     */
     public readonly name: string;
+    /**
+     * The SRID of this coordinate system.
+     */
     public readonly srid?: SRID;
+    /**
+     * Contains metadata about the horizontal component of this coordinate system.
+     */
     public readonly horizontal?: { readonly unit: Unit };
+    /**
+     * Contains metadata about the vertical component of this coordinate system.
+     */
     public readonly vertical?: { readonly unit: LinearUnit };
+    /**
+     * The WKT definition of this coordinate system.
+     */
     public readonly definition?: string;
+
+    /**
+     * The internal identifier of this coordinate system. Used as a key in the coordinate system registry.
+     * By order of priority, will return: the custom identifier, the SRID, then the name.
+     */
     public get id(): string {
+        if (typeof this._customId !== 'undefined') {
+            return this._customId;
+        }
+
         if (typeof this.srid !== 'undefined') {
             return this.srid.toString();
         }
         return this.name;
     }
-    public constructor(params: Parameters) {
+
+    public constructor(params: {
+        /**
+         * The name of the coordinate system.
+         */
+        name: string;
+        /**
+         * The optional SRID of this coordinate system.
+         */
+        srid?: SRID;
+        /**
+         * The id of this coordinate system. If unspecified, will use the SRID or name, if available.
+         */
+        id?: string;
+        /**
+         * The horizontal component of the coordinate system.
+         */
+        horizontal?: { unit: Unit };
+        /**
+         * The vertical component of the coordinate system.
+         */
+        vertical?: { unit: LinearUnit };
+        /**
+         * The WKT definition of the coordinate system.
+         */
+        definition?: string;
+    }) {
         this.name = params.name;
         this.srid = params.srid;
+        this._customId = params.id;
 
         if (typeof params.horizontal !== 'undefined') {
             this.horizontal = params.horizontal;
@@ -363,6 +399,9 @@ export default class CoordinateSystem {
         }
     }
 
+    /**
+     * Returns true if this coordinate system has angular units.
+     */
     public isGeographic(): boolean {
         const unit = this.horizontal?.unit;
         if (AngularUnit.isAngularUnit(unit)) {
@@ -372,6 +411,9 @@ export default class CoordinateSystem {
         return false;
     }
 
+    /**
+     * Returns the conversion factor between horizontal units and meters.
+     */
     public get metersPerHorizontalUnit(): number {
         const unit = this.horizontal?.unit;
         if (LinearUnit.isLinearUnit(unit)) {
@@ -380,6 +422,9 @@ export default class CoordinateSystem {
         return 1;
     }
 
+    /**
+     * Returns the conversion factor between vertical units and meters.
+     */
     public get metersPerVerticalUnit(): number {
         const unit = this.vertical?.unit;
         if (LinearUnit.isLinearUnit(unit)) {
@@ -395,14 +440,23 @@ export default class CoordinateSystem {
         return false;
     }
 
+    /**
+     * Returns `true` if this coordinate system is the special equirectangular coordinate system (used for spherical mapping).
+     */
     public isEquirectangular(): boolean {
         return this.name === 'equirectangular';
     }
 
+    /**
+     * Returns `true` if this coordinate system is the special unknown coordinate system (used for non-georeferenced scenes).
+     */
     public isUnknown(): boolean {
         return this.name === 'unknown' && typeof this.definition === 'undefined';
     }
 
+    /**
+     * Returns `true` if the two coordinate systems are equal.
+     */
     public equals(other: CoordinateSystem): boolean {
         return this.id === other.id;
     }

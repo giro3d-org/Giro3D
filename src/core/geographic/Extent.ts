@@ -11,8 +11,8 @@ import { Box3, Vector2, Vector3 } from 'three';
 import ProjUtils from '../../utils/ProjUtils';
 import { nonNull } from '../../utils/tsutils';
 import OffsetScale from '../OffsetScale';
-import CoordinateSystem from './coordinate-system/CoordinateSystem';
 import Coordinates from './Coordinates';
+import CoordinateSystem from './CoordinateSystem';
 
 const tmpXY = new Vector2();
 
@@ -75,15 +75,15 @@ export interface GridExtent {
  *     // latitude 1
  *     const extent = new Extent(CoordinateSystem.epsg4326, 0, 0, 1, 1);
  *
- * For other EPSG codes, you must register them with `Instance.registerCRS()` :
+ * For other EPSG codes, you must register them with `CoordinateSystem.register()` :
  *
  * ```js
- *     Instance.registerCRS('EPSG:3946',
+ *     const crs = CoordinateSystem.register('EPSG:3946',
  *         '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 + \
  *         ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
  *
  *     extent = new Extent(
- *                  'EPSG:3946',
+ *                  crs,
  *                  1837816.94334, 1847692.32501,
  *                  5170036.4587, 5178412.82698);
  * ```

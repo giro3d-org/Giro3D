@@ -17,7 +17,7 @@ import type { GridExtent } from '../core/geographic/Extent';
 import type ImageFormat from '../formats/ImageFormat';
 import type { GetImageOptions, ImageResponse, ImageSourceOptions } from './ImageSource';
 
-import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import CoordinateSystem from '../core/geographic/CoordinateSystem';
 import EmptyTexture from '../renderer/EmptyTexture';
 import MemoryTracker from '../renderer/MemoryTracker';
 import { isHttpError } from '../utils/Fetcher';

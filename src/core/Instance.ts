@@ -23,7 +23,7 @@ import {
 import type Entity from '../entities/Entity';
 import type Entity3D from '../entities/Entity3D';
 import type RenderingOptions from '../renderer/RenderingOptions';
-import type CoordinateSystem from './geographic/coordinate-system/CoordinateSystem';
+import type CoordinateSystem from './geographic/CoordinateSystem';
 import type PickOptions from './picking/PickOptions';
 import type PickResult from './picking/PickResult';
 import type Progress from './Progress';

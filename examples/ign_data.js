@@ -21,7 +21,7 @@ import {
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 // NOTE: changing the imported name because we use the native `Map` object in this example.
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';

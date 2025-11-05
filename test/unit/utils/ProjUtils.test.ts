@@ -7,7 +7,7 @@
 import { Vector2 } from 'three';
 import { describe, expect, it } from 'vitest';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem';
 import ProjUtils from '@giro3d/giro3d/utils/ProjUtils';
 
 describe('transformBufferInPlace', () => {

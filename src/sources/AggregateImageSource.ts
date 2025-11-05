@@ -6,7 +6,7 @@
 
 import { MathUtils } from 'three';
 
-import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import type CoordinateSystem from '../core/geographic/CoordinateSystem';
 import type { GetMemoryUsageContext } from '../core/MemoryUsage';
 import type { GetImageOptions, ImageResponse, ImageResult } from './ImageSource';
 

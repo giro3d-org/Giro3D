@@ -29,7 +29,7 @@ import type Context from '../core/Context';
 import type ContourLineOptions from '../core/ContourLineOptions';
 import type ElevationProvider from '../core/ElevationProvider';
 import type ElevationRange from '../core/ElevationRange';
-import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import type CoordinateSystem from '../core/geographic/CoordinateSystem';
 import type Extent from '../core/geographic/Extent';
 import type GetElevationOptions from '../core/GetElevationOptions';
 import type GetElevationResult from '../core/GetElevationResult';

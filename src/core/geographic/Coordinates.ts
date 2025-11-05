@@ -9,7 +9,7 @@ import proj4 from 'proj4';
 import { MathUtils, Vector2, Vector3 } from 'three';
 
 import { isVector3 } from '../../utils/predicates';
-import CoordinateSystem from './coordinate-system/CoordinateSystem';
+import CoordinateSystem from './CoordinateSystem';
 import { getConverter } from './ProjectionCache';
 
 proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs +type=crs');

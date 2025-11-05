@@ -7,7 +7,7 @@
 import { Group, Object3D, Vector2, WebGLRenderer } from 'three';
 import { beforeEach, describe, expect, it, vitest } from 'vitest';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem';
 import Instance from '@giro3d/giro3d/core/Instance';
 import Entity from '@giro3d/giro3d/entities/Entity';
 import Entity3D from '@giro3d/giro3d/entities/Entity3D';

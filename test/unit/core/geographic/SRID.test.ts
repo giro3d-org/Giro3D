@@ -6,7 +6,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import SRID from '@giro3d/giro3d/core/geographic/coordinate-system/SRID';
+import SRID from '@giro3d/giro3d/core/geographic/SRID';
 
 describe('constructor', () => {
     it('should assign property authority and code', () => {

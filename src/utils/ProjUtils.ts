@@ -9,7 +9,7 @@ import type { Vector3 } from 'three';
 import proj from 'proj4';
 import { MathUtils, Vector2, type TypedArray } from 'three';
 
-import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import type CoordinateSystem from '../core/geographic/CoordinateSystem';
 
 import { getConverter } from '../core/geographic/ProjectionCache';
 

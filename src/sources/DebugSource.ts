@@ -6,7 +6,7 @@
 
 import { CanvasTexture, Color } from 'three';
 
-import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import type CoordinateSystem from '../core/geographic/CoordinateSystem';
 import type Extent from '../core/geographic/Extent';
 import type { GridExtent } from '../core/geographic/Extent';
 import type { CustomContainsFn, GetImageOptions, ImageResponse } from './ImageSource';

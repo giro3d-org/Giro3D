@@ -6,8 +6,58 @@
 
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
-import { AngularUnit, LinearUnit } from '@giro3d/giro3d/core/geographic/coordinate-system/Unit';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem';
+import { AngularUnit, LinearUnit } from '@giro3d/giro3d/core/geographic/Unit';
+
+const WKT_UTM_ZONE_11 = `
+    PROJCRS["WGS 84 / UTM zone 11N",
+        BASEGEOGCRS["WGS 84",
+            ENSEMBLE["World Geodetic System 1984 ensemble",
+                MEMBER["World Geodetic System 1984 (Transit)"],
+                MEMBER["World Geodetic System 1984 (G730)"],
+                MEMBER["World Geodetic System 1984 (G873)"],
+                MEMBER["World Geodetic System 1984 (G1150)"],
+                MEMBER["World Geodetic System 1984 (G1674)"],
+                MEMBER["World Geodetic System 1984 (G1762)"],
+                MEMBER["World Geodetic System 1984 (G2139)"],
+                MEMBER["World Geodetic System 1984 (G2296)"],
+                ELLIPSOID["WGS 84",6378137,298.257223563,
+                    LENGTHUNIT["metre",1]],
+                ENSEMBLEACCURACY[2.0]],
+            PRIMEM["Greenwich",0,
+                ANGLEUNIT["degree",0.0174532925199433]],
+            ID["EPSG",4326]],
+        CONVERSION["UTM zone 11N",
+            METHOD["Transverse Mercator",
+                ID["EPSG",9807]],
+            PARAMETER["Latitude of natural origin",0,
+                ANGLEUNIT["degree",0.0174532925199433],
+                ID["EPSG",8801]],
+            PARAMETER["Longitude of natural origin",-117,
+                ANGLEUNIT["degree",0.0174532925199433],
+                ID["EPSG",8802]],
+            PARAMETER["Scale factor at natural origin",0.9996,
+                SCALEUNIT["unity",1],
+                ID["EPSG",8805]],
+            PARAMETER["False easting",500000,
+                LENGTHUNIT["metre",1],
+                ID["EPSG",8806]],
+            PARAMETER["False northing",0,
+                LENGTHUNIT["metre",1],
+                ID["EPSG",8807]]],
+        CS[Cartesian,2],
+            AXIS["(E)",east,
+                ORDER[1],
+                LENGTHUNIT["metre",1]],
+            AXIS["(N)",north,
+                ORDER[2],
+                LENGTHUNIT["metre",1]],
+        USAGE[
+            SCOPE["Navigation and medium accuracy spatial referencing."],
+            AREA["Between 120°W and 114°W, northern hemisphere between equator and 84°N, onshore and offshore. Canada - Alberta; British Columbia (BC); Northwest Territories (NWT); Nunavut. Mexico. United States (USA)."],
+            BBOX[0,-120,84,-114]],
+        ID["EPSG",32611]]
+        `;
 
 beforeEach(() => {
     CoordinateSystem.clearRegistry();
@@ -41,7 +91,7 @@ describe('fromWkt', () => {
                 AUTHORITY["EPSG","2154"]]
             `;
 
-            const coordinateSystem = CoordinateSystem.register('EPSG:2154', wkt);
+            const coordinateSystem = CoordinateSystem.fromWkt(wkt);
             expect(coordinateSystem).toBeDefined();
             expect(coordinateSystem.isEpsg(2154)).toEqual(true);
             expect(coordinateSystem.name).toEqual('RGF93 v1 / Lambert-93');
@@ -84,7 +134,7 @@ describe('fromWkt', () => {
                     AUTHORITY["EPSG","5703"]]]
             `;
 
-            const coordinateSystem = CoordinateSystem.register('test', wkt);
+            const coordinateSystem = CoordinateSystem.fromWkt(wkt);
             expect(coordinateSystem).toBeDefined();
             expect(coordinateSystem.name).toEqual('NAD83(2011) / UTM zone 14N');
             expect(coordinateSystem.srid).toBeUndefined();
@@ -120,7 +170,7 @@ describe('fromWkt', () => {
                 AXIS["Northing",NORTH]]
             `;
 
-            const coordinateSystem = CoordinateSystem.register('test', wkt);
+            const coordinateSystem = CoordinateSystem.fromWkt(wkt);
             expect(coordinateSystem).toBeDefined();
             expect(coordinateSystem.name).toEqual(
                 'Projected CRS NAD83(2011) / Tennessee (ftUS) with ellipsoidal NAD83(2011) height demoted to 2D',
@@ -192,7 +242,7 @@ describe('fromWkt', () => {
                     AUTHORITY["EPSG","6360"]]]
             `;
 
-            const coordinateSystem = CoordinateSystem.register('test', wkt);
+            const coordinateSystem = CoordinateSystem.fromWkt(wkt);
             expect(coordinateSystem).toBeDefined();
             expect(coordinateSystem.isEpsg(2992)).toEqual(true);
             expect(coordinateSystem.name).toEqual('NAD83 / Oregon GIC Lambert (ft)');
@@ -233,7 +283,7 @@ describe('fromWkt', () => {
                 AUTHORITY["EPSG","2154"]]
             `;
 
-            const parsedCrs = CoordinateSystem.register('EPSG:2154', wkt);
+            const parsedCrs = CoordinateSystem.fromWkt(wkt);
             expect(parsedCrs).toBeDefined();
             expect(parsedCrs!.name).toEqual('RGF93 v1 / Lambert-93');
             expect(parsedCrs!.srid?.toString()).toEqual('EPSG:2154');
@@ -270,7 +320,7 @@ describe('fromWkt', () => {
                     AUTHORITY["EPSG","5703"]]]
             `;
 
-            const parsedCrs = CoordinateSystem.register('test', wkt);
+            const parsedCrs = CoordinateSystem.fromWkt(wkt);
             expect(parsedCrs).toBeDefined();
             expect(parsedCrs!.name).toEqual('NAD83(2011) / UTM zone 14N');
             expect(parsedCrs!.srid).toBeUndefined();
@@ -299,7 +349,7 @@ describe('fromWkt', () => {
             AXIS["Northing",NORTH]]
             `;
 
-            const parsedCrs = CoordinateSystem.register('test', wkt);
+            const parsedCrs = CoordinateSystem.fromWkt(wkt);
             expect(parsedCrs).toBeDefined();
             expect(parsedCrs!.name).toEqual(
                 'Projected CRS NAD83(2011) / Tennessee (ftUS) with ellipsoidal NAD83(2011) height demoted to 2D',
@@ -324,7 +374,7 @@ describe('fromWkt', () => {
                 AUTHORITY["EPSG","4978"]]
             `;
 
-            const parsedCrs = CoordinateSystem.register('test', wkt);
+            const parsedCrs = CoordinateSystem.fromWkt(wkt);
             expect(parsedCrs).toBeDefined();
             expect(parsedCrs!.name).toEqual('WGS 84');
             expect(parsedCrs!.srid?.toString()).toEqual('EPSG:4978');
@@ -438,7 +488,7 @@ describe('fromWkt', () => {
                     ID["EPSG",3857]]
                 `;
 
-                const parsedCrs = CoordinateSystem.register('test', wkt);
+                const parsedCrs = CoordinateSystem.fromWkt(wkt);
                 expect(parsedCrs).toBeDefined();
                 expect(parsedCrs!.name).toEqual('WGS 84 / Pseudo-Mercator');
                 expect(parsedCrs!.srid?.toString()).toEqual('EPSG:3857');
@@ -490,7 +540,7 @@ describe('fromWkt', () => {
                     ID["EPSG",2154]]
                 `;
 
-                const parsedCrs = CoordinateSystem.register('test', wkt);
+                const parsedCrs = CoordinateSystem.fromWkt(wkt);
                 expect(parsedCrs).toBeDefined();
                 expect(parsedCrs!.name).toEqual('RGF93 v1 / Lambert-93');
                 expect(parsedCrs!.srid?.toString()).toEqual('EPSG:2154');
@@ -620,5 +670,36 @@ describe('get', () => {
 
         expect(crs).toBeDefined();
         expect(crs).toBe(crs2);
+    });
+});
+
+describe('id', () => {
+    it('should return the custom id if specified', () => {
+        const crs = CoordinateSystem.fromWkt(WKT_UTM_ZONE_11, { id: 'FOO' });
+
+        expect(crs).toBeDefined();
+        expect(crs.id).toEqual('FOO');
+        expect(crs.name).toEqual('WGS 84 / UTM zone 11N');
+        expect(crs.srid?.toString()).toEqual('EPSG:32611');
+    });
+
+    it('should return the SRID if specified, when no ID is present', () => {
+        const crs = CoordinateSystem.fromWkt(WKT_UTM_ZONE_11);
+
+        expect(crs).toBeDefined();
+        expect(crs.id).toEqual('EPSG:32611');
+        expect(crs.name).toEqual('WGS 84 / UTM zone 11N');
+        expect(crs.srid?.toString()).toEqual('EPSG:32611');
+    });
+
+    it('should return the name if specified, when no ID nor SRID are present', () => {
+        const wkt =
+            'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]';
+        const crs = CoordinateSystem.fromWkt(wkt);
+
+        expect(crs).toBeDefined();
+        expect(crs.id).toEqual('GCS_WGS_1984');
+        expect(crs.name).toEqual('GCS_WGS_1984');
+        expect(crs.srid).toBeUndefined();
     });
 });
