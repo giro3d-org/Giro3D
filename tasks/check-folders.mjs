@@ -6,7 +6,14 @@
 
 import esMain from 'es-main';
 import { globSync } from 'glob';
+import { basename } from 'path';
 import { exit } from 'process';
+
+import { logError, logOk } from './utils.mjs';
+
+const regex = /^[a-z_\d]+$/;
+
+const MODULE_NAME = 'check-folders';
 
 /**
  * Check that folders are in lowercase.
@@ -19,14 +26,18 @@ async function main() {
         const dirs = globSync(`${folder}/**/`);
 
         for (const dir of dirs) {
-            if (dir.toLocaleLowerCase() !== dir) {
+            const dirname = basename(dir);
+            if (!regex.test(dirname)) {
                 error++;
-                console.error(`invalid directory name: ${dir}`);
+                logError(MODULE_NAME, `invalid directory name: ${dir}`);
             }
         }
     }
     if (error > 0) {
         exit(1);
+    } else {
+        logOk(MODULE_NAME, 'no issue with directory names');
+        exit(0);
     }
 }
 
