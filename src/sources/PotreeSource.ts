@@ -377,7 +377,7 @@ export default class PotreeSource extends PointCloudSourceBase {
     private async readLazFile(
         buffer: ArrayBuffer,
         node: PotreeNode,
-        optionalAttribute?: LazPointCloudAttribute,
+        attributes: LazPointCloudAttribute[],
     ): Promise<ParseResult> {
         const compressed = new Uint8Array(buffer);
         const header = Las.Header.parse(compressed);
@@ -400,16 +400,15 @@ export default class PotreeSource extends PointCloudSourceBase {
 
         const position = readPosition(view, node.volume.min, 1, null);
 
-        let attributeBuffer: BufferAttribute | undefined = undefined;
-        if (optionalAttribute != null) {
-            if (optionalAttribute.interpretation === 'color') {
+        const attributeBuffers = attributes.map(attribute => {
+            if (attribute.interpretation === 'color') {
                 const colorBuffer = readColor(view, 1, true, null);
-                attributeBuffer = createBufferAttribute(colorBuffer, optionalAttribute);
+                return createBufferAttribute(colorBuffer, attribute);
             } else {
-                const scalarBuffer = readScalarAttribute(view, optionalAttribute, 1, null);
-                attributeBuffer = createBufferAttribute(scalarBuffer, optionalAttribute);
+                const scalarBuffer = readScalarAttribute(view, attribute, 1, null);
+                return createBufferAttribute(scalarBuffer, attribute);
             }
-        }
+        });
 
         return {
             positionBuffer: {
@@ -418,13 +417,11 @@ export default class PotreeSource extends PointCloudSourceBase {
                 normalized: false,
             },
             localBoundingBox: position.localBoundingBox,
-            attributeBuffer: attributeBuffer
-                ? {
-                      array: attributeBuffer.array,
-                      dimension: attributeBuffer.itemSize,
-                      normalized: attributeBuffer.normalized,
-                  }
-                : undefined,
+            attributeBuffers: attributeBuffers.map(attributeBuffer => ({
+                array: attributeBuffer.array,
+                dimension: attributeBuffer.itemSize,
+                normalized: attributeBuffer.normalized,
+            })),
         };
     }
 
@@ -432,24 +429,19 @@ export default class PotreeSource extends PointCloudSourceBase {
         buffer: ArrayBuffer,
         pointByteSize: number,
         positionAttribute: PotreePointCloudAttribute,
-        optionalAttribute?: PotreePointCloudAttribute,
+        attributes: PotreePointCloudAttribute[],
     ): Promise<ParseResult> {
-        return readBinFile(buffer, pointByteSize, positionAttribute, optionalAttribute);
+        return readBinFile(buffer, pointByteSize, positionAttribute, attributes);
     }
 
     private async readBinFile(
         buffer: ArrayBuffer,
         pointByteSize: number,
         positionAttribute: PotreePointCloudAttribute,
-        optionalAttribute?: PotreePointCloudAttribute,
+        attributes: PotreePointCloudAttribute[],
     ): Promise<ParseResult> {
         if (this._options.enableWorkers === false) {
-            return this.readBinFileSync(
-                buffer,
-                pointByteSize,
-                positionAttribute,
-                optionalAttribute,
-            );
+            return this.readBinFileSync(buffer, pointByteSize, positionAttribute, attributes);
         } else {
             const potreePool = await PotreeWorkerPool.get();
 
@@ -461,7 +453,7 @@ export default class PotreeSource extends PointCloudSourceBase {
                         info: {
                             pointByteSize,
                             positionAttribute,
-                            optionalAttribute,
+                            attributes,
                         },
                     },
                     [buffer],
@@ -469,7 +461,7 @@ export default class PotreeSource extends PointCloudSourceBase {
                 .then(msg => {
                     const parseResult: ParseResult = {
                         positionBuffer: msg.position,
-                        attributeBuffer: msg.attribute,
+                        attributeBuffers: msg.attributes,
                     };
 
                     return parseResult;
@@ -531,6 +523,8 @@ export default class PotreeSource extends PointCloudSourceBase {
 
         this._opCounter.increment();
 
+        const paramsAttributes = params.attributes ?? [];
+
         switch (dataFilesExtension) {
             case 'bin':
                 {
@@ -540,9 +534,9 @@ export default class PotreeSource extends PointCloudSourceBase {
                         buffer,
                         pointByteSize,
                         nonNull(potreeAttrs.find(a => a.name === 'POSITION_CARTESIAN')),
-                        params.attribute?.name != null
-                            ? nonNull(potreeAttrs.find(a => a.name === params.attribute?.name))
-                            : undefined,
+                        paramsAttributes.map(attribute =>
+                            nonNull(potreeAttrs.find(a => a.name === attribute.name)),
+                        ),
                     ).finally(() => this._opCounter.decrement());
                 }
                 break;
@@ -552,9 +546,9 @@ export default class PotreeSource extends PointCloudSourceBase {
                     result = await this.readLazFile(
                         buffer,
                         node,
-                        params.attribute?.name != null
-                            ? nonNull(lazAttrs.find(a => a.name === params.attribute?.name))
-                            : undefined,
+                        paramsAttributes.map(attribute =>
+                            nonNull(lazAttrs.find(a => a.name === attribute.name)),
+                        ),
                     ).finally(() => this._opCounter.decrement());
                 }
                 break;
@@ -565,10 +559,12 @@ export default class PotreeSource extends PointCloudSourceBase {
         signal?.throwIfAborted();
 
         const positionBuffer = new Float32BufferAttribute(result.positionBuffer.array, 3, false);
-        let attribute: BufferAttribute | undefined = undefined;
-        if (params.attribute != null && result.attributeBuffer != null) {
-            attribute = createBufferAttribute(result.attributeBuffer.array, params.attribute);
-        }
+        const attributeBuffers = paramsAttributes.map((paramAttribute, index) => {
+            const attributeBuffer = result.attributeBuffers[index];
+            if (attributeBuffer != null) {
+                return createBufferAttribute(attributeBuffer.array, paramAttribute);
+            }
+        });
 
         const localBoundingBox = new Box3().setFromBufferAttribute(positionBuffer);
 
@@ -578,7 +574,7 @@ export default class PotreeSource extends PointCloudSourceBase {
             localBoundingBox,
             position: positionBuffer,
             pointCount: positionBuffer.count,
-            attribute,
+            attributes: attributeBuffers,
         };
     }
 

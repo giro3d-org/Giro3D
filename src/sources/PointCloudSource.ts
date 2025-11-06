@@ -184,9 +184,9 @@ export interface PointCloudNodeData {
      */
     localBoundingBox?: Box3;
     /**
-     * The optionally requested attribute buffer (color, classification, etc).
+     * The optionally requested attribute buffers (color, classification, etc).
      */
-    attribute?: BufferAttribute;
+    attributes: Array<BufferAttribute | undefined>;
 }
 
 /**
@@ -211,9 +211,9 @@ export interface GetNodeDataOptions {
      */
     position: boolean;
     /**
-     * The optional attribute to load.
+     * The optional attributes to load.
      */
-    attribute?: PointCloudAttribute;
+    attributes?: PointCloudAttribute[];
     /**
      * Optional abort signal for early cancellation of asynchronous requests.
      */

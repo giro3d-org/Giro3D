@@ -299,7 +299,9 @@ export default class LASSource extends PointCloudSourceBase {
     }
 
     public async getNodeData(params: GetNodeDataOptions): Promise<PointCloudNodeData> {
-        const dimensions = getDimensionsToRead(params.attribute, params.position, this._filters);
+        const requestedAttributes = params.attributes ?? [];
+
+        const dimensions = getDimensionsToRead(requestedAttributes, params.position, this._filters);
 
         const view = await this.getView(dimensions);
 
@@ -313,13 +315,9 @@ export default class LASSource extends PointCloudSourceBase {
 
         const filters = getPerPointFilters(this._filters, view);
 
-        const requestedAttribute = params.attribute;
         const compressColors = this._options.compressColorsToUint8;
-        let attribute: BufferAttribute | undefined = undefined;
 
-        if (requestedAttribute != null) {
-            this._opCounter.increment();
-        }
+        this._opCounter.increment(requestedAttributes.length);
 
         let positionBuffer: BufferAttribute | undefined = undefined;
         let localBoundingBox: Box3 | undefined = undefined;
@@ -334,30 +332,35 @@ export default class LASSource extends PointCloudSourceBase {
             localBoundingBox = result.localBoundingBox;
         }
 
-        if (requestedAttribute != null) {
-            let action: () => ArrayBuffer;
+        const attributes = await Promise.all(
+            requestedAttributes.map(async requestedAttribute => {
+                let action: () => ArrayBuffer;
 
-            switch (requestedAttribute.interpretation) {
-                case 'color':
-                    action = (): ArrayBuffer => readColor(view, stride, compressColors, filters);
-                    break;
-                default:
-                    action = (): ArrayBuffer =>
-                        readScalarAttribute(view, requestedAttribute, stride, filters);
-                    break;
-            }
+                switch (requestedAttribute.interpretation) {
+                    case 'color':
+                        action = (): ArrayBuffer =>
+                            readColor(view, stride, compressColors, filters);
+                        break;
+                    default:
+                        action = (): ArrayBuffer =>
+                            readScalarAttribute(view, requestedAttribute, stride, filters);
+                        break;
+                }
 
-            const buffer = await defer(action, signal).finally(() => this._opCounter.decrement());
+                const buffer = await defer(action, signal).finally(() =>
+                    this._opCounter.decrement(),
+                );
 
-            attribute = createBufferAttribute(buffer, requestedAttribute, compressColors);
-        }
+                return createBufferAttribute(buffer, requestedAttribute, compressColors);
+            }),
+        );
 
         return Promise.resolve({
             origin,
-            pointCount: positionBuffer?.count ?? attribute?.count,
+            pointCount: positionBuffer?.count ?? attributes[0]?.count,
             localBoundingBox,
             position: positionBuffer,
-            attribute,
+            attributes,
         });
     }
 

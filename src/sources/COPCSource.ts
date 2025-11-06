@@ -421,7 +421,9 @@ export default class COPCSource extends PointCloudSourceBase {
 
         signal?.throwIfAborted();
 
-        const dimensions = getDimensionsToRead(params.attribute, params.position, this._filters);
+        const paramsAttributes = params.attributes ?? [];
+
+        const dimensions = getDimensionsToRead(paramsAttributes, params.position, this._filters);
 
         const octree = nonNull(this._nodeMap.get(id));
 
@@ -493,21 +495,23 @@ export default class COPCSource extends PointCloudSourceBase {
             );
         }
 
-        let attribute: BufferAttribute | undefined = undefined;
-        if (params.attribute && result.attribute) {
-            attribute = createBufferAttribute(
-                result.attribute,
-                params.attribute,
-                this._options.compressColorsToUint8,
-            );
-        }
+        const bufferAttributes = paramsAttributes.map((paramAttribute, index) => {
+            const resultAttribute = result.attributes[index];
+            if (resultAttribute != null) {
+                return createBufferAttribute(
+                    resultAttribute,
+                    paramAttribute,
+                    this._options.compressColorsToUint8,
+                );
+            }
+        });
 
         return {
-            pointCount: position?.count ?? attribute?.count,
+            pointCount: position?.count ?? bufferAttributes[0]?.count,
             origin: octree.center,
             localBoundingBox,
             position,
-            attribute,
+            attributes: bufferAttributes,
         };
     }
 
@@ -534,7 +538,7 @@ export default class COPCSource extends PointCloudSourceBase {
             origin: { x, y, z },
             stride,
             position: params.position,
-            optionalAttribute: params.attribute,
+            attributes: params.attributes ?? [],
             compressColors: this._options.compressColorsToUint8,
             filters: this._filters,
         });
@@ -585,7 +589,7 @@ export default class COPCSource extends PointCloudSourceBase {
                     filters: this._filters,
                     eb: copc.eb,
                     stride,
-                    optionalAttribute: params.attribute,
+                    attributes: params.attributes ?? [],
                     compressColors: this._options.compressColorsToUint8,
                 },
                 [actualBuffer],

@@ -1146,14 +1146,15 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
             geometry.setAttribute('position', data.position);
         }
 
-        if (data.attribute && this._activeAttribute && data.attribute.count > 0) {
+        const dataAttribute = data.attributes[0];
+        if (dataAttribute && this._activeAttribute && dataAttribute.count > 0) {
             const active = this._activeAttribute;
             if (active.interpretation === 'classification') {
-                geometry.setAttribute('classification', data.attribute);
+                geometry.setAttribute('classification', dataAttribute);
             } else if (active.interpretation === 'color') {
-                geometry.setAttribute('color', data.attribute);
+                geometry.setAttribute('color', dataAttribute);
             } else {
-                geometry.setAttribute('intensity', data.attribute);
+                geometry.setAttribute('intensity', dataAttribute);
             }
         }
 
@@ -1280,7 +1281,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
                 // Let's not reload the point position if we already have them,
                 // as they are not going to change when switching attributes for example.
                 position: info.mesh == null || info.positionDirty,
-                attribute: attribute ?? undefined,
+                attributes: attribute ? [attribute] : [],
                 signal,
             });
 

@@ -86,20 +86,21 @@ describe('getNodeData', () => {
         const data = await source.getNodeData({
             node: root,
             position: true,
-            attribute: metadata.attributes.find(att => att.name === 'Color'),
+            attributes: [metadata.attributes.find(att => att.name === 'Color')!],
         });
 
         expect(data.pointCount).toEqual(19190);
         expect(data.position).toBeDefined();
-        expect(data.attribute).toBeDefined();
+        expect(data.attributes.length).toEqual(1);
+        expect(data.attributes[0]).toBeDefined();
 
         expect(data.position!.count).toEqual(data.pointCount);
         expect(data.position!.array).toBeInstanceOf(Float32Array);
         expect(data.position!.itemSize).toEqual(3);
 
-        expect(data.attribute!.count).toEqual(data.pointCount);
-        expect(data.attribute!.array).toBeInstanceOf(Uint8Array);
-        expect(data.attribute!.itemSize).toEqual(3);
+        expect(data.attributes[0]!.count).toEqual(data.pointCount);
+        expect(data.attributes[0]!.array).toBeInstanceOf(Uint8Array);
+        expect(data.attributes[0]!.itemSize).toEqual(3);
     });
 
     it('should honor classification attribute', async () => {
@@ -112,20 +113,21 @@ describe('getNodeData', () => {
         const data = await source.getNodeData({
             node: root,
             position: true,
-            attribute: metadata.attributes.find(att => att.name === 'Classification'),
+            attributes: [metadata.attributes.find(att => att.name === 'Classification')!],
         });
 
         expect(data.pointCount).toEqual(19190);
         expect(data.position).toBeDefined();
-        expect(data.attribute).toBeDefined();
+        expect(data.attributes.length).toEqual(1);
+        expect(data.attributes[0]).toBeDefined();
 
         expect(data.position!.count).toEqual(data.pointCount);
         expect(data.position!.array).toBeInstanceOf(Float32Array);
         expect(data.position!.itemSize).toEqual(3);
 
-        expect(data.attribute!.count).toEqual(data.pointCount);
-        expect(data.attribute!.array).toBeInstanceOf(Uint8Array);
-        expect(data.attribute!.itemSize).toEqual(1);
+        expect(data.attributes[0]!.count).toEqual(data.pointCount);
+        expect(data.attributes[0]!.array).toBeInstanceOf(Uint8Array);
+        expect(data.attributes[0]!.itemSize).toEqual(1);
     });
 
     it('should honor scalar attribute', async () => {
@@ -138,21 +140,67 @@ describe('getNodeData', () => {
         const data = await source.getNodeData({
             node: root,
             position: true,
-            attribute: metadata.attributes.find(att => att.name === 'Intensity'),
+            attributes: [metadata.attributes.find(att => att.name === 'Intensity')!],
         });
 
         expect(data.pointCount).toEqual(19190);
         expect(data.position).toBeDefined();
-        expect(data.attribute).toBeDefined();
+        expect(data.attributes.length).toEqual(1);
+        expect(data.attributes[0]).toBeDefined();
 
         expect(data.position!.count).toEqual(data.pointCount);
         expect(data.position!.array).toBeInstanceOf(Float32Array);
         expect(data.position!.itemSize).toEqual(3);
 
-        expect(data.attribute!.count).toEqual(data.pointCount);
-        expect(data.attribute!.array).toBeInstanceOf(Uint16Array);
-        expect(data.attribute!.itemSize).toEqual(1);
-        expect(data.attribute!.gpuType).toEqual(IntType);
+        expect(data.attributes[0]!.count).toEqual(data.pointCount);
+        expect(data.attributes[0]!.array).toBeInstanceOf(Uint16Array);
+        expect(data.attributes[0]!.itemSize).toEqual(1);
+        expect(data.attributes[0]!.gpuType).toEqual(IntType);
+    });
+
+    it('should honor multi-attribute loading', async () => {
+        await source.initialize();
+
+        const root = await source.getHierarchy();
+
+        const metadata = await source.getMetadata();
+
+        const data = await source.getNodeData({
+            node: root,
+            position: true,
+            attributes: [
+                metadata.attributes.find(att => att.name === 'Color')!,
+                metadata.attributes.find(att => att.name === 'Classification')!,
+                metadata.attributes.find(att => att.name === 'Intensity')!,
+            ],
+        });
+
+        expect(data.pointCount).toEqual(19190);
+        expect(data.position).toBeDefined();
+        expect(data.attributes.length).toEqual(3);
+        expect(data.attributes[0]).toBeDefined();
+        expect(data.attributes[1]).toBeDefined();
+        expect(data.attributes[2]).toBeDefined();
+
+        expect(data.position!.count).toEqual(data.pointCount);
+        expect(data.position!.array).toBeInstanceOf(Float32Array);
+        expect(data.position!.itemSize).toEqual(3);
+
+        // color attribute
+        expect(data.attributes[0]!.count).toEqual(data.pointCount);
+        expect(data.attributes[0]!.array).toBeInstanceOf(Uint8Array);
+        expect(data.attributes[0]!.itemSize).toEqual(3);
+
+        // classification attribute
+        expect(data.attributes[1]!.count).toEqual(data.pointCount);
+        expect(data.attributes[1]!.array).toBeInstanceOf(Uint8Array);
+        expect(data.attributes[1]!.itemSize).toEqual(1);
+
+        // intensity attribute
+        expect(data.attributes[2]!.count).toEqual(data.pointCount);
+        expect(data.attributes[2]!.array).toBeInstanceOf(Uint16Array);
+        expect(data.attributes[2]!.itemSize).toEqual(1);
+        expect(data.attributes[2]!.gpuType).toEqual(IntType);
     });
 
     it('should honor decimation parameter', async () => {
@@ -169,12 +217,14 @@ describe('getNodeData', () => {
         const data = await source.getNodeData({
             node: root,
             position: true,
-            attribute: metadata.attributes.find(att => att.name === 'Intensity'),
+            attributes: [metadata.attributes.find(att => att.name === 'Intensity')!],
         });
 
         expect(data.pointCount).toEqual(19190 / decimate);
         expect(data.position!.count).toEqual(19190 / decimate);
-        expect(data.attribute!.count).toEqual(19190 / decimate);
+        expect(data.attributes.length).toEqual(1);
+        expect(data.attributes[0]).toBeDefined();
+        expect(data.attributes[0]!.count).toEqual(19190 / decimate);
     });
 
     it('should not load position buffers if position option is false', async () => {
@@ -189,13 +239,15 @@ describe('getNodeData', () => {
         const data = await source.getNodeData({
             node: root,
             position: false,
-            attribute: metadata.attributes.find(att => att.name === 'Intensity'),
+            attributes: [metadata.attributes.find(att => att.name === 'Intensity')!],
         });
 
         expect(data.pointCount).toEqual(19190);
         expect(data.position).toBeUndefined();
         expect(data.localBoundingBox).toBeUndefined();
-        expect(data.attribute!.count).toEqual(19190);
+        expect(data.attributes.length).toEqual(1);
+        expect(data.attributes[0]).toBeDefined();
+        expect(data.attributes[0]!.count).toEqual(19190);
     });
 
     it('should honor filters', async () => {
@@ -222,15 +274,17 @@ describe('getNodeData', () => {
         const data = await source.getNodeData({
             node: root,
             position: true,
-            attribute: metadata.attributes.find(att => att.name === 'Classification'),
+            attributes: [metadata.attributes.find(att => att.name === 'Classification')!],
         });
 
         expect(data.pointCount).toEqual(698);
         expect(data.position!.count).toEqual(698);
-        expect(data.attribute!.count).toEqual(698);
+        expect(data.attributes.length).toEqual(1);
+        expect(data.attributes[0]).toBeDefined();
+        expect(data.attributes[0]!.count).toEqual(698);
 
-        for (let i = 0; i < data.attribute!.array.length; i++) {
-            const value = data.attribute!.array[i];
+        for (let i = 0; i < data.attributes[0]!.array.length; i++) {
+            const value = data.attributes[0]!.array[i];
             expect(value).toEqual(filteredClassification);
         }
     });
