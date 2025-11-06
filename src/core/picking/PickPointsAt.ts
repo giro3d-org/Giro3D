@@ -118,7 +118,7 @@ function pickPointsAt(
         const pointIndex = Math.round(buffer[idx * 4 + RED]);
         const objectId = Math.round(buffer[idx * 4 + GREEN]);
 
-        if (objectId >= maxObjectId) {
+        if (objectId > maxObjectId) {
             console.warn(`weird: objectId (${objectId}) > maxObjectId (${maxObjectId})`);
         }
 
