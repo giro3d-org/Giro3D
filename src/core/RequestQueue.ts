@@ -23,7 +23,7 @@ class Task {
     private readonly _resolve: (arg: unknown) => void;
     private readonly _request: () => Promise<unknown>;
 
-    public readonly reject: (reason?: Error | string) => void;
+    public readonly reject: (reason?: unknown) => void;
     public readonly shouldExecute: () => boolean;
 
     public constructor(
