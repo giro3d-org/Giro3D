@@ -23,7 +23,7 @@ class Task {
     private readonly _resolve: (arg: unknown) => void;
     private readonly _request: () => Promise<unknown>;
 
-    public readonly reject: (reason?: Error | string) => void;
+    public readonly reject: (reason?: unknown) => void;
     public readonly shouldExecute: () => boolean;
 
     public constructor(
@@ -153,13 +153,15 @@ class RequestQueue extends EventDispatcher<RequestQueueEvents> implements Progre
 
             if (task.shouldExecute()) {
                 this._concurrentRequests++;
-                task.execute().finally(() => {
-                    this._opCounter.decrement();
-                    this._pendingIds.delete(key);
-                    this._concurrentRequests--;
-                    this.onQueueAvailable();
-                    this.dispatchEvent({ type: 'task-executed' });
-                });
+                task.execute()
+                    .catch(e => task.reject(e))
+                    .finally(() => {
+                        this._opCounter.decrement();
+                        this._pendingIds.delete(key);
+                        this._concurrentRequests--;
+                        this.onQueueAvailable();
+                        this.dispatchEvent({ type: 'task-executed' });
+                    });
             } else {
                 this._opCounter.decrement();
                 this._pendingIds.delete(key);
