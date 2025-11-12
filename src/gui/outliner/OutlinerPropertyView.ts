@@ -13,7 +13,7 @@ import { Object3D } from 'three';
 import type Instance from '../../core/Instance';
 import type PointOfView from '../../core/PointOfView';
 
-import { isBufferGeometry, isVector3 } from '../../utils/predicates';
+import { isBufferGeometry, isInterleavedBufferAttribute, isVector3 } from '../../utils/predicates';
 import Panel from '../Panel';
 
 class OutlinerPropertyView extends Panel {
@@ -144,7 +144,9 @@ class OutlinerPropertyView extends Panel {
                         attr.add(attrValue, 'normalized');
                         attr.add(attrValue, 'count');
                         attr.add(attrValue, 'itemSize');
-                        attr.add(attrValue, 'usage');
+                        if (!isInterleavedBufferAttribute(attrValue)) {
+                            attr.add(attrValue, 'usage');
+                        }
                     }
                 });
             }
