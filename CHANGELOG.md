@@ -89,6 +89,8 @@ const instance = new Instance({
 - **AggregatePointCloudSource**: prevent mutation of source array
 - **ComposerTileFS.glsl**: support non-standard alpha channels (i.e RG texture format)
 - **Entity3D**: don't cancel material update by mistake
+- Fix incorrect warning in some cases when picking point clouds (#648)
+- **RequestQueue**: avoid uncaught exceptions when requests are cancelled (#649)
 
 ### Refactor
 
