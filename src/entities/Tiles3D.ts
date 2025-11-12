@@ -15,6 +15,7 @@ import {
     UnloadTilesPlugin,
 } from '3d-tiles-renderer/plugins';
 import { Box3, Color, Group, REVISION, Vector3 } from 'three';
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 
@@ -287,12 +288,10 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
             new GLTFExtensionsPlugin({
                 dracoLoader,
                 ktxLoader,
-                // FIXME the following parameters are optional but the .d.ts file makes them mandatory
-                // https://github.com/NASA-AMMOS/3DTilesRendererJS/pull/908
-                metadata: true,
-                rtc: true,
-                autoDispose: true,
-                plugins: [],
+                // @ts-expect-error FIXME this field is missing from the type definition file
+                // in the current version of the library, but was fixed upstream
+                // https://github.com/NASA-AMMOS/3DTilesRendererJS/pull/1357
+                meshoptDecoder: MeshoptDecoder,
             }),
         );
 
