@@ -7,8 +7,8 @@
 import { AxesHelper, Matrix4, Raycaster, Vector2, Vector3 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem';
 import Ellipsoid from '@giro3d/giro3d/core/geographic/Ellipsoid';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector';

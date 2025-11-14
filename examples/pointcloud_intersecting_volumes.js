@@ -7,6 +7,7 @@
 import { Color, Matrix4, OrthographicCamera, PerspectiveCamera, Vector3 } from 'three';
 
 import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import PointCloud from '@giro3d/giro3d/entities/PointCloud.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
@@ -29,7 +30,7 @@ setLazPerfPath('/assets/wasm');
 // It is technically the WebMercator CRS, but we label it 'unknown' to make
 // it very explicit that it is not correct.
 // See https://gitlab.com/giro3d/giro3d/-/issues/514
-Instance.registerCRS(
+CoordinateSystem.register(
     'unknown',
     '+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs +type=crs',
 );
@@ -244,7 +245,7 @@ async function load(url) {
     if (typeof epsgCode === 'number') {
         try {
             const definitionFromEpsg = await fetchCrsDefinitionFromEpsg(epsgCode);
-            Instance.registerCRS(metadata.crs.id, definitionFromEpsg);
+            CoordinateSystem.register(metadata.crs.id, definitionFromEpsg);
             document.getElementById('basemap-group').style.display = 'block';
         } catch (e) {
             console.warn('could not load map: ' + e);

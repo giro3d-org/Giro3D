@@ -16,7 +16,7 @@ import type {
 } from '@giro3d/giro3d/core/layer/Layer';
 import type RequestQueue from '@giro3d/giro3d/core/RequestQueue';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import Layer from '@giro3d/giro3d/core/layer/Layer';
 import NullSource from '@giro3d/giro3d/sources/NullSource';

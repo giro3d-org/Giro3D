@@ -6,7 +6,7 @@
 
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
@@ -18,9 +18,12 @@ import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';
 import { bindNumericalDropDown } from './widgets/bindNumericalDropDown.js';
 import StatusBar from './widgets/StatusBar.js';
 
-Instance.registerCRS('EPSG:32611', '+proj=utm +zone=11 +datum=WGS84 +units=m +no_defs +type=crs');
+const crs = CoordinateSystem.register(
+    'EPSG:32611',
+    '+proj=utm +zone=11 +datum=WGS84 +units=m +no_defs +type=crs',
+);
 
-const extent = new Extent(CoordinateSystem.fromEpsg(32611), 666285, 668533.5, 3997174, 3998444);
+const extent = new Extent(crs, 666285, 668533.5, 3997174, 3998444);
 const center = extent.centerAsVector3();
 
 const instance = new Instance({

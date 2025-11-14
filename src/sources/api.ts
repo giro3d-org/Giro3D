@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-// import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+// import CoordinateSystem from '../core/geographic/CoordinateSystem';
 import AggregateImageSource from './AggregateImageSource';
 import AggregatePointCloudSource, {
     AggregatePointCloudSourceOptions,

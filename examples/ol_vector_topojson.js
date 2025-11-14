@@ -10,8 +10,8 @@ import { Fill, Stroke, Style } from 'ol/style.js';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
@@ -22,13 +22,13 @@ import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-Instance.registerCRS(
+const crs = CoordinateSystem.register(
     'EPSG:30174',
     '+proj=tmerc +lat_0=26 +lon_0=142 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=-146.414,507.337,680.507,0,0,0,0 +units=m +no_defs +type=crs',
 );
 
 const extent = new Extent(
-    CoordinateSystem.fromEpsg(30174),
+    crs,
     -201012.900985493,
     -198191.63799031873,
     1066954.2964232096,

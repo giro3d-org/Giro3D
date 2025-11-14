@@ -7,12 +7,12 @@
 import { Color, DoubleSide, Group } from 'three';
 import { beforeEach, describe, expect, it, vitest } from 'vitest';
 
+import type Instance from '@giro3d/giro3d/core/Instance';
 import type { LayerUserData } from '@giro3d/giro3d/core/layer/Layer';
 import type TileMesh from '@giro3d/giro3d/entities/tiles/TileMesh';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
-import Instance from '@giro3d/giro3d/core/Instance';
 import ColorLayer, { isColorLayer } from '@giro3d/giro3d/core/layer/ColorLayer';
 import ElevationLayer, { isElevationLayer } from '@giro3d/giro3d/core/layer/ElevationLayer';
 import Map from '@giro3d/giro3d/entities/Map';
@@ -255,13 +255,10 @@ describe('preprocess', () => {
         const verticalExtent = new Extent(CoordinateSystem.epsg3857, -100, 100, -250, 250);
         const verticalMap = new Map({ extent: verticalExtent });
 
-        Instance.registerCRS(
+        CoordinateSystem.register(
             'EPSG:3946',
             '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
         );
-
-        // @ts-expect-error private property
-        verticalMap._instance = { referenceCrs: 'EPSG:3946' } as Instance;
 
         expect(() => verticalMap.preprocess()).toThrow();
     });

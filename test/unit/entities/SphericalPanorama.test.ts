@@ -7,7 +7,7 @@
 import { Euler, MathUtils, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem';
 import SphericalPanorama from '@giro3d/giro3d/entities/SphericalPanorama';
 
 describe('setOrientation', () => {

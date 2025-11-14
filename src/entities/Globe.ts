@@ -16,8 +16,8 @@ import type { TileGeometryBuilder } from './tiles/TileGeometry';
 import type TileMesh from './tiles/TileMesh';
 import type TileVolume from './tiles/TileVolume';
 
-import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import Coordinates from '../core/geographic/Coordinates';
+import CoordinateSystem from '../core/geographic/CoordinateSystem';
 import Ellipsoid from '../core/geographic/Ellipsoid';
 import Extent from '../core/geographic/Extent';
 import { isColorLayer } from '../core/layer/ColorLayer';

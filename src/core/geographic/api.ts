@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-import type * as coordinatesystem from './coordinate-system/api';
 import type Coordinates from './Coordinates';
 import type { CoordinateParameters, DMS } from './Coordinates';
 import type Ellipsoid from './Ellipsoid';
@@ -12,10 +11,18 @@ import type Extent from './Extent';
 import type { ExtentParameters } from './Extent';
 import type Sun from './Sun';
 
+import CoordinateSystem from './CoordinateSystem';
+import SRID from './SRID';
+import { AngularUnit, LinearUnit, Unit } from './Unit';
+
 export {
     CoordinateParameters,
     Coordinates,
-    coordinatesystem,
+    Unit,
+    AngularUnit,
+    LinearUnit,
+    SRID,
+    CoordinateSystem,
     DMS,
     Ellipsoid,
     Extent,

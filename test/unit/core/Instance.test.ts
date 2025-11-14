@@ -4,11 +4,10 @@
  * SPDX-License-Identifier: MIT
  */
 
-import proj4 from 'proj4';
 import { Group, Object3D, Vector2, WebGLRenderer } from 'three';
 import { beforeEach, describe, expect, it, vitest } from 'vitest';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem';
 import Instance from '@giro3d/giro3d/core/Instance';
 import Entity from '@giro3d/giro3d/entities/Entity';
 import Entity3D from '@giro3d/giro3d/entities/Entity3D';
@@ -396,36 +395,6 @@ describe('Instance', () => {
             instance.add(map2);
 
             expect(instance.progress).toEqual((0.7 + 0.2) / 2);
-        });
-    });
-
-    describe('registerCRS', () => {
-        it('should throw if name or value is undefined', () => {
-            // @ts-expect-error invalid parameter
-            expect(() => Instance.registerCRS(undefined, '')).toThrow(/missing CRS name/);
-            expect(() => Instance.registerCRS('', '')).toThrow(/missing CRS name/);
-            expect(() => Instance.registerCRS('EPSG:foo', '')).toThrow(/missing CRS PROJ string/);
-            // @ts-expect-error invalid parameter
-            expect(() => Instance.registerCRS('EPSG:foo', undefined)).toThrow(
-                /missing CRS PROJ string/,
-            );
-        });
-
-        it('should remember previously registered CRSes', () => {
-            Instance.registerCRS(
-                'EPSG:3946',
-                '+proj=lcc +lat_0=46 +lon_0=3 +lat_1=45.25 +lat_2=46.75 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
-            );
-
-            expect(Object.keys(proj4.defs).includes('EPSG:3946')).toBeTruthy();
-
-            Instance.registerCRS(
-                'EPSG:5011',
-                '+proj=geocent +ellps=GRS80 +units=m +no_defs +type=crs',
-            );
-
-            expect(Object.keys(proj4.defs).includes('EPSG:3946')).toBeTruthy();
-            expect(Object.keys(proj4.defs).includes('EPSG:5011')).toBeTruthy();
         });
     });
 

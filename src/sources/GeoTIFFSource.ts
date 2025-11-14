@@ -19,7 +19,7 @@ import {
 } from 'geotiff';
 import { FloatType, MathUtils, Texture, UnsignedByteType, Vector2 } from 'three';
 
-import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import type CoordinateSystem from '../core/geographic/CoordinateSystem';
 import type { GridExtent } from '../core/geographic/Extent';
 import type { CreateDataTextureResult } from '../utils/TextureGenerator';
 import type { ImageResponse } from './ImageSource';

@@ -22,7 +22,7 @@ import { Projection } from 'ol/proj';
 import { Box3, Group, MathUtils, Vector3 } from 'three';
 
 import type Context from '../core/Context';
-import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import type CoordinateSystem from '../core/geographic/CoordinateSystem';
 import type Extent from '../core/geographic/Extent';
 import type { SSE } from '../core/ScreenSpaceError';
 import type { BaseOptions } from '../renderer/geometries/GeometryConverter';
@@ -233,7 +233,7 @@ type ObjectOptions = {
  *
  * The `FeatureCollection` supports the reprojection of geometries if the source has a different CRS
  * than the scene. Any custom CRS must be registered first with
- * {@link core.Instance.registerCRS | Instance.registerCRS()}.
+ * {@link core.geographic.CoordinateSystem.register | CoordinateSystem.register()}.
  *
  * Related examples:
  *

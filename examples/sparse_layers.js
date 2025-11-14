@@ -7,7 +7,7 @@
 import { DoubleSide } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
@@ -18,12 +18,12 @@ import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-Instance.registerCRS(
+const crs = CoordinateSystem.register(
     'EPSG:26910',
     '+proj=utm +zone=10 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
 );
 
-const extent = new Extent(CoordinateSystem.fromEpsg(26910), 532622, 569790, 5114416, 5137240);
+const extent = new Extent(crs, 532622, 569790, 5114416, 5137240);
 
 const center = extent.centerAsVector3();
 

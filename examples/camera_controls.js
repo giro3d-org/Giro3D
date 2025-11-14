@@ -19,7 +19,7 @@ import {
     Vector4,
 } from 'three';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import Tiles3D from '@giro3d/giro3d/entities/Tiles3D.js';
@@ -44,7 +44,7 @@ CameraControls.install({
     },
 });
 
-Instance.registerCRS(
+const crs = CoordinateSystem.register(
     'EPSG:3946',
     '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 ' +
         '+y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
@@ -52,7 +52,7 @@ Instance.registerCRS(
 
 const instance = new Instance({
     target: 'view',
-    crs: CoordinateSystem.fromEpsg(3946),
+    crs,
 });
 
 const pointcloud = new Tiles3D({

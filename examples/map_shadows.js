@@ -24,8 +24,8 @@ import {
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Sun from '@giro3d/giro3d/core/geographic/Sun.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';

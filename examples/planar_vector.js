@@ -12,7 +12,7 @@ import { XYZ } from 'ol/source.js';
 import { Fill, RegularShape, Stroke, Style } from 'ol/style.js';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
@@ -25,23 +25,20 @@ import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-Instance.registerCRS(
+const epsg3946 = CoordinateSystem.register(
     'EPSG:3946',
     '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
 );
-Instance.registerCRS('EPSG:4171', '+proj=longlat +ellps=GRS80 +no_defs +type=crs');
-
-const extent = new Extent(
-    CoordinateSystem.fromEpsg(3946),
-    1837816.94334,
-    1847692.32501,
-    5170036.4587,
-    5178412.82698,
+const epsg4171 = CoordinateSystem.register(
+    'EPSG:4171',
+    '+proj=longlat +ellps=GRS80 +no_defs +type=crs',
 );
+
+const extent = new Extent(epsg3946, 1837816.94334, 1847692.32501, 5170036.4587, 5178412.82698);
 
 const instance = new Instance({
     target: 'view',
-    crs: CoordinateSystem.fromEpsg(3946),
+    crs: epsg3946,
 });
 
 const map = new Map({ extent });
@@ -91,7 +88,7 @@ const geoJsonLayer = new ColorLayer({
         // Defines the dataProjection to reproject the data,
         // GeoJSON specifications say that the crs should be EPSG:4326 but
         // here we are using a different one.
-        dataProjection: CoordinateSystem.fromEpsg(4171),
+        dataProjection: epsg4171,
         style: feature =>
             new Style({
                 fill: new Fill({
@@ -136,7 +133,7 @@ const kmlLayer = new ColorLayer({
             url: 'https://3d.oslandia.com/lyon/tcl_sytral.tcllignemf_2_0_0.kml',
             format: new KML(),
         },
-        dataProjection: CoordinateSystem.fromEpsg(3946),
+        dataProjection: epsg3946,
         // With KML format, there is not necessary to specify style rules,
         // there are already present in the file.
     }),
@@ -153,7 +150,7 @@ const gmlLayer = new ColorLayer({
             url: 'https://3d.oslandia.com/lyon/adr_voie_lieu.adrbornefontaine_latest.gml',
             format: new GML32(),
         },
-        dataProjection: CoordinateSystem.fromEpsg(4171),
+        dataProjection: epsg4171,
         style: (feature, resolution) => {
             const meters = 1 / resolution; // Assuming pixel ratio is 1
             // We want to display a 5*5m square, except

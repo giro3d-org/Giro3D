@@ -6,8 +6,8 @@
 
 import { MathUtils, Spherical, Vector3 } from 'three';
 
-import CoordinateSystem from './coordinate-system/CoordinateSystem';
 import Coordinates from './Coordinates';
+import CoordinateSystem from './CoordinateSystem';
 
 function computeJulianDate(date: Date): number {
     let year = date.getUTCFullYear();

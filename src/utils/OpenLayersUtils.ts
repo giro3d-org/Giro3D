@@ -11,7 +11,7 @@ import type { Extent as OLExtent } from 'ol/extent';
 
 import { Color } from 'three';
 
-import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import type CoordinateSystem from '../core/geographic/CoordinateSystem';
 
 import Extent from '../core/geographic/Extent';
 

@@ -7,8 +7,8 @@
 import { Color, DoubleSide, MathUtils, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
@@ -38,27 +38,22 @@ import { bindDropDown } from './widgets/bindDropDown.js';
 import { bindSlider } from './widgets/bindSlider.js';
 import StatusBar from './widgets/StatusBar.js';
 
-Instance.registerCRS(
+const crs = CoordinateSystem.register(
     'EPSG:2154',
     '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
 );
-Instance.registerCRS(
+CoordinateSystem.register(
     'IGNF:WGS84G',
     'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]',
 );
 
 const instance = new Instance({
     target: 'view',
-    crs: CoordinateSystem.fromEpsg(2154),
+    crs,
     backgroundColor: null,
 });
 
-const extent = Extent.fromCenterAndSize(
-    CoordinateSystem.fromEpsg(2154),
-    { x: 972_027, y: 6_299_491 },
-    10_000,
-    10_000,
-);
+const extent = Extent.fromCenterAndSize(crs, { x: 972_027, y: 6_299_491 }, 10_000, 10_000);
 
 const map = new Map({
     extent,
@@ -233,10 +228,8 @@ function fromGeoJSON(feature) {
         throw new Error('not a valid GeoJSON feature');
     }
 
-    const crs = CoordinateSystem.epsg4326;
-
     const getPoint = c => {
-        const coord = new Coordinates(crs, c[0], c[1], c[2] ?? 0);
+        const coord = new Coordinates(CoordinateSystem.epsg4326, c[0], c[1], c[2] ?? 0);
         return coord.as(instance.coordinateSystem, coord).toVector3();
     };
 

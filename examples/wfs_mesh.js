@@ -13,7 +13,7 @@ import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 import { MathUtils } from 'three/src/math/MathUtils.js';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
@@ -25,21 +25,16 @@ import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 import { bindToggle } from './widgets/bindToggle.js';
 import StatusBar from './widgets/StatusBar.js';
 
-Instance.registerCRS(
+const crs = CoordinateSystem.register(
     'EPSG:3946',
     '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
 );
 
-const extent = Extent.fromCenterAndSize(
-    CoordinateSystem.fromEpsg(3946),
-    { x: 1842741, y: 5174060 },
-    30000,
-    30000,
-);
+const extent = Extent.fromCenterAndSize(crs, { x: 1842741, y: 5174060 }, 30000, 30000);
 
 const instance = new Instance({
     target: 'view',
-    crs: CoordinateSystem.fromEpsg(3946),
+    crs,
 });
 
 const map = new Map({ extent });

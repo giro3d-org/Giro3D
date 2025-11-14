@@ -11,8 +11,8 @@ import { Box3, MathUtils, Sphere, Vector2, Vector3 } from 'three';
 import type ElevationRange from '../../core/ElevationRange';
 import type Extent from '../../core/geographic/Extent';
 
-import CoordinateSystem from '../../core/geographic/coordinate-system/CoordinateSystem';
 import Coordinates from '../../core/geographic/Coordinates';
+import CoordinateSystem from '../../core/geographic/CoordinateSystem';
 import { toCartesian } from './PanoramaTileGeometry';
 import TileVolume from './TileVolume';
 

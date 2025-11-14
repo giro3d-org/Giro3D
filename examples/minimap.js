@@ -8,8 +8,8 @@ import OSM from 'ol/source/OSM.js';
 import { Color, CubeTextureLoader, MathUtils, OrthographicCamera, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
@@ -22,11 +22,11 @@ import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-Instance.registerCRS(
+const crs = CoordinateSystem.register(
     'EPSG:2154',
     '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
 );
-Instance.registerCRS(
+CoordinateSystem.register(
     'IGNF:WGS84G',
     'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]',
 );
@@ -35,18 +35,12 @@ const SKY_COLOR = new Color(0xf1e9c6);
 
 const mainInstance = new Instance({
     target: 'view',
-    crs: CoordinateSystem.fromEpsg(2154),
+    crs,
     backgroundColor: SKY_COLOR,
 });
 
 // create a map
-const extent = new Extent(
-    CoordinateSystem.fromEpsg(2154),
-    -111629.52,
-    1275028.84,
-    5976033.79,
-    7230161.64,
-);
+const extent = new Extent(crs, -111629.52, 1275028.84, 5976033.79, 7230161.64);
 const map = new Map({
     extent,
     backgroundColor: 'gray',
