@@ -11,6 +11,7 @@ import type {
     ColorRepresentation,
     DataTexture,
     Euler,
+    InterleavedBufferAttribute,
     Light,
     Material,
     Matrix3,
@@ -52,6 +53,11 @@ export function isLight(obj: unknown): obj is Light {
 }
 export function isBufferGeometry(obj: unknown): obj is BufferGeometry {
     return isObject(obj) && (obj as BufferGeometry).isBufferGeometry === true;
+}
+export function isInterleavedBufferAttribute(obj: unknown): obj is InterleavedBufferAttribute {
+    return (
+        isObject(obj) && (obj as InterleavedBufferAttribute).isInterleavedBufferAttribute === true
+    );
 }
 export function isTexture(obj: unknown): obj is Texture {
     return isObject(obj) && (obj as Texture).isTexture === true;
