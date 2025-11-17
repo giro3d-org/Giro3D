@@ -1,6 +1,12 @@
 # Changelog
 
-## v0.44.0 (2025-10-27)
+## v1.0.0 (2025-10-27)
+
+### Note about the version
+
+The numbering scheme used by Giro3D is [semver](https://semver.org/). Until now, Giro3D was using "initial development phase" version numbering (i.e with a leading zero, for example 0.43.0). We are now using regular semver (i.e with a leading non-zero number, for example 1.0.0). This change ensures that we can communicate more clearly about breaking changes, since 0.x versions could not properly convey breaking change information.
+
+This version change does not have any additional meaning (especially not a guarantee of API stability nor feature content), and future breaking changes will increase the first version number (e.g 2.0.0).
 
 ### Changes in coordinate system handling
 
