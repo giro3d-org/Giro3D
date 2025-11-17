@@ -11,8 +11,25 @@ import HttpConfiguration from './HttpConfiguration';
 import PromiseUtils from './PromiseUtils';
 import TextureGenerator from './TextureGenerator';
 
-const DEFAULT_RETRY_DELAY_MS = 1000;
-const DEFAULT_CONCURRENT_REQUESTS_PER_HOST = 10;
+export type FetcherConfiguration = {
+    /**
+     * The maximum amount of concurrent requests, per-host.
+     * @defaultValue 10
+     */
+    concurrentRequestsPerHost: number;
+    /**
+     * The delay, in milliseconds, before retryable requests are re-emitted.
+     * @defaultValue 1000
+     */
+    retryDelay: number;
+};
+
+const defaultConfig: FetcherConfiguration = {
+    concurrentRequestsPerHost: 10,
+    retryDelay: 1000,
+};
+
+let currentConfig: FetcherConfiguration = defaultConfig;
 
 export interface FetcherEventMap {
     /**
@@ -103,7 +120,9 @@ function enqueue(req: Request, init?: RequestInit): Promise<Response> {
 
     let queue = hostQueues.get(url.hostname);
     if (!queue) {
-        queue = new RequestQueue({ maxConcurrentRequests: DEFAULT_CONCURRENT_REQUESTS_PER_HOST });
+        queue = new RequestQueue({
+            maxConcurrentRequests: currentConfig.concurrentRequestsPerHost,
+        });
         hostQueues.set(url.hostname, queue);
     }
 
@@ -185,7 +204,7 @@ async function fetchInternal(input: RequestInfo | URL, options?: FetchOptions): 
         const retries = options?.retries ?? 0;
 
         if (retries > 0) {
-            const retryDelay = options?.retryDelay ?? DEFAULT_RETRY_DELAY_MS;
+            const retryDelay = options?.retryDelay ?? currentConfig.retryDelay;
             if (retryDelay > 0) {
                 await PromiseUtils.delay(retryDelay);
             }
@@ -286,6 +305,19 @@ async function texture(
 }
 
 /**
+ * Configures the Fetcher.
+ *
+ * Note: this must be done before the first HTTP request is emitted.
+ * @param config - The configuration.
+ */
+function configure(config: Partial<FetcherConfiguration>) {
+    currentConfig = {
+        ...defaultConfig,
+        ...config,
+    };
+}
+
+/**
  * Exposes an API to perform HTTP requests.
  * This should be used instead of the [Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)
  * in order to benefit from some error-checking, automatic configuration (from the
@@ -294,6 +326,7 @@ async function texture(
  */
 export default {
     fetch: fetchInternal,
+    configure,
     xml,
     json,
     blob,
