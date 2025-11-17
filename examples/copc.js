@@ -186,7 +186,7 @@ function updateColorMap() {
 }
 
 function loadMap(extent) {
-    const map = new Map({ extent, depthTest: false });
+    const map = new Map({ extent });
 
     instance.add(map);
 
