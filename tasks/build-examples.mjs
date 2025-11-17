@@ -43,6 +43,23 @@ const relativeImportRegex = /\.\.\/src/;
 
 let exampleId = 0;
 
+// We now need a vite.config.js because the config-less examples fail to build
+// some dependencies that require a recent target.
+const viteConfigCode = `
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  build: {
+    target: 'esnext',
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      target: 'esnext',
+    },
+  },
+})
+`;
+
 export function parseExample(pathToHtmlFile) {
     const html = fse.readFileSync(pathToHtmlFile, 'utf-8');
 
@@ -234,6 +251,10 @@ export async function generateExample(htmlFile, parameters) {
         variables['highlightedPackageCode'] = await shiki.codeToHtml(packageJson, {
             theme: 'github-light',
             lang: 'json',
+        });
+        variables['viteConfigCode'] = await shiki.codeToHtml(viteConfigCode.trim(), {
+            theme: 'github-light',
+            lang: 'js',
         });
     }
 
