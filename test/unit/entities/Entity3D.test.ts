@@ -29,22 +29,31 @@ import Entity3D from '@giro3d/giro3d/entities/Entity3D';
 function sut(obj3d: Object3D | undefined = undefined) {
     const object3d = obj3d ?? new Group();
 
-    const entity = new Entity3D(object3d);
+    const entity = new Entity3D({ object3d });
     return entity;
 }
 
 describe('constructor', () => {
-    it('should throw on undefined object3d', () => {
-        // @ts-expect-error argument is not an Object3D
-        expect(() => new Entity3D(undefined)).toThrow();
-        // @ts-expect-error argument is not an Object3D
-        expect(() => new Entity3D({ isObject3D: false })).toThrow();
+    it('should create a Group as object3d if undefined', () => {
+        const defaultEntity = new Entity3D();
+        expect(defaultEntity.object3d.type).toEqual('Group');
+    });
+
+    it('should honor the passed object as object3d', () => {
+        const root = new Object3D();
+        const defaultEntity = new Entity3D({ object3d: root });
+        expect(defaultEntity.object3d).toBe(root);
+    });
+
+    it('should throw if the passed object is not an instance of Object3D', () => {
+        // @ts-expect-error incorrect type
+        expect(() => new Entity3D({ object3d: 5 })).toThrow(/Incorrect root object type/);
     });
 
     it('should assign the provided properties', () => {
         const obj3d = new Object3D();
 
-        const entity = new Entity3D(obj3d);
+        const entity = new Entity3D({ object3d: obj3d });
 
         expect(entity.type).toStrictEqual('Entity3D');
         expect(entity.object3d).toBe(obj3d);
@@ -53,7 +62,7 @@ describe('constructor', () => {
     it('should assign the object3d.name with id if it is a group', () => {
         const obj3d = new Group();
 
-        const entity = new Entity3D(obj3d);
+        const entity = new Entity3D({ object3d: obj3d });
 
         expect(entity.object3d.name).toEqual(entity.id);
     });
@@ -352,7 +361,7 @@ describe('onObjectCreated', () => {
 describe('getDefaultPointOfView', () => {
     class StubEntity extends Entity3D {
         constructor() {
-            super(new Group());
+            super({ object3d: new Group() });
         }
     }
 

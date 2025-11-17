@@ -34,6 +34,21 @@ The `PointCloud` entity now supports coloring the intersection between box-like 
 
 ### BREAKING CHANGE
 
+#### `Entity3D` constructor params
+
+Entity3D now takes a single optional Javascript object has parameter, instead of a THREE.js `Object3D`. This object can contain the root THREE.js object to use:
+
+```ts
+// Before
+new Entity3D(new Group());
+
+// After
+new Entity3D({
+    object3d: new Group()
+    name: "my custom name"
+});
+```
+
 #### Coordinate system handling
 
 All classes that expected a coordinate system name in their constructor or interfaces now expect an instance of the `CoordinateSystem` class. The interface of many classes changed, for example `Instance`, `Extent`, `Coordinate`.
@@ -72,6 +87,7 @@ const instance = new Instance({
 
 ### Feat
 
+- **Entity3D**: add `name` in constructor options (#506)
 - introduce the `CoordinateSystem` class
 - add the `VideoSource` image source to draw videos on color layers (#505)
 - **entities**: introduce new entity `OrientedImageCollection`
@@ -101,6 +117,7 @@ const instance = new Instance({
 ### Refactor
 
 - enforce 'no-shadow' eslint rule
+- **Entity3D**: create the `.object3d` if none is provided
 
 ## v0.43.6 (2025-10-06)
 

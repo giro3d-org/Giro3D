@@ -49,6 +49,7 @@ function getHue(area) {
 
 // Creates the entity. The features will automatically be reprojected before being displayed.
 const arrondissements = new FeatureCollection({
+    name: 'arrondissements',
     source: arrondissementSource,
     extent,
     ignoreZ: true,
@@ -77,7 +78,6 @@ const arrondissements = new FeatureCollection({
         };
     },
 });
-arrondissements.name = 'arrondissements';
 instance.add(arrondissements);
 
 // Another GeoJSON in EPSG:3857
@@ -90,6 +90,7 @@ const perimeterqaaSource = new VectorSource({
 });
 
 const perimeterqaa = new FeatureCollection({
+    name: 'perimeterqaa',
     source: perimeterqaaSource,
     extent,
     ignoreZ: true,
@@ -113,7 +114,6 @@ const perimeterqaa = new FeatureCollection({
         };
     },
 });
-perimeterqaa.name = 'perimeterqaa';
 instance.add(perimeterqaa);
 
 // A WFS source in EPSG:3857
@@ -135,6 +135,7 @@ const bdTopoSource = new VectorSource({
     strategy: tile(createXYZ({ tileSize: 512 })),
 });
 const buildings = new FeatureCollection({
+    name: 'buildings',
     source: bdTopoSource,
     // we specify that FeatureCollection should reproject the features before displaying them
     dataProjection: CoordinateSystem.epsg3857,
@@ -171,7 +172,6 @@ const buildings = new FeatureCollection({
     minLevel: 11,
     maxLevel: 11,
 });
-buildings.name = 'buildings';
 instance.add(buildings);
 
 const position = new Coordinates(crs, 652212.5, 6860754.1, 27717.3);

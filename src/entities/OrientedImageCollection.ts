@@ -32,7 +32,7 @@ import type PickOptions from '../core/picking/PickOptions';
 import type PickResult from '../core/picking/PickResult';
 import type PointOfView from '../core/PointOfView';
 import type { EntityUserData } from './Entity';
-import type { Entity3DEventMap } from './Entity3D';
+import type { Entity3DOptions, Entity3DEventMap } from './Entity3D';
 
 import {
     getGeometryMemoryUsage,
@@ -72,9 +72,9 @@ type ImageObject = {
 };
 
 /**
- * Constructor options for the OrientedImageCollection entity.
+ * Constructor options for the {@link OrientedImageCollection} entity.
  */
-export type OrientedImageCollectionOptions = {
+export interface OrientedImageCollectionOptions extends Entity3DOptions {
     /**
      * The OrientedImageCollection source.
      */
@@ -95,7 +95,7 @@ export type OrientedImageCollectionOptions = {
         opacity?: number;
         visible?: boolean;
     };
-};
+}
 
 export type OrientedImageCollectionPickResult = PickResult & {
     imageIndex: number;
@@ -147,7 +147,7 @@ export default class OrientedImageCollection<
     };
 
     public constructor(options: OrientedImageCollectionOptions) {
-        super(new Group());
+        super(options);
 
         this._container = new Group();
         this._container.name = 'OrientedImageCollection-container';

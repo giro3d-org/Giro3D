@@ -30,7 +30,7 @@ import type { IntersectingVolume } from '../renderer/IntersectingVolume';
 import type { Classification } from '../renderer/PointCloudMaterial';
 import type View from '../renderer/View';
 import type { EntityPreprocessOptions, EntityUserData } from './Entity';
-import type { Entity3DEventMap } from './Entity3D';
+import type { Entity3DOptions, Entity3DEventMap } from './Entity3D';
 
 import { defaultColorimetryOptions } from '../core/ColorimetryOptions';
 import ColorMap from '../core/ColorMap';
@@ -184,9 +184,9 @@ function computeScreenSpaceError(
 type NodeWithInfo = PointCloudNode & { info: NodeInfo };
 
 /**
- * Constructor options for the PointCloud entity.
+ * Constructor options for the {@link PointCloud} entity.
  */
-export type PointCloudOptions = {
+export interface PointCloudOptions extends Entity3DOptions {
     /**
      * The point cloud source.
      */
@@ -203,7 +203,7 @@ export type PointCloudOptions = {
      * @defaultValue 5000
      */
     cleanupDelay?: number;
-};
+}
 
 /**
  * Displays point clouds coming from a {@link PointCloudSource}.
@@ -271,7 +271,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
     private _volumeHelper: Box3Helper | null = null;
 
     public constructor(options: PointCloudOptions) {
-        super(new Group());
+        super(options);
 
         this.source = options.source;
 

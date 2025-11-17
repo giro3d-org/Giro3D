@@ -23,7 +23,7 @@ import Shape, {
     isShape,
     isShapePickResult,
     slopeSegmentFormatter,
-    type ShapeConstructorOptions,
+    type ShapeOptions,
 } from '../entities/Shape';
 import ConstantSizeSphere from '../renderer/ConstantSizeSphere';
 import { isVector2 } from '../utils/predicates';
@@ -87,7 +87,7 @@ export type CommonCreationOptions = {
     endCondition?: MouseCallback;
 };
 
-export type CreationOptions = Partial<ShapeConstructorOptions> & CommonCreationOptions;
+export type CreationOptions = Partial<ShapeOptions> & CommonCreationOptions;
 
 /**
  * Verify that the given operation is possible on the shape.
@@ -115,7 +115,7 @@ const isFirstVertexPicked = (shape: Shape, e: MouseEvent | Vector2): boolean => 
 /**
  * Options for the {@link DrawTool.createShape} method.
  */
-export type CreateShapeOptions = Partial<ShapeConstructorOptions> &
+export type CreateShapeOptions = Partial<ShapeOptions> &
     CommonCreationOptions & {
         /**
          * The minimum number of points to create before the shape can be completed.

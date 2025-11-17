@@ -39,6 +39,7 @@ import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
 import type PickOptions from '../core/picking/PickOptions';
 import type PickResult from '../core/picking/PickResult';
+import type { Entity3DOptions } from './Entity3D';
 
 import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../core/MemoryUsage';
 import ConstantSizeSphere, { getWorldSpaceRadius } from '../renderer/ConstantSizeSphere';
@@ -729,7 +730,10 @@ class LineWithBorder extends Group {
 
 export type ShapeFontWeight = 'bold' | 'normal';
 
-export interface ShapeConstructorOptions {
+/**
+ * Constructor options for the {@link Shape} entity.
+ */
+export interface ShapeOptions extends Entity3DOptions {
     /**
      * Show vertices.
      * @defaultValue {@link DEFAULT_SHOW_VERTICES}
@@ -1179,8 +1183,8 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
      * Creates a {@link Shape}.
      * @param options - The constructor options.
      */
-    public constructor(options?: ShapeConstructorOptions) {
-        super(new Group());
+    public constructor(options?: ShapeOptions) {
+        super(options);
 
         this._showVertices = options?.showVertices ?? this._showVertices;
         this._showFloorVertices = options?.showFloorVertices ?? this._showFloorVertices;

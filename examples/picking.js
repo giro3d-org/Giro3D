@@ -52,6 +52,7 @@ const instance = new Instance({
 instance.renderingOptions.enableEDL = true;
 
 const map = new Map({
+    name: 'map',
     extent,
     backgroundColor: 'gray',
     lighting: {
@@ -59,8 +60,6 @@ const map = new Map({
         elevationLayersOnly: true,
     },
 });
-
-map.name = 'map';
 
 instance.add(map);
 
@@ -107,11 +106,10 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
 
 // Create the 3D tiles entity
 const pointcloud = new Tiles3D({
+    name: 'point cloud',
     url: 'https://3d.oslandia.com/lidar_hd/tileset.json',
     errorTarget: 16,
 });
-
-pointcloud.name = 'point cloud';
 
 instance.add(pointcloud);
 

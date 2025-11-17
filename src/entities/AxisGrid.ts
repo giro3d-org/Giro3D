@@ -27,7 +27,7 @@ import type Context from '../core/Context';
 import type Extent from '../core/geographic/Extent';
 import type View from '../renderer/View';
 import type { EntityUserData } from './Entity';
-import type { Entity3DEventMap } from './Entity3D';
+import type { Entity3DOptions, Entity3DEventMap } from './Entity3D';
 
 import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../core/MemoryUsage';
 import Helpers from '../helpers/Helpers';
@@ -208,6 +208,36 @@ export interface AxisGridEventMap extends Entity3DEventMap {
 }
 
 /**
+ * Constructor options for the {@link AxisGrid} entity.
+ */
+export interface AxisGridOptions extends Entity3DOptions {
+    /**
+     * The grid volume
+     */
+    volume: Volume;
+    /**
+     * The origin of the ticks volume
+     * @defaultValue {@link TickOrigin.Relative}
+     */
+    origin?: TickOrigin;
+    /**
+     * The distance between grid lines.
+     * @defaultValue 100 on each axis.
+     */
+    ticks?: Ticks;
+    /**
+     * The style to apply to lines and labels.
+     */
+    style?: Partial<Style>;
+
+    /**
+     * Toggles adaptive labels: labels outside the screen will be rendered at the screen edge.
+     * @defaultValue false
+     */
+    adaptiveLabels?: boolean;
+}
+
+/**
  * Create a 3D axis grid. This is represented as a box volume where each side of the box is itself a
  * grid.
  *
@@ -290,33 +320,8 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
      *
      * @param options - The options.
      */
-    public constructor(options: {
-        /**
-         * The grid volume
-         */
-        volume: Volume;
-        /**
-         * The origin of the ticks volume
-         * @defaultValue {@link TickOrigin.Relative}
-         */
-        origin?: TickOrigin;
-        /**
-         * The distance between grid lines.
-         * @defaultValue 100 on each axis.
-         */
-        ticks?: Ticks;
-        /**
-         * The style to apply to lines and labels.
-         */
-        style?: Partial<Style>;
-
-        /**
-         * Toggles adaptive labels: labels outside the screen will be rendered at the screen edge.
-         * @defaultValue false
-         */
-        adaptiveLabels?: boolean;
-    }) {
-        super(new Group());
+    public constructor(options: AxisGridOptions) {
+        super(options);
 
         this._root = this.object3d as Group;
 

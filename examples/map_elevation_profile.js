@@ -114,11 +114,11 @@ const measureTool = new DrawTool({ instance });
 
 // The 3D line that will follow the elevation profile
 const measure = new Shape({
+    name: 'profile',
     showVertices: false,
     showLine: true,
     vertexRadius: 3,
 });
-measure.name = 'profile';
 measure.renderOrder = 10;
 
 instance.add(measure);
@@ -325,13 +325,13 @@ bindToggle('showColorLayer', v => {
 });
 
 const hoveredPoint = new Shape({
+    name: 'hovered-point',
     vertexRadius: 6,
     showVertexLabels: true,
     vertexLabelFormatter: ({ position }) => {
         return `${position.z.toFixed(0)}m`;
     },
 });
-hoveredPoint.name = 'hovered-point';
 hoveredPoint.setPoints([new Vector3()]);
 hoveredPoint.renderOrder = measure.renderOrder + 2;
 hoveredPoint.color = measure.color;
