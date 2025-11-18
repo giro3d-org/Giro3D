@@ -165,7 +165,6 @@ class RequestQueue extends EventDispatcher<RequestQueueEvents> implements Progre
             } else {
                 this._opCounter.decrement();
                 this._pendingIds.delete(key);
-                this.onQueueAvailable();
                 task.reject(PromiseUtils.abortError());
                 this.dispatchEvent({ type: 'task-cancelled' });
             }
