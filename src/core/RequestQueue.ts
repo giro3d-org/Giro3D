@@ -139,10 +139,6 @@ class RequestQueue extends EventDispatcher<RequestQueueEvents> implements Progre
     }
 
     public onQueueAvailable(): void {
-        if (this._queue.isEmpty()) {
-            return;
-        }
-
         while (this._concurrentRequests < this._maxConcurrentRequests) {
             if (this._queue.isEmpty()) {
                 break;
