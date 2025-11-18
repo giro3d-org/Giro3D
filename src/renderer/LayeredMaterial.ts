@@ -253,29 +253,29 @@ function mapLightingMode(input: MapLightingOptions): InternalShadingMode {
     return InternalShadingMode.Simple;
 }
 
-type HillshadingUniform = {
+interface HillshadingUniform {
     mode: InternalShadingMode;
     intensity: number;
     zFactor: number;
     zenith: number;
     azimuth: number;
-};
+}
 
-type ContourLineUniform = {
+interface ContourLineUniform {
     thickness: number;
     primaryInterval: number;
     secondaryInterval: number;
     color: Vector4;
-};
+}
 
-type GraticuleUniform = {
+interface GraticuleUniform {
     thickness: number;
     /** xOffset, yOffset, xStep, yStep */
     position: Vector4;
     color: Vector4;
-};
+}
 
-type LayerUniform = {
+interface LayerUniform {
     offsetScale: Vector4;
     color: Vector4;
     textureSize: Vector2;
@@ -283,21 +283,21 @@ type LayerUniform = {
     brightnessContrastSaturation: Vector3;
     mode: 0 | MaskMode;
     blendingMode: BlendingMode;
-};
+}
 
-type NeighbourUniform = {
+interface NeighbourUniform {
     offsetScale: Vector4 | null;
     diffLevel: number;
-};
+}
 
-type ColorMapUniform = {
+interface ColorMapUniform {
     mode: ColorMapMode | 0;
     min: number;
     max: number;
     offset: number;
-};
+}
 
-type Defines = {
+interface Defines extends Record<string, unknown> {
     ENABLE_CONTOUR_LINES?: 1;
     STITCHING?: 1;
     TERRAIN_DEFORMATION?: 1;
@@ -328,11 +328,11 @@ type Defines = {
     VISIBLE_COLOR_LAYER_COUNT: number;
 
     ENABLE_SKIRTS?: 1;
-};
+}
 
 type ThreeUniforms = typeof UniformsLib.common & typeof UniformsLib.fog & typeof UniformsLib.lights;
 
-type Uniforms = ThreeUniforms & {
+interface Uniforms extends ThreeUniforms, Record<string, IUniform> {
     // The id of the tile encoded into a single float
     uuid: IUniform<number>;
 
@@ -383,7 +383,7 @@ type Uniforms = ThreeUniforms & {
     skirtElevation: IUniform<number>;
     // The start and end index of vertices located at the bottom of the skirt
     skirtVertexRange: IUniform<Vector2>;
-} & Record<string, IUniform>;
+}
 
 class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
     public readonly isMemoryUsage = true as const;

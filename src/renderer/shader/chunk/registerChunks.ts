@@ -23,7 +23,9 @@ import giro3d_precision_qualifiers from './giro3d_precision_qualifiers.glsl';
 import giro3d_terrain_pars_vertex from './giro3d_terrain_pars_vertex.glsl';
 import giro3d_terrain_vertex from './giro3d_terrain_vertex.glsl';
 
-type Giro3DShaderChunk = typeof ShaderChunk & {
+type ShaderChunk = typeof ShaderChunk;
+
+interface Giro3DShaderChunk extends ShaderChunk {
     giro3d_common: string;
     giro3d_outline_pars_fragment: string;
     giro3d_outline_fragment: string;
@@ -40,7 +42,7 @@ type Giro3DShaderChunk = typeof ShaderChunk & {
     giro3d_intersecting_volume_pars: string;
     giro3d_terrain_pars_vertex: string;
     giro3d_terrain_vertex: string;
-};
+}
 
 export default function registerChunks(): void {
     const Giro3dShaderChunk = ShaderChunk as Giro3DShaderChunk;

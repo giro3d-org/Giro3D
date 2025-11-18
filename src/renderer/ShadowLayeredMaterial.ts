@@ -9,10 +9,11 @@ import MaterialUtils from './MaterialUtils';
 
 export type ShadowMode = 'distance' | 'depth';
 
-type ConstructorParams = ConstructorParameters<typeof LayeredMaterial>[0] & {
+type LayeredMaterialConstructorParams = ConstructorParameters<typeof LayeredMaterial>[0];
+interface ConstructorParams extends LayeredMaterialConstructorParams {
     source: LayeredMaterial;
     shadowMode: ShadowMode;
-};
+}
 
 export default class ShadowLayeredMaterial extends LayeredMaterial {
     private readonly _shadowMode: ShadowMode;

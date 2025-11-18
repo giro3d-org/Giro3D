@@ -22,7 +22,7 @@ export enum MapLightingMode {
 /**
  * Options for map shading.
  */
-type MapLightingOptions = {
+interface MapLightingOptions {
     /**
      * Enables shading.
      * @defaultValue false
@@ -62,6 +62,6 @@ type MapLightingOptions = {
      * @defaultValue 1
      */
     hillshadeIntensity?: number;
-};
+}
 
 export default MapLightingOptions;

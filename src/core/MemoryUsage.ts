@@ -15,15 +15,15 @@ import {
 } from '../utils/predicates';
 import TextureGenerator from '../utils/TextureGenerator';
 
-export type MemoryUsageReport = {
+export interface MemoryUsageReport {
     cpuMemory: number;
     gpuMemory: number;
-};
+}
 
-export type GetMemoryUsageContext = {
+export interface GetMemoryUsageContext {
     renderer: WebGLRenderer;
     objects: Map<number | string, MemoryUsageReport>;
-};
+}
 
 /**
  * Trait of objects that can report their memory usage.

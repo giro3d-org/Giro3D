@@ -85,7 +85,7 @@ export interface OutputMap<UserData extends DefaultUserData = DefaultUserData> {
     MultiPolygon: MultiPolygonMesh<UserData>;
 }
 
-export type BaseOptions = {
+export interface BaseOptions {
     /**
      * The point of origin for relative coordinates.
      */
@@ -94,16 +94,16 @@ export type BaseOptions = {
      * Ignores the Z component of coordinates.
      */
     ignoreZ?: boolean;
-};
+}
 
-export type PointOptions = BaseOptions & Partial<PointStyle>;
-export type PolygonOptions = BaseOptions & {
+export interface PointOptions extends BaseOptions, Partial<PointStyle> {}
+export interface PolygonOptions extends BaseOptions {
     fill?: FillStyle;
     stroke?: StrokeStyle;
     extrusionOffset?: FeatureExtrusionOffset;
     elevation?: FeatureElevation;
-};
-export type LineOptions = BaseOptions & StrokeStyle;
+}
+export interface LineOptions extends BaseOptions, StrokeStyle {}
 
 export interface OptionMap {
     Point: PointOptions;

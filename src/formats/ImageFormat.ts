@@ -6,20 +6,20 @@
 
 import type { Texture, TextureDataType } from 'three';
 
-export type DecodeOptions = {
+export interface DecodeOptions {
     /** The texture width. */
     width: number;
     /** The texture height */
     height: number;
     /** The no-data value */
     noDataValue?: number;
-};
+}
 
-export type DecodeResult = {
+export interface DecodeResult {
     texture: Texture;
     min?: number;
     max?: number;
-};
+}
 
 /**
  * Base class for image decoders. To implement your own image decoder, subclass this class.

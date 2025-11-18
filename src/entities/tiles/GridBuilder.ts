@@ -13,12 +13,12 @@ import type { VectorArray } from '../../core/VectorArray';
 import { Vector2Array, Vector3Array } from '../../core/VectorArray';
 import { nonNull } from '../../utils/tsutils';
 
-type CachedBuffers = {
+interface CachedBuffers {
     positionBuffer: Vector3Array;
     normalBuffer: Vector3Array;
     uvBuffer: Vector2Array;
     indexBuffer: TypedArray;
-};
+}
 
 const pool: Map<string, CachedBuffers> = new Map();
 

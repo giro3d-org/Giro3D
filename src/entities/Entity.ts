@@ -20,9 +20,9 @@ export interface EntityEventMap {
 
 export type EntityUserData = Record<string, unknown>;
 
-export type EntityPreprocessOptions = {
+export interface EntityPreprocessOptions {
     instance: Instance;
-};
+}
 
 /**
  * Abstract base class for all entities in Giro3D.

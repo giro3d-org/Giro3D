@@ -17,7 +17,7 @@ import ImageSource, { ImageResult } from './ImageSource';
 /**
  * Options for the {@link VideoSource} constructor.
  */
-export type VideoSourceOptions = {
+export interface VideoSourceOptions {
     /**
      * The source of the image. It can be:
      * - a URL to a remote video file,
@@ -34,7 +34,7 @@ export type VideoSourceOptions = {
      * {@link VideoSourceOptions.source | source} is a texture.
      */
     flipY?: boolean;
-};
+}
 
 export interface VideoSourceEvents extends ImageSourceEvents {
     /**

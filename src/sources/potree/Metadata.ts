@@ -7,7 +7,7 @@
 import type { AttributeName } from './attributes';
 import type BoundingBox from './BoundingBox';
 
-export type Metadata = {
+export interface Metadata {
     version: string;
     octreeDir: string;
     points?: number;
@@ -18,4 +18,4 @@ export type Metadata = {
     spacing: number;
     scale: number;
     hierarchyStepSize: number;
-};
+}

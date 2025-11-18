@@ -81,7 +81,7 @@ const STATE_COLORS: Record<NodeState, Color> = {
 };
 
 /** Additional book-keeping info for each point cloud node. */
-type NodeInfo = {
+interface NodeInfo {
     id: string;
     state: NodeState;
     /** The timestamp of the last state change  */
@@ -94,7 +94,7 @@ type NodeInfo = {
     shouldBeVisible: boolean;
     /** Should we reload the position buffer ? */
     positionDirty: boolean;
-};
+}
 
 const nothing = (): void => {};
 
@@ -181,7 +181,9 @@ function computeScreenSpaceError(
     return Math.max(0.0, onScreenSpacing - pointRadius);
 }
 
-type NodeWithInfo = PointCloudNode & { info: NodeInfo };
+interface NodeWithInfo extends PointCloudNode {
+    info: NodeInfo;
+}
 
 /**
  * Constructor options for the {@link PointCloud} entity.

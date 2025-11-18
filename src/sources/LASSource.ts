@@ -62,18 +62,18 @@ async function decodeLazFileUsingWorker(data: Uint8Array): Promise<Uint8Array> {
         .then(res => new Uint8Array(res));
 }
 
-export type LASSourceOptions = CommonOptions & {
+export interface LASSourceOptions extends CommonOptions {
     /**
      * The URL to the remote LAS file, or a function to retrieve the remote file.
      */
     url: string | Getter;
-};
+}
 
-type PerfOptions = {
+interface PerfOptions {
     decimate: number;
     enableWorkers: boolean;
     compressColorsToUint8: boolean;
-};
+}
 
 /**
  * A source that reads from a LAS or LAZ file.

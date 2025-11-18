@@ -8,7 +8,10 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import MaterialUtils from '@giro3d/giro3d/renderer/MaterialUtils';
 
-type MockMaterial = { defines: { FOO?: 1 }; needsUpdate: boolean };
+interface MockMaterial {
+    defines: { FOO?: 1 };
+    needsUpdate: boolean;
+}
 
 describe('setDefine', () => {
     let material: MockMaterial;

@@ -21,11 +21,11 @@ const BUCKETS = {
     TRANSPARENT: 2,
 };
 
-type RenderPipelineUserData = {
+interface RenderPipelineUserData {
     giro3dRenderPipeline?: {
         usePointCloudPostProcessing: boolean;
     };
-};
+}
 
 /**
  * Patches the object so that it will be included in the point
@@ -42,9 +42,9 @@ export function enablePointCloudPostProcessing(obj: Object3D): void {
 /**
  * Can be a Mesh or a PointCloud for instance
  */
-type Object3DWithMaterial = Object3D & {
+interface Object3DWithMaterial extends Object3D {
     material: Material;
-};
+}
 
 const currentClearColor = new Color();
 const tmpColor = new Color();

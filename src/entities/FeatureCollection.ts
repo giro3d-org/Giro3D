@@ -72,7 +72,7 @@ const ID_PROPERTY = '___37499262-65c9-FeatureCollection_ID';
 /**
  * The content of the `.userData` property of the {@link SimpleGeometryMesh}es created by this entity.
  */
-export type MeshUserData = {
+export interface MeshUserData extends EntityUserData {
     /**
      * The feature this mesh was generated from.
      */
@@ -85,7 +85,7 @@ export type MeshUserData = {
      * The style of this mesh.
      */
     style: FeatureStyle;
-};
+}
 
 function isThreeCamera(obj: unknown): obj is Camera {
     return typeof obj === 'object' && (obj as Camera)?.isCamera;
@@ -116,14 +116,14 @@ function selectBestSubdivisions(extent: Extent): { x: number; y: number } {
     return { x, y };
 }
 
-type FeatureTileUserData = {
+interface FeatureTileUserData {
     parentEntity: Entity3D;
     layerUpdateState: LayerUpdateState;
     extent: Extent;
     x: number;
     y: number;
     z: number;
-};
+}
 
 class FeatureTile extends Group {
     public readonly isFeatureTile = true as const;
@@ -177,10 +177,10 @@ function getRootMesh(obj: Object3D): SimpleGeometryMesh<MeshUserData> | null {
     return null;
 }
 
-type ObjectOptions = {
+interface ObjectOptions {
     castShadow: boolean;
     receiveShadow: boolean;
-};
+}
 
 /**
  * Constructor options for the {@link FeatureCollection} entity.

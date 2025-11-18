@@ -9,11 +9,11 @@ import type { FetchOptions } from '../utils/Fetcher';
 import Fetcher from '../utils/Fetcher';
 import PromiseUtils from '../utils/PromiseUtils';
 
-type RequestData = {
+interface RequestData {
     abortController: AbortController;
     signals: AbortSignal[];
     promise: Promise<Response>;
-};
+}
 
 export type FetchCallback = (url: string, options?: FetchOptions) => Promise<Response>;
 

@@ -16,6 +16,7 @@ import {
 import type Disposable from '../core/Disposable';
 import type Instance from '../core/Instance';
 import type PickResult from '../core/picking/PickResult';
+import type { EntityUserData } from '../entities/Entity';
 import type { ShapePickResult, VerticalLineLabelFormatter } from '../entities/Shape';
 
 import Shape, {
@@ -47,9 +48,9 @@ interface Permissions {
     removePoint?: boolean;
 }
 
-type ShapeUserData = {
+interface ShapeUserData extends EntityUserData {
     permissions?: Permissions;
-};
+}
 
 /**
  * A callback that can be used to test for a mouse button or key combination.
@@ -64,7 +65,7 @@ export type PickCallback<T extends PickResult = PickResult> = (
     eventOrCanvasCoordinate: MouseEvent | Vector2,
 ) => T[];
 
-export type CommonCreationOptions = {
+export interface CommonCreationOptions {
     /**
      * The optional signal to listen to cancel the creation of a shape.
      */
@@ -85,9 +86,9 @@ export type CommonCreationOptions = {
      * @defaultValue right click
      */
     endCondition?: MouseCallback;
-};
+}
 
-export type CreationOptions = Partial<ShapeOptions> & CommonCreationOptions;
+export interface CreationOptions extends Partial<ShapeOptions>, CommonCreationOptions {}
 
 /**
  * Verify that the given operation is possible on the shape.
@@ -115,32 +116,31 @@ const isFirstVertexPicked = (shape: Shape, e: MouseEvent | Vector2): boolean => 
 /**
  * Options for the {@link DrawTool.createShape} method.
  */
-export type CreateShapeOptions = Partial<ShapeOptions> &
-    CommonCreationOptions & {
-        /**
-         * The minimum number of points to create before the shape can be completed.
-         */
-        minPoints?: number;
-        /**
-         * The maximum number of points to create before the shape is automatically completed.
-         */
-        maxPoints?: number;
-        /**
-         * If `true`, the shape's line will be closed just before being returned to the caller.
-         */
-        closeRing?: boolean;
-        /**
-         * An optional callback to be called when a point has been added to the shape.
-         * @param shape - The shape being created.
-         * @param index - The index of the point.
-         * @param position - The position of the point.
-         */
-        onPointCreated?: (shape: Shape, index: number, position: Vector3) => void;
-        /**
-         * An optional list of permitted operations.
-         */
-        constraints?: Permissions;
-    };
+export interface CreateShapeOptions extends Partial<ShapeOptions>, CommonCreationOptions {
+    /**
+     * The minimum number of points to create before the shape can be completed.
+     */
+    minPoints?: number;
+    /**
+     * The maximum number of points to create before the shape is automatically completed.
+     */
+    maxPoints?: number;
+    /**
+     * If `true`, the shape's line will be closed just before being returned to the caller.
+     */
+    closeRing?: boolean;
+    /**
+     * An optional callback to be called when a point has been added to the shape.
+     * @param shape - The shape being created.
+     * @param index - The index of the point.
+     * @param position - The position of the point.
+     */
+    onPointCreated?: (shape: Shape, index: number, position: Vector3) => void;
+    /**
+     * An optional list of permitted operations.
+     */
+    constraints?: Permissions;
+}
 
 function inhibit(e: Event): void {
     e.preventDefault();

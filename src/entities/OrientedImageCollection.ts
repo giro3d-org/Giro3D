@@ -45,13 +45,13 @@ import Fetcher from '../utils/Fetcher';
 import Entity3D from './Entity3D';
 
 /** All angles are expected to be in degrees. */
-export type ImageOrientation = {
+export interface ImageOrientation {
     azimuth: number;
     pitch: number;
     roll: number;
-};
+}
 
-export type OrientedImageSource = {
+export interface OrientedImageSource {
     position: Vector3Like;
     orientation: ImageOrientation;
     /** Vertical field of view in degrees. */
@@ -59,17 +59,17 @@ export type OrientedImageSource = {
     aspectRatio: number;
     distance: number;
     imageUrl: string;
-};
+}
 
-export type OrientedImageCollectionSource = {
+export interface OrientedImageCollectionSource {
     images: OrientedImageSource[];
-};
+}
 
-type ImageObject = {
+interface ImageObject {
     readonly mesh: Mesh;
     readonly material: MeshBasicMaterial;
     wasDisposed: boolean;
-};
+}
 
 /**
  * Constructor options for the {@link OrientedImageCollection} entity.
@@ -97,9 +97,9 @@ export interface OrientedImageCollectionOptions extends Entity3DOptions {
     };
 }
 
-export type OrientedImageCollectionPickResult = PickResult & {
+export interface OrientedImageCollectionPickResult extends PickResult {
     imageIndex: number;
-};
+}
 
 /**
  * Displays a collection of oriented images coming from a {@link OrientedImageCollectionSource} in the 3D space.

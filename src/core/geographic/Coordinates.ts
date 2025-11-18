@@ -24,11 +24,11 @@ register(proj4);
 /**
  * A geographic coordinate expressed in degrees, minutes, seconds.
  */
-export type DMS = {
+export interface DMS {
     degrees: number;
     minutes?: number;
     seconds?: number;
-};
+}
 
 export function parseDMS(dms: DMS): number {
     const { degrees, minutes, seconds } = dms;

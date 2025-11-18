@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: MIT
  */
 
-type TileCoordinate = {
+interface TileCoordinate {
     z: number;
     x: number;
     y: number;
-};
+}
 
 export default TileCoordinate;

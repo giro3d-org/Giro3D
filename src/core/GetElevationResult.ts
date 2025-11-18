@@ -7,7 +7,7 @@
 import type ElevationSample from './ElevationSample';
 import type Coordinates from './geographic/Coordinates';
 
-type GetElevationResult = {
+interface GetElevationResult {
     /**
      * The coordinates of the samples.
      */
@@ -16,6 +16,6 @@ type GetElevationResult = {
      * The elevation samples.
      */
     samples: ElevationSample[];
-};
+}
 
 export default GetElevationResult;

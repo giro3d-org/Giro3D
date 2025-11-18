@@ -6,17 +6,17 @@
 
 import type { Color, Matrix4 } from 'three';
 
-export type IntersectingVolume = {
+export interface IntersectingVolume {
     worldToBoxNdc: Matrix4;
     color: Color;
-};
+}
 
-export type IntersectingVolumeUniform = {
+export interface IntersectingVolumeUniform {
     viewToBoxNc: Matrix4;
     color: Color;
-};
+}
 
-export type IntersectingVolumesUniform = {
+export interface IntersectingVolumesUniform {
     count: number;
     volumes: IntersectingVolumeUniform[];
-};
+}

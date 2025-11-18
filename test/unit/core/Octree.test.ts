@@ -11,7 +11,9 @@ import type { ChildrenList, Octree } from '@giro3d/giro3d/core/Octree';
 
 import { create, populate, traverse } from '@giro3d/giro3d/core/Octree';
 
-type Payload = { value?: number };
+interface Payload {
+    value?: number;
+}
 
 describe('create', () => {
     it('should honor passed properties', () => {
