@@ -100,4 +100,79 @@ describe('enqueue', () => {
 
         expect(result).toEqual(1);
     });
+
+    it('should not throw an exception if there are too many tasks that have been cancelled', async () => {
+        const queue = new RequestQueue({ maxConcurrentRequests: 1 });
+
+        let id = 0;
+        const promisesList: Promise<void>[] = [];
+        let tasksInSuccessCount = 0;
+        let tasksInErrorCount = 0;
+
+        // fill the queue
+        for (let i = 0; i < 2; i++) {
+            promisesList.push(
+                queue
+                    .enqueue({
+                        id: `${id++}`,
+                        request: () => new Promise(resolve => setTimeout(resolve, 100)),
+                    })
+                    .then(() => {
+                        tasksInSuccessCount++;
+                    })
+                    .catch(() => {
+                        tasksInErrorCount++;
+                    }),
+            );
+        }
+
+        // add lots of tasks that are cancelled
+        for (let i = 0; i < 10000; i++) {
+            promisesList.push(
+                queue
+                    .enqueue({
+                        id: `${id++}`,
+                        request: () => Promise.resolve(),
+                        shouldExecute: () => false,
+                    })
+                    .then(() => {
+                        tasksInSuccessCount++;
+                    })
+                    .catch(() => {
+                        tasksInErrorCount++;
+                    }),
+            );
+        }
+
+        // add a few other tasks just to make sure they are executed
+        for (let i = 0; i < 3; i++) {
+            promisesList.push(
+                queue
+                    .enqueue({
+                        id: `${id++}`,
+                        request: () =>
+                            new Promise<void>(resolve =>
+                                setTimeout(() => {
+                                    console.log('success');
+                                    resolve();
+                                }, 100),
+                            ),
+                    })
+                    .then(() => {
+                        tasksInSuccessCount++;
+                    })
+                    .catch(() => {
+                        tasksInErrorCount++;
+                    }),
+            );
+        }
+
+        try {
+            await Promise.all(promisesList);
+            expect(tasksInSuccessCount).toBe(2 + 3);
+            expect(tasksInErrorCount).toBe(10000);
+        } catch (error: unknown) {
+            expect.fail(`There was an uncaught error: ${error}`);
+        }
+    });
 });
