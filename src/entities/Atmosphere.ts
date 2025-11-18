@@ -9,7 +9,6 @@ import type { IUniform } from 'three';
 import {
     AdditiveBlending,
     BackSide,
-    Group,
     Mesh,
     ShaderMaterial,
     Sphere,
@@ -21,6 +20,7 @@ import {
 
 import type Context from '../core/Context';
 import type PickResult from '../core/picking/PickResult';
+import type { Entity3DOptions } from './Entity3D';
 
 import Ellipsoid from '../core/geographic/Ellipsoid';
 import GroundFS from '../renderer/shader/GroundFS.glsl';
@@ -58,6 +58,27 @@ type SkyUniforms = {
     tSkyboxDiffuse: IUniform<Texture>;
     fNightScale: IUniform<number>;
 } & Record<string, IUniform>;
+
+/**
+ * Constructor options for the {@link Atmosphere} entity.
+ */
+export interface AtmosphereOptions extends Entity3DOptions {
+    /**
+     * The ellipsoid to use.
+     * @defaultValue {@link Ellipsoid.WGS84}
+     */
+    ellipsoid?: Ellipsoid;
+    /**
+     * The thickness of the atmosphere
+     * @defaultValue 300km (earth atmosphere)
+     */
+    thickness?: number;
+    /**
+     * Red, green, blue wavelength, in normalized values (i;e in the [0, 1] range)
+     * @defaultValue [0.65, 0.57, 0.475]
+     */
+    wavelengths?: [number, number, number];
+}
 
 /**
  * Displays an atmosphere around an ellipsoid.
@@ -121,24 +142,8 @@ export default class Atmosphere extends Entity3D {
         return this._inner;
     }
 
-    public constructor(options?: {
-        /**
-         * The ellipsoid to use.
-         * @defaultValue {@link Ellipsoid.WGS84}
-         */
-        ellipsoid?: Ellipsoid;
-        /**
-         * The thickness of the atmosphere
-         * @defaultValue 300km (earth atmosphere)
-         */
-        thickness?: number;
-        /**
-         * Red, green, blue wavelength, in normalized values (i;e in the [0, 1] range)
-         * @defaultValue [0.65, 0.57, 0.475]
-         */
-        wavelengths?: [number, number, number];
-    }) {
-        super(new Group());
+    public constructor(options?: AtmosphereOptions) {
+        super(options);
 
         this._ellipsoid = options?.ellipsoid ?? Ellipsoid.WGS84;
 

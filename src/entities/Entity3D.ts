@@ -4,7 +4,15 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { Box3, type Material, type Mesh, type Object3D, type Plane, type Vector2 } from 'three';
+import {
+    Box3,
+    Group,
+    type Material,
+    type Mesh,
+    type Object3D,
+    type Plane,
+    type Vector2,
+} from 'three';
 
 import type Context from '../core/Context';
 import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
@@ -16,7 +24,7 @@ import type RenderingContextHandler from '../renderer/RenderingContextHandler';
 
 import { type GetMemoryUsageContext } from '../core/MemoryUsage';
 import pickObjectsAt from '../core/picking/PickObjectsAt';
-import { isMaterial } from '../utils/predicates';
+import { isMaterial, isObject3D } from '../utils/predicates';
 import Entity, { type EntityEventMap, type EntityUserData } from './Entity';
 
 export interface Entity3DEventMap extends EntityEventMap {
@@ -40,6 +48,20 @@ export interface Entity3DEventMap extends EntityEventMap {
      * Fired when the entity creates a new object
      */
     'object-created': { obj: Object3D };
+}
+
+/**
+ * Constructor options for the {@link Entity3D} class.
+ */
+export interface Entity3DOptions {
+    /**
+     * The root object of this entity. If none is provided, a new {@link Group} is created.
+     */
+    object3d?: Object3D;
+    /**
+     * The optional display name of this entity. Mostly used for debugging.
+     */
+    name?: string;
 }
 
 /**
@@ -78,20 +100,22 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
      *
      * @param object3d - the root Three.js of this entity
      */
-    public constructor(object3d: Object3D) {
+    public constructor(options?: Entity3DOptions) {
         super();
-        if (object3d == null || !object3d.isObject3D) {
-            throw new Error(
-                'Missing/Invalid object3d parameter (must be a three.js Object3D instance)',
-            );
+
+        if (options?.object3d != null && !isObject3D(options.object3d)) {
+            throw new Error('Incorrect root object type (must be a three.js Object3D instance)');
         }
-        if (object3d.type === 'Group' && object3d.name === '') {
-            object3d.name = this.id;
+
+        const rootObj = options?.object3d ?? new Group();
+        if (rootObj.type === 'Group' && rootObj.name === '') {
+            rootObj.name = this.id;
         }
 
         this._visible = true;
         this._opacity = 1;
-        this._object3d = object3d;
+        this._object3d = rootObj;
+        this.name = options?.name ?? undefined;
 
         // processing can overwrite that with values calculating from this layer's Object3D
         this._distance = { min: Infinity, max: 0 };
@@ -100,7 +124,7 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
 
         this._renderOrder = 0;
 
-        this.onObjectCreated(object3d);
+        this.onObjectCreated(this._object3d);
     }
 
     public getMemoryUsage(_context: GetMemoryUsageContext): void {

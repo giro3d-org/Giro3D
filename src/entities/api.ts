@@ -5,31 +5,33 @@
  */
 
 import type Atmosphere from './Atmosphere';
+import type { AtmosphereOptions } from './Atmosphere';
 import type Globe from './Globe';
-import type {
-    GlobeConstructorOptions,
-    GlobeTerrainOptions,
-    defaultGlobeSubdivisionStrategy,
-} from './Globe';
+import type { GlobeOptions, GlobeTerrainOptions, defaultGlobeSubdivisionStrategy } from './Globe';
 import type Glow from './Glow';
+import type { GlowOptions } from './Glow';
 import type Map from './Map';
 
 import AxisGrid, {
+    type AxisGridOptions,
     type TickOrigin as AxisGridOrigin,
     type Style as AxisGridStyle,
     type Ticks as AxisGridTicks,
     type Volume as AxisGridVolume,
 } from './AxisGrid';
 import Entity, { type EntityEventMap, type EntityUserData } from './Entity';
-import Entity3D, { type Entity3DEventMap } from './Entity3D';
-import FeatureCollection, { type MeshUserData } from './FeatureCollection';
+import Entity3D, { type Entity3DEventMap, type Entity3DOptions } from './Entity3D';
+import FeatureCollection, {
+    type MeshUserData,
+    type FeatureCollectionOptions,
+} from './FeatureCollection';
 import {
     DEFAULT_MAP_BACKGROUND_COLOR,
     DEFAULT_SUBDIVISION_THRESHOLD,
     allLayersLoadedSubdivisionStrategy,
     defaultMapSubdivisionStrategy,
     type LayerCompareFn,
-    type MapConstructorOptions,
+    type MapOptions,
     type MapEventMap,
     type MapSubdivisionStrategy,
 } from './Map';
@@ -42,8 +44,8 @@ import OrientedImageCollection, {
     type OrientedImageSource,
 } from './OrientedImageCollection';
 import PointCloud, { PointCloudOptions, UnsupportedAttributeError } from './PointCloud';
-import Shape, * as shape from './Shape';
-import SphericalPanorama, * as sphericalPanorama from './SphericalPanorama';
+import Shape, { ShapeOptions, ShapeExportOptions, ShapeFontWeight, ShapePickResult } from './Shape';
+import SphericalPanorama, { SphericalPanoramaOptions } from './SphericalPanorama';
 import Tiles3D, {
     DEFAULT_TILES3D_POINTCLOUD_ATTRIBUTE_MAPPING,
     WellKnown3DTilesPointCloudAttributes,
@@ -54,7 +56,9 @@ import Tiles3D, {
 
 export {
     Atmosphere,
+    AtmosphereOptions,
     AxisGrid,
+    AxisGridOptions,
     AxisGridOrigin,
     AxisGridStyle,
     AxisGridTicks,
@@ -64,18 +68,21 @@ export {
     DEFAULT_TILES3D_POINTCLOUD_ATTRIBUTE_MAPPING,
     Entity,
     Entity3D,
+    Entity3DOptions,
     Entity3DEventMap,
     EntityEventMap,
     EntityUserData,
     FeatureCollection,
+    FeatureCollectionOptions,
     Globe,
-    GlobeConstructorOptions,
+    GlobeOptions,
     GlobeTerrainOptions,
     Glow,
+    GlowOptions,
     ImageOrientation,
     LayerCompareFn,
     Map,
-    MapConstructorOptions,
+    MapOptions,
     MapEventMap,
     MapLightingMode,
     MapLightingOptions,
@@ -90,7 +97,12 @@ export {
     PointCloudBatchTableAttributeMapping,
     PointCloudOptions,
     Shape,
+    ShapeOptions,
+    ShapeExportOptions,
+    ShapeFontWeight,
+    ShapePickResult,
     SphericalPanorama,
+    SphericalPanoramaOptions,
     Tiles3D,
     Tiles3DOptions,
     Tiles3DPickResult,
@@ -99,6 +111,4 @@ export {
     allLayersLoadedSubdivisionStrategy,
     defaultGlobeSubdivisionStrategy,
     defaultMapSubdivisionStrategy,
-    shape,
-    sphericalPanorama,
 };

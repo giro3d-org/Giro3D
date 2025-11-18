@@ -158,14 +158,14 @@ describe('Instance', () => {
         });
 
         it('should add the entity object3D to the default location if it has no parent', async () => {
-            const entity1 = new FakeEntity3D(new Object3D());
+            const entity1 = new FakeEntity3D({ object3d: new Object3D() });
 
             await instance.add(entity1);
 
             expect(instance.scene.children).toContain(entity1.object3d);
         });
         it('should honor the entity object3D location in scenegraph if it has a parent', async () => {
-            const entity1 = new FakeEntity3D(new Object3D());
+            const entity1 = new FakeEntity3D({ object3d: new Object3D() });
 
             const parent = new Object3D();
 
@@ -200,7 +200,7 @@ describe('Instance', () => {
 
     describe('remove', () => {
         it('should remove the entity object3d from the scenegraph', async () => {
-            const entity1 = new FakeEntity3D(new Object3D());
+            const entity1 = new FakeEntity3D({ object3d: new Object3D() });
 
             entity1.object3d.removeFromParent = vitest.fn();
 

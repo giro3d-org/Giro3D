@@ -90,6 +90,7 @@ const lineStyles = {};
 
 // Create the `FeatureCollection` entity that will load our features as meshes.
 const busLines = new FeatureCollection({
+    name: 'bus lines',
     source: busLinesSource,
     extent,
     minLevel: 0,
@@ -123,7 +124,6 @@ const busLines = new FeatureCollection({
         };
     },
 });
-busLines.name = 'bus lines';
 
 // Let's add our bus lines feature collection to the scene
 instance.add(busLines);
@@ -147,6 +147,7 @@ const busStopSource = new VectorSource({
 });
 // Create the `FeatureCollection` entity that will load our features as meshes.
 const busStops = new FeatureCollection({
+    name: 'bus stops',
     source: busStopSource,
     extent,
     minLevel: 0,
@@ -166,7 +167,6 @@ const busStops = new FeatureCollection({
         };
     },
 });
-busStops.name = 'bus stops';
 instance.add(busStops);
 
 // add a skybox background, just to look nicer :-)
