@@ -8,6 +8,8 @@ import { register } from 'ol/proj/proj4.js';
 import proj4 from 'proj4';
 // @ts-expect-error no types
 import parseCode from 'proj4/lib/parseCode';
+// @ts-expect-error no types
+import wktParser from 'wkt-parser';
 
 import SRID from './SRID';
 import { LinearUnit, AngularUnit, parseUnit, type Unit } from './Unit';
@@ -253,7 +255,16 @@ export default class CoordinateSystem {
      */
     public static fromWkt(wkt: string, overrides?: { id?: string }): CoordinateSystem {
         try {
-            const parsed = parseCode(wkt) as ProjCRS | ProjCS | CompoundCS | object;
+            let parsed: ProjCRS | ProjCS | CompoundCS | object;
+
+            try {
+                // We use the wkt-parser package directly because it provides better
+                // information, especially correct SRID, but only works for WKT.
+                // For a proj string, we have to fallback to parseCode()
+                parsed = wktParser(wkt);
+            } catch {
+                parsed = parseCode(wkt);
+            }
 
             if ('ID' in parsed) {
                 // WKT 2 / PROJCRS
