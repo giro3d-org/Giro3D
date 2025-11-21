@@ -20,7 +20,7 @@ import type {
 } from './PointCloudSource';
 
 import { GlobalCache } from '../core/Cache';
-import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import CoordinateSystem from '../core/geographic/CoordinateSystem';
 import * as Octree from '../core/Octree';
 import OperationCounter from '../core/OperationCounter';
 import RequestQueue from '../core/RequestQueue';

@@ -9,8 +9,8 @@ import { describe, expect, it, vitest } from 'vitest';
 import type ElevationProvider from '@giro3d/giro3d/core/ElevationProvider';
 
 import { aggregateElevationProviders } from '@giro3d/giro3d/core/ElevationProvider';
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem';
 
 describe('aggregateProviders', () => {
     it('should throw if no provider is provided', () => {

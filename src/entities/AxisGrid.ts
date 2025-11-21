@@ -27,9 +27,8 @@ import type Context from '../core/Context';
 import type Extent from '../core/geographic/Extent';
 import type View from '../renderer/View';
 import type { EntityUserData } from './Entity';
-import type { Entity3DEventMap } from './Entity3D';
+import type { Entity3DOptions, Entity3DEventMap } from './Entity3D';
 
-import { crsToUnit, UNIT } from '../core/geographic/Coordinates';
 import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../core/MemoryUsage';
 import Helpers from '../helpers/Helpers';
 import { isBufferGeometry, isCSS2DObject } from '../utils/predicates';
@@ -209,6 +208,36 @@ export interface AxisGridEventMap extends Entity3DEventMap {
 }
 
 /**
+ * Constructor options for the {@link AxisGrid} entity.
+ */
+export interface AxisGridOptions extends Entity3DOptions {
+    /**
+     * The grid volume
+     */
+    volume: Volume;
+    /**
+     * The origin of the ticks volume
+     * @defaultValue {@link TickOrigin.Relative}
+     */
+    origin?: TickOrigin;
+    /**
+     * The distance between grid lines.
+     * @defaultValue 100 on each axis.
+     */
+    ticks?: Ticks;
+    /**
+     * The style to apply to lines and labels.
+     */
+    style?: Partial<Style>;
+
+    /**
+     * Toggles adaptive labels: labels outside the screen will be rendered at the screen edge.
+     * @defaultValue false
+     */
+    adaptiveLabels?: boolean;
+}
+
+/**
  * Create a 3D axis grid. This is represented as a box volume where each side of the box is itself a
  * grid.
  *
@@ -259,7 +288,7 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
     private _boundingBoxCenter: Vector3;
     private _origin: TickOrigin;
     private _ticks: Ticks;
-    private _unitSuffix: string;
+    private _unitSuffix: string = '';
     private _material: LineBasicMaterial;
     private _cameraForward: Vector3;
     private _showFloorGrid: boolean;
@@ -291,33 +320,8 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
      *
      * @param options - The options.
      */
-    public constructor(options: {
-        /**
-         * The grid volume
-         */
-        volume: Volume;
-        /**
-         * The origin of the ticks volume
-         * @defaultValue {@link TickOrigin.Relative}
-         */
-        origin?: TickOrigin;
-        /**
-         * The distance between grid lines.
-         * @defaultValue 100 on each axis.
-         */
-        ticks?: Ticks;
-        /**
-         * The style to apply to lines and labels.
-         */
-        style?: Partial<Style>;
-
-        /**
-         * Toggles adaptive labels: labels outside the screen will be rendered at the screen edge.
-         * @defaultValue false
-         */
-        adaptiveLabels?: boolean;
-    }) {
-        super(new Group());
+    public constructor(options: AxisGridOptions) {
+        super(options);
 
         this._root = this.object3d as Group;
 
@@ -348,17 +352,12 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
         this._ticks = options.ticks ?? { x: 100, y: 100, z: 100 };
         this._origin = options.origin ?? TickOrigin.Relative;
 
-        const unit = crsToUnit(this.volume.extent.crs);
-        switch (unit) {
-            case UNIT.METER:
-                this._unitSuffix = ' m';
-                break;
-            case UNIT.DEGREE:
-                this._unitSuffix = ' °';
-                break;
-            default:
-                this._unitSuffix = '';
-                break;
+        const crs = this.volume.extent.crs;
+        const unit = crs.horizontal?.unit;
+
+        if (unit != null) {
+            // TODO we should distinguish between horizontal and vertical units ideally.
+            this._unitSuffix = unit.getSymbol();
         }
 
         const color = new Color(this.style.color);

@@ -22,7 +22,7 @@ import { Projection } from 'ol/proj';
 import { Box3, Group, MathUtils, Vector3 } from 'three';
 
 import type Context from '../core/Context';
-import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import type CoordinateSystem from '../core/geographic/CoordinateSystem';
 import type Extent from '../core/geographic/Extent';
 import type { SSE } from '../core/ScreenSpaceError';
 import type { BaseOptions } from '../renderer/geometries/GeometryConverter';
@@ -32,7 +32,7 @@ import type PointMesh from '../renderer/geometries/PointMesh';
 import type SimpleGeometryMesh from '../renderer/geometries/SimpleGeometryMesh';
 import type SurfaceMesh from '../renderer/geometries/SurfaceMesh';
 import type { EntityUserData } from './Entity';
-import type { Entity3DEventMap } from './Entity3D';
+import type { Entity3DOptions, Entity3DEventMap } from './Entity3D';
 
 import { GlobalCache } from '../core/Cache';
 import {
@@ -183,6 +183,76 @@ type ObjectOptions = {
 };
 
 /**
+ * Constructor options for the {@link FeatureCollection} entity.
+ */
+export interface FeatureCollectionOptions extends Entity3DOptions {
+    /** The OpenLayers [VectorSource](https://openlayers.org/en/latest/apidoc/module-ol_source_Vector-VectorSource.html) providing features to this entity */
+    source: VectorSource;
+    /**
+     * The projection code for the projections of the features. If null or empty,
+     * no reprojection will be done. If a valid epsg code is given and if different from
+     * `instance.coordinateSystem`, each feature will be reprojected before mesh
+     * conversion occurs. Note that reprojection can be somewhat heavy on CPU resources.
+     */
+    dataProjection?: CoordinateSystem;
+    /** The geographic extent of the entity. */
+    extent: Extent;
+    /**
+     * The min subdivision level to start processing features.
+     * Useful for WFS or other untiled servers, to avoid to download the
+     * entire dataset when the whole extent is visible.
+     */
+    minLevel?: number;
+    /**
+     * The max level to subdivide the extent and process features.
+     */
+    maxLevel?: number;
+    /**
+     * Set the elevation of the features received from the source.
+     * It can be a constant for every feature, or a callback.
+     * The callback version is particularly useful to derive the elevation
+     * from the properties of the feature.
+     * Requires `ignoreZ` to be `false`.
+     */
+    elevation?: FeatureElevation | FeatureElevationCallback;
+    /**
+     * If true, the Z-coordinates of geometries will be ignored and set to zero.
+     * @defaultValue false
+     */
+    ignoreZ?: boolean;
+    /**
+     * If set, this will cause 2D features to be extruded of the corresponding amount.
+     * If a single value is given, it will be used for all the vertices of every feature.
+     * If an array is given, each extruded vertex will use the corresponding value.
+     * If a callback is given, it allows to extrude each feature individually.
+     */
+    extrusionOffset?: FeatureExtrusionOffset | FeatureExtrusionOffsetCallback;
+    /**
+     * An style or a callback returning a style to style the individual features.
+     * If an object is used, the informations it contains will be used to style every
+     * feature the same way. If a function is provided, it will be called with the feature.
+     * This allows to individually style each feature.
+     */
+    style?: FeatureStyle | FeatureStyleCallback;
+    /**
+     * An optional material generator for shaded surfaces.
+     */
+    shadedSurfaceMaterialGenerator?: SurfaceMaterialGenerator;
+    /**
+     * An optional material generator for unshaded surfaces.
+     */
+    unshadedSurfaceMaterialGenerator?: SurfaceMaterialGenerator;
+    /**
+     * An optional material generator for lines.
+     */
+    lineMaterialGenerator?: LineMaterialGenerator;
+    /**
+     * An optional material generator for points.
+     */
+    pointMaterialGenerator?: PointMaterialGenerator;
+}
+
+/**
  * An {@link Entity3D} that represent [simple features](https://en.wikipedia.org/wiki/Simple_Features)
  * as 3D meshes.
  *
@@ -233,7 +303,7 @@ type ObjectOptions = {
  *
  * The `FeatureCollection` supports the reprojection of geometries if the source has a different CRS
  * than the scene. Any custom CRS must be registered first with
- * {@link core.Instance.registerCRS | Instance.registerCRS()}.
+ * {@link core.geographic.CoordinateSystem.register | CoordinateSystem.register()}.
  *
  * Related examples:
  *
@@ -323,75 +393,8 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
      *
      * @param options - Constructor options.
      */
-    public constructor(options: {
-        /** The OpenLayers [VectorSource](https://openlayers.org/en/latest/apidoc/module-ol_source_Vector-VectorSource.html) providing features to this entity */
-        source: VectorSource;
-        /**
-         * The projection code for the projections of the features. If null or empty,
-         * no reprojection will be done. If a valid epsg code is given and if different from
-         * `instance.coordinateSystem`, each feature will be reprojected before mesh
-         * conversion occurs. Note that reprojection can be somewhat heavy on CPU resources.
-         */
-        dataProjection?: CoordinateSystem;
-        /** The geographic extent of the entity. */
-        extent: Extent;
-        /** The optional 3D object to use as the root */
-        object3d?: Object3D;
-        /**
-         * The min subdivision level to start processing features.
-         * Useful for WFS or other untiled servers, to avoid to download the
-         * entire dataset when the whole extent is visible.
-         */
-        minLevel?: number;
-        /**
-         * The max level to subdivide the extent and process features.
-         */
-        maxLevel?: number;
-        /**
-         * Set the elevation of the features received from the source.
-         * It can be a constant for every feature, or a callback.
-         * The callback version is particularly useful to derive the elevation
-         * from the properties of the feature.
-         * Requires `ignoreZ` to be `false`.
-         */
-        elevation?: FeatureElevation | FeatureElevationCallback;
-        /**
-         * If true, the Z-coordinates of geometries will be ignored and set to zero.
-         * @defaultValue false
-         */
-        ignoreZ?: boolean;
-        /**
-         * If set, this will cause 2D features to be extruded of the corresponding amount.
-         * If a single value is given, it will be used for all the vertices of every feature.
-         * If an array is given, each extruded vertex will use the corresponding value.
-         * If a callback is given, it allows to extrude each feature individually.
-         */
-        extrusionOffset?: FeatureExtrusionOffset | FeatureExtrusionOffsetCallback;
-        /**
-         * An style or a callback returning a style to style the individual features.
-         * If an object is used, the informations it contains will be used to style every
-         * feature the same way. If a function is provided, it will be called with the feature.
-         * This allows to individually style each feature.
-         */
-        style?: FeatureStyle | FeatureStyleCallback;
-        /**
-         * An optional material generator for shaded surfaces.
-         */
-        shadedSurfaceMaterialGenerator?: SurfaceMaterialGenerator;
-        /**
-         * An optional material generator for unshaded surfaces.
-         */
-        unshadedSurfaceMaterialGenerator?: SurfaceMaterialGenerator;
-        /**
-         * An optional material generator for lines.
-         */
-        lineMaterialGenerator?: LineMaterialGenerator;
-        /**
-         * An optional material generator for points.
-         */
-        pointMaterialGenerator?: PointMaterialGenerator;
-    }) {
-        super(options.object3d || new Group());
+    public constructor(options: FeatureCollectionOptions) {
+        super(options);
 
         this._geometryConverter = new GeometryConverter<MeshUserData>({
             shadedSurfaceMaterialGenerator: options.shadedSurfaceMaterialGenerator,

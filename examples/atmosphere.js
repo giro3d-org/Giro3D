@@ -17,8 +17,8 @@ import {
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem';
 import Ellipsoid from '@giro3d/giro3d/core/geographic/Ellipsoid';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import Atmosphere from '@giro3d/giro3d/entities/Atmosphere';

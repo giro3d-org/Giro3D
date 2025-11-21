@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { MaterialOptions } from '@giro3d/giro3d/renderer/LayeredMaterial';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import OffsetScale from '@giro3d/giro3d/core/OffsetScale';
 import { MapLightingMode } from '@giro3d/giro3d/entities/MapLightingOptions';

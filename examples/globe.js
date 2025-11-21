@@ -12,7 +12,7 @@ import { AmbientLight, DirectionalLight, MathUtils, Vector3 } from 'three';
 
 import GlobeControls from '@giro3d/giro3d/controls/GlobeControls.js';
 import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem.js';
 import Ellipsoid from '@giro3d/giro3d/core/geographic/Ellipsoid.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Sun from '@giro3d/giro3d/core/geographic/Sun.js';
@@ -51,6 +51,7 @@ const instance = new Instance({
 /////////////////////////////// Globe creations ///////////////////////////////////////////////////
 
 const earth = new Globe({
+    name: 'Earth',
     lighting: {
         enabled: true,
     },
@@ -67,11 +68,10 @@ const earth = new Globe({
     backgroundColor: '#001B35',
 });
 
-earth.name = 'Earth';
-
 instance.add(earth);
 
 const moon = new Globe({
+    name: 'Moon',
     lighting: {
         enabled: true,
     },
@@ -93,8 +93,6 @@ const moon = new Globe({
     }),
 });
 
-moon.name = 'Moon';
-
 instance.add(moon);
 
 const moonLayer = new ColorLayer({
@@ -107,6 +105,7 @@ const moonLayer = new ColorLayer({
 moon.addLayer(moonLayer);
 
 const mars = new Globe({
+    name: 'Mars',
     lighting: {
         enabled: true,
     },
@@ -129,8 +128,6 @@ const mars = new Globe({
     }),
 });
 
-mars.name = 'Mars';
-
 instance.add(mars);
 
 const marsLayer = new ColorLayer({
@@ -148,6 +145,7 @@ mars.addLayer(marsLayer);
 const SUN_SIZE_FACTOR = 0.1;
 
 const sun = new Globe({
+    name: 'Sun',
     lighting: {
         enabled: false,
     },
@@ -169,8 +167,6 @@ const sun = new Globe({
     }),
 });
 
-sun.name = 'Sun';
-
 instance.add(sun);
 
 const sunLayer = new ColorLayer({
@@ -188,11 +184,11 @@ const allGlobes = [earth, moon, mars, sun];
 /////////////////////////////// Star background /////////////////////////////////////////////////
 
 const background = new SphericalPanorama({
+    name: 'background',
     radius: 10_000_000,
     subdivisionThreshold: 0.4,
     depthTest: false,
 });
-background.name = 'background';
 background.renderOrder = -9999;
 instance.add(background);
 
@@ -297,24 +293,22 @@ instance.add(ambientLight);
 
 /////////////////////////////// Atmospheres //////////////////////////////////////////////////
 
-const earthAtmosphere = new Atmosphere({ ellipsoid: earth.ellipsoid });
-earthAtmosphere.name = 'Earth atmosphere';
+const earthAtmosphere = new Atmosphere({ name: 'Earth atmosphere', ellipsoid: earth.ellipsoid });
 instance.add(earthAtmosphere);
 
 const marsAtmosphere = new Atmosphere({
+    name: 'Mars atmosphere',
     ellipsoid: mars.ellipsoid,
     wavelengths: [0.414, 0.443, 0.475], // To give the atmosphere the rusty color of Mars
 });
-marsAtmosphere.name = 'Mars atmosphere';
 instance.add(marsAtmosphere);
 
 // For the sun we don't use an atmosphere, but a glow
 const sunGlow = new Glow({
+    name: 'sun glow',
     color: '#ff7800',
     ellipsoid: sun.ellipsoid,
 });
-
-sunGlow.name = 'sun glow';
 
 instance.add(sunGlow);
 

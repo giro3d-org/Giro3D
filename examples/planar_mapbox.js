@@ -7,7 +7,7 @@
 import XYZ from 'ol/source/XYZ.js';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
@@ -18,11 +18,6 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
-
-Instance.registerCRS(
-    'EPSG:3857',
-    '+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs +type=crs',
-);
 
 const extent = new Extent(CoordinateSystem.epsg3857, 659030, 735596, 5535152, 5647497);
 

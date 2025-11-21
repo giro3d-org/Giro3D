@@ -139,10 +139,6 @@ class RequestQueue extends EventDispatcher<RequestQueueEvents> implements Progre
     }
 
     public onQueueAvailable(): void {
-        if (this._queue.isEmpty()) {
-            return;
-        }
-
         while (this._concurrentRequests < this._maxConcurrentRequests) {
             if (this._queue.isEmpty()) {
                 break;
@@ -165,7 +161,6 @@ class RequestQueue extends EventDispatcher<RequestQueueEvents> implements Progre
             } else {
                 this._opCounter.decrement();
                 this._pendingIds.delete(key);
-                this.onQueueAvailable();
                 task.reject(PromiseUtils.abortError());
                 this.dispatchEvent({ type: 'task-cancelled' });
             }

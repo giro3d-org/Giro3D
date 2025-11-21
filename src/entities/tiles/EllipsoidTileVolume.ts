@@ -11,8 +11,8 @@ import type ElevationRange from '../../core/ElevationRange';
 import type Ellipsoid from '../../core/geographic/Ellipsoid';
 import type Extent from '../../core/geographic/Extent';
 
-import CoordinateSystem from '../../core/geographic/coordinate-system/CoordinateSystem';
 import Coordinates from '../../core/geographic/Coordinates';
+import CoordinateSystem from '../../core/geographic/CoordinateSystem';
 import TileVolume from './TileVolume';
 
 const vec3 = new Vector3();

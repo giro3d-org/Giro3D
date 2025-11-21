@@ -8,7 +8,7 @@ import type { GeoTIFFImage } from 'geotiff';
 
 import { describe, expect, it, vitest } from 'vitest';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import GeoTIFFSource from '@giro3d/giro3d/sources/GeoTIFFSource';
 
@@ -17,11 +17,11 @@ describe('constructor', () => {
         const containsFn = vitest.fn();
         const source = new GeoTIFFSource({
             url: 'http://example.com',
-            crs: CoordinateSystem.fromEpsg(1234),
+            crs: CoordinateSystem.epsg3857,
             containsFn,
         });
         expect(source.url).toEqual('http://example.com');
-        expect(source.crs.isEpsg(1234)).toEqual(true);
+        expect(source.crs.isEpsg(3857)).toEqual(true);
         expect(source.containsFn).toBe(containsFn);
     });
 });
@@ -30,7 +30,7 @@ describe('initialize', () => {
     it('should always return the same promise to avoid concurrent initializations', () => {
         const source = new GeoTIFFSource({
             url: 'http://example.com',
-            crs: CoordinateSystem.fromEpsg(1234),
+            crs: CoordinateSystem.epsg3857,
         });
 
         const promise1 = source.initialize();

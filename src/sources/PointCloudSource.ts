@@ -7,7 +7,7 @@
 import { EventDispatcher, MathUtils, type Box3, type BufferAttribute, type Vector3 } from 'three';
 
 import type Disposable from '../core/Disposable';
-import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import type CoordinateSystem from '../core/geographic/CoordinateSystem';
 import type MemoryUsage from '../core/MemoryUsage';
 import type { GetMemoryUsageContext } from '../core/MemoryUsage';
 import type Progress from '../core/Progress';

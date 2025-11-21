@@ -8,7 +8,6 @@ import {
     Box3,
     Color,
     FrontSide,
-    Group,
     MathUtils,
     Matrix4,
     Raycaster,
@@ -29,7 +28,7 @@ import type Context from '../core/Context';
 import type ContourLineOptions from '../core/ContourLineOptions';
 import type ElevationProvider from '../core/ElevationProvider';
 import type ElevationRange from '../core/ElevationRange';
-import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import type CoordinateSystem from '../core/geographic/CoordinateSystem';
 import type Extent from '../core/geographic/Extent';
 import type GetElevationOptions from '../core/GetElevationOptions';
 import type GetElevationResult from '../core/GetElevationResult';
@@ -48,6 +47,7 @@ import type { SSE } from '../core/ScreenSpaceError';
 import type TerrainOptions from '../core/TerrainOptions';
 import type RenderingState from '../renderer/RenderingState';
 import type { EntityUserData } from './Entity';
+import type { Entity3DOptions } from './Entity3D';
 import type MapLightingOptions from './MapLightingOptions';
 import type { TileGeometryBuilder } from './tiles/TileGeometry';
 import type TileVolume from './tiles/TileVolume';
@@ -386,7 +386,10 @@ export interface MapEventMap extends Entity3DEventMap {
     'paint-complete': unknown;
 }
 
-export type MapConstructorOptions = {
+/**
+ * Constructor options for the {@link Map} entity.
+ */
+export interface MapOptions extends Entity3DOptions {
     /**
      * The geographic extent of the map.
      *
@@ -450,11 +453,6 @@ export type MapConstructorOptions = {
      */
     discardNoData?: boolean;
     /**
-     * The optional `Object3D` to use as the root object of this map.
-     * If none provided, a new one will be created.
-     */
-    object3d?: Object3D;
-    /**
      * The color of the map when no color layers are present.
      * @defaultValue {@link DEFAULT_MAP_BACKGROUND_COLOR}
      */
@@ -491,7 +489,6 @@ export type MapConstructorOptions = {
      * @defaultValue {@link DEFAULT_SUBDIVISION_THRESHOLD}
      */
     subdivisionThreshold?: number;
-
     /**
      * If `true`, the map will cast shadow.
      * @defaultValue true
@@ -508,7 +505,7 @@ export type MapConstructorOptions = {
      * @defaultValue {@link defaultMapSubdivisionStrategy}
      */
     subdivisionStrategy?: MapSubdivisionStrategy;
-};
+}
 
 type ObjectOptions = { castShadow: boolean; receiveShadow: boolean };
 
@@ -621,8 +618,8 @@ class Map<UserData extends EntityUserData = EntityUserData>
      *
      * @param options - Constructor options.
      */
-    public constructor(options: MapConstructorOptions) {
-        super(options.object3d || new Group());
+    public constructor(options: MapOptions) {
+        super(options);
 
         this._rootTiles = [];
 

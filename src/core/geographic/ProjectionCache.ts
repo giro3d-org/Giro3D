@@ -7,7 +7,7 @@
 import proj4 from 'proj4';
 
 import type { CreateValueFn } from '../../utils/NestedMap';
-import type CoordinateSystem from './coordinate-system/CoordinateSystem';
+import type CoordinateSystem from './CoordinateSystem';
 
 import NestedMap from '../../utils/NestedMap';
 

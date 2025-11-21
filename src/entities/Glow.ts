@@ -11,7 +11,6 @@ import {
     BackSide,
     Color,
     FrontSide,
-    Group,
     Mesh,
     ShaderMaterial,
     Sphere,
@@ -23,6 +22,7 @@ import {
 
 import type Context from '../core/Context';
 import type PickResult from '../core/picking/PickResult';
+import type { Entity3DOptions } from './Entity3D';
 
 import Ellipsoid from '../core/geographic/Ellipsoid';
 import GlowFS from '../renderer/shader/GlowFS.glsl';
@@ -81,6 +81,26 @@ class GlowMaterial extends ShaderMaterial {
 }
 
 /**
+ * Constructor options for the {@link Glow} entity.
+ */
+export interface GlowOptions extends Entity3DOptions {
+    /**
+     * The color of the glow.
+     */
+    color?: ColorRepresentation;
+    /**
+     * The ellipsoid to use.
+     * @defaultValue {@link Ellipsoid.WGS84}
+     */
+    ellipsoid?: Ellipsoid;
+    /**
+     * The thickness of the atmosphere
+     * @defaultValue 300km (earth atmosphere)
+     */
+    thickness?: number;
+}
+
+/**
  * Displays a simple glow around an ellipsoid.
  */
 export default class Glow extends Entity3D {
@@ -106,23 +126,8 @@ export default class Glow extends Entity3D {
         this.notifyChange();
     }
 
-    public constructor(options: {
-        /**
-         * The color of the glow.
-         */
-        color?: ColorRepresentation;
-        /**
-         * The ellipsoid to use.
-         * @defaultValue {@link Ellipsoid.WGS84}
-         */
-        ellipsoid?: Ellipsoid;
-        /**
-         * The thickness of the atmosphere
-         * @defaultValue 300km (earth atmosphere)
-         */
-        thickness?: number;
-    }) {
-        super(new Group());
+    public constructor(options: GlowOptions) {
+        super(options);
 
         this._ellipsoid = options?.ellipsoid ?? Ellipsoid.WGS84;
         this._sphere = new Sphere(new Vector3(0, 0, 0), this._ellipsoid.semiMajorAxis);

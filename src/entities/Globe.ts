@@ -16,8 +16,8 @@ import type { TileGeometryBuilder } from './tiles/TileGeometry';
 import type TileMesh from './tiles/TileMesh';
 import type TileVolume from './tiles/TileVolume';
 
-import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import Coordinates from '../core/geographic/Coordinates';
+import CoordinateSystem from '../core/geographic/CoordinateSystem';
 import Ellipsoid from '../core/geographic/Ellipsoid';
 import Extent from '../core/geographic/Extent';
 import { isColorLayer } from '../core/layer/ColorLayer';
@@ -25,7 +25,7 @@ import { isElevationLayer } from '../core/layer/ElevationLayer';
 import ScreenSpaceError from '../core/ScreenSpaceError';
 import { computeDistanceToFitSphere, computeZoomToFitSphere } from '../renderer/View';
 import { isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
-import Map, { defaultMapSubdivisionStrategy, type MapConstructorOptions } from './Map';
+import Map, { defaultMapSubdivisionStrategy, type MapOptions } from './Map';
 import { MapLightingMode } from './MapLightingOptions';
 import EllipsoidTileGeometryBuilder from './tiles/EllipsoidTileGeometryBuilder';
 import EllipsoidTileVolume from './tiles/EllipsoidTileVolume';
@@ -91,7 +91,10 @@ export function computeEllipsoidalImageSize(extent: Extent, ellipsoid: Ellipsoid
 // Note: we disable the extent because it would not make a lot of sense to have
 // sections of globes. However, this would be relatively simple to enable in the future
 // if someone asks for this feature.
-export interface GlobeConstructorOptions extends Omit<MapConstructorOptions, 'extent' | 'terrain'> {
+/**
+ * Constructor options for the {@link Globe} entity.
+ */
+export interface GlobeOptions extends Omit<MapOptions, 'extent' | 'terrain'> {
     /**
      * Which ellipsoid to use.
      * @defaultValue {@link Ellipsoid.WGS84}
@@ -146,7 +149,7 @@ export default class Globe extends Map {
         this._enableHorizonCulling = v;
     }
 
-    public constructor(options?: GlobeConstructorOptions) {
+    public constructor(options?: GlobeOptions) {
         super({
             subdivisionStrategy: defaultGlobeSubdivisionStrategy,
             ...options,

@@ -11,7 +11,7 @@ import { createXYZ } from 'ol/tilegrid.js';
 import { MathUtils, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import FeatureCollection from '@giro3d/giro3d/entities/FeatureCollection.js';
@@ -125,6 +125,7 @@ const countryStyle = feature => {
 };
 
 const countries = new FeatureCollection({
+    name: 'countries',
     source: new VectorSource({
         format: new GeoJSON(),
         url: 'https://3d.oslandia.com/giro3d/vectors/countries.geojson',
@@ -135,7 +136,6 @@ const countries = new FeatureCollection({
     minLevel: 0,
     maxLevel: 0,
 });
-countries.name = 'countries';
 
 instance.add(countries);
 
@@ -155,6 +155,7 @@ const capitalStyle = feature => {
 };
 
 const capitals = new FeatureCollection({
+    name: 'capitals',
     source: new VectorSource({
         format: new GeoJSON(),
         url: 'https://3d.oslandia.com/giro3d/vectors/capitals.geojson',
@@ -165,7 +166,6 @@ const capitals = new FeatureCollection({
     minLevel: 0,
     maxLevel: 0,
 });
-capitals.name = 'capitals';
 
 instance.add(capitals);
 

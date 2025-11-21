@@ -13,8 +13,8 @@ import type PickOptions from './PickOptions';
 import type PickResult from './PickResult';
 
 import RenderingState from '../../renderer/RenderingState';
-import CoordinateSystem from '../geographic/coordinate-system/CoordinateSystem';
 import Coordinates from '../geographic/Coordinates';
+import CoordinateSystem from '../geographic/CoordinateSystem';
 import traversePickingCircle from './PickingCircle';
 
 /** Pick result on tiles (e.g. map) */

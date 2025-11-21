@@ -7,7 +7,7 @@
 import TileWMS from 'ol/source/TileWMS.js';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
@@ -19,22 +19,16 @@ import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-Instance.registerCRS(
+const crs = CoordinateSystem.register(
     'EPSG:3946',
     '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
 );
 
-const extent = new Extent(
-    CoordinateSystem.fromEpsg(3946),
-    1837816.94334,
-    1847692.32501,
-    5170036.4587,
-    5178412.82698,
-);
+const extent = new Extent(crs, 1837816.94334, 1847692.32501, 5170036.4587, 5178412.82698);
 
 const instance = new Instance({
     target: 'view',
-    crs: CoordinateSystem.fromEpsg(3946),
+    crs,
 });
 
 const map = new Map({ extent, lighting: true, backgroundColor: 'white' });

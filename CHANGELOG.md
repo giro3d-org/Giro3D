@@ -1,6 +1,12 @@
 # Changelog
 
-## v0.44.0 (2025-10-27)
+## v1.0.0 (2025-10-27)
+
+### Note about the version
+
+The numbering scheme used by Giro3D is [semver](https://semver.org/). Until now, Giro3D was using "initial development phase" version numbering (i.e with a leading zero, for example 0.43.0). We are now using regular semver (i.e with a leading non-zero number, for example 1.0.0). This change ensures that we can communicate more clearly about breaking changes, since 0.x versions could not properly convey breaking change information.
+
+This version change does not have any additional meaning (especially not a guarantee of API stability nor feature content), and future breaking changes will increase the first version number (e.g 2.0.0).
 
 ### Changes in coordinate system handling
 
@@ -27,6 +33,21 @@ The `PointCloud` entity now supports coloring the intersection between box-like 
 👉 [See the example](https://giro3d.org/examples/pointcloud_intersecting_volumes.html)
 
 ### BREAKING CHANGE
+
+#### `Entity3D` constructor params
+
+Entity3D now takes a single optional Javascript object has parameter, instead of a THREE.js `Object3D`. This object can contain the root THREE.js object to use:
+
+```ts
+// Before
+new Entity3D(new Group());
+
+// After
+new Entity3D({
+    object3d: new Group()
+    name: "my custom name"
+});
+```
 
 #### Coordinate system handling
 
@@ -66,6 +87,7 @@ const instance = new Instance({
 
 ### Feat
 
+- **Entity3D**: add `name` in constructor options (#506)
 - introduce the `CoordinateSystem` class
 - add the `VideoSource` image source to draw videos on color layers (#505)
 - **entities**: introduce new entity `OrientedImageCollection`
@@ -95,6 +117,7 @@ const instance = new Instance({
 ### Refactor
 
 - enforce 'no-shadow' eslint rule
+- **Entity3D**: create the `.object3d` if none is provided
 
 ## v0.43.6 (2025-10-06)
 

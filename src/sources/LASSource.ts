@@ -22,7 +22,7 @@ import type {
     PointCloudNodeData,
 } from './PointCloudSource';
 
-import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import CoordinateSystem from '../core/geographic/CoordinateSystem';
 import OperationCounter from '../core/OperationCounter';
 import { defer } from '../core/RequestQueue';
 import Fetcher from '../utils/Fetcher';

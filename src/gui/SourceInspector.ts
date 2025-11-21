@@ -12,7 +12,7 @@ import UrlTile from 'ol/source/UrlTile.js';
 import type Instance from '../core/Instance';
 import type ImageSource from '../sources/ImageSource';
 
-import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import CoordinateSystem from '../core/geographic/CoordinateSystem';
 import * as MemoryUsage from '../core/MemoryUsage';
 import { isGeoTIFFSource } from '../sources/GeoTIFFSource';
 import { isTiledImageSource } from '../sources/TiledImageSource';

@@ -14,7 +14,8 @@ import {
     ImplicitTilingPlugin,
     UnloadTilesPlugin,
 } from '3d-tiles-renderer/plugins';
-import { Box3, Color, Group, REVISION, Vector3 } from 'three';
+import { Box3, Color, REVISION, Vector3 } from 'three';
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 
@@ -35,7 +36,7 @@ import type {
 } from '../renderer/PointCloudMaterial';
 import type PointCloudParameters from './3dtiles/PointCloudParameters';
 import type { EntityPreprocessOptions, EntityUserData } from './Entity';
-import type { Entity3DEventMap } from './Entity3D';
+import type { Entity3DOptions, Entity3DEventMap } from './Entity3D';
 
 import { defaultColorimetryOptions } from '../core/ColorimetryOptions';
 import ColorMap from '../core/ColorMap';
@@ -61,8 +62,10 @@ export {
 
 type Listener<T> = (args: T & object) => void;
 
-/** Options to create a Tiles3D object. */
-export type Tiles3DOptions = {
+/**
+ * Constructor options for the {@link Tiles3D} entity.
+ */
+export interface Tiles3DOptions extends Entity3DOptions {
     /**
      * The URL to the root tileset.
      * Might be `undefined` if the URL is provided externally (for example by the `GoogleCloudAuthPlugin`)
@@ -120,7 +123,7 @@ export type Tiles3DOptions = {
      * @defaultValue {@link ASPRS_CLASSIFICATIONS}
      */
     classifications?: Classification[];
-};
+}
 
 const tmpBox3 = new Box3();
 const tmpVector = new Vector3();
@@ -238,7 +241,7 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
     private _colorLayer: ColorLayer | null = null;
 
     public constructor(options?: Tiles3DOptions) {
-        super(new Group());
+        super(options);
 
         this._tiles = new TilesRenderer(options?.url);
 
@@ -287,12 +290,10 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
             new GLTFExtensionsPlugin({
                 dracoLoader,
                 ktxLoader,
-                // FIXME the following parameters are optional but the .d.ts file makes them mandatory
-                // https://github.com/NASA-AMMOS/3DTilesRendererJS/pull/908
-                metadata: true,
-                rtc: true,
-                autoDispose: true,
-                plugins: [],
+                // @ts-expect-error FIXME this field is missing from the type definition file
+                // in the current version of the library, but was fixed upstream
+                // https://github.com/NASA-AMMOS/3DTilesRendererJS/pull/1357
+                meshoptDecoder: MeshoptDecoder,
             }),
         );
 

@@ -10,7 +10,7 @@ import { Color } from 'three';
 
 import type ColorMap from '../core/ColorMap';
 import type { ColorMapMode } from '../core/ColorMap';
-import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import type CoordinateSystem from '../core/geographic/CoordinateSystem';
 import type Instance from '../core/Instance';
 import type Layer from '../core/layer/Layer';
 import type Entity3D from '../entities/Entity3D';

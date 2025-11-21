@@ -12,8 +12,8 @@ import { Color, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import { MathUtils } from 'three/src/math/MathUtils.js';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import FeatureCollection from '@giro3d/giro3d/entities/FeatureCollection.js';
@@ -21,18 +21,12 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-Instance.registerCRS(
+const crs = CoordinateSystem.register(
     'EPSG:2154',
     '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
 );
 
-const extent = new Extent(
-    CoordinateSystem.fromEpsg(2154),
-    -111629.52,
-    1275028.84,
-    5976033.79,
-    7230161.64,
-);
+const extent = new Extent(crs, -111629.52, 1275028.84, 5976033.79, 7230161.64);
 
 const instance = new Instance({
     target: 'view',
@@ -55,6 +49,7 @@ function getHue(area) {
 
 // Creates the entity. The features will automatically be reprojected before being displayed.
 const arrondissements = new FeatureCollection({
+    name: 'arrondissements',
     source: arrondissementSource,
     extent,
     ignoreZ: true,
@@ -83,7 +78,6 @@ const arrondissements = new FeatureCollection({
         };
     },
 });
-arrondissements.name = 'arrondissements';
 instance.add(arrondissements);
 
 // Another GeoJSON in EPSG:3857
@@ -96,6 +90,7 @@ const perimeterqaaSource = new VectorSource({
 });
 
 const perimeterqaa = new FeatureCollection({
+    name: 'perimeterqaa',
     source: perimeterqaaSource,
     extent,
     ignoreZ: true,
@@ -119,7 +114,6 @@ const perimeterqaa = new FeatureCollection({
         };
     },
 });
-perimeterqaa.name = 'perimeterqaa';
 instance.add(perimeterqaa);
 
 // A WFS source in EPSG:3857
@@ -141,6 +135,7 @@ const bdTopoSource = new VectorSource({
     strategy: tile(createXYZ({ tileSize: 512 })),
 });
 const buildings = new FeatureCollection({
+    name: 'buildings',
     source: bdTopoSource,
     // we specify that FeatureCollection should reproject the features before displaying them
     dataProjection: CoordinateSystem.epsg3857,
@@ -177,11 +172,10 @@ const buildings = new FeatureCollection({
     minLevel: 11,
     maxLevel: 11,
 });
-buildings.name = 'buildings';
 instance.add(buildings);
 
-const position = new Coordinates(CoordinateSystem.fromEpsg(2154), 652212.5, 6860754.1, 27717.3);
-const lookAtCoords = new Coordinates(CoordinateSystem.fromEpsg(2154), 652338.3, 6862087.1, 200);
+const position = new Coordinates(crs, 652212.5, 6860754.1, 27717.3);
+const lookAtCoords = new Coordinates(crs, 652338.3, 6862087.1, 200);
 const lookAt = new Vector3(lookAtCoords.x, lookAtCoords.y, lookAtCoords.z);
 instance.view.camera.position.set(position.x, position.y, position.z);
 instance.view.camera.lookAt(lookAt);

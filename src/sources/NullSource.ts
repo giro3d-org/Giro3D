@@ -6,7 +6,7 @@
 
 import type { ImageResponse } from './ImageSource';
 
-import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import CoordinateSystem from '../core/geographic/CoordinateSystem';
 import Extent from '../core/geographic/Extent';
 import ImageSource from './ImageSource';
 

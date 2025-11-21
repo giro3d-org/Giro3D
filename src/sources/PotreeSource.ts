@@ -35,7 +35,7 @@ import type { ParseResult } from './potree/bin';
 import type { Metadata } from './potree/Metadata';
 
 import { GlobalCache } from '../core/Cache';
-import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import CoordinateSystem from '../core/geographic/CoordinateSystem';
 import OperationCounter from '../core/OperationCounter';
 import { DefaultQueue } from '../core/RequestQueue';
 import Fetcher from '../utils/Fetcher';

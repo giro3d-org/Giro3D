@@ -7,8 +7,6 @@
 import type { OrthographicCamera, PerspectiveCamera } from 'three';
 import type { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
-import { register } from 'ol/proj/proj4.js';
-import proj4 from 'proj4';
 import {
     Clock,
     EventDispatcher,
@@ -25,7 +23,7 @@ import {
 import type Entity from '../entities/Entity';
 import type Entity3D from '../entities/Entity3D';
 import type RenderingOptions from '../renderer/RenderingOptions';
-import type CoordinateSystem from './geographic/coordinate-system/CoordinateSystem';
+import type CoordinateSystem from './geographic/CoordinateSystem';
 import type PickOptions from './picking/PickOptions';
 import type PickResult from './picking/PickResult';
 import type Progress from './Progress';
@@ -158,7 +156,7 @@ export interface InstanceOptions {
     /**
      * The coordinate reference system of the scene.
      * Must be a cartesian system.
-     * Must first be registered via {@link Instance.registerCRS}
+     * Must first be registered via {@link CoordinateSystem.register}
      */
     crs: CoordinateSystem;
     /**
@@ -628,53 +626,6 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         },
     ): void {
         this._mainLoop.scheduleUpdate(this, changeSources, options);
-    }
-
-    /**
-     * Registers a new coordinate reference system.
-     * This should be done before creating the instance.
-     * This method can be called several times to add multiple CRS.
-     *
-     * ```js
-     *  // register the CRS first...
-     *  Instance.registerCRS(
-     *  'EPSG:102115',
-     *  '+proj=utm +zone=5 +ellps=clrk66 +units=m +no_defs +type=crs');
-     *
-     *  // ...then create the instance
-     *  const instance = new Instance({ crs: 'EPSG:102115' });
-     * ```
-     * @param name - the short name, or EPSG code to identify this CRS.
-     * @param value - the CRS definition, either in proj syntax, or in WKT syntax.
-     */
-    public static registerCRS(name: string, value: string): void {
-        if (!name || name === '') {
-            throw new Error('missing CRS name');
-        }
-        if (!value || value === '') {
-            throw new Error('missing CRS PROJ string');
-        }
-
-        try {
-            // define the CRS with PROJ
-            proj4.defs(name, value);
-        } catch (e) {
-            let message = '';
-            if (e instanceof Error) {
-                message = ': ' + e.message;
-            }
-            throw new Error(`failed to register PROJ definition for ${name}${message}`);
-        }
-        try {
-            // register this CRS with OpenLayers
-            register(proj4);
-        } catch (e) {
-            let message = '';
-            if (e instanceof Error) {
-                message = ': ' + e.message;
-            }
-            throw new Error(`failed to register PROJ definitions in OpenLayers${message}`);
-        }
     }
 
     /**

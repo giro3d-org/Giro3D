@@ -9,8 +9,7 @@ import XYZ from 'ol/source/XYZ.js';
 import { Stroke, Style } from 'ol/style.js';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
-import { crsToUnit } from '@giro3d/giro3d/core/geographic/Coordinates.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
@@ -131,8 +130,7 @@ function createScene(/** @type CoordinateSystem */ crs, extent) {
     StatusBar.bind(instance, { disableUrlUpdate: true });
 }
 
-async function fetchCrs(/** @type CoordinateSystem */ crs) {
-    const code = crs.srid.tryGetEpsgCode();
+async function fetchCrs(code) {
     const res = await fetch(`https://epsg.io/${code}.wkt2`, { mode: 'cors' });
     const wkt2 = await res.text();
 
@@ -144,7 +142,8 @@ async function fetchCrs(/** @type CoordinateSystem */ crs) {
 
     const proj = await (await fetch(`https://epsg.io/${code}.proj4`, { mode: 'cors' })).text();
 
-    Instance.registerCRS(crs.id, proj);
+    const id = `EPSG:${code}`;
+    const crs = CoordinateSystem.register(id, proj, { throwIfFailedToRegisterWithProj: true });
 
     const extent = new Extent(CoordinateSystem.epsg4326, {
         west: Number.parseFloat(minLon),
@@ -153,29 +152,23 @@ async function fetchCrs(/** @type CoordinateSystem */ crs) {
         south: Number.parseFloat(minLat),
     });
 
-    document.getElementById('srid').innerText = crs.id;
+    document.getElementById('srid').innerText = id;
     document.getElementById('name').innerText = name;
     document.getElementById('description').innerText = area;
     // @ts-expect-error typing
     document.getElementById('link').href = `https://epsg.io/${code}`;
 
-    if (crsToUnit(crs) === undefined) {
-        // Unsupported projection
-        throw new Error('unsupported projection (invalid units)');
-    }
-
-    return { def: wkt2, extent: extent.as(crs) };
+    return { def: wkt2, crs, extent: extent.as(crs) };
 }
 
-async function initialize(/** @type CoordinateSystem */ crs) {
+async function initialize(epsgCode) {
     const error = document.getElementById('message');
 
     try {
-        const { extent } = await fetchCrs(crs);
-        const proj = crs;
+        const { extent, crs } = await fetchCrs(epsgCode);
         error.style.display = 'none';
 
-        createScene(proj, extent);
+        createScene(crs, extent);
     } catch (e) {
         error.style.display = 'block';
 
@@ -192,11 +185,11 @@ bindButton('create', () => {
     // @ts-expect-error conversion
     const epsgCodeElt = document.getElementById('code');
 
-    const content = epsgCodeElt.value;
+    const epsgCode = Number.parseInt(epsgCodeElt.value);
 
-    if (content) {
-        initialize(CoordinateSystem.fromSrid(content));
+    if (epsgCode) {
+        initialize(epsgCode);
     }
 });
 
-initialize(CoordinateSystem.fromEpsg(2154));
+initialize(2154);

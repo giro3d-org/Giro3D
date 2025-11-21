@@ -16,7 +16,7 @@ import {
 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
@@ -32,22 +32,16 @@ import { bindSlider } from './widgets/bindSlider';
 import { bindToggle } from './widgets/bindToggle';
 import StatusBar from './widgets/StatusBar';
 
-Instance.registerCRS(
+const crs = CoordinateSystem.register(
     'EPSG:2154',
     '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
 );
-Instance.registerCRS(
+CoordinateSystem.register(
     'IGNF:WGS84G',
     'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]',
 );
 
-const extent = new Extent(
-    CoordinateSystem.fromEpsg(2154),
-    -111629.52,
-    1275028.84,
-    5976033.79,
-    7230161.64,
-);
+const extent = new Extent(crs, -111629.52, 1275028.84, 5976033.79, 7230161.64);
 
 const instance = new Instance({
     target: 'view',
@@ -58,6 +52,7 @@ const instance = new Instance({
 instance.renderingOptions.enableEDL = true;
 
 const map = new Map({
+    name: 'map',
     extent,
     backgroundColor: 'gray',
     lighting: {
@@ -65,8 +60,6 @@ const map = new Map({
         elevationLayersOnly: true,
     },
 });
-
-map.name = 'map';
 
 instance.add(map);
 
@@ -113,11 +106,10 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
 
 // Create the 3D tiles entity
 const pointcloud = new Tiles3D({
+    name: 'point cloud',
     url: 'https://3d.oslandia.com/lidar_hd/tileset.json',
     errorTarget: 16,
 });
-
-pointcloud.name = 'point cloud';
 
 instance.add(pointcloud);
 

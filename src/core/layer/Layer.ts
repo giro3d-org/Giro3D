@@ -30,8 +30,8 @@ import type ColorMap from '../ColorMap';
 import type Context from '../Context';
 import type Disposable from '../Disposable';
 import type ElevationRange from '../ElevationRange';
-import type CoordinateSystem from '../geographic/coordinate-system/CoordinateSystem';
 import type Coordinates from '../geographic/Coordinates';
+import type CoordinateSystem from '../geographic/CoordinateSystem';
 import type { GridExtent } from '../geographic/Extent';
 import type Instance from '../Instance';
 import type MemoryUsage from '../MemoryUsage';
@@ -644,36 +644,39 @@ abstract class Layer<
         this._opCounter.increment();
         const targetProjection = nonNull(this._composerProjection);
 
-        await this.source.initialize({
-            targetProjection,
-        });
+        try {
+            await this.source.initialize({
+                targetProjection,
+            });
 
-        this._composer = new LayerComposer({
-            transparent: this.source.transparent,
-            renderer: this.instance.renderer,
-            showImageOutlines: this.showTileBorders,
-            showEmptyTextures: this.showEmptyTextures,
-            extent: this.extent ?? undefined,
-            dimensions: this.getExtent()?.dimensions(),
-            computeMinMax: this.computeMinMax,
-            sourceCrs: this.source.getCrs(),
-            targetCrs: targetProjection,
-            interpretation: this.interpretation,
-            fillNoData: this.noDataOptions.replaceNoData,
-            fillNoDataAlphaReplacement: this.noDataOptions.alpha,
-            fillNoDataRadius: this.noDataOptions.maxSearchDistance,
-            textureDataType: this.getRenderTargetDataType(),
-            pixelFormat: this.getRenderTargetPixelFormat(),
-            minFilter: this._minFilter,
-            magFilter: this._magFilter,
-        });
+            this._composer = new LayerComposer({
+                transparent: this.source.transparent,
+                renderer: this.instance.renderer,
+                showImageOutlines: this.showTileBorders,
+                showEmptyTextures: this.showEmptyTextures,
+                extent: this.extent ?? undefined,
+                dimensions: this.getExtent()?.dimensions(),
+                computeMinMax: this.computeMinMax,
+                sourceCrs: this.source.getCrs(),
+                targetCrs: targetProjection,
+                interpretation: this.interpretation,
+                fillNoData: this.noDataOptions.replaceNoData,
+                fillNoDataAlphaReplacement: this.noDataOptions.alpha,
+                fillNoDataRadius: this.noDataOptions.maxSearchDistance,
+                textureDataType: this.getRenderTargetDataType(),
+                pixelFormat: this.getRenderTargetPixelFormat(),
+                minFilter: this._minFilter,
+                magFilter: this._magFilter,
+            });
 
-        if (this._preloadImages) {
-            await this.loadFallbackImages();
+            if (this._preloadImages) {
+                await this.loadFallbackImages();
+            }
+
+            this.instance.notifyChange(this);
+        } finally {
+            this._opCounter.decrement();
         }
-
-        this.instance.notifyChange(this);
-        this._opCounter.decrement();
 
         return this;
     }

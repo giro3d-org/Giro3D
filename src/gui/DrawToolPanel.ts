@@ -11,8 +11,8 @@ import { Color } from 'three';
 import type Instance from '../core/Instance';
 import type Shape from '../entities/Shape';
 
-import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
 import Coordinates from '../core/geographic/Coordinates';
+import CoordinateSystem from '../core/geographic/CoordinateSystem';
 import { DEFAULT_COLOR, type VertexLabelFormatter } from '../entities/Shape';
 import DrawTool from '../interactions/DrawTool';
 import Panel from './Panel';

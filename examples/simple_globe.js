@@ -7,7 +7,7 @@
 import { OSM } from 'ol/source.js';
 
 import GlobeControls from '@giro3d/giro3d/controls/GlobeControls.js';
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import Globe from '@giro3d/giro3d/entities/Globe.js';

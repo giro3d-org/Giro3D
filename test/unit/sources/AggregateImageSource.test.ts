@@ -8,7 +8,7 @@ import { describe, expect, it, vitest } from 'vitest';
 
 import type { GetImageOptions, ImageResponse } from '@giro3d/giro3d/sources/ImageSource';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import AggregateImageSource from '@giro3d/giro3d/sources/AggregateImageSource';
 import ImageSource from '@giro3d/giro3d/sources/ImageSource';

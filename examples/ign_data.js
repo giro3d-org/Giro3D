@@ -21,7 +21,7 @@ import {
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 // NOTE: changing the imported name because we use the native `Map` object in this example.
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem.js';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
@@ -34,11 +34,11 @@ import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
-Instance.registerCRS(
+const epsg2154 = CoordinateSystem.register(
     'EPSG:2154',
     '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
 );
-Instance.registerCRS(
+CoordinateSystem.register(
     'IGNF:WGS84G',
     'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]',
 );
@@ -47,17 +47,11 @@ const SKY_COLOR = new Color(0xf1e9c6);
 
 const instance = new Instance({
     target: 'view',
-    crs: CoordinateSystem.fromEpsg(2154),
+    crs: epsg2154,
     backgroundColor: SKY_COLOR,
 });
 
-const extent = new Extent(
-    CoordinateSystem.fromEpsg(2154),
-    -111629.52,
-    1275028.84,
-    5976033.79,
-    7230161.64,
-);
+const extent = new Extent(epsg2154, -111629.52, 1275028.84, 5976033.79, 7230161.64);
 
 // create a map
 const map = new Giro3dMap({

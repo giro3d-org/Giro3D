@@ -86,7 +86,9 @@ export default class SkyDome extends Entity3D {
     }
 
     public constructor(params?: { atmosphereThickness?: number }) {
-        super(new SkyDomeObject({ atmosphereThickness: params?.atmosphereThickness }));
+        super({
+            object3d: new SkyDomeObject({ atmosphereThickness: params?.atmosphereThickness }),
+        });
 
         this._skyDome = this.object3d as SkyDomeObject;
 

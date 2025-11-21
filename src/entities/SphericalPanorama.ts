@@ -11,11 +11,11 @@ import { FrontSide, MathUtils, Quaternion, Vector3 } from 'three';
 import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
 import type Layer from '../core/layer/Layer';
 import type PointOfView from '../core/PointOfView';
-import type { MapConstructorOptions } from './Map';
+import type { MapOptions } from './Map';
 import type { TileGeometryBuilder } from './tiles/TileGeometry';
 import type TileVolume from './tiles/TileVolume';
 
-import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import CoordinateSystem from '../core/geographic/CoordinateSystem';
 import Ellipsoid from '../core/geographic/Ellipsoid';
 import Extent from '../core/geographic/Extent';
 import { isColorLayer } from '../core/layer/ColorLayer';
@@ -52,7 +52,10 @@ function getQuaternion(orientation?: Matrix4 | Euler | Quaternion): Quaternion {
     throw new Error('not a valid orientation parameter');
 }
 
-export interface SphericalPanoramaOptions extends Omit<MapConstructorOptions, 'extent'> {
+/**
+ * Constructor options for the {@link SphericalPanorama} entity.
+ */
+export interface SphericalPanoramaOptions extends Omit<MapOptions, 'extent'> {
     /**
      * The radius of the sphere, in scene units.
      * @defaultValue 5

@@ -17,7 +17,7 @@ import type { GridExtent } from '../core/geographic/Extent';
 import type ImageFormat from '../formats/ImageFormat';
 import type { GetImageOptions, ImageResponse, ImageSourceOptions } from './ImageSource';
 
-import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import CoordinateSystem from '../core/geographic/CoordinateSystem';
 import EmptyTexture from '../renderer/EmptyTexture';
 import MemoryTracker from '../renderer/MemoryTracker';
 import { isHttpError } from '../utils/Fetcher';
@@ -159,7 +159,7 @@ export default class TiledImageSource extends ImageSource {
             options.extent ??
             OpenLayersUtils.fromOLExtent(
                 tileGrid.getExtent(),
-                CoordinateSystem.fromSrid(projection.getCode()),
+                CoordinateSystem.get(projection.getCode()),
             );
     }
 
@@ -168,7 +168,7 @@ export default class TiledImageSource extends ImageSource {
     }
 
     public getCrs(): CoordinateSystem {
-        return CoordinateSystem.fromSrid(this.olprojection.getCode());
+        return CoordinateSystem.get(this.olprojection.getCode());
     }
 
     public override adjustExtentAndPixelSize(

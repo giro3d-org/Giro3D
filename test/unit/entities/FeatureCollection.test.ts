@@ -7,7 +7,7 @@
 import VectorSource from 'ol/source/Vector';
 import { describe, expect, it } from 'vitest';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import FeatureCollection from '@giro3d/giro3d/entities/FeatureCollection';
 
