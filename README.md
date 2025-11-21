@@ -61,7 +61,7 @@ Below is a non-exhaustive list of supported data sources.
 - [WMS](https://www.ogc.org/standards/wms)
 - [TMS](https://www.ogc.org/standards/tms)
 - [GeoTIFF](https://www.ogc.org/standard/geotiff/), with support for [Cloud Optimized GeoTIFFs (COG)](https://www.cogeo.org/)
-- Static images
+- Static images (JPEG, PNG, WebP)
 
 ### Elevation data
 
