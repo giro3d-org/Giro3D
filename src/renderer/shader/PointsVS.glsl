@@ -31,12 +31,8 @@ attribute INTENSITY_TYPE intensity;
 #endif
 
 #if defined(CLASSIFICATION)
-struct Classification {
-    vec3 color;
-    bool visible;
-};
+uniform sampler2D classifications;
 
-uniform Classification[256] classifications;
 attribute uint classification;
 #endif
 
@@ -144,9 +140,8 @@ void main() {
         vColor.a *= opacity;
 #if defined(CLASSIFICATION)
     } else if (mode == MODE_CLASSIFICATION) {
-        Classification classif = classifications[classification];
-        vColor.rgb = classif.color;
-        vColor.a = classif.visible ? opacity : 0.0;
+        vColor = texelFetch(classifications, ivec2(classification, 0), 0);
+        vColor.a *= opacity;
 #endif
     } else {
         // default to color mode
