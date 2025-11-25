@@ -119,6 +119,14 @@ void main() {
 #endif
 
     if (pickingId > uint(0)) {
+        #if defined(CLASSIFICATION)
+        float visibility = texelFetch(classifications, ivec2(classification, 0), 0).a;
+        if (visibility < 0.5) {
+            discardPoint();
+            return;
+        }
+        #endif
+
         // In picking mode, we simply output the point id in the red channel and the object id in the green channel.
         // No need to encode them because we are rendering to a float texture.
         vColor = vec4(float(gl_VertexID), float(pickingId), 0, 1);
