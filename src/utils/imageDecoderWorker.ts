@@ -33,21 +33,21 @@ export type TypedArrayType =
     | 'Int16Array'
     | 'Int32Array';
 
-export type CreatePixelBufferOptions = {
+export interface CreatePixelBufferOptions {
     input: ArrayBuffer[];
     bufferSize: number;
     inputType: TypedArrayType;
     dataType: TextureDataType;
     nodata?: number;
     opaqueValue: number;
-};
+}
 
-export type CreatePixelBufferResult = {
+export interface CreatePixelBufferResult {
     buffer: ArrayBuffer;
     min: number;
     max: number;
     isTransparent: boolean;
-};
+}
 
 export function getTypedArrayType(array: TypedArray): TypedArrayType {
     if (array instanceof Float32Array) {
@@ -276,15 +276,18 @@ export function createPixelBuffer(options: CreatePixelBufferOptions): CreatePixe
 }
 
 // Web worker implementation
-export type CreatePixelBufferMessage = Message<CreatePixelBufferOptions> & {
+export interface CreatePixelBufferMessage extends Message<CreatePixelBufferOptions> {
     type: 'CreatePixelBuffer';
-};
+}
 export type CreatePixelBufferResponse = SuccessResponse<CreatePixelBufferResult>;
 
-export type CreateImageBitmapMessage = Message<{
-    buffer: ArrayBuffer;
-    options?: ImageBitmapOptions;
-}> & { type: 'CreateImageBitmap' };
+export interface CreateImageBitmapMessage
+    extends Message<{
+        buffer: ArrayBuffer;
+        options?: ImageBitmapOptions;
+    }> {
+    type: 'CreateImageBitmap';
+}
 export type CreateImageBitmapMessageResponse = SuccessResponse<ImageBitmap>;
 
 export type MessageType = 'CreateImageBitmap' | 'CreatePixelBuffer';

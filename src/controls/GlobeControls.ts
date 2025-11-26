@@ -17,7 +17,7 @@ export interface GlobeControlsEvents {
     change: unknown;
 }
 
-export type GlobeControlsOptions = {
+export interface GlobeControlsOptions {
     /**
      * The scene to navigate around.
      * Can be the root object of the Giro3D instance, or a particular globe's root object.
@@ -61,7 +61,7 @@ export type GlobeControlsOptions = {
      * @defaultValue infinity
      */
     maxDistance?: number;
-};
+}
 
 /**
  * Camera controls for a {@link Globe}. Internally, this wraps `3d-tiles-renderer`'s own `GlobeControls`.

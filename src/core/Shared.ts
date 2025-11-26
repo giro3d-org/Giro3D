@@ -6,7 +6,9 @@
 
 import type Disposable from './Disposable';
 
-type RefCount = { count: number };
+interface RefCount {
+    count: number;
+}
 
 /**
  * Represents an object that can be shared among multiple instances (multiple ownership).

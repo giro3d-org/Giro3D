@@ -54,14 +54,14 @@ import { readBinFile } from './potree/bin';
 import { toBox3 } from './potree/BoundingBox';
 import PotreeWorkerPool from './potree/PotreeWorkerPool';
 
-type NodeInternalData = PointCloudNode & {
+interface NodeInternalData extends PointCloudNode {
     childrenBitField: number;
     baseUrl: string;
-};
+}
 
 type PotreeNode = octree.Octree<NodeInternalData>;
 
-export type PotreeSourceOptions = {
+export interface PotreeSourceOptions {
     /**
      * The URL to the dataset.
      */
@@ -71,7 +71,7 @@ export type PotreeSourceOptions = {
      * @defaultValue true
      */
     enableWorkers?: boolean;
-};
+}
 
 // Create an A(xis)A(ligned)B(ounding)B(ox) for the child `childIndex` of one aabb.
 // (PotreeConverter protocol builds implicit octree hierarchy by applying the same

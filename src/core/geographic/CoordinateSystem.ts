@@ -16,14 +16,31 @@ import { LinearUnit, AngularUnit, parseUnit, type Unit } from './Unit';
 
 type ID = Record<string, number>;
 
-type WktUnit = { name: string; convert: number; AUTHORITY?: object };
+interface WktUnit {
+    name: string;
+    convert: number;
+    AUTHORITY?: object;
+}
 
-type ProjCS = { type: 'PROJCS'; name: string; UNIT: WktUnit; AUTHORITY?: object };
-type VertCS = { UNIT: WktUnit };
+interface ProjCS {
+    type: 'PROJCS';
+    name: string;
+    UNIT: WktUnit;
+    AUTHORITY?: object;
+}
+interface VertCS {
+    UNIT: WktUnit;
+}
 
-type ProjCRS = { ID: ID };
+interface ProjCRS {
+    ID: ID;
+}
 
-type CompoundCS = { type: 'COMPD_CS'; PROJCS: ProjCS; VERT_CS: VertCS };
+interface CompoundCS {
+    type: 'COMPD_CS';
+    PROJCS: ProjCS;
+    VERT_CS: VertCS;
+}
 
 function parseLinearUnit(unit: WktUnit): LinearUnit {
     return new LinearUnit(unit.name, unit.convert);
@@ -41,7 +58,11 @@ function getNicename(obj: object): string {
     return '<unknown>';
 }
 
-type ProjCSInfos = { name: string; srid?: SRID; unit: LinearUnit };
+interface ProjCSInfos {
+    name: string;
+    srid?: SRID;
+    unit: LinearUnit;
+}
 function getProjCsInfos(projCs: ProjCS): ProjCSInfos {
     const name = getNicename(projCs);
     const unit = parseLinearUnit(projCs.UNIT);

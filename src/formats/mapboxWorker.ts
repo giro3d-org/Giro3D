@@ -12,7 +12,7 @@ import { createErrorResponse, type Message } from '../utils/WorkerPool';
  * Utility functions and worker to process mapbox encoded terrain.
  */
 
-export type DecodeMapboxTerrainResult = {
+export interface DecodeMapboxTerrainResult {
     min: number;
     max: number;
     width: number;
@@ -21,7 +21,7 @@ export type DecodeMapboxTerrainResult = {
      * An array buffer that can be turned into a Float32Array.
      */
     data: ArrayBuffer;
-};
+}
 
 function getPixels(image: ImageBitmap): Uint8ClampedArray {
     const canvas = new OffscreenCanvas(image.width, image.height);

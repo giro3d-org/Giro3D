@@ -152,17 +152,21 @@ export interface PointCloudMaterialOptions {
     mode?: Mode;
 }
 
-type Deformation = {
+interface Deformation {
     transformation: Matrix4;
     origin: Vector2;
     influence: Vector2;
     color: Color;
     vec: Vector3;
-};
+}
 
-type ColorMapUniform = { min: number; max: number; lut: Texture };
+interface ColorMapUniform {
+    min: number;
+    max: number;
+    lut: Texture;
+}
 
-type Uniforms = {
+interface Uniforms extends Record<string, IUniform> {
     opacity: IUniform<number>;
     brightnessContrastSaturation: IUniform<Vector3>;
     size: IUniform<number>;
@@ -189,9 +193,9 @@ type Uniforms = {
     fogNear: IUniform<number>;
     fogFar: IUniform<number>;
     fogColor: IUniform<Color>;
-} & Record<string, IUniform>;
+}
 
-export type Defines = {
+export interface Defines extends Record<string, unknown> {
     NORMAL?: 1;
     CLASSIFICATION?: 1;
     DEFORMATION_SUPPORT?: 1;
@@ -204,7 +208,7 @@ export type Defines = {
 
     INTENSITY?: 1;
     INTENSITY_TYPE: VertexAttributeType;
-};
+}
 
 function createDefaultColorMap(): ColorMap {
     const colors = [new Color('black'), new Color('white')];

@@ -13,7 +13,11 @@ import type { DefaultUserData } from './SimpleGeometryMesh';
 
 import { DEFAULT_POINT_SIZE } from '../../core/FeatureTypes';
 
-export type ConstructorParams = { material: SpriteMaterial; opacity?: number; pointSize?: number };
+export interface ConstructorParams {
+    material: SpriteMaterial;
+    opacity?: number;
+    pointSize?: number;
+}
 
 export default class PointMesh<UserData extends DefaultUserData = DefaultUserData>
     extends Sprite

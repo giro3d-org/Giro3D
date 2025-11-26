@@ -6,7 +6,7 @@
 
 import { Box3, Vector3 } from 'three';
 
-type BoundingBox = {
+interface BoundingBox {
     lx: number;
     ly: number;
     lz: number;
@@ -14,7 +14,7 @@ type BoundingBox = {
     ux: number;
     uy: number;
     uz: number;
-};
+}
 
 export function toBox3(input: BoundingBox): Box3 {
     const box = new Box3(

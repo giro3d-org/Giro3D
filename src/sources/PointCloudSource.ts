@@ -12,7 +12,7 @@ import type MemoryUsage from '../core/MemoryUsage';
 import type { GetMemoryUsageContext } from '../core/MemoryUsage';
 import type Progress from '../core/Progress';
 
-export type PointCloudAttribute = {
+export interface PointCloudAttribute {
     /**
      * The name of the attribute.
      */
@@ -47,12 +47,12 @@ export type PointCloudAttribute = {
      * The maximum value of this attribute, if any. Can be used as a hint to specify color map bounds.
      */
     max?: number;
-};
+}
 
 /**
  * Contains lightweight metadata about the source, such as point count.
  */
-export type PointCloudMetadata = {
+export interface PointCloudMetadata {
     /**
      * The volume of the point cloud.
      *
@@ -76,12 +76,12 @@ export type PointCloudMetadata = {
      * The coordinate system of this source, if any.
      */
     crs?: CoordinateSystem;
-};
+}
 
 /**
  * A point cloud hierarchy node.
  */
-export type PointCloudNode = {
+export interface PointCloudNode {
     /**
      * The ID of the node in the source.
      * Note: this ID is **not unique** across sources.
@@ -125,7 +125,7 @@ export type PointCloudNode = {
      * undefined items though (for example an octree that does not have 8 defined children).
      */
     children?: Array<PointCloudNode | undefined>;
-};
+}
 
 /**
  * Performs a depth-first traversal of the node hierarchy, applying the callback to each traversed node.
@@ -158,7 +158,7 @@ export function traverseNode(
 /**
  * Contains data for a single {@link PointCloudNode}.
  */
-export type PointCloudNodeData = {
+export interface PointCloudNodeData {
     /**
      * The number of points in the buffers.
      * Might be undefined if position buffer was not required by the caller.
@@ -187,7 +187,7 @@ export type PointCloudNodeData = {
      * The optionally requested attribute buffer (color, classification, etc).
      */
     attribute?: BufferAttribute;
-};
+}
 
 /**
  * Default event map.
@@ -201,7 +201,7 @@ export interface PointCloudSourceEventMap {
     updated: unknown;
 }
 
-export type GetNodeDataOptions = {
+export interface GetNodeDataOptions {
     /**
      * To node to process.
      */
@@ -218,7 +218,7 @@ export type GetNodeDataOptions = {
      * Optional abort signal for early cancellation of asynchronous requests.
      */
     signal?: AbortSignal;
-};
+}
 
 /**
  * Provides point cloud data.

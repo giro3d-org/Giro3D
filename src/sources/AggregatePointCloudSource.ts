@@ -19,12 +19,12 @@ import {
     type PointCloudSource,
 } from './PointCloudSource';
 
-export type AggregatePointCloudSourceOptions = {
+export interface AggregatePointCloudSourceOptions {
     /**
      * The sources to aggregate. Cannot be empty.
      */
     sources: PointCloudSource[];
-};
+}
 
 function getAttributeKey(attr: PointCloudAttribute): string {
     return `${attr.name}-${attr.dimension}-${attr.type}-${attr.interpretation}-${attr.size}`;

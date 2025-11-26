@@ -12,7 +12,9 @@ import { createErrorResponse } from '../../utils/WorkerPool';
 import { readBinFile } from './bin';
 
 export type MessageType = 'ReadBinFile';
-export type TypedMessage<K extends MessageType, T> = Message<T> & { type: K };
+export interface TypedMessage<K extends MessageType, T> extends Message<T> {
+    type: K;
+}
 
 type ReadBinFileMessage = TypedMessage<
     'ReadBinFile',

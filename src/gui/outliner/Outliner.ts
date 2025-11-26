@@ -18,11 +18,11 @@ import { isLight } from '../../utils/predicates';
 import Panel from '../Panel';
 import OutlinerPropertyView from './OutlinerPropertyView';
 
-type OutlinedObject3D = Object3D & {
+interface OutlinedObject3D extends Object3D {
     // We use underscores to avoid potential naming conflicts with existing properties
     ___outlinerTreeviewVisible?: boolean;
     ___outlinerTreeviewCollapsed?: boolean;
-};
+}
 type ClickHandler = (obj: OutlinedObject3D) => void;
 interface Filter {
     showHelpers: boolean;
@@ -31,14 +31,14 @@ interface Filter {
     searchQuery: string;
 }
 
-type TreeviewNode = {
+interface TreeviewNode {
     object: OutlinedObject3D;
     root: HTMLElement;
     collapseButton: HTMLElement;
     name: HTMLParagraphElement;
     textColor: string;
     opacity?: string;
-};
+}
 
 function getHash(scene: Scene): number {
     let hash = 27 | 0;

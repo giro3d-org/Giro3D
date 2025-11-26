@@ -150,10 +150,10 @@ export interface RenderToBufferOptions {
     zone?: RenderToBufferZone;
 }
 
-type EngineOptions = {
+interface EngineOptions {
     clearColor?: ColorRepresentation | null;
     renderer?: WebGLRenderer | WebGLRendererParameters;
-};
+}
 
 class C3DEngine {
     private readonly _renderTargets: Map<number, WebGLRenderTarget> = new Map();

@@ -16,7 +16,7 @@ import { isOrthographicCamera, isVector3 } from '../utils/predicates';
  * Note: this point of view might not be applicable to different camera
  * settings (e.g different field of views, or orthographic sizes).
  */
-type PointOfView = {
+interface PointOfView {
     /**
      * The location of the point of view.
      */
@@ -30,7 +30,7 @@ type PointOfView = {
      * If the camera is not orthographic, this value is ignored.
      */
     orthographicZoom: number;
-};
+}
 
 export function isPointOfView(obj: unknown): obj is PointOfView {
     if (obj != null && typeof obj === 'object') {

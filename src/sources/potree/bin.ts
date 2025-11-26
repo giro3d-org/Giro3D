@@ -8,11 +8,11 @@ import type { Box3 } from 'three';
 
 import { createReader, getTypedArray, type PotreePointCloudAttribute } from './attributes';
 
-export type BufferAttributeDescriptor = {
+export interface BufferAttributeDescriptor {
     array: ArrayBuffer;
     dimension: number;
     normalized: boolean;
-};
+}
 
 function readAttribute(
     attribute: PotreePointCloudAttribute,
@@ -35,11 +35,11 @@ function readAttribute(
     };
 }
 
-export type ParseResult = {
+export interface ParseResult {
     positionBuffer: BufferAttributeDescriptor;
     attributeBuffer?: BufferAttributeDescriptor;
     localBoundingBox?: Box3;
-};
+}
 
 export function readBinFile(
     buffer: ArrayBuffer,

@@ -36,7 +36,10 @@ import { nonNull } from '../utils/tsutils';
 import Entity3D from './Entity3D';
 
 type Axis = 'X' | 'Y' | 'Z';
-type Line3WithLabel = Line3 & { labelValue: number; axis: Axis };
+interface Line3WithLabel extends Line3 {
+    labelValue: number;
+    axis: Axis;
+}
 
 const mod = MathUtils.euclideanModulo;
 

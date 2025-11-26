@@ -150,7 +150,7 @@ export function isHttpError(obj: unknown): obj is HttpError {
     return (obj as HttpError).isHttpError === true;
 }
 
-export type FetchOptions = RequestInit & {
+export interface FetchOptions extends RequestInit {
     /**
      * The number of retries if the initial requests fails with an HTTP error code.
      * @defaultValue undefined
@@ -161,7 +161,7 @@ export type FetchOptions = RequestInit & {
      * @defaultValue 1000
      */
     retryDelay?: number;
-};
+}
 
 /**
  * Wrapper over [`fetch()`](https://developer.mozilla.org/en-US/docs/Web/API/fetch).

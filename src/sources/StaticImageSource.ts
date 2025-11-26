@@ -18,7 +18,7 @@ import ImageSource, { ImageResult } from './ImageSource';
 /**
  * Options for the {@link StaticImageSource} constructor.
  */
-export type StaticImageSourceOptions = {
+export interface StaticImageSourceOptions {
     /**
      * The source of the image. It can be:
      * - a URL to a remote PNG, JPEG or WebP file,
@@ -35,7 +35,7 @@ export type StaticImageSourceOptions = {
      * {@link StaticImageSourceOptions.source | source} is a texture.
      */
     flipY?: boolean;
-};
+}
 
 export interface StaticImageSourceEvents extends ImageSourceEvents {
     /**

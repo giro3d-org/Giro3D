@@ -7,7 +7,10 @@
 /**
  * Trait for objects that have a unique owner.
  */
-type UniqueOwner<T, Owner = unknown> = { owner: Owner; payload: T };
+interface UniqueOwner<T, Owner = unknown> {
+    owner: Owner;
+    payload: T;
+}
 
 /**
  * Creates an {@link UniqueOwner} object with the specified owner and payload.

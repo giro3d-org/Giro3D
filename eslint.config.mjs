@@ -85,6 +85,7 @@ export default [
             'no-plusplus': 'off',
             'arrow-parens': ['error', 'as-needed'],
             '@typescript-eslint/lines-between-class-members': 'off',
+            '@typescript-eslint/consistent-type-definitions': 'error',
             'one-var': ['error', 'never'],
             'import/extensions': 'off',
             'no-underscore-dangle': 'off',

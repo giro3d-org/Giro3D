@@ -27,12 +27,12 @@ interface InterpretationOptions {
     max?: number;
 }
 
-export type InterpretationUniform = {
+export interface InterpretationUniform {
     mode: number;
     negateValues: boolean;
     min: number;
     max: number;
-};
+}
 
 /**
  * Describes how an image pixel should be interpreted. Any interpretation other than `Raw` will

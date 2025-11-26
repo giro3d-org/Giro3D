@@ -14,11 +14,11 @@ import Extent from '../core/geographic/Extent';
 import { nonEmpty, nonNull } from '../utils/tsutils';
 import ImageSource from './ImageSource';
 
-type SourceProperties = {
+interface SourceProperties {
     zIndex: number;
     id: string;
     visible: boolean;
-};
+}
 
 /**
  * An image source that aggregates several sub-sources.

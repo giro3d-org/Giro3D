@@ -62,9 +62,9 @@ export interface ExternalControls extends EventDispatcher<{ change: unknown }> {
 export const DEFAULT_MIN_NEAR_PLANE = 2;
 export const DEFAULT_MAX_FAR_PLANE = 2_000_000_000;
 
-type ViewEvents = {
+interface ViewEvents {
     change: unknown;
-};
+}
 
 /**
  * Returns the distance from the center of the bounding sphere so

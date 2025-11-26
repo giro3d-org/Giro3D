@@ -81,10 +81,10 @@ function getPool(concurrency?: number): Pool | undefined {
     return sharedPool;
 }
 
-type CachedBlock = {
+interface CachedBlock {
     data: ArrayBuffer;
     length: number;
-};
+}
 
 /**
  * Determine if an image type is a mask.
