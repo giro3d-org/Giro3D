@@ -166,6 +166,14 @@ interface ColorMapUniform {
     lut: Texture;
 }
 
+function buildColorMapUniform(colorMap: ColorMap): ColorMapUniform {
+    return {
+        min: colorMap.min,
+        max: colorMap.max,
+        lut: colorMap.getTexture(),
+    };
+}
+
 interface Uniforms extends Record<string, IUniform> {
     opacity: IUniform<number>;
     brightnessContrastSaturation: IUniform<Vector3>;
@@ -180,7 +188,9 @@ interface Uniforms extends Record<string, IUniform> {
     extentBottomLeft: IUniform<Vector2>;
     extentSize: IUniform<Vector2>;
 
-    colorMap: IUniform<ColorMapUniform>;
+    elevationColorMap: IUniform<ColorMapUniform>;
+
+    intensityColorMap: IUniform<ColorMapUniform>;
 
     classifications: IUniform<Texture | null>;
 
@@ -492,11 +502,9 @@ class PointCloudMaterial extends ShaderMaterial {
             hasOverlayTexture: new Uniform(0),
             offsetScale: new Uniform(new OffsetScale(0, 0, 1, 1)),
 
-            colorMap: new Uniform({
-                lut: this.colorMap.getTexture(),
-                min: this.colorMap.min,
-                max: this.colorMap.max,
-            }),
+            elevationColorMap: new Uniform(buildColorMapUniform(this.colorMap)),
+            intensityColorMap: new Uniform(buildColorMapUniform(this.colorMap)),
+
             size: new Uniform(options.size ?? 0),
             mode: new Uniform(options.mode ?? MODE.COLOR),
             pickingId: new Uniform(0),
@@ -555,10 +563,8 @@ class PointCloudMaterial extends ShaderMaterial {
     public updateUniforms(): void {
         this.uniforms.opacity.value = this.opacity;
 
-        const colorMapUniform = this.uniforms.colorMap.value;
-        colorMapUniform.min = this.colorMap.min;
-        colorMapUniform.max = this.colorMap.max;
-        colorMapUniform.lut = this.colorMap.getTexture();
+        this.uniforms.elevationColorMap.value = buildColorMapUniform(this.colorMap);
+        this.uniforms.intensityColorMap.value = buildColorMapUniform(this.colorMap);
     }
 
     public override onBeforeRender(_renderer: WebGLRenderer, _scene: Scene, camera: Camera): void {

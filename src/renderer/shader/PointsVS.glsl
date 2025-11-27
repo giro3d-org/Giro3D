@@ -23,9 +23,10 @@ struct PointCloudColorMap {
     sampler2D lut;
 };
 
-uniform PointCloudColorMap colorMap;
+uniform PointCloudColorMap elevationColorMap;
 
 #if defined(INTENSITY)
+uniform PointCloudColorMap intensityColorMap;
 // INTENSITY_TYPE is a define macro
 attribute INTENSITY_TYPE intensity;
 #endif
@@ -101,6 +102,10 @@ void discardPoint() {
     gl_Position = vec4(-9999.0, -9999.0, -9999.0, 0.0);
 }
 
+vec4 computeColorFromScalar(const float value, const PointCloudColorMap colorMap) {
+    return sampleColorMap(value, colorMap.min, colorMap.max, colorMap.lut, 0.0);
+}
+
 void main() {
     if (decimation > 1 && gl_VertexID % decimation != 0) {
         discardPoint();
@@ -143,11 +148,11 @@ void main() {
         vColor = vec4(mix(textureColor, overlayColor.rgb, overlayColor.a), opacity * hasOverlayTexture);
     } else if (mode == MODE_ELEVATION) {
         float z = (modelMatrix * vec4(position, 1.0)).z;
-        vColor = sampleColorMap(z, colorMap.min, colorMap.max, colorMap.lut, 0.0);
+        vColor = computeColorFromScalar(z, elevationColorMap);
         vColor.a *= opacity;
 #if defined(INTENSITY)
     } else if (mode == MODE_INTENSITY) {
-        vColor = sampleColorMap(float(intensity), colorMap.min, colorMap.max, colorMap.lut, 0.0);
+        vColor = computeColorFromScalar(float(intensity), intensityColorMap);
         vColor.a *= opacity;
 #endif
 #if defined(CLASSIFICATION)
