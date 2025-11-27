@@ -110,6 +110,15 @@ vec4 computeColorFromClassification(const uint classification, sampler2D classif
     return texelFetch(classifications, ivec2(classification, 0), 0);
 }
 
+vec4 computeColorFromColor(const vec3 value) {
+    // We need to convert to linear color space because the colors are in sRGB and they
+    // are not automatically converted to sRGB-linear. This is due to the fact that those
+    // colors come from a vertex buffer and not from a texture (automatically converted)
+    // or a single color uniform (also automatically converted).
+    vec4 linear = sRGBToLinear(vec4(value, 1.0));
+    return vec4(mix(linear.rgb, overlayColor.rgb, overlayColor.a), 1);
+}
+
 void main() {
     if (decimation > 1 && gl_VertexID % decimation != 0) {
         discardPoint();
@@ -164,13 +173,7 @@ void main() {
     #endif
         } else {
             // default to color mode
-
-            // We need to convert to linear color space because the colors are in sRGB and they
-            // are not automatically converted to sRGB-linear. This is due to the fact that those
-            // colors come from a vertex buffer and not from a texture (automatically converted)
-            // or a single color uniform (also automatically converted).
-            vec4 linear = sRGBToLinear(vec4(color, 1.0));
-            vColor = vec4(mix(linear.rgb, overlayColor.rgb, overlayColor.a), 1);
+            vColor = computeColorFromColor(color);
         }
 
         vColor.a *= opacity;
