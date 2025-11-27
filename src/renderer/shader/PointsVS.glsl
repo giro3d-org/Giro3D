@@ -130,11 +130,6 @@ void main() {
         // In picking mode, we simply output the point id in the red channel and the object id in the green channel.
         // No need to encode them because we are rendering to a float texture.
         vColor = vec4(float(gl_VertexID), float(pickingId), 0, 1);
-#if defined(INTENSITY)
-    } else if (mode == MODE_INTENSITY) {
-        vColor = sampleColorMap(float(intensity), colorMap.min, colorMap.max, colorMap.lut, 0.0);
-        vColor.a *= opacity;
-#endif
     } else if (mode == MODE_NORMAL) {
         vColor = vec4(abs(normal), opacity);
     } else if (mode == MODE_TEXTURE) {
@@ -150,6 +145,11 @@ void main() {
         float z = (modelMatrix * vec4(position, 1.0)).z;
         vColor = sampleColorMap(z, colorMap.min, colorMap.max, colorMap.lut, 0.0);
         vColor.a *= opacity;
+#if defined(INTENSITY)
+    } else if (mode == MODE_INTENSITY) {
+        vColor = sampleColorMap(float(intensity), colorMap.min, colorMap.max, colorMap.lut, 0.0);
+        vColor.a *= opacity;
+#endif
 #if defined(CLASSIFICATION)
     } else if (mode == MODE_CLASSIFICATION) {
         vColor = texelFetch(classifications, ivec2(classification, 0), 0);
