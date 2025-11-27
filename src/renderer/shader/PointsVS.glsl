@@ -139,40 +139,41 @@ void main() {
         // In picking mode, we simply output the point id in the red channel and the object id in the green channel.
         // No need to encode them because we are rendering to a float texture.
         vColor = vec4(float(gl_VertexID), float(pickingId), 0, 1);
-    } else if (mode == MODE_NORMAL) {
-        vColor = vec4(abs(normal), opacity);
-    } else if (mode == MODE_TEXTURE) {
-        vec2 pp = (modelMatrix * vec4(position, 1.0)).xy;
-        // offsetScale is from bottomleft
-        pp.x -= extentBottomLeft.x;
-        pp.y -= extentBottomLeft.y;
-        pp *= offsetScale.zw / extentSize;
-        pp += offsetScale.xy;
-        vec3 textureColor = texture2D(overlayTexture, pp).rgb;
-        vColor = vec4(mix(textureColor, overlayColor.rgb, overlayColor.a), opacity * hasOverlayTexture);
-    } else if (mode == MODE_ELEVATION) {
-        float z = (modelMatrix * vec4(position, 1.0)).z;
-        vColor = computeColorFromScalar(z, elevationColorMap);
-        vColor.a *= opacity;
-#if defined(INTENSITY)
-    } else if (mode == MODE_INTENSITY) {
-        vColor = computeColorFromScalar(float(intensity), intensityColorMap);
-        vColor.a *= opacity;
-#endif
-#if defined(CLASSIFICATION)
-    } else if (mode == MODE_CLASSIFICATION) {
-        vColor = computeColorFromClassification(classification, classifications);
-        vColor.a *= opacity;
-#endif
     } else {
-        // default to color mode
+        if (mode == MODE_NORMAL) {
+            vColor = vec4(abs(normal), 1);
+        } else if (mode == MODE_TEXTURE) {
+            vec2 pp = (modelMatrix * vec4(position, 1.0)).xy;
+            // offsetScale is from bottomleft
+            pp.x -= extentBottomLeft.x;
+            pp.y -= extentBottomLeft.y;
+            pp *= offsetScale.zw / extentSize;
+            pp += offsetScale.xy;
+            vec3 textureColor = texture2D(overlayTexture, pp).rgb;
+            vColor = vec4(mix(textureColor, overlayColor.rgb, overlayColor.a), hasOverlayTexture);
+        } else if (mode == MODE_ELEVATION) {
+            float z = (modelMatrix * vec4(position, 1.0)).z;
+            vColor = computeColorFromScalar(z, elevationColorMap);
+    #if defined(INTENSITY)
+        } else if (mode == MODE_INTENSITY) {
+            vColor = computeColorFromScalar(float(intensity), intensityColorMap);
+    #endif
+    #if defined(CLASSIFICATION)
+        } else if (mode == MODE_CLASSIFICATION) {
+            vColor = computeColorFromClassification(classification, classifications);
+    #endif
+        } else {
+            // default to color mode
 
-        // We need to convert to linear color space because the colors are in sRGB and they
-        // are not automatically converted to sRGB-linear. This is due to the fact that those
-        // colors come from a vertex buffer and not from a texture (automatically converted)
-        // or a single color uniform (also automatically converted).
-        vec4 linear = sRGBToLinear(vec4(color, 1.0));
-        vColor = vec4(mix(linear.rgb, overlayColor.rgb, overlayColor.a), opacity);
+            // We need to convert to linear color space because the colors are in sRGB and they
+            // are not automatically converted to sRGB-linear. This is due to the fact that those
+            // colors come from a vertex buffer and not from a texture (automatically converted)
+            // or a single color uniform (also automatically converted).
+            vec4 linear = sRGBToLinear(vec4(color, 1.0));
+            vColor = vec4(mix(linear.rgb, overlayColor.rgb, overlayColor.a), 1);
+        }
+
+        vColor.a *= opacity;
     }
 
     mat4 mvMatrix = modelViewMatrix;
