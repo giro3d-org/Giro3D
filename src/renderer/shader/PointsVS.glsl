@@ -106,6 +106,10 @@ vec4 computeColorFromScalar(const float value, const PointCloudColorMap colorMap
     return sampleColorMap(value, colorMap.min, colorMap.max, colorMap.lut, 0.0);
 }
 
+vec4 computeColorFromClassification(const uint classification, sampler2D classifications) {
+    return texelFetch(classifications, ivec2(classification, 0), 0);
+}
+
 void main() {
     if (decimation > 1 && gl_VertexID % decimation != 0) {
         discardPoint();
@@ -125,7 +129,7 @@ void main() {
 
     if (pickingId > uint(0)) {
         #if defined(CLASSIFICATION)
-        float visibility = texelFetch(classifications, ivec2(classification, 0), 0).a;
+        float visibility = computeColorFromClassification(classification, classifications).a;
         if (visibility < 0.5) {
             discardPoint();
             return;
@@ -157,7 +161,7 @@ void main() {
 #endif
 #if defined(CLASSIFICATION)
     } else if (mode == MODE_CLASSIFICATION) {
-        vColor = texelFetch(classifications, ivec2(classification, 0), 0);
+        vColor = computeColorFromClassification(classification, classifications);
         vColor.a *= opacity;
 #endif
     } else {
