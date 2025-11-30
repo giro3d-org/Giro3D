@@ -31,19 +31,22 @@ import type Extent from '../core/geographic/Extent';
 import type ColorLayer from '../core/layer/ColorLayer';
 import type { TextureAndPitch } from '../core/layer/Layer';
 import type { IntersectingVolume, IntersectingVolumesUniform } from './IntersectingVolume';
+import type { VertexAttributeType } from './MaterialUtils';
+import type { ClassificationPropertiesUniform } from './pointcloudmaterial/ClassificationSlot';
+import type { ColorPropertiesUniform } from './pointcloudmaterial/ColorSlot';
+import type { ScalarPropertiesUniform } from './pointcloudmaterial/ScalarSlot';
 
 import ColorMap from '../core/ColorMap';
 import OffsetScale from '../core/OffsetScale';
-import MaterialUtils, { type VertexAttributeType } from './MaterialUtils';
-import {
-    ASPRS_CLASSIFICATIONS,
-    Classification,
-    ClassificationsTexture,
-} from './pointcloudmaterial/Classification';
+import MaterialUtils from './MaterialUtils';
+import { ASPRS_CLASSIFICATIONS, Classification } from './pointcloudmaterial/Classification';
+import { ClassificationSlot } from './pointcloudmaterial/ClassificationSlot';
+import { ColorSlot } from './pointcloudmaterial/ColorSlot';
+import { ScalarSlot } from './pointcloudmaterial/ScalarSlot';
 import PointsFS from './shader/PointsFS.glsl';
 import PointsVS from './shader/PointsVS.glsl';
 
-export { ASPRS_CLASSIFICATIONS, Classification, ClassificationsTexture };
+export { ASPRS_CLASSIFICATIONS, Classification };
 
 const tmpDims = new Vector2();
 
@@ -134,9 +137,9 @@ interface Uniforms extends Record<string, IUniform> {
 
     elevationColorMap: IUniform<ColorMapUniform>;
 
-    intensityColorMap: IUniform<ColorMapUniform>;
-
-    classifications: IUniform<Texture | null>;
+    colorProperties: IUniform<ColorPropertiesUniform>;
+    intensityProperties: IUniform<ScalarPropertiesUniform>;
+    classificationProperties: IUniform<ClassificationPropertiesUniform>;
 
     enableDeformations: IUniform<boolean>;
     deformations: IUniform<Deformation[]>;
@@ -185,7 +188,9 @@ class PointCloudMaterial extends ShaderMaterial {
 
     private _colorMap: ColorMap = createDefaultColorMap();
 
-    private readonly _classificationsTexture: ClassificationsTexture;
+    private readonly _colorSlot: ColorSlot;
+    private readonly _intensitySlot: ScalarSlot;
+    private readonly _classificationSlot: ClassificationSlot;
 
     /**
      * @internal
@@ -235,15 +240,15 @@ class PointCloudMaterial extends ShaderMaterial {
      * Update material uniforms related to intensity and classification attributes.
      */
     public setupFromGeometry(geometry: BufferGeometry): void {
-        this.enableClassification = geometry.hasAttribute('classification');
+        this._classificationSlot.hasAttribute = geometry.hasAttribute('classification');
 
         if (geometry.hasAttribute('intensity')) {
             const intensityType = MaterialUtils.getVertexAttributeType(
                 geometry.getAttribute('intensity') as BufferAttribute,
             );
 
-            MaterialUtils.setDefine(this, 'INTENSITY', true);
-            MaterialUtils.setDefineValue(this, 'INTENSITY_TYPE', intensityType);
+            this._intensitySlot.hasAttribute = true;
+            this._intensitySlot.intensityType = intensityType;
         }
     }
 
@@ -311,25 +316,25 @@ class PointCloudMaterial extends ShaderMaterial {
      * @defaultValue {@link ASPRS_CLASSIFICATIONS} (see https://www.asprs.org/wp-content/uploads/2010/12/LAS_Specification.pdf)
      */
     public get classifications(): Classification[] {
-        return this._classificationsTexture.classifications;
+        return this._classificationSlot.classifications;
     }
 
     public set classifications(classifications: Classification[]) {
-        this._classificationsTexture.classifications = classifications;
+        this._classificationSlot.classifications = classifications;
     }
 
     /**
      * @internal
      */
     public get enableClassification(): boolean {
-        return this.defines.CLASSIFICATION !== undefined;
+        return this._classificationSlot.hasAttribute;
     }
 
     /**
      * @internal
      */
     public set enableClassification(enable: boolean) {
-        MaterialUtils.setDefine(this, 'CLASSIFICATION', enable);
+        this._classificationSlot.hasAttribute = enable;
     }
 
     public get colorMap(): ColorMap {
@@ -367,7 +372,9 @@ class PointCloudMaterial extends ShaderMaterial {
         this.colorLayer = null;
         this.needsUpdate = true;
 
-        this._classificationsTexture = new ClassificationsTexture();
+        this._colorSlot = new ColorSlot();
+        this._intensitySlot = new ScalarSlot(this, this.colorMap);
+        this._classificationSlot = new ClassificationSlot(this);
 
         this.uniforms = {
             fogDensity: new Uniform(0.00025),
@@ -375,7 +382,10 @@ class PointCloudMaterial extends ShaderMaterial {
             fogFar: new Uniform(2000),
             decimation: new Uniform(1),
             fogColor: new Uniform(new Color(0xffffff)),
-            classifications: this._classificationsTexture.uniform,
+
+            colorProperties: new Uniform(this._colorSlot.uniform),
+            intensityProperties: new Uniform(this._intensitySlot.uniform),
+            classificationProperties: new Uniform(this._classificationSlot.uniform),
 
             // Texture-related uniforms
             extentBottomLeft: new Uniform(new Vector2(0, 0)),
@@ -385,7 +395,6 @@ class PointCloudMaterial extends ShaderMaterial {
             offsetScale: new Uniform(new OffsetScale(0, 0, 1, 1)),
 
             elevationColorMap: new Uniform(buildColorMapUniform(this.colorMap)),
-            intensityColorMap: new Uniform(buildColorMapUniform(this.colorMap)),
 
             size: new Uniform(options.size ?? 0),
             mode: new Uniform(options.mode ?? MODE.COLOR),
@@ -423,7 +432,7 @@ class PointCloudMaterial extends ShaderMaterial {
             return;
         }
 
-        this._classificationsTexture.dispose();
+        this._classificationSlot.dispose();
 
         this.dispatchEvent({ type: 'dispose' });
         this.disposed = true;
@@ -446,7 +455,7 @@ class PointCloudMaterial extends ShaderMaterial {
         this.uniforms.opacity.value = this.opacity;
 
         this.uniforms.elevationColorMap.value = buildColorMapUniform(this.colorMap);
-        this.uniforms.intensityColorMap.value = buildColorMapUniform(this.colorMap);
+        this._intensitySlot.colorMap = this.colorMap;
     }
 
     public override onBeforeRender(_renderer: WebGLRenderer, _scene: Scene, camera: Camera): void {
@@ -454,11 +463,11 @@ class PointCloudMaterial extends ShaderMaterial {
 
         this.transparent = this.opacity < 1 || this.colorMap.opacity != null;
 
+        this.updateAttributesWeights();
+
         this.updateIntersectingVolumes(camera);
 
-        if (this.enableClassification) {
-            this._classificationsTexture.updateUniform();
-        }
+        this._classificationSlot.update();
     }
 
     public override copy(source: PointCloudMaterial): this {
@@ -582,6 +591,26 @@ class PointCloudMaterial extends ShaderMaterial {
                 volumeUniform.color.copy(volumeDefinition.color);
             }
             this.uniforms.intersectingVolumes.value.count = this.intersectingVolumes.length;
+        }
+    }
+
+    private updateAttributesWeights(): void {
+        this._intensitySlot.weight = this.mode === MODE.INTENSITY ? 1 : 0;
+        this._classificationSlot.weight = this.mode === MODE.CLASSIFICATION ? 1 : 0;
+        this._colorSlot.weight = this.mode === MODE.COLOR ? 1 : 0;
+
+        const totalWeight =
+            this._intensitySlot.actualWeight +
+            this._classificationSlot.actualWeight +
+            this._colorSlot.actualWeight;
+        if (totalWeight > 0) {
+            // normalize attributes
+            this._intensitySlot.actualWeight /= totalWeight;
+            this._classificationSlot.actualWeight /= totalWeight;
+            this._colorSlot.actualWeight /= totalWeight;
+        } else {
+            // default to color
+            this._colorSlot.weight = 1;
         }
     }
 

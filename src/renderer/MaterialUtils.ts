@@ -18,7 +18,7 @@ import {
     Uint8ClampedBufferAttribute,
 } from 'three';
 
-interface HasDefines {
+export interface HasDefines {
     defines: Record<string, unknown>;
     needsUpdate: boolean;
 }

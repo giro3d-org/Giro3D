@@ -15,7 +15,6 @@ uniform uint pickingId;
 uniform int mode;
 uniform float opacity;
 uniform vec4 overlayColor;
-attribute vec3 color;
 
 struct PointCloudColorMap {
     float min;
@@ -25,15 +24,28 @@ struct PointCloudColorMap {
 
 uniform PointCloudColorMap elevationColorMap;
 
+struct ColorProperties {
+    float weight;
+};
+uniform ColorProperties colorProperties;
+attribute vec3 color;
+
+struct IntensityProperties {
+    float weight;
+    PointCloudColorMap colorMap;
+};
+uniform IntensityProperties intensityProperties;
 #if defined(INTENSITY)
-uniform PointCloudColorMap intensityColorMap;
 // INTENSITY_TYPE is a define macro
 attribute INTENSITY_TYPE intensity;
 #endif
 
+struct ClassificationProperties {
+    float weight;
+    sampler2D lut;
+};
+uniform ClassificationProperties classificationProperties;
 #if defined(CLASSIFICATION)
-uniform sampler2D classifications;
-
 attribute uint classification;
 #endif
 
@@ -110,13 +122,27 @@ vec4 computeColorFromClassification(const uint classification, sampler2D classif
     return texelFetch(classifications, ivec2(classification, 0), 0);
 }
 
-vec4 computeColorFromColor(const vec3 value) {
-    // We need to convert to linear color space because the colors are in sRGB and they
-    // are not automatically converted to sRGB-linear. This is due to the fact that those
-    // colors come from a vertex buffer and not from a texture (automatically converted)
-    // or a single color uniform (also automatically converted).
-    vec4 linear = sRGBToLinear(vec4(value, 1.0));
-    return vec4(mix(linear.rgb, overlayColor.rgb, overlayColor.a), 1);
+void addScalarContribution(const float value, const IntensityProperties properties, inout vec4 color) {
+    if (properties.weight > 0.0) {
+        color += computeColorFromScalar(value, properties.colorMap) * properties.weight;
+    }
+}
+
+void addClassificationContribution(const uint classification, const ClassificationProperties properties, inout vec4 color) {
+    if (properties.weight > 0.0) {
+        color += computeColorFromClassification(classification, properties.lut) * properties.weight;
+    }
+}
+
+void addColorContribution(const vec3 value, const ColorProperties properties, inout vec4 color) {
+    if (properties.weight > 0.0) {
+        // We need to convert to linear color space because the colors are in sRGB and they
+        // are not automatically converted to sRGB-linear. This is due to the fact that those
+        // colors come from a vertex buffer and not from a texture (automatically converted)
+        // or a single color uniform (also automatically converted).
+        vec4 linear = sRGBToLinear(vec4(value, 1.0));
+        color += vec4(mix(linear.rgb, overlayColor.rgb, overlayColor.a), 1) * properties.weight;
+    }
 }
 
 void main() {
@@ -138,7 +164,7 @@ void main() {
 
     if (pickingId > uint(0)) {
         #if defined(CLASSIFICATION)
-        float visibility = computeColorFromClassification(classification, classifications).a;
+        float visibility = computeColorFromClassification(classification, classificationProperties.lut).a;
         if (visibility < 0.5) {
             discardPoint();
             return;
@@ -163,17 +189,18 @@ void main() {
         } else if (mode == MODE_ELEVATION) {
             float z = (modelMatrix * vec4(position, 1.0)).z;
             vColor = computeColorFromScalar(z, elevationColorMap);
-    #if defined(INTENSITY)
-        } else if (mode == MODE_INTENSITY) {
-            vColor = computeColorFromScalar(float(intensity), intensityColorMap);
-    #endif
-    #if defined(CLASSIFICATION)
-        } else if (mode == MODE_CLASSIFICATION) {
-            vColor = computeColorFromClassification(classification, classifications);
-    #endif
         } else {
-            // default to color mode
-            vColor = computeColorFromColor(color);
+            vColor = vec4(0);
+            
+            #if defined(INTENSITY)
+            addScalarContribution(float(intensity), intensityProperties, vColor);
+            #endif
+
+            #if defined(CLASSIFICATION)
+            addClassificationContribution(classification, classificationProperties, vColor);
+            #endif
+
+            addColorContribution(color, colorProperties, vColor);
         }
 
         vColor.a *= opacity;

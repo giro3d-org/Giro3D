@@ -6,7 +6,7 @@
 
 import type { ColorRepresentation, Texture } from 'three';
 
-import { Color, DataTexture, Uniform } from 'three';
+import { Color, DataTexture } from 'three';
 
 /**
  * Parameters for a point cloud classification.
@@ -72,21 +72,23 @@ ASPRS_CLASSIFICATIONS[18] = new Classification('#cd27d6'); // High Noise
 export class ClassificationsTexture {
     public static readonly maxCount = 256;
 
-    public classifications: Classification[] = ASPRS_CLASSIFICATIONS.map(c => c.clone());
-    public readonly uniform = new Uniform<Texture | null>(null);
+    public classifications: Classification[];
+    public readonly texture: Texture;
 
-    private readonly _array = new Uint8Array(4 * ClassificationsTexture.maxCount);
+    private readonly _array: Uint8Array; // = new Uint8Array(4 * ClassificationsTexture.maxCount);
+
+    public constructor() {
+        this.classifications = ASPRS_CLASSIFICATIONS.map(c => c.clone());
+        this._array = new Uint8Array(4 * ClassificationsTexture.maxCount);
+        this.texture = new DataTexture(
+            this._array as BufferSource,
+            ClassificationsTexture.maxCount,
+            1,
+        );
+    }
 
     public updateUniform(): void {
         this.sanitizeClassifications();
-
-        if (!this.uniform.value) {
-            this.uniform.value = new DataTexture(
-                this._array as BufferSource,
-                ClassificationsTexture.maxCount,
-                1,
-            );
-        }
 
         const temp = new Uint8Array(4);
         for (let i = 0; i < ClassificationsTexture.maxCount; i++) {
@@ -106,14 +108,13 @@ export class ClassificationsTexture {
             }
             if (classifChanged) {
                 this._array.set(temp, classifOffset);
-                this.uniform.value.needsUpdate = true;
+                this.texture.needsUpdate = true;
             }
         }
     }
 
     public dispose(): void {
-        this.uniform.value?.dispose();
-        this.uniform.value = null;
+        this.texture.dispose();
     }
 
     private sanitizeClassifications(): void {
