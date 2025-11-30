@@ -23,9 +23,10 @@ export class ClassificationSlot extends AttributeSlot {
     public readonly uniform: ClassificationPropertiesUniform;
 
     private readonly _material: HasDefines;
+    private readonly _flagDefine: string;
 
-    public constructor(material: HasDefines) {
-        super();
+    public constructor(attributeName: string, material: HasDefines, index: number) {
+        super(attributeName);
 
         this.texture = new ClassificationsTexture();
         this.uniform = {
@@ -33,6 +34,8 @@ export class ClassificationSlot extends AttributeSlot {
             lut: this.texture.texture,
         };
         this._material = material;
+
+        this._flagDefine = `CLASSIFICATION_${index};`;
     }
 
     public get classifications(): Classification[] {
@@ -44,11 +47,11 @@ export class ClassificationSlot extends AttributeSlot {
     }
 
     public override get hasAttribute(): boolean {
-        return typeof this._material.defines['CLASSIFICATION'] !== 'undefined';
+        return typeof this._material.defines[this._flagDefine] !== 'undefined';
     }
 
     public set hasAttribute(value: boolean) {
-        MaterialUtils.setDefine(this._material, 'CLASSIFICATION', value);
+        MaterialUtils.setDefine(this._material, this._flagDefine, value);
         this.updateActualWeight();
     }
 

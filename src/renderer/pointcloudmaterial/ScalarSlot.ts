@@ -25,9 +25,16 @@ export class ScalarSlot extends AttributeSlot {
     public readonly uniform: ScalarPropertiesUniform;
 
     private readonly _material: HasDefines;
+    private readonly _flagDefine: string;
+    private readonly _typeDefine: string;
 
-    public constructor(material: HasDefines, colorMap: ColorMap) {
-        super();
+    public constructor(
+        attributeName: string,
+        material: HasDefines,
+        index: number,
+        colorMap: ColorMap,
+    ) {
+        super(attributeName);
 
         this.uniform = {
             weight: 0,
@@ -39,19 +46,21 @@ export class ScalarSlot extends AttributeSlot {
         };
         this._material = material;
 
+        this._flagDefine = `INTENSITY_${index}`;
+        this._typeDefine = `INTENSITY_${index}_TYPE`;
         this.intensityType = 'uint';
     }
 
     public override get hasAttribute(): boolean {
-        return typeof this._material.defines['INTENSITY'] !== 'undefined';
+        return typeof this._material.defines[this._flagDefine] !== 'undefined';
     }
 
     public set hasAttribute(value: boolean) {
-        MaterialUtils.setDefine(this._material, 'INTENSITY', value);
+        MaterialUtils.setDefine(this._material, this._flagDefine, value);
     }
 
     public set intensityType(intensityType: VertexAttributeType) {
-        MaterialUtils.setDefineValue(this._material, 'INTENSITY_TYPE', intensityType);
+        MaterialUtils.setDefineValue(this._material, this._typeDefine, intensityType);
     }
 
     public set colorMap(colorMap: ColorMap) {

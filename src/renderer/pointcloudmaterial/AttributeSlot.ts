@@ -9,11 +9,17 @@ export interface AttributePropertiesUniform {
 }
 
 export abstract class AttributeSlot {
+    public readonly attributeName: string;
+
     public abstract uniform: AttributePropertiesUniform;
 
     protected abstract get hasAttribute(): boolean;
 
     private _wantedWeight: number = 0;
+
+    protected constructor(attributeName: string) {
+        this.attributeName = attributeName;
+    }
 
     public set weight(value: number) {
         this._wantedWeight = value;

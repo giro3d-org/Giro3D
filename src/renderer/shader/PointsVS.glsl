@@ -27,26 +27,43 @@ uniform PointCloudColorMap elevationColorMap;
 struct ColorProperties {
     float weight;
 };
-uniform ColorProperties colorProperties;
+uniform ColorProperties colorProperties[3];
 attribute vec3 color;
+#if defined(COLOR_1)
+attribute vec3 color_1;
+#endif
+#if defined(COLOR_2)
+attribute vec3 color_2;
+#endif
 
 struct IntensityProperties {
     float weight;
     PointCloudColorMap colorMap;
 };
-uniform IntensityProperties intensityProperties;
-#if defined(INTENSITY)
-// INTENSITY_TYPE is a define macro
-attribute INTENSITY_TYPE intensity;
+uniform IntensityProperties intensityProperties[3];
+#if defined(INTENSITY_0)
+attribute INTENSITY_0_TYPE intensity;
+#endif
+#if defined(INTENSITY_1)
+attribute INTENSITY_1_TYPE intensity_1;
+#endif
+#if defined(INTENSITY_2)
+attribute INTENSITY_2_TYPE intensity_2;
 #endif
 
 struct ClassificationProperties {
     float weight;
     sampler2D lut;
 };
-uniform ClassificationProperties classificationProperties;
-#if defined(CLASSIFICATION)
+uniform ClassificationProperties classificationProperties[3];
+#if defined(CLASSIFICATION_0)
 attribute uint classification;
+#endif
+#if defined(CLASSIFICATION_1)
+attribute uint classification_1;
+#endif
+#if defined(CLASSIFICATION_2)
+attribute uint classification_2;
 #endif
 
 #if defined(NORMAL_OCT16)
@@ -175,15 +192,33 @@ void main() {
     } else {
         vColor = vec4(0);
         
-        #if defined(INTENSITY)
-        addScalarContribution(float(intensity), intensityProperties, vColor);
+        #if defined(INTENSITY_0)
+        addScalarContribution(float(intensity), intensityProperties[0], vColor);
+        #endif
+        #if defined(INTENSITY_1)
+        addScalarContribution(float(intensity_1), intensityProperties[1], vColor);
+        #endif
+        #if defined(INTENSITY_2)
+        addScalarContribution(float(intensity_2), intensityProperties[2], vColor);
         #endif
 
-        #if defined(CLASSIFICATION)
-        addClassificationContribution(classification, classificationProperties, vColor);
+        #if defined(CLASSIFICATION_0)
+        addClassificationContribution(classification, classificationProperties[0], vColor);
+        #endif
+        #if defined(CLASSIFICATION_1)
+        addClassificationContribution(classification_1, classificationProperties[1], vColor);
+        #endif
+        #if defined(CLASSIFICATION_2)
+        addClassificationContribution(classification_2, classificationProperties[2], vColor);
         #endif
 
-        addColorContribution(color, colorProperties, vColor);
+        addColorContribution(color, colorProperties[0], vColor);
+        #if defined(COLOR_1)
+        addColorContribution(color_1, colorProperties[1], vColor);
+        #endif
+        #if defined(COLOR_2)
+        addColorContribution(color_2, colorProperties[2], vColor);
+        #endif
     }
 
     vColor.a *= opacity;
