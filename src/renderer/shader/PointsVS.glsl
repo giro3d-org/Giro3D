@@ -118,10 +118,6 @@ vec4 computeColorFromScalar(const float value, const PointCloudColorMap colorMap
     return sampleColorMap(value, colorMap.min, colorMap.max, colorMap.lut, 0.0);
 }
 
-vec4 computeColorFromClassification(const uint classification, sampler2D classifications) {
-    return texelFetch(classifications, ivec2(classification, 0), 0);
-}
-
 void addScalarContribution(const float value, const IntensityProperties properties, inout vec4 color) {
     if (properties.weight > 0.0) {
         color += computeColorFromScalar(value, properties.colorMap) * properties.weight;
@@ -130,7 +126,7 @@ void addScalarContribution(const float value, const IntensityProperties properti
 
 void addClassificationContribution(const uint classification, const ClassificationProperties properties, inout vec4 color) {
     if (properties.weight > 0.0) {
-        color += computeColorFromClassification(classification, properties.lut) * properties.weight;
+        color += texelFetch(properties.lut, ivec2(classification, 0), 0) * properties.weight;
     }
 }
 
@@ -162,48 +158,45 @@ void main() {
     vec3 normal = color;
 #endif
 
-    if (pickingId > uint(0)) {
+    if (mode == MODE_NORMAL) {
+        vColor = vec4(abs(normal), 1);
+    } else if (mode == MODE_TEXTURE) {
+        vec2 pp = (modelMatrix * vec4(position, 1.0)).xy;
+        // offsetScale is from bottomleft
+        pp.x -= extentBottomLeft.x;
+        pp.y -= extentBottomLeft.y;
+        pp *= offsetScale.zw / extentSize;
+        pp += offsetScale.xy;
+        vec3 textureColor = texture2D(overlayTexture, pp).rgb;
+        vColor = vec4(mix(textureColor, overlayColor.rgb, overlayColor.a), hasOverlayTexture);
+    } else if (mode == MODE_ELEVATION) {
+        float z = (modelMatrix * vec4(position, 1.0)).z;
+        vColor = computeColorFromScalar(z, elevationColorMap);
+    } else {
+        vColor = vec4(0);
+        
+        #if defined(INTENSITY)
+        addScalarContribution(float(intensity), intensityProperties, vColor);
+        #endif
+
         #if defined(CLASSIFICATION)
-        float visibility = computeColorFromClassification(classification, classificationProperties.lut).a;
-        if (visibility < 0.5) {
+        addClassificationContribution(classification, classificationProperties, vColor);
+        #endif
+
+        addColorContribution(color, colorProperties, vColor);
+    }
+
+    vColor.a *= opacity;
+    
+    if (pickingId > 0u) {
+        if (vColor.a <= EPSILON) {
             discardPoint();
             return;
         }
-        #endif
 
         // In picking mode, we simply output the point id in the red channel and the object id in the green channel.
         // No need to encode them because we are rendering to a float texture.
         vColor = vec4(float(gl_VertexID), float(pickingId), 0, 1);
-    } else {
-        if (mode == MODE_NORMAL) {
-            vColor = vec4(abs(normal), 1);
-        } else if (mode == MODE_TEXTURE) {
-            vec2 pp = (modelMatrix * vec4(position, 1.0)).xy;
-            // offsetScale is from bottomleft
-            pp.x -= extentBottomLeft.x;
-            pp.y -= extentBottomLeft.y;
-            pp *= offsetScale.zw / extentSize;
-            pp += offsetScale.xy;
-            vec3 textureColor = texture2D(overlayTexture, pp).rgb;
-            vColor = vec4(mix(textureColor, overlayColor.rgb, overlayColor.a), hasOverlayTexture);
-        } else if (mode == MODE_ELEVATION) {
-            float z = (modelMatrix * vec4(position, 1.0)).z;
-            vColor = computeColorFromScalar(z, elevationColorMap);
-        } else {
-            vColor = vec4(0);
-            
-            #if defined(INTENSITY)
-            addScalarContribution(float(intensity), intensityProperties, vColor);
-            #endif
-
-            #if defined(CLASSIFICATION)
-            addClassificationContribution(classification, classificationProperties, vColor);
-            #endif
-
-            addColorContribution(color, colorProperties, vColor);
-        }
-
-        vColor.a *= opacity;
     }
 
     mat4 mvMatrix = modelViewMatrix;
