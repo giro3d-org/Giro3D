@@ -13,6 +13,10 @@ export interface ColorPropertiesUniform {
     weight: number;
 }
 
+export interface ColorSlotState {
+    weight: number;
+}
+
 export class ColorSlot extends AttributeSlot {
     public readonly uniform: ColorPropertiesUniform;
 
@@ -48,5 +52,17 @@ export class ColorSlot extends AttributeSlot {
             throw new Error('Color slot 0 is always present');
         }
         MaterialUtils.setDefine(this._material, this._flagDefine, value);
+    }
+
+    public get state(): ColorSlotState {
+        return {
+            weight: this.weight,
+        };
+    }
+
+    public set state(state: Partial<ColorSlotState>) {
+        if (typeof state.weight !== 'undefined') {
+            this.weight = state.weight;
+        }
     }
 }

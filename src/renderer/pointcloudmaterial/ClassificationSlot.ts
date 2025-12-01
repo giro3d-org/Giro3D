@@ -18,6 +18,11 @@ export interface ClassificationPropertiesUniform {
     lut: Texture | null;
 }
 
+export interface ClassificationSlotState {
+    weight: number;
+    classifications: Classification[];
+}
+
 export class ClassificationSlot extends AttributeSlot {
     public readonly texture: ClassificationsTexture;
     public readonly uniform: ClassificationPropertiesUniform;
@@ -63,5 +68,21 @@ export class ClassificationSlot extends AttributeSlot {
 
     public dispose(): void {
         this.texture.dispose();
+    }
+
+    public get state(): ClassificationSlotState {
+        return {
+            weight: this.weight,
+            classifications: this.classifications,
+        };
+    }
+
+    public set state(state: Partial<ClassificationSlotState>) {
+        if (typeof state.weight !== 'undefined') {
+            this.weight = state.weight;
+        }
+        if (typeof state.classifications !== 'undefined') {
+            this.classifications = state.classifications;
+        }
     }
 }

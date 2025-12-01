@@ -1226,17 +1226,27 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         material.visible = this._showPoints;
         material.depthTest = this._depthTest;
         material.opacity = this.opacity;
-        material.classifications = this._classifications;
         material.size = this._pointSize;
         material.mode = this._shaderMode;
-        material.enableClassification = this._shaderMode === MODE.CLASSIFICATION;
 
         material.brightness = this._colorimetry.brightness;
         material.saturation = this._colorimetry.saturation;
         material.contrast = this._colorimetry.contrast;
 
         material.elevationColorMap = this.colorMap;
-        material.colorMap = this.colorMap;
+
+        material.attributesState = {
+            intensities: [
+                {
+                    colorMap: this.colorMap,
+                },
+            ],
+            classifications: [
+                {
+                    classifications: this._classifications,
+                },
+            ],
+        };
 
         material.updateUniforms();
     }

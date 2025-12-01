@@ -17,6 +17,11 @@ export interface ScalarPropertiesUniform {
     colorMap: ColorMapUniform;
 }
 
+export interface ScalarSlotState {
+    weight: number;
+    colorMap: ColorMap;
+}
+
 export class ScalarSlot extends AttributeSlot {
     public readonly uniform: ScalarPropertiesUniform;
 
@@ -54,5 +59,22 @@ export class ScalarSlot extends AttributeSlot {
 
     public update(): void {
         this.uniform.colorMap = buildColorMapUniform(this.colorMap);
+    }
+
+    public get state(): ScalarSlotState {
+        return {
+            weight: this.weight,
+            colorMap: this.colorMap,
+        };
+    }
+
+    public set state(state: Partial<ScalarSlotState>) {
+        if (typeof state.weight !== 'undefined') {
+            this.weight = state.weight;
+        }
+
+        if (typeof state.colorMap !== 'undefined') {
+            this.colorMap = state.colorMap;
+        }
     }
 }

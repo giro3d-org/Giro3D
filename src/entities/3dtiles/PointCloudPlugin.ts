@@ -95,8 +95,18 @@ export default class PointCloudPlugin {
     public updateMaterial(material: PointCloudMaterial): void {
         material.size = this._parameters.pointSize;
         material.elevationColorMap = this._parameters.pointCloudColorMap;
-        material.colorMap = this._parameters.pointCloudColorMap;
-        material.classifications = this._parameters.classifications;
+        material.attributesState = {
+            intensities: [
+                {
+                    colorMap: this._parameters.pointCloudColorMap,
+                },
+            ],
+            classifications: [
+                {
+                    classifications: this._parameters.classifications,
+                },
+            ],
+        };
         material.mode = this._parameters.pointCloudMode;
 
         material.brightness = this._parameters.colorimetry.brightness;
