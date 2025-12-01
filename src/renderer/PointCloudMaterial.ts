@@ -177,7 +177,7 @@ class PointCloudMaterial extends ShaderMaterial {
 
     public intersectingVolumes: IntersectingVolume[] = [];
 
-    private _colorMap: ColorMap = createDefaultColorMap();
+    private _elevationColorMap: ColorMap = createDefaultColorMap();
 
     private readonly _colorSlots: [ColorSlot, ColorSlot, ColorSlot];
     private readonly _intensitySlots: [ScalarSlot, ScalarSlot, ScalarSlot];
@@ -339,12 +339,20 @@ class PointCloudMaterial extends ShaderMaterial {
         this._classificationSlots[0].hasAttribute = enable;
     }
 
+    public get elevationColorMap(): ColorMap {
+        return this._elevationColorMap;
+    }
+
+    public set elevationColorMap(colorMap: ColorMap) {
+        this._elevationColorMap = colorMap;
+    }
+
     public get colorMap(): ColorMap {
-        return this._colorMap;
+        return this._intensitySlots[0].colorMap;
     }
 
     public set colorMap(colorMap: ColorMap) {
-        this._colorMap = colorMap;
+        this._intensitySlots[0].colorMap = colorMap;
     }
 
     /**
@@ -382,9 +390,9 @@ class PointCloudMaterial extends ShaderMaterial {
             new ColorSlot('color_2', this, 2),
         ];
         this._intensitySlots = [
-            new ScalarSlot('intensity', this, 0, this.colorMap),
-            new ScalarSlot('intensity_1', this, 1, this.colorMap),
-            new ScalarSlot('intensity_2', this, 2, this.colorMap),
+            new ScalarSlot('intensity', this, 0),
+            new ScalarSlot('intensity_1', this, 1),
+            new ScalarSlot('intensity_2', this, 2),
         ];
         this._classificationSlots = [
             new ClassificationSlot('classification', this, 0),
@@ -412,7 +420,7 @@ class PointCloudMaterial extends ShaderMaterial {
             hasOverlayTexture: new Uniform(0),
             offsetScale: new Uniform(new OffsetScale(0, 0, 1, 1)),
 
-            elevationColorMap: new Uniform(buildColorMapUniform(this.colorMap)),
+            elevationColorMap: new Uniform(buildColorMapUniform(this.elevationColorMap)),
 
             size: new Uniform(options.size ?? 0),
             mode: new Uniform(options.mode ?? MODE.COLOR),
@@ -474,14 +482,17 @@ class PointCloudMaterial extends ShaderMaterial {
     public updateUniforms(): void {
         this.uniforms.opacity.value = this.opacity;
 
-        this.uniforms.elevationColorMap.value = buildColorMapUniform(this.colorMap);
-        this._intensitySlots[0].colorMap = this.colorMap;
+        this.uniforms.elevationColorMap.value = buildColorMapUniform(this.elevationColorMap);
+
+        for (const slot of this._intensitySlots) {
+            slot.update();
+        }
     }
 
     public override onBeforeRender(_renderer: WebGLRenderer, _scene: Scene, camera: Camera): void {
         this.uniforms.opacity.value = this.opacity;
 
-        this.transparent = this.opacity < 1 || this.colorMap.opacity != null;
+        this.transparent = this.opacity < 1 || this.elevationColorMap.opacity != null;
 
         this.updateAttributesWeights();
 
@@ -504,6 +515,7 @@ class PointCloudMaterial extends ShaderMaterial {
         this.brightness = source.brightness;
         this.contrast = source.contrast;
         this.saturation = source.saturation;
+        this.elevationColorMap = source.elevationColorMap;
         this.colorMap = source.colorMap;
         this.decimation = source.decimation;
 

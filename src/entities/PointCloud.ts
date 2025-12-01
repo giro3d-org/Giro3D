@@ -1235,6 +1235,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         material.saturation = this._colorimetry.saturation;
         material.contrast = this._colorimetry.contrast;
 
+        material.elevationColorMap = this.colorMap;
         material.colorMap = this.colorMap;
 
         material.updateUniforms();

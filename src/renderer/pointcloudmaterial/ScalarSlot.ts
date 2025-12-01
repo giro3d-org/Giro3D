@@ -10,7 +10,7 @@ import type { ColorMapUniform } from './ColorMapUniform';
 
 import MaterialUtils from '../MaterialUtils';
 import { AttributeSlot } from './AttributeSlot';
-import { buildColorMapUniform } from './ColorMapUniform';
+import { buildColorMapUniform, createDefaultColorMap } from './ColorMapUniform';
 
 export interface ScalarPropertiesUniform {
     weight: number;
@@ -24,17 +24,14 @@ export class ScalarSlot extends AttributeSlot {
     private readonly _flagDefine: string;
     private readonly _typeDefine: string;
 
-    public constructor(
-        attributeName: string,
-        material: HasDefines,
-        index: number,
-        colorMap: ColorMap,
-    ) {
+    public colorMap: ColorMap = createDefaultColorMap();
+
+    public constructor(attributeName: string, material: HasDefines, index: number) {
         super(attributeName);
 
         this.uniform = {
             weight: 0,
-            colorMap: buildColorMapUniform(colorMap),
+            colorMap: buildColorMapUniform(this.colorMap),
         };
         this._material = material;
 
@@ -55,9 +52,7 @@ export class ScalarSlot extends AttributeSlot {
         MaterialUtils.setDefineValue(this._material, this._typeDefine, intensityType);
     }
 
-    public set colorMap(colorMap: ColorMap) {
-        this.uniform.colorMap.min = colorMap.min;
-        this.uniform.colorMap.max = colorMap.max;
-        this.uniform.colorMap.lut = colorMap.getTexture();
+    public update(): void {
+        this.uniform.colorMap = buildColorMapUniform(this.colorMap);
     }
 }
