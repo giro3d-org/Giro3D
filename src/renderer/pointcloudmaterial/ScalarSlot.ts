@@ -4,21 +4,17 @@
  * SPDX-License-Identifier: MIT
  */
 
-import type { Texture } from 'three';
-
 import type ColorMap from '../../core/ColorMap';
 import type { HasDefines, VertexAttributeType } from '../MaterialUtils';
+import type { ColorMapUniform } from './ColorMapUniform';
 
 import MaterialUtils from '../MaterialUtils';
 import { AttributeSlot } from './AttributeSlot';
+import { buildColorMapUniform } from './ColorMapUniform';
 
 export interface ScalarPropertiesUniform {
     weight: number;
-    colorMap: {
-        min: number;
-        max: number;
-        lut: Texture;
-    };
+    colorMap: ColorMapUniform;
 }
 
 export class ScalarSlot extends AttributeSlot {
@@ -38,11 +34,7 @@ export class ScalarSlot extends AttributeSlot {
 
         this.uniform = {
             weight: 0,
-            colorMap: {
-                min: colorMap.min,
-                max: colorMap.max,
-                lut: colorMap.getTexture(),
-            },
+            colorMap: buildColorMapUniform(colorMap),
         };
         this._material = material;
 

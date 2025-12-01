@@ -27,20 +27,22 @@ import {
     Vector4,
 } from 'three';
 
+import type ColorMap from '../core/ColorMap';
 import type Extent from '../core/geographic/Extent';
 import type ColorLayer from '../core/layer/ColorLayer';
 import type { TextureAndPitch } from '../core/layer/Layer';
 import type { IntersectingVolume, IntersectingVolumesUniform } from './IntersectingVolume';
 import type { VertexAttributeType } from './MaterialUtils';
 import type { ClassificationPropertiesUniform } from './pointcloudmaterial/ClassificationSlot';
+import type { ColorMapUniform } from './pointcloudmaterial/ColorMapUniform';
 import type { ColorPropertiesUniform } from './pointcloudmaterial/ColorSlot';
 import type { ScalarPropertiesUniform } from './pointcloudmaterial/ScalarSlot';
 
-import ColorMap from '../core/ColorMap';
 import OffsetScale from '../core/OffsetScale';
 import MaterialUtils from './MaterialUtils';
 import { ASPRS_CLASSIFICATIONS, Classification } from './pointcloudmaterial/Classification';
 import { ClassificationSlot } from './pointcloudmaterial/ClassificationSlot';
+import { buildColorMapUniform, createDefaultColorMap } from './pointcloudmaterial/ColorMapUniform';
 import { ColorSlot } from './pointcloudmaterial/ColorSlot';
 import { ScalarSlot } from './pointcloudmaterial/ScalarSlot';
 import PointsFS from './shader/PointsFS.glsl';
@@ -107,20 +109,6 @@ interface Deformation {
     vec: Vector3;
 }
 
-interface ColorMapUniform {
-    min: number;
-    max: number;
-    lut: Texture;
-}
-
-function buildColorMapUniform(colorMap: ColorMap): ColorMapUniform {
-    return {
-        min: colorMap.min,
-        max: colorMap.max,
-        lut: colorMap.getTexture(),
-    };
-}
-
 interface Uniforms extends Record<string, IUniform> {
     opacity: IUniform<number>;
     brightnessContrastSaturation: IUniform<Vector3>;
@@ -173,11 +161,6 @@ export interface Defines extends Record<string, unknown> {
     INTENSITY_1_TYPE: VertexAttributeType;
     INTENSITY_2?: 1;
     INTENSITY_2_TYPE: VertexAttributeType;
-}
-
-function createDefaultColorMap(): ColorMap {
-    const colors = [new Color('black'), new Color('white')];
-    return new ColorMap({ colors, min: 0, max: 1000 });
 }
 
 /**
