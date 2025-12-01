@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: MIT
  */
 
-import type { HasDefines } from '../MaterialUtils';
+import type { HasDefines } from '../../MaterialUtils';
 
-import MaterialUtils from '../MaterialUtils';
+import MaterialUtils from '../../MaterialUtils';
 import { AttributeSlot } from './AttributeSlot';
 
 export interface ColorPropertiesUniform {

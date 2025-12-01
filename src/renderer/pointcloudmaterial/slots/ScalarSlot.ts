@@ -4,13 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-import type ColorMap from '../../core/ColorMap';
-import type { HasDefines, VertexAttributeType } from '../MaterialUtils';
-import type { ColorMapUniform } from './ColorMapUniform';
+import type ColorMap from '../../../core/ColorMap';
+import type { HasDefines, VertexAttributeType } from '../../MaterialUtils';
+import type { ColorMapUniform } from '../ColorMapUniform';
 
-import MaterialUtils from '../MaterialUtils';
+import MaterialUtils from '../../MaterialUtils';
+import { buildColorMapUniform, createDefaultColorMap } from '../ColorMapUniform';
 import { AttributeSlot } from './AttributeSlot';
-import { buildColorMapUniform, createDefaultColorMap } from './ColorMapUniform';
 
 export interface ScalarPropertiesUniform {
     weight: number;

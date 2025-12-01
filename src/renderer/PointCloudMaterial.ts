@@ -33,21 +33,24 @@ import type ColorLayer from '../core/layer/ColorLayer';
 import type { TextureAndPitch } from '../core/layer/Layer';
 import type { IntersectingVolume, IntersectingVolumesUniform } from './IntersectingVolume';
 import type { VertexAttributeType } from './MaterialUtils';
+import type { ColorMapUniform } from './pointcloudmaterial/ColorMapUniform';
 import type {
     ClassificationPropertiesUniform,
     ClassificationSlotState,
-} from './pointcloudmaterial/ClassificationSlot';
-import type { ColorMapUniform } from './pointcloudmaterial/ColorMapUniform';
-import type { ColorPropertiesUniform, ColorSlotState } from './pointcloudmaterial/ColorSlot';
-import type { ScalarPropertiesUniform, ScalarSlotState } from './pointcloudmaterial/ScalarSlot';
+} from './pointcloudmaterial/slots/ClassificationSlot';
+import type { ColorPropertiesUniform, ColorSlotState } from './pointcloudmaterial/slots/ColorSlot';
+import type {
+    ScalarPropertiesUniform,
+    ScalarSlotState,
+} from './pointcloudmaterial/slots/ScalarSlot';
 
 import OffsetScale from '../core/OffsetScale';
 import MaterialUtils from './MaterialUtils';
 import { ASPRS_CLASSIFICATIONS, Classification } from './pointcloudmaterial/Classification';
-import { ClassificationSlot } from './pointcloudmaterial/ClassificationSlot';
 import { buildColorMapUniform, createDefaultColorMap } from './pointcloudmaterial/ColorMapUniform';
-import { ColorSlot } from './pointcloudmaterial/ColorSlot';
-import { ScalarSlot } from './pointcloudmaterial/ScalarSlot';
+import { ClassificationSlot } from './pointcloudmaterial/slots/ClassificationSlot';
+import { ColorSlot } from './pointcloudmaterial/slots/ColorSlot';
+import { ScalarSlot } from './pointcloudmaterial/slots/ScalarSlot';
 import PointsFS from './shader/PointsFS.glsl';
 import PointsVS from './shader/PointsVS.glsl';
 

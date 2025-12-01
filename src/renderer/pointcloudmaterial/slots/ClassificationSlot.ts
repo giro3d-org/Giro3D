@@ -6,12 +6,12 @@
 
 import type { Texture } from 'three';
 
-import type { HasDefines } from '../MaterialUtils';
-import type { Classification } from './Classification';
+import type { HasDefines } from '../../MaterialUtils';
+import type { Classification } from '../Classification';
 
-import MaterialUtils from '../MaterialUtils';
+import MaterialUtils from '../../MaterialUtils';
+import { ClassificationsTexture } from '../Classification';
 import { AttributeSlot } from './AttributeSlot';
-import { ClassificationsTexture } from './Classification';
 
 export interface ClassificationPropertiesUniform {
     weight: number;
