@@ -30,7 +30,7 @@ import type { IntersectingVolume } from '../renderer/IntersectingVolume';
 import type { Classification } from '../renderer/PointCloudMaterial';
 import type View from '../renderer/View';
 import type { EntityPreprocessOptions, EntityUserData } from './Entity';
-import type { Entity3DOptions, Entity3DEventMap } from './Entity3D';
+import type { Entity3DEventMap, Entity3DOptions } from './Entity3D';
 
 import { defaultColorimetryOptions } from '../core/ColorimetryOptions';
 import ColorMap from '../core/ColorMap';
@@ -244,8 +244,8 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
     private readonly _tileVolumeRoot: Group = new Group();
     private readonly _pointsRoot: Group = new Group();
     private readonly _cleanupPollingInterval: NodeJS.Timeout;
-    private readonly _classifications: Classification[] = ASPRS_CLASSIFICATIONS.map(c => c.clone());
 
+    private readonly _classificationsPerAttribute: Map<string, Classification[]> = new Map();
     private readonly _colorMapPerAttribute: Map<string, ColorMap> = new Map();
 
     /** The source of this entity. */
@@ -838,10 +838,11 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
      * Gets the classification array. The array contains 256 entries that can be updated,
      * but the array itself may not be resized.
      *
+     * @param attributeName - Name of the attribute
      * @defaultValue `ASPRS_CLASSIFICATIONS`
      */
-    public get classifications(): Readonly<Classification[]> {
-        return this._classifications;
+    public getAttributeClassifications(attributeName: string): Readonly<Classification[]> {
+        return this.getOrCreateAttributeClassifications(attributeName);
     }
 
     /**
@@ -939,6 +940,8 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
                 if (!this._colorMapPerAttribute.has(attribute.name)) {
                     this._colorMapPerAttribute.set(attribute.name, DEFAULT_COLORMAP.clone());
                 }
+            } else if (attribute.interpretation === 'classification') {
+                this.getOrCreateAttributeClassifications(attribute.name);
             }
         }
 
@@ -1166,6 +1169,14 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         }
     }
 
+    private getOrCreateAttributeClassifications(attributeName: string): Classification[] {
+        let classifications = this._classificationsPerAttribute.get(attributeName);
+        if (classifications == null) {
+            classifications = ASPRS_CLASSIFICATIONS.map(c => c.clone());
+            this._classificationsPerAttribute.set(attributeName, classifications);
+        }
+        return classifications;
+    }
     private cleanup(): void {
         const now = performance.now();
 
@@ -1283,15 +1294,17 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
             material.attributesState = {
                 intensities: [{ colorMap: this.getAttributeColorMap(this.activeAttribute.name) }],
             };
+        } else if (this.activeAttribute?.interpretation === 'classification') {
+            material.attributesState = {
+                classifications: [
+                    {
+                        classifications: this.getOrCreateAttributeClassifications(
+                            this.activeAttribute.name,
+                        ),
+                    },
+                ],
+            };
         }
-
-        material.attributesState = {
-            classifications: [
-                {
-                    classifications: this._classifications,
-                },
-            ],
-        };
 
         material.updateUniforms();
     }

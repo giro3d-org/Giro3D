@@ -257,26 +257,28 @@ async function load(url) {
         entity.setActiveAttribute(metadata.attributes[0].name);
     }
 
+    const classifications = entity.getAttributeClassifications('Classification');
+
     // Let's populate the classification list with default values from the ASPRS classifications.
-    addClassification(0, 'Created, never classified', entity.classifications);
-    addClassification(1, 'Unclassified', entity.classifications);
-    addClassification(2, 'Ground', entity.classifications);
-    addClassification(3, 'Low vegetation', entity.classifications);
-    addClassification(4, 'Medium vegetation', entity.classifications);
-    addClassification(5, 'High vegetation', entity.classifications);
-    addClassification(6, 'Building', entity.classifications);
-    addClassification(7, 'Low point (noise)', entity.classifications);
-    addClassification(8, 'Reserved', entity.classifications);
-    addClassification(9, 'Water', entity.classifications);
-    addClassification(10, 'Rail', entity.classifications);
-    addClassification(11, 'Road surface', entity.classifications);
-    addClassification(12, 'Reserved', entity.classifications);
-    addClassification(13, 'Wire - Guard (shield)', entity.classifications);
-    addClassification(14, 'Wire - Conductor (Phase)', entity.classifications);
-    addClassification(15, 'Transmission Tower', entity.classifications);
-    addClassification(16, 'Wire Structure connector (e.g Insulator)', entity.classifications);
-    addClassification(17, 'Bridge deck', entity.classifications);
-    addClassification(18, 'High noise', entity.classifications);
+    addClassification(0, 'Created, never classified', classifications);
+    addClassification(1, 'Unclassified', classifications);
+    addClassification(2, 'Ground', classifications);
+    addClassification(3, 'Low vegetation', classifications);
+    addClassification(4, 'Medium vegetation', classifications);
+    addClassification(5, 'High vegetation', classifications);
+    addClassification(6, 'Building', classifications);
+    addClassification(7, 'Low point (noise)', classifications);
+    addClassification(8, 'Reserved', classifications);
+    addClassification(9, 'Water', classifications);
+    addClassification(10, 'Rail', classifications);
+    addClassification(11, 'Road surface', classifications);
+    addClassification(12, 'Reserved', classifications);
+    addClassification(13, 'Wire - Guard (shield)', classifications);
+    addClassification(14, 'Wire - Conductor (Phase)', classifications);
+    addClassification(15, 'Transmission Tower', classifications);
+    addClassification(16, 'Wire Structure connector (e.g Insulator)', classifications);
+    addClassification(17, 'Bridge deck', classifications);
+    addClassification(18, 'High noise', classifications);
 
     bindToggle('show-dataset', show => {
         entity.visible = show;

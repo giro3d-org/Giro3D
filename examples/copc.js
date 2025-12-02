@@ -463,46 +463,33 @@ async function load(url) {
     };
     classificationFilterOperatorSelect.addEventListener('change', updateClassificationFilter);
 
+    const classifications = entity.getAttributeClassifications('Classification');
+
     // Let's populate the classification list with default values from the ASPRS classifications.
-    addClassification(
-        0,
-        'Created, never classified',
-        entity.classifications,
-        updateClassificationFilter,
-    );
-    addClassification(1, 'Unclassified', entity.classifications, updateClassificationFilter);
-    addClassification(2, 'Ground', entity.classifications, updateClassificationFilter);
-    addClassification(3, 'Low vegetation', entity.classifications, updateClassificationFilter);
-    addClassification(4, 'Medium vegetation', entity.classifications, updateClassificationFilter);
-    addClassification(5, 'High vegetation', entity.classifications, updateClassificationFilter);
-    addClassification(6, 'Building', entity.classifications, updateClassificationFilter);
-    addClassification(7, 'Low point (noise)', entity.classifications, updateClassificationFilter);
-    addClassification(8, 'Reserved', entity.classifications, updateClassificationFilter);
-    addClassification(9, 'Water', entity.classifications, updateClassificationFilter);
-    addClassification(10, 'Rail', entity.classifications, updateClassificationFilter);
-    addClassification(11, 'Road surface', entity.classifications, updateClassificationFilter);
-    addClassification(12, 'Reserved', entity.classifications, updateClassificationFilter);
-    addClassification(
-        13,
-        'Wire - Guard (shield)',
-        entity.classifications,
-        updateClassificationFilter,
-    );
-    addClassification(
-        14,
-        'Wire - Conductor (Phase)',
-        entity.classifications,
-        updateClassificationFilter,
-    );
-    addClassification(15, 'Transmission Tower', entity.classifications, updateClassificationFilter);
+    addClassification(0, 'Created, never classified', classifications, updateClassificationFilter);
+    addClassification(1, 'Unclassified', classifications, updateClassificationFilter);
+    addClassification(2, 'Ground', classifications, updateClassificationFilter);
+    addClassification(3, 'Low vegetation', classifications, updateClassificationFilter);
+    addClassification(4, 'Medium vegetation', classifications, updateClassificationFilter);
+    addClassification(5, 'High vegetation', classifications, updateClassificationFilter);
+    addClassification(6, 'Building', classifications, updateClassificationFilter);
+    addClassification(7, 'Low point (noise)', classifications, updateClassificationFilter);
+    addClassification(8, 'Reserved', classifications, updateClassificationFilter);
+    addClassification(9, 'Water', classifications, updateClassificationFilter);
+    addClassification(10, 'Rail', classifications, updateClassificationFilter);
+    addClassification(11, 'Road surface', classifications, updateClassificationFilter);
+    addClassification(12, 'Reserved', classifications, updateClassificationFilter);
+    addClassification(13, 'Wire - Guard (shield)', classifications, updateClassificationFilter);
+    addClassification(14, 'Wire - Conductor (Phase)', classifications, updateClassificationFilter);
+    addClassification(15, 'Transmission Tower', classifications, updateClassificationFilter);
     addClassification(
         16,
         'Wire Structure connector (e.g Insulator)',
-        entity.classifications,
+        classifications,
         updateClassificationFilter,
     );
-    addClassification(17, 'Bridge deck', entity.classifications, updateClassificationFilter);
-    addClassification(18, 'High noise', entity.classifications, updateClassificationFilter);
+    addClassification(17, 'Bridge deck', classifications, updateClassificationFilter);
+    addClassification(18, 'High noise', classifications, updateClassificationFilter);
 
     updateClassificationFilter();
     populateGUI(source);
