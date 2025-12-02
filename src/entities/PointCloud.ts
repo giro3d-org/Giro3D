@@ -246,6 +246,8 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
     private readonly _cleanupPollingInterval: NodeJS.Timeout;
     private readonly _classifications: Classification[] = ASPRS_CLASSIFICATIONS.map(c => c.clone());
 
+    private readonly _colorMapPerAttribute: Map<string, ColorMap> = new Map();
+
     /** The source of this entity. */
     public readonly source: PointCloudSource;
 
@@ -264,7 +266,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
     private _showNodeDataVolumes = false;
     private _disposed = false;
     private _pointBudget: number | null = null;
-    private _colorMap: ColorMap = DEFAULT_COLORMAP.clone();
+    private _elevationColorMap: ColorMap = DEFAULT_COLORMAP.clone();
     private _colorimetry: ColorimetryOptions = defaultColorimetryOptions();
 
     // Available after initialization
@@ -293,7 +295,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
             updateColorMap: this.updateColorMap.bind(this),
         };
         this.source.addEventListener('updated', this._listeners.clear);
-        this._colorMap.addEventListener('updated', this._listeners.updateColorMap);
+        this._elevationColorMap.addEventListener('updated', this._listeners.updateColorMap);
 
         // We use a state machine to represent the transitions between various
         // point cloud node states, as well as the logic to trigger for each transition.
@@ -493,23 +495,53 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
     }
 
     /**
-     * The colormap used to colorize scalar attributes.
+     * The colormap used to colorize cloud by elevation.
      */
-    public get colorMap(): ColorMap {
-        return this._colorMap;
+    public get elevationColorMap(): ColorMap {
+        return this._elevationColorMap;
     }
 
-    public set colorMap(c: ColorMap | null) {
-        if (this._colorMap !== c) {
-            this._colorMap.removeEventListener('updated', this._listeners.updateColorMap);
+    public set elevationColorMap(c: ColorMap | null) {
+        if (this._elevationColorMap !== c) {
+            this._elevationColorMap.removeEventListener('updated', this._listeners.updateColorMap);
 
-            this._colorMap = c ?? DEFAULT_COLORMAP;
+            this._elevationColorMap = c ?? DEFAULT_COLORMAP;
 
-            this._colorMap.addEventListener('updated', this._listeners.updateColorMap);
+            this._elevationColorMap.addEventListener('updated', this._listeners.updateColorMap);
 
             this.updateColorMap();
             this.notifyChange(this);
         }
+    }
+
+    /**
+     * Gets the colormap used for coloring an attribute.
+     * @param attributeName - The name of the attribute
+     */
+    public getAttributeColorMap(attributeName: string): ColorMap {
+        let colorMap = this._colorMapPerAttribute.get(attributeName);
+        if (colorMap == null) {
+            colorMap = DEFAULT_COLORMAP.clone();
+            colorMap.addEventListener('updated', this._listeners.updateColorMap);
+            this._colorMapPerAttribute.set(attributeName, colorMap);
+        }
+        return colorMap;
+    }
+
+    /**
+     * Sets the colormap used for coloring an attribute.
+     * @param attributeName - The name of the attribute
+     * @param colorMap - The colormap to use
+     */
+    public setAttributeColorMap(attributeName: string, colorMap: ColorMap | null): void {
+        const previousColorMap = this._colorMapPerAttribute.get(attributeName);
+        if (previousColorMap != null) {
+            previousColorMap.removeEventListener('updated', this._listeners.updateColorMap);
+        }
+
+        const newColorMap = colorMap ?? DEFAULT_COLORMAP.clone();
+        newColorMap.addEventListener('updated', this._listeners.updateColorMap);
+        this._colorMapPerAttribute.set(attributeName, newColorMap);
     }
 
     private updateColorMap(): void {
@@ -902,6 +934,14 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
 
         this._metadata = await this.source.getMetadata();
 
+        for (const attribute of this._metadata.attributes) {
+            if (attribute.interpretation === 'unknown') {
+                if (!this._colorMapPerAttribute.has(attribute.name)) {
+                    this._colorMapPerAttribute.set(attribute.name, DEFAULT_COLORMAP.clone());
+                }
+            }
+        }
+
         // Default to displaying the first attribute in the list
         this.setActiveAttribute(this._metadata.attributes[0].name);
 
@@ -1043,7 +1083,11 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         this.object3d.clear();
 
         this.source.removeEventListener('updated', this._listeners.clear);
-        this._colorMap.removeEventListener('updated', this._listeners.updateColorMap);
+        this._elevationColorMap.removeEventListener('updated', this._listeners.updateColorMap);
+
+        for (const colorMap of this._colorMapPerAttribute.values()) {
+            colorMap.removeEventListener('updated', this._listeners.updateColorMap);
+        }
 
         this.source.dispose();
     }
@@ -1233,14 +1277,15 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         material.saturation = this._colorimetry.saturation;
         material.contrast = this._colorimetry.contrast;
 
-        material.elevationColorMap = this.colorMap;
+        material.elevationColorMap = this.elevationColorMap;
+
+        if (this.activeAttribute?.interpretation === 'unknown') {
+            material.attributesState = {
+                intensities: [{ colorMap: this.getAttributeColorMap(this.activeAttribute.name) }],
+            };
+        }
 
         material.attributesState = {
-            intensities: [
-                {
-                    colorMap: this.colorMap,
-                },
-            ],
             classifications: [
                 {
                     classifications: this._classifications,

@@ -51,6 +51,9 @@ let entity;
 /** @type {Instance} */
 let instance;
 
+// Create the color map. The color ramp and bounds will be set later.
+const colorMap = new ColorMap({ colors: [], min: 0, max: 1 });
+
 function updateActiveAttribute() {
     const attribute = options.attribute;
 
@@ -82,7 +85,7 @@ const [, , , setAvailableAttributes] = bindDropDown('attribute', attribute => {
 const [setMin] = bindSlider('min', min => {
     options.min = Math.round(min);
     if (entity && instance) {
-        entity.colorMap.min = min;
+        colorMap.min = min;
         instance.notifyChange(entity);
         document.getElementById('label-bounds').innerHTML =
             `Bounds: <b>${options.min}</b> — <b>${options.max}<b>`;
@@ -92,7 +95,7 @@ const [setMin] = bindSlider('min', min => {
 const [setMax] = bindSlider('max', max => {
     options.max = Math.round(max);
     if (entity && instance) {
-        entity.colorMap.max = max;
+        colorMap.max = max;
         instance.notifyChange(entity);
         document.getElementById('label-bounds').innerHTML =
             `Bounds: <b>${options.min}</b> — <b>${options.max}<b>`;
@@ -121,7 +124,7 @@ const [, currentRamp] = bindDropDown('ramp', ramp => {
 
 function updateColorMap() {
     if (entity && instance) {
-        entity.colorMap.colors = makeColorRamp(options.colorRamp);
+        colorMap.colors = makeColorRamp(options.colorRamp);
 
         updateColorMapMinMax();
 
@@ -231,8 +234,9 @@ async function load(url) {
         progressElement.style.display = 'none';
     }
 
-    // Create the color map. The color ramp and bounds will be set later.
-    entity.colorMap = new ColorMap({ colors: [], min: 0, max: 1 });
+    for (const attribute of metadata.attributes) {
+        entity.setAttributeColorMap(attribute.name, colorMap);
+    }
 
     instance.addEventListener('update-end', () =>
         updateDisplayedPointCounts(entity.pointCount, entity.displayedPointCount),
