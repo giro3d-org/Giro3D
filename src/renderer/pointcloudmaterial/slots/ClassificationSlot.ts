@@ -23,15 +23,26 @@ export interface ClassificationSlotState {
     classifications: Classification[];
 }
 
+type SlotIndex = 0 | 1 | 2;
+const slotNames: Record<SlotIndex, string> = {
+    0: 'classification',
+    1: 'classification_1',
+    2: 'classification_2',
+};
+
 export class ClassificationSlot extends AttributeSlot {
+    public static getAttributeName(index: SlotIndex): string {
+        return slotNames[index];
+    }
+
     public readonly texture: ClassificationsTexture;
     public readonly uniform: ClassificationPropertiesUniform;
 
     private readonly _material: HasDefines;
     private readonly _flagDefine: string;
 
-    public constructor(attributeName: string, material: HasDefines, index: number) {
-        super(attributeName);
+    public constructor(material: HasDefines, index: SlotIndex) {
+        super(ClassificationSlot.getAttributeName(index));
 
         this.texture = new ClassificationsTexture();
         this.uniform = {

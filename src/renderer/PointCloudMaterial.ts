@@ -367,20 +367,16 @@ class PointCloudMaterial extends ShaderMaterial {
         this.colorLayer = null;
         this.needsUpdate = true;
 
-        this._colorSlots = [
-            new ColorSlot('color', this, 0),
-            new ColorSlot('color_1', this, 1),
-            new ColorSlot('color_2', this, 2),
-        ];
+        this._colorSlots = [new ColorSlot(this, 0), new ColorSlot(this, 1), new ColorSlot(this, 2)];
         this._intensitySlots = [
-            new ScalarSlot('intensity', this, 0),
-            new ScalarSlot('intensity_1', this, 1),
-            new ScalarSlot('intensity_2', this, 2),
+            new ScalarSlot(this, 0),
+            new ScalarSlot(this, 1),
+            new ScalarSlot(this, 2),
         ];
         this._classificationSlots = [
-            new ClassificationSlot('classification', this, 0),
-            new ClassificationSlot('classification_1', this, 1),
-            new ClassificationSlot('classification_2', this, 2),
+            new ClassificationSlot(this, 0),
+            new ClassificationSlot(this, 1),
+            new ClassificationSlot(this, 2),
         ];
 
         this.uniforms = {

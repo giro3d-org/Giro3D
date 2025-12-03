@@ -22,7 +22,18 @@ export interface ScalarSlotState {
     colorMap: ColorMap;
 }
 
+type SlotIndex = 0 | 1 | 2;
+const slotNames: Record<SlotIndex, string> = {
+    0: 'intensity',
+    1: 'intensity_1',
+    2: 'intensity_2',
+};
+
 export class ScalarSlot extends AttributeSlot {
+    public static getAttributeName(index: SlotIndex): string {
+        return slotNames[index];
+    }
+
     public readonly uniform: ScalarPropertiesUniform;
 
     private readonly _material: HasDefines;
@@ -31,8 +42,8 @@ export class ScalarSlot extends AttributeSlot {
 
     public colorMap: ColorMap = createDefaultColorMap();
 
-    public constructor(attributeName: string, material: HasDefines, index: number) {
-        super(attributeName);
+    public constructor(material: HasDefines, index: SlotIndex) {
+        super(ScalarSlot.getAttributeName(index));
 
         this.uniform = {
             weight: 0,

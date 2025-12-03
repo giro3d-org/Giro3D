@@ -17,14 +17,25 @@ export interface ColorSlotState {
     weight: number;
 }
 
+type SlotIndex = 0 | 1 | 2;
+const slotNames: Record<SlotIndex, string> = {
+    0: 'color',
+    1: 'color_1',
+    2: 'color_2',
+};
+
 export class ColorSlot extends AttributeSlot {
+    public static getAttributeName(index: SlotIndex): string {
+        return slotNames[index];
+    }
+
     public readonly uniform: ColorPropertiesUniform;
 
     private readonly _material: HasDefines;
     private readonly _flagDefine: string | null;
 
-    public constructor(attributeName: string, material: HasDefines, index: number) {
-        super(attributeName);
+    public constructor(material: HasDefines, index: SlotIndex) {
+        super(ColorSlot.getAttributeName(index));
 
         this.uniform = {
             weight: 0,
