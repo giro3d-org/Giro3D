@@ -74,6 +74,8 @@ export enum MODE {
     TEXTURE = 4,
     /** The points are colored using their elevation */
     ELEVATION = 5,
+    /** The points are colored using a mix of their attributes */
+    ATTRIBUTES = 6,
 }
 
 export type Mode = (typeof MODE)[keyof typeof MODE];
@@ -246,6 +248,21 @@ class PointCloudMaterial extends ShaderMaterial {
     }
 
     public set mode(mode: Mode) {
+        if (mode === MODE.COLOR || mode === MODE.CLASSIFICATION || mode === MODE.INTENSITY) {
+            this.attributesState = {
+                colors: [{ weight: mode === MODE.COLOR ? 1 : 0 }, { weight: 0 }, { weight: 0 }],
+                intensities: [
+                    { weight: mode === MODE.INTENSITY ? 1 : 0 },
+                    { weight: 0 },
+                    { weight: 0 },
+                ],
+                classifications: [
+                    { weight: mode === MODE.CLASSIFICATION ? 1 : 0 },
+                    { weight: 0 },
+                    { weight: 0 },
+                ],
+            };
+        }
         this.uniforms.mode.value = mode;
     }
 
@@ -659,15 +676,12 @@ class PointCloudMaterial extends ShaderMaterial {
     }
 
     private updateAttributesWeights(): void {
-        this._intensitySlots[0].weight = this.mode === MODE.INTENSITY ? 1 : 0;
-        this._classificationSlots[0].weight = this.mode === MODE.CLASSIFICATION ? 1 : 0;
-        this._colorSlots[0].weight = this.mode === MODE.COLOR ? 1 : 0;
-
         const allSlots = [
             ...this._intensitySlots,
             ...this._classificationSlots,
             ...this._colorSlots,
         ];
+
         let totalWeight = 0;
         for (const slot of allSlots) {
             totalWeight += slot.actualWeight;

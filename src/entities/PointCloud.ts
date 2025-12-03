@@ -28,6 +28,9 @@ import type PickOptions from '../core/picking/PickOptions';
 import type PickResult from '../core/picking/PickResult';
 import type { IntersectingVolume } from '../renderer/IntersectingVolume';
 import type { Classification } from '../renderer/PointCloudMaterial';
+import type { ClassificationSlotState } from '../renderer/pointcloudmaterial/slots/ClassificationSlot';
+import type { ColorSlotState } from '../renderer/pointcloudmaterial/slots/ColorSlot';
+import type { ScalarSlotState } from '../renderer/pointcloudmaterial/slots/ScalarSlot';
 import type View from '../renderer/View';
 import type { EntityPreprocessOptions, EntityUserData } from './Entity';
 import type { Entity3DEventMap, Entity3DOptions } from './Entity3D';
@@ -40,6 +43,9 @@ import pickPointsAt from '../core/picking/PickPointsAt';
 import PointCloudMesh from '../core/PointCloud';
 import { DefaultQueue } from '../core/RequestQueue';
 import PointCloudMaterial, { ASPRS_CLASSIFICATIONS, MODE } from '../renderer/PointCloudMaterial';
+import { ClassificationSlot } from '../renderer/pointcloudmaterial/slots/ClassificationSlot';
+import { ColorSlot } from '../renderer/pointcloudmaterial/slots/ColorSlot';
+import { ScalarSlot } from '../renderer/pointcloudmaterial/slots/ScalarSlot';
 import {
     traverseNode,
     type PointCloudAttribute,
@@ -185,6 +191,19 @@ interface NodeWithInfo extends PointCloudNode {
     info: NodeInfo;
 }
 
+interface ActiveAttribute {
+    readonly attribute: PointCloudAttribute;
+    weight: number;
+
+    /** @internal */
+    readonly geometrySlot: 0 | 1 | 2;
+}
+
+interface ActiveAttributeDefinition {
+    name: string;
+    weight: number;
+}
+
 /**
  * Constructor options for the {@link PointCloud} entity.
  */
@@ -211,7 +230,7 @@ export interface PointCloudOptions extends Entity3DOptions {
  * Displays point clouds coming from a {@link PointCloudSource}.
  *
  * This entity supports two coloring modes: `'attribute'` and `'layer'`. In coloring mode `'attribute'`,
- * points are colorized from the selected attribute (e.g color, intensity, classification...).
+ * points are colorized from the selected attributes (e.g color, intensity, classification...).
  *
  * ```ts
  * pointCloud.setColoringMode('attribute');
@@ -257,7 +276,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
     private _depthTest = true;
     private _subdivisionThreshold = 1;
     private _shaderMode: MODE = MODE.ELEVATION;
-    private _activeAttribute: PointCloudAttribute | null = null;
+    private _activeAttributes: ActiveAttribute[] = [];
     private _pointSize = 0;
     private _cleanupDelay = DEFAULT_CLEANUP_DELAY;
     private _showVolume = false;
@@ -292,7 +311,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
 
         this._listeners = {
             clear: this.clear.bind(this),
-            updateColorMap: this.updateColorMap.bind(this),
+            updateColorMap: this.updateUniforms.bind(this),
         };
         this.source.addEventListener('updated', this._listeners.clear);
         this._elevationColorMap.addEventListener('updated', this._listeners.updateColorMap);
@@ -384,7 +403,10 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
                 // of the loading, in case the state changes before the loading is finished.
                 value.controller = new AbortController();
                 const signal = value.controller.signal;
-                const activeAttribute = this._activeAttribute;
+
+                const activeAttributes = this._activeAttributes.map(activeAttribute => ({
+                    ...activeAttribute,
+                }));
 
                 const priority = this.getNodeLoadingPriority(value);
 
@@ -393,7 +415,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
                     priority,
                     signal,
                     shouldExecute: () => value.state === 'loading',
-                    request: () => this.loadNodeData(value, signal, activeAttribute),
+                    request: () => this.loadNodeData(value, signal, activeAttributes),
                 }).catch(e => {
                     if (e instanceof AbortError) {
                         // Do nothing
@@ -509,7 +531,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
 
             this._elevationColorMap.addEventListener('updated', this._listeners.updateColorMap);
 
-            this.updateColorMap();
+            this.updateUniforms();
             this.notifyChange(this);
         }
     }
@@ -544,7 +566,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         this._colorMapPerAttribute.set(attributeName, newColorMap);
     }
 
-    private updateColorMap(): void {
+    private updateUniforms(): void {
         this.forEachNodeInfo(info => {
             // We don't want to immediately update the colormap for nodes that are
             // not completely loaded to avoid inconsistent situations where the node
@@ -608,12 +630,12 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
     }
 
     /**
-     * Gets the active attribute.
+     * Gets the active attributes.
      *
-     * Note: to set the active attribute, use {@link setActiveAttribute}.
+     * Note: to set the active attributes, use {@link setActiveAttribute} or {@link setActiveAttributes}.
      */
-    public get activeAttribute(): PointCloudAttribute | null {
-        return this._activeAttribute;
+    public getActiveAttributes(): ReadonlyArray<Readonly<ActiveAttribute>> {
+        return this._activeAttributes;
     }
 
     /**
@@ -628,50 +650,44 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
             this.notifyChange(this);
         } else {
             this._shaderMode = MODE.ELEVATION;
-            this.updateColoringFromAttribute();
+            this.updateColoringFromAttribute(true);
         }
 
         this.traversePointCloudMaterials(m => (m.mode = this._shaderMode));
     }
 
-    private updateColoringFromAttribute(): void {
-        const attribute = nonNull(this._activeAttribute);
-
-        switch (attribute.interpretation) {
-            case 'color':
-                this._shaderMode = MODE.COLOR;
-                break;
-            case 'classification':
-                this._shaderMode = MODE.CLASSIFICATION;
-                break;
-            case 'unknown':
-                // TODO maybe rename into something more generic, since
-                // this will store scalars and not only intensity
-                this._shaderMode = MODE.INTENSITY;
-                break;
+    private updateColoringFromAttribute(needsReload: boolean): void {
+        if (this._activeAttributes.length > 0) {
+            this._shaderMode = MODE.ATTRIBUTES;
         }
 
-        // Let's reload the relevant nodes.
-        this.forEachNodeInfo(info => {
-            switch (info.state) {
-                case 'displayed':
-                case 'loading':
-                    // We must reload the node's data, but only the attribute part.
-                    // No need to reload the position data has it will not change
-                    // inbetween attributes.
-                    info.positionDirty = false;
-                    // Note that we allow transitioning from 'loading' to 'loading', as
-                    // the two states do not match the same attribute, so they are not
-                    // strictly identical.
-                    this._stateMachine.transition(info, 'loading', { allowSelfTransition: true });
-                    break;
-                case 'hidden':
-                    // Since the data is obsolete, we might as well destroy it right now,
-                    // instead of waiting for the expiration delay.
-                    this._stateMachine.transition(info, 'empty');
-                    break;
-            }
-        });
+        if (needsReload) {
+            // Let's reload the relevant nodes.
+            this.forEachNodeInfo(info => {
+                switch (info.state) {
+                    case 'displayed':
+                    case 'loading':
+                        // We must reload the node's data, but only the attribute part.
+                        // No need to reload the position data has it will not change
+                        // inbetween attributes.
+                        info.positionDirty = false;
+                        // Note that we allow transitioning from 'loading' to 'loading', as
+                        // the two states do not match the same attribute, so they are not
+                        // strictly identical.
+                        this._stateMachine.transition(info, 'loading', {
+                            allowSelfTransition: true,
+                        });
+                        break;
+                    case 'hidden':
+                        // Since the data is obsolete, we might as well destroy it right now,
+                        // instead of waiting for the expiration delay.
+                        this._stateMachine.transition(info, 'empty');
+                        break;
+                }
+            });
+        }
+
+        this.updateUniforms();
 
         this.notifyChange(this);
     }
@@ -688,21 +704,84 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
      * @throws {@link UnsupportedAttributeError} If the attribute is not supported by the source.
      */
     public setActiveAttribute(attributeName: string): void {
-        if (this._activeAttribute?.name === attributeName) {
-            return;
+        this.setActiveAttributes([{ name: attributeName, weight: 1 }]);
+    }
+
+    /**
+     * Sets the active attributes.
+     *
+     * Note: to enable coloring from the attributes, use {@link setColoringMode} with mode `'attribute'`.
+     *
+     * Note: To get the supported attributes, use {@link getSupportedAttributes}.
+     *
+     * @param attributes - List of attributes to set activate, with their respective weights. There cannot be more than 3;
+     *
+     * @throws {@link UnsupportedAttributeError} If the attribute is not supported by the source.
+     */
+
+    public setActiveAttributes(attributes: ActiveAttributeDefinition[]): void {
+        if (attributes.length > 3) {
+            throw new Error(
+                `A point cloud cannot have more than 3 active attributes (${attributes.length} were requested).`,
+            );
         }
 
-        const attributes = nonNull(this._metadata?.attributes, 'the entity is not yet ready');
-        const existing = attributes.find(att => att.name === attributeName);
+        // ignore attributes that were requested with an invalid weight
+        attributes = attributes.filter(att => att.weight > 0);
 
-        if (!existing) {
-            throw new UnsupportedAttributeError(attributeName);
+        // deactivate attributes that are requested to be removed
+        this._activeAttributes = this._activeAttributes.filter(activeAttribute => {
+            return attributes.find(att => att.name === activeAttribute.attribute.name) != null;
+        });
+
+        const availableMaterialSlots = {
+            color: new Set([0, 1, 2] as const),
+            classification: new Set([0, 1, 2] as const),
+            unknown: new Set([0, 1, 2] as const),
+        };
+        for (const activeAttribute of this._activeAttributes) {
+            const slotType = activeAttribute.attribute.interpretation;
+            availableMaterialSlots[slotType].delete(activeAttribute.geometrySlot);
         }
 
-        this._activeAttribute = existing;
+        const supportedAttributes = this.getSupportedAttributes();
+        let needsReload = false;
+
+        for (const attribute of attributes) {
+            let activeAttribute = this._activeAttributes.find(
+                att => att.attribute.name === attribute.name,
+            );
+            if (activeAttribute) {
+                activeAttribute.weight = attribute.weight;
+            } else {
+                const supportedAttribute = supportedAttributes.find(
+                    att => att.name === attribute.name,
+                );
+                if (!supportedAttribute) {
+                    throw new UnsupportedAttributeError(attribute.name);
+                }
+
+                const slotType = supportedAttribute.interpretation;
+                const nextSlotAvailable = Array.from(availableMaterialSlots[slotType]).shift();
+                if (typeof nextSlotAvailable === 'undefined') {
+                    throw new Error(
+                        `Could not find an available slot for a newattribute of type "${slotType}".`,
+                    );
+                }
+                availableMaterialSlots[slotType].delete(nextSlotAvailable);
+
+                activeAttribute = {
+                    attribute: supportedAttribute,
+                    weight: attribute.weight,
+                    geometrySlot: nextSlotAvailable,
+                };
+                this._activeAttributes.push(activeAttribute);
+                needsReload = true;
+            }
+        }
 
         if (this._shaderMode !== MODE.TEXTURE) {
-            this.updateColoringFromAttribute();
+            this.updateColoringFromAttribute(needsReload);
         }
     }
 
@@ -1196,30 +1275,31 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         return sse > this.subdivisionThreshold;
     }
 
-    private updateGeometry(geometry: BufferGeometry, data: PointCloudNodeData): BufferGeometry {
+    private updateGeometry(
+        geometry: BufferGeometry,
+        data: PointCloudNodeData,
+        attributeNames: string[],
+    ): BufferGeometry {
         if (data.position) {
             geometry.setAttribute('position', data.position);
         }
 
-        const dataAttribute = data.attributes[0];
-        if (dataAttribute && this._activeAttribute && dataAttribute.count > 0) {
-            const active = this._activeAttribute;
-            if (active.interpretation === 'classification') {
-                geometry.setAttribute('classification', dataAttribute);
-            } else if (active.interpretation === 'color') {
-                geometry.setAttribute('color', dataAttribute);
-            } else {
-                geometry.setAttribute('intensity', dataAttribute);
+        for (let i = 0; i < data.attributes.length; i++) {
+            const dataAttribute = data.attributes[i];
+            const name = attributeNames[i];
+
+            if (dataAttribute && dataAttribute.count > 0) {
+                geometry.setAttribute(name, dataAttribute);
             }
         }
 
         return geometry;
     }
 
-    private createGeometry(data: PointCloudNodeData): BufferGeometry {
+    private createGeometry(data: PointCloudNodeData, attributeNames: string[]): BufferGeometry {
         const geometry = new BufferGeometry();
 
-        this.updateGeometry(geometry, data);
+        this.updateGeometry(geometry, data, attributeNames);
 
         return geometry;
     }
@@ -1231,8 +1311,12 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         return result;
     }
 
-    private createMesh(data: PointCloudNodeData, volume: Box3): PointCloudMesh {
-        const geometry = this.createGeometry(data);
+    private createMesh(
+        data: PointCloudNodeData,
+        attributeNames: string[],
+        volume: Box3,
+    ): PointCloudMesh {
+        const geometry = this.createGeometry(data, attributeNames);
 
         const mesh = new PointCloudMesh({
             geometry,
@@ -1290,22 +1374,47 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
 
         material.elevationColorMap = this.elevationColorMap;
 
-        if (this.activeAttribute?.interpretation === 'unknown') {
-            material.attributesState = {
-                intensities: [{ colorMap: this.getAttributeColorMap(this.activeAttribute.name) }],
-            };
-        } else if (this.activeAttribute?.interpretation === 'classification') {
-            material.attributesState = {
-                classifications: [
-                    {
-                        classifications: this.getOrCreateAttributeClassifications(
-                            this.activeAttribute.name,
-                        ),
-                    },
-                ],
-            };
-        }
+        const colorsState: Partial<ColorSlotState>[] = [
+            { weight: 0 },
+            { weight: 0 },
+            { weight: 0 },
+        ];
+        const classificationsState: Partial<ClassificationSlotState>[] = [
+            { weight: 0 },
+            { weight: 0 },
+            { weight: 0 },
+        ];
+        const intensitiesStates: Partial<ScalarSlotState>[] = [
+            { weight: 0 },
+            { weight: 0 },
+            { weight: 0 },
+        ];
+        for (const activeAttribute of this._activeAttributes) {
+            const interpretation = activeAttribute.attribute.interpretation;
 
+            if (interpretation === 'unknown') {
+                intensitiesStates[activeAttribute.geometrySlot] = {
+                    weight: activeAttribute.weight,
+                    colorMap: this.getAttributeColorMap(activeAttribute.attribute.name),
+                };
+            } else if (interpretation === 'classification') {
+                classificationsState[activeAttribute.geometrySlot] = {
+                    weight: activeAttribute.weight,
+                    classifications: this.getOrCreateAttributeClassifications(
+                        activeAttribute.attribute.name,
+                    ),
+                };
+            } else if (interpretation === 'color') {
+                colorsState[activeAttribute.geometrySlot] = {
+                    weight: activeAttribute.weight,
+                };
+            }
+        }
+        material.attributesState = {
+            colors: colorsState,
+            intensities: intensitiesStates,
+            classifications: classificationsState,
+        };
         material.updateUniforms();
     }
 
@@ -1336,7 +1445,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
     private async loadNodeData(
         info: NodeInfo,
         signal: AbortSignal,
-        attribute: PointCloudAttribute | null,
+        attributesAndSlots: ActiveAttribute[],
     ): Promise<void> {
         try {
             if (signal.aborted) {
@@ -1344,13 +1453,23 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
             }
 
             const node = info.node;
+            const attributes = attributesAndSlots.map(att => att.attribute);
+            const attributeNames = attributesAndSlots.map(att => {
+                if (att.attribute.interpretation === 'color') {
+                    return ColorSlot.getAttributeName(att.geometrySlot);
+                } else if (att.attribute.interpretation === 'classification') {
+                    return ClassificationSlot.getAttributeName(att.geometrySlot);
+                } else {
+                    return ScalarSlot.getAttributeName(att.geometrySlot);
+                }
+            });
 
             const data = await this.source.getNodeData({
                 node,
                 // Let's not reload the point position if we already have them,
                 // as they are not going to change when switching attributes for example.
                 position: info.mesh == null || info.positionDirty,
-                attributes: attribute ? [attribute] : [],
+                attributes,
                 signal,
             });
 
@@ -1363,10 +1482,10 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
             if (info.mesh != null) {
                 // Let's just update the geometry rather
                 // than recreate the material and mesh.
-                this.updateGeometry(info.mesh.geometry, data);
+                this.updateGeometry(info.mesh.geometry, data, attributeNames);
                 this.updateMaterial(info.mesh);
             } else {
-                const mesh = this.createMesh(data, node.volume);
+                const mesh = this.createMesh(data, attributeNames, node.volume);
                 mesh.name = node.id;
                 info.mesh = mesh;
                 this.onObjectCreated(mesh);

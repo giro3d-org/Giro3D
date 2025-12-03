@@ -107,8 +107,9 @@ function updateColorMapMinMax() {
         return;
     }
 
-    const min = entity.activeAttribute.min ?? 0;
-    const max = entity.activeAttribute.max ?? 255;
+    const activeAttribute = entity.getActiveAttributes()[0].attribute;
+    const min = activeAttribute.min ?? 0;
+    const max = activeAttribute.max ?? 255;
 
     const lowerBound = min;
     const upperBound = max;
