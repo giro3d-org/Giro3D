@@ -163,12 +163,12 @@ export interface Defines extends Record<string, unknown> {
     INTERSECTING_VOLUMES_SUPPORT?: 1;
     MAX_INTERSECTING_VOLUMES_COUNT?: number;
 
-    INTENSITY_0?: 1;
-    INTENSITY_0_TYPE: VertexAttributeType;
-    INTENSITY_1?: 1;
-    INTENSITY_1_TYPE: VertexAttributeType;
-    INTENSITY_2?: 1;
-    INTENSITY_2_TYPE: VertexAttributeType;
+    SCALAR_0?: 1;
+    SCALAR_0_TYPE: VertexAttributeType;
+    SCALAR_1?: 1;
+    SCALAR_1_TYPE: VertexAttributeType;
+    SCALAR_2?: 1;
+    SCALAR_2_TYPE: VertexAttributeType;
 }
 
 export interface AttributesState {
@@ -367,9 +367,9 @@ class PointCloudMaterial extends ShaderMaterial {
 
         // Default
         this.defines = {
-            INTENSITY_0_TYPE: 'uint',
-            INTENSITY_1_TYPE: 'uint',
-            INTENSITY_2_TYPE: 'uint',
+            SCALAR_0_TYPE: 'uint',
+            SCALAR_1_TYPE: 'uint',
+            SCALAR_2_TYPE: 'uint',
             MAX_INTERSECTING_VOLUMES_COUNT: PointCloudMaterial.maxIntersectingVolumesCount,
         };
 

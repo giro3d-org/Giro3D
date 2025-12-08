@@ -41,14 +41,14 @@ struct IntensityProperties {
     PointCloudColorMap colorMap;
 };
 uniform IntensityProperties intensityProperties[3];
-#if defined(INTENSITY_0)
-attribute INTENSITY_0_TYPE intensity;
+#if defined(SCALAR_0)
+attribute SCALAR_0_TYPE intensity;
 #endif
-#if defined(INTENSITY_1)
-attribute INTENSITY_1_TYPE intensity_1;
+#if defined(SCALAR_1)
+attribute SCALAR_1_TYPE intensity_1;
 #endif
-#if defined(INTENSITY_2)
-attribute INTENSITY_2_TYPE intensity_2;
+#if defined(SCALAR_2)
+attribute SCALAR_2_TYPE intensity_2;
 #endif
 
 struct ClassificationProperties {
@@ -192,13 +192,13 @@ void main() {
     } else {
         vColor = vec4(0);
         
-        #if defined(INTENSITY_0)
+        #if defined(SCALAR_0)
         addScalarContribution(float(intensity), intensityProperties[0], vColor);
         #endif
-        #if defined(INTENSITY_1)
+        #if defined(SCALAR_1)
         addScalarContribution(float(intensity_1), intensityProperties[1], vColor);
         #endif
-        #if defined(INTENSITY_2)
+        #if defined(SCALAR_2)
         addScalarContribution(float(intensity_2), intensityProperties[2], vColor);
         #endif
 

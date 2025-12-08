@@ -51,8 +51,8 @@ export class ScalarSlot extends AttributeSlot {
         };
         this._material = material;
 
-        this._flagDefine = `INTENSITY_${index}`;
-        this._typeDefine = `INTENSITY_${index}_TYPE`;
+        this._flagDefine = `SCALAR_${index}`;
+        this._typeDefine = `SCALAR_${index}_TYPE`;
         this.intensityType = 'uint';
     }
 
