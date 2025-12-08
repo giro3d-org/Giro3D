@@ -36,11 +36,11 @@ attribute vec3 color_1;
 attribute vec3 color_2;
 #endif
 
-struct IntensityProperties {
+struct ScalarProperties {
     float weight;
     PointCloudColorMap colorMap;
 };
-uniform IntensityProperties intensityProperties[3];
+uniform ScalarProperties scalarProperties[3];
 #if defined(SCALAR_0)
 attribute SCALAR_0_TYPE scalar;
 #endif
@@ -135,7 +135,7 @@ vec4 computeColorFromScalar(const float value, const PointCloudColorMap colorMap
     return sampleColorMap(value, colorMap.min, colorMap.max, colorMap.lut, 0.0);
 }
 
-void addScalarContribution(const float value, const IntensityProperties properties, inout vec4 color) {
+void addScalarContribution(const float value, const ScalarProperties properties, inout vec4 color) {
     if (properties.weight > 0.0) {
         color += computeColorFromScalar(value, properties.colorMap) * properties.weight;
     }
@@ -193,13 +193,13 @@ void main() {
         vColor = vec4(0);
         
         #if defined(SCALAR_0)
-        addScalarContribution(float(scalar), intensityProperties[0], vColor);
+        addScalarContribution(float(scalar), scalarProperties[0], vColor);
         #endif
         #if defined(SCALAR_1)
-        addScalarContribution(float(scalar_1), intensityProperties[1], vColor);
+        addScalarContribution(float(scalar_1), scalarProperties[1], vColor);
         #endif
         #if defined(SCALAR_2)
-        addScalarContribution(float(scalar_2), intensityProperties[2], vColor);
+        addScalarContribution(float(scalar_2), scalarProperties[2], vColor);
         #endif
 
         #if defined(CLASSIFICATION_0)

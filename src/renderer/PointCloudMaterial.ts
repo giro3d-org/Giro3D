@@ -134,7 +134,7 @@ interface Uniforms extends Record<string, IUniform> {
     elevationColorMap: IUniform<ColorMapUniform>;
 
     colorProperties: IUniform<ColorPropertiesUniform[]>;
-    intensityProperties: IUniform<ScalarPropertiesUniform[]>;
+    scalarProperties: IUniform<ScalarPropertiesUniform[]>;
     classificationProperties: IUniform<ClassificationPropertiesUniform[]>;
 
     enableDeformations: IUniform<boolean>;
@@ -404,7 +404,7 @@ class PointCloudMaterial extends ShaderMaterial {
             fogColor: new Uniform(new Color(0xffffff)),
 
             colorProperties: new Uniform(this._colorSlots.map(slot => slot.uniform)),
-            intensityProperties: new Uniform(this._intensitySlots.map(slot => slot.uniform)),
+            scalarProperties: new Uniform(this._intensitySlots.map(slot => slot.uniform)),
             classificationProperties: new Uniform(
                 this._classificationSlots.map(slot => slot.uniform),
             ),
