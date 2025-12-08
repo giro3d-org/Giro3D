@@ -317,7 +317,6 @@ export default class LASSource extends PointCloudSourceBase {
         const compressColors = this._options.compressColorsToUint8;
         let attribute: BufferAttribute | undefined = undefined;
 
-        this._opCounter.increment();
         if (requestedAttribute != null) {
             this._opCounter.increment();
         }
@@ -326,6 +325,7 @@ export default class LASSource extends PointCloudSourceBase {
         let localBoundingBox: Box3 | undefined = undefined;
 
         if (params.position) {
+            this._opCounter.increment();
             const result = await defer(() => readPosition(view, origin, stride, filters)).finally(
                 () => this._opCounter.decrement(),
             );
