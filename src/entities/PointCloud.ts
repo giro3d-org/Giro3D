@@ -40,7 +40,6 @@ import ColorMap from '../core/ColorMap';
 import Extent from '../core/geographic/Extent';
 import { getGeometryMemoryUsage } from '../core/MemoryUsage';
 import pickPointsAt from '../core/picking/PickPointsAt';
-import PointCloudMesh from '../core/PointCloud';
 import { DefaultQueue } from '../core/RequestQueue';
 import PointCloudMaterial, { ASPRS_CLASSIFICATIONS, MODE } from '../renderer/PointCloudMaterial';
 import { ClassificationSlot } from '../renderer/pointcloudmaterial/slots/ClassificationSlot';
@@ -59,6 +58,7 @@ import { AbortError } from '../utils/PromiseUtils';
 import StateMachine from '../utils/StateMachine';
 import { nonNull } from '../utils/tsutils';
 import Entity3D from './Entity3D';
+import { PointCloudMesh } from './pointcloud/PointCloudMesh';
 
 /**
  * - empty: no mesh data yet. Initial state.

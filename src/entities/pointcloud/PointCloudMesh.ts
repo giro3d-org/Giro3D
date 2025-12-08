@@ -13,19 +13,19 @@ import {
     type Vector2,
 } from 'three';
 
-import type PointCloudMaterial from '../renderer/PointCloudMaterial';
-import type Disposable from './Disposable';
-import type Extent from './geographic/Extent';
+import type Disposable from '../../core/Disposable';
+import type Extent from '../../core/geographic/Extent';
+import type PointCloudMaterial from '../../renderer/PointCloudMaterial';
 
-import { enablePointCloudPostProcessing } from '../renderer/RenderPipeline';
-import { nonNull } from '../utils/tsutils';
+import { enablePointCloudPostProcessing } from '../../renderer/RenderPipeline';
+import { nonNull } from '../../utils/tsutils';
 
 export interface PointCloudEventMap extends Object3DEventMap {
     'visibility-changed': unknown;
     dispose: unknown;
 }
 
-/** Options for constructing {@link PointCloud} */
+/** Options for constructing {@link PointCloudMesh} */
 export interface PointCloudOptions<M extends Material = Material> {
     /** Geometry */
     geometry: BufferGeometry;
@@ -40,7 +40,7 @@ export interface PointCloudOptions<M extends Material = Material> {
  * A point cloud object with geospatial properties.
  *
  */
-class PointCloud<M extends PointCloudMaterial = PointCloudMaterial>
+class PointCloudMesh<M extends PointCloudMaterial = PointCloudMaterial>
     extends Points<BufferGeometry, M>
     implements EventDispatcher<PointCloudEventMap>, Disposable
 {
@@ -51,12 +51,12 @@ class PointCloud<M extends PointCloudMaterial = PointCloudMaterial>
     public textureSize: Vector2;
     public disposed: boolean;
 
-    public static isPointCloud(obj: unknown): obj is PointCloud {
-        return (obj as PointCloud)?.isPointCloud;
+    public static isPointCloud(obj: unknown): obj is PointCloudMesh {
+        return (obj as PointCloudMesh)?.isPointCloud;
     }
 
     public get lod(): number {
-        if (PointCloud.isPointCloud(this.parent)) {
+        if (PointCloudMesh.isPointCloud(this.parent)) {
             return this.parent.lod + 1;
         } else {
             return 0;
@@ -123,4 +123,4 @@ class PointCloud<M extends PointCloudMaterial = PointCloudMaterial>
     }
 }
 
-export default PointCloud;
+export { PointCloudMesh };

@@ -34,8 +34,6 @@ import type OffsetScale from './OffsetScale';
 import type OperationCounter from './OperationCounter';
 import type { OperationCounterEvents } from './OperationCounter';
 import type * as picking from './picking/api';
-import type PointCloud from './PointCloud';
-import type { PointCloudEventMap, PointCloudOptions } from './PointCloud';
 import type Progress from './Progress';
 import type Rect from './Rect';
 import type TerrainOptions from './TerrainOptions';
@@ -85,9 +83,6 @@ export {
     OperationCounterEvents,
     picking,
     PickObjectsAtOptions,
-    PointCloud,
-    PointCloudEventMap,
-    PointCloudOptions,
     Progress,
     Rect,
     RenderingState,
