@@ -31,12 +31,12 @@ export interface AtlasInfo {
     atlas: Atlas | null;
 }
 
-type LayerBlock = {
+interface LayerBlock {
     layerId: string;
     fit?: Node;
     w: number;
     h: number;
-};
+}
 
 /**
  * Build a texture atlas from N images.

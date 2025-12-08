@@ -12,18 +12,24 @@ import OperationCounter from '../core/OperationCounter';
 /**
  * A message to send to the worker.
  */
-export type Message<T = unknown> = {
+export interface Message<T = unknown> {
     /**
      * The unique id of this message. Used to match the response to the original message.
      */
     id: number;
     type: string;
     payload: T;
-};
+}
 
-export type BaseResponse = { requestId: number };
-export type SuccessResponse<T = unknown> = BaseResponse & { payload: T };
-export type ErrorResponse = BaseResponse & { error: string };
+export interface BaseResponse {
+    requestId: number;
+}
+export interface SuccessResponse<T = unknown> extends BaseResponse {
+    payload: T;
+}
+export interface ErrorResponse extends BaseResponse {
+    error: string;
+}
 export type Response<T = unknown> = SuccessResponse<T> | ErrorResponse;
 
 export class WorkerError extends Error {
@@ -35,12 +41,12 @@ export class WorkerError extends Error {
     }
 }
 
-export type PoolWorker = {
+export interface PoolWorker {
     terminate(): void;
     postMessage(message: Message, transfer: Transferable[]): void;
     addEventListener(type: 'message', listener: (ev: MessageEvent<Response>) => void): void;
     removeEventListener(type: 'message', listener: (ev: MessageEvent<Response>) => void): void;
-};
+}
 
 export function createErrorResponse(requestId: number, error: unknown): Response {
     return {
@@ -49,11 +55,11 @@ export function createErrorResponse(requestId: number, error: unknown): Response
     };
 }
 
-type WorkerWrapper = {
+interface WorkerWrapper {
     counter: OperationCounter;
     worker: PoolWorker;
     idleTimeout: NodeJS.Timeout | null;
-};
+}
 
 export type BaseMessageMap<K extends string> = Record<K, { payload: unknown; response: unknown }>;
 

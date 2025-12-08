@@ -41,7 +41,7 @@ export const DEFAULT_LINE_WIDTH_UNITS: LineWidthUnit = 'pixels';
 
 export const DEFAULT_SURFACE_COLOR = '#87c6fa';
 
-export type BaseStyle = {
+export interface BaseStyle {
     /**
      * The opacity of the style.
      * @defaultValue 1
@@ -59,12 +59,12 @@ export type BaseStyle = {
      * of the displayed mesh will be 13.
      */
     renderOrder?: number;
-};
+}
 
 /**
  * Fill style for vector features.
  */
-export type FillStyle = BaseStyle & {
+export interface FillStyle extends BaseStyle {
     /**
      * The fill color.
      * @defaultValue {@link DEFAULT_SURFACE_COLOR}
@@ -75,12 +75,12 @@ export type FillStyle = BaseStyle & {
      * @defaultValue false
      */
     shading?: boolean;
-};
+}
 
 /**
  * Stroke style for vector features.
  */
-export type StrokeStyle = BaseStyle & {
+export interface StrokeStyle extends BaseStyle {
     /**
      * The color of the line.
      * @defaultValue {@link DEFAULT_LINE_COLOR}
@@ -98,12 +98,12 @@ export type StrokeStyle = BaseStyle & {
      * @defaultValue {@link DEFAULT_LINE_WIDTH_UNITS}
      */
     lineWidthUnits?: LineWidthUnit;
-};
+}
 
 /**
  * Point style for vector features.
  */
-export type PointStyle = BaseStyle & {
+export interface PointStyle extends BaseStyle {
     /**
      * The color of the point.
      * @defaultValue {@link DEFAULT_POINT_COLOR}
@@ -126,7 +126,7 @@ export type PointStyle = BaseStyle & {
      * @defaultValue `false`
      */
     sizeAttenuation?: boolean;
-};
+}
 
 /**
  * Returns a fill style where every property is defined, if necessary with default values.
@@ -224,7 +224,7 @@ export function hashStyle(
     return `${prefix}::${items.sort().join(',')}`;
 }
 
-export type FeatureStyle = {
+export interface FeatureStyle {
     /**
      * The fill style to apply to `Polygon`s and `MultiPolygon`s geometries.
      */
@@ -237,7 +237,7 @@ export type FeatureStyle = {
      * The style to apply to `Point`s and `MultiPoint`s.
      */
     point?: PointStyle;
-};
+}
 
 /**
  * This callback is called just after a source data has been converted to a THREE.js Mesh, to

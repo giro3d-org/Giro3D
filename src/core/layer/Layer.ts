@@ -224,7 +224,7 @@ export class Target implements MemoryUsage {
     }
 }
 
-type FetchImagesOptions = {
+interface FetchImagesOptions {
     /** The request extent. */
     extent: Extent;
     /** The request width, in pixels. */
@@ -233,7 +233,7 @@ type FetchImagesOptions = {
     height: number;
     /** The target of the images. */
     target: Target;
-};
+}
 
 export interface LayerEvents {
     /**

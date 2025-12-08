@@ -53,11 +53,11 @@ const createGetter: (url: string) => Getter = url => {
     };
 };
 
-type PerfOptions = {
+interface PerfOptions {
     decimate: number;
     enableWorkers: boolean;
     compressColorsToUint8: boolean;
-};
+}
 
 async function decodeLazChunkSync(chunk: Uint8Array, metadata: Metadata): Promise<Uint8Array> {
     const lp = await getLazPerf();
@@ -75,17 +75,17 @@ async function decodeLazChunkUsingWorker(
         .then(res => new Uint8Array(res));
 }
 
-export type COPCSourceOptions = CommonOptions & {
+export interface COPCSourceOptions extends CommonOptions {
     /**
      * The URL to the remote COPC LAS file, or a copc.js `Getter` function to directly access the file byte range.
      */
     url: string | Getter;
-};
+}
 
 /**
  * Data acquired from the remote file during initialization.
  */
-type RemoteData = {
+interface RemoteData {
     copc: Copc;
     /**
      * The actual volume of the LAS file. This is different from the volume of the octree.
@@ -93,14 +93,14 @@ type RemoteData = {
     volume: Box3;
     nodes: Map<string, Hierarchy.Node>;
     dimensions: Dimension.Map;
-};
+}
 
-type NodeInternalData = PointCloudNode & {
+interface NodeInternalData extends PointCloudNode {
     x: number;
     y: number;
     z: number;
     depth: number;
-};
+}
 
 const tmpCenter = new Vector3();
 const tmpSize = new Vector3();

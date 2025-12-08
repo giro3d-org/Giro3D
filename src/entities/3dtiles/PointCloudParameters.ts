@@ -35,7 +35,7 @@ export const DEFAULT_TILES3D_POINTCLOUD_ATTRIBUTE_MAPPING: PointCloudBatchTableA
     intensity: 'intensity',
 };
 
-type PointCloudParameters = {
+interface PointCloudParameters {
     colorimetry: ColorimetryOptions;
     pointSize: number;
     pointCloudMode: Mode;
@@ -43,6 +43,6 @@ type PointCloudParameters = {
     classifications: Classification[];
     overlayColor: Color | null;
     attributeMapping: PointCloudBatchTableAttributeMapping;
-};
+}
 
 export default PointCloudParameters;

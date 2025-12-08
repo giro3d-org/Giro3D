@@ -8,9 +8,9 @@ import { describe, expect, it } from 'vitest';
 
 import NestedMap from '@giro3d/giro3d/utils/NestedMap';
 
-type Value = {
+interface Value {
     payload: number;
-};
+}
 
 describe('getOrDefault', () => {
     it('should returns the provided default value if the key tuple is not present', () => {
@@ -42,10 +42,10 @@ describe('getOrDefault', () => {
 
 describe('forEach', () => {
     it('should visit all items and they are consistent', () => {
-        type V = {
+        interface V {
             k0: number;
             k1: number;
-        };
+        }
 
         const map = new NestedMap<number, number, V>();
 

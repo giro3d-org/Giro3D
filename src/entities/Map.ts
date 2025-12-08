@@ -507,7 +507,10 @@ export interface MapOptions extends Entity3DOptions {
     subdivisionStrategy?: MapSubdivisionStrategy;
 }
 
-type ObjectOptions = { castShadow: boolean; receiveShadow: boolean };
+interface ObjectOptions {
+    castShadow: boolean;
+    receiveShadow: boolean;
+}
 
 /**
  * A map is an {@link Entity3D} that represents a flat surface displaying one or more {@link core.layer.Layer | layer(s)}.

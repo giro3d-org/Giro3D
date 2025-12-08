@@ -15,11 +15,11 @@ import { getLazPerf, setLazPerfWasmBinary } from './config';
 import { getPerPointFilters } from './filter';
 import { readColor, readPosition, readScalarAttribute } from './readers';
 
-export type Metadata = {
+export interface Metadata {
     pointCount: number;
     pointDataRecordFormat: number;
     pointDataRecordLength: number;
-};
+}
 
 async function decompressChunk(chunk: ArrayBufferLike, metadata: Metadata): Promise<copc.Binary> {
     const lazPerf = await getLazPerf();
@@ -35,19 +35,21 @@ export type BoundingBox = [number, number, number, number, number, number];
 
 export type MessageType = 'DecodeLazChunk' | 'DecodeLazFile' | 'ReadView' | 'SetWasmBinary';
 
-type TypedMessage<K extends MessageType, T> = Message<T> & { type: K };
+interface TypedMessage<K extends MessageType, T> extends Message<T> {
+    type: K;
+}
 
 type DecodeLazChunkMessage = TypedMessage<
     'DecodeLazChunk',
     { buffer: ArrayBufferLike; metadata: Metadata }
 >;
-export type ReadViewResult = {
+export interface ReadViewResult {
     position?: {
         buffer: ArrayBuffer;
         localBoundingBox: BoundingBox;
     };
     attribute?: ArrayBuffer;
-};
+}
 type ReadViewMessage = TypedMessage<
     'ReadView',
     {
@@ -69,7 +71,10 @@ type DecodeLazChunkResponse = SuccessResponse<ArrayBufferLike>;
 type DecodeLazFileResponse = SuccessResponse<ArrayBufferLike>;
 type ReadViewResponse = SuccessResponse<ReadViewResult>;
 
-export type SetWasmBinaryMessage = { type: 'SetWasmBinary'; buffer: ArrayBuffer };
+export interface SetWasmBinaryMessage {
+    type: 'SetWasmBinary';
+    buffer: ArrayBuffer;
+}
 
 type Messages =
     | DecodeLazFileMessage

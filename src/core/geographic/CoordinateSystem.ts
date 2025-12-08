@@ -8,20 +8,39 @@ import { register } from 'ol/proj/proj4.js';
 import proj4 from 'proj4';
 // @ts-expect-error no types
 import parseCode from 'proj4/lib/parseCode';
+// @ts-expect-error no types
+import wktParser from 'wkt-parser';
 
 import SRID from './SRID';
 import { LinearUnit, AngularUnit, parseUnit, type Unit } from './Unit';
 
 type ID = Record<string, number>;
 
-type WktUnit = { name: string; convert: number; AUTHORITY?: object };
+interface WktUnit {
+    name: string;
+    convert: number;
+    AUTHORITY?: object;
+}
 
-type ProjCS = { type: 'PROJCS'; name: string; UNIT: WktUnit; AUTHORITY?: object };
-type VertCS = { UNIT: WktUnit };
+interface ProjCS {
+    type: 'PROJCS';
+    name: string;
+    UNIT: WktUnit;
+    AUTHORITY?: object;
+}
+interface VertCS {
+    UNIT: WktUnit;
+}
 
-type ProjCRS = { ID: ID };
+interface ProjCRS {
+    ID: ID;
+}
 
-type CompoundCS = { type: 'COMPD_CS'; PROJCS: ProjCS; VERT_CS: VertCS };
+interface CompoundCS {
+    type: 'COMPD_CS';
+    PROJCS: ProjCS;
+    VERT_CS: VertCS;
+}
 
 function parseLinearUnit(unit: WktUnit): LinearUnit {
     return new LinearUnit(unit.name, unit.convert);
@@ -39,7 +58,11 @@ function getNicename(obj: object): string {
     return '<unknown>';
 }
 
-type ProjCSInfos = { name: string; srid?: SRID; unit: LinearUnit };
+interface ProjCSInfos {
+    name: string;
+    srid?: SRID;
+    unit: LinearUnit;
+}
 function getProjCsInfos(projCs: ProjCS): ProjCSInfos {
     const name = getNicename(projCs);
     const unit = parseLinearUnit(projCs.UNIT);
@@ -253,7 +276,16 @@ export default class CoordinateSystem {
      */
     public static fromWkt(wkt: string, overrides?: { id?: string }): CoordinateSystem {
         try {
-            const parsed = parseCode(wkt) as ProjCRS | ProjCS | CompoundCS | object;
+            let parsed: ProjCRS | ProjCS | CompoundCS | object;
+
+            try {
+                // We use the wkt-parser package directly because it provides better
+                // information, especially correct SRID, but only works for WKT.
+                // For a proj string, we have to fallback to parseCode()
+                parsed = wktParser(wkt);
+            } catch {
+                parsed = parseCode(wkt);
+            }
 
             if ('ID' in parsed) {
                 // WKT 2 / PROJCRS

@@ -43,7 +43,10 @@ function normalizeAngle360(degrees: number): number {
     return angle >= 0 ? angle : angle < 0 ? 360 + angle : 360 - angle;
 }
 
-type Celestial = { rightAscension: number; declination: number };
+interface Celestial {
+    rightAscension: number;
+    declination: number;
+}
 
 function celestialToGeographic(
     celestialLocation: Celestial,

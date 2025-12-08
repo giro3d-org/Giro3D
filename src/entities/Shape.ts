@@ -71,7 +71,7 @@ function toNumberArray(vectors: Vector3[], origin: Vector3): ArrayLike<number> {
 
 export type Formatter<T> = (values: T) => string | null;
 
-export type LineLabelFormatOptions = {
+export interface LineLabelFormatOptions {
     /**
      * The shape the lable belongs to.
      */
@@ -84,7 +84,7 @@ export type LineLabelFormatOptions = {
      * The length of the segment or line, in CRS units.
      */
     length: number;
-};
+}
 
 /**
  * A formatter for length values.
@@ -93,7 +93,7 @@ export type LineLabelFormatOptions = {
  */
 export type LineLabelFormatter = Formatter<LineLabelFormatOptions>;
 
-export type SegmentLabelFormatOptions = {
+export interface SegmentLabelFormatOptions {
     /**
      * The shape the lable belongs to.
      */
@@ -114,7 +114,7 @@ export type SegmentLabelFormatOptions = {
      * The coordinate of the segment end.
      */
     end: Vector3;
-};
+}
 
 /**
  * A formatter for segment values.
@@ -123,7 +123,7 @@ export type SegmentLabelFormatOptions = {
  */
 export type SegmentLabelFormatter = Formatter<SegmentLabelFormatOptions>;
 
-export type VerticalLineFormatOptions = {
+export interface VerticalLineFormatOptions {
     /**
      * The shape the lable belongs to.
      */
@@ -140,7 +140,7 @@ export type VerticalLineFormatOptions = {
      * The length of the line, in CRS units.
      */
     length: number;
-};
+}
 
 /**
  * A formatter for vertical lines labels.
@@ -149,7 +149,7 @@ export type VerticalLineFormatOptions = {
  */
 export type VerticalLineLabelFormatter = Formatter<VerticalLineFormatOptions>;
 
-export type SurfaceFormatOptions = {
+export interface SurfaceFormatOptions {
     shape: Shape;
     /**
      * The default formatter used as fallback.
@@ -159,7 +159,7 @@ export type SurfaceFormatOptions = {
      * The area to format, in CRS square units.
      */
     area: number;
-};
+}
 
 /**
  * A formatter for the surface label.
@@ -170,7 +170,7 @@ export type SurfaceLabelFormatter = Formatter<SurfaceFormatOptions>;
 
 export type SurfaceLabelPlacement = (params: { shape: Shape }) => Vector3;
 
-export type VertexFormatOptions = {
+export interface VertexFormatOptions {
     shape: Shape;
     /**
      * The default formatter for vertices.
@@ -184,7 +184,7 @@ export type VertexFormatOptions = {
      * The position of the vertex in world space.
      */
     position: Vector3;
-};
+}
 export type VertexLabelFormatter = Formatter<VertexFormatOptions>;
 
 /**
@@ -201,7 +201,7 @@ export type PostHook<T> = (args: T) => void;
 /**
  * Hook options for point removal.
  */
-export type RemovePointHook = {
+export interface RemovePointHook {
     /**
      * The shape that triggered the hook.
      */
@@ -214,12 +214,12 @@ export type RemovePointHook = {
      * The position of the point to remove.
      */
     position: Vector3;
-};
+}
 
 /**
  * Hook options for point update.
  */
-export type UpdatePointHook = {
+export interface UpdatePointHook {
     /**
      * The shape that triggered the hook.
      */
@@ -236,12 +236,12 @@ export type UpdatePointHook = {
      * The new position of the updated point.
      */
     newPosition: Vector3;
-};
+}
 
 /**
  * Hook options for point insertion.
  */
-export type InsertPointHook = {
+export interface InsertPointHook {
     /**
      * The shape that triggered the hook.
      */
@@ -254,7 +254,7 @@ export type InsertPointHook = {
      * The position of the inserted point.
      */
     position: Vector3;
-};
+}
 
 const tmpIntersectList: Intersection[] = [];
 
@@ -264,7 +264,7 @@ const SQ_KILOMETER = KILOMETER * KILOMETER;
 /**
  * The picking result for shapes.
  */
-export type ShapePickResult = PickResult & {
+export interface ShapePickResult extends PickResult {
     isShapePickResult: true;
     /**
      * The index of the picked vertex, otherwise `null`.
@@ -283,19 +283,19 @@ export type ShapePickResult = PickResult & {
      */
     pickedLabel?: boolean;
     entity: Shape;
-};
+}
 
 export function isShapePickResult(obj?: unknown): obj is ShapePickResult {
     return (obj as ShapePickResult)?.isShapePickResult;
 }
 
-export type ShapeExportOptions = {
+export interface ShapeExportOptions {
     /**
      * Should the elevation/altitude of points be exported?
      * @defaultValue true
      */
     includeAltitudes?: boolean;
-};
+}
 
 function defaultLabelPlacement(options: { shape: Shape }): Vector3 {
     const { points } = options.shape;

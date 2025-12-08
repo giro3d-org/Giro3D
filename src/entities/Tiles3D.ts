@@ -155,11 +155,11 @@ export interface Tiles3DEventMap extends Entity3DEventMap {
     'layer-removed': { layer: Layer };
 }
 
-type SharedResources = {
+interface SharedResources {
     downloadQueue: PriorityQueue;
     parseQueue: PriorityQueue;
     lruCache: LRUCache;
-};
+}
 
 const perInstanceSharedResources: Map<Instance, SharedResources> = new Map();
 
@@ -177,10 +177,10 @@ function setSharedResources(instance: Instance, resources: SharedResources): voi
     instance.addEventListener('dispose', e => perInstanceSharedResources.delete(e.target));
 }
 
-type ObjectOptions = {
+interface ObjectOptions {
     castShadow: boolean;
     receiveShadow: boolean;
-};
+}
 
 /**
  * Displays a [3D Tiles Tileset](https://www.ogc.org/publications/standard/3dtiles/). This entity

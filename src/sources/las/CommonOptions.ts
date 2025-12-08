@@ -6,7 +6,7 @@
 
 import type { DimensionFilter } from './filter';
 
-export type CommonOptions = {
+export interface CommonOptions {
     /**
      * If true, colors are compressed to 8-bit (instead of 16-bit).
      * @defaultValue true
@@ -27,4 +27,4 @@ export type CommonOptions = {
      * The filters to use.
      */
     filters?: Readonly<DimensionFilter[]>;
-};
+}

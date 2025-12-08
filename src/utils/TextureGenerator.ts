@@ -339,11 +339,11 @@ async function decodeBlob(
     }
 }
 
-export type CreateDataTextureResult = {
+export interface CreateDataTextureResult {
     texture: DataTexture | Texture;
     min: number;
     max: number;
-};
+}
 
 function createTextureFromPixelBuffer(
     result: decoder.CreatePixelBufferResult,

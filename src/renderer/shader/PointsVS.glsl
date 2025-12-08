@@ -31,12 +31,8 @@ attribute INTENSITY_TYPE intensity;
 #endif
 
 #if defined(CLASSIFICATION)
-struct Classification {
-    vec3 color;
-    bool visible;
-};
+uniform sampler2D classifications;
 
-uniform Classification[256] classifications;
 attribute uint classification;
 #endif
 
@@ -98,12 +94,16 @@ struct Deformation {
 uniform Deformation deformations[NUM_TRANSFO];
 #endif
 
+void discardPoint() {
+    // Move the vertex out of the render area to prevent calling the fragment shader for
+    // this point, saving a lot of GPU processing time when millions of points are displayed.
+    gl_PointSize = 0.0;
+    gl_Position = vec4(-9999.0, -9999.0, -9999.0, 0.0);
+}
+
 void main() {
     if (decimation > 1 && gl_VertexID % decimation != 0) {
-        // Move the vertex out of the render area to prevent calling the fragment shader for
-        // this point, saving a lot of GPU processing time when millions of points are displayed.
-        gl_PointSize = 0.0;
-        gl_Position = vec4(-9999.0, -9999.0, -9999.0, 0.0);
+        discardPoint();
         return;
     }
 
@@ -119,6 +119,14 @@ void main() {
 #endif
 
     if (pickingId > uint(0)) {
+        #if defined(CLASSIFICATION)
+        float visibility = texelFetch(classifications, ivec2(classification, 0), 0).a;
+        if (visibility < 0.5) {
+            discardPoint();
+            return;
+        }
+        #endif
+
         // In picking mode, we simply output the point id in the red channel and the object id in the green channel.
         // No need to encode them because we are rendering to a float texture.
         vColor = vec4(float(gl_VertexID), float(pickingId), 0, 1);
@@ -144,9 +152,8 @@ void main() {
         vColor.a *= opacity;
 #if defined(CLASSIFICATION)
     } else if (mode == MODE_CLASSIFICATION) {
-        Classification classif = classifications[classification];
-        vColor.rgb = classif.color;
-        vColor.a = classif.visible ? opacity : 0.0;
+        vColor = texelFetch(classifications, ivec2(classification, 0), 0);
+        vColor.a *= opacity;
 #endif
     } else {
         // default to color mode

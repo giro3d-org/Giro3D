@@ -18,10 +18,10 @@ import {
     Uint8ClampedBufferAttribute,
 } from 'three';
 
-type HasDefines = {
+interface HasDefines {
     defines: Record<string, unknown>;
     needsUpdate: boolean;
-};
+}
 
 /**
  * Sets or unsets a define directive according to the condition.

@@ -47,27 +47,27 @@ enum PotreeDataType {
     Double,
 }
 
-export type PotreeAttribute = {
+export interface PotreeAttribute {
     type: PotreeDataType;
     dimension: 1 | 2 | 3 | 4;
     normalized: boolean;
     interpretation: PointCloudAttribute['interpretation'];
     min?: number;
     max?: number;
-};
+}
 
 /**
  * Point cloud attribute for LAZ-based Potree datasets.
  */
-export type LazPointCloudAttribute = PointCloudAttribute & {
+export interface LazPointCloudAttribute extends PointCloudAttribute {
     // Stronger typing than string
     name: DimensionName | 'Color';
-};
+}
 
 /**
  * Point cloud attribute for BIN-based Potree datasets.
  */
-export type PotreePointCloudAttribute = PointCloudAttribute & {
+export interface PotreePointCloudAttribute extends PointCloudAttribute {
     // Stronger typing than string
     name: AttributeName;
 
@@ -79,7 +79,7 @@ export type PotreePointCloudAttribute = PointCloudAttribute & {
 
     // The byte offset where this attribute starts in the buffer.
     offset: number;
-};
+}
 
 function getDefaultMin(type: PotreeDataType): number | undefined {
     switch (type) {

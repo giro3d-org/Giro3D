@@ -8,7 +8,9 @@ import { describe, expect, it, vitest } from 'vitest';
 
 import Shared from '@giro3d/giro3d/core/Shared';
 
-type Payload = { value: string };
+interface Payload {
+    value: string;
+}
 
 class Owner {}
 

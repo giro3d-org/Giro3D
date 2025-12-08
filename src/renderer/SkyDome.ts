@@ -36,7 +36,7 @@ import {
 import SkyDomeFS from './shader/SkyDomeFS.glsl';
 import SkyDomeVS from './shader/SkyDomeVS.glsl';
 
-type Uniforms = {
+interface Uniforms extends Record<string, IUniform<unknown>> {
     skyDomeLuminance: IUniform<number>;
     turbidity: IUniform<number>;
     rayleighCoefficient: IUniform<number>;
@@ -45,7 +45,7 @@ type Uniforms = {
     sunPosition: IUniform<Vector3>;
     up: IUniform<Vector3>;
     sunAngularDiameterCos: IUniform<number>;
-};
+}
 
 const defaultUniforms: Uniforms = {
     skyDomeLuminance: new Uniform(1),

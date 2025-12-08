@@ -17,9 +17,9 @@ import TextureGenerator from '../utils/TextureGenerator';
 import { nonNull } from '../utils/tsutils';
 import ColorMapMode from './ColorMapMode';
 
-export type ColorMapEvents = {
+export interface ColorMapEvents {
     updated: unknown;
-};
+}
 
 /**
  * Represents a 1D color gradient bounded by a `min` and `max` values.

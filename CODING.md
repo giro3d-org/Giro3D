@@ -12,6 +12,7 @@ Here are the general guidelines:
 
 - New files should be in Typescript (`.ts`)
 - Existing files may be migrated to Typescript, as long as all linters and tests pass.
+- Use `interface` over `type` when possible (this is enforced by [this ESLint rule](https://typescript-eslint.io/rules/consistent-type-definitions/))
 
 ### Importing `.ts` files
 
