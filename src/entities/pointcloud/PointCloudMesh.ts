@@ -73,36 +73,6 @@ class PointCloudMesh<M extends PointCloudMaterial = PointCloudMaterial>
         this.disposed = false;
     }
 
-    private getPointValue(pointIndex: number, attribute: string): number | undefined {
-        if (this.geometry.hasAttribute(attribute)) {
-            const buffer = this.geometry.getAttribute(attribute).array;
-
-            return buffer[pointIndex];
-        }
-
-        return undefined;
-    }
-
-    /**
-     * Returns the intensity of the specified point.
-     *
-     * @param pointIndex - The index of the point.
-     * @returns The intensity value for the specified point, or `undefined` if this point cloud does not support intensities.
-     */
-    public getIntensity(pointIndex: number): number | undefined {
-        return this.getPointValue(pointIndex, 'intensity');
-    }
-
-    /**
-     * Returns the classification number of the specified point.
-     *
-     * @param pointIndex - The index of the point.
-     * @returns The classification number for the specified point, or `undefined` if this point cloud does not support classifications.
-     */
-    public getClassification(pointIndex: number): number | undefined {
-        return this.getPointValue(pointIndex, 'classification');
-    }
-
     public canProcessColorLayer(): boolean {
         return true;
     }
