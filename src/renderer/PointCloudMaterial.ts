@@ -64,8 +64,8 @@ const tmpDims = new Vector2();
 export enum MODE {
     /** The points are colored using their own color */
     COLOR = 0,
-    /** The points are colored using their intensity */
-    INTENSITY = 1,
+    /** The points are colored using  one of their attributes */
+    SCALAR = 1,
     /** The points are colored using their classification */
     CLASSIFICATION = 2,
     /** The points are colored using their normal */
@@ -248,14 +248,10 @@ class PointCloudMaterial extends ShaderMaterial {
     }
 
     public set mode(mode: Mode) {
-        if (mode === MODE.COLOR || mode === MODE.CLASSIFICATION || mode === MODE.INTENSITY) {
+        if (mode === MODE.COLOR || mode === MODE.CLASSIFICATION || mode === MODE.SCALAR) {
             this.attributesState = {
                 colors: [{ weight: mode === MODE.COLOR ? 1 : 0 }, { weight: 0 }, { weight: 0 }],
-                scalars: [
-                    { weight: mode === MODE.INTENSITY ? 1 : 0 },
-                    { weight: 0 },
-                    { weight: 0 },
-                ],
+                scalars: [{ weight: mode === MODE.SCALAR ? 1 : 0 }, { weight: 0 }, { weight: 0 }],
                 classifications: [
                     { weight: mode === MODE.CLASSIFICATION ? 1 : 0 },
                     { weight: 0 },

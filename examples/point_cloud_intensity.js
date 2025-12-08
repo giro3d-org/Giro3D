@@ -62,7 +62,7 @@ const pointcloud = new Tiles3D({
         classification: 'Classification',
         scalar: 'Intensity',
     },
-    pointCloudMode: MODE.INTENSITY,
+    pointCloudMode: MODE.SCALAR,
     colorMap: new ColorMap({
         colors: parameters.colors,
         min: parameters.min,
