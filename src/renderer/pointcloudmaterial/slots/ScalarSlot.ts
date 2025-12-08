@@ -24,9 +24,9 @@ export interface ScalarSlotState {
 
 type SlotIndex = 0 | 1 | 2;
 const slotNames: Record<SlotIndex, string> = {
-    0: 'intensity',
-    1: 'intensity_1',
-    2: 'intensity_2',
+    0: 'scalar',
+    1: 'scalar_1',
+    2: 'scalar_2',
 };
 
 export class ScalarSlot extends AttributeSlot {

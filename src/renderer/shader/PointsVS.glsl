@@ -42,13 +42,13 @@ struct IntensityProperties {
 };
 uniform IntensityProperties intensityProperties[3];
 #if defined(SCALAR_0)
-attribute SCALAR_0_TYPE intensity;
+attribute SCALAR_0_TYPE scalar;
 #endif
 #if defined(SCALAR_1)
-attribute SCALAR_1_TYPE intensity_1;
+attribute SCALAR_1_TYPE scalar_1;
 #endif
 #if defined(SCALAR_2)
-attribute SCALAR_2_TYPE intensity_2;
+attribute SCALAR_2_TYPE scalar_2;
 #endif
 
 struct ClassificationProperties {
@@ -193,13 +193,13 @@ void main() {
         vColor = vec4(0);
         
         #if defined(SCALAR_0)
-        addScalarContribution(float(intensity), intensityProperties[0], vColor);
+        addScalarContribution(float(scalar), intensityProperties[0], vColor);
         #endif
         #if defined(SCALAR_1)
-        addScalarContribution(float(intensity_1), intensityProperties[1], vColor);
+        addScalarContribution(float(scalar_1), intensityProperties[1], vColor);
         #endif
         #if defined(SCALAR_2)
-        addScalarContribution(float(intensity_2), intensityProperties[2], vColor);
+        addScalarContribution(float(scalar_2), intensityProperties[2], vColor);
         #endif
 
         #if defined(CLASSIFICATION_0)

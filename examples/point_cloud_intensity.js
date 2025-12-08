@@ -60,7 +60,7 @@ const pointcloud = new Tiles3D({
     // as the names expected by the entity, so we have to map them.
     pointCloudAttributeMapping: {
         classification: 'Classification',
-        intensity: 'Intensity',
+        scalar: 'Intensity',
     },
     pointCloudMode: MODE.INTENSITY,
     colorMap: new ColorMap({
@@ -268,7 +268,7 @@ function updateLabel(mouseEvent) {
             // @ts-expect-error typing
             if (object.geometry) {
                 // @ts-expect-error typing
-                const intensity = object.geometry.getAttribute('intensity')?.getX(index);
+                const intensity = object.geometry.getAttribute('scalar')?.getX(index);
 
                 if (intensity) {
                     const color = pointcloud.colorMap.sample(intensity);

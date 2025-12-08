@@ -133,12 +133,7 @@ export default class PointCloudPlugin {
 
             const mapping = this._parameters.attributeMapping;
 
-            this.processBufferAttribute(
-                scene.geometry,
-                batchTable,
-                mapping['intensity'],
-                'intensity',
-            );
+            this.processBufferAttribute(scene.geometry, batchTable, mapping['scalar'], 'scalar');
             this.processBufferAttribute(
                 scene.geometry,
                 batchTable,
