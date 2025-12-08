@@ -1384,7 +1384,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
             { weight: 0 },
             { weight: 0 },
         ];
-        const intensitiesStates: Partial<ScalarSlotState>[] = [
+        const scalarsStates: Partial<ScalarSlotState>[] = [
             { weight: 0 },
             { weight: 0 },
             { weight: 0 },
@@ -1393,7 +1393,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
             const interpretation = activeAttribute.attribute.interpretation;
 
             if (interpretation === 'unknown') {
-                intensitiesStates[activeAttribute.geometrySlot] = {
+                scalarsStates[activeAttribute.geometrySlot] = {
                     weight: activeAttribute.weight,
                     colorMap: this.getAttributeColorMap(activeAttribute.attribute.name),
                 };
@@ -1412,7 +1412,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         }
         material.attributesState = {
             colors: colorsState,
-            intensities: intensitiesStates,
+            scalars: scalarsStates,
             classifications: classificationsState,
         };
         material.updateUniforms();

@@ -173,13 +173,13 @@ export interface Defines extends Record<string, unknown> {
 
 export interface AttributesState {
     colors: [ColorSlotState, ColorSlotState, ColorSlotState];
-    intensities: [ScalarSlotState, ScalarSlotState, ScalarSlotState];
+    scalars: [ScalarSlotState, ScalarSlotState, ScalarSlotState];
     classifications: [ClassificationSlotState, ClassificationSlotState, ClassificationSlotState];
 }
 
 export interface PartialAttributesState {
     colors?: Array<Partial<ColorSlotState> | undefined>;
-    intensities?: Array<Partial<ScalarSlotState> | undefined>;
+    scalars?: Array<Partial<ScalarSlotState> | undefined>;
     classifications?: Array<Partial<ClassificationSlotState> | undefined>;
 }
 
@@ -200,7 +200,7 @@ class PointCloudMaterial extends ShaderMaterial {
     private _elevationColorMap: ColorMap = createDefaultColorMap();
 
     private readonly _colorSlots: [ColorSlot, ColorSlot, ColorSlot];
-    private readonly _intensitySlots: [ScalarSlot, ScalarSlot, ScalarSlot];
+    private readonly _scalarSlots: [ScalarSlot, ScalarSlot, ScalarSlot];
     private readonly _classificationSlots: [
         ClassificationSlot,
         ClassificationSlot,
@@ -251,7 +251,7 @@ class PointCloudMaterial extends ShaderMaterial {
         if (mode === MODE.COLOR || mode === MODE.CLASSIFICATION || mode === MODE.INTENSITY) {
             this.attributesState = {
                 colors: [{ weight: mode === MODE.COLOR ? 1 : 0 }, { weight: 0 }, { weight: 0 }],
-                intensities: [
+                scalars: [
                     { weight: mode === MODE.INTENSITY ? 1 : 0 },
                     { weight: 0 },
                     { weight: 0 },
@@ -267,17 +267,17 @@ class PointCloudMaterial extends ShaderMaterial {
     }
 
     /**
-     * Update material uniforms related to intensity and classification attributes.
+     * Update material uniforms related to scalar and classification attributes.
      */
     public setupFromGeometry(geometry: BufferGeometry): void {
         for (const slot of this._classificationSlots) {
             slot.hasAttribute = geometry.hasAttribute(slot.attributeName);
         }
 
-        for (const slot of this._intensitySlots) {
+        for (const slot of this._scalarSlots) {
             slot.hasAttribute = geometry.hasAttribute(slot.attributeName);
             if (slot.hasAttribute) {
-                slot.intensityType = MaterialUtils.getVertexAttributeType(
+                slot.attributeType = MaterialUtils.getVertexAttributeType(
                     geometry.getAttribute(slot.attributeName) as BufferAttribute,
                 );
             }
@@ -385,7 +385,7 @@ class PointCloudMaterial extends ShaderMaterial {
         this.needsUpdate = true;
 
         this._colorSlots = [new ColorSlot(this, 0), new ColorSlot(this, 1), new ColorSlot(this, 2)];
-        this._intensitySlots = [
+        this._scalarSlots = [
             new ScalarSlot(this, 0),
             new ScalarSlot(this, 1),
             new ScalarSlot(this, 2),
@@ -404,7 +404,7 @@ class PointCloudMaterial extends ShaderMaterial {
             fogColor: new Uniform(new Color(0xffffff)),
 
             colorProperties: new Uniform(this._colorSlots.map(slot => slot.uniform)),
-            scalarProperties: new Uniform(this._intensitySlots.map(slot => slot.uniform)),
+            scalarProperties: new Uniform(this._scalarSlots.map(slot => slot.uniform)),
             classificationProperties: new Uniform(
                 this._classificationSlots.map(slot => slot.uniform),
             ),
@@ -480,7 +480,7 @@ class PointCloudMaterial extends ShaderMaterial {
 
         this.uniforms.elevationColorMap.value = buildColorMapUniform(this.elevationColorMap);
 
-        for (const slot of this._intensitySlots) {
+        for (const slot of this._scalarSlots) {
             slot.update();
         }
     }
@@ -590,10 +590,10 @@ class PointCloudMaterial extends ShaderMaterial {
                 this._colorSlots[1].state,
                 this._colorSlots[2].state,
             ],
-            intensities: [
-                this._intensitySlots[0].state,
-                this._intensitySlots[1].state,
-                this._intensitySlots[2].state,
+            scalars: [
+                this._scalarSlots[0].state,
+                this._scalarSlots[1].state,
+                this._scalarSlots[2].state,
             ],
             classifications: [
                 this._classificationSlots[0].state,
@@ -614,12 +614,12 @@ class PointCloudMaterial extends ShaderMaterial {
             });
         }
 
-        if (typeof state.intensities !== 'undefined') {
-            const intensities = state.intensities;
+        if (typeof state.scalars !== 'undefined') {
+            const scalars = state.scalars;
 
-            this._intensitySlots.forEach((slot, index) => {
-                if (typeof intensities[index] !== 'undefined') {
-                    slot.state = intensities[index];
+            this._scalarSlots.forEach((slot, index) => {
+                if (typeof scalars[index] !== 'undefined') {
+                    slot.state = scalars[index];
                 }
             });
         }
@@ -676,11 +676,7 @@ class PointCloudMaterial extends ShaderMaterial {
     }
 
     private updateAttributesWeights(): void {
-        const allSlots = [
-            ...this._intensitySlots,
-            ...this._classificationSlots,
-            ...this._colorSlots,
-        ];
+        const allSlots = [...this._scalarSlots, ...this._classificationSlots, ...this._colorSlots];
 
         let totalWeight = 0;
         for (const slot of allSlots) {

@@ -96,7 +96,7 @@ export default class PointCloudPlugin {
         material.size = this._parameters.pointSize;
         material.elevationColorMap = this._parameters.pointCloudColorMap;
         material.attributesState = {
-            intensities: [
+            scalars: [
                 {
                     colorMap: this._parameters.pointCloudColorMap,
                 },

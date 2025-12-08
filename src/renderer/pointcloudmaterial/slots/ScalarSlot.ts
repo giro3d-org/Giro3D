@@ -53,7 +53,7 @@ export class ScalarSlot extends AttributeSlot {
 
         this._flagDefine = `SCALAR_${index}`;
         this._typeDefine = `SCALAR_${index}_TYPE`;
-        this.intensityType = 'uint';
+        this.attributeType = 'uint';
     }
 
     public override get hasAttribute(): boolean {
@@ -64,8 +64,8 @@ export class ScalarSlot extends AttributeSlot {
         MaterialUtils.setDefine(this._material, this._flagDefine, value);
     }
 
-    public set intensityType(intensityType: VertexAttributeType) {
-        MaterialUtils.setDefineValue(this._material, this._typeDefine, intensityType);
+    public set attributeType(attributeType: VertexAttributeType) {
+        MaterialUtils.setDefineValue(this._material, this._typeDefine, attributeType);
     }
 
     public update(): void {
