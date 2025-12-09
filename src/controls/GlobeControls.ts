@@ -6,10 +6,10 @@
 
 import type { Object3D, OrthographicCamera, PerspectiveCamera } from 'three';
 
-import { GlobeControls as WrappedControls } from '3d-tiles-renderer';
+import { GlobeControls as WrappedControls, Ellipsoid as WrappedEllipsoid } from '3d-tiles-renderer';
 import { EventDispatcher } from 'three';
 
-import type Ellipsoid from '../core/geographic/Ellipsoid';
+import Ellipsoid from '../core/geographic/Ellipsoid';
 
 export interface GlobeControlsEvents {
     start: unknown;
@@ -92,8 +92,17 @@ export default class GlobeControls extends EventDispatcher<GlobeControlsEvents> 
             end: (): void => this.dispatchEvent({ type: 'end' }),
         };
 
+        const ellipsoid = params.ellipsoid ?? Ellipsoid.WGS84;
         this._controls = new WrappedControls(scene, camera, domElement);
 
+        this._controls.setEllipsoid(
+            new WrappedEllipsoid(
+                ellipsoid.semiMajorAxis,
+                ellipsoid.semiMajorAxis,
+                ellipsoid.semiMinorAxis,
+            ),
+            null,
+        );
         this._controls.minDistance = params.minDistance ?? this._controls.minDistance;
         this._controls.maxDistance = params.maxDistance ?? this._controls.maxDistance;
         this._controls.zoomSpeed = params.zoomSpeed ?? this._controls.zoomSpeed;
