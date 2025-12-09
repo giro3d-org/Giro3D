@@ -2051,8 +2051,18 @@ class Map<UserData extends EntityUserData = EntityUserData>
         const bbox = node.getWorldSpaceBoundingBox(tmpBox3);
         const distance = context.distance.plane.distanceToPoint(bbox.getCenter(tmpVector));
         const radius = bbox.getSize(tmpVector).length() * 0.5;
-        this._distance.min = Math.min(this._distance.min, distance - radius);
-        this._distance.max = Math.max(this._distance.max, distance + radius);
+        const MAX_DISTANCE = 1_000_000_000;
+        const MIN_DISTANCE = 0.5;
+        this._distance.min = MathUtils.clamp(
+            Math.min(this._distance.min, distance - radius),
+            MIN_DISTANCE,
+            MAX_DISTANCE,
+        );
+        this._distance.max = MathUtils.clamp(
+            Math.max(this._distance.max, distance + radius),
+            this._distance.min,
+            MAX_DISTANCE,
+        );
     }
 
     /**
