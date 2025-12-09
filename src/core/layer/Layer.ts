@@ -383,9 +383,9 @@ export type LayerUserData = Record<string, unknown>;
  * @typeParam TUserData - The type of the `userData` property.
  */
 abstract class Layer<
-        TEvents extends LayerEvents = LayerEvents,
-        TUserData extends LayerUserData = LayerUserData,
-    >
+    TEvents extends LayerEvents = LayerEvents,
+    TUserData extends LayerUserData = LayerUserData,
+>
     extends EventDispatcher<TEvents & LayerEvents>
     implements Progress, MemoryUsage, RenderingContextHandler, Disposable
 {

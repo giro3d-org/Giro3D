@@ -290,9 +290,6 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
             new GLTFExtensionsPlugin({
                 dracoLoader,
                 ktxLoader,
-                // @ts-expect-error FIXME this field is missing from the type definition file
-                // in the current version of the library, but was fixed upstream
-                // https://github.com/NASA-AMMOS/3DTilesRendererJS/pull/1357
                 meshoptDecoder: MeshoptDecoder,
             }),
         );

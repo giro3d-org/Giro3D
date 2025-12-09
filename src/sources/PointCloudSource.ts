@@ -225,10 +225,8 @@ export interface GetNodeDataOptions {
  */
 export interface PointCloudSource<
     TEventMap extends PointCloudSourceEventMap = PointCloudSourceEventMap,
-> extends Progress,
-        Disposable,
-        MemoryUsage,
-        EventDispatcher<TEventMap> {
+>
+    extends Progress, Disposable, MemoryUsage, EventDispatcher<TEventMap> {
     readonly id: string;
     /**
      * A flag that indicates that the source is ready to use. This flag should be true when
@@ -270,8 +268,8 @@ export interface PointCloudSource<
  * Base class for sources that provide point cloud data.
  */
 export abstract class PointCloudSourceBase<
-        TEventMap extends PointCloudSourceEventMap = PointCloudSourceEventMap,
-    >
+    TEventMap extends PointCloudSourceEventMap = PointCloudSourceEventMap,
+>
     extends EventDispatcher<TEventMap>
     implements Progress, Disposable, MemoryUsage
 {

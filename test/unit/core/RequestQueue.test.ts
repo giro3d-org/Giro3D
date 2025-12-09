@@ -153,7 +153,6 @@ describe('enqueue', () => {
                         request: () =>
                             new Promise<void>(resolve =>
                                 setTimeout(() => {
-                                    console.log('success');
                                     resolve();
                                 }, 100),
                             ),
@@ -167,12 +166,8 @@ describe('enqueue', () => {
             );
         }
 
-        try {
-            await Promise.all(promisesList);
-            expect(tasksInSuccessCount).toBe(2 + 3);
-            expect(tasksInErrorCount).toBe(10000);
-        } catch (error: unknown) {
-            expect.fail(`There was an uncaught error: ${error}`);
-        }
+        await Promise.all(promisesList);
+        expect(tasksInSuccessCount).toBe(2 + 3);
+        expect(tasksInErrorCount).toBe(10000);
     });
 });
