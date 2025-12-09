@@ -88,11 +88,9 @@ describe('Instance', () => {
 
     describe('eventToNormalizedCoords', () => {
         it('should return the passed target, using TouchEvent', () => {
-            if (window.TouchEvent != null) {
-                const target = new Vector2();
-                const result = instance.eventToNormalizedCoords(touchEvent, target);
-                expect(result).toBe(target);
-            }
+            const target = new Vector2();
+            const result = instance.eventToNormalizedCoords(touchEvent, target);
+            expect(result).toBe(target);
         });
         it('should return the passed target, using MouseEvent on domElement', () => {
             const target = new Vector2();
@@ -108,11 +106,9 @@ describe('Instance', () => {
 
     describe('eventToCanvasCoords', () => {
         it('should return the passed target', () => {
-            if (window.TouchEvent != null) {
-                const target = new Vector2();
-                const result = instance.eventToCanvasCoords(touchEvent, target);
-                expect(result).toBe(target);
-            }
+            const target = new Vector2();
+            const result = instance.eventToCanvasCoords(touchEvent, target);
+            expect(result).toBe(target);
         });
         it('should return the passed target, using MouseEvent on domElement', () => {
             const target = new Vector2();
@@ -262,7 +258,7 @@ describe('Instance', () => {
             });
         });
 
-        it('should fire the entity-removed event', () => {
+        it('should fire the entity-removed event', async () => {
             let eventFired = false;
 
             const entity = new FakeEntity();
@@ -273,10 +269,10 @@ describe('Instance', () => {
 
             expect(eventFired).toBeFalsy();
 
-            instance.add(entity).then(() => {
+            await instance.add(entity).then(() => {
                 instance.remove(entity);
-                expect(eventFired).toBeTruthy();
             });
+            expect(eventFired).toBeTruthy();
         });
     });
 

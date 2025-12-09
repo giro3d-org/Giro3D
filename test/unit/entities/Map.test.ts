@@ -305,15 +305,14 @@ describe('addLayers', () => {
         expect(map.getLayers()).toStrictEqual([]);
     });
 
-    it('should add a layer', () => {
+    it('should add a layer', async () => {
         const layer = new ColorLayer({ source: nullSource });
 
         // @ts-expect-error invalid type
         map._nullableInstance = { referenceCrs: 'EPSG:3857', notifyChange: vitest.fn() };
 
-        map.addLayer(layer).then(() => {
-            expect(map.getLayers()).toStrictEqual([layer]);
-        });
+        await map.addLayer(layer);
+        expect(map.getLayers()).toStrictEqual([layer]);
     });
 
     it('should not add 2 layers with the same id', async () => {
