@@ -326,7 +326,7 @@ let controls;
 const updateControls = () => {
     if (controls) {
         controls.update();
-        instance.notifyChange();
+        instance.notifyChange(allGlobes);
     }
 
     requestAnimationFrame(updateControls);

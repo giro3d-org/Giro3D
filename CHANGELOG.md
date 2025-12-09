@@ -104,6 +104,7 @@ const instance = new Instance({
 
 ### Fix
 
+- **Globe**: fix camera plane computation that could cause flickering in some cases
 - **GlobeControls**: pass the ellipsoid to the underlying controls (#657)
 - **TileFS.glsl**: fix non working shadow maps on MacOS (#579)
 - **PointCloud**: fix filters not being applied

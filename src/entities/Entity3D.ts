@@ -89,8 +89,8 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
     private _opacity: number;
     private _object3d: Object3D;
     protected _distance: { min: number; max: number };
-    public get distance(): { min: number; max: number } {
-        return { min: this._distance.min, max: this._distance.max };
+    public get distance(): Readonly<{ min: number; max: number }> {
+        return this._distance;
     }
     private _clippingPlanes: Plane[] | null;
     private _renderOrder: number;
