@@ -1620,8 +1620,6 @@ class Map<UserData extends EntityUserData = EntityUserData>
             if (node.material.visible) {
                 node.material.update(this._materialOptions);
 
-                this.updateMinMaxDistance(context, node);
-
                 // update uniforms
                 if (!requestChildrenUpdate) {
                     this._cachedTraversals.clear();
@@ -1649,6 +1647,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         this.traverseTiles(tile => {
             if (tile.visible && tile.material.visible) {
                 this._layers.forEach(layer => layer.update(context, tile));
+                this.updateMinMaxDistance(context, tile);
             }
         });
         this._layers.forEach(l => l.postUpdate());
