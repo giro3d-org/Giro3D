@@ -15,7 +15,6 @@ uniform uint pickingId;
 uniform int mode;
 uniform float opacity;
 uniform vec4 overlayColor;
-attribute vec3 color;
 
 struct PointCloudColorMap {
     float min;
@@ -23,17 +22,48 @@ struct PointCloudColorMap {
     sampler2D lut;
 };
 
-uniform PointCloudColorMap colorMap;
+uniform PointCloudColorMap elevationColorMap;
 
-#if defined(INTENSITY)
-// INTENSITY_TYPE is a define macro
-attribute INTENSITY_TYPE intensity;
+struct ColorProperties {
+    float weight;
+};
+uniform ColorProperties colorProperties[3];
+attribute vec3 color;
+#if defined(COLOR_1)
+attribute vec3 color_1;
+#endif
+#if defined(COLOR_2)
+attribute vec3 color_2;
 #endif
 
-#if defined(CLASSIFICATION)
-uniform sampler2D classifications;
+struct ScalarProperties {
+    float weight;
+    PointCloudColorMap colorMap;
+};
+uniform ScalarProperties scalarProperties[3];
+#if defined(SCALAR_0)
+attribute SCALAR_0_TYPE scalar;
+#endif
+#if defined(SCALAR_1)
+attribute SCALAR_1_TYPE scalar_1;
+#endif
+#if defined(SCALAR_2)
+attribute SCALAR_2_TYPE scalar_2;
+#endif
 
+struct ClassificationProperties {
+    float weight;
+    sampler2D lut;
+};
+uniform ClassificationProperties classificationProperties[3];
+#if defined(CLASSIFICATION_0)
 attribute uint classification;
+#endif
+#if defined(CLASSIFICATION_1)
+attribute uint classification_1;
+#endif
+#if defined(CLASSIFICATION_2)
+attribute uint classification_2;
 #endif
 
 #if defined(NORMAL_OCT16)
@@ -101,6 +131,33 @@ void discardPoint() {
     gl_Position = vec4(-9999.0, -9999.0, -9999.0, 0.0);
 }
 
+vec4 computeColorFromScalar(const float value, const PointCloudColorMap colorMap) {
+    return sampleColorMap(value, colorMap.min, colorMap.max, colorMap.lut, 0.0);
+}
+
+void addScalarContribution(const float value, const ScalarProperties properties, inout vec4 color) {
+    if (properties.weight > 0.0) {
+        color += computeColorFromScalar(value, properties.colorMap) * properties.weight;
+    }
+}
+
+void addClassificationContribution(const uint classification, const ClassificationProperties properties, inout vec4 color) {
+    if (properties.weight > 0.0) {
+        color += texelFetch(properties.lut, ivec2(classification, 0), 0) * properties.weight;
+    }
+}
+
+void addColorContribution(const vec3 value, const ColorProperties properties, inout vec4 color) {
+    if (properties.weight > 0.0) {
+        // We need to convert to linear color space because the colors are in sRGB and they
+        // are not automatically converted to sRGB-linear. This is due to the fact that those
+        // colors come from a vertex buffer and not from a texture (automatically converted)
+        // or a single color uniform (also automatically converted).
+        vec4 linear = sRGBToLinear(vec4(value, 1.0));
+        color += vec4(mix(linear.rgb, overlayColor.rgb, overlayColor.a), 1) * properties.weight;
+    }
+}
+
 void main() {
     if (decimation > 1 && gl_VertexID % decimation != 0) {
         discardPoint();
@@ -118,25 +175,8 @@ void main() {
     vec3 normal = color;
 #endif
 
-    if (pickingId > uint(0)) {
-        #if defined(CLASSIFICATION)
-        float visibility = texelFetch(classifications, ivec2(classification, 0), 0).a;
-        if (visibility < 0.5) {
-            discardPoint();
-            return;
-        }
-        #endif
-
-        // In picking mode, we simply output the point id in the red channel and the object id in the green channel.
-        // No need to encode them because we are rendering to a float texture.
-        vColor = vec4(float(gl_VertexID), float(pickingId), 0, 1);
-#if defined(INTENSITY)
-    } else if (mode == MODE_INTENSITY) {
-        vColor = sampleColorMap(float(intensity), colorMap.min, colorMap.max, colorMap.lut, 0.0);
-        vColor.a *= opacity;
-#endif
-    } else if (mode == MODE_NORMAL) {
-        vColor = vec4(abs(normal), opacity);
+    if (mode == MODE_NORMAL) {
+        vColor = vec4(abs(normal), 1);
     } else if (mode == MODE_TEXTURE) {
         vec2 pp = (modelMatrix * vec4(position, 1.0)).xy;
         // offsetScale is from bottomleft
@@ -145,25 +185,53 @@ void main() {
         pp *= offsetScale.zw / extentSize;
         pp += offsetScale.xy;
         vec3 textureColor = texture2D(overlayTexture, pp).rgb;
-        vColor = vec4(mix(textureColor, overlayColor.rgb, overlayColor.a), opacity * hasOverlayTexture);
+        vColor = vec4(mix(textureColor, overlayColor.rgb, overlayColor.a), hasOverlayTexture);
     } else if (mode == MODE_ELEVATION) {
         float z = (modelMatrix * vec4(position, 1.0)).z;
-        vColor = sampleColorMap(z, colorMap.min, colorMap.max, colorMap.lut, 0.0);
-        vColor.a *= opacity;
-#if defined(CLASSIFICATION)
-    } else if (mode == MODE_CLASSIFICATION) {
-        vColor = texelFetch(classifications, ivec2(classification, 0), 0);
-        vColor.a *= opacity;
-#endif
+        vColor = computeColorFromScalar(z, elevationColorMap);
     } else {
-        // default to color mode
+        vColor = vec4(0);
+        
+        #if defined(SCALAR_0)
+        addScalarContribution(float(scalar), scalarProperties[0], vColor);
+        #endif
+        #if defined(SCALAR_1)
+        addScalarContribution(float(scalar_1), scalarProperties[1], vColor);
+        #endif
+        #if defined(SCALAR_2)
+        addScalarContribution(float(scalar_2), scalarProperties[2], vColor);
+        #endif
 
-        // We need to convert to linear color space because the colors are in sRGB and they
-        // are not automatically converted to sRGB-linear. This is due to the fact that those
-        // colors come from a vertex buffer and not from a texture (automatically converted)
-        // or a single color uniform (also automatically converted).
-        vec4 linear = sRGBToLinear(vec4(color, 1.0));
-        vColor = vec4(mix(linear.rgb, overlayColor.rgb, overlayColor.a), opacity);
+        #if defined(CLASSIFICATION_0)
+        addClassificationContribution(classification, classificationProperties[0], vColor);
+        #endif
+        #if defined(CLASSIFICATION_1)
+        addClassificationContribution(classification_1, classificationProperties[1], vColor);
+        #endif
+        #if defined(CLASSIFICATION_2)
+        addClassificationContribution(classification_2, classificationProperties[2], vColor);
+        #endif
+
+        addColorContribution(color, colorProperties[0], vColor);
+        #if defined(COLOR_1)
+        addColorContribution(color_1, colorProperties[1], vColor);
+        #endif
+        #if defined(COLOR_2)
+        addColorContribution(color_2, colorProperties[2], vColor);
+        #endif
+    }
+
+    vColor.a *= opacity;
+    
+    if (pickingId > 0u) {
+        if (vColor.a <= EPSILON) {
+            discardPoint();
+            return;
+        }
+
+        // In picking mode, we simply output the point id in the red channel and the object id in the green channel.
+        // No need to encode them because we are rendering to a float texture.
+        vColor = vec4(float(gl_VertexID), float(pickingId), 0, 1);
     }
 
     mat4 mvMatrix = modelViewMatrix;

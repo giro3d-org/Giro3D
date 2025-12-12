@@ -10,7 +10,7 @@ import type ColorimetryOptions from '../../core/ColorimetryOptions';
 import type ColorMap from '../../core/ColorMap';
 import type { Classification, Mode } from '../../renderer/PointCloudMaterial';
 
-export type WellKnown3DTilesPointCloudAttributes = 'intensity' | 'classification';
+export type WellKnown3DTilesPointCloudAttributes = 'scalar' | 'classification';
 
 /**
  * Maps attribute names found in the batch table with well-known names expected by Giro3D
@@ -32,7 +32,7 @@ export type PointCloudBatchTableAttributeMapping = Record<
 
 export const DEFAULT_TILES3D_POINTCLOUD_ATTRIBUTE_MAPPING: PointCloudBatchTableAttributeMapping = {
     classification: 'classification',
-    intensity: 'intensity',
+    scalar: 'intensity',
 };
 
 interface PointCloudParameters {

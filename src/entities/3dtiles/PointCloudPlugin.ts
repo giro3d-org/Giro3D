@@ -94,8 +94,19 @@ export default class PointCloudPlugin {
 
     public updateMaterial(material: PointCloudMaterial): void {
         material.size = this._parameters.pointSize;
-        material.colorMap = this._parameters.pointCloudColorMap;
-        material.classifications = this._parameters.classifications;
+        material.elevationColorMap = this._parameters.pointCloudColorMap;
+        material.attributesState = {
+            scalars: [
+                {
+                    colorMap: this._parameters.pointCloudColorMap,
+                },
+            ],
+            classifications: [
+                {
+                    classifications: this._parameters.classifications,
+                },
+            ],
+        };
         material.mode = this._parameters.pointCloudMode;
 
         material.brightness = this._parameters.colorimetry.brightness;
@@ -122,12 +133,7 @@ export default class PointCloudPlugin {
 
             const mapping = this._parameters.attributeMapping;
 
-            this.processBufferAttribute(
-                scene.geometry,
-                batchTable,
-                mapping['intensity'],
-                'intensity',
-            );
+            this.processBufferAttribute(scene.geometry, batchTable, mapping['scalar'], 'scalar');
             this.processBufferAttribute(
                 scene.geometry,
                 batchTable,

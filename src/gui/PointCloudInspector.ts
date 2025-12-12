@@ -14,7 +14,8 @@ import EntityInspector from './EntityInspector';
 import PointCloudSourceInspector from './PointCloudSourceInspector';
 
 export default class PointCloudInspector extends EntityInspector<PointCloud> {
-    public colorMapInspector: ColorMapInspector | null = null;
+    public elevationColorMapInspector: ColorMapInspector | null = null;
+    public attributesColorMapInspectors: ReadonlyMap<string, ColorMapInspector> | null = null;
     public sourceInspector: PointCloudSourceInspector | null = null;
 
     public get pointBudget(): number {
@@ -64,12 +65,26 @@ export default class PointCloudInspector extends EntityInspector<PointCloud> {
         this.addController(entity, 'pointSize').min(0).max(50).step(1);
         this.addController(entity, 'clear');
 
-        this.colorMapInspector = new ColorMapInspector(
+        this.elevationColorMapInspector = new ColorMapInspector(
             this.gui,
             this.instance,
-            () => entity.colorMap,
+            () => entity.elevationColorMap,
             () => this.notify(entity),
         );
+
+        const attributesColorMapInspectors = new Map<string, ColorMapInspector>();
+        const supportedAttributes = entity.getSupportedAttributes();
+        for (const attribute of supportedAttributes) {
+            attributesColorMapInspectors.set(
+                attribute.name,
+                new ColorMapInspector(
+                    this.gui,
+                    this.instance,
+                    () => entity.getAttributeColorMap(attribute.name),
+                    () => this.notify(entity),
+                ),
+            );
+        }
 
         this.sourceInspector = new PointCloudSourceInspector(
             this.gui,
@@ -84,6 +99,6 @@ export default class PointCloudInspector extends EntityInspector<PointCloud> {
         }
         super.updateControllers();
         this.sourceInspector?.updateControllers();
-        this.colorMapInspector?.updateControllers();
+        this.elevationColorMapInspector?.updateControllers();
     }
 }

@@ -63,6 +63,9 @@ let entity;
 /** @type {ColorLayer} */
 let colorLayer;
 
+// Create the color map. The color ramp and bounds will be set later.
+const colorMap = new ColorMap({ colors: [], min: 0, max: 1 });
+
 function updateColoring() {
     const attribute = options.attribute;
 
@@ -102,7 +105,7 @@ const [, , , setAvailableAttributes] = bindDropDown('attribute', attribute => {
 const [setMin] = bindSlider('min', min => {
     options.min = Math.round(min);
     if (entity && instance) {
-        entity.colorMap.min = min;
+        colorMap.min = min;
         instance.notifyChange(entity);
         document.getElementById('label-bounds').innerHTML =
             `Bounds: <b>${options.min}</b> — <b>${options.max}<b>`;
@@ -112,7 +115,7 @@ const [setMin] = bindSlider('min', min => {
 const [setMax] = bindSlider('max', max => {
     options.max = Math.round(max);
     if (entity && instance) {
-        entity.colorMap.max = max;
+        colorMap.max = max;
         instance.notifyChange(entity);
         document.getElementById('label-bounds').innerHTML =
             `Bounds: <b>${options.min}</b> — <b>${options.max}<b>`;
@@ -158,10 +161,11 @@ function updateColorMapMinMax() {
         return;
     }
 
-    const min = entity.activeAttribute.min ?? 0;
-    const max = entity.activeAttribute.max ?? 255;
+    const activeAttribute = entity.getActiveAttributes()[0].attribute;
+    const min = activeAttribute.min ?? 0;
+    const max = activeAttribute.max ?? 255;
 
-    const step = entity.activeAttribute.type === 'float' ? 0.0001 : 1;
+    const step = activeAttribute.type === 'float' ? 0.0001 : 1;
 
     const lowerBound = min;
     const upperBound = max;
@@ -177,7 +181,7 @@ bindDropDown('ramp', ramp => {
 
 function updateColorMap() {
     if (entity && instance) {
-        entity.colorMap.colors = makeColorRamp(options.colorRamp);
+        colorMap.colors = makeColorRamp(options.colorRamp);
 
         updateColorMapMinMax();
 
@@ -380,8 +384,10 @@ async function load(url) {
     // Let's get the volume of the point cloud for various operations.
     const volume = entity.getBoundingBox();
 
-    // Create the color map. The color ramp and bounds will be set later.
-    entity.colorMap = new ColorMap({ colors: [], min: 0, max: 1 });
+    entity.elevationColorMap = colorMap;
+    for (const attribute of metadata.attributes) {
+        entity.setAttributeColorMap(attribute.name, colorMap);
+    }
 
     // Such as setting the min and max of the colormap bounds.
     setMin(volume.min.z, volume.min.z, volume.max.z);
@@ -458,46 +464,33 @@ async function load(url) {
     };
     classificationFilterOperatorSelect.addEventListener('change', updateClassificationFilter);
 
+    const classifications = entity.getAttributeClassifications('Classification');
+
     // Let's populate the classification list with default values from the ASPRS classifications.
-    addClassification(
-        0,
-        'Created, never classified',
-        entity.classifications,
-        updateClassificationFilter,
-    );
-    addClassification(1, 'Unclassified', entity.classifications, updateClassificationFilter);
-    addClassification(2, 'Ground', entity.classifications, updateClassificationFilter);
-    addClassification(3, 'Low vegetation', entity.classifications, updateClassificationFilter);
-    addClassification(4, 'Medium vegetation', entity.classifications, updateClassificationFilter);
-    addClassification(5, 'High vegetation', entity.classifications, updateClassificationFilter);
-    addClassification(6, 'Building', entity.classifications, updateClassificationFilter);
-    addClassification(7, 'Low point (noise)', entity.classifications, updateClassificationFilter);
-    addClassification(8, 'Reserved', entity.classifications, updateClassificationFilter);
-    addClassification(9, 'Water', entity.classifications, updateClassificationFilter);
-    addClassification(10, 'Rail', entity.classifications, updateClassificationFilter);
-    addClassification(11, 'Road surface', entity.classifications, updateClassificationFilter);
-    addClassification(12, 'Reserved', entity.classifications, updateClassificationFilter);
-    addClassification(
-        13,
-        'Wire - Guard (shield)',
-        entity.classifications,
-        updateClassificationFilter,
-    );
-    addClassification(
-        14,
-        'Wire - Conductor (Phase)',
-        entity.classifications,
-        updateClassificationFilter,
-    );
-    addClassification(15, 'Transmission Tower', entity.classifications, updateClassificationFilter);
+    addClassification(0, 'Created, never classified', classifications, updateClassificationFilter);
+    addClassification(1, 'Unclassified', classifications, updateClassificationFilter);
+    addClassification(2, 'Ground', classifications, updateClassificationFilter);
+    addClassification(3, 'Low vegetation', classifications, updateClassificationFilter);
+    addClassification(4, 'Medium vegetation', classifications, updateClassificationFilter);
+    addClassification(5, 'High vegetation', classifications, updateClassificationFilter);
+    addClassification(6, 'Building', classifications, updateClassificationFilter);
+    addClassification(7, 'Low point (noise)', classifications, updateClassificationFilter);
+    addClassification(8, 'Reserved', classifications, updateClassificationFilter);
+    addClassification(9, 'Water', classifications, updateClassificationFilter);
+    addClassification(10, 'Rail', classifications, updateClassificationFilter);
+    addClassification(11, 'Road surface', classifications, updateClassificationFilter);
+    addClassification(12, 'Reserved', classifications, updateClassificationFilter);
+    addClassification(13, 'Wire - Guard (shield)', classifications, updateClassificationFilter);
+    addClassification(14, 'Wire - Conductor (Phase)', classifications, updateClassificationFilter);
+    addClassification(15, 'Transmission Tower', classifications, updateClassificationFilter);
     addClassification(
         16,
         'Wire Structure connector (e.g Insulator)',
-        entity.classifications,
+        classifications,
         updateClassificationFilter,
     );
-    addClassification(17, 'Bridge deck', entity.classifications, updateClassificationFilter);
-    addClassification(18, 'High noise', entity.classifications, updateClassificationFilter);
+    addClassification(17, 'Bridge deck', classifications, updateClassificationFilter);
+    addClassification(18, 'High noise', classifications, updateClassificationFilter);
 
     updateClassificationFilter();
     populateGUI(source);

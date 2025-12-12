@@ -254,7 +254,10 @@ async function onInitialized(entity) {
     progressElement.style.display = 'none';
     document.getElementById('options').style.display = 'block';
 
-    entity.colorMap = colormaps.Z;
+    for (const [attribute, colorMap] of Object.entries(colormaps)) {
+        entity.setAttributeColorMap(attribute, colorMap);
+    }
+
     entity.setActiveAttribute('Z');
 
     document.getElementById('point-count').innerText = formatPointCount(entity.pointCount);
@@ -292,7 +295,6 @@ async function onInitialized(entity) {
 
     const [, , , setAvailableAttributes] = bindDropDown('attribute', attribute => {
         entity.setActiveAttribute(attribute);
-        entity.colorMap = colormaps[attribute];
     });
 
     setAvailableAttributes(

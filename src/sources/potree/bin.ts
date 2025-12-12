@@ -37,7 +37,7 @@ function readAttribute(
 
 export interface ParseResult {
     positionBuffer: BufferAttributeDescriptor;
-    attributeBuffer?: BufferAttributeDescriptor;
+    attributeBuffers: BufferAttributeDescriptor[];
     localBoundingBox?: Box3;
 }
 
@@ -45,7 +45,7 @@ export function readBinFile(
     buffer: ArrayBuffer,
     pointByteSize: number,
     positionAttribute: PotreePointCloudAttribute,
-    optionalAttribute?: PotreePointCloudAttribute,
+    attributes: PotreePointCloudAttribute[],
 ): ParseResult {
     const view = new DataView(buffer);
 
@@ -54,13 +54,12 @@ export function readBinFile(
 
     const positionBuffer = readAttribute(positionAttribute, view, pointByteSize, pointCount);
 
-    let attributeBuffer: BufferAttributeDescriptor | undefined = undefined;
-    if (optionalAttribute != null) {
-        attributeBuffer = readAttribute(optionalAttribute, view, pointByteSize, pointCount);
-    }
+    const attributeBuffers = attributes.map(attribute =>
+        readAttribute(attribute, view, pointByteSize, pointCount),
+    );
 
     return {
         positionBuffer,
-        attributeBuffer,
+        attributeBuffers,
     };
 }

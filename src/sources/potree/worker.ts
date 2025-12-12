@@ -22,7 +22,7 @@ type ReadBinFileMessage = TypedMessage<
         buffer: ArrayBuffer;
         info: {
             positionAttribute: PotreePointCloudAttribute;
-            optionalAttribute?: PotreePointCloudAttribute;
+            attributes: PotreePointCloudAttribute[];
             pointByteSize: number;
         };
     }
@@ -30,7 +30,7 @@ type ReadBinFileMessage = TypedMessage<
 
 type ReadBinFileResponse = SuccessResponse<{
     position: BufferAttributeDescriptor;
-    attribute?: BufferAttributeDescriptor;
+    attributes: BufferAttributeDescriptor[];
 }>;
 
 type Messages = ReadBinFileMessage;
@@ -49,24 +49,21 @@ function processReadBinMessage(msg: ReadBinFileMessage): void {
             buffer,
             info.pointByteSize,
             info.positionAttribute,
-            info.optionalAttribute,
+            info.attributes,
         );
 
         const response: ReadBinFileResponse = {
             requestId: msg.id,
             payload: {
                 position: result.positionBuffer,
-                attribute: result.attributeBuffer,
+                attributes: result.attributeBuffers,
             },
         };
 
-        const position = result.positionBuffer.array;
-        const attribute = result.attributeBuffer?.array;
+        const transfer = [result.positionBuffer, ...result.attributeBuffers].map(
+            bufferToTransfer => bufferToTransfer.array,
+        );
 
-        const transfer = [position];
-        if (attribute) {
-            transfer.push(attribute);
-        }
         postMessage(response, { transfer });
     } catch (err) {
         postMessage(createErrorResponse(msg.id, err));
