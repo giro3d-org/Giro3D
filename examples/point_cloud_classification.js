@@ -65,7 +65,7 @@ const pointcloud = new Tiles3D({
     // as the names expected by the entity, so we have to map them.
     pointCloudAttributeMapping: {
         classification: 'Classification',
-        intensity: 'Intensity',
+        scalar: 'Intensity',
     },
     pointCloudMode: MODE.CLASSIFICATION,
     errorTarget: 14,

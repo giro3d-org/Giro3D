@@ -72,9 +72,9 @@ export type BaseMessageMap<K extends string> = Record<K, { payload: unknown; res
  * @typeParam TMessageMap - The map between request and response messages.
  */
 export default class WorkerPool<
-        TMessageType extends string,
-        TMessageMap extends BaseMessageMap<TMessageType>,
-    >
+    TMessageType extends string,
+    TMessageMap extends BaseMessageMap<TMessageType>,
+>
     implements Disposable, Progress
 {
     private readonly _concurrency: number;

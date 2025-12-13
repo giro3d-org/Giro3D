@@ -216,6 +216,9 @@ class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
         }
 
         this.addController(this, 'deleteEntity').name('❌ Delete entity');
+
+        this.addController(this.entity.distance, 'min').name('Min view distance').decimals(1);
+        this.addController(this.entity.distance, 'max').name('Max view distance').decimals(1);
     }
 
     private updateControlsWithDefaultView(defaultView: PointOfView | null): void {

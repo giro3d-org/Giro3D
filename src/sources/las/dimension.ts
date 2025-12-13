@@ -214,7 +214,7 @@ export function extractAttributes(
  * - `Classification` and `GpsTime` for filtering.
  */
 export function getDimensionsToRead(
-    attribute: PointCloudAttribute | undefined,
+    attributes: PointCloudAttribute[],
     readPosition: boolean,
     filters: DimensionFilter[],
 ): DimensionName[] {
@@ -224,7 +224,7 @@ export function getDimensionsToRead(
         set.add(filter.dimension);
     }
 
-    if (attribute != null) {
+    for (const attribute of attributes) {
         if (attribute.interpretation === 'color') {
             set.add('Red');
             set.add('Green');

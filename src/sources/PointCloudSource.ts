@@ -184,9 +184,9 @@ export interface PointCloudNodeData {
      */
     localBoundingBox?: Box3;
     /**
-     * The optionally requested attribute buffer (color, classification, etc).
+     * The optionally requested attribute buffers (color, classification, etc).
      */
-    attribute?: BufferAttribute;
+    attributes: Array<BufferAttribute | undefined>;
 }
 
 /**
@@ -211,9 +211,9 @@ export interface GetNodeDataOptions {
      */
     position: boolean;
     /**
-     * The optional attribute to load.
+     * The optional attributes to load.
      */
-    attribute?: PointCloudAttribute;
+    attributes?: PointCloudAttribute[];
     /**
      * Optional abort signal for early cancellation of asynchronous requests.
      */
@@ -225,10 +225,8 @@ export interface GetNodeDataOptions {
  */
 export interface PointCloudSource<
     TEventMap extends PointCloudSourceEventMap = PointCloudSourceEventMap,
-> extends Progress,
-        Disposable,
-        MemoryUsage,
-        EventDispatcher<TEventMap> {
+>
+    extends Progress, Disposable, MemoryUsage, EventDispatcher<TEventMap> {
     readonly id: string;
     /**
      * A flag that indicates that the source is ready to use. This flag should be true when
@@ -270,8 +268,8 @@ export interface PointCloudSource<
  * Base class for sources that provide point cloud data.
  */
 export abstract class PointCloudSourceBase<
-        TEventMap extends PointCloudSourceEventMap = PointCloudSourceEventMap,
-    >
+    TEventMap extends PointCloudSourceEventMap = PointCloudSourceEventMap,
+>
     extends EventDispatcher<TEventMap>
     implements Progress, Disposable, MemoryUsage
 {

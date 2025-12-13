@@ -35,12 +35,30 @@ function mockSource(options?: {
 }
 
 describe('constructor', () => {
-    it('should clone the default colormap', () => {
-        const source = mockSource();
+    it('should clone the default colormap', async () => {
+        const source = mockSource({
+            metadata: {
+                attributes: [
+                    // @ts-expect-error incomplete
+                    {
+                        name: 'myattribute',
+                        interpretation: 'color',
+                    },
+                ],
+            },
+        });
         const entity1 = new PointCloud({ source, cleanupDelay: 1234 });
         const entity2 = new PointCloud({ source, cleanupDelay: 1234 });
 
-        expect(entity1.colorMap).not.toBe(entity2.colorMap);
+        expect(entity1.elevationColorMap).not.toBe(entity2.elevationColorMap);
+
+        // @ts-expect-error incomplete
+        const instance: Instance = { notifyChange: vitest.fn() };
+
+        await Promise.all([entity1.initialize({ instance }), entity2.initialize({ instance })]);
+        expect(entity1.getAttributeColorMap('myattribute')).not.toBe(
+            entity2.getAttributeColorMap('myattribute'),
+        );
     });
 
     it('should set properties', () => {

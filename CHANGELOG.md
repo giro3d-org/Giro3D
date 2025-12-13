@@ -78,12 +78,33 @@ const instance = new Instance({
 > - `CoordinateSystem.epsg4326`
 > - `CoordinateSystem.epsg4978`
 
+#### `PointCloud` coloring-related parameters
+
+Due to the added support for multi-attribute coloring for point clouds, the following APIs have changed:
+
+- `PointCloud.colorMap` has been removed and replaced by `PointCloud.elevationColorMap` and `PointCloud.setAttributeColorMap` to handle up to one colorMap per attribute;
+- `PointCloud.classifications` has been removed and replaced by `PointCloud.getAttributeClassifications` to handle up to one classification map per attribute.
+
 #### Other breaking changes
 
 - Due to worker pool sharing, the `workerConcurrency` option is removed from the constructors of:
     - `COPCsource`
     - `LASSource`
     - `PotreeSource`
+
+- Due to the support for multi-attribute coloring for point clouds, the `PointCloudSource.getNodeData` API no longer takes and returns a single attribute stored in an optional `attribute` field, but a list of attributes stored in a new `attributes` field. This affects:
+    - `COPCsource`
+    - `LASSource`
+    - `PotreeSource`
+
+- Removed exposed APIs:
+    - core.PointCloud
+    - core.PointCloudEventMap
+    - core.PointCloudOptions
+
+- Renamed `entity.WellKnown3DTilesPointCloudAttributes` "intensity" attribute to "scalar"
+
+- Renamed `renderer.PointCloudModes.INTENSITY` to `renderer.PointCloudModes.SCALAR`
 
 ### Feat
 
@@ -95,6 +116,7 @@ const instance = new Instance({
 - **Layer**: getPixel of a layer at coordinates
 - **LASSource/COPCSource**: introduce new FilterOperator `in` and `not_in`
 - **Pointcloud**: ability to color points by intersecting volumes
+- **Pointcloud**: ability to color points by mixing up to 3 different attributes at once
 - **AggregateImageSource**: combine several sources (#581)
 
 ### Perf
@@ -104,6 +126,8 @@ const instance = new Instance({
 
 ### Fix
 
+- **Globe**: fix camera plane computation that could cause flickering in some cases
+- **GlobeControls**: pass the ellipsoid to the underlying controls (#657)
 - **TileFS.glsl**: fix non working shadow maps on MacOS (#579)
 - **PointCloud**: fix filters not being applied
 - **Tiles3D**: correctly handle load-error from 3DtilesRenderer

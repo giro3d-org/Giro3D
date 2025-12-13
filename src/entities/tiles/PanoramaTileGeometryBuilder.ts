@@ -12,9 +12,7 @@ import type { TileGeometryBuilder } from './TileGeometry';
 
 import PanoramaTileGeometry from './PanoramaTileGeometry';
 
-export default class PanoramaTileGeometryBuilder
-    implements TileGeometryBuilder<PanoramaTileGeometry>
-{
+export default class PanoramaTileGeometryBuilder implements TileGeometryBuilder<PanoramaTileGeometry> {
     public constructor(
         private readonly _radius: number,
         private readonly _segments: number,

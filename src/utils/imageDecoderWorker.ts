@@ -281,11 +281,10 @@ export interface CreatePixelBufferMessage extends Message<CreatePixelBufferOptio
 }
 export type CreatePixelBufferResponse = SuccessResponse<CreatePixelBufferResult>;
 
-export interface CreateImageBitmapMessage
-    extends Message<{
-        buffer: ArrayBuffer;
-        options?: ImageBitmapOptions;
-    }> {
+export interface CreateImageBitmapMessage extends Message<{
+    buffer: ArrayBuffer;
+    options?: ImageBitmapOptions;
+}> {
     type: 'CreateImageBitmap';
 }
 export type CreateImageBitmapMessageResponse = SuccessResponse<ImageBitmap>;

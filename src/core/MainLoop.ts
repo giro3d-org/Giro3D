@@ -11,6 +11,7 @@ import type View from '../renderer/View';
 import type Context from './Context';
 import type Instance from './Instance';
 
+import { isEntity3D } from '../entities/Entity3D';
 import { isBufferGeometry } from '../utils/predicates';
 
 /** Rendering state */
@@ -152,8 +153,8 @@ class MainLoop {
                     entity.postUpdate(context, updateSources);
                 }
 
-                if ('distance' in entity) {
-                    const entityDistance = entity.distance as { min: number; max: number };
+                if (isEntity3D(entity)) {
+                    const entityDistance = entity.distance;
                     context.distance.min = Math.min(context.distance.min, entityDistance.min);
                     if (entityDistance.max === Infinity) {
                         context.distance.max = instance.view.maxFarPlane;

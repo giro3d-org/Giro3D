@@ -223,15 +223,19 @@ describe('getHierarchy', () => {
             expect(root.parent).toBeUndefined();
 
             traverseNode(root, n => {
-                if (n !== root) {
-                    expect(n.parent).toBeDefined();
-                    expect(n.depth).toEqual(n.parent!.depth + 1);
-                    expect(n.geometricError).toEqual(root.geometricError / 2 ** n.depth);
-                }
                 expect(n.volume).toBeDefined();
                 expect(n.hasData).toEqual(true);
                 return true;
             });
+
+            root.children?.forEach(child =>
+                traverseNode(child, desc => {
+                    expect(desc.parent).toBeDefined();
+                    expect(desc.depth).toEqual(desc.parent!.depth + 1);
+                    expect(desc.geometricError).toEqual(root.geometricError / 2 ** desc.depth);
+                    return true;
+                }),
+            );
         });
     });
     describe('LAZ dataset', () => {
@@ -262,15 +266,19 @@ describe('getHierarchy', () => {
             expect(root.parent).toBeUndefined();
 
             traverseNode(root, n => {
-                if (n !== root) {
-                    expect(n.parent).toBeDefined();
-                    expect(n.depth).toEqual(n.parent!.depth + 1);
-                    expect(n.geometricError).toEqual(root.geometricError / 2 ** n.depth);
-                }
                 expect(n.volume).toBeDefined();
                 expect(n.hasData).toEqual(true);
                 return true;
             });
+
+            root.children?.forEach(child =>
+                traverseNode(child, desc => {
+                    expect(desc.parent).toBeDefined();
+                    expect(desc.depth).toEqual(desc.parent!.depth + 1);
+                    expect(desc.geometricError).toEqual(root.geometricError / 2 ** desc.depth);
+                    return true;
+                }),
+            );
         });
     });
 });

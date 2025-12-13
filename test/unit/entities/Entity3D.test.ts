@@ -269,12 +269,18 @@ describe('opacity', () => {
 
         entity.opacity = 0.5;
 
+        const materials: Material[] = [];
+
         object3d.traverse(o => {
             if ((o as Mesh).isMesh) {
                 const mesh = o as Mesh<BufferGeometry, Material>;
-                expect(mesh.material.opacity).toEqual(0.5);
-                expect(mesh.material.transparent).toEqual(true);
+                materials.push(mesh.material);
             }
+        });
+
+        materials.forEach(m => {
+            expect(m.opacity).toEqual(0.5);
+            expect(m.transparent).toEqual(true);
         });
     });
 });

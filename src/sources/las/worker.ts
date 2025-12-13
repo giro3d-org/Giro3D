@@ -48,8 +48,9 @@ export interface ReadViewResult {
         buffer: ArrayBuffer;
         localBoundingBox: BoundingBox;
     };
-    attribute?: ArrayBuffer;
+    attributes: ArrayBuffer[];
 }
+
 type ReadViewMessage = TypedMessage<
     'ReadView',
     {
@@ -61,7 +62,7 @@ type ReadViewMessage = TypedMessage<
         position: boolean;
         stride?: number;
         include?: string[];
-        optionalAttribute?: PointCloudAttribute;
+        attributes: PointCloudAttribute[];
         filters?: DimensionFilter[];
         compressColors: boolean;
     }
@@ -136,11 +137,11 @@ export function readView(options: {
     origin: { x: number; y: number; z: number };
     stride?: number;
     position: boolean;
-    optionalAttribute?: PointCloudAttribute;
+    attributes: PointCloudAttribute[];
     filters?: DimensionFilter[];
     compressColors: boolean;
 }): ReadViewResult {
-    const { view, filters, origin, optionalAttribute, compressColors } = options;
+    const { view, filters, origin, attributes, compressColors } = options;
 
     const stride = options.stride ?? 1;
     const perPointFilters = getPerPointFilters(filters ?? [], view);
@@ -164,21 +165,19 @@ export function readView(options: {
         };
     }
 
-    let attribute: ArrayBuffer | undefined = undefined;
-
-    if (optionalAttribute != null) {
-        switch (optionalAttribute.interpretation) {
+    const attributesBuffers = attributes.map(attribute => {
+        switch (attribute.interpretation) {
             case 'color':
-                attribute = readColor(view, stride, compressColors, perPointFilters);
+                return readColor(view, stride, compressColors, perPointFilters);
                 break;
             case 'classification':
             case 'unknown':
-                attribute = readScalarAttribute(view, optionalAttribute, stride, perPointFilters);
+                return readScalarAttribute(view, attribute, stride, perPointFilters);
                 break;
         }
-    }
+    });
 
-    return { position, attribute };
+    return { position, attributes: attributesBuffers };
 }
 
 function processReadViewMessage(msg: ReadViewMessage): void {
@@ -195,10 +194,7 @@ function processReadViewMessage(msg: ReadViewMessage): void {
                 payload,
             };
 
-            const transfer: Transferable[] = [];
-            if (payload.attribute) {
-                transfer.push(payload.attribute);
-            }
+            const transfer: Transferable[] = [...payload.attributes];
             if (payload.position) {
                 transfer.push(payload.position.buffer);
             }

@@ -49,6 +49,9 @@ const options = {
 /** @type {PointCloud} */
 let entity;
 
+// Create the color map. The color ramp and bounds will be set later.
+const colorMap = new ColorMap({ colors: [], min: 0, max: 1 });
+
 const [setProgress, progressElement] = bindProgress('progress');
 
 bindToggle('edl', v => {
@@ -72,7 +75,7 @@ bindSlider('point-size', size => {
 
 function updateColorMap() {
     if (entity && instance) {
-        entity.colorMap.colors = makeColorRamp(options.colorRamp);
+        colorMap.colors = makeColorRamp(options.colorRamp);
         instance.notifyChange();
     }
 }
@@ -228,8 +231,10 @@ async function load(url) {
     // Let's get the volume of the point cloud for various operations.
     const volume = entity.getBoundingBox();
 
-    // Create the color map. The color ramp and bounds will be set later.
-    entity.colorMap = new ColorMap({ colors: [], min: 0, max: 1 });
+    for (const attribute of metadata.attributes) {
+        entity.setAttributeColorMap(attribute.name, colorMap);
+    }
+
     updateIntersectingVolumes();
     bindToggle('intersecting-volumes', () => {
         updateIntersectingVolumes();

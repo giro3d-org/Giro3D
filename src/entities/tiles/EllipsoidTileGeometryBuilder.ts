@@ -13,9 +13,7 @@ import type { TileGeometryBuilder } from './TileGeometry';
 
 import EllipsoidTileGeometry from './EllipsoidTileGeometry';
 
-export default class EllipsoidTileGeometryBuilder
-    implements TileGeometryBuilder<EllipsoidTileGeometry>
-{
+export default class EllipsoidTileGeometryBuilder implements TileGeometryBuilder<EllipsoidTileGeometry> {
     public constructor(
         private readonly ellipsoid: Ellipsoid,
         private _segments: number,
