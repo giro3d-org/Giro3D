@@ -564,6 +564,7 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         const newColorMap = colorMap ?? DEFAULT_COLORMAP.clone();
         newColorMap.addEventListener('updated', this._listeners.updateColorMap);
         this._colorMapPerAttribute.set(attributeName, newColorMap);
+        this._listeners.updateColorMap();
     }
 
     private updateUniforms(): void {
