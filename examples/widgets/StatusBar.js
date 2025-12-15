@@ -127,7 +127,7 @@ function updateCoordinates() {
 
         const { x, y, z } = coords;
 
-        if (coordsAsLatLon) {
+        if (coordsAsLatLon && ecefToLatlonConverter != null) {
             if (Number.isFinite(x) && Number.isFinite(y) && Number.isFinite(z)) {
                 const [lon, lat, alt] = ecefToLatlonConverter.forward([x, y, z]);
                 coordinates.textContent = `lat: ${LATLON_FORMAT.format(lat)}, lon: ${LATLON_FORMAT.format(lon)}, altitude: ${NUMBER_FORMAT.format(alt)}`;
@@ -183,7 +183,11 @@ function bind(instance, options = {}) {
         instance.domElement.addEventListener('mousemove', pick);
     }
 
-    ecefToLatlonConverter = proj4(instance.coordinateSystem.id, 'EPSG:4979');
+    try {
+        ecefToLatlonConverter = proj4(instance.coordinateSystem.id, 'EPSG:4979');
+    } catch (e) {
+        ecefToLatlonConverter = null;
+    }
 
     progressBar = document.getElementById('progress-bar');
     percent = document.getElementById('loading-percent');
