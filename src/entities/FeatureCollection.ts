@@ -307,8 +307,8 @@ export interface FeatureCollectionOptions extends Entity3DOptions {
  *
  * Related examples:
  *
- * - [WFS as 3D meshes](/examples/wfs_mesh.html)
- * - [IGN data](/examples/ign_data.html)
+ * - [WFS as 3D meshes](/examples/wfs-mesh.html)
+ * - [IGN data](/examples/ign-data.html)
  *
  * ## Styling
  *

@@ -44,13 +44,13 @@ Examples that use the `AggregateImageSource` feature:
 
 The `PointCloud` entity now supports coloring the intersection between box-like volumes (represented by the `IntersectingVolume` type) and the point cloud. This is useful to emulate Potree's features that colorize a point cloud with boxes.
 
-👉 [See the example](https://giro3d.org/examples/pointcloud_intersecting_volumes.html)
+👉 [See the example](https://giro3d.org/examples/pointcloud-intersecting-volumes.html)
 
 ### Multi-attribute coloring for point clouds
 
 The `PointCloud` entity now supports displaying more than one attribute simultaneously, e.g color and classification, and set the relative weight of each attribute in the color mix.
 
-👉 [See the example](https://giro3d.org/examples/pointcloud_hybrid_coloring.html)
+👉 [See the example](https://giro3d.org/examples/point-cloud-hybrid-coloring.html)
 
 ### BREAKING CHANGE
 
