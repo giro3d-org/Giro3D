@@ -26,11 +26,31 @@ This source allows you to use videos as color layers. Common use cases include m
 
 👉 [See the example](https://giro3d.org/examples/video_source.html)
 
+### New image source: `AggregateImageSource`
+
+This source allows you to combine multiple image sources into a single layer. This is useful to reduce the video memory footprint thanks to the reduced number of layers used.
+
+This also makes it possible to use more than one elevation source (since currently Giro3D supports only one elevation layer). For example, a high-resolution elevation dataset on top of low-resolution basemap.
+
+Examples that use the `AggregateImageSource` feature:
+
+👉 [SRTM mosaic](https://giro3d.org/examples/srtm_mosaic.html)
+
+👉 [Multi-resolution elevation](https://giro3d.org/examples/multi_resolution_elevation.html)
+
+👉 [Stacked WMTS layers](https://giro3d.org/examples/stacked_wmts_layers.html)
+
 ### Colorize point clouds with intersecting volumes
 
 The `PointCloud` entity now supports coloring the intersection between box-like volumes (represented by the `IntersectingVolume` type) and the point cloud. This is useful to emulate Potree's features that colorize a point cloud with boxes.
 
 👉 [See the example](https://giro3d.org/examples/pointcloud_intersecting_volumes.html)
+
+### Multi-attribute coloring for point clouds
+
+The `PointCloud` entity now supports displaying more than one attribute simultaneously, e.g color and classification, and set the relative weight of each attribute in the color mix.
+
+👉 [See the example](https://giro3d.org/examples/pointcloud_hybrid_coloring.html)
 
 ### BREAKING CHANGE
 
@@ -113,7 +133,7 @@ Due to the added support for multi-attribute coloring for point clouds, the foll
 - add the `VideoSource` image source to draw videos on color layers (#505)
 - **entities**: introduce new entity `OrientedImageCollection`
 - **crs**: add support for CRS with non-meter vertical unit
-- **Layer**: getPixel of a layer at coordinates
+- **Layer**: add the `getPixel()` method to get the color of the layer at a specific coordinate
 - **LASSource/COPCSource**: introduce new FilterOperator `in` and `not_in`
 - **Pointcloud**: ability to color points by intersecting volumes
 - **Pointcloud**: ability to color points by mixing up to 3 different attributes at once
