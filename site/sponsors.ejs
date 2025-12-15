@@ -7,6 +7,8 @@
             description: 'A versatile framework to visualize geospatial data in the browser.',
             url: 'https://giro3d.org/sponsors.html',
         }) %>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js"></script>
     </head>
 
     <body>
@@ -325,5 +327,18 @@
             crossorigin="anonymous"
             async
         ></script>
+
+        <script>
+            const masonryRow = document.querySelector('.row[data-masonry]'); // Targeting the Masonry container
+            if (masonryRow) {
+                imagesLoaded(masonryRow, function () {
+                    // Initialize Masonry after all images have loaded
+                    new Masonry(masonryRow, {
+                        itemSelector: '.col-12, .col-md-6, .col-lg-4, .col-xl-3', // Targeting the grid items
+                        percentPosition: true, // Since you have 'percentPosition' in your data attribute
+                    });
+                });
+            }
+        </script>
     </body>
 </html>
