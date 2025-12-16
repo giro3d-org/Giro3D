@@ -47,17 +47,23 @@ import Entity3D from './Entity3D';
 
 /** All angles are expected to be in degrees. */
 export interface ImageOrientation {
+    /** The azimuth (also called yaw) angle. Zero is pointing north. East is 90, south is 180 and west is 270 (or -90). */
     azimuth: number;
+    /** The pitch angle. Zero is pointing down, vertically (nadir). */
     pitch: number;
     roll: number;
 }
 
 export interface OrientedImageSource {
+    /** The position of the camera, in the same coordinate system as the instance. */
     position: Vector3Like;
+    /** The orientation of the camera. */
     orientation: ImageOrientation;
     /** Vertical field of view in degrees. */
     fov: number;
+    /** The aspect ratio of the image, which is width divided by height. */
     aspectRatio: number;
+    /** The distance from the origin at which the image is displayed. */
     distance: number;
     /** The URL of the image. If undefined, the image is not displayed (but the frustum and origin point can still be displayed) */
     imageUrl?: string;
@@ -82,20 +88,55 @@ export interface OrientedImageCollectionOptions extends Entity3DOptions {
      */
     source: OrientedImageCollectionSource;
 
+    /**
+     * Location spheres show the location of the camera when an image was taken.
+     */
     locationSpheres?: {
-        radius?: number;
-        color?: ColorRepresentation;
+        /**
+         * Display the location spheres at the origin of each image.
+         * @defaultValue true
+         */
         visible?: boolean;
+        /**
+         * The radius of the location spheres, in CRS units.
+         * @defaultValue 0.5
+         */
+        radius?: number;
+        /**
+         * The color of the location spheres.
+         * @defaultValue green
+         */
+        color?: ColorRepresentation;
     };
 
+    /**
+     * Frustums represent the field of view of each images as a view cone.
+     */
     frustums?: {
-        color?: ColorRepresentation;
+        /**
+         * Display the frustum of each image.
+         * @defaultValue true
+         */
         visible?: boolean;
+        /**
+         * The color of the camera frustums.
+         * @defaultValue green
+         */
+        color?: ColorRepresentation;
     };
 
     images?: {
-        opacity?: number;
+        /**
+         * Display the actual images.
+         * Note, if the `.imageUrl` property is undefined, then a blank rectangle is displayed instead.
+         * @defaultValue false
+         */
         visible?: boolean;
+        /**
+         * The opacity of the image object.
+         * @defaultValue 1
+         */
+        opacity?: number;
     };
 }
 
