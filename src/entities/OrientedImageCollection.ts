@@ -29,6 +29,7 @@ import {
 
 import type Context from '../core/Context';
 import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
+import type { HeadingPitchRollLike } from '../core/HeadingPitchRoll';
 import type PickOptions from '../core/picking/PickOptions';
 import type PickResult from '../core/picking/PickResult';
 import type PointOfView from '../core/PointOfView';
@@ -45,20 +46,11 @@ import pickObjectsAt from '../core/picking/PickObjectsAt';
 import Fetcher from '../utils/Fetcher';
 import Entity3D from './Entity3D';
 
-/** All angles are expected to be in degrees. */
-export interface ImageOrientation {
-    /** The azimuth (also called yaw) angle. Zero is pointing north. East is 90, south is 180 and west is 270 (or -90). */
-    azimuth: number;
-    /** The pitch angle. Zero is pointing down, vertically (nadir). */
-    pitch: number;
-    roll: number;
-}
-
 export interface OrientedImageSource {
     /** The position of the camera, in the same coordinate system as the instance. */
     position: Vector3Like;
     /** The orientation of the camera. */
-    orientation: ImageOrientation;
+    orientation: HeadingPitchRollLike;
     /** Vertical field of view in degrees. */
     fov: number;
     /** The aspect ratio of the image, which is width divided by height. */
@@ -200,9 +192,9 @@ export default class OrientedImageCollection<
 
         this._images = {
             container: new Group(),
-            bufferGeometry: new PlaneGeometry().applyMatrix4(
-                new Matrix4().makeTranslation(0, 0, -1),
-            ),
+            bufferGeometry: new PlaneGeometry()
+                .applyMatrix4(new Matrix4().makeTranslation(0, 0, -1))
+                .rotateX(MathUtils.degToRad(90)),
             opacity: options.images?.opacity ?? 1,
             objects: null,
         };
@@ -224,6 +216,7 @@ export default class OrientedImageCollection<
                 3,
             ),
         );
+        frustumGeometry.rotateX(MathUtils.degToRad(90));
         frustumGeometry.setIndex([0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 1]);
         this._frustums = {
             bufferGeometry: frustumGeometry,
@@ -564,12 +557,17 @@ export default class OrientedImageCollection<
             .multiply(scaleMatrix);
     }
 
-    private computeLocalRotationMatrix(orientation: ImageOrientation): Matrix4 {
+    private computeLocalRotationMatrix(orientation: HeadingPitchRollLike): Matrix4 {
+        const heading = orientation.heading ?? 0;
+        const pitch = orientation.pitch ?? 0;
+        const roll = orientation.roll ?? 0;
+
         return new Matrix4().makeRotationFromEuler(
             new Euler(
-                MathUtils.degToRad(orientation.azimuth),
-                MathUtils.degToRad(orientation.pitch),
-                MathUtils.degToRad(orientation.roll),
+                MathUtils.degToRad(pitch),
+                MathUtils.degToRad(roll),
+                MathUtils.degToRad(-heading),
+                'ZYX',
             ),
         );
     }
@@ -586,7 +584,7 @@ export default class OrientedImageCollection<
         const rotationMatrix = this.computeLocalRotationMatrix(source.orientation);
         return {
             origin: new Vector3().copy(source.position),
-            target: new Vector3(0, 0, -1).applyMatrix4(rotationMatrix).add(source.position),
+            target: new Vector3(0, 1, 0).applyMatrix4(rotationMatrix).add(source.position),
             orthographicZoom: 1,
         };
     }
