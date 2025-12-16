@@ -22,7 +22,7 @@ import webpackDevServer from 'webpack-dev-server';
 import { handleModification } from '../observer.mjs';
 import { copyAssets } from './build-static-site.mjs';
 import { getPackageVersion } from './prepare-package.mjs';
-import { log, logOk } from './utils.mjs';
+import { log, logError, logOk } from './utils.mjs';
 
 const baseDir = dirname(fileURLToPath(import.meta.url));
 const rootDir = path.join(baseDir, '..');
@@ -148,6 +148,10 @@ export function findExamples() {
         });
 }
 
+// Having underscores or special characters in examples
+// names would be a bad practice that hurts SEO.
+const exampleNameValidator = new RegExp(/^[a-z0-9-]+$/, 'm');
+
 export function findExamplesEntries(parameters) {
     const entry = {};
 
@@ -157,6 +161,17 @@ export function findExamplesEntries(parameters) {
 
     const examples = findExamples(examplesDir);
     examples.forEach(example => {
+        if (!exampleNameValidator.test(example)) {
+            logError(
+                'examples',
+                `Invalid example name: "${example}". Expected only lowercase letters, numbers and hyphens.`,
+            );
+        }
+        const thumbnail = path.join(examplesDir, 'screenshots', `${example}.jpg`);
+        if (!fse.existsSync(thumbnail)) {
+            logError('examples', `Missing thumbnail: ${example}.jpg`);
+        }
+
         if (parameters.example === undefined || parameters.example === example) {
             const jsFile = `${example}.js`;
             entry[example] = [path.join(examplesDir, jsFile)];
