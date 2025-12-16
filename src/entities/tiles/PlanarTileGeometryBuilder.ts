@@ -8,7 +8,7 @@ import { Vector2 } from 'three';
 
 import type Extent from '../../core/geographic/Extent';
 import type TileCoordinate from './TileCoordinate';
-import type { TileGeometryBuilder } from './TileGeometry';
+import type TileGeometryBuilder from './TileGeometryBuilder';
 
 import PlanarTileGeometry from './PlanarTileGeometry';
 

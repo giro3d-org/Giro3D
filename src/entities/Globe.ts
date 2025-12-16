@@ -12,7 +12,7 @@ import type PointOfView from '../core/PointOfView';
 import type TerrainOptions from '../core/TerrainOptions';
 import type { MapSubdivisionStrategy } from './Map';
 import type MapLightingOptions from './MapLightingOptions';
-import type { TileGeometryBuilder } from './tiles/TileGeometry';
+import type TileGeometryBuilder from './tiles/TileGeometryBuilder';
 import type TileMesh from './tiles/TileMesh';
 import type TileVolume from './tiles/TileVolume';
 

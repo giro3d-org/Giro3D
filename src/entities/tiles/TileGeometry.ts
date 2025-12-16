@@ -4,12 +4,10 @@
  * SPDX-License-Identifier: MIT
  */
 
-import type { BufferGeometry, Vector2, Vector3 } from 'three';
+import type { BufferGeometry, Vector3 } from 'three';
 
-import type Extent from '../../core/geographic/Extent';
 import type HeightMap from '../../core/HeightMap';
 import type MemoryUsage from '../../core/MemoryUsage';
-import type TileCoordinate from './TileCoordinate';
 
 export default interface TileGeometry extends BufferGeometry, MemoryUsage {
     get vertexCount(): number;
@@ -35,13 +33,4 @@ export default interface TileGeometry extends BufferGeometry, MemoryUsage {
      * The geometry to use for raycast purposes.
      */
     get raycastGeometry(): BufferGeometry;
-}
-
-export interface TileGeometryBuilder<T extends TileGeometry = TileGeometry> {
-    /**
-     * The number of tiles on each axis at zoom level 0.
-     */
-    get rootTileMatrix(): Vector2;
-
-    build(params: { tile: TileCoordinate; extent: Extent }): T;
 }

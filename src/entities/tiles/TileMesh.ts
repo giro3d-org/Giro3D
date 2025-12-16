@@ -46,7 +46,7 @@ import type ShadowLayeredMaterial from '../../renderer/ShadowLayeredMaterial';
 import type View from '../../renderer/View';
 import type TileCoordinate from './TileCoordinate';
 import type TileGeometry from './TileGeometry';
-import type { TileGeometryBuilder } from './TileGeometry';
+import type TileGeometryBuilder from './TileGeometryBuilder';
 import type { NeighbourList } from './TileIndex';
 import type TileVolume from './TileVolume';
 

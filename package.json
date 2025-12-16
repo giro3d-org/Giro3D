@@ -86,14 +86,15 @@
         "Firefox ESR"
     ],
     "dependencies": {
+        "@mapbox/martini": "^0.2.0",
         "3d-tiles-renderer": "^0.4.14",
-        "wkt-parser": "^1.5.2",
         "chart.js": "^3.9.1",
         "copc": "^0.0.8",
         "earcut": "^2.2.4",
         "geotiff": "^2.1.0",
         "lil-gui": "^0.17.0",
-        "lru-cache": "^10.0.1"
+        "lru-cache": "^10.0.1",
+        "wkt-parser": "^1.5.2"
     },
     "peerDependencies": {
         "ol": "10",
@@ -111,6 +112,7 @@
         "@types/earcut": "^2.1.4",
         "@types/emscripten": "^1.39.13",
         "@types/geojson": "^7946.0.14",
+        "@types/node": "^25.0.2",
         "@types/three": "^0.170.0",
         "@typescript-eslint/eslint-plugin": "^8.9.0",
         "@typescript-eslint/parser": "^8.9.0",

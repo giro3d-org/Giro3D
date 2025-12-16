@@ -46,6 +46,7 @@ import OrientedImageCollection, {
 import PointCloud, { PointCloudOptions, UnsupportedAttributeError } from './PointCloud';
 import Shape, { ShapeOptions, ShapeExportOptions, ShapeFontWeight, ShapePickResult } from './Shape';
 import SphericalPanorama, { SphericalPanoramaOptions } from './SphericalPanorama';
+import * as tiles from './tiles/api';
 import Tiles3D, {
     DEFAULT_TILES3D_POINTCLOUD_ATTRIBUTE_MAPPING,
     WellKnown3DTilesPointCloudAttributes,
@@ -55,6 +56,7 @@ import Tiles3D, {
 } from './Tiles3D';
 
 export {
+    tiles,
     Atmosphere,
     AtmosphereOptions,
     AxisGrid,

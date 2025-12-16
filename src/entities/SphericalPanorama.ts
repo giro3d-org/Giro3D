@@ -12,7 +12,7 @@ import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
 import type Layer from '../core/layer/Layer';
 import type PointOfView from '../core/PointOfView';
 import type { MapOptions } from './Map';
-import type { TileGeometryBuilder } from './tiles/TileGeometry';
+import type TileGeometryBuilder from './tiles/TileGeometryBuilder';
 import type TileVolume from './tiles/TileVolume';
 
 import CoordinateSystem from '../core/geographic/CoordinateSystem';

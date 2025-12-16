@@ -49,7 +49,7 @@ import type RenderingState from '../renderer/RenderingState';
 import type { EntityUserData } from './Entity';
 import type { Entity3DOptions } from './Entity3D';
 import type MapLightingOptions from './MapLightingOptions';
-import type { TileGeometryBuilder } from './tiles/TileGeometry';
+import type TileGeometryBuilder from './tiles/TileGeometryBuilder';
 import type TileVolume from './tiles/TileVolume';
 
 import { defaultColorimetryOptions } from '../core/ColorimetryOptions';
@@ -391,6 +391,10 @@ export interface MapEventMap extends Entity3DEventMap {
  */
 export interface MapOptions extends Entity3DOptions {
     /**
+     * The custom geometry builder.
+     */
+    geometryBuilder?: TileGeometryBuilder;
+    /**
      * The geographic extent of the map.
      *
      * Note: It must have the same CRS as the instance this map will be added to.
@@ -610,6 +614,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     private _colorAtlasDataType: TextureDataType = UnsignedByteType;
     private _wireframe = false;
     private _subdivisionThreshold;
+    private _customGeometryBuilder: TileGeometryBuilder | undefined;
 
     public override getMemoryUsage(context: GetMemoryUsageContext): void {
         this._layers.forEach(layer => layer.getMemoryUsage(context));
@@ -625,6 +630,8 @@ class Map<UserData extends EntityUserData = EntityUserData>
         super(options);
 
         this._rootTiles = [];
+
+        this._customGeometryBuilder = options.geometryBuilder;
 
         this._layerIndices = new window.Map();
 
@@ -1090,7 +1097,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
             );
         }
 
-        this._geometryBuilder = this.getGeometryBuilder();
+        this._geometryBuilder = this._customGeometryBuilder ?? this.getGeometryBuilder();
 
         const subdivs = this.getRootTileMatrix();
 
