@@ -7,6 +7,7 @@
 import {
     Box3,
     BufferGeometry,
+    Color,
     DoubleSide,
     Euler,
     Float32BufferAttribute,
@@ -58,7 +59,8 @@ export interface OrientedImageSource {
     fov: number;
     aspectRatio: number;
     distance: number;
-    imageUrl: string;
+    /** The URL of the image. If undefined, the image is not displayed (but the frustum and origin point can still be displayed) */
+    imageUrl?: string;
 }
 
 export interface OrientedImageCollectionSource {
@@ -579,12 +581,17 @@ export default class OrientedImageCollection<
     }
 
     private createImageObject(imageSource: OrientedImageSource, index: number): ImageObject {
-        const actualOpacity = this.opacity * this._images.opacity;
+        const url = imageSource.imageUrl;
+        const hasUrl = url != null;
+
+        const actualOpacity = hasUrl ? this.opacity * this._images.opacity : this.opacity * 0.3;
+        const transparent = actualOpacity < 1;
 
         const material = new MeshBasicMaterial({
             side: DoubleSide,
-            transparent: actualOpacity < 1,
-            opacity: actualOpacity,
+            transparent: true,
+            opacity: 0,
+            color: hasUrl ? undefined : this._frustums.material.color,
         });
 
         const mesh = new Mesh(this._images.bufferGeometry, material);
@@ -596,27 +603,39 @@ export default class OrientedImageCollection<
 
         const imageObject: ImageObject = { mesh, material, wasDisposed: false };
 
-        // only trigger texture fetching once when the mesh is visible
-        mesh.onBeforeRender = async (): Promise<void> => {
-            mesh.onBeforeRender = (): void => {};
+        if (hasUrl) {
+            // only trigger texture fetching once when the mesh is visible
+            mesh.onBeforeRender = async (): Promise<void> => {
+                mesh.onBeforeRender = (): void => {};
 
-            try {
-                const texture = await Fetcher.texture(imageSource.imageUrl, {
-                    flipY: true,
-                });
-                if (imageObject.wasDisposed) {
-                    texture.dispose();
-                } else {
-                    texture.generateMipmaps = true;
-                    texture.colorSpace = SRGBColorSpace;
-                    material.map = texture;
-                    material.needsUpdate = true;
+                try {
+                    const texture = await Fetcher.texture(url, {
+                        flipY: true,
+                    });
+                    if (imageObject.wasDisposed) {
+                        texture.dispose();
+                    } else {
+                        texture.generateMipmaps = true;
+                        texture.colorSpace = SRGBColorSpace;
+                        material.map = texture;
+                        material.visible = true;
+                        material.transparent = transparent;
+                        material.opacity = actualOpacity;
+                        material.needsUpdate = true;
+                        this.notifyChange(this);
+                    }
+                } catch (error: unknown) {
+                    material.color = new Color('red');
+                    material.visible = true;
+                    material.opacity = 1;
+                    console.error(`Failed to load texture "${imageSource.imageUrl}": `, error);
                     this.notifyChange(this);
                 }
-            } catch (error: unknown) {
-                console.error(`Failed to load texture "${imageSource.imageUrl}": `, error);
-            }
-        };
+            };
+        } else {
+            material.color = this._frustums.material.color;
+            material.opacity = actualOpacity;
+        }
 
         return imageObject;
     }
