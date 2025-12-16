@@ -204,6 +204,8 @@ export default class OrientedImageCollection<
         this.showLocationSpheres = options.locationSpheres?.visible ?? true;
         this.showFrustums = options.frustums?.visible ?? true;
         this.showImages = options.images?.visible ?? false;
+
+        this.object3d.updateMatrixWorld(true);
     }
 
     public override getMemoryUsage(context: GetMemoryUsageContext): void {
