@@ -42,6 +42,7 @@ import type { Vector2Array, Vector3Array, Vector4Array, VectorArray } from './Ve
 import { type aggregateElevationProviders } from './ElevationProvider';
 import GetElevationOptions from './GetElevationOptions';
 import GetElevationResult from './GetElevationResult';
+import HeadingPitchRoll, { HeadingPitchRollLike } from './HeadingPitchRoll';
 import {
     DEFAULT_ENABLE_STITCHING,
     DEFAULT_ENABLE_TERRAIN,
@@ -50,6 +51,8 @@ import {
 
 export {
     aggregateElevationProviders,
+    HeadingPitchRoll,
+    HeadingPitchRollLike,
     cache,
     ColorimetryOptions,
     ColorMap,
