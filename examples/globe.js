@@ -187,6 +187,7 @@ const background = new SphericalPanorama({
     name: 'background',
     radius: 10_000_000,
     subdivisionThreshold: 0.4,
+    maxSubdivisionLevel: 3,
     depthTest: false,
 });
 background.renderOrder = -9999;
@@ -400,6 +401,7 @@ function update() {
 
     background.object3d.position.set(x, y, z);
     background.object3d.updateMatrixWorld(true);
+    instance.notifyChange(background);
 }
 
 update();
