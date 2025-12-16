@@ -45,7 +45,7 @@ const video = new ColorLayer({
     name: 'video',
     source,
     colorMap: new ColorMap({
-        colors: makeColorRamp('jet'),
+        colors: makeColorRamp('jet', false, true),
         min: 0,
         max: 1,
     }),
