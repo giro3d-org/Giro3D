@@ -46,18 +46,33 @@ import pickObjectsAt from '../core/picking/PickObjectsAt';
 import Fetcher from '../utils/Fetcher';
 import Entity3D from './Entity3D';
 
+const DEFAULT_DISTANCE = 10;
+
 export interface OrientedImageSource {
-    /** The position of the camera, in the same coordinate system as the instance. */
+    /**
+     * The position of the camera, in the same coordinate system as the instance.
+     */
     position: Vector3Like;
-    /** The orientation of the camera. */
+    /**
+     * The orientation of the camera.
+     */
     orientation: HeadingPitchRollLike;
-    /** Vertical field of view in degrees. */
+    /**
+     * Vertical field of view in degrees.
+     */
     fov: number;
-    /** The aspect ratio of the image, which is width divided by height. */
+    /**
+     * The aspect ratio of the image, which is width divided by height.
+     */
     aspectRatio: number;
-    /** The distance from the origin at which the image is displayed. */
-    distance: number;
-    /** The URL of the image. If undefined, the image is not displayed (but the frustum and origin point can still be displayed) */
+    /**
+     * The distance from the origin at which the image is displayed.
+     * @defaultValue 10
+     */
+    distance?: number;
+    /**
+     * The URL of the image. If undefined, the image is not displayed (but the frustum and origin point can still be displayed)
+     */
     imageUrl?: string;
 }
 
@@ -409,7 +424,7 @@ export default class OrientedImageCollection<
      * Gets the projection distance of a specific image in the collection.
      */
     public getImageProjectionDistance(imageIndex: number): number {
-        return this.getImageSource(imageIndex).distance;
+        return this.getImageSource(imageIndex).distance ?? DEFAULT_DISTANCE;
     }
 
     /**
@@ -544,11 +559,13 @@ export default class OrientedImageCollection<
         const translationMatrix = this.computeLocalTranslationMatrix(source.position);
         const rotationMatrix = this.computeLocalRotationMatrix(source.orientation);
 
+        const distance = source.distance ?? DEFAULT_DISTANCE;
+
         const frustumSizeY = 2 * Math.tan(MathUtils.degToRad(0.5 * source.fov));
         const scaleMatrix = new Matrix4().makeScale(
-            source.distance * frustumSizeY * source.aspectRatio,
-            source.distance * frustumSizeY,
-            source.distance,
+            distance * frustumSizeY * source.aspectRatio,
+            distance * frustumSizeY,
+            distance,
         );
 
         return new Matrix4()
