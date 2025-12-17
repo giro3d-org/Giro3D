@@ -7,7 +7,14 @@
 import type { NormalBufferAttributes, Vector3 } from 'three';
 
 import Martini from '@mapbox/martini';
-import { BufferGeometry, type Vector2 } from 'three';
+import {
+    BufferAttribute,
+    BufferGeometry,
+    Float32BufferAttribute,
+    Uint16BufferAttribute,
+    Uint32BufferAttribute,
+    type Vector2,
+} from 'three';
 
 import type Extent from '../../core/geographic/Extent';
 import type HeightMap from '../../core/HeightMap';
@@ -23,18 +30,17 @@ class MartiniTileGeometry extends BufferGeometry implements TileGeometry {
 
     private readonly _origin: Vector3;
     private readonly _extent: Extent;
+    private readonly _segments: number;
 
     public get vertexCount(): number {
-        throw new Error('Method not implemented.');
+        return this.getAttribute('position').count;
     }
 
     public get segments(): number {
-        throw new Error('Method not implemented.');
+        return this._segments;
     }
 
-    public set segments(v: number) {
-        throw new Error('Method not implemented.');
-    }
+    public set segments(v: number) {}
 
     public get origin(): Vector3 {
         return this._origin;
@@ -42,26 +48,56 @@ class MartiniTileGeometry extends BufferGeometry implements TileGeometry {
 
     public resetHeights(): void {}
 
-    public constructor(params: { extent: Extent }) {
+    public constructor(params: { extent: Extent; segments: number }) {
         super();
         this._extent = params.extent;
+        this._segments = params.segments;
         this._origin = this._extent.center().toVector3();
     }
 
     public applyHeightMap(heightMap: HeightMap): { min: number; max: number } {
         const martini = new Martini(257);
 
-        const buffer = new Float32Array(257 * 257);
-        const tile = martini.createTile(buffer);
+        const tile = martini.createTile(heightMap.getResizedBuffer(257, 257));
 
-        const mesh = tile.getMesh(2);
+        const dims = this._extent.dimensions();
 
-        console.log(mesh);
+        const error = dims.width / this.segments;
+
+        const mesh = tile.getMesh(200);
+
+        const vertexCount = mesh.vertices.length / 2;
+        const position = new Float32Array(vertexCount * 3);
+
+        const scaleX = (1 / 256) * dims.width;
+        const scaleY = (1 / 256) * dims.height;
+        const offsetX = dims.width / 2;
+        const offsetY = dims.height / 2;
+
+        const uv = new Float32Array(vertexCount * 2);
+
+        for (let i = 0; i < vertexCount; i++) {
+            const x = mesh.vertices[i * 2 + 0];
+            const y = mesh.vertices[i * 2 + 1];
+
+            const u = x / 256;
+            const v = 1 - y / 256;
+
+            position[i * 3 + 0] = offsetX - u * dims.width;
+            position[i * 3 + 1] = offsetY - v * dims.height;
+            position[i * 3 + 2] = 0;
+
+            uv[i * 2 + 0] = u;
+            uv[i * 2 + 1] = v;
+        }
+
+        this.setAttribute('position', new Float32BufferAttribute(position, 3));
+        this.setAttribute('uv', new Float32BufferAttribute(uv, 2));
+        this.setIndex(new Uint32BufferAttribute(mesh.triangles, 1));
+        this.computeBoundingBox();
+        this.computeBoundingSphere();
 
         return { min: 0, max: 10 };
-
-        // this.setAttribute('position', new BufferAttribute(new Float32Array(mesh.vertices)));
-        // this.setIndex(mesh.indices);
     }
 
     public get raycastGeometry(): BufferGeometry<NormalBufferAttributes> {
@@ -102,6 +138,7 @@ export default class MapboxMartiniTileBuilder implements TileGeometryBuilder {
     public build(params: { tile: TileCoordinate; extent: Extent }): MartiniTileGeometry {
         return new MartiniTileGeometry({
             extent: params.extent,
+            segments: this._segments,
         });
     }
 }

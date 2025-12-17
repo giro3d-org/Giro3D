@@ -148,6 +148,24 @@ export default class HeightMap {
         );
     }
 
+    public getResizedBuffer(width: number, height: number): Float32Array {
+        const data = new Float32Array(width * height);
+        let idx = 0;
+
+        for (let i = 0; i < width; i++) {
+            for (let j = 0; j < height; j++) {
+                const u = i / width;
+                const v = j / height;
+
+                const value = this.getValue(u, v, true) ?? 0;
+
+                data[idx++] = value;
+            }
+        }
+
+        return data;
+    }
+
     /**
      * Returns the elevation of the pixel that contains the UV coordinate.
      * No interpolation is performed.

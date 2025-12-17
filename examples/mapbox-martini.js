@@ -127,7 +127,7 @@ function load() {
     instance.add(map);
 
     map.addLayer(elevationLayer);
-    // map.addLayer(satelliteLayer);
+    map.addLayer(satelliteLayer);
 }
 
 load();
