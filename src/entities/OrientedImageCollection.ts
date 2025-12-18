@@ -7,6 +7,7 @@
 import {
     Box3,
     BufferGeometry,
+    Color,
     DoubleSide,
     Euler,
     Float32BufferAttribute,
@@ -28,6 +29,7 @@ import {
 
 import type Context from '../core/Context';
 import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
+import type { HeadingPitchRollLike } from '../core/HeadingPitchRoll';
 import type PickOptions from '../core/picking/PickOptions';
 import type PickResult from '../core/picking/PickResult';
 import type PointOfView from '../core/PointOfView';
@@ -44,21 +46,34 @@ import pickObjectsAt from '../core/picking/PickObjectsAt';
 import Fetcher from '../utils/Fetcher';
 import Entity3D from './Entity3D';
 
-/** All angles are expected to be in degrees. */
-export interface ImageOrientation {
-    azimuth: number;
-    pitch: number;
-    roll: number;
-}
+const DEFAULT_DISTANCE = 10;
 
 export interface OrientedImageSource {
+    /**
+     * The position of the camera, in the same coordinate system as the instance.
+     */
     position: Vector3Like;
-    orientation: ImageOrientation;
-    /** Vertical field of view in degrees. */
+    /**
+     * The orientation of the camera.
+     */
+    orientation: HeadingPitchRollLike;
+    /**
+     * Vertical field of view in degrees.
+     */
     fov: number;
+    /**
+     * The aspect ratio of the image, which is width divided by height.
+     */
     aspectRatio: number;
-    distance: number;
-    imageUrl: string;
+    /**
+     * The distance from the origin at which the image is displayed.
+     * @defaultValue 10
+     */
+    distance?: number;
+    /**
+     * The URL of the image. If undefined, the image is not displayed (but the frustum and origin point can still be displayed)
+     */
+    imageUrl?: string;
 }
 
 export interface OrientedImageCollectionSource {
@@ -80,20 +95,55 @@ export interface OrientedImageCollectionOptions extends Entity3DOptions {
      */
     source: OrientedImageCollectionSource;
 
+    /**
+     * Location spheres show the location of the camera when an image was taken.
+     */
     locationSpheres?: {
-        radius?: number;
-        color?: ColorRepresentation;
+        /**
+         * Display the location spheres at the origin of each image.
+         * @defaultValue true
+         */
         visible?: boolean;
+        /**
+         * The radius of the location spheres, in CRS units.
+         * @defaultValue 0.5
+         */
+        radius?: number;
+        /**
+         * The color of the location spheres.
+         * @defaultValue green
+         */
+        color?: ColorRepresentation;
     };
 
+    /**
+     * Frustums represent the field of view of each images as a view cone.
+     */
     frustums?: {
-        color?: ColorRepresentation;
+        /**
+         * Display the frustum of each image.
+         * @defaultValue true
+         */
         visible?: boolean;
+        /**
+         * The color of the camera frustums.
+         * @defaultValue green
+         */
+        color?: ColorRepresentation;
     };
 
     images?: {
-        opacity?: number;
+        /**
+         * Display the actual images.
+         * Note, if the `.imageUrl` property is undefined, then a blank rectangle is displayed instead.
+         * @defaultValue false
+         */
         visible?: boolean;
+        /**
+         * The opacity of the image object.
+         * @defaultValue 1
+         */
+        opacity?: number;
     };
 }
 
@@ -157,9 +207,9 @@ export default class OrientedImageCollection<
 
         this._images = {
             container: new Group(),
-            bufferGeometry: new PlaneGeometry().applyMatrix4(
-                new Matrix4().makeTranslation(0, 0, -1),
-            ),
+            bufferGeometry: new PlaneGeometry()
+                .applyMatrix4(new Matrix4().makeTranslation(0, 0, -1))
+                .rotateX(MathUtils.degToRad(90)),
             opacity: options.images?.opacity ?? 1,
             objects: null,
         };
@@ -181,6 +231,7 @@ export default class OrientedImageCollection<
                 3,
             ),
         );
+        frustumGeometry.rotateX(MathUtils.degToRad(90));
         frustumGeometry.setIndex([0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 1]);
         this._frustums = {
             bufferGeometry: frustumGeometry,
@@ -202,6 +253,8 @@ export default class OrientedImageCollection<
         this.showLocationSpheres = options.locationSpheres?.visible ?? true;
         this.showFrustums = options.frustums?.visible ?? true;
         this.showImages = options.images?.visible ?? false;
+
+        this.object3d.updateMatrixWorld(true);
     }
 
     public override getMemoryUsage(context: GetMemoryUsageContext): void {
@@ -371,7 +424,7 @@ export default class OrientedImageCollection<
      * Gets the projection distance of a specific image in the collection.
      */
     public getImageProjectionDistance(imageIndex: number): number {
-        return this.getImageSource(imageIndex).distance;
+        return this.getImageSource(imageIndex).distance ?? DEFAULT_DISTANCE;
     }
 
     /**
@@ -506,11 +559,13 @@ export default class OrientedImageCollection<
         const translationMatrix = this.computeLocalTranslationMatrix(source.position);
         const rotationMatrix = this.computeLocalRotationMatrix(source.orientation);
 
+        const distance = source.distance ?? DEFAULT_DISTANCE;
+
         const frustumSizeY = 2 * Math.tan(MathUtils.degToRad(0.5 * source.fov));
         const scaleMatrix = new Matrix4().makeScale(
-            source.distance * frustumSizeY * source.aspectRatio,
-            source.distance * frustumSizeY,
-            source.distance,
+            distance * frustumSizeY * source.aspectRatio,
+            distance * frustumSizeY,
+            distance,
         );
 
         return new Matrix4()
@@ -519,12 +574,17 @@ export default class OrientedImageCollection<
             .multiply(scaleMatrix);
     }
 
-    private computeLocalRotationMatrix(orientation: ImageOrientation): Matrix4 {
+    private computeLocalRotationMatrix(orientation: HeadingPitchRollLike): Matrix4 {
+        const heading = orientation.heading ?? 0;
+        const pitch = orientation.pitch ?? 0;
+        const roll = orientation.roll ?? 0;
+
         return new Matrix4().makeRotationFromEuler(
             new Euler(
-                MathUtils.degToRad(orientation.azimuth),
-                MathUtils.degToRad(orientation.pitch),
-                MathUtils.degToRad(orientation.roll),
+                MathUtils.degToRad(pitch),
+                MathUtils.degToRad(roll),
+                MathUtils.degToRad(-heading),
+                'ZYX',
             ),
         );
     }
@@ -541,7 +601,7 @@ export default class OrientedImageCollection<
         const rotationMatrix = this.computeLocalRotationMatrix(source.orientation);
         return {
             origin: new Vector3().copy(source.position),
-            target: new Vector3(0, 0, -1).applyMatrix4(rotationMatrix).add(source.position),
+            target: new Vector3(0, 1, 0).applyMatrix4(rotationMatrix).add(source.position),
             orthographicZoom: 1,
         };
     }
@@ -579,12 +639,17 @@ export default class OrientedImageCollection<
     }
 
     private createImageObject(imageSource: OrientedImageSource, index: number): ImageObject {
-        const actualOpacity = this.opacity * this._images.opacity;
+        const url = imageSource.imageUrl;
+        const hasUrl = url != null;
+
+        const actualOpacity = hasUrl ? this.opacity * this._images.opacity : this.opacity * 0.3;
+        const transparent = actualOpacity < 1;
 
         const material = new MeshBasicMaterial({
             side: DoubleSide,
-            transparent: actualOpacity < 1,
-            opacity: actualOpacity,
+            transparent: true,
+            opacity: 0,
+            color: hasUrl ? undefined : this._frustums.material.color,
         });
 
         const mesh = new Mesh(this._images.bufferGeometry, material);
@@ -596,27 +661,39 @@ export default class OrientedImageCollection<
 
         const imageObject: ImageObject = { mesh, material, wasDisposed: false };
 
-        // only trigger texture fetching once when the mesh is visible
-        mesh.onBeforeRender = async (): Promise<void> => {
-            mesh.onBeforeRender = (): void => {};
+        if (hasUrl) {
+            // only trigger texture fetching once when the mesh is visible
+            mesh.onBeforeRender = async (): Promise<void> => {
+                mesh.onBeforeRender = (): void => {};
 
-            try {
-                const texture = await Fetcher.texture(imageSource.imageUrl, {
-                    flipY: true,
-                });
-                if (imageObject.wasDisposed) {
-                    texture.dispose();
-                } else {
-                    texture.generateMipmaps = true;
-                    texture.colorSpace = SRGBColorSpace;
-                    material.map = texture;
-                    material.needsUpdate = true;
+                try {
+                    const texture = await Fetcher.texture(url, {
+                        flipY: true,
+                    });
+                    if (imageObject.wasDisposed) {
+                        texture.dispose();
+                    } else {
+                        texture.generateMipmaps = true;
+                        texture.colorSpace = SRGBColorSpace;
+                        material.map = texture;
+                        material.visible = true;
+                        material.transparent = transparent;
+                        material.opacity = actualOpacity;
+                        material.needsUpdate = true;
+                        this.notifyChange(this);
+                    }
+                } catch (error: unknown) {
+                    material.color = new Color('red');
+                    material.visible = true;
+                    material.opacity = 1;
+                    console.error(`Failed to load texture "${imageSource.imageUrl}": `, error);
                     this.notifyChange(this);
                 }
-            } catch (error: unknown) {
-                console.error(`Failed to load texture "${imageSource.imageUrl}": `, error);
-            }
-        };
+            };
+        } else {
+            material.color = this._frustums.material.color;
+            material.opacity = actualOpacity;
+        }
 
         return imageObject;
     }

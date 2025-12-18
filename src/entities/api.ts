@@ -37,7 +37,6 @@ import {
 } from './Map';
 import MapLightingOptions, { MapLightingMode } from './MapLightingOptions';
 import OrientedImageCollection, {
-    type ImageOrientation,
     type OrientedImageCollectionOptions,
     type OrientedImageCollectionPickResult,
     type OrientedImageCollectionSource,
@@ -79,7 +78,6 @@ export {
     GlobeTerrainOptions,
     Glow,
     GlowOptions,
-    ImageOrientation,
     LayerCompareFn,
     Map,
     MapOptions,

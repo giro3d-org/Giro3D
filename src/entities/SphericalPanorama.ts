@@ -9,6 +9,7 @@ import type { Euler, Matrix4, Vector2 } from 'three';
 import { FrontSide, MathUtils, Quaternion, Vector3 } from 'three';
 
 import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
+import type { HeadingPitchRollLike } from '../core/HeadingPitchRoll';
 import type Layer from '../core/layer/Layer';
 import type PointOfView from '../core/PointOfView';
 import type { MapOptions } from './Map';
@@ -211,21 +212,7 @@ export default class SphericalPanorama extends Map {
      *
      * @param params - The parameters. If undefined, the orientation is reset to the default orientation.
      */
-    public setOrientation(params?: {
-        /**
-         * The heading (azimuth), in degrees. Zero is north, 90 is east, and so on.
-         * @defaultValue 0
-         */
-        heading?: number;
-        /**
-         * The pitch, in degrees. Positive values raise the image up.
-         */
-        pitch?: number;
-        /**
-         * The roll, in degrees. Positives values tilt the image on the right.
-         */
-        roll?: number;
-    }): void {
+    public setOrientation(params?: HeadingPitchRollLike): void {
         let baseOrientation: Quaternion | Matrix4 = IDENTITY_QUATERNION;
 
         if (this.instance.coordinateSystem.isEpsg(4978)) {
@@ -247,9 +234,13 @@ export default class SphericalPanorama extends Map {
         // https://developers.google.com/streetview/spherical-metadata#euler_overview
 
         if (params) {
-            this.object3d.rotateZ(MathUtils.degToRad(-(params.heading ?? 0))); // Note the negative sign
-            this.object3d.rotateX(MathUtils.degToRad(params.pitch ?? 0));
-            this.object3d.rotateY(MathUtils.degToRad(params.roll ?? 0));
+            const heading = params.heading ?? 0;
+            const pitch = params.pitch ?? 0;
+            const roll = params.roll ?? 0;
+
+            this.object3d.rotateZ(MathUtils.degToRad(-heading)); // Note the negative sign
+            this.object3d.rotateX(MathUtils.degToRad(pitch));
+            this.object3d.rotateY(MathUtils.degToRad(roll));
         }
 
         this.object3d.updateMatrixWorld(true);
