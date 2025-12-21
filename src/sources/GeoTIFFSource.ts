@@ -18,12 +18,12 @@ import {
 } from 'geotiff';
 import { FloatType, MathUtils, Texture, UnsignedByteType, Vector2 } from 'three';
 
-import type CoordinateSystem from '../core/geographic/CoordinateSystem';
 import type { GridExtent } from '../core/geographic/Extent';
 import type { CreateDataTextureResult } from '../utils/TextureGenerator';
 import type { ImageResponse } from './ImageSource';
 
 import { GlobalCache, type Cache } from '../core/Cache';
+import CoordinateSystem from '../core/geographic/CoordinateSystem';
 import Extent from '../core/geographic/Extent';
 import { type GetMemoryUsageContext } from '../core/MemoryUsage';
 import Fetcher from '../utils/Fetcher';
@@ -235,8 +235,9 @@ export interface GeoTIFFSourceOptions extends ImageSourceOptions {
     url: string;
     /**
      * The Coordinate Reference System of the image.
+     * If undefined, the CRS will be read from the GeoTIFF file, if possible.
      */
-    crs: CoordinateSystem;
+    crs?: CoordinateSystem;
     /**
      * How to map bands in the source GeoTIFF to color channels in Giro3D textures.
      */
@@ -274,6 +275,17 @@ export interface GeoTIFFSourceOptions extends ImageSourceOptions {
     workerConcurrency?: number;
 }
 
+interface GeoKeys {
+    GTModelTypeGeoKey: number;
+    GTRasterTypeGeoKey: number;
+    GTCitationGeoKey: string;
+    GeogCitationGeoKey: string;
+    GeogAngularUnitsGeoKey: number;
+    ProjectedCSTypeGeoKey: number;
+    GeographicTypeGeoKey: number;
+    ProjLinearUnitsGeoKey: number;
+}
+
 /**
  * Provides data from a remote GeoTIFF file.
  *
@@ -294,7 +306,7 @@ class GeoTIFFSource extends ImageSource {
     public override readonly type = 'GeoTIFFSource' as const;
 
     public readonly url: string;
-    public readonly crs: CoordinateSystem;
+    public crs?: CoordinateSystem;
 
     private readonly _cacheId: string = MathUtils.generateUUID();
     private readonly _cacheOptions?: GeoTIFFCacheOptions;
@@ -379,7 +391,7 @@ class GeoTIFFSource extends ImageSource {
     }
 
     public getCrs(): CoordinateSystem {
-        return this.crs;
+        return nonNull(this.crs, 'no coordinate system defined for this source');
     }
 
     /**
@@ -443,7 +455,7 @@ class GeoTIFFSource extends ImageSource {
         // Special case to avoid the ugly visible seam at the 180° line on
         // spherical panoramas.
         // https://gitlab.com/giro3d/giro3d/-/issues/630
-        if (this.crs.id === 'equirectangular') {
+        if (nonNull(this.crs).id === 'equirectangular') {
             return this.adjustExtentAndPixelSizeForEquirectangular(
                 requestExtent,
                 requestWidth,
@@ -494,6 +506,26 @@ class GeoTIFFSource extends ImageSource {
         return this._initializePromise;
     }
 
+    private readCoordinateSystemFromGeoKeys(geokeys: GeoKeys): CoordinateSystem | undefined {
+        switch (geokeys.GTModelTypeGeoKey) {
+            case 1: // Projected
+                if (geokeys.ProjectedCSTypeGeoKey != null) {
+                    return CoordinateSystem.get(`EPSG:${geokeys.ProjectedCSTypeGeoKey}`);
+                }
+                break;
+            case 2: // Geographic
+                if (geokeys.GeographicTypeGeoKey != null) {
+                    return CoordinateSystem.get(`EPSG:${geokeys.GeographicTypeGeoKey}`);
+                }
+                break;
+            default:
+                // Type 3 is geocentric, but I don't see how to handle that and they seem very rare.
+                throw new Error('Unsupported geocentric coordinate system for GeoTIFF source.');
+        }
+
+        return undefined;
+    }
+
     private async initializeOnce(): Promise<void> {
         if (this._initialized) {
             return;
@@ -517,6 +549,18 @@ class GeoTIFFSource extends ImageSource {
 
         // Get original image header
         const firstImage = await this._tiffImage.getImage();
+
+        // Let's try to get the CRS from the geokeys, if possible.
+        if (this.crs == null) {
+            const geokeys = firstImage.getGeoKeys() as GeoKeys;
+            this.crs = this.readCoordinateSystemFromGeoKeys(geokeys);
+        }
+
+        if (!this.crs) {
+            throw new Error(
+                'cannot determine the coordinate system of the GeoTIFF source and none was provided.',
+            );
+        }
 
         this._extent = GeoTIFFSource.computeExtent(this.crs, firstImage);
         this._dimensions = this._extent.dimensions();
