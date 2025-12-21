@@ -30,11 +30,18 @@ class SourceInspector extends Panel {
     public url?: string;
     public cogChannels = '[0]';
     public subtype?: string;
-    public crs?: string;
     public resolutions?: number;
     public cpuMemoryUsage = 'unknown';
     public gpuMemoryUsage = 'unknown';
     public loadedPercent = '';
+
+    private get crs(): CoordinateSystem {
+        try {
+            return this.source.getCrs() ?? CoordinateSystem.unknown;
+        } catch {
+            return CoordinateSystem.unknown;
+        }
+    }
 
     /**
      * @param gui - The GUI.
@@ -50,14 +57,12 @@ class SourceInspector extends Panel {
     }
 
     private addControllers(source: ImageSource): void {
-        const obj = { crs: source.getCrs() ?? CoordinateSystem.unknown };
-
         this.addController(source, 'type').name('Type');
         this.addController(source, 'colorSpace').name('Color space');
         this.addController(source, 'datatype').name('Data type');
         this.addController(source, 'flipY').name('Flip Y');
         this.addController(source, 'synchronous').name('Synchronous');
-        this.addController(obj.crs, 'id').name('CRS');
+        this.addController(this.crs, 'id').name('CRS');
         this.addController(source, 'update').name('Update');
 
         this.addController(this, 'cpuMemoryUsage').name('Memory usage (CPU)');
@@ -128,15 +133,8 @@ class SourceInspector extends Panel {
     }
 
     public processOpenLayersSource(source: TileSource): void {
-        const proj = source.getProjection();
-
         // default value in case we can't process the constructor name
         this.subtype = 'Unknown';
-
-        if (proj) {
-            this.crs = proj.getCode();
-            this.addController(this, 'crs').name('CRS');
-        }
 
         const res = source.getResolutions();
         if (res) {

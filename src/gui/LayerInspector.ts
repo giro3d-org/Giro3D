@@ -10,12 +10,12 @@ import { Color } from 'three';
 
 import type ColorMap from '../core/ColorMap';
 import type { ColorMapMode } from '../core/ColorMap';
-import type CoordinateSystem from '../core/geographic/CoordinateSystem';
 import type Instance from '../core/Instance';
 import type Layer from '../core/layer/Layer';
 import type Entity3D from '../entities/Entity3D';
 import type { BoundingBoxHelper } from '../helpers/Helpers';
 
+import CoordinateSystem from '../core/geographic/CoordinateSystem';
 import { isColorLayer } from '../core/layer/ColorLayer';
 import { isElevationLayer } from '../core/layer/ElevationLayer';
 import * as MemoryUsage from '../core/MemoryUsage';
@@ -41,7 +41,6 @@ class LayerInspector extends Panel {
     public layer: Layer;
     public entity: Entity3D;
     public state: string;
-    public sourceCrs: CoordinateSystem;
     public interpretation: string;
     public minmax: { min: number; max: number } | undefined;
     public extentColor: Color;
@@ -58,6 +57,14 @@ class LayerInspector extends Panel {
     public gpuMemoryUsage = 'unknown';
     public blendingMode = 'Normal';
 
+    private get sourceCrs(): CoordinateSystem {
+        try {
+            return this.layer.source.getCrs() ?? this.instance.coordinateSystem;
+        } catch {
+            return CoordinateSystem.unknown;
+        }
+    }
+
     /**
      * @param gui - The GUI.
      * @param instance - The Giro3D instance.
@@ -71,7 +78,6 @@ class LayerInspector extends Panel {
 
         this.entity = entity;
         this.state = 'idle';
-        this.sourceCrs = layer.source.getCrs() ?? instance.coordinateSystem;
 
         this.updateValues();
 
