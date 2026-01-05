@@ -10,6 +10,7 @@ import { Color } from 'three';
 
 import type Instance from '../core/Instance';
 import type Shape from '../entities/Shape';
+import type { LineLabelFormatter, SurfaceLabelFormatter } from '../entities/Shape';
 
 import Coordinates from '../core/geographic/Coordinates';
 import CoordinateSystem from '../core/geographic/CoordinateSystem';
@@ -26,6 +27,30 @@ const vertexLabelFormatter: (instance: Instance) => VertexLabelFormatter =
 
         return `lat: ${latlon.latitude.toFixed(5)}°, lon: ${latlon.longitude.toFixed(5)}°`;
     };
+
+const lineLabelFormatter: LineLabelFormatter = params => {
+    const length = params.length;
+    let precision = 1;
+    if (length < 1) {
+        precision = 2;
+    }
+    if (length < 0.5) {
+        precision = 3;
+    }
+    return length.toFixed(precision);
+};
+
+const surfaceLabelFormatter: SurfaceLabelFormatter = params => {
+    const area = params.area;
+    let precision = 1;
+    if (area < 1) {
+        precision = 2;
+    }
+    if (area < 0.5) {
+        precision = 3;
+    }
+    return area.toFixed(precision);
+};
 
 export default class DrawToolPanel extends Panel {
     private readonly _shapes: Shape[] = [];
@@ -73,6 +98,7 @@ export default class DrawToolPanel extends Panel {
         tool.createSegment({
             showLineLabel: true,
             color: this.pendingColor,
+            lineLabelFormatter,
         }).then(shape => this.onShapeFinished(shape));
     }
 
@@ -92,6 +118,7 @@ export default class DrawToolPanel extends Panel {
         tool.createPolygon({
             showSurfaceLabel: true,
             color: this.pendingColor,
+            surfaceLabelFormatter,
         }).then(shape => this.onShapeFinished(shape));
     }
 

@@ -331,6 +331,11 @@ const DEFAULT_NUMBER_FORMAT = new Intl.NumberFormat(undefined, {
     maximumFractionDigits: 0,
 });
 
+const DEFAULT_NUMBER_FORMAT = new Intl.NumberFormat(undefined, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+});
+
 function getAngle(A: Vector3, B: Vector3, C: Vector3): number {
     const AB = Math.sqrt(Math.pow(B.x - A.x, 2) + Math.pow(B.y - A.y, 2));
     const BC = Math.sqrt(Math.pow(B.x - C.x, 2) + Math.pow(B.y - C.y, 2));
@@ -429,7 +434,7 @@ function defaultLengthFormatter(opts: { length: number }): string {
     if (length > KILOMETER * 10) {
         value = length / KILOMETER;
         unit = 'km';
-    } else {
+    } else if (length < 10) {
         value = length;
         unit = 'm';
     }
