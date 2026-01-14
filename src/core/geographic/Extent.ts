@@ -837,7 +837,7 @@ class Extent {
      *
      * @param coordinates - The coordinates to include
      */
-    public expandByPoint(coordinates: Coordinates): void {
+    public expandByPoint(coordinates: Coordinates): this {
         const coords = coordinates.as(this.crs);
         const we = coords.values[0];
         if (we < this.minX) {
@@ -853,6 +853,8 @@ class Extent {
         if (sn > this.maxY) {
             this._values[SIDE.TOP] = sn;
         }
+
+        return this;
     }
 
     /**
@@ -878,7 +880,7 @@ class Extent {
      * @returns the constructed extent.
      */
     public static fromBox3(crs: CoordinateSystem, box: Box3): Extent {
-        return new this(crs, {
+        return new Extent(crs, {
             west: box.min.x,
             east: box.max.x,
             south: box.min.y,
