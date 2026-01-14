@@ -527,7 +527,7 @@ class PointCloudMaterial extends ShaderMaterial {
         this.mode = MODE.TEXTURE;
 
         this.colorLayer = layer;
-        this.uniforms.extentBottomLeft.value.set(extent.west, extent.south);
+        this.uniforms.extentBottomLeft.value.set(extent.minX, extent.minY);
         const dim = extent.dimensions(tmpDims);
         this.uniforms.extentSize.value.copy(dim);
         this.needsUpdate = true;

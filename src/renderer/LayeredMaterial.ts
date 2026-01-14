@@ -525,7 +525,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
 
             renderingState: new Uniform(RenderingState.FINAL),
 
-            extent: new Uniform(new Vector4(extent.west, extent.south, width, height)),
+            extent: new Uniform(new Vector4(extent.minX, extent.minY, width, height)),
             tileDimensions: new Uniform(params.tileDimensions),
             segments: new Uniform(options.terrain.segments ?? 8),
             neighbours: new Uniform(

@@ -189,7 +189,7 @@ const camera = instance.view.camera;
 // altitude of 2000 meters.
 const cameraAltitude = 2000;
 
-const cameraPosition = new Vector3(extent.west, extent.south, cameraAltitude);
+const cameraPosition = new Vector3(extent.minX, extent.minY, cameraAltitude);
 
 camera.position.copy(cameraPosition);
 

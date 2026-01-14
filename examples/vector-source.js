@@ -174,7 +174,7 @@ const gmlLayer = new ColorLayer({
 });
 map.addLayer(gmlLayer);
 
-instance.view.camera.position.set(extent.west, extent.south, 2000);
+instance.view.camera.position.set(extent.minX, extent.minY, 2000);
 
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.target = extent.centerAsVector3();

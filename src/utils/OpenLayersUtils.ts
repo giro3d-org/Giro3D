@@ -20,12 +20,7 @@ function fromOLExtent(extent: OLExtent, coordinateSystem: CoordinateSystem): Ext
 }
 
 function toOLExtent(extent: Extent, margin = 0): OLExtent {
-    return [
-        extent.west - margin,
-        extent.south - margin,
-        extent.east + margin,
-        extent.north + margin,
-    ];
+    return [extent.minX - margin, extent.minY - margin, extent.maxX + margin, extent.maxY + margin];
 }
 
 function parseAlpha(css: string): number {

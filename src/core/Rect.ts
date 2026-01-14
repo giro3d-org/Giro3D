@@ -55,7 +55,7 @@ class Rect {
     }
 
     public static fromExtent(extent: Extent): Rect {
-        return new Rect(extent.west, extent.east, extent.south, extent.north);
+        return new Rect(extent.minX, extent.maxX, extent.minY, extent.maxY);
     }
 
     /**

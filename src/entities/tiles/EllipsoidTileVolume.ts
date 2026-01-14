@@ -185,17 +185,17 @@ export default class EllipsoidTileVolume extends TileVolume {
         const min = this._range.min;
         const max = this._range.max;
 
-        const p0 = this._ellipsoid.toCartesian(extent.north, extent.west, min);
-        const p1 = this._ellipsoid.toCartesian(extent.north, extent.west, max);
+        const p0 = this._ellipsoid.toCartesian(extent.maxY, extent.minX, min);
+        const p1 = this._ellipsoid.toCartesian(extent.maxY, extent.minX, max);
 
-        const p2 = this._ellipsoid.toCartesian(extent.south, extent.west, min);
-        const p3 = this._ellipsoid.toCartesian(extent.south, extent.west, max);
+        const p2 = this._ellipsoid.toCartesian(extent.minY, extent.minX, min);
+        const p3 = this._ellipsoid.toCartesian(extent.minY, extent.minX, max);
 
-        const p4 = this._ellipsoid.toCartesian(extent.south, extent.east, min);
-        const p5 = this._ellipsoid.toCartesian(extent.south, extent.east, max);
+        const p4 = this._ellipsoid.toCartesian(extent.minY, extent.maxX, min);
+        const p5 = this._ellipsoid.toCartesian(extent.minY, extent.maxX, max);
 
-        const p6 = this._ellipsoid.toCartesian(extent.north, extent.east, min);
-        const p7 = this._ellipsoid.toCartesian(extent.north, extent.east, max);
+        const p6 = this._ellipsoid.toCartesian(extent.maxY, extent.maxX, min);
+        const p7 = this._ellipsoid.toCartesian(extent.maxY, extent.maxX, max);
 
         const center = extent.center(coord);
 
@@ -205,8 +205,8 @@ export default class EllipsoidTileVolume extends TileVolume {
         const p10 = this._ellipsoid.toCartesian(extent.north, center.longitude, min);
         const p11 = this._ellipsoid.toCartesian(extent.south, center.longitude, max);
 
-        const p12 = this._ellipsoid.toCartesian(center.latitude, extent.west, min);
-        const p13 = this._ellipsoid.toCartesian(center.latitude, extent.east, max);
+        const p12 = this._ellipsoid.toCartesian(center.latitude, extent.minX, min);
+        const p13 = this._ellipsoid.toCartesian(center.latitude, extent.maxX, max);
 
         const worldBox = new Box3().setFromPoints([
             p0,
