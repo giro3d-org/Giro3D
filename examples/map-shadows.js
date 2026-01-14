@@ -89,7 +89,7 @@ instance.add(map);
 
 const northArrow = new ArrowHelper(
     new Vector3(0, 1, 0),
-    new Vector3(center.x, extent.north + 500, min),
+    new Vector3(center.x, extent.maxY + 500, min),
     EXTENT_SIZE * 0.5,
     'yellow',
     EXTENT_SIZE * 0.1,

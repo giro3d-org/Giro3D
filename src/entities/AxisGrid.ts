@@ -942,8 +942,8 @@ class AxisGrid<UserData = EntityUserData> extends Entity3D<AxisGridEventMap, Use
 
         const relative = this.origin === TickOrigin.Relative;
 
-        const xStart = relative ? 0 : this._ticks.x - mod(extent.west, this._ticks.x);
-        const yStart = relative ? 0 : this._ticks.y - mod(extent.south, this._ticks.y);
+        const xStart = relative ? 0 : this._ticks.x - mod(extent.minX, this._ticks.x);
+        const yStart = relative ? 0 : this._ticks.y - mod(extent.minY, this._ticks.y);
         const zStart = this._ticks.z - mod(this.volume.floor, this._ticks.z);
 
         const xMin = xStart;

@@ -122,8 +122,8 @@ function pickTilesAt(
             const ex = tile.extent;
             tmpCoords.set(
                 crs,
-                ex.west + uv.x * (ex.east - ex.west),
-                ex.south + uv.y * (ex.north - ex.south),
+                ex.minX + uv.x * (ex.maxX - ex.minX),
+                ex.minY + uv.y * (ex.maxY - ex.minY),
                 0,
             );
 

@@ -113,7 +113,7 @@ function rasterizeBuilderGroup(
 
     const transform = resetTransform(tmpTransform);
     scaleTransform(transform, pixelRatio / resX, -pixelRatio / resY);
-    translateTransform(transform, -extent.west, -extent.north);
+    translateTransform(transform, -extent.minX, -extent.maxY);
 
     const olExtent = OpenLayersUtils.toOLExtent(extent);
     const resolution = extent.dimensions().x / size.width;

@@ -74,8 +74,8 @@ export default class PanoramaTileGeometry
         this._radius = params.radius;
 
         this._origin = toCartesian(
-            this._extent.north,
-            this._extent.west,
+            this._extent.maxY,
+            this._extent.minX,
             this._radius,
             new Vector3(),
         );
@@ -108,8 +108,8 @@ export default class PanoramaTileGeometry
         const dims = this._extent.dimensions(tmpVec2);
         const width = dims.width;
         const height = dims.height;
-        const west = this._extent.west;
-        const north = this._extent.north;
+        const west = this._extent.minX;
+        const north = this._extent.maxY;
 
         // Positions are relative to the origin of the tile
         const origin = this._origin;

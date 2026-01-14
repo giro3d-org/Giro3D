@@ -16,11 +16,11 @@ import CoordinateSystem from './CoordinateSystem';
 
 const tmpXY = new Vector2();
 
-const CARDINAL = {
-    WEST: 0,
-    EAST: 1,
-    SOUTH: 2,
-    NORTH: 3,
+const SIDE = {
+    LEFT: 0,
+    RIGHT: 1,
+    BOTTOM: 2,
+    TOP: 3,
 };
 
 export function reasonnableEpsilonForCRS(
@@ -55,7 +55,19 @@ const cardinals: Vector2[] = [
 export type ExtentParameters =
     | [Coordinates, Coordinates]
     | [number, number, number, number]
-    | [{ west: number; east: number; south: number; north: number }];
+    | [{ minX: number; maxX: number; minY: number; maxY: number }]
+    | [
+          {
+              /** @deprecated use minX */
+              west: number;
+              /** @deprecated use maxX */
+              east: number;
+              /** @deprecated use minY */
+              south: number;
+              /** @deprecated use maxY */
+              north: number;
+          },
+      ];
 
 export interface GridExtent {
     extent: Extent;
@@ -161,8 +173,8 @@ class Extent {
      */
     public sampleUV(u: number, v: number, target?: Coordinates): Coordinates {
         const { width, height } = this.dimensions(tmpXY);
-        const bottom = this.south;
-        const left = this.west;
+        const bottom = this.minY;
+        const left = this.minX;
 
         const x = left + width * u;
         const y = bottom + height * v;
@@ -199,10 +211,10 @@ class Extent {
     public isValid(): boolean {
         if (
             !(
-                Number.isFinite(this.west) &&
-                Number.isFinite(this.east) &&
-                Number.isFinite(this.south) &&
-                Number.isFinite(this.north)
+                Number.isFinite(this.minX) &&
+                Number.isFinite(this.maxX) &&
+                Number.isFinite(this.minY) &&
+                Number.isFinite(this.maxY)
             )
         ) {
             return false;
@@ -211,12 +223,12 @@ class Extent {
         // Geographic coordinate systems may allow a greater "west" than "east"
         // to account for the wrap around the 180° longitude line.
         if (!this.crs.isGeographic()) {
-            if (this.west > this.east) {
+            if (this.minX > this.maxX) {
                 return false;
             }
         }
 
-        if (this.south > this.north) {
+        if (this.minY > this.maxY) {
             return false;
         }
 
@@ -229,10 +241,10 @@ class Extent {
      * @returns a copy of this object.
      */
     public clone(): Extent {
-        const minx = this._values[CARDINAL.WEST];
-        const maxx = this._values[CARDINAL.EAST];
-        const miny = this._values[CARDINAL.SOUTH];
-        const maxy = this._values[CARDINAL.NORTH];
+        const minx = this._values[SIDE.LEFT];
+        const maxx = this._values[SIDE.RIGHT];
+        const miny = this._values[SIDE.BOTTOM];
+        const maxy = this._values[SIDE.TOP];
         const result = new Extent(this._crs, minx, maxx, miny, maxy);
         return result;
     }
@@ -251,8 +263,8 @@ class Extent {
      * @returns a new extent with a specified margin applied.
      */
     public withRelativeMargin(marginRatio: number): Extent {
-        const w = Math.abs(this.west - this.east);
-        const h = Math.abs(this.north - this.south);
+        const w = Math.abs(this.minX - this.maxX);
+        const h = Math.abs(this.maxY - this.minY);
 
         return this.withMargin(marginRatio * w, marginRatio * h);
     }
@@ -270,10 +282,10 @@ class Extent {
      * @returns a new extent with a specified margin applied.
      */
     public withMargin(x: number, y: number): Extent {
-        const w = this.west - x;
-        const e = this.east + x;
-        const n = this.north + y;
-        const s = this.south - y;
+        const w = this.minX - x;
+        const e = this.maxX + x;
+        const n = this.maxY + y;
+        const s = this.minY - y;
 
         return new Extent(this.crs, w, e, s, n);
     }
@@ -296,10 +308,10 @@ class Extent {
             const c = this.centerAsVector2(tmpXY);
             const cx = c.x;
             const cy = c.y;
-            const e = this.east;
-            const w = this.west;
-            const n = this.north;
-            const s = this.south;
+            const e = this.maxX;
+            const w = this.minX;
+            const n = this.maxY;
+            const s = this.minY;
 
             cardinals[0].set(w, n);
             cardinals[1].set(cx, n);
@@ -344,8 +356,8 @@ class Extent {
         const oDim = other.dimensions();
         const dim = this.dimensions();
 
-        const originX = Math.round((1000 * (this.west - other.west)) / oDim.x) * 0.001;
-        const originY = Math.round((1000 * (this.south - other.south)) / oDim.y) * 0.001;
+        const originX = Math.round((1000 * (this.minX - other.minX)) / oDim.x) * 0.001;
+        const originY = Math.round((1000 * (this.minY - other.minY)) / oDim.y) * 0.001;
 
         const scaleX = Math.round((1000 * dim.x) / oDim.x) * 0.001;
         const scaleY = Math.round((1000 * dim.y) / oDim.y) * 0.001;
@@ -355,58 +367,90 @@ class Extent {
 
     /**
      * @returns the horizontal coordinate of the westernmost side
+     * @deprecated Use {@link minX} instead.
      */
     public get west(): number {
-        return this._values[CARDINAL.WEST];
+        return this.minX;
+    }
+
+    /**
+     * The minimum X value of this extent (the X coordinate of the left side).
+     */
+    public get minX(): number {
+        return this._values[SIDE.LEFT];
     }
 
     /**
      * @returns the horizontal coordinate of the easternmost side
+     * @deprecated Use {@link maxX} instead.
      */
     public get east(): number {
-        return this._values[CARDINAL.EAST];
+        return this.maxX;
     }
 
     /**
-     * @returns the horizontal coordinate of the northernmost side
+     * The maximum X value of this extent (the X coordinate of the right side).
+     */
+    public get maxX(): number {
+        return this._values[SIDE.RIGHT];
+    }
+
+    /**
+     * @returns the vertical coordinate of the northernmost side
+     * @deprecated Use {@link maxY} instead.
      */
     public get north(): number {
-        return this._values[CARDINAL.NORTH];
+        return this.maxY;
+    }
+
+    /**
+     * The maximum Y value of this extent (the Y coordinate of the top side).
+     */
+    public get maxY(): number {
+        return this._values[SIDE.TOP];
     }
 
     /**
      * @returns the horizontal coordinate of the southermost side
+     * @deprecated Use {@link minY} instead.
      */
     public get south(): number {
-        return this._values[CARDINAL.SOUTH];
+        return this.minY;
+    }
+
+    /**
+     * The minimum Y value of this extent (the Y coordinate of the bottom side).
+     */
+    public get minY(): number {
+        return this._values[SIDE.BOTTOM];
     }
 
     /**
      * @returns the coordinates of the top left corner
      */
     public topLeft(): Coordinates {
-        return new Coordinates(this.crs, this.west, this.north, 0);
+        return new Coordinates(this.crs, this.minX, this.maxY, 0);
     }
 
     /**
      * @returns the coordinates of the top right corner
      */
     public topRight(): Coordinates {
-        return new Coordinates(this.crs, this.east, this.north, 0);
+        return new Coordinates(this.crs, this.maxX, this.maxY, 0);
     }
 
     /**
      * @returns the coordinates of the bottom right corner
      */
     public bottomRight(): Coordinates {
-        return new Coordinates(this.crs, this.east, this.south, 0);
+        return new Coordinates(this.crs, this.maxX, this.minY, 0);
     }
 
     /**
      * @returns the coordinates of the bottom right corner
      */
     public bottomLeft(): Coordinates {
-        return new Coordinates(this.crs, this.west, this.south, 0);
+        return new Coordinates(this.crs, this.minX, this.minY, 0);
     }
 
     /**
@@ -496,8 +540,8 @@ class Extent {
      * or a new object if none was provided.
      */
     public dimensions(target: Vector2 = new Vector2()): Vector2 {
-        target.x = Math.abs(this.east - this.west);
-        target.y = Math.abs(this.north - this.south);
+        target.x = Math.abs(this.maxX - this.minX);
+        target.y = Math.abs(this.maxY - this.minY);
         return target;
     }
 
@@ -513,17 +557,17 @@ class Extent {
         // TODO this ignores altitude
         if (this.crs.isGeographic()) {
             return (
-                c.longitude <= this.east + epsilon &&
-                c.longitude >= this.west - epsilon &&
-                c.latitude <= this.north + epsilon &&
-                c.latitude >= this.south - epsilon
+                c.longitude <= this.maxX + epsilon &&
+                c.longitude >= this.minX - epsilon &&
+                c.latitude <= this.maxY + epsilon &&
+                c.latitude >= this.minY - epsilon
             );
         }
         return (
-            c.x <= this.east + epsilon &&
-            c.x >= this.west - epsilon &&
-            c.y <= this.north + epsilon &&
-            c.y >= this.south - epsilon
+            c.x <= this.maxX + epsilon &&
+            c.x >= this.minX - epsilon &&
+            c.y <= this.maxY + epsilon &&
+            c.y >= this.minY - epsilon
         );
     }
 
@@ -541,10 +585,10 @@ class Extent {
         const dims = this.dimensions(tmpXY);
         epsilon = epsilon == null ? reasonnableEpsilonForCRS(this._crs, dims.x, dims.y) : epsilon;
         return (
-            this.east - o.east <= epsilon &&
-            o.west - this.west <= epsilon &&
-            this.north - o.north <= epsilon &&
-            o.south - this.south <= epsilon
+            this.maxX - o.maxX <= epsilon &&
+            o.minX - this.minX <= epsilon &&
+            this.maxY - o.maxY <= epsilon &&
+            o.minY - this.minY <= epsilon
         );
     }
 
@@ -569,10 +613,10 @@ class Extent {
     public intersectsExtent(bbox: Extent): boolean {
         const other = bbox.as(this.crs);
         return !(
-            this.west >= other.east ||
-            this.east <= other.west ||
-            this.south >= other.north ||
-            this.north <= other.south
+            this.minX >= other.maxX ||
+            this.maxX <= other.minX ||
+            this.minY >= other.maxY ||
+            this.maxY <= other.minY
         );
     }
 
@@ -587,16 +631,17 @@ class Extent {
             this.set(this.crs, 0, 0, 0, 0);
             return this;
         }
-        // TODO use an intermediate tmp instance for .as
+
         if (!other.crs.equals(this.crs)) {
             other = other.as(this.crs);
         }
+
         this.set(
             this.crs,
-            Math.max(this.west, other.west),
-            Math.min(this.east, other.east),
-            Math.max(this.south, other.south),
-            Math.min(this.north, other.north),
+            Math.max(this.minX, other.minX),
+            Math.min(this.maxX, other.maxX),
+            Math.max(this.minY, other.minY),
+            Math.min(this.maxY, other.maxY),
         );
 
         return this;
@@ -626,10 +671,10 @@ class Extent {
         const pixelWidth = gridDims.x / gridWidth;
         const pixelHeight = gridDims.y / gridHeight;
 
-        let leftPixels = Math.floor((this.west - gridExtent.west) / pixelWidth);
-        let rightPixels = Math.ceil((this.east - gridExtent.west) / pixelWidth);
-        let bottomPixels = Math.floor((this.south - gridExtent.south) / pixelHeight);
-        let topPixels = Math.ceil((this.north - gridExtent.south) / pixelHeight);
+        let leftPixels = Math.floor((this.minX - gridExtent.minX) / pixelWidth);
+        let rightPixels = Math.ceil((this.maxX - gridExtent.minX) / pixelWidth);
+        let bottomPixels = Math.floor((this.minY - gridExtent.minY) / pixelHeight);
+        let topPixels = Math.ceil((this.maxY - gridExtent.minY) / pixelHeight);
 
         if (minPixWidth !== undefined && minPixHeight !== undefined) {
             const pixelCountX = rightPixels - leftPixels;
@@ -651,10 +696,10 @@ class Extent {
         bottomPixels = Math.max(0, Math.floor(bottomPixels));
         topPixels = Math.min(gridHeight, Math.ceil(topPixels));
 
-        const west = gridExtent.west + leftPixels * pixelWidth;
-        const east = gridExtent.west + rightPixels * pixelWidth;
-        const south = gridExtent.south + bottomPixels * pixelHeight;
-        const north = gridExtent.south + topPixels * pixelHeight;
+        const west = gridExtent.minX + leftPixels * pixelWidth;
+        const east = gridExtent.minX + rightPixels * pixelWidth;
+        const south = gridExtent.minY + bottomPixels * pixelHeight;
+        const north = gridExtent.minY + topPixels * pixelHeight;
 
         return {
             extent: new Extent(this.crs, west, east, south, north),
@@ -675,18 +720,28 @@ class Extent {
         this._crs = crs;
 
         if (values.length === 2 && isCoordinates(values[0]) && isCoordinates(values[1])) {
-            [this._values[CARDINAL.WEST], this._values[CARDINAL.SOUTH]] = values[0].values;
-            [this._values[CARDINAL.EAST], this._values[CARDINAL.NORTH]] = values[1].values;
-        } else if (values.length === 1 && values[0].west !== undefined) {
-            this._values[CARDINAL.WEST] = values[0].west;
-            this._values[CARDINAL.EAST] = values[0].east;
-            this._values[CARDINAL.SOUTH] = values[0].south;
-            this._values[CARDINAL.NORTH] = values[0].north;
+            [this._values[SIDE.LEFT], this._values[SIDE.BOTTOM]] = values[0].values;
+            [this._values[SIDE.RIGHT], this._values[SIDE.TOP]] = values[1].values;
+        } else if (values.length === 1) {
+            const obj = values[0];
+
+            if ('west' in obj && 'east' in obj && 'south' in obj && 'north' in obj) {
+                // deprecated code path
+                this._values[SIDE.LEFT] = obj.west;
+                this._values[SIDE.RIGHT] = obj.east;
+                this._values[SIDE.BOTTOM] = obj.south;
+                this._values[SIDE.TOP] = obj.north;
+            } else if ('minX' in obj && 'maxX' in obj && 'minY' in obj && 'maxY' in obj) {
+                this._values[SIDE.LEFT] = obj.minX;
+                this._values[SIDE.RIGHT] = obj.maxX;
+                this._values[SIDE.BOTTOM] = obj.minY;
+                this._values[SIDE.TOP] = obj.maxY;
+            }
         } else if (values.length === 4) {
-            this._values[CARDINAL.WEST] = values[CARDINAL.WEST];
-            this._values[CARDINAL.EAST] = values[CARDINAL.EAST];
-            this._values[CARDINAL.SOUTH] = values[CARDINAL.SOUTH];
-            this._values[CARDINAL.NORTH] = values[CARDINAL.NORTH];
+            this._values[SIDE.LEFT] = values[SIDE.LEFT];
+            this._values[SIDE.RIGHT] = values[SIDE.RIGHT];
+            this._values[SIDE.BOTTOM] = values[SIDE.BOTTOM];
+            this._values[SIDE.TOP] = values[SIDE.TOP];
         } else {
             throw new Error(`Unsupported constructor args '${values}'`);
         }
@@ -695,10 +750,10 @@ class Extent {
 
     public copy(other: Extent): this {
         this._crs = other.crs;
-        this._values[CARDINAL.WEST] = other._values[CARDINAL.WEST];
-        this._values[CARDINAL.EAST] = other._values[CARDINAL.EAST];
-        this._values[CARDINAL.SOUTH] = other._values[CARDINAL.SOUTH];
-        this._values[CARDINAL.NORTH] = other._values[CARDINAL.NORTH];
+        this._values[SIDE.LEFT] = other._values[SIDE.LEFT];
+        this._values[SIDE.RIGHT] = other._values[SIDE.RIGHT];
+        this._values[SIDE.BOTTOM] = other._values[SIDE.BOTTOM];
+        this._values[SIDE.TOP] = other._values[SIDE.TOP];
         return this;
     }
 
@@ -733,10 +788,10 @@ class Extent {
                 crs = e.crs;
             }
 
-            south = Math.min(e.south, south);
-            north = Math.max(e.north, north);
-            east = Math.max(e.east, east);
-            west = Math.min(e.west, west);
+            south = Math.min(e.minY, south);
+            north = Math.max(e.maxY, north);
+            east = Math.max(e.maxX, east);
+            west = Math.min(e.minX, west);
         }
 
         if (valid) {
@@ -756,24 +811,24 @@ class Extent {
                 `unsupported union between different CRSes (${extent.crs.id} and ${this.crs.id} differ)`,
             );
         }
-        const west = extent.west;
-        if (west < this.west) {
-            this._values[CARDINAL.WEST] = west;
+        const west = extent.minX;
+        if (west < this.minX) {
+            this._values[SIDE.LEFT] = west;
         }
 
-        const east = extent.east;
-        if (east > this.east) {
-            this._values[CARDINAL.EAST] = east;
+        const east = extent.maxX;
+        if (east > this.maxX) {
+            this._values[SIDE.RIGHT] = east;
         }
 
-        const south = extent.south;
-        if (south < this.south) {
-            this._values[CARDINAL.SOUTH] = south;
+        const south = extent.minY;
+        if (south < this.minY) {
+            this._values[SIDE.BOTTOM] = south;
         }
 
-        const north = extent.north;
-        if (north > this.north) {
-            this._values[CARDINAL.NORTH] = north;
+        const north = extent.maxY;
+        if (north > this.maxY) {
+            this._values[SIDE.TOP] = north;
         }
     }
 
@@ -785,18 +840,18 @@ class Extent {
     public expandByPoint(coordinates: Coordinates): void {
         const coords = coordinates.as(this.crs);
         const we = coords.values[0];
-        if (we < this.west) {
-            this._values[CARDINAL.WEST] = we;
+        if (we < this.minX) {
+            this._values[SIDE.LEFT] = we;
         }
-        if (we > this.east) {
-            this._values[CARDINAL.EAST] = we;
+        if (we > this.maxX) {
+            this._values[SIDE.RIGHT] = we;
         }
         const sn = coords.values[1];
-        if (sn < this.south) {
-            this._values[CARDINAL.SOUTH] = sn;
+        if (sn < this.minY) {
+            this._values[SIDE.BOTTOM] = sn;
         }
-        if (sn > this.north) {
-            this._values[CARDINAL.NORTH] = sn;
+        if (sn > this.maxY) {
+            this._values[SIDE.TOP] = sn;
         }
     }
 
@@ -808,10 +863,10 @@ class Extent {
      * @returns the modified extent.
      */
     public shift(x: number, y: number): this {
-        this._values[CARDINAL.WEST] += x;
-        this._values[CARDINAL.EAST] += x;
-        this._values[CARDINAL.SOUTH] += y;
-        this._values[CARDINAL.NORTH] += y;
+        this._values[SIDE.LEFT] += x;
+        this._values[SIDE.RIGHT] += x;
+        this._values[SIDE.BOTTOM] += y;
+        this._values[SIDE.TOP] += y;
         return this;
     }
 
@@ -839,8 +894,8 @@ class Extent {
      * @returns The box.
      */
     public toBox3(minHeight: number, maxHeight: number): Box3 {
-        const min = new Vector3(this.west, this.south, minHeight);
-        const max = new Vector3(this.east, this.north, maxHeight);
+        const min = new Vector3(this.minX, this.minY, minHeight);
+        const max = new Vector3(this.maxX, this.maxY, maxHeight);
         const box = new Box3(min, max);
         return box;
     }
@@ -861,15 +916,15 @@ class Extent {
             throw new Error('unsupported mix');
         }
 
-        const dimX = Math.abs(this.east - this.west);
-        const dimY = Math.abs(this.north - this.south);
+        const dimX = Math.abs(this.maxX - this.minX);
+        const dimY = Math.abs(this.maxY - this.minY);
 
         const isGeographic = coordinate.crs.isGeographic();
         const x = isGeographic ? coordinate.longitude : coordinate.x;
         const y = isGeographic ? coordinate.latitude : coordinate.y;
 
-        const originX = (x - this.west) / dimX;
-        const originY = (y - this.south) / dimY;
+        const originX = (x - this.minX) / dimX;
+        const originY = (y - this.minY) / dimY;
 
         target.set(originX, originY);
         return target;
@@ -899,8 +954,8 @@ class Extent {
         stride: number,
     ): T {
         const dims = this.dimensions(tmpXY);
-        const west = this.west;
-        const north = this.north;
+        const west = this.minX;
+        const north = this.maxY;
 
         // The size of an horizontal/vertical step
         const xStep = dims.x / xSubdivs;
@@ -950,8 +1005,8 @@ class Extent {
         }
 
         const dims = this.dimensions();
-        const minX = this.west;
-        const minY = this.south;
+        const minX = this.minX;
+        const minY = this.minY;
         const w = dims.x / xSubdivs;
         const h = dims.y / ySubdivs;
         const crs = this.crs;

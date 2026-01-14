@@ -191,7 +191,7 @@ map.addLayer(geoJsonLayer).then(() => {
     instance.notifyChange(geoJsonLayer);
 });
 
-instance.view.camera.position.set(extent.west, extent.south, 2000);
+instance.view.camera.position.set(extent.minX, extent.minY, 2000);
 
 Inspector.attach('inspector', instance);
 

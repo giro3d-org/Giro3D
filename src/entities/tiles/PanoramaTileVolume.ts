@@ -82,18 +82,18 @@ export default class PanoramaTileVolume extends TileVolume {
 
         const radius = this._radius;
 
-        const nw = toCartesian(extent.north, extent.west, radius, new Vector3());
-        const sw = toCartesian(extent.south, extent.west, radius, new Vector3());
-        const se = toCartesian(extent.south, extent.east, radius, new Vector3());
-        const ne = toCartesian(extent.north, extent.east, radius, new Vector3());
+        const nw = toCartesian(extent.maxY, extent.minX, radius, new Vector3());
+        const sw = toCartesian(extent.minY, extent.minX, radius, new Vector3());
+        const se = toCartesian(extent.minY, extent.maxX, radius, new Vector3());
+        const ne = toCartesian(extent.maxY, extent.maxX, radius, new Vector3());
 
         const center = extent.center(coord);
 
         const c = toCartesian(center.latitude, center.longitude, radius, new Vector3());
-        const nc = toCartesian(extent.north, center.longitude, radius, new Vector3());
-        const cw = toCartesian(center.latitude, extent.west, radius, new Vector3());
-        const ce = toCartesian(center.latitude, extent.east, radius, new Vector3());
-        const sc = toCartesian(extent.south, center.longitude, radius, new Vector3());
+        const nc = toCartesian(extent.maxY, center.longitude, radius, new Vector3());
+        const cw = toCartesian(center.latitude, extent.minX, radius, new Vector3());
+        const ce = toCartesian(center.latitude, extent.maxX, radius, new Vector3());
+        const sc = toCartesian(extent.minY, center.longitude, radius, new Vector3());
 
         const worldBox = new Box3().setFromPoints([nw, sw, se, ne, c, nc, cw, ce, sc]);
 
