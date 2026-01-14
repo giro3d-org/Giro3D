@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2015-2018, IGN France.
- * Copyright (c) 2018-2025, Giro3D team.
+ * Copyright (c) 2018-2026, Giro3D team.
  * SPDX-License-Identifier: MIT
  */
 
@@ -139,7 +139,7 @@ export default class CoordinateSystem {
      * @param definition - The WKT or proj definition.
      * @param options - Registration options.
      * @example
-     * const wkt = `
+     * const wkt = \`
      * PROJCS["RGF93 v1 / Lambert-93",
      *     GEOGCS["RGF93 v1",
      *         DATUM["Reseau_Geodesique_Francais_1993_v1",
@@ -162,7 +162,7 @@ export default class CoordinateSystem {
      *     AXIS["Easting",EAST],
      *     AXIS["Northing",NORTH],
      *     AUTHORITY["EPSG","2154"]]
-     * `;
+     * \`;
      *
      * const crs = CoordinateSystem.register('EPSG:2154', wkt);
      * console.log(crs.name);
