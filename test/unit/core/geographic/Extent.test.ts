@@ -255,6 +255,29 @@ describe('as', () => {
     });
 });
 
+describe('expandByPoint', () => {
+    it('should return the extent', () => {
+        const crs = CoordinateSystem.epsg3857;
+        const extent = new Extent(crs, 0, 10, 0, 10);
+
+        const expanded = extent.expandByPoint(new Coordinates(crs, 20, 30));
+
+        expect(expanded).toBe(extent);
+    });
+
+    it('should expand the extent', () => {
+        const crs = CoordinateSystem.epsg3857;
+        const extent = new Extent(crs, -2, 10, 1, 10);
+
+        extent.expandByPoint(new Coordinates(crs, 20, 30));
+
+        expect(extent.minX).toEqual(-2);
+        expect(extent.minY).toEqual(1);
+        expect(extent.maxY).toEqual(30);
+        expect(extent.maxY).toEqual(30);
+    });
+});
+
 describe('center', () => {
     it('should return a new object if none was provided', () => {
         const result = BOUNDS_EPSG4326.center();
