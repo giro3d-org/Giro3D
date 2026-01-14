@@ -69,6 +69,10 @@ function toNumberArray(vectors: Vector3[], origin: Vector3): ArrayLike<number> {
     return result;
 }
 
+/**
+ * A function that outputs a formatted string suitable to display as a label.
+ * @typeParam T - The input type.
+ */
 export type Formatter<T> = (values: T) => string | null;
 
 export interface LineLabelFormatOptions {
@@ -185,16 +189,22 @@ export interface VertexFormatOptions {
      */
     position: Vector3;
 }
+
+/**
+ * A formatter for vertex labels. Displays a label for each vertex in the main line.
+ */
 export type VertexLabelFormatter = Formatter<VertexFormatOptions>;
 
 /**
  * A hook that is triggered just before a modification of the shape's points.
  * If the hook returns `false`, the operation is not performed.
+ * @typeParam T - The argument type of the hook.
  */
 export type PreHook<T> = (args: T) => boolean;
 
 /**
  * A hook that is triggered just after a modification of the shape's points.
+ * @typeParam T - The argument type of the hook.
  */
 export type PostHook<T> = (args: T) => void;
 

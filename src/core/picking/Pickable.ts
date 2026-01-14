@@ -34,7 +34,6 @@ interface Pickable<
      *
      * @param canvasCoords -Coordinates on the rendering canvas
      * @param options - Options
-     * @param target - Target to fill
      * @returns Target
      */
     pick: (canvasCoords: Vector2, options?: TOptions) => TResult[];

@@ -17,6 +17,7 @@ import type ElevationSample from './ElevationSample';
 import type * as features from './FeatureTypes';
 import type * as geographic from './geographic/api';
 import type GraticuleOptions from './GraticuleOptions';
+import type HasDefaultPointOfView from './HasDefaultPointOfView';
 import type Instance from './Instance';
 import type {
     EntityEventPayload,
@@ -34,6 +35,7 @@ import type OffsetScale from './OffsetScale';
 import type OperationCounter from './OperationCounter';
 import type { OperationCounterEvents } from './OperationCounter';
 import type * as picking from './picking/api';
+import type PointOfView from './PointOfView';
 import type Progress from './Progress';
 import type Rect from './Rect';
 import type TerrainOptions from './TerrainOptions';
@@ -74,6 +76,7 @@ export {
     GetElevationResult,
     GetMemoryUsageContext,
     GraticuleOptions,
+    HasDefaultPointOfView,
     Instance,
     InstanceEvents,
     InstanceOptions,
@@ -86,6 +89,7 @@ export {
     OperationCounterEvents,
     picking,
     PickObjectsAtOptions,
+    PointOfView,
     Progress,
     Rect,
     RenderingState,
