@@ -209,6 +209,33 @@ export default class CoordinateSystem {
     }
 
     /**
+     * Registers multiple coordinate systems at once. Much faster than calling {@link register} for every coordinate system.
+     * Registered coordinate systems are then available with {@link get}.
+     * @param coordinateSystems - The coordinate system definitions to register.
+     */
+    public static registerMany(
+        coordinateSystems: Array<{
+            id: string;
+            /**
+             * The WKT string of this coordinate system.
+             */
+            definition: string;
+        }>,
+    ): void {
+        const projDefs: Array<[string, string]> = coordinateSystems.map(def => [
+            def.id,
+            def.definition,
+        ]);
+        proj4.defs(projDefs);
+        register(proj4);
+
+        for (const def of coordinateSystems) {
+            const crs = CoordinateSystem.fromWkt(def.definition, { id: def.id });
+            this._registry.set(def.id, crs);
+        }
+    }
+
+    /**
      * Mostly used for unit testing.
      * @internal
      */

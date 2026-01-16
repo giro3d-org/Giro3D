@@ -19,3 +19,14 @@ export function readDataFileSync(filename: string): Buffer {
 
     return buf;
 }
+
+/**
+ * Reads a JSON file in the data folder
+ * @param filename - The path to the file relative to the data folder.
+ * @returns A string containing the file content.
+ */
+export function readJsonSync(filename: string): string {
+    const buf = fs.readFileSync(getDataFileUrl(filename), { encoding: 'utf-8'});
+
+    return buf;
+}

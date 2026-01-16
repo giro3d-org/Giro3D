@@ -8,6 +8,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem';
 import { AngularUnit, LinearUnit } from '@giro3d/giro3d/core/geographic/Unit';
+import { readDataFileSync, readJsonSync } from '../../../data/utils';
 
 const WKT_UTM_ZONE_11 = `
     PROJCRS["WGS 84 / UTM zone 11N",
@@ -740,5 +741,24 @@ describe('id', () => {
         expect(crs.id).toEqual('GCS_WGS_1984');
         expect(crs.name).toEqual('GCS_WGS_1984');
         expect(crs.srid).toBeUndefined();
+    });
+});
+
+describe('registerMany', () => {
+    it('should accept all systems in a PostGIS database', () => {
+        const contents = readJsonSync('spatial_ref_sys.json');
+        const json = JSON.parse(contents);
+        const list = json.crs as { id: string; definition: string }[];
+
+        const blacklist = new Set(['EPSG:3823', 'EPSG:3888', 'EPSG:6979', 'EPSG:6982']);
+
+        const filtered = list.filter(
+            x =>
+                !blacklist.has(x.id) &&
+                !x.definition.includes('GEOCCS') &&
+                !x.definition.includes('BOUNDCRS'),
+        );
+
+        CoordinateSystem.registerMany(filtered);
     });
 });
