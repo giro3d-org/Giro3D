@@ -1,0 +1,26 @@
+---
+title: WMS
+shortdesc: Load a WMS layer on a Map with various parameters.
+longdesc: This example illustrates how to load a WMS layer on a Giro3D map by using the <a href="../apidoc/classes/sources.WmsSource.html" target="_blank"><code>WmsSource</code></a>.
+attribution: © <a target="_blank" href="https://ign.fr/">IGN</a>
+tags: [map, wms]
+---
+
+<div class="side-pane-with-status-bar">
+    <div class="card">
+        <div class="card-header">Parameters</div>
+        <div class="card-body">
+            <fieldset id="options">
+                <!-- Layer selector -->
+                <div class="input-group mb-2">
+                    <label class="input-group-text" for="source">WMS coordinate system</label>
+                    <select class="form-select" id="source" autocomplete="off">
+                        <option value="3857" selected>EPSG:3857 (same as Giro3D scene)</option>
+                        <option value="2154">EPSG:2154</option>
+                        <option value="4326">EPSG:4326</option>
+                    </select>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+</div>

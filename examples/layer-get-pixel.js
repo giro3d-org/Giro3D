@@ -4,8 +4,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { get as getProjection } from 'ol/proj.js';
-import { TileWMS } from 'ol/source.js';
 import { Vector2, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
@@ -16,7 +14,7 @@ import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
+import WmsSource from '@giro3d/giro3d/sources/WmsSource.js';
 import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 
 import { bindColorPicker } from './widgets/bindColorPicker.js';
@@ -60,14 +58,11 @@ const capabilitiesUrl =
 
 const wmsLayer = new ColorLayer({
     name: 'museums',
-    source: new TiledImageSource({
+    source: new WmsSource({
         httpTimeout: 10000,
-        source: new TileWMS({
-            url: 'https://data.geopf.fr/wms-v/wms?SERVICE=WMS&VERSION=1.3.0',
-            params: { LAYERS: 'POI.MUSEUM', TILED: true },
-            crossOrigin: 'anonymous',
-            projection: getProjection('EPSG:3857'),
-        }),
+        url: 'https://data.geopf.fr/wms-v/wms',
+        layer: 'POI.MUSEUM',
+        projection: 'EPSG:3857',
     }),
 });
 

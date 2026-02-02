@@ -6,7 +6,6 @@
 
 import { getUid } from 'ol';
 import { GeoJSON } from 'ol/format.js';
-import TileWMS from 'ol/source/TileWMS.js';
 import { Stroke, Style } from 'ol/style.js';
 import { MathUtils, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
@@ -19,8 +18,8 @@ import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
+import WmsSource from '@giro3d/giro3d/sources/WmsSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
@@ -41,15 +40,11 @@ const map = new Map({ extent });
 instance.add(map);
 
 // Adds a WMS imagery layer
-const colorSource = new TiledImageSource({
-    source: new TileWMS({
-        url: 'https://data.geopf.fr/wms-r',
-        projection: 'EPSG:3946',
-        params: {
-            LAYERS: ['ORTHOIMAGERY.ORTHOPHOTOS'],
-            FORMAT: 'image/jpeg',
-        },
-    }),
+const colorSource = new WmsSource({
+    url: 'https://data.geopf.fr/wms-r',
+    projection: 'EPSG:3946',
+    layer: 'ORTHOIMAGERY.ORTHOPHOTOS',
+    imageFormat: 'image/jpeg',
 });
 
 const colorLayer = new ColorLayer({

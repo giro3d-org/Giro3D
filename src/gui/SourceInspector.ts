@@ -18,6 +18,7 @@ import { isGeoTIFFSource } from '../sources/GeoTIFFSource';
 import { isTiledImageSource } from '../sources/TiledImageSource';
 import { isVectorSource } from '../sources/VectorSource';
 import VideoSource from '../sources/VideoSource';
+import { isWmsSource } from '../sources/WmsSource';
 import Panel from './Panel';
 
 /**
@@ -87,6 +88,8 @@ class SourceInspector extends Panel {
             } else {
                 source.addEventListener('loaded', () => this.populateVideoSource(source));
             }
+        } else if (isWmsSource(source)) {
+            this.addController(this, 'loadedPercent').name('Loaded/Requested');
         }
     }
 
@@ -112,6 +115,11 @@ class SourceInspector extends Panel {
         if (isTiledImageSource(this.source)) {
             const loaded = this.source.info.loadedTiles;
             const requested = this.source.info.requestedTiles;
+            const ratio = Math.ceil(100 * (loaded / requested));
+            this.loadedPercent = `${loaded}/${requested} (${ratio}%)`;
+        } else if (isWmsSource(this.source)) {
+            const loaded = this.source.info.loadedImages;
+            const requested = this.source.info.requestedImages;
             const ratio = Math.ceil(100 * (loaded / requested));
             this.loadedPercent = `${loaded}/${requested} (${ratio}%)`;
         }

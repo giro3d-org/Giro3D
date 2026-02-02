@@ -16,7 +16,6 @@
 // This walkthrough is based on the [2.5D Map example](../examples/getting-started.html).
 // Feel free to visit this example to see the final result of this tutorial.
 
-import TileWMS from 'ol/source/TileWMS.js';
 import { Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
@@ -28,7 +27,7 @@ import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
+import WmsSource from '@giro3d/giro3d/sources/WmsSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
@@ -102,17 +101,12 @@ instance.add(map);
 
 // Let's create a source that will pull data from a WMS service.
 // We are using the
-// [`TiledImageSource`](../apidoc/classes/sources.TiledImageSource.html) for that.
-// This source will wrap an OpenLayers source, in this case a `TileWMS`.
-const satelliteSource = new TiledImageSource({
-    source: new TileWMS({
-        url: 'https://data.geopf.fr/wms-r',
-        projection: 'EPSG:3946',
-        params: {
-            LAYERS: ['ORTHOIMAGERY.ORTHOPHOTOS'],
-            FORMAT: 'image/jpeg',
-        },
-    }),
+// [`WmsSource`](../apidoc/classes/sources.WmsSource.html) for that.
+const satelliteSource = new WmsSource({
+    url: 'https://data.geopf.fr/wms-r',
+    projection: 'EPSG:3946',
+    layer: 'ORTHOIMAGERY.ORTHOPHOTOS',
+    imageFormat: 'image/jpeg',
 });
 
 // ##### Create the layer
@@ -145,16 +139,11 @@ map.addLayer(colorLayer);
 // map, but it rather deforms the map to display the terrain (hence the name 2.5D map).
 
 // Let's create a WMS source for this layer.
-const demSource = new TiledImageSource({
-    source: new TileWMS({
-        url: 'https://data.geopf.fr/wms-r',
-        projection: 'EPSG:3946',
-        crossOrigin: 'anonymous',
-        params: {
-            LAYERS: ['ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES'],
-            FORMAT: 'image/x-bil;bits=32',
-        },
-    }),
+const demSource = new WmsSource({
+    layer: 'ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES',
+    imageFormat: 'image/x-bil;bits=32',
+    url: 'https://data.geopf.fr/wms-r',
+    projection: 'EPSG:3946',
     format: new BilFormat(),
     noDataValue: -1000,
 });
