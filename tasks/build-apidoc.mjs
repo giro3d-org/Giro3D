@@ -80,7 +80,11 @@ async function handleModification(parameters, sourceFile) {
 
 async function watchApidoc(parameters) {
     chokidar
-        .watch([`${sourceDir}/**/*.ts`, apidocDir])
+        .watch([sourceDir, apidocDir], {
+            depth: 99,
+            awaitWriteFinish: true,
+            interval: 200,
+        })
         .on('change', p => handleModification(parameters, p));
 }
 
