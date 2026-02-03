@@ -4,12 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-import BilFormat from './BilFormat';
-import GeoTIFFFormat from './GeoTIFFFormat';
-import ImageFormat, { type DecodeOptions } from './ImageFormat';
-import MapboxTerrainFormat from './MapboxTerrainFormat';
-
-/**
- * Data decoders, such as image formats.
- */
-export { BilFormat, DecodeOptions, GeoTIFFFormat, ImageFormat, MapboxTerrainFormat };
+export * as BilFormat from './BilFormat';
+export * as GeoTIFFFormat from './GeoTIFFFormat';
+export * as ImageFormat from './ImageFormat';
+export * as MapboxTerrainFormat from './MapboxTerrainFormat';

@@ -4,98 +4,21 @@
  * SPDX-License-Identifier: MIT
  */
 
-// import CoordinateSystem from '../core/geographic/CoordinateSystem';
-import AggregateImageSource from './AggregateImageSource';
-import AggregatePointCloudSource, {
-    AggregatePointCloudSourceOptions,
-} from './AggregatePointCloudSource';
-import COPCSource, { COPCSourceOptions } from './COPCSource';
-import GeoTIFFSource, {
-    type ChannelMapping,
-    type GeoTIFFCacheOptions,
-    type GeoTIFFSourceOptions,
-} from './GeoTIFFSource';
-import ImageSource, {
-    type CustomContainsFn,
-    type GetImageOptions,
-    type ImageResponse,
-    type ImageResult,
-    type ImageSourceEvents,
-    type ImageSourceOptions,
-} from './ImageSource';
-import * as las from './las/api';
-import LASSource, { LASSourceOptions } from './LASSource';
-import {
-    GetNodeDataOptions,
-    PointCloudAttribute,
-    PointCloudMetadata,
-    PointCloudNode,
-    PointCloudNodeData,
-    PointCloudSource,
-    PointCloudSourceBase,
-    PointCloudSourceEventMap,
-} from './PointCloudSource';
-import PotreeSource, { PotreeSourceOptions } from './PotreeSource';
-import StaticImageSource, {
-    type StaticImageSourceEvents,
-    type StaticImageSourceOptions,
-} from './StaticImageSource';
-import TiledImageSource, { type TiledImageSourceOptions } from './TiledImageSource';
-import VectorSource, { type VectorSourceOptions } from './VectorSource';
-import VectorTileSource, { type VectorTileSourceOptions } from './VectorTileSource';
-import VideoSource, { type VideoSourceEvents, type VideoSourceOptions } from './VideoSource';
-import WmsSource, { type WmsSourceOptions } from './WmsSource';
-import WmtsSource, { type WmtsFromCapabilitiesOptions, type WmtsSourceOptions } from './WmtsSource';
+export * as AggregateImageSource from './AggregateImageSource';
+export * as AggregatePointCloudSource from './AggregatePointCloudSource';
+export * as COPCSource from './COPCSource';
+export * as DebugSource from './DebugSource';
+export * as GeoTIFFSource from './GeoTIFFSource';
+export * as ImageSource from './ImageSource';
+export * as LASSource from './LASSource';
+export * as NullSource from './NullSource';
+export * as PointCloudSource from './PointCloudSource';
+export * as StaticImageSource from './StaticImageSource';
+export * as TiledImageSource from './TiledImageSource';
+export * as VectorSource from './VectorSource';
+export * as VectorTileSource from './VectorTileSource';
+export * as VideoSource from './VideoSource';
+export * as WmsSource from './WmsSource';
+export * as WmtsSource from './WmtsSource';
 
-/**
- * Data sources.
- */
-export {
-    AggregateImageSource,
-    AggregatePointCloudSource,
-    AggregatePointCloudSourceOptions,
-    ChannelMapping,
-    // CoordinateSystem,
-    COPCSource,
-    COPCSourceOptions,
-    CustomContainsFn,
-    GeoTIFFCacheOptions,
-    GeoTIFFSource,
-    GeoTIFFSourceOptions,
-    GetImageOptions,
-    GetNodeDataOptions,
-    ImageResponse,
-    ImageResult,
-    ImageSource,
-    ImageSourceEvents,
-    ImageSourceOptions,
-    las,
-    LASSource,
-    LASSourceOptions,
-    PointCloudAttribute,
-    PointCloudMetadata,
-    PointCloudNode,
-    PointCloudNodeData,
-    PointCloudSource,
-    PointCloudSourceBase,
-    PointCloudSourceEventMap,
-    PotreeSource,
-    PotreeSourceOptions,
-    StaticImageSource,
-    StaticImageSourceEvents,
-    StaticImageSourceOptions,
-    TiledImageSource,
-    TiledImageSourceOptions,
-    VectorSource,
-    VectorSourceOptions,
-    VectorTileSource,
-    VectorTileSourceOptions,
-    VideoSource,
-    VideoSourceEvents,
-    VideoSourceOptions,
-    WmsSource,
-    WmsSourceOptions,
-    WmtsFromCapabilitiesOptions,
-    WmtsSource,
-    WmtsSourceOptions,
-};
+export * as las from './las/api';

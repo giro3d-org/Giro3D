@@ -4,109 +4,18 @@
  * SPDX-License-Identifier: MIT
  */
 
-import type Atmosphere from './Atmosphere';
-import type { AtmosphereOptions } from './Atmosphere';
-import type Globe from './Globe';
-import type { GlobeOptions, GlobeTerrainOptions, defaultGlobeSubdivisionStrategy } from './Globe';
-import type Glow from './Glow';
-import type { GlowOptions } from './Glow';
-import type Map from './Map';
-
-import AxisGrid, {
-    type AxisGridOptions,
-    type TickOrigin as AxisGridOrigin,
-    type Style as AxisGridStyle,
-    type Ticks as AxisGridTicks,
-    type Volume as AxisGridVolume,
-} from './AxisGrid';
-import Entity, { type EntityEventMap, type EntityUserData } from './Entity';
-import Entity3D, { type Entity3DEventMap, type Entity3DOptions } from './Entity3D';
-import FeatureCollection, {
-    type MeshUserData,
-    type FeatureCollectionOptions,
-} from './FeatureCollection';
-import {
-    DEFAULT_MAP_BACKGROUND_COLOR,
-    DEFAULT_SUBDIVISION_THRESHOLD,
-    allLayersLoadedSubdivisionStrategy,
-    defaultMapSubdivisionStrategy,
-    type LayerCompareFn,
-    type MapOptions,
-    type MapEventMap,
-    type MapSubdivisionStrategy,
-} from './Map';
-import MapLightingOptions, { MapLightingMode } from './MapLightingOptions';
-import OrientedImageCollection, {
-    type OrientedImageCollectionOptions,
-    type OrientedImageCollectionPickResult,
-    type OrientedImageCollectionSource,
-    type OrientedImageSource,
-} from './OrientedImageCollection';
-import PointCloud, { PointCloudOptions, UnsupportedAttributeError } from './PointCloud';
-import Shape, { ShapeOptions, ShapeExportOptions, ShapeFontWeight, ShapePickResult } from './Shape';
-import SphericalPanorama, { SphericalPanoramaOptions } from './SphericalPanorama';
-import Tiles3D, {
-    DEFAULT_TILES3D_POINTCLOUD_ATTRIBUTE_MAPPING,
-    WellKnown3DTilesPointCloudAttributes,
-    type PointCloudBatchTableAttributeMapping,
-    type Tiles3DOptions,
-    type Tiles3DPickResult,
-} from './Tiles3D';
-
-export {
-    Atmosphere,
-    AtmosphereOptions,
-    AxisGrid,
-    AxisGridOptions,
-    AxisGridOrigin,
-    AxisGridStyle,
-    AxisGridTicks,
-    AxisGridVolume,
-    DEFAULT_MAP_BACKGROUND_COLOR,
-    DEFAULT_SUBDIVISION_THRESHOLD,
-    DEFAULT_TILES3D_POINTCLOUD_ATTRIBUTE_MAPPING,
-    Entity,
-    Entity3D,
-    Entity3DOptions,
-    Entity3DEventMap,
-    EntityEventMap,
-    EntityUserData,
-    FeatureCollection,
-    FeatureCollectionOptions,
-    Globe,
-    GlobeOptions,
-    GlobeTerrainOptions,
-    Glow,
-    GlowOptions,
-    LayerCompareFn,
-    Map,
-    MapOptions,
-    MapEventMap,
-    MapLightingMode,
-    MapLightingOptions,
-    MapSubdivisionStrategy,
-    MeshUserData,
-    OrientedImageCollection,
-    OrientedImageCollectionOptions,
-    OrientedImageCollectionPickResult,
-    OrientedImageCollectionSource,
-    OrientedImageSource,
-    PointCloud,
-    PointCloudBatchTableAttributeMapping,
-    PointCloudOptions,
-    Shape,
-    ShapeOptions,
-    ShapeExportOptions,
-    ShapeFontWeight,
-    ShapePickResult,
-    SphericalPanorama,
-    SphericalPanoramaOptions,
-    Tiles3D,
-    Tiles3DOptions,
-    Tiles3DPickResult,
-    UnsupportedAttributeError,
-    WellKnown3DTilesPointCloudAttributes,
-    allLayersLoadedSubdivisionStrategy,
-    defaultGlobeSubdivisionStrategy,
-    defaultMapSubdivisionStrategy,
-};
+export * as Atmosphere from './Atmosphere';
+export * as AxisGrid from './AxisGrid';
+export * as Entity from './Entity';
+export * as Entity3D from './Entity3D';
+export * as FeatureCollection from './FeatureCollection';
+export * as Globe from './Globe';
+export * as Glow from './Glow';
+export * as Map from './Map';
+export * as MapLightingOptions from './MapLightingOptions';
+export * as OrientedImageCollection from './OrientedImageCollection';
+export * as PointCloud from './PointCloud';
+export * as Shape from './Shape';
+export * as SkyDome from './SkyDome';
+export * as SphericalPanorama from './SphericalPanorama';
+export * as Tiles3D from './Tiles3D';

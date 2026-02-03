@@ -4,8 +4,5 @@
  * SPDX-License-Identifier: MIT
  */
 
-import EllipsoidHelper from './EllipsoidHelper';
-import Helpers from './Helpers';
-import OBBHelper from './OBBHelper';
-
-export { EllipsoidHelper, Helpers, OBBHelper };
+export * as EllipsoidHelper from './EllipsoidHelper';
+export * as OBBHelper from './OBBHelper';
