@@ -130,6 +130,9 @@ class Extent {
         return new Extent(crs, minX, maxX, minY, maxY);
     }
 
+    /**
+     * Returns the internal value array in this order: [minX, maxX, minY, maxY]
+     */
     public get values(): Float64Array {
         return this._values;
     }
@@ -142,6 +145,19 @@ class Extent {
      * @param v - The normalized coordinate over the Y-axis.
      * @param target - The target to store the result. If unspecified, one will be created.
      * @returns The sampled coordinate.
+     * @example
+     * const extent = new Extent(CoordinateSystem.epsg4326, 0, 10, 0, 5);
+     * // Get the bottom left corner
+     * extent.sampleUV(0, 0)
+     * // [0, 0]
+     *
+     * // Get the center
+     * extent.sampleUV(0.5, 0.5)
+     * // [5, 2.5]
+     *
+     * // Get the top right corner
+     * extent.sampleUV(1, 1)
+     * // [10, 5]
      */
     public sampleUV(u: number, v: number, target?: Coordinates): Coordinates {
         const { width, height } = this.dimensions(tmpXY);
@@ -176,7 +192,7 @@ class Extent {
     }
 
     /**
-     * Checks the validity of the extent.
+     * Checks the validity of the extent. Valid extents must not have infinite or NaN values.
      *
      * @returns `true` if the extent is valid, `false` otherwise.
      */
@@ -222,11 +238,13 @@ class Extent {
     }
 
     /**
-     * Returns an extent with a relative margin added.
+     * Returns an extent grown the specified relative margin.
+     * The margin is relative to the width or height of the extent.
      *
      * @param marginRatio - The margin, in normalized value ([0, 1]).
      * A margin of 1 means 100% of the width or height of the extent.
      * @example
+     * // Create an extent with a 10% margin applied:
      * const extent = new Extent(CoordinateSystem.epsg3857, 0, 100, 0, 100);
      * const margin = extent.withRelativeMargin(0.1);
      * //  new Extent(CoordinateSystem.epsg3857, -10, 110, -10, 110);
@@ -240,7 +258,8 @@ class Extent {
     }
 
     /**
-     * Returns an extent with a margin.
+     * Returns an extent grown or shrinked with the specified margin.
+     * If the margin is positive, the new extent is bigger, and if the margin is negative the new extent is smaller.
      *
      * @param x - The horizontal margin, in CRS units.
      * @param y - The vertical margin, in CRS units.
@@ -265,6 +284,10 @@ class Extent {
      *
      * @param crs - the new CRS
      * @returns the converted extent.
+     * @example
+     * const original = new Extent(CoordinateSystem.epsg4326, -5, 5, -5, 5);
+     * const transformed = original.as(CoordinateSystem.epsg3857);
+     * // [-556597.4539663679, 556597.4539663679, -557305.2572745769, 557305.2572745753]
      */
     public as(crs: CoordinateSystem): this | Extent {
         if (!this._crs.equals(crs) && !(this._crs.isEpsg(4326) && crs.isEpsg(4326))) {
@@ -538,10 +561,10 @@ class Extent {
     }
 
     /**
-     * Returns `true` if this bounding box intersect with the bouding box parameter
+     * Returns `true` if this extent intersects with the specified extent.
      *
-     * @param bbox - the bounding box to test
-     * @returns `true` if this bounding box intersects with the provided bounding box
+     * @param bbox - the extent to test
+     * @returns `true` if this extent intersects with the provided extent, `false` otherwise.
      */
     public intersectsExtent(bbox: Extent): boolean {
         const other = bbox.as(this.crs);
@@ -964,6 +987,10 @@ class Extent {
 
     /**
      * The bounds of the whole world in the EPSG:4326 projection.
+     *
+     * @example
+     * const bounds = Extent.WGS84;
+     * // [-180, 180, -90, 90]
      */
     public static get WGS84(): Extent {
         return new Extent(CoordinateSystem.epsg4326, -180, 180, -90, 90);
@@ -980,7 +1007,7 @@ class Extent {
     }
 
     /**
-     * Comptes the extent of a photosphere in the `'equirectangular'` projection for the given image parameters.
+     * Creates an extent from parameters of a photosphere in the `'equirectangular'` projection for the given image parameters.
      * See [the Google Street View documentation](https://developers.google.com/streetview/spherical-metadata) for additional information.
      * @param params - The parameters of the image. If undefined, then it returns the extent
      * for the full sphere equivalent to {@link fullEquirectangularProjection}

@@ -171,8 +171,8 @@ export default class Ellipsoid {
 
     /**
      * Gets the ENU (east/north/up) matrix for the given location in geodetic coordinates.
-     * @param point - The geodetic coordinate in the geocentric system of this ellipsoid.
-     * @param target - The optional matrix to set with the ENU matrix.
+     * @param lat - The latitude of the location.
+     * @param lon - The longitude of the location.
      * @returns The ENU matrix.
      */
     public getEastNorthUpMatrix(lat: number, lon: number, target?: Matrix4): Matrix4 {

@@ -67,7 +67,7 @@ export interface Entity3DOptions {
 /**
  * Base class for any {@link Entity} that displays 3D objects.
  *
- * Subclasses *must* call `onObjectCreated` when creating new Object3D, before adding them to the
+ * Subclasses *must* call {@link onObjectCreated} when creating new Object3D, before adding them to the
  * scene
  */
 class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData = EntityUserData>
@@ -98,7 +98,7 @@ class Entity3D<TEventMap extends Entity3DEventMap = Entity3DEventMap, TUserData 
     /**
      * Creates a Entity3D with the specified parameters.
      *
-     * @param object3d - the root Three.js of this entity
+     * @param options - The constructor options.
      */
     public constructor(options?: Entity3DOptions) {
         super();

@@ -143,15 +143,16 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
     }
 
     /**
-     * @param crs - the CRS of this camera
-     * @param width - the width in pixels of the camera viewport
-     * @param height - the height in pixels of the camera viewport
-     * @param options - optional values
+     * @param params - The constructor parameters.
      */
     public constructor(params: {
+        /** The coordinate system of the view. */
         crs: CoordinateSystem;
+        /** The width in pixels of the camera viewport */
         width: number;
+        /** The height in pixels of the camera viewport */
         height: number;
+        /** The three.js camera to use. If unspecified, a default perspective camera is created. */
         camera?: PerspectiveCamera | OrthographicCamera;
     }) {
         super();

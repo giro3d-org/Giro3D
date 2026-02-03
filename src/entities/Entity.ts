@@ -185,7 +185,8 @@ abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserDa
      *
      * @returns A promise that resolves when the entity is ready to be used.
      */
-    protected preprocess(_opts: EntityPreprocessOptions): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    protected preprocess(opts: EntityPreprocessOptions): Promise<void> {
         return Promise.resolve();
     }
 

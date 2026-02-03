@@ -23,7 +23,6 @@ export interface DecodeResult {
 
 /**
  * Base class for image decoders. To implement your own image decoder, subclass this class.
- *
  */
 abstract class ImageFormat {
     public readonly isImageFormat = true as const;
