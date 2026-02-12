@@ -76,7 +76,7 @@ const naip = createMap(split[0], 'naip');
 const satellite = createMap(split[1], 'satellite');
 
 const center = extent.centerAsVector3();
-instance.view.camera.position.set(center.x, extent.north, 10000);
+instance.view.camera.position.set(center.x, extent.maxY, 10000);
 
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.target = center;

@@ -38,31 +38,44 @@ describe('constructor', () => {
             new Coordinates(CoordinateSystem.epsg4326, maxX, maxY),
         );
 
-        expect(minX).toEqual(withCoords.west);
-        expect(maxX).toEqual(withCoords.east);
-        expect(minY).toEqual(withCoords.south);
-        expect(maxY).toEqual(withCoords.north);
+        expect(minX).toEqual(withCoords.minX);
+        expect(maxX).toEqual(withCoords.maxX);
+        expect(minY).toEqual(withCoords.minY);
+        expect(maxY).toEqual(withCoords.maxY);
     });
 
-    it('should build the expected extent using keywords', () => {
+    it('should build the expected extent using deprecated keywords', () => {
         const withKeywords = new Extent(CoordinateSystem.epsg4326, {
             south: minY,
             east: maxX,
             north: maxY,
             west: minX,
         });
-        expect(minX).toEqual(withKeywords.west);
-        expect(maxX).toEqual(withKeywords.east);
-        expect(minY).toEqual(withKeywords.south);
-        expect(maxY).toEqual(withKeywords.north);
+        expect(minX).toEqual(withKeywords.minX);
+        expect(maxX).toEqual(withKeywords.maxX);
+        expect(minY).toEqual(withKeywords.minY);
+        expect(maxY).toEqual(withKeywords.maxY);
+    });
+
+    it('should build the expected extent using keywords', () => {
+        const withKeywords = new Extent(CoordinateSystem.epsg4326, {
+            minY,
+            maxX,
+            maxY,
+            minX,
+        });
+        expect(minX).toEqual(withKeywords.minX);
+        expect(maxX).toEqual(withKeywords.maxX);
+        expect(minY).toEqual(withKeywords.minY);
+        expect(maxY).toEqual(withKeywords.maxY);
     });
 
     it('should build the expected extent using values', () => {
         const withValues = new Extent(CoordinateSystem.epsg4326, minX, maxX, minY, maxY);
-        expect(minX).toEqual(withValues.west);
-        expect(maxX).toEqual(withValues.east);
-        expect(minY).toEqual(withValues.south);
-        expect(maxY).toEqual(withValues.north);
+        expect(minX).toEqual(withValues.minX);
+        expect(maxX).toEqual(withValues.maxX);
+        expect(minY).toEqual(withValues.minY);
+        expect(maxY).toEqual(withValues.maxY);
     });
 
     it('should build the expected extent from box3', () => {
@@ -72,10 +85,10 @@ describe('constructor', () => {
         );
         const fromBox = Extent.fromBox3(CoordinateSystem.epsg4978, box);
 
-        expect(fromBox.west).toEqual(box.min.x);
-        expect(fromBox.east).toEqual(box.max.x);
-        expect(fromBox.north).toEqual(box.max.y);
-        expect(fromBox.south).toEqual(box.min.y);
+        expect(fromBox.minX).toEqual(box.min.x);
+        expect(fromBox.maxX).toEqual(box.max.x);
+        expect(fromBox.maxY).toEqual(box.max.y);
+        expect(fromBox.minY).toEqual(box.min.y);
     });
 });
 
@@ -156,26 +169,26 @@ describe('offsetInExtent', () => {
 
 describe('clone', () => {
     it('should return a new Extent', () => {
-        const south = -43;
-        const north = 34;
-        const east = 22.34;
-        const west = -179.99;
+        const minY = -43;
+        const maxY = 34;
+        const maxX = 22.34;
+        const minX = -179.99;
 
         const original = new Extent(CoordinateSystem.epsg4326, {
-            south,
-            north,
-            east,
-            west,
+            minY,
+            maxY,
+            maxX,
+            minX,
         });
 
         const copy = original.clone();
 
         expect(copy).not.toBe(original);
 
-        expect(south).toEqual(copy.south);
-        expect(north).toEqual(copy.north);
-        expect(east).toEqual(copy.east);
-        expect(west).toEqual(copy.west);
+        expect(minY).toEqual(copy.minY);
+        expect(maxY).toEqual(copy.maxY);
+        expect(maxX).toEqual(copy.maxX);
+        expect(minX).toEqual(copy.minX);
     });
 });
 
@@ -232,7 +245,36 @@ describe('as', () => {
         });
 
         const projected = original.as(CoordinateSystem.epsg3857); // Spherical Mercator
+
         expect(original).not.toEqual(projected);
+
+        expect(projected.minX).toEqual(-556597.4539663679);
+        expect(projected.minY).toEqual(-557305.2572745769);
+        expect(projected.maxX).toEqual(556597.4539663679);
+        expect(projected.maxY).toEqual(557305.2572745753);
+    });
+});
+
+describe('expandByPoint', () => {
+    it('should return the extent', () => {
+        const crs = CoordinateSystem.epsg3857;
+        const extent = new Extent(crs, 0, 10, 0, 10);
+
+        const expanded = extent.expandByPoint(new Coordinates(crs, 20, 30));
+
+        expect(expanded).toBe(extent);
+    });
+
+    it('should expand the extent', () => {
+        const crs = CoordinateSystem.epsg3857;
+        const extent = new Extent(crs, -2, 10, 1, 10);
+
+        extent.expandByPoint(new Coordinates(crs, 20, 30));
+
+        expect(extent.minX).toEqual(-2);
+        expect(extent.minY).toEqual(1);
+        expect(extent.maxY).toEqual(30);
+        expect(extent.maxY).toEqual(30);
     });
 });
 
@@ -420,10 +462,10 @@ describe('toBox3', () => {
         const maxHeight = 400.3;
         const box = extent.toBox3(minHeight, maxHeight);
 
-        expect(box.min.x).toBe(extent.west);
-        expect(box.max.x).toBe(extent.east);
-        expect(box.min.y).toBe(extent.south);
-        expect(box.max.y).toBe(extent.north);
+        expect(box.min.x).toBe(extent.minX);
+        expect(box.max.x).toBe(extent.maxX);
+        expect(box.min.y).toBe(extent.minY);
+        expect(box.max.y).toBe(extent.maxY);
         expect(box.min.z).toBe(minHeight);
         expect(box.max.z).toBe(maxHeight);
     });
@@ -443,10 +485,10 @@ describe('withMargin', () => {
         const extent = new Extent(CoordinateSystem.epsg3857, 5, 1132, 4204.2, 10000.4);
         const result = extent.withMargin(xmargin, ymargin);
 
-        expect(result.west).toEqual(extent.west - xmargin);
-        expect(result.east).toEqual(extent.east + xmargin);
-        expect(result.south).toEqual(extent.south - ymargin);
-        expect(result.north).toEqual(extent.north + ymargin);
+        expect(result.minX).toEqual(extent.minX - xmargin);
+        expect(result.maxX).toEqual(extent.maxX + xmargin);
+        expect(result.minY).toEqual(extent.minY - ymargin);
+        expect(result.maxY).toEqual(extent.maxY + ymargin);
     });
 });
 
@@ -464,10 +506,10 @@ describe('withRelativeMargin', () => {
         const extent = new Extent(CoordinateSystem.epsg3857, 0, 100, 0, 200);
         const result = extent.withRelativeMargin(0.1);
 
-        expect(result.west).toEqual(extent.west - xmargin);
-        expect(result.east).toEqual(extent.east + xmargin);
-        expect(result.south).toEqual(extent.south - ymargin);
-        expect(result.north).toEqual(extent.north + ymargin);
+        expect(result.minX).toEqual(extent.minX - xmargin);
+        expect(result.maxX).toEqual(extent.maxX + xmargin);
+        expect(result.minY).toEqual(extent.minY - ymargin);
+        expect(result.maxY).toEqual(extent.maxY + ymargin);
     });
 });
 
@@ -478,10 +520,10 @@ describe('fromBox3', () => {
         const extent = Extent.fromBox3(CoordinateSystem.epsg4326, box);
 
         expect(extent.crs.isEpsg(4326)).toBe(true);
-        expect(extent.west).toBe(box.min.x);
-        expect(extent.east).toBe(box.max.x);
-        expect(extent.north).toBe(box.max.y);
-        expect(extent.south).toBe(box.min.y);
+        expect(extent.minX).toBe(box.min.x);
+        expect(extent.maxX).toBe(box.max.x);
+        expect(extent.maxY).toBe(box.max.y);
+        expect(extent.minY).toBe(box.min.y);
     });
 });
 
@@ -675,10 +717,10 @@ describe('unionMany', () => {
         const union = Extent.unionMany(e0, e1, e2)!;
 
         expect(union.crs).toEqual(crs);
-        expect(union.west).toEqual(-123);
-        expect(union.east).toEqual(100);
-        expect(union.north).toEqual(6660);
-        expect(union.south).toEqual(-908);
+        expect(union.minX).toEqual(-123);
+        expect(union.maxX).toEqual(100);
+        expect(union.maxY).toEqual(6660);
+        expect(union.minY).toEqual(-908);
     });
 });
 
@@ -745,10 +787,10 @@ describe('equirectangular', () => {
         const extent = Extent.fullEquirectangularProjection;
 
         expect(extent.crs.isEquirectangular()).toEqual(true);
-        expect(extent.west).toEqual(-180);
-        expect(extent.east).toEqual(+180);
-        expect(extent.south).toEqual(-90);
-        expect(extent.north).toEqual(+90);
+        expect(extent.minX).toEqual(-180);
+        expect(extent.maxX).toEqual(+180);
+        expect(extent.minY).toEqual(-90);
+        expect(extent.maxY).toEqual(+90);
     });
 });
 
@@ -757,10 +799,10 @@ describe('fromPhotosphere', () => {
         const extent = Extent.fromPhotosphere();
 
         expect(extent.crs.isEquirectangular()).toEqual(true);
-        expect(extent.west).toEqual(-180);
-        expect(extent.east).toEqual(+180);
-        expect(extent.south).toEqual(-90);
-        expect(extent.north).toEqual(+90);
+        expect(extent.minX).toEqual(-180);
+        expect(extent.maxX).toEqual(+180);
+        expect(extent.minY).toEqual(-90);
+        expect(extent.maxY).toEqual(+90);
     });
 
     it('should return the correct angular values for a given image parameters', () => {
@@ -781,10 +823,10 @@ describe('fromPhotosphere', () => {
         });
 
         expect(extent.crs.isEquirectangular()).toEqual(true);
-        expect(extent.west).toEqual(-90);
-        expect(extent.north).toEqual(+45);
-        expect(extent.east).toEqual(+90);
-        expect(extent.south).toEqual(-45);
+        expect(extent.minX).toEqual(-90);
+        expect(extent.maxY).toEqual(+45);
+        expect(extent.maxX).toEqual(+90);
+        expect(extent.minY).toEqual(-45);
         expect(extent.dimensions()).toEqual(new Vector2(180, 90));
     });
 });
@@ -808,7 +850,7 @@ describe('contains/isInside', () => {
 
     it('should return false if the extents only partially overlap', () => {
         const a = new Extent(CoordinateSystem.epsg3857, 10, 20, 30, 40);
-        const b = new Extent(CoordinateSystem.epsg3857, a.west + 1, a.east + 1, a.south, a.north);
+        const b = new Extent(CoordinateSystem.epsg3857, a.minX + 1, a.maxX + 1, a.minY, a.maxY);
 
         expect(a.contains(b)).toEqual(false);
         expect(b.isInside(a)).toEqual(false);
@@ -843,6 +885,7 @@ describe('sampleUV', () => {
 
         expect(sample.x).toEqual(10);
         expect(sample.y).toEqual(40);
+        expect(sample).toEqual(extent.bottomLeft());
     });
 
     it('should return the top right corner when u = 1 and v = 1', () => {
@@ -852,6 +895,7 @@ describe('sampleUV', () => {
 
         expect(sample.x).toEqual(20);
         expect(sample.y).toEqual(50);
+        expect(sample).toEqual(extent.topRight());
     });
 
     it('should return the center when u = 0.5 and v = 0.5', () => {
@@ -861,5 +905,6 @@ describe('sampleUV', () => {
 
         expect(sample.x).toEqual(15);
         expect(sample.y).toEqual(45);
+        expect(sample).toEqual(extent.center());
     });
 });

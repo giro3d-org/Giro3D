@@ -552,8 +552,8 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         // we initialize it with fake z to avoid a degenerate bounding box
         // the culling test will be done considering x and y only anyway.
         const boundingBox = new Box3(
-            new Vector3(extent.west, extent.south, -1),
-            new Vector3(extent.east, extent.north, 1),
+            new Vector3(extent.minX, extent.minY, -1),
+            new Vector3(extent.maxX, extent.maxY, 1),
         );
 
         const tile = new FeatureTile({

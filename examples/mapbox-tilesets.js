@@ -74,7 +74,7 @@ addLayers(
     'pk.eyJ1IjoiZ2lybzNkIiwiYSI6ImNtZ3Q0NDNlNTAwY2oybHI3Ym1kcW03YmoifQ.Zl7_KZiAhqWSPjlkKDKYnQ',
 ).catch(console.error);
 
-instance.view.camera.position.set(extent.east, extent.south, 2000);
+instance.view.camera.position.set(extent.maxX, extent.minY, 2000);
 
 const controls = new MapControls(instance.view.camera, instance.domElement);
 controls.target = extent.centerAsVector3();
