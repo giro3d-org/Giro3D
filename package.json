@@ -90,7 +90,7 @@
         "chart.js": "^3.9.1",
         "copc": "^0.0.8",
         "earcut": "^2.2.4",
-        "geotiff": "^2.1.0",
+        "geotiff": "^3.0.2",
         "lil-gui": "^0.17.0",
         "lru-cache": "^10.0.1",
         "wkt-parser": "^1.5.2"
