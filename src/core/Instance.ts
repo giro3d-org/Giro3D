@@ -133,19 +133,6 @@ export interface InstanceEvents {
     dispose: unknown;
 }
 
-/**
- * The names of events supported by
- * [`Instance.addEventListener()`](https://threejs.org/docs/#api/en/core/EventDispatcher.addEventListener)
- * and
- * [`Instance.removeEventListener()`](https://threejs.org/docs/#api/en/core/EventDispatcher.removeEventListener).
- *
- * @deprecated Use InstanceEvents instead.
- */
-export const INSTANCE_EVENTS: Record<string, keyof InstanceEvents> = {
-    ENTITY_ADDED: 'entity-added',
-    ENTITY_REMOVED: 'entity-removed',
-} as const;
-
 /** Options for creating Instance */
 export interface InstanceOptions {
     /**
