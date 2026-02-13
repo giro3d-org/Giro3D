@@ -1,6 +1,6 @@
-/**
+/*
  * Copyright (c) 2015-2018, IGN France.
- * Copyright (c) 2018-2025, Giro3D team.
+ * Copyright (c) 2018-2026, Giro3D team.
  * SPDX-License-Identifier: MIT
  */
 
@@ -8,7 +8,7 @@ import type { Feature } from 'ol';
 import type { Extent as OLExtent } from 'ol/extent';
 import type { Geometry } from 'ol/geom';
 
-import type CoordinateSystem from '../../core/geographic/coordinate-system/CoordinateSystem';
+import type CoordinateSystem from '../../core/geographic/CoordinateSystem';
 import type Extent from '../../core/geographic/Extent';
 
 import OpenLayersUtils from '../../utils/OpenLayersUtils';

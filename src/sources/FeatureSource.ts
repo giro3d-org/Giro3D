@@ -1,6 +1,6 @@
-/**
+/*
  * Copyright (c) 2015-2018, IGN France.
- * Copyright (c) 2018-2025, Giro3D team.
+ * Copyright (c) 2018-2026, Giro3D team.
  * SPDX-License-Identifier: MIT
  */
 
@@ -8,17 +8,17 @@ import type { Feature } from 'ol';
 
 import { EventDispatcher } from 'three';
 
-import type CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import type CoordinateSystem from '../core/geographic/CoordinateSystem';
 import type Extent from '../core/geographic/Extent';
 
-export type GetFeatureResult = {
+export interface GetFeatureResult {
     /**
      * The resulting features.
      */
     features: Readonly<Feature[]>;
-};
+}
 
-export type GetFeatureRequest = {
+export interface GetFeatureRequest {
     /**
      * The extent of the request. The source will make the best effort to return features
      * limited to this extent, but may return more features.
@@ -28,7 +28,7 @@ export type GetFeatureRequest = {
      * Optional abort signal to cancel the feature request.
      */
     signal?: AbortSignal;
-};
+}
 
 export interface FeatureSourceEventMap {
     /**

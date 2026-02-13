@@ -1,6 +1,6 @@
-/**
+/*
  * Copyright (c) 2015-2018, IGN France.
- * Copyright (c) 2018-2025, Giro3D team.
+ * Copyright (c) 2018-2026, Giro3D team.
  * SPDX-License-Identifier: MIT
  */
 
@@ -11,7 +11,7 @@ import type { Geometry } from 'ol/geom';
 
 import GeoJSON from 'ol/format/GeoJSON';
 
-import CoordinateSystem from '../core/geographic/coordinate-system/CoordinateSystem';
+import CoordinateSystem from '../core/geographic/CoordinateSystem';
 import Fetcher from '../utils/Fetcher';
 import { nonNull } from '../utils/tsutils';
 import { filterByExtent, processFeatures } from './features/processor';
@@ -101,7 +101,7 @@ export default class FileFeatureSource extends FeatureSourceBase {
         if (!this._sourceCoordinateSystem) {
             const dataProjection = this._format.readProjection(data);
             if (dataProjection) {
-                this._sourceCoordinateSystem = CoordinateSystem.fromSrid(dataProjection?.getCode());
+                this._sourceCoordinateSystem = CoordinateSystem.get(dataProjection?.getCode());
             } else {
                 this._sourceCoordinateSystem = CoordinateSystem.epsg4326;
             }
