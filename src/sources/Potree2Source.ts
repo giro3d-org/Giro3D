@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { Box3, Vector3 } from 'three';
+import { Box3, Float32BufferAttribute, Vector3 } from 'three';
 
 import type {
     GetNodeDataOptions,
@@ -12,6 +12,7 @@ import type {
     PointCloudNode,
     PointCloudNodeData,
 } from './PointCloudSource';
+import type { ParseResult } from './potree/bin';
 import type Potree2Metadata from './potree/Potree2Metadata';
 import type Potree2Node from './potree/Potree2Node';
 
@@ -20,7 +21,9 @@ import Fetcher from '../utils/Fetcher';
 import { nonNull } from '../utils/tsutils';
 import { PointCloudSourceBase } from './PointCloudSource';
 import createChildAABB from './potree/createChildAABB';
+import { decodeUncompressedBuffer } from './potree/potree2Decoder';
 import { NodeType } from './potree/Potree2Node';
+import { isSupported, toPointCloudAttribute } from './potree/Potree2Metadata';
 
 export interface Potree2SourceConstructorOptions {
     /** The URL to the metadata.json file. */
@@ -71,19 +74,7 @@ export default class Potree2Source extends PointCloudSourceBase {
                 new Vector3().fromArray(potreeMetadata.boundingBox.min),
                 new Vector3().fromArray(potreeMetadata.boundingBox.max),
             ),
-            // TODO
-            // attributes: potreeMetadata.attributes.map(toPointCloudAttribute),
-            attributes: [
-                {
-                    dimension: 1,
-                    interpretation: 'unknown',
-                    name: 'fake',
-                    size: 1,
-                    type: 'unsigned',
-                    min: 0,
-                    max: 255,
-                },
-            ],
+            attributes: potreeMetadata.attributes.filter(isSupported).map(toPointCloudAttribute),
         };
 
         this._metadata = result;
@@ -108,7 +99,7 @@ export default class Potree2Source extends PointCloudSourceBase {
             depth: 0,
             volume: nonNull(metadata.volume),
             center: nonNull(metadata.volume).getCenter(new Vector3()),
-            hasData: false,
+            hasData: true,
             id: 'r',
             sourceId: this.id,
             geometricError: potreeMetadata.spacing,
@@ -185,6 +176,7 @@ export default class Potree2Source extends PointCloudSourceBase {
                     children: [],
                     parent: current,
                     volume: childAABB,
+                    hasData: true, // TODO
                     center: childAABB.getCenter(new Vector3()),
                 };
 
@@ -214,14 +206,40 @@ export default class Potree2Source extends PointCloudSourceBase {
 
         const buf = await this.fetchBytes(this._octreeUrl, first, last);
 
+        let result: ParseResult;
+
         switch (metadata.encoding) {
             case 'DEFAULT':
             case 'UNCOMPRESSED':
+                result = decodeUncompressedBuffer(
+                    buf,
+                    nonNull(potreeNode.pointCount),
+                    metadata.attributes,
+                    metadata.scale,
+                    metadata.offset,
+                    new Vector3().fromArray(metadata.offset).add(potreeNode.volume.min),
+                    potreeNode.volume.getSize(new Vector3()),
+                    0,
+                );
                 break;
             case 'BROTLI':
             default:
                 throw new Error('unsupported encoding: ' + metadata.encoding);
         }
+
+        const positionBufferAttribute = new Float32BufferAttribute(
+            result.positionBuffer.array,
+            result.positionBuffer.dimension,
+            result.positionBuffer.normalized,
+        );
+
+        return {
+            localBoundingBox: result.localBoundingBox,
+            origin: nonNull(potreeNode.volume).min,
+            position: positionBufferAttribute,
+            pointCount: positionBufferAttribute.count,
+            attributes: [], // TODO
+        };
     }
 
     private fetchBytes(

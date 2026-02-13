@@ -35,14 +35,35 @@ const instance = new Instance({
     target: 'view',
 });
 
+const source = new Potree2Source({
+    url: 'http://files.home.local/potree/v2/out/metadata.json',
+});
+
 const entity = new PointCloud({
-    source: new Potree2Source({
-        url: 'http://files.home.local/potree/v2/out/metadata.json',
-    }),
+    source,
 });
 
 instance.add(entity).then(() => {
     instance.view.goTo(entity);
+
+    source.initialize().then(s => {
+        s.getMetadata().then(md => {
+            console.log(md);
+
+            const first = md.attributes[0];
+
+            entity.setAttributeColorMap(
+                first.name,
+                new ColorMap({
+                    colors: makeColorRamp('viridis'),
+                    min: first.min,
+                    max: first.max,
+                }),
+            );
+            entity.setActiveAttribute(first.name);
+        });
+    });
+    StatusBar.bind(instance);
 });
 
 const controls = new MapControls(instance.view.camera, instance.domElement);
@@ -50,4 +71,3 @@ const controls = new MapControls(instance.view.camera, instance.domElement);
 instance.view.setControls(controls);
 
 Inspector.attach('inspector', instance);
-StatusBar.bind(instance);
