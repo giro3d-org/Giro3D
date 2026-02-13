@@ -87,13 +87,13 @@
     ],
     "dependencies": {
         "3d-tiles-renderer": "^0.4.14",
-        "wkt-parser": "^1.5.2",
         "chart.js": "^3.9.1",
         "copc": "^0.0.8",
         "earcut": "^2.2.4",
         "geotiff": "^2.1.0",
         "lil-gui": "^0.17.0",
-        "lru-cache": "^10.0.1"
+        "lru-cache": "^10.0.1",
+        "wkt-parser": "^1.5.2"
     },
     "peerDependencies": {
         "ol": "10",
