@@ -271,7 +271,7 @@ export abstract class PointCloudSourceBase<
     TEventMap extends PointCloudSourceEventMap = PointCloudSourceEventMap,
 >
     extends EventDispatcher<TEventMap>
-    implements Progress, Disposable, MemoryUsage
+    implements PointCloudSource, Progress, Disposable, MemoryUsage
 {
     public abstract type: string;
 
