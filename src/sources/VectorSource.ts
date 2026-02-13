@@ -405,7 +405,7 @@ class VectorSource extends ImageSource {
 
     public getCurrentExtent(): Extent | null {
         const sourceExtent = this.source.getExtent(tmpExtent);
-        if (!Number.isFinite(sourceExtent[0])) {
+        if (sourceExtent == null || !Number.isFinite(sourceExtent[0])) {
             return null;
         }
         return OpenLayersUtils.fromOLExtent(sourceExtent, nonNull(this._targetProjection));
