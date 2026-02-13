@@ -74,7 +74,18 @@ export default class Potree2Source extends PointCloudSourceBase {
                 new Vector3().fromArray(potreeMetadata.boundingBox.min),
                 new Vector3().fromArray(potreeMetadata.boundingBox.max),
             ),
-            attributes: potreeMetadata.attributes.filter(isSupported).map(toPointCloudAttribute),
+            // attributes: potreeMetadata.attributes.filter(isSupported).map(toPointCloudAttribute),
+            attributes: [
+                {
+                    name: 'Z',
+                    dimension: 1,
+                    interpretation: 'unknown',
+                    min: potreeMetadata.boundingBox.min[2],
+                    max: potreeMetadata.boundingBox.max[2],
+                    size: 4,
+                    type: 'float',
+                },
+            ],
         };
 
         this._metadata = result;
@@ -216,14 +227,11 @@ export default class Potree2Source extends PointCloudSourceBase {
                     nonNull(potreeNode.pointCount),
                     metadata.attributes,
                     metadata.scale,
-                    metadata.offset,
-                    new Vector3().fromArray(metadata.offset).add(potreeNode.volume.min),
-                    potreeNode.volume.getSize(new Vector3()),
-                    0,
                 );
                 break;
             case 'BROTLI':
             default:
+                // TODO
                 throw new Error('unsupported encoding: ' + metadata.encoding);
         }
 
@@ -233,9 +241,14 @@ export default class Potree2Source extends PointCloudSourceBase {
             result.positionBuffer.normalized,
         );
 
+        const origin = nonNull(potreeNode.volume).min;
+        // origin.sub(potreeNode.volume.getSize(new Vector3()));
+        // if (potreeNode.parent) {
+        // }
+
         return {
             localBoundingBox: result.localBoundingBox,
-            origin: nonNull(potreeNode.volume).min,
+            origin,
             position: positionBufferAttribute,
             pointCount: positionBufferAttribute.count,
             attributes: [], // TODO

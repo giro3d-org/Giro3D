@@ -5,7 +5,6 @@
  */
 
 import { Box3, Vector3 } from 'three';
-import { type Vector3Like } from 'three';
 
 import type { ParseResult } from './bin';
 import type { Potree2Attribute } from './Potree2Metadata';
@@ -15,8 +14,7 @@ function decodePositionAttribute(
     pointCount: number,
     bytesPerPoint: number,
     attributeByteOffset: number,
-    pointCloudScale: [number, number, number],
-    pointCloudOffset: [number, number, number],
+    scale: [number, number, number],
 ): { buffer: ParseResult['positionBuffer']; localBoundingBox: Box3 } {
     const buf = new ArrayBuffer(pointCount * 4 * 3);
     const positions = new Float32Array(buf);
@@ -28,21 +26,13 @@ function decodePositionAttribute(
     let minZ = +Infinity;
     let maxZ = -Infinity;
 
-    // TODO
-    pointCloudOffset = [0, 0, 0];
-
     for (let j = 0; j < pointCount; j++) {
         const ptOffset = j * bytesPerPoint;
+        const offset = ptOffset + attributeByteOffset;
 
-        const x =
-            view.getInt32(ptOffset + attributeByteOffset + 0, true) * pointCloudScale[0] +
-            pointCloudOffset[0]; // - min.x; // TODO
-        const y =
-            view.getInt32(ptOffset + attributeByteOffset + 4, true) * pointCloudScale[1] +
-            pointCloudOffset[1]; // - min.y; // TODO
-        const z =
-            view.getInt32(ptOffset + attributeByteOffset + 8, true) * pointCloudScale[2] +
-            pointCloudOffset[2]; // - min.z; // TODO
+        const x = view.getInt32(offset + 0, true) * scale[0];
+        const y = view.getInt32(offset + 4, true) * scale[1];
+        const z = view.getInt32(offset + 8, true) * scale[2];
 
         positions[3 * j + 0] = x;
         positions[3 * j + 1] = y;
@@ -73,31 +63,13 @@ export function decodeUncompressedBuffer(
     pointCount: number,
     attributes: Potree2Attribute[],
     scale: number[],
-    offset: [number, number, number],
-    min: Vector3Like,
-    size: Vector3Like,
-    attributeIndex: number,
 ): ParseResult {
     const attrOffset = 0;
     let bytesPerPoint = 0;
 
     for (let i = 0; i < attributes.length; i++) {
         bytesPerPoint += attributes[i].size;
-
-        // TODO
-        // attributeOffset += attributes[i].size;
     }
-
-    // TODO
-    // if (attributeIndex > 0) {
-    //     for (let i = 0; i < attributeIndex - 1; i++) {
-    //         attributeOffset += attributes[i].size;
-    //     }
-    // }
-
-    // const attribute = attributes[attributeIndex];
-    // const { offset, min } = attribute;
-
     const view = new DataView(buffer);
 
     const positionAttr = decodePositionAttribute(
@@ -105,8 +77,7 @@ export function decodeUncompressedBuffer(
         pointCount,
         bytesPerPoint,
         attrOffset,
-        scale,
-        offset,
+        scale as [number, number, number],
     );
 
     return {
