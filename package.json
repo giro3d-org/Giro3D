@@ -96,7 +96,7 @@
         "wkt-parser": "^1.5.2"
     },
     "peerDependencies": {
-        "ol": "10",
+        "ol": "^10.8.0",
         "proj4": "^2.19.0",
         "three": "^0.170.0"
     },
