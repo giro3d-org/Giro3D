@@ -42,7 +42,12 @@ import OrientedImageCollection, {
     type OrientedImageCollectionSource,
     type OrientedImageSource,
 } from './OrientedImageCollection';
-import PointCloud, { PointCloudOptions, UnsupportedAttributeError } from './PointCloud';
+import PointCloud, {
+    PointCloudOptions,
+    UnsupportedAttributeError,
+    ActiveAttribute,
+    ActiveAttributeDefinition,
+} from './PointCloud';
 import Shape, { ShapeOptions, ShapeExportOptions, ShapeFontWeight, ShapePickResult } from './Shape';
 import SphericalPanorama, { SphericalPanoramaOptions } from './SphericalPanorama';
 import Tiles3D, {
@@ -58,6 +63,8 @@ export {
     AtmosphereOptions,
     AxisGrid,
     AxisGridOptions,
+    ActiveAttribute,
+    ActiveAttributeDefinition,
     AxisGridOrigin,
     AxisGridStyle,
     AxisGridTicks,

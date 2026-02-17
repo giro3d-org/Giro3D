@@ -481,6 +481,7 @@ class PointCloudMaterial extends ShaderMaterial {
         }
     }
 
+    /** @internal */
     public override onBeforeRender(_renderer: WebGLRenderer, _scene: Scene, camera: Camera): void {
         this.uniforms.opacity.value = this.opacity;
 
@@ -495,6 +496,7 @@ class PointCloudMaterial extends ShaderMaterial {
         }
     }
 
+    /** @internal */
     public override copy(source: PointCloudMaterial): this {
         super.copy(source);
 

@@ -191,7 +191,7 @@ interface NodeWithInfo extends PointCloudNode {
     info: NodeInfo;
 }
 
-interface ActiveAttribute {
+export interface ActiveAttribute {
     readonly attribute: PointCloudAttribute;
     weight: number;
 
@@ -199,7 +199,7 @@ interface ActiveAttribute {
     readonly geometrySlot: 0 | 1 | 2;
 }
 
-interface ActiveAttributeDefinition {
+export interface ActiveAttributeDefinition {
     name: string;
     weight: number;
 }

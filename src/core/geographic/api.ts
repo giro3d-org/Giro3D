@@ -13,11 +13,12 @@ import type Sun from './Sun';
 
 import CoordinateSystem from './CoordinateSystem';
 import SRID from './SRID';
-import { AngularUnit, LinearUnit, Unit } from './Unit';
+import { AngularUnit, LinearUnit, Unit, UnitType } from './Unit';
 
 export {
     CoordinateParameters,
     Coordinates,
+    UnitType,
     Unit,
     AngularUnit,
     LinearUnit,

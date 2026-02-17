@@ -71,12 +71,14 @@ export default class ConstantSizeSphere extends Mesh {
         this.radius = options?.radius ?? DEFAULT_RADIUS;
     }
 
+    /** @internal */
     public override raycast(raycaster: Raycaster, intersects: Intersection[]): void {
         if (this.enableRaycast) {
             super.raycast(raycaster, intersects);
         }
     }
 
+    /** @internal */
     public override onBeforeRender(renderer: WebGLRenderer, _scene: Scene, camera: Camera): void {
         this.updateWorldMatrix(true, false);
 
