@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { execSync } from 'child_process';
+import { exec, execSync } from 'child_process';
 import chokidar from 'chokidar';
 import { program } from 'commander';
 import esMain from 'es-main';
@@ -28,6 +28,7 @@ const tmpDir = path.join(rootDir, 'build', '.cache', 'apidoc');
  * @property {string} output
  * @property {string} version
  * @property {boolean} lintOnly
+ * @property {boolean} watch
  */
 
 export const defaultParameters = {
@@ -81,38 +82,19 @@ export async function buildApidoc(parameters) {
     if (parameters.lintOnly) {
         execSync(`npx typedoc --options ${typedocConfigPath} --emit none`);
     } else {
-        execSync(`npx typedoc --options ${typedocConfigPath}`);
+        if (parameters.watch) {
+            exec(`npx typedoc --watch --options ${typedocConfigPath}`);
+        } else {
+            execSync(`npx typedoc --options ${typedocConfigPath}`);
+        }
     }
     logOk('apidoc', `Built documentation at ${parameters.output}`);
 }
 
 /**
  * @param {Parameters} parameters
- * @param {string} sourceFile
- */
-async function handleModification(parameters, sourceFile) {
-    logWatched('apidoc', path.basename(sourceFile));
-    await buildApidoc(parameters);
-}
-
-/**
- * @param {Parameters} parameters
- */
-async function watchApidoc(parameters) {
-    chokidar
-        .watch([sourceDir, apidocDir], {
-            depth: 99,
-            awaitWriteFinish: true,
-            interval: 200,
-        })
-        .on('change', p => handleModification(parameters, p));
-}
-
-/**
- * @param {Parameters} parameters
  */
 async function serveApidoc(parameters) {
-    await watchApidoc(parameters);
     log('apidoc', 'Starting server...');
     return createStaticServer(parameters.output, path.join(parameters.output, '..'));
 }
@@ -142,20 +124,17 @@ if (esMain(import.meta)) {
     options.output = path.resolve(pwd, options.output);
 
     /** @type {Parameters} */
-    // @ts-expect-error conversion
-    const params = options;
+    const params = { ...options, clean, watch };
 
-    run(params, clean, watch);
+    run(params);
 }
 
 /**
  * @param {Parameters} params
- * @param {boolean} clean
- * @param {boolean} watch
  */
-async function run(params, clean, watch) {
+async function run(params) {
     if (!params.lintOnly) {
-        if (clean) {
+        if (params.clean) {
             await cleanApidoc(params);
         }
 
@@ -165,7 +144,7 @@ async function run(params, clean, watch) {
     }
 
     await buildApidoc(params);
-    if (watch) {
+    if (params.watch) {
         await serveApidoc(params);
     }
 }
