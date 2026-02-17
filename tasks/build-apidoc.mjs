@@ -58,7 +58,10 @@ export async function buildApidoc(parameters) {
     fse.mkdirpSync(tmpDir);
     const typedocConfigPath = path.join(tmpDir, 'typedoc.json');
 
-    fse.writeJsonSync(typedocConfigPath, {
+    /**
+     * @type {import('typedoc').TypeDocOptions}
+     */
+    const config = {
         $schema: 'https://typedoc.org/schema.json',
         entryPoints: [path.join(sourceDir, 'api.ts')],
         tsconfig: path.join(rootDir, 'tsconfig.json'),
@@ -77,7 +80,9 @@ export async function buildApidoc(parameters) {
         releaseName: parameters.releaseName,
         releaseVersion: parameters.version,
         customFooterHtml: `Copyright <strong>Giro3D</strong> 2018-${new Date().getFullYear()}, licensed under <a target="blank" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA</href>`,
-    });
+    };
+
+    fse.writeJsonSync(typedocConfigPath, config);
 
     log('apidoc', 'Building documentation...');
     if (parameters.lintOnly) {
