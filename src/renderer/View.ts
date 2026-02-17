@@ -70,7 +70,7 @@ interface ViewEvents {
  * Returns the distance from the center of the bounding sphere so
  * that the perspective camera's frustum view fits the sphere.
  * @param camera - The perspective camera.
- * @param bounds - The bounds to encompass.
+ * @param radius - The sphere radius.
  */
 export function computeDistanceToFitSphere(camera: PerspectiveCamera, radius: number): number {
     // Simple trigonometry
@@ -86,7 +86,7 @@ export function computeDistanceToFitSphere(camera: PerspectiveCamera, radius: nu
 /**
  * Computes the zoom value so that the sphere fits in the orthographic camera's frustum.
  * @param camera - The orthographic camera.
- * @param sphere - The sphere to fit.
+ * @param radius - The sphere radius.
  */
 export function computeZoomToFitSphere(camera: OrthographicCamera, radius: number): number {
     const camWidth = camera.right - camera.left;

@@ -143,7 +143,7 @@ export interface RenderToBufferOptions {
     /**
      * The type of pixels in the buffer.
      *
-     * @defaultvalue `UnsignedByteType`.
+     * @defaultValue `UnsignedByteType`.
      */
     datatype?: TextureDataType;
     /** partial zone to render. If undefined, the whole viewport is used. */

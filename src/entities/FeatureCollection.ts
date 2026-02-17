@@ -571,7 +571,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         return tile;
     }
 
-    public override preUpdate(_: Context, changeSources: Set<unknown>): FeatureTile[] {
+    public override preUpdate(_: Context, changeSources: Set<unknown>): unknown[] {
         if (changeSources.has(undefined) || changeSources.size === 0) {
             return this._level0Nodes;
         }

@@ -202,7 +202,7 @@ function isObject3D(o: unknown): o is Object3D {
 /**
  * The instance is the core component of Giro3D. It encapsulates the 3D scene,
  * the current camera and one or more {@link Entity | entities},
- * such as a {@link Map}.
+ * such as a {@link entities.Map}.
  *
  * ```js
  * // Create a Giro3D instance in the EPSG:3857 coordinate system:

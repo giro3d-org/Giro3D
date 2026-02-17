@@ -59,11 +59,11 @@ export interface EntityPreprocessOptions {
  * ### The update methods
  *
  * This class exposes three methods to update the object:
- * - {@link Entity.preUpdate}
+ * - {@link preUpdate}
  * to determine which _parts_ of the object should actually be updated.
- * - {@link Entity.update} called for each part returned
+ * - {@link update} called for each part returned
  * by `preUpdate()`
- * - {@link Entity.postUpdate} to finalize
+ * - {@link postUpdate} to finalize
  * the update step.
  *
  * ### A note on "parts"
@@ -312,7 +312,7 @@ abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserDa
     }
 
     /**
-     * Method called after {@link Entity.update}.
+     * Method called after {@link update}.
      *
      * @param context - the update context.
      * @param changeSources - the objects that triggered an update step.
