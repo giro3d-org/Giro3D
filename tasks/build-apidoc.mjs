@@ -23,6 +23,13 @@ const apidocDir = path.join(rootDir, 'apidoc');
 const sourceDir = path.join(rootDir, 'src');
 const tmpDir = path.join(rootDir, 'build', '.cache', 'apidoc');
 
+/**
+ * @typedef {object} Parameters
+ * @property {string} output
+ * @property {string} version
+ * @property {boolean} lintOnly
+ */
+
 export const defaultParameters = {
     output: path.join(rootDir, 'build', 'site', 'next', 'apidoc'),
     clean: true,
@@ -30,12 +37,18 @@ export const defaultParameters = {
     releaseName: 'next',
 };
 
+/**
+ * @param {Parameters} parameters
+ */
 export async function cleanApidoc(parameters) {
     log('apidoc', 'Cleaning output directory...');
     fse.removeSync(parameters.output);
     fse.removeSync(tmpDir);
 }
 
+/**
+ * @param {Parameters} parameters
+ */
 export async function buildApidoc(parameters) {
     if (!parameters.version) {
         parameters.version = await getPackageVersion();
@@ -73,11 +86,18 @@ export async function buildApidoc(parameters) {
     logOk('apidoc', `Built documentation at ${parameters.output}`);
 }
 
+/**
+ * @param {Parameters} parameters
+ * @param {string} sourceFile
+ */
 async function handleModification(parameters, sourceFile) {
     logWatched('apidoc', path.basename(sourceFile));
     await buildApidoc(parameters);
 }
 
+/**
+ * @param {Parameters} parameters
+ */
 async function watchApidoc(parameters) {
     chokidar
         .watch([sourceDir, apidocDir], {
@@ -88,6 +108,9 @@ async function watchApidoc(parameters) {
         .on('change', p => handleModification(parameters, p));
 }
 
+/**
+ * @param {Parameters} parameters
+ */
 async function serveApidoc(parameters) {
     await watchApidoc(parameters);
     log('apidoc', 'Starting server...');
@@ -118,18 +141,31 @@ if (esMain(import.meta)) {
     const pwd = process.cwd();
     options.output = path.resolve(pwd, options.output);
 
-    if (!options.lintOnly) {
+    /** @type {Parameters} */
+    // @ts-expect-error conversion
+    const params = options;
+
+    run(params, clean, watch);
+}
+
+/**
+ * @param {Parameters} params
+ * @param {boolean} clean
+ * @param {boolean} watch
+ */
+async function run(params, clean, watch) {
+    if (!params.lintOnly) {
         if (clean) {
-            await cleanApidoc(options);
+            await cleanApidoc(params);
         }
 
         await copyAssets({
-            output: path.join(options.output, '..'),
+            output: path.join(params.output, '..'),
         });
     }
 
-    await buildApidoc(options);
+    await buildApidoc(params);
     if (watch) {
-        await serveApidoc(options);
+        await serveApidoc(params);
     }
 }
