@@ -70,6 +70,7 @@ export async function buildApidoc(parameters) {
         basePath: sourceDir,
         customCss: path.join(apidocDir, 'theme.css'),
         titleLink: '/',
+        excludeExternals: true,
         excludeInternal: true,
         excludePrivate: true,
         navigationLinks: {},
