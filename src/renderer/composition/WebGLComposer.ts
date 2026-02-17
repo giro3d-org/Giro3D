@@ -28,7 +28,7 @@ import {
 
 import Interpretation from '../../core/layer/Interpretation';
 import Rect from '../../core/Rect';
-import Capabilities from '../../core/system/Capabilities';
+import Capabilities from '../../utils/Capabilities';
 import { isMesh, isTexture } from '../../utils/predicates';
 import TextureGenerator from '../../utils/TextureGenerator';
 import MemoryTracker from '../MemoryTracker';
