@@ -64,7 +64,7 @@ export interface GlobeControlsOptions {
 }
 
 /**
- * Camera controls for a {@link Globe}. Internally, this wraps `3d-tiles-renderer`'s own `GlobeControls`.
+ * Camera controls for a {@link entities.Globe}. Internally, this wraps `3d-tiles-renderer`'s own `GlobeControls`.
  */
 export default class GlobeControls extends EventDispatcher<GlobeControlsEvents> {
     private readonly _controls: WrappedControls;

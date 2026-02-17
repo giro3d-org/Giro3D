@@ -107,8 +107,7 @@ export default class ConcurrentDownloader {
      * Fetches the resource. If a request to the same URL is already started, returns the promise
      * to the first request instead.
      * @param url - The URL to fetch.
-     * @param signal - Optional abort signal. If specified, it will be attached to the existing request.
-     * Only when _all_ signals attached to this request are aborted, is the request aborted.
+     * @param options - Optional settings.
      * @returns A response that can be safely reused across multiple calls.
      */
     public async fetch(url: string, options?: FetchOptions): Promise<Response> {

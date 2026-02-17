@@ -197,8 +197,6 @@ class TileMesh
 
     /**
      * Creates an instance of TileMesh.
-     *
-     * @param options - Constructor options.
      */
     public constructor(params: {
         geometryBuilder: TileGeometryBuilder<TileGeometry>;

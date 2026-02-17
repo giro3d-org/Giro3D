@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { execSync } from 'child_process';
+import { exec, execSync } from 'child_process';
 import chokidar from 'chokidar';
 import { program } from 'commander';
 import esMain from 'es-main';
@@ -23,6 +23,14 @@ const apidocDir = path.join(rootDir, 'apidoc');
 const sourceDir = path.join(rootDir, 'src');
 const tmpDir = path.join(rootDir, 'build', '.cache', 'apidoc');
 
+/**
+ * @typedef {object} Parameters
+ * @property {string} output
+ * @property {string} version
+ * @property {boolean} lintOnly
+ * @property {boolean} watch
+ */
+
 export const defaultParameters = {
     output: path.join(rootDir, 'build', 'site', 'next', 'apidoc'),
     clean: true,
@@ -30,12 +38,18 @@ export const defaultParameters = {
     releaseName: 'next',
 };
 
+/**
+ * @param {Parameters} parameters
+ */
 export async function cleanApidoc(parameters) {
     log('apidoc', 'Cleaning output directory...');
     fse.removeSync(parameters.output);
     fse.removeSync(tmpDir);
 }
 
+/**
+ * @param {Parameters} parameters
+ */
 export async function buildApidoc(parameters) {
     if (!parameters.version) {
         parameters.version = await getPackageVersion();
@@ -44,7 +58,10 @@ export async function buildApidoc(parameters) {
     fse.mkdirpSync(tmpDir);
     const typedocConfigPath = path.join(tmpDir, 'typedoc.json');
 
-    fse.writeJsonSync(typedocConfigPath, {
+    /**
+     * @type {import('typedoc').TypeDocOptions}
+     */
+    const config = {
         $schema: 'https://typedoc.org/schema.json',
         entryPoints: [path.join(sourceDir, 'api.ts')],
         tsconfig: path.join(rootDir, 'tsconfig.json'),
@@ -56,40 +73,34 @@ export async function buildApidoc(parameters) {
         basePath: sourceDir,
         customCss: path.join(apidocDir, 'theme.css'),
         titleLink: '/',
+        excludeExternals: true,
         excludeInternal: true,
         excludePrivate: true,
         navigationLinks: {},
         releaseName: parameters.releaseName,
         releaseVersion: parameters.version,
         customFooterHtml: `Copyright <strong>Giro3D</strong> 2018-${new Date().getFullYear()}, licensed under <a target="blank" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA</href>`,
-    });
+    };
+
+    fse.writeJsonSync(typedocConfigPath, config);
 
     log('apidoc', 'Building documentation...');
     if (parameters.lintOnly) {
         execSync(`npx typedoc --options ${typedocConfigPath} --emit none`);
     } else {
-        execSync(`npx typedoc --options ${typedocConfigPath}`);
+        if (parameters.watch) {
+            exec(`npx typedoc --watch --options ${typedocConfigPath}`);
+        } else {
+            execSync(`npx typedoc --options ${typedocConfigPath}`);
+        }
     }
     logOk('apidoc', `Built documentation at ${parameters.output}`);
 }
 
-async function handleModification(parameters, sourceFile) {
-    logWatched('apidoc', path.basename(sourceFile));
-    await buildApidoc(parameters);
-}
-
-async function watchApidoc(parameters) {
-    chokidar
-        .watch([sourceDir, apidocDir], {
-            depth: 99,
-            awaitWriteFinish: true,
-            interval: 200,
-        })
-        .on('change', p => handleModification(parameters, p));
-}
-
+/**
+ * @param {Parameters} parameters
+ */
 async function serveApidoc(parameters) {
-    await watchApidoc(parameters);
     log('apidoc', 'Starting server...');
     return createStaticServer(parameters.output, path.join(parameters.output, '..'));
 }
@@ -118,18 +129,28 @@ if (esMain(import.meta)) {
     const pwd = process.cwd();
     options.output = path.resolve(pwd, options.output);
 
-    if (!options.lintOnly) {
-        if (clean) {
-            await cleanApidoc(options);
+    /** @type {Parameters} */
+    const params = { ...options, clean, watch };
+
+    run(params);
+}
+
+/**
+ * @param {Parameters} params
+ */
+async function run(params) {
+    if (!params.lintOnly) {
+        if (params.clean) {
+            await cleanApidoc(params);
         }
 
         await copyAssets({
-            output: path.join(options.output, '..'),
+            output: path.join(params.output, '..'),
         });
     }
 
-    await buildApidoc(options);
-    if (watch) {
-        await serveApidoc(options);
+    await buildApidoc(params);
+    if (params.watch) {
+        await serveApidoc(params);
     }
 }

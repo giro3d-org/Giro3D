@@ -17,6 +17,7 @@ import type RenderingOptions from './RenderingOptions';
 import type View from './View';
 import type { ExternalControls } from './View';
 
+import C3DEngine from './c3DEngine';
 import ConstantSizeSphere from './ConstantSizeSphere';
 import MemoryTracker from './MemoryTracker';
 import {
@@ -28,6 +29,7 @@ import {
 export {
     ASPRS_CLASSIFICATIONS,
     Classification,
+    C3DEngine,
     ConstantSizeSphere,
     ExternalControls,
     IntersectingVolume,

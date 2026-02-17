@@ -1940,7 +1940,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
      * sampling coordinate is not inside the map's extent.
      *
      * Note: sampling might return more than one sample for any given coordinate. You can sort them
-     * by {@link entities.ElevationSample.resolution | resolution} to select the best sample for your needs.
+     * by {@link core.ElevationSample.resolution | resolution} to select the best sample for your needs.
      * @param options - The options.
      * @param result - The result object to populate with the samples. If none is provided, a new
      * empty result is created. The existing samples in the array are not removed. Useful to

@@ -1507,7 +1507,7 @@ export default class Shape<UserData extends EntityUserData = EntityUserData> ext
 
     /**
      * Gets or sets the font weight.
-     * @defaultValue {@link DEFAULT_FONT_WEIGHT}
+     * @defaultValue "bold"
      */
     public get fontWeight(): ShapeFontWeight {
         return this._fontWeight;

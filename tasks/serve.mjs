@@ -18,6 +18,12 @@ export const defaultParameters = {
     siteDirectory: path.join(baseDir, '..', 'build', 'site'),
 };
 
+/**
+ * @param {string} rootDir
+ * @param {string} [siteDir]
+ * @param {string[]} otherStaticPaths
+ * @returns
+ */
 export function createStaticServer(rootDir, siteDir = undefined, otherStaticPaths = []) {
     const staticPaths = [
         {

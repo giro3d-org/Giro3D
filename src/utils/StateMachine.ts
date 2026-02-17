@@ -15,7 +15,7 @@ export type TransitionCallback<S, T> = (params: {
 
 export type Transition<T> = [T, T];
 
-type State = number | string;
+export type State = number | string;
 
 /**
  * A simple state machine that supports a list of legal transitions, as well as callbacks

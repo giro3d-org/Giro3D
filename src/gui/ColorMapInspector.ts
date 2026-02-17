@@ -21,7 +21,6 @@ const DEFAULT_COLORMAP = new ColorMap({ colors: [], min: 0, max: 1 });
  * Inspector for a {@link ColorMap}.
  */
 class ColorMapInspector extends Panel {
-    private readonly _notify: () => void;
     private readonly _colorMapFn: () => ColorMap | null;
 
     public get colorMap(): ColorMap {
@@ -39,7 +38,6 @@ class ColorMapInspector extends Panel {
     /**
      * @param gui - The GUI.
      * @param instance - The Giro3D instance.
-     * @param layer - The color map owner.
      * @param colorMapFn - The color map to inspect.
      */
     public constructor(
@@ -49,7 +47,6 @@ class ColorMapInspector extends Panel {
         notify: () => void,
     ) {
         super(gui, instance, 'Color map');
-        this._notify = notify;
         this._colorMapFn = colorMapFn;
 
         this.addController(this.colorMap, 'active').name('Enabled').onChange(notify);

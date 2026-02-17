@@ -24,6 +24,11 @@ let exitWithError = false;
 /** @type {Record<string, boolean>} */
 const visitedLinks = {};
 
+/**
+ * @param {URL} uri
+ * @param {string} relativeLink
+ * @param {string} emitterPath
+ */
 function checkPath(uri, relativeLink, emitterPath) {
     const filename = uri.toString().replace('file://', '').replace(uri.hash, '').trim();
 
@@ -98,6 +103,11 @@ function validateRelativeLink(href, emitterAbsolutePath, relativePath) {
     checkPath(uri, href, relativePath);
 }
 
+/**
+ * @param {string} absolutePath
+ * @param {string} relativePath
+ * @param {string} siteRoot
+ */
 function processHtmlFile(absolutePath, relativePath, siteRoot) {
     const html = fse.readFileSync(absolutePath, { encoding: 'utf-8' });
     const dom = new jsdom.JSDOM(html);
@@ -143,10 +153,10 @@ if (esMain(import.meta)) {
     }
 
     if (exitWithError) {
-        logError('Broken links were found in the generated website.');
+        logError('validate-hyperlinks', 'Broken links were found in the generated website.');
         exit(1);
     } else {
-        logOk('No broken links found');
+        logOk('validate-hyperlinks', 'No broken links found');
         exit(0);
     }
 }

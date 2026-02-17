@@ -13,6 +13,10 @@ import { MathUtils } from 'three';
 
 import { log, logOk, logWarning } from './utils.mjs';
 
+/**
+ * @param {number} bytes
+ * @returns {string}
+ */
 function formatBytes(bytes) {
     if (bytes < 2048) {
         return `${bytes} B`;
