@@ -51,8 +51,8 @@ import type * as decoder from './imageDecoderWorker';
 
 import Interpretation, { Mode } from '../core/layer/Interpretation';
 import { type GetMemoryUsageContext, type MemoryUsageReport } from '../core/MemoryUsage';
-import Capabilities from '../core/system/Capabilities';
 import EmptyTexture from '../renderer/EmptyTexture';
+import Capabilities from './Capabilities';
 import {
     createPixelBuffer,
     createTypedArrayFromBuffer,

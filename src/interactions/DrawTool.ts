@@ -100,7 +100,7 @@ function isOperationAllowed<K extends keyof Permissions>(
     shape: Shape<ShapeUserData>,
     constraint: K,
 ): boolean {
-    if (!shape.userData.permissions) {
+    if (shape.userData.permissions == null) {
         return true;
     }
 
@@ -355,9 +355,10 @@ function computeMarkerRadius(shape: Shape, type: 'vertex' | 'segment'): number {
     // bigger than the vertex. Otherwise, make it slightly bigger than the line.
     switch (type) {
         case 'vertex':
-            baseRadius = shape.showVertices
-                ? shape.vertexRadius + shape.borderWidth
-                : DEFAULT_MARKER_RADIUS;
+            baseRadius =
+                shape.showVertices === true
+                    ? shape.vertexRadius + shape.borderWidth
+                    : DEFAULT_MARKER_RADIUS;
             break;
         case 'segment':
             baseRadius = shape.lineWidth / 2 + shape.borderWidth;
@@ -395,7 +396,7 @@ function computeMarkerRadius(shape: Shape, type: 'vertex' | 'segment'): number {
  * last vertex, the other one is automatically moved at the same position, to ensure the shape
  * remains closed.
  */
-export default class DrawTool extends EventDispatcher<DrawToolEventMap> implements Disposable {
+export class DrawTool extends EventDispatcher<DrawToolEventMap> implements Disposable {
     private readonly _domElement: HTMLElement;
     private readonly _instance: Instance;
     private readonly _markerMaterial: MeshBasicMaterial;
@@ -458,7 +459,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
     }
 
     private hideVertexMarker(): void {
-        if (this._selectedVertexMarker) {
+        if (this._selectedVertexMarker != null) {
             this._selectedVertexMarker.visible = false;
         }
 
@@ -471,7 +472,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
         radius: number,
         opacity: number,
     ): void {
-        if (!this._selectedVertexMarker) {
+        if (this._selectedVertexMarker == null) {
             this._selectedVertexMarker = new ConstantSizeSphere({
                 radius: radius,
                 material: this._markerMaterial,
@@ -675,7 +676,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
             }
 
             if (isDragging) {
-                if (pickedShape && pickedVertexIndex != null) {
+                if (pickedShape != null && pickedVertexIndex != null) {
                     const position = pickNonShapes(e)?.point;
                     if (position) {
                         pickedShape.updatePoint(pickedVertexIndex, position);
@@ -685,7 +686,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
                             newPosition: position,
                         });
 
-                        if (this._selectedVertexMarker) {
+                        if (this._selectedVertexMarker != null) {
                             this.displayVertexMarker(
                                 pickedShape,
                                 position,
@@ -790,7 +791,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
             let removeListeners: (() => void) | undefined = undefined;
 
             const finalize = (shapeToFinalize: Shape | null): void => {
-                if (shapeToFinalize) {
+                if (shapeToFinalize != null) {
                     shapeToFinalize.pickableLabels = pickableLabels;
                 }
                 if (removeListeners) {
@@ -1189,7 +1190,7 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
      */
     public dispose(): void {
         this._markerMaterial.dispose();
-        if (this._selectedVertexMarker) {
+        if (this._selectedVertexMarker != null) {
             this._instance.remove(this._selectedVertexMarker);
             this._selectedVertexMarker = undefined;
         }
@@ -1197,3 +1198,5 @@ export default class DrawTool extends EventDispatcher<DrawToolEventMap> implemen
         window.removeEventListener('mousemove', this._mouseEventHandler);
     }
 }
+
+export default DrawTool;

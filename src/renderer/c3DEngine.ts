@@ -26,7 +26,7 @@ import {
 } from 'three';
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
-import Capabilities from '../core/system/Capabilities';
+import Capabilities from '../utils/Capabilities';
 import TextureGenerator from '../utils/TextureGenerator';
 import RenderingOptions from './RenderingOptions';
 import RenderPipeline from './RenderPipeline';

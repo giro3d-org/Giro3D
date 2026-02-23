@@ -62,7 +62,6 @@ import { isPickableFeatures } from '../core/picking/PickableFeatures';
 import traversePickingCircle from '../core/picking/PickingCircle';
 import pickTilesAt, { type MapPickResult } from '../core/picking/PickTilesAt';
 import ScreenSpaceError from '../core/ScreenSpaceError';
-import Capabilities from '../core/system/Capabilities';
 import {
     DEFAULT_ENABLE_STITCHING,
     DEFAULT_ENABLE_TERRAIN,
@@ -81,6 +80,7 @@ import LayeredMaterial, {
 } from '../renderer/LayeredMaterial';
 import ShadowLayeredMaterial from '../renderer/ShadowLayeredMaterial';
 import { computeDistanceToFitSphere, computeZoomToFitSphere } from '../renderer/View';
+import Capabilities from '../utils/Capabilities';
 import { isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
 import TextureGenerator from '../utils/TextureGenerator';
 import { nonNull } from '../utils/tsutils';
