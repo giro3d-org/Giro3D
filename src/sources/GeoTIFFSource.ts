@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-import type QuickLRU from 'quick-lru';
 import type { TextureDataType, TypedArray } from 'three';
 
 import {
@@ -96,7 +95,7 @@ interface CachedBlock {
 function isMask(image: GeoTIFFImage): boolean {
     const FILETYPE_MASK = 4;
     const fileDirectory = image.fileDirectory;
-    const type = fileDirectory.NewSubfileType ?? 0;
+    const type = fileDirectory.getValue('NewSubfileType') ?? 0;
 
     return (type & FILETYPE_MASK) === FILETYPE_MASK;
 }
@@ -113,7 +112,8 @@ function canReadRGB(image: GeoTIFFImage): boolean {
         return false;
     }
 
-    const interpretation = image.fileDirectory.PhotometricInterpretation;
+    const ifd = image.fileDirectory;
+    const interpretation: number = ifd.getValue('PhotometricInterpretation');
     const interpretations = geotiffGlobals.photometricInterpretations;
     return (
         interpretation === interpretations.CMYK ||
@@ -340,13 +340,18 @@ class GeoTIFFSource extends ImageSource {
         this._httpTimeout = options.httpTimeout ?? DEFAULT_TIMEOUT;
     }
 
-    private getInternalCache(): QuickLRU<number, CachedBlock> | undefined {
+    private getInternalCache(): Map<number, CachedBlock> | undefined {
         if (!this._tiffImage) {
             return undefined;
         }
 
-        const source = this._tiffImage.source as { blockCache: QuickLRU<number, CachedBlock> };
-        return source.blockCache;
+        const source = this._tiffImage.source;
+
+        if ('blockCache' in source && source.blockCache instanceof Map) {
+            return source.blockCache;
+        }
+
+        return undefined;
     }
 
     public override getMemoryUsage(context: GetMemoryUsageContext): void {
