@@ -95,12 +95,12 @@ class MapInspector extends EntityInspector<Map> {
         this.reachableTiles = 0;
         this.visibleTiles = 0;
 
+        const notify = (): void => this.notify(this.entity);
+
         this.addController(this, 'side', sides)
             .name('Sidedness')
             .onChange(v => this.setSidedness(v));
-        this.addController(this.entity, 'depthTest')
-            .name('Depth test')
-            .onChange(() => this.notify(this.entity));
+        this.addController(this.entity, 'depthTest').name('Depth test').onChange(notify);
         this.addController(this, 'visibleTiles').name('Visible tiles');
         this.addController(this, 'reachableTiles').name('Reachable tiles');
         // @ts-expect-error private property
@@ -108,18 +108,18 @@ class MapInspector extends EntityInspector<Map> {
         if (this.entity.elevationRange) {
             this.addController(this.entity.elevationRange, 'min')
                 .name('Elevation range minimum')
-                .onChange(() => this.notify(map));
+                .onChange(notify);
 
             this.addController(this.entity.elevationRange, 'max')
                 .name('Elevation range maximum')
-                .onChange(() => this.notify(map));
+                .onChange(notify);
         }
         if (isGlobe(this.entity)) {
-            this.addController(this.entity, 'horizonCulling');
+            this.addController(this.entity, 'horizonCulling').onChange(notify);
         }
         this.addController(this, 'completePaints');
-        this.addController(this.entity, 'castShadow');
-        this.addController(this.entity, 'receiveShadow');
+        this.addController(this.entity, 'castShadow').onChange(notify);
+        this.addController(this.entity, 'receiveShadow').onChange(notify);
         this.addController(this, 'showGrid')
             .name('Show grid')
             .onChange(v => this.toggleGrid(v));
@@ -133,10 +133,10 @@ class MapInspector extends EntityInspector<Map> {
             .onChange(v => this.updateBackgroundOpacity(v));
         this.addController(this.entity, 'showTileOutlines')
             .name('Show tiles outlines')
-            .onChange(() => this.notify());
+            .onChange(notify);
         this.addColorController(this.entity, 'tileOutlineColor')
             .name('Tile outline color')
-            .onChange(() => this.notify());
+            .onChange(notify);
         this.addController(this, 'showExtent')
             .name('Show extent')
             .onChange(() => this.toggleExtent());
@@ -149,18 +149,22 @@ class MapInspector extends EntityInspector<Map> {
             .min(0.1)
             .max(3)
             .step(0.1)
-            .onChange(() => this.notify());
+            .onChange(notify);
 
         this.tileInfoPanel = new TileInfoPanel(this.entity, this.gui, instance);
         this.terrainPanel = new MapTerrainPanel(this.entity, this.gui, instance);
 
         this.lightingPanel = new MapLightingPanel(this.entity.lighting, this.gui, instance);
+        this.lightingPanel.addEventListener('notify', notify);
 
         this.graticulePanel = new GraticulePanel(this.entity.graticule, this.gui, instance);
+        this.graticulePanel.addEventListener('notify', notify);
 
         this.contourLinePanel = new ContourLinePanel(this.entity.contourLines, this.gui, instance);
+        this.contourLinePanel.addEventListener('notify', notify);
 
         this.colorimetryPanel = new ColorimetryPanel(this.entity.colorimetry, this.gui, instance);
+        this.colorimetryPanel.addEventListener('notify', notify);
 
         this.addController(this, 'layerCount').name('Layer count');
         this.addController(this, 'renderState', ['Normal', 'Picking'])

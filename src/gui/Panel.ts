@@ -7,6 +7,8 @@
 import type GUI from 'lil-gui';
 import type { Controller } from 'lil-gui';
 
+import { EventDispatcher } from 'three';
+
 import type Instance from '../core/Instance';
 
 export interface TypedController<T> extends Controller {
@@ -33,10 +35,14 @@ function parsePascalCase(text: string): string {
     return result.join('');
 }
 
+export interface PanelEventMap {
+    notify: unknown;
+}
+
 /**
  * Base class for the panels in the inspector.
  */
-abstract class Panel {
+abstract class Panel extends EventDispatcher<PanelEventMap> {
     public gui: GUI;
     public instance: Instance;
     /** The controllers. */
@@ -66,6 +72,7 @@ abstract class Panel {
      * @param name - The name of the panel.
      */
     public constructor(parentGui: GUI, instance: Instance, name: string) {
+        super();
         this.gui = parentGui.addFolder(name);
         this.gui.close();
         this.instance = instance;
@@ -74,6 +81,7 @@ abstract class Panel {
 
     public notify(source: unknown = undefined): void {
         this.instance.notifyChange(source);
+        this.dispatchEvent({ type: 'notify' });
     }
 
     public collapse(): void {

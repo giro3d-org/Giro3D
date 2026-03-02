@@ -43,9 +43,9 @@ class CameraInspector extends Panel {
 
         this.addController(this.camera, 'type').name('Type');
         if (isPerspectiveCamera(this.camera)) {
-            this.addController(this.camera, 'fov').min(25).max(150).name('FOV');
+            this.addController(this.camera, 'fov').min(25).max(150).name('FOV').onChange(notify);
         } else if (isOrthographicCamera(this.camera)) {
-            this.addController(this.camera, 'zoom');
+            this.addController(this.camera, 'zoom').onChange(notify);
             this.addController(this.camera, 'left');
             this.addController(this.camera, 'right');
             this.addController(this.camera, 'top');
