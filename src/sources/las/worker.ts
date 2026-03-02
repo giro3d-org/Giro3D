@@ -132,6 +132,39 @@ function processDecodeFileMessage(msg: DecodeLazFileMessage): void {
         });
 }
 
+export function createLasView(
+    buffer: copc.Binary,
+    header: copc.Las.Extractor.PartialHeader,
+    eb?: copc.Las.ExtraBytes[],
+    include?: string[],
+): copc.View {
+    const view = copc.Las.View.create(buffer, header, eb, include);
+
+    if (eb) {
+        const newDimensions: copc.Dimension.Map = {};
+        for (const [name, dimension] of Object.entries(view.dimensions)) {
+            let actualDimension = dimension;
+            const extrabyte = eb.find(extra => extra.name === name);
+            if (extrabyte) {
+                if (extrabyte.type === 'signed' || extrabyte.type === 'unsigned') {
+                    if (
+                        (typeof extrabyte.scale === 'number' && extrabyte.scale !== 1) ||
+                        (typeof extrabyte.offset === 'number' && extrabyte.offset !== 0)
+                    ) {
+                        // If a LAS ExtraByte is a scaled integer, then we need to store its scaled value in a float,
+                        // otherwise we might lose precision.
+                        actualDimension = { type: 'float', size: 4 };
+                    }
+                }
+            }
+            newDimensions[name] = actualDimension;
+        }
+        view.dimensions = newDimensions;
+    }
+
+    return view;
+}
+
 export function readView(options: {
     view: copc.View;
     origin: { x: number; y: number; z: number };
@@ -185,7 +218,7 @@ function processReadViewMessage(msg: ReadViewMessage): void {
 
     decompressChunk(buffer, metadata)
         .then(bin => {
-            const view = copc.Las.View.create(bin, header, eb, include);
+            const view = createLasView(bin, header, eb, include);
 
             const payload = readView({ ...msg.payload, view });
 

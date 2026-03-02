@@ -43,6 +43,7 @@ import { defined, nonNull } from '../utils/tsutils';
 import { getLazPerf } from './las/config';
 import LASWorkerPool from './las/LASWorkerPool';
 import { readColor, readPosition, readScalarAttribute } from './las/readers';
+import { createLasView } from './las/worker';
 import { PointCloudSourceBase } from './PointCloudSource';
 import {
     EXPOSED_ATTRIBUTES,
@@ -396,7 +397,7 @@ export default class PotreeSource extends PointCloudSourceBase {
             decompressed = new Uint8Array(response);
         }
 
-        const view = Las.View.create(decompressed, header);
+        const view = createLasView(decompressed, header);
 
         const position = readPosition(view, node.volume.min, 1, null);
 
