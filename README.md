@@ -193,7 +193,7 @@ If you are interested in contributing to Giro3D, please read [CONTRIBUTING.md](C
 Giro3D is the successor of [iTowns](https://www.itowns-project.org/), an original work from [IGN](https://www.ign.fr/institut/identity-card) and [MATIS research laboratory](https://www.ensg.eu/MATIS-laboratory).
 It has been funded through various research programs involving the [French National Research Agency](https://anr.fr/en/), [Cap Digital](https://www.capdigital.com/en/), [The Sorbonne University](https://www.sorbonne-universite.fr/en), [Mines ParisTech](https://mines-paristech.eu/), [CNRS](https://www.cnrs.fr/en), [IFSTTAR](https://www.ifsttar.fr/en), [Région Auvergne-Rhône-Alpes](https://www.auvergnerhonealpes.fr/).
 
-Giro3D is currently maintained by [Oslandia](http://www.oslandia.com).
+Giro3D is currently maintained by [Oslandia](https://oslandia.com).
 
 ## No code with Piero
 

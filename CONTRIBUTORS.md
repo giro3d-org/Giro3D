@@ -31,7 +31,7 @@ The following people have contributed to Giro3D.
 - [My Digital Buildings](https://www.mydigitalbuildings.com/)
     - [Gabriel Touzalin](https://github.com/TheEmperorPenguin)
 
-- [Oslandia](http://www.oslandia.com)
+- [Oslandia](https://oslandia.com)
     - [Antoine Facchini](https://gitlab.com/antoinefacchini)
     - [Augustin Trancart](https://github.com/autra)
     - [Benoît Blanc](https://github.com/benoitblanc)
@@ -58,10 +58,10 @@ The following people have contributed to Giro3D.
 
 The following organizations supported Giro3D:
 
-- AtolCD (<http://www.atolcd.com>)
+- AtolCD (<https://www.atolcd.com>)
 - BPI France (<https://www.bpifrance.com/>)
-- IGN (<http://www.ign.fr>)
-- Oslandia (<http://www.oslandia.com>)
+- IGN (<https://www.ign.fr>)
+- Oslandia (<https://oslandia.com>)
 
 ---
 
