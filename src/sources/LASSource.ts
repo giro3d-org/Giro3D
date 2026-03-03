@@ -32,6 +32,7 @@ import { extractAttributes, getDimensionsToRead } from './las/dimension';
 import { getPerPointFilters, type DimensionFilter } from './las/filter';
 import LASWorkerPool from './las/LASWorkerPool';
 import { createBufferAttribute, readColor, readPosition, readScalarAttribute } from './las/readers';
+import { createLasView } from './las/worker';
 import { PointCloudSourceBase } from './PointCloudSource';
 
 export type Getter = () => Promise<Uint8Array>;
@@ -220,7 +221,7 @@ export default class LASSource extends PointCloudSourceBase {
             );
         }
 
-        const view = Las.View.create(decompressed, header, undefined, include);
+        const view = createLasView(decompressed, header, undefined, include);
 
         return view;
     }

@@ -31,7 +31,7 @@ import { extractAttributes, getDimensionsToRead } from './las/dimension';
 import { type DimensionFilter } from './las/filter';
 import LASWorkerPool from './las/LASWorkerPool';
 import { createBufferAttribute } from './las/readers';
-import { readView, type Metadata } from './las/worker';
+import { createLasView, readView, type Metadata } from './las/worker';
 import { PointCloudSourceBase } from './PointCloudSource';
 
 const deduplicatedQueue = new RequestQueue();
@@ -675,7 +675,7 @@ export default class COPCSource extends PointCloudSourceBase {
 
         signal?.throwIfAborted();
 
-        return Las.View.create(decoded, copc.header, copc.eb, include);
+        return createLasView(decoded, copc.header, copc.eb, include);
     }
 
     public getMemoryUsage(): void {
