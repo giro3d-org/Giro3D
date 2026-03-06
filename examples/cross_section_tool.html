@@ -1,0 +1,83 @@
+---
+title: Cross-section tool
+shortdesc: Use the <code>CrossSectionTool</code> to visualize cross-sections.
+longdesc: The <a href="../apidoc/classes/interactions.CrossSectionTool.html" target="_blank"><code>CrossSectionTool</code></a> helps managing features related to cross-sections and clipping planes, such as translation/rotation of the plane, adding and removing objects to clip, and enabling cross-section visualization through the stencil buffer. Keep in mind that clipping planes are a purely graphical mechanism that does not actually change what is loaded in the scene. In other words, an object can be entirely clipped and still keeping on processing its data normally.
+attribution: © <a target="_blank" href="https://www.mapbox.com/">Mapbox</a>, © <a target="_blank" href="https://ign.fr/">IGN</a>
+tags: [clipping]
+---
+
+<div class="side-pane-with-status-bar" class="pe-none">
+    <!--Parameters -->
+    <div class="card">
+        <div class="card-header">
+            Parameters
+            <button type="button" id="reset" class="btn btn-sm btn-primary rounded float-end">
+                reset
+            </button>
+        </div>
+
+        <div class="card-body">
+            <!-- Translation/Rotation selector -->
+            <div class="btn-group" id="button-transform">
+                <a href="#" class="btn btn-primary">
+                    <i class="bi bi-arrows-expand-vertical"></i> Translate</a
+                >
+                <a href="#" class="btn btn-primary"> <i class="bi bi-arrow-repeat"></i> Rotate</a>
+            </div>
+
+            <!-- Show Mapbox map -->
+            <div class="form-check form-switch mt-3">
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    checked="true"
+                    role="switch"
+                    id="show-mapbox"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="show-mapbox">Show Mapbox map</label>
+            </div>
+
+            <!-- Show IGN map -->
+            <div class="form-check form-switch mt-1">
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    checked="true"
+                    role="switch"
+                    id="show-ign"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="show-ign">Show IGN map</label>
+            </div>
+
+            <!-- Show plane helper -->
+            <div class="form-check form-switch mt-1">
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    checked="true"
+                    role="switch"
+                    id="show-plane"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="show-plane">Show plane</label>
+            </div>
+
+            <!-- Angle increment -->
+            <div class="input-group mt-3" id="attribute-group">
+                <label class="input-group-text" for="attribute">Angle snap (degrees)</label>
+                <input
+                    type="number"
+                    min="0"
+                    max="180"
+                    value="0"
+                    step="1"
+                    class="form-control"
+                    id="angle-snap"
+                    autocomplete="off"
+                />
+            </div>
+        </div>
+    </div>
+</div>

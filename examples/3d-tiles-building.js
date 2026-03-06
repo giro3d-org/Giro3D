@@ -4,7 +4,28 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { AmbientLight, Color, DirectionalLight, GridHelper, MathUtils, Vector3 } from 'three';
+import {
+    Color,
+    DirectionalLight,
+    AmbientLight,
+    Vector3,
+    GridHelper,
+    MathUtils,
+    AlwaysStencilFunc,
+    BackSide,
+    DecrementWrapStencilOp,
+    FrontSide,
+    IncrementWrapStencilOp,
+    Mesh,
+    MeshBasicMaterial,
+    Plane,
+    PlaneHelper,
+    MeshStandardMaterial,
+    NotEqualStencilFunc,
+    PlaneGeometry,
+    ReplaceStencilOp,
+    Clock,
+} from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem.js';
@@ -25,6 +46,9 @@ const instance = new Instance({
     target: 'view',
     crs,
     backgroundColor: 0xcccccc,
+    renderer: {
+        stencil: true,
+    },
 });
 
 // Add a sunlight
@@ -73,6 +97,74 @@ function placeCamera(position, lookAt) {
     instance.notifyChange(instance.view.camera);
 }
 
+let newMeshes = [];
+
+const baseMat = new MeshBasicMaterial();
+baseMat.depthWrite = false;
+baseMat.depthTest = false;
+baseMat.colorWrite = false;
+baseMat.stencilWrite = true;
+baseMat.stencilFunc = AlwaysStencilFunc;
+
+const stencilBack = baseMat.clone();
+stencilBack.side = BackSide;
+stencilBack.stencilFail = IncrementWrapStencilOp;
+stencilBack.stencilZFail = IncrementWrapStencilOp;
+stencilBack.stencilZPass = IncrementWrapStencilOp;
+
+const stencilFront = baseMat.clone();
+stencilFront.side = FrontSide;
+stencilFront.stencilFail = DecrementWrapStencilOp;
+stencilFront.stencilZFail = DecrementWrapStencilOp;
+stencilFront.stencilZPass = DecrementWrapStencilOp;
+
+function createStencilMeshes(baseMesh, plane) {
+    if (baseMesh.userData.__stencilFront != null) {
+        return;
+    }
+
+    if (baseMesh.userData.__stencil === true) {
+        return;
+    }
+
+    const material = baseMesh.material;
+    const geometry = baseMesh.geometry;
+
+    if (geometry.boundingBox == null) {
+        geometry.computeBoundingBox();
+    }
+
+    const bbox = geometry.boundingBox.clone().applyMatrix4(baseMesh.matrixWorld);
+    if (!plane.intersectsBox(bbox)) {
+        return;
+    }
+
+    stencilBack.clippingPlanes = [plane];
+    stencilFront.clippingPlanes = [plane];
+
+    const meshBack = new Mesh(geometry, stencilBack);
+    const meshFront = new Mesh(geometry, stencilFront);
+
+    meshBack.renderOrder = 1;
+    meshFront.renderOrder = 1;
+
+    baseMesh.userData.__stencilFront = meshFront;
+    baseMesh.userData.__stencilBack = meshBack;
+
+    meshBack.updateMatrixWorld(true);
+    meshFront.updateMatrixWorld(true);
+
+    meshBack.name = 'back';
+    meshFront.name = 'front';
+
+    meshFront.userData.__stencil = true;
+    meshBack.userData.__stencil = true;
+
+    newMeshes.push([baseMesh, meshBack, meshFront]);
+    // instance.add(meshBack);
+    // instance.add(meshFront);
+}
+
 // add pointcloud to scene
 function initializeCamera() {
     const bbox = ifc.getBoundingBox();
@@ -97,89 +189,78 @@ function initializeCamera() {
     instance.add(grid);
     grid.updateMatrixWorld(true);
 
+    const planeCenter = bbox.getCenter(new Vector3());
+    planeCenter.setZ(planeCenter.z + 8);
+
+    const plane = new Plane()
+        .setFromNormalAndCoplanarPoint(new Vector3(0, 0, 1), planeCenter)
+        .negate();
+
+    const planeHelper = new PlaneHelper(plane, 50);
+
+    instance.add(planeHelper);
+
+    planeHelper.position.copy(planeCenter);
+
+    planeHelper.updateMatrixWorld(true);
+
+    ifc.clippingPlanes = [plane];
+
+    instance.addEventListener('update-end', () => {
+        newMeshes.length = 0;
+        ifc.traverseMeshes(m => createStencilMeshes(m, plane));
+        if (newMeshes.length > 0) {
+            for (const [parent, a, b] of newMeshes) {
+                parent.add(a, b);
+                parent.updateMatrixWorld(true);
+            }
+            instance.notifyChange();
+        }
+    });
+
+    const planeMesh = new Mesh(
+        new PlaneGeometry(50, 50),
+        new MeshStandardMaterial({
+            color: 'black',
+            metalness: 0.1,
+            side: BackSide,
+            roughness: 0.75,
+
+            stencilWrite: true,
+            stencilRef: 0,
+            stencilFunc: NotEqualStencilFunc,
+            stencilFail: ReplaceStencilOp,
+            stencilZFail: ReplaceStencilOp,
+            stencilZPass: ReplaceStencilOp,
+        }),
+    );
+
+    planeMesh.renderOrder = 5;
+    planeMesh.onAfterRender = renderer => renderer.clearStencil();
+
+    planeMesh.position.copy(planeCenter);
+    planeMesh.lookAt(planeCenter.clone().add(plane.normal));
+    planeMesh.updateMatrixWorld(true);
+
+    instance.add(planeMesh);
+
+    // const c = plane.constant;
+
+    // const clock = new Clock();
+
+    // function animate() {
+    //     const dt = clock.getDelta();
+    //     plane.constant = c + 20 * Math.sin(dt);
+
+    //     instance.render();
+    //     requestAnimationFrame(animate);
+    // }
+
+    // animate();
+
     StatusBar.bind(instance);
 }
 
 instance.add(ifc).then(initializeCamera);
 
 Inspector.attach('inspector', instance);
-
-const resultsTable = document.getElementById('results-body');
-
-let highlighted;
-let highlightColor = new Color(0xff7171);
-
-let canPick = true;
-
-/**
- * @param {MouseEvent} evt
- */
-function highlight(evt) {
-    if (!canPick) {
-        return;
-    }
-
-    const picked = instance.pickObjectsAt(evt, {
-        radius: 5,
-        limit: 10,
-        where: [ifc],
-        filter: pick => pick.object.visible, // Ignore invisible objects, such as IfcSpace elements
-    });
-
-    if (highlighted) {
-        // reset style
-        const material = highlighted.material;
-        material.color.copy(material.userData.oldColor);
-
-        instance.notifyChange(highlighted);
-    }
-
-    if (picked.length === 0) {
-        const row = document.createElement('tr');
-        const count = document.createElement('th');
-        count.setAttribute('scope', 'row');
-        count.innerText = '-';
-        const coordinates = document.createElement('td');
-        coordinates.innerText = '-';
-        const distanceToCamera = document.createElement('td');
-        distanceToCamera.innerText = '-';
-        row.append(count, coordinates, distanceToCamera);
-        resultsTable.replaceChildren(row);
-    } else {
-        const obj = picked[0].object;
-        // @ts-expect-error material is missing
-        const material = obj.material;
-
-        // keep the old color to reset it later
-        if (!material.userData.oldColor) {
-            material.userData.oldColor = material.color.clone();
-        }
-
-        material.color.copy(highlightColor);
-
-        instance.notifyChange(obj);
-
-        highlighted = obj;
-
-        const rows = [];
-
-        for (const [name, value] of Object.entries(obj.userData)) {
-            if (name !== 'oldColor' && name !== 'parentEntity') {
-                const row = document.createElement('tr');
-                const nameCell = document.createElement('td');
-                nameCell.innerHTML = `<code>${name}</code>`;
-                const valueCell = document.createElement('td');
-                valueCell.innerText = value;
-                row.append(nameCell, valueCell);
-                rows.push(row);
-            }
-        }
-
-        resultsTable.replaceChildren(...rows);
-    }
-}
-
-// Prevent picking if user is dragging mouse
-instance.domElement.addEventListener('mousedown', () => (canPick = true));
-instance.domElement.addEventListener('mousemove', () => (canPick = false));
-instance.domElement.addEventListener('mouseup', highlight);
