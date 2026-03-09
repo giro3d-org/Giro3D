@@ -123,6 +123,13 @@ export interface Tiles3DOptions extends Entity3DOptions {
      * @defaultValue {@link ASPRS_CLASSIFICATIONS}
      */
     classifications?: Classification[];
+
+    /**
+     * Whether to enable the default fetch plugin to route tile requests using Giro3D's internal
+     * Fetcher.
+     * @defaultValue true
+     */
+    enableFetchPlugin?: boolean;
 }
 
 const tmpBox3 = new Box3();
@@ -200,7 +207,6 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
     public override readonly type = 'Tiles3D';
 
     private readonly _debugPlugin: DebugTilesPlugin;
-    private readonly _fetchPlugin: FetchPlugin;
     private readonly _pointCloudPlugin: PointCloudPlugin;
     private readonly _tiles: TilesRenderer;
     private readonly _ktx2Loader: KTX2Loader;
@@ -269,10 +275,12 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         this._tiles.registerPlugin(new UnloadTilesPlugin({ delay: 5000, bytesTarget: +Infinity }));
 
         // Giro3D specific plugins
-        this._fetchPlugin = new FetchPlugin();
         this._pointCloudPlugin = new PointCloudPlugin(this._pointCloudParameters);
         this._tiles.registerPlugin(this._pointCloudPlugin);
-        this._tiles.registerPlugin(this._fetchPlugin);
+        const enableFetchPlugin = options?.enableFetchPlugin ?? true;
+        if (enableFetchPlugin) {
+            this._tiles.registerPlugin(new FetchPlugin());
+        }
 
         const dracoLoader = new DRACOLoader(this._tiles.manager).setDecoderPath(
             options?.dracoDecoderPath ??
