@@ -10,6 +10,7 @@ import { Color } from 'three';
 
 import type Instance from '../core/Instance';
 import type Shape from '../entities/Shape';
+import type { SegmentLabelFormatter } from '../entities/Shape';
 
 import Coordinates from '../core/geographic/Coordinates';
 import CoordinateSystem from '../core/geographic/CoordinateSystem';
@@ -26,6 +27,14 @@ const vertexLabelFormatter: (instance: Instance) => VertexLabelFormatter =
 
         return `lat: ${latlon.latitude.toFixed(5)}°, lon: ${latlon.longitude.toFixed(5)}°`;
     };
+
+const segmentLabelFormatter: SegmentLabelFormatter = params => {
+    const length = params.length;
+    if (length < 10) {
+        return length.toFixed(2);
+    }
+    return length.toFixed(1);
+};
 
 export default class DrawToolPanel extends Panel {
     private readonly _shapes: Shape[] = [];
@@ -71,7 +80,8 @@ export default class DrawToolPanel extends Panel {
         const tool = this.createDrawToolIfNecessary();
 
         tool.createSegment({
-            showLineLabel: true,
+            showSegmentLabels: true,
+            segmentLabelFormatter,
             color: this.pendingColor,
         }).then(shape => this.onShapeFinished(shape));
     }
