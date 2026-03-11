@@ -9,7 +9,7 @@ import { beforeEach, describe, expect, it, vitest } from 'vitest';
 import type { GetFeatureRequest } from '@giro3d/giro3d/sources/FeatureSource';
 import type { StreamableFeatureSourceLoadingStrategy } from '@giro3d/giro3d/sources/StreamableFeatureSource';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import StreamableFeatureSource, {
     defaultLoadingStrategy,

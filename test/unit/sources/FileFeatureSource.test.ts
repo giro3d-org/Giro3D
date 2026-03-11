@@ -9,7 +9,7 @@ import type FeatureFormat from 'ol/format/Feature';
 import { Projection } from 'ol/proj';
 import { describe, expect, it, vitest } from 'vitest';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import FileFeatureSource from '@giro3d/giro3d/sources/FileFeatureSource';
 

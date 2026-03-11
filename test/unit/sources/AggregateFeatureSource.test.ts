@@ -9,7 +9,7 @@ import { describe, expect, it, vitest } from 'vitest';
 
 import type { FeatureSource } from '@giro3d/giro3d/sources/FeatureSource';
 
-import CoordinateSystem from '@giro3d/giro3d/core/geographic/coordinate-system/CoordinateSystem';
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import AggregateFeatureSource from '@giro3d/giro3d/sources/AggregateFeatureSource';
 
@@ -30,15 +30,15 @@ describe('initialize', () => {
         });
 
         await source.initialize({
-            targetCoordinateSystem: CoordinateSystem.fromEpsg(4326),
+            targetCoordinateSystem: CoordinateSystem.epsg4326,
         });
 
         expect(source1.initialize).toHaveBeenCalledExactlyOnceWith({
-            targetCoordinateSystem: CoordinateSystem.fromEpsg(4326),
+            targetCoordinateSystem: CoordinateSystem.epsg4326,
         });
 
         expect(source2.initialize).toHaveBeenCalledExactlyOnceWith({
-            targetCoordinateSystem: CoordinateSystem.fromEpsg(4326),
+            targetCoordinateSystem: CoordinateSystem.epsg4326,
         });
     });
 });
@@ -67,11 +67,11 @@ describe('getFeatures', () => {
         });
 
         await source.initialize({
-            targetCoordinateSystem: CoordinateSystem.fromEpsg(4326),
+            targetCoordinateSystem: CoordinateSystem.epsg4326,
         });
 
         const signal = new AbortController().signal;
-        const extent = new Extent(CoordinateSystem.fromEpsg(4325), {
+        const extent = new Extent(CoordinateSystem.epsg4326, {
             west: 0,
             east: 1,
             north: 1,
