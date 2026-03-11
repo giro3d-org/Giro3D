@@ -385,6 +385,15 @@ export async function getWebpackConfig(parameters) {
         module: {
             rules: [
                 {
+                    // Added because when copc.js switched to type: "module",
+                    // webpack refused to import the files in this library since
+                    // import paths were missing the ".js" extension.
+                    test: /\.m?js/, // fix:issue: https://github.com/webpack/webpack/issues/11467
+                    resolve: {
+                        fullySpecified: false,
+                    },
+                },
+                {
                     test: {
                         and: [
                             () => parameters.mode === 'development',
