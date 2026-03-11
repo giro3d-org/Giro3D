@@ -1,6 +1,6 @@
-/**
+/*
  * Copyright (c) 2015-2018, IGN France.
- * Copyright (c) 2018-2025, Giro3D team.
+ * Copyright (c) 2018-2026, Giro3D team.
  * SPDX-License-Identifier: MIT
  */
 
@@ -223,7 +223,7 @@ function applyPerVertexDraping<G extends SupportedPerVertexGeometry>(
     return clone as G;
 }
 
-export type DrapedFeatureCollectionOptions = {
+export interface DrapedFeatureCollectionOptions {
     /**
      * The data source.
      */
@@ -268,7 +268,7 @@ export type DrapedFeatureCollectionOptions = {
      * An optional material generator for points.
      */
     pointMaterialGenerator?: PointMaterialGenerator;
-};
+}
 
 function getStableFeatureId(feature: Feature): string {
     const existing = feature.getId();
@@ -285,18 +285,18 @@ function getStableFeatureId(feature: Feature): string {
 
 type EventHandler<T> = (e: T) => void;
 
-type ObjectOptions = {
+interface ObjectOptions {
     castShadow: boolean;
     receiveShadow: boolean;
-};
+}
 
-type FeaturesEntry = {
+interface FeaturesEntry {
     feature: Feature;
     originalZ: number;
     extent: Extent;
     mesh: SimpleGeometryMesh | undefined;
     sampledLod: number;
-};
+}
 
 /**
  * Loads 3D features from a {@link FeatureSource} and displays them on top
