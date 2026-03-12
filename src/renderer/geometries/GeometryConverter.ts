@@ -19,8 +19,8 @@ import {
 import {
     BufferAttribute,
     BufferGeometry,
-    DoubleSide,
     EventDispatcher,
+    FrontSide,
     MeshBasicMaterial,
     MeshLambertMaterial,
     SpriteMaterial,
@@ -149,8 +149,8 @@ function createFloorVertices(params: {
     const { coordinates, offset, ignoreZ, elevation, stride } = params;
 
     for (const ring of coordinates) {
-        // NOTE: rings coming from openlayers are auto-closing, so we need to remove the last vertex
-        // of each ring here
+        // NOTE: rings coming from openlayers are auto-closing,
+        // so we need to remove the last vertex of each ring here
         if (currentIndex > 0) {
             holesIndices.push(currentIndex);
         }
@@ -858,7 +858,7 @@ export default class GeometryConverter<
             color,
             opacity,
             transparent: opacity < 1,
-            side: DoubleSide,
+            side: FrontSide,
             depthTest,
             depthWrite: depthTest,
         });
@@ -885,7 +885,7 @@ export default class GeometryConverter<
             color,
             opacity,
             transparent: opacity < 1,
-            side: DoubleSide,
+            side: FrontSide,
             depthTest,
             depthWrite: depthTest,
         });
