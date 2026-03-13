@@ -31,6 +31,9 @@ function run(apiKey) {
     // Note that we need the DRACO and Basis libraries.
     // You can omit those parameters to use the default URLs which use a CDN.
     const entity = new Tiles3D({
+        // We disable the fetch plugin because we are going to use a Google specific plugin
+        // to handle authentication
+        enableFetchPlugin: false,
         dracoDecoderPath: '/assets/wasm/',
         ktx2DecoderPath: '/assets/wasm/',
     });
