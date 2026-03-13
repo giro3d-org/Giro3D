@@ -270,7 +270,7 @@ export interface PointCloudSource<
 export abstract class PointCloudSourceBase<
     TEventMap extends PointCloudSourceEventMap = PointCloudSourceEventMap,
 >
-    extends EventDispatcher<TEventMap>
+    extends EventDispatcher<TEventMap & PointCloudSourceEventMap>
     implements PointCloudSource, Progress, Disposable, MemoryUsage
 {
     public abstract type: string;
@@ -298,12 +298,18 @@ export abstract class PointCloudSourceBase<
             this._initializePromise = this.initializeOnce();
             this._initializePromise.then(() => {
                 this._ready = true;
-                // @ts-expect-error stange issue with typing here
                 this.dispatchEvent({ type: 'initialized' });
             });
         }
 
         return this._initializePromise;
+    }
+
+    /**
+     * Raises an event to reload the source.
+     */
+    public update(): void {
+        this.dispatchEvent({ type: 'updated' });
     }
 
     /**

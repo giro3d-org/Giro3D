@@ -793,7 +793,8 @@ class TileMesh
         this._onElevationChanged(this);
     }
 
-    private applyHeightMap(): void {
+    /** @internal */
+    public applyHeightMap(): void {
         if (!this._heightMap) {
             return;
         }

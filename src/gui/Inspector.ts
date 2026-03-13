@@ -16,6 +16,7 @@ import InstanceInspector from './InstanceInspector';
 import Outliner from './outliner/Outliner';
 import PackageInfoInspector from './PackageInfoInspector';
 import ProcessingInspector from './ProcessingInspector';
+import SunExposurePanel from './SunExposurePanel';
 import ViewInspector from './ViewInspector';
 
 // Here follows the style adaptation to lil-gui
@@ -106,6 +107,7 @@ class Inspector {
         this.addPanel(new InstanceInspector(this.gui, instance));
         this.addPanel(new ViewInspector(this.gui, instance));
         this.addPanel(new DrawToolPanel(this.gui, instance));
+        this.addPanel(new SunExposurePanel(this.gui, instance));
         this.addPanel(new ProcessingInspector(this.gui, instance));
         this.addPanel(new EntityPanel(this.gui, instance));
         this.addPanel(new Outliner(this.gui, instance));

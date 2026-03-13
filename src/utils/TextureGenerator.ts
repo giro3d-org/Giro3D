@@ -4,8 +4,9 @@
  * SPDX-License-Identifier: MIT
  */
 
-import type { WebGLRenderTarget } from 'three';
+import type { DepthTexture } from 'three';
 
+import { Camera, Mesh, Vector4, WebGLRenderTarget } from 'three';
 import {
     AlphaFormat,
     ByteType,
@@ -21,12 +22,15 @@ import {
     LuminanceFormat,
     MathUtils,
     NearestFilter,
+    PlaneGeometry,
     RedFormat,
     RedIntegerFormat,
     RGBAFormat,
     RGBAIntegerFormat,
     RGFormat,
     RGIntegerFormat,
+    Scene,
+    ShaderMaterial,
     ShortType,
     Texture,
     UnsignedByteType,
@@ -741,6 +745,88 @@ function getTextureMemoryUsage(context: GetMemoryUsageContext, texture: Texture)
     }
 }
 
+const depthToRGBAMaterial = new ShaderMaterial({
+    uniforms: {
+        depthTexture: { value: null },
+    },
+    vertexShader: `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+    fragmentShader: `
+    #include <packing>
+
+    uniform sampler2D depthTexture;
+    varying vec2 vUv;
+
+    void main() {
+      float depth = texture2D(depthTexture, vUv).r;
+      gl_FragColor = packDepthToRGBA(depth);
+    }
+  `,
+});
+
+// Note: this is copied from packing.glsl.js in three.js
+const PackFactors = new Vector4(1.0, 256.0, 256.0 * 256.0, 256.0 * 256.0 * 256.0);
+const UnpackDownscale = 255 / 256; // 0..1 -> fraction (excluding 1)
+const UnpackFactors4 = new Vector4(
+    UnpackDownscale / PackFactors.x,
+    UnpackDownscale / PackFactors.y,
+    UnpackDownscale / PackFactors.z,
+    1.0 / PackFactors.w,
+);
+const QUAD = new PlaneGeometry(2, 2);
+
+async function readDepthTexture(
+    texture: DepthTexture,
+    renderer: WebGLRenderer,
+): Promise<Float32Array> {
+    const width = texture.image.width;
+    const height = texture.image.height;
+
+    const tempScene = new Scene();
+    const quad = new Mesh(QUAD, depthToRGBAMaterial);
+    tempScene.add(quad);
+    depthToRGBAMaterial.uniforms.depthTexture.value = texture;
+
+    const target = new WebGLRenderTarget(width, height, {
+        format: RGBAFormat,
+        type: UnsignedByteType,
+    });
+
+    renderer.setRenderTarget(target);
+    renderer.render(tempScene, new Camera());
+    renderer.setRenderTarget(null);
+
+    const pixels = new Uint8Array(width * height * 4);
+    await renderer.readRenderTargetPixelsAsync(target, 0, 0, width, height, pixels);
+
+    const result = new Float32Array(width * height);
+    let k = 0;
+
+    const v = new Vector4();
+    for (let i = 0; i < pixels.length; i += 4) {
+        const r = pixels[i + 0] / 255;
+        const g = pixels[i + 1] / 255;
+        const b = pixels[i + 2] / 255;
+        const a = pixels[i + 3] / 255;
+
+        v.set(r, g, b, a);
+
+        const depth = v.dot(UnpackFactors4);
+
+        result[k] = depth;
+        k++;
+    }
+
+    target.dispose();
+
+    return result;
+}
+
 function getDepthBufferMemoryUsage(
     context: GetMemoryUsageContext,
     renderTarget: RenderTarget,
@@ -857,6 +943,7 @@ export default {
     computeMinMaxFromBuffer,
     computeMinMaxFromImage,
     estimateSize,
+    readDepthTexture,
     shouldExpandRGB,
     isCanvasEmpty,
     getMemoryUsage,
