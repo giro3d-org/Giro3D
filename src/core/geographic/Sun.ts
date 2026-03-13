@@ -8,6 +8,7 @@ import { MathUtils, Spherical, Vector3 } from 'three';
 
 import Coordinates from './Coordinates';
 import CoordinateSystem from './CoordinateSystem';
+import Ellipsoid from './Ellipsoid';
 
 function computeJulianDate(date: Date): number {
     let year = date.getUTCFullYear();
@@ -167,9 +168,38 @@ function getLocalPosition(
 }
 
 /**
+ * Gets the direction vector of sun rays at a given date, in the ECEF coordinate system.
+ */
+function getDirection(date?: Date): Vector3 {
+    const sunGeo = getGeographicPosition(date);
+
+    const dir = Ellipsoid.WGS84.toCartesian(sunGeo.latitude, sunGeo.longitude, 0).normalize();
+
+    return dir.negate();
+}
+
+/**
+ * Gets the direction vector of sun rays at a given date in the ENU
+ * coordinate system centered at the observer location.
+ * Note: this assumes that the target coordinate system is north up.
+ */
+function getLocalFrameDirection(observer: Coordinates, date?: Date): Vector3 {
+    const observerGeo = observer.as(CoordinateSystem.epsg4326);
+    const observerFrame = Ellipsoid.WGS84.getEastNorthUpMatrix(
+        observerGeo.latitude,
+        observerGeo.longitude,
+    );
+    const sunCartesian = getDirection(date);
+    const sunLocal = sunCartesian.applyMatrix4(observerFrame.invert());
+    return sunLocal;
+}
+
+/**
  * Utility functions related to the position of the sun.
  */
 export default {
     getGeographicPosition,
     getLocalPosition,
+    getLocalFrameDirection,
+    getDirection,
 };
