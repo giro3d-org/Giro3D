@@ -6,9 +6,8 @@
 
 import { register } from 'ol/proj/proj4';
 import proj4 from 'proj4';
-import { MathUtils, Vector2, Vector3 } from 'three';
+import { MathUtils, Vector2, type Vector2Like, Vector3, type Vector3Like } from 'three';
 
-import { isVector3 } from '../../utils/predicates';
 import CoordinateSystem from './CoordinateSystem';
 import { getConverter } from './ProjectionCache';
 
@@ -51,24 +50,13 @@ function assertIsNotGeographic(crs: CoordinateSystem): void {
 }
 
 /**
- * Possible values to set a `Coordinates` object.
- *
- * It can be:
- * - A pair of numbers for 2D coordinates [X, Y]
- * - A triplet of numbers for 3D coordinates [X, Y, Z]
- * - A THREE `Vector3`
- *
- * @example
- * new Coordinates(CoordinateSystem.epsg4978, 20885167, 849862, 23385912); //Geocentric coordinates
- * // or
- * new Coordinates(CoordinateSystem.epsg4978, new Vector3(20885167, 849862, 23385912)) // Same with a vector.
- * // or
- * new Coordinates(CoordinateSystem.epsg4326, 2.33, 48.24, 24999549); //Geographic coordinates
- */
-export type CoordinateParameters = [number, number] | [number, number, number] | [Vector3];
-
-/**
- * Represents coordinates associated with a coordinate reference system (CRS).
+ * Represents coordinates associated with a {@link CoordinateSystem | coordinate reference system (CRS)}.
+ * The exact semantics of the values in the coordinates depend on the kind of CRS used:
+ * - for projected systems, X is the easting, Y is the northing and Z is the elevation above/below
+ *   the map plane.
+ * - for geocentric systems (such as ECEF), XYZ are cartesian coordinates in the 3D frame.
+ * - for geographic systems (such as  EPSG:4326), X is the longitude, Y is the latitude and Z is the
+ *   elevation above/below the reference ellipsoid.
  */
 class Coordinates {
     public readonly isCoordinates = true as const;
@@ -76,46 +64,132 @@ class Coordinates {
     public crs: CoordinateSystem;
 
     /**
-     * Build a {@link Coordinates} object, given a [CRS](http://inspire.ec.europa.eu/theme/rs) and a number of coordinates value.
-     * Coordinates can be geocentric, geographic, or an instance of [Vector3](https://threejs.org/docs/#api/math/Vector3).
-     * - If `crs` is `'EPSG:4326'`, coordinates must be in [geographic system](https://en.wikipedia.org/wiki/Geographic_coordinate_system).
-     * - If `crs` is `'EPSG:4978'`, coordinates must be in [geocentric system](https://en.wikipedia.org/wiki/Earth-centered,_Earth-fixed_coordinate_system).
+     * Create coordinates from a pair of XY coordinates.
+     * @param crs - The coordinate system to use.
+     * @param x - The X coordinate.
+     * @param y - The Y coordinate.
+     * @example
+     * const x = 124225;
+     * const y = 10244.2;
+     * const mercator = new Coordinates(CoordinateSystem.epsg3857, x, y);
      *
-     * @param crs - Geographic or Geocentric coordinates system.
-     * @param coordinates - The coordinates.
+     * // If using geographic coordinates, X is the longitude and Y is the latitude.
+     * const lon = 4.2123;
+     * const lat = 43.256;
+     * const geo = new Coordinates(CoordinateSystem.epsg4326, lon, lat);
      */
-    public constructor(crs: CoordinateSystem, ...coordinates: CoordinateParameters) {
+    public constructor(crs: CoordinateSystem, x: number, y: number);
+    /**
+     * Create coordinates from a XYZ triplet.
+     * @param crs - The coordinate system to use.
+     * @param x - The X coordinate.
+     * @param y - The Y coordinate.
+     * @param z - The Z coordinate.
+     * @example
+     * const x = 124225;
+     * const y = 10244.2;
+     * const z = 1000;
+     * const mercator = new Coordinates(CoordinateSystem.epsg3857, x, y, z);
+     *
+     * // If using geographic coordinates, X is the longitude and Y is the latitude.
+     * // Z is still the elevation in meters.
+     * const lon = 4.2123;
+     * const lat = 43.256;
+     * const geo = new Coordinates(CoordinateSystem.epsg4326, lon, lat, z);
+     */
+    public constructor(crs: CoordinateSystem, x: number, y: number, z: number);
+    /**
+     * Create coordinates from a {@link Vector2Like}
+     * @param crs - The coordinate system to use.
+     * @param xy - The vector to initialize coordinates.
+     * @example
+     * const coord = new Coordinates(CoordinateSystem.epsg3857, new THREE.Vector2(1020, 20924));
+     * // Alternatively, you don't have to use an actual Vector2 instance.
+     * // Any object that matches the Vector2Like interface will do.
+     * const coord = new Coordinates(CoordinateSystem.epsg3857, \{ x: 1020, y: 20924 \});
+     */
+    public constructor(crs: CoordinateSystem, xy: Vector2Like);
+    /**
+     * Create coordinates from a {@link Vector3Like}
+     * @param crs - The coordinate system to use.
+     * @param xyz - The vector to initialize coordinates.
+     * @example
+     * const coord = new Coordinates(CoordinateSystem.epsg3857, new THREE.Vector3(1020, 20924, 1000));
+     * // Alternatively, you don't have to use an actual Vector3 instance.
+     * // Any object that matches the Vector3Like interface will do.
+     * const coord = new Coordinates(CoordinateSystem.epsg3857, \{ x: 1020, y: 20924, z: 1000 \});
+     */
+    public constructor(crs: CoordinateSystem, xyz: Vector3Like);
+
+    public constructor(
+        crs: CoordinateSystem,
+        x: number | Vector2Like | Vector3Like,
+        y?: number,
+        z?: number,
+    ) {
         this._values = new Float64Array(3);
         this.crs = crs;
-        this.set(crs, ...coordinates);
+        // @ts-expect-error type shenanigans
+        this.set(crs, x, y, z);
     }
 
     public get values(): Float64Array {
         return this._values;
     }
 
-    public set(crs: CoordinateSystem, ...coordinates: CoordinateParameters): this {
+    /**
+     * Sets the values in this coordinate from a XY pair.
+     * @param crs - The coordinate system to use.
+     * @param x - The X coordinate.
+     * @param y - The Y coordinate.
+     */
+    public set(crs: CoordinateSystem, x: number, y: number): this;
+    /**
+     * Sets the values in this coordinate from a XYZ triplet.
+     * @param crs - The coordinate system to use.
+     * @param x - The X coordinate.
+     * @param y - The Y coordinate.
+     * @param z - The Z coordinate.
+     */
+    public set(crs: CoordinateSystem, x: number, y: number, z: number): this;
+    /**
+     * Sets the values in this coordinate from a {@link Vector2Like}
+     * @param crs - The coordinate system to use.
+     * @param vector - The vector to initialize coordinates.
+     */
+    public set(crs: CoordinateSystem, xy: Vector2Like): this;
+    /**
+     * Sets the values in this coordinate from a {@link Vector3Like}
+     * @param crs - The coordinate system to use.
+     * @param vector - The vector to initialize coordinates.
+     */
+    public set(crs: CoordinateSystem, xyz: Vector3Like): this;
+    public set(
+        crs: CoordinateSystem,
+        x: number | Vector2Like | Vector3Like,
+        y?: number,
+        z?: number,
+    ): this {
         this.crs = crs;
 
-        if (coordinates.length === 1 && isVector3(coordinates[0])) {
-            this._values[0] = coordinates[0].x;
-            this._values[1] = coordinates[0].y;
-            this._values[2] = coordinates[0].z;
+        if (typeof x === 'object') {
+            const c = x as Vector2Like | Vector3Like;
+            this._values[0] = c.x;
+            this._values[1] = c.y;
+            this._values[2] = 'z' in c ? c.z : 0;
         } else {
-            for (let i = 0; i < coordinates.length && i < 3; i++) {
-                this._values[i] = coordinates[i] as number;
-            }
-            for (let i = coordinates.length; i < 3; i++) {
-                this._values[i] = 0;
-            }
+            this._values[0] = x;
+            this._values[1] = y ?? 0;
+            this._values[2] = z ?? 0;
         }
+
         return this;
     }
 
     public clone(target?: Coordinates): Coordinates {
         let r;
         if (target) {
-            Coordinates.call(target, this.crs, this._values[0], this._values[1], this._values[2]);
+            target.set(this.crs, this.x, this.y, this.z);
             r = target;
         } else {
             r = new Coordinates(this.crs, this._values[0], this._values[1], this._values[2]);
