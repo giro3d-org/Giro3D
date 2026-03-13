@@ -1,0 +1,168 @@
+---
+title: Sun exposure
+shortdesc: Use the <a href="../apidoc/classes/interactions.SunExposure.html" target="_blank"><code>SunExposure</code></a> tool to compute solar exposition for a time interval.
+tags: [simulation, sun, sunlight]
+---
+
+<div class="side-pane-with-status-bar" style="width: 24rem">
+    <div class="card">
+        <div class="card-header">Parameters</div>
+        <div class="card-body">
+            <!-- Scenario selector -->
+            <div class="input-group">
+                <label class="input-group-text col-4" for="scenario">Scenario</label>
+                <select
+                    class="form-select"
+                    id="scenario"
+                    autocomplete="off"
+                    title="Sets the solar parameter"
+                >
+                    <option value="box">Plane + Box</option>
+                    <option value="plane">Plane only</option>
+                    <option value="sphere">Plane + Sphere</option>
+                    <option value="terrain">Terrain only</option>
+                    <option value="city-block">Photogrammetry mesh</option>
+                </select>
+            </div>
+
+            <!-- Date -->
+            <label for="date" class="form-label mt-3">Date (UTC)</label>
+            <input
+                type="date"
+                class="form-control"
+                id="date"
+                value="2025-06-21"
+                autocomplete="off"
+            />
+
+            <label for="start-time" class="form-label mt-3">Start/end times (h)</label>
+
+            <div class="d-flex">
+                <input
+                    type="number"
+                    min="0"
+                    max="23"
+                    value="8"
+                    step="1"
+                    class="form-control"
+                    id="start-time"
+                    autocomplete="off"
+                />
+
+                <input
+                    type="number"
+                    min="0"
+                    max="23"
+                    value="16"
+                    step="1"
+                    class="form-control ms-2"
+                    id="end-time"
+                    autocomplete="off"
+                />
+            </div>
+
+            <!-- Spatial resolution -->
+            <label for="spatial-resolution" class="form-label mt-3">Spatial resolution (m)</label>
+            <input
+                type="number"
+                min="0.25"
+                max="100"
+                value="10"
+                step="0.1"
+                class="form-control"
+                id="spatial-resolution"
+                autocomplete="off"
+            />
+            <!-- Temporal resolution -->
+            <label for="temporal-resolution" class="form-label mt-3"
+                >Temporal resolution (minutes)</label
+            >
+            <input
+                type="number"
+                min="1"
+                max="120"
+                value="60"
+                step="1"
+                class="form-control"
+                id="temporal-resolution"
+                autocomplete="off"
+            />
+
+            <!-- Show/Hide helpers -->
+            <div class="form-check form-switch mt-3">
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    role="switch"
+                    id="show-helpers"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="show-helpers">Show helpers</label>
+            </div>
+
+            <button type="button" class="btn btn-secondary w-100 mt-3" id="draw-aoi">
+                Draw simulation area
+            </button>
+
+            <button type="button" class="btn btn-primary w-100 mt-3" id="start">
+                Compute sun exposure
+            </button>
+            <button type="button" class="btn btn-danger w-100 mt-3 d-none" id="cancel">
+                Cancel
+            </button>
+
+            <div class="progress mt-3" role="progressbar" style="display: none">
+                <div
+                    class="progress-bar bg-info progress-bar-striped progress-bar-animated text-dark"
+                    id="progress"
+                    style="width: 0%"
+                >
+                    Computing...
+                </div>
+            </div>
+
+            <!-- Show/Hide inputs -->
+            <div class="form-check form-switch mt-3">
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    role="switch"
+                    checked
+                    id="show-inputs"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="show-inputs">Show objects</label>
+            </div>
+
+            <!-- Active attribute selector -->
+            <div class="input-group mt-3" id="attribute-group" style="display: none">
+                <label class="input-group-text col-4" for="attribute">Variable</label>
+                <select
+                    class="form-select"
+                    id="attribute"
+                    autocomplete="off"
+                    title="Sets the solar parameter"
+                >
+                    <option value="irradiation">Irradiation (KWh/m²)</option>
+                    <option value="meanIrradiance">Mean irradiance (W/m²)</option>
+                    <option value="hoursOfSunlight">Hours of sunlight</option>
+                </select>
+
+                <!-- Gradient preview -->
+                <div class="mt-3 w-100">
+                    <canvas
+                        id="gradient"
+                        height="32"
+                        class="w-100 border rounded"
+                        style="height: 32px; image-rendering: pixelated"
+                    ></canvas>
+
+                    <div class="w-100">
+                        <p class="float-start mb-0" id="colorMapMin">0</p>
+                        <p class="float-end mb-0" id="colorMapMax">100</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -5,3 +5,4 @@
  */
 
 export * as DrawTool from './DrawTool';
+export * as SunExposure from './SunExposure';
