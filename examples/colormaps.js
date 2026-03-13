@@ -28,6 +28,7 @@ import { bindSlider } from './widgets/bindSlider.js';
 import { bindToggle } from './widgets/bindToggle.js';
 import { makeColorRamp } from './widgets/makeColorRamp.js';
 import StatusBar from './widgets/StatusBar.js';
+import updateColorMapPreview from './widgets/updateColorMapPreview.js';
 
 const extent = Extent.fromCenterAndSize(
     CoordinateSystem.epsg3857,
@@ -74,23 +75,7 @@ let parameters = {
     mode: ColorMapMode.Elevation,
 };
 
-function updatePreview(colors) {
-    /** @type {HTMLCanvasElement} */
-    // @ts-expect-error conversion
-    const canvas = document.getElementById('gradient');
-    const ctx = canvas.getContext('2d');
-
-    canvas.width = colors.length;
-    canvas.height = 1;
-
-    for (let i = 0; i < colors.length; i++) {
-        const color = colors[i];
-        ctx.fillStyle = `#${color.getHexString()}`;
-        ctx.fillRect(i, 0, 1, canvas.height);
-    }
-}
-
-updatePreview(parameters.colors);
+updateColorMapPreview('gradient', parameters.colors);
 
 // Adds the map that will contain the layers.
 const map = new Map({
@@ -169,7 +154,7 @@ function updateColorRamp() {
 
     updateTransparency();
 
-    updatePreview(parameters.colors);
+    updateColorMapPreview('gradient', parameters.colors);
 
     instance.notifyChange(map);
 }
