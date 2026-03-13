@@ -705,6 +705,8 @@ export default class DrapedFeatureCollection extends Entity3D {
 
             this.assignRenderOrder(obj);
         });
+
+        this.onObjectCreated(mesh);
     }
 
     private getPointOptions(style?: FeatureStyle): PointOptions {
