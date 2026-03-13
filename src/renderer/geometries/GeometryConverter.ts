@@ -20,7 +20,6 @@ import {
     BufferAttribute,
     BufferGeometry,
     EventDispatcher,
-    FrontSide,
     MeshBasicMaterial,
     MeshLambertMaterial,
     SpriteMaterial,
@@ -885,7 +884,7 @@ export default class GeometryConverter<
             color,
             opacity,
             transparent: opacity < 1,
-            side: FrontSide,
+            side: style.side,
             depthTest,
             depthWrite: depthTest,
         });
@@ -912,7 +911,7 @@ export default class GeometryConverter<
             color,
             opacity,
             transparent: opacity < 1,
-            side: FrontSide,
+            side: style.side,
             depthTest,
             depthWrite: depthTest,
         });
