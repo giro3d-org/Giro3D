@@ -7,11 +7,11 @@
 import PngTerrainFormat from './PngTerrainFormat';
 
 /**
- * Decoder for [Mapbox Terrain](https://docs.mapbox.com/data/tilesets/reference/mapbox-terrain-dem-v1/) images.
+ * Decoder for [Mapzen Terrarium](https://www.mapzen.com/blog/terrain-tile-service/) tiles.
  */
-class MapboxTerrainFormat extends PngTerrainFormat {
-    public readonly isMapboxTerrainFormat: boolean = true as const;
-    public override readonly type = 'MapboxTerrainFormat' as const;
+class MapzenTerrariumFormat extends PngTerrainFormat {
+    public readonly isMapzenTerrariumFormat: boolean = true as const;
+    public override readonly type = 'MapzenTerrariumFormat' as const;
 
     /**
      * @param options - Decoder options.
@@ -31,10 +31,10 @@ class MapboxTerrainFormat extends PngTerrainFormat {
     }) {
         super({
             workerConcurrency: options?.workerConcurrency,
-            encoding: 'MapboxTerrainRGB',
+            encoding: 'MapzenTerrarium',
             enableWorkers: options?.enableWorkers,
         });
     }
 }
 
-export default MapboxTerrainFormat;
+export default MapzenTerrariumFormat;
