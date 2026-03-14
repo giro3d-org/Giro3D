@@ -1,3 +1,10 @@
 {
-    "include": ["BilFormat.ts", "ImageFormat.ts", "GeoTIFFFormat.ts", "MapboxTerrainFormat.ts"]
+    "include": [
+        "BilFormat.ts",
+        "ImageFormat.ts",
+        "GeoTIFFFormat.ts",
+        "PngTerrainFormat.ts",
+        "MapboxTerrainFormat.ts",
+        "MapzenTerrariumFormat.ts"
+    ]
 }
