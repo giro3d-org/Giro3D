@@ -4,33 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { DataTexture, FloatType, LinearFilter, RGFormat } from 'three';
-
-import type { DecodeOptions, DecodeResult } from './ImageFormat';
-import type { DecodeMapboxTerrainResult, MessageMap, MessageType } from './mapboxWorker';
-
-import WorkerPool from '../utils/WorkerPool';
-import ImageFormat from './ImageFormat';
-import { decodeMapboxTerrainImage } from './mapboxWorker';
-
-let workerPool: WorkerPool<MessageType, MessageMap> | null = null;
-
-function createWorker(): Worker {
-    return new Worker(new URL('./mapboxWorker.js', import.meta.url), {
-        type: 'module',
-        name: 'mapbox',
-    });
-}
+import PngTerrainFormat from './PngTerrainFormat';
 
 /**
  * Decoder for [Mapbox Terrain](https://docs.mapbox.com/data/tilesets/reference/mapbox-terrain-dem-v1/) images.
  */
-class MapboxTerrainFormat extends ImageFormat {
+class MapboxTerrainFormat extends PngTerrainFormat {
     public readonly isMapboxTerrainFormat: boolean = true as const;
     public override readonly type = 'MapboxTerrainFormat' as const;
-
-    private readonly _enableWorkers: boolean = true;
-    private readonly _workerConcurrency: number | undefined;
 
     /**
      * @param options - Decoder options.
@@ -48,69 +29,11 @@ class MapboxTerrainFormat extends ImageFormat {
          */
         workerConcurrency?: number;
     }) {
-        super(true, FloatType);
-
-        this._enableWorkers = options?.enableWorkers ?? true;
-        this._workerConcurrency = options?.workerConcurrency ?? undefined;
-    }
-
-    /**
-     * Decode a Mapbox Terrain blob into a
-     * [DataTexture](https://threejs.org/docs/?q=texture#api/en/textures/DataTexture) containing
-     * the elevation data.
-     *
-     * @param blob - the data to decode
-     * @param options - the decoding options
-     */
-    public async decode(blob: Blob, options?: DecodeOptions): Promise<DecodeResult> {
-        let result: DecodeMapboxTerrainResult;
-
-        if (this._enableWorkers) {
-            result = await this.getHeightValuesUsingWorker(
-                blob,
-                options?.noDataValue,
-                this._workerConcurrency,
-            );
-        } else {
-            result = await decodeMapboxTerrainImage(blob, options?.noDataValue);
-        }
-
-        const texture = new DataTexture(
-            new Float32Array(result.data),
-            result.width,
-            result.height,
-            RGFormat,
-            FloatType,
-        );
-
-        texture.needsUpdate = true;
-        texture.generateMipmaps = false;
-        texture.magFilter = LinearFilter;
-        texture.minFilter = LinearFilter;
-
-        return {
-            texture,
-            min: result.min,
-            max: result.max,
-        };
-    }
-
-    private async getHeightValuesUsingWorker(
-        blob: Blob,
-        noData?: number,
-        concurrency?: number,
-    ): Promise<DecodeMapboxTerrainResult> {
-        if (workerPool == null) {
-            workerPool = new WorkerPool({ createWorker, concurrency });
-        }
-
-        const buffer = await blob.arrayBuffer();
-
-        const result = await workerPool.queue('DecodeMapboxTerrainMessage', { buffer, noData }, [
-            buffer,
-        ]);
-
-        return result;
+        super({
+            workerConcurrency: options?.workerConcurrency,
+            encoding: 'MapboxTerrainRGB',
+            enableWorkers: options?.enableWorkers,
+        });
     }
 }
 

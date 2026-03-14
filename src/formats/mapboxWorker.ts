@@ -12,7 +12,7 @@ import { createErrorResponse, type Message } from '../utils/WorkerPool';
  * Utility functions and worker to process mapbox encoded terrain.
  */
 
-export interface DecodeMapboxTerrainResult {
+export interface DecodeTerrainResult {
     min: number;
     max: number;
     width: number;
@@ -38,24 +38,36 @@ function getPixels(image: ImageBitmap): Uint8ClampedArray {
     return context.getImageData(0, 0, image.width, image.height).data;
 }
 
-export async function decodeMapboxTerrainImage(
+export async function decodeTerrainImage(
     blob: Blob,
+    encoding: Encoding,
     noData?: number,
-): Promise<DecodeMapboxTerrainResult> {
+): Promise<DecodeTerrainResult> {
     const image = await createImageBitmap(blob);
     const pixelData = getPixels(image);
 
     return {
-        ...decodeMapboxTerrainBuffer(pixelData, noData),
+        ...decodeTerrainBuffer(pixelData, encoding, noData),
         width: image.width,
         height: image.height,
     };
 }
 
-function decodeMapboxTerrainBuffer(
+export type Encoding = 'MapboxTerrainRGB' | 'MapzenTerrarium';
+
+function decodeMapboxTerrainRGBPixel(r: number, g: number, b: number): number {
+    return -10000 + (r * 256 * 256 + g * 256 + b) * 0.1;
+}
+
+function decodeMapzenTerrariumRGBPixel(r: number, g: number, b: number): number {
+    return r * 256 + g + b / 256 - 32768;
+}
+
+function decodeTerrainBuffer(
     pixelData: Uint8ClampedArray,
+    encoding: Encoding,
     noData?: number,
-): Pick<DecodeMapboxTerrainResult, 'data' | 'min' | 'max'> {
+): Pick<DecodeTerrainResult, 'data' | 'min' | 'max'> {
     const stride = pixelData.length % 3 === 0 ? 3 : 4;
 
     const length = pixelData.length / stride;
@@ -71,7 +83,16 @@ function decodeMapboxTerrainBuffer(
         const g = pixelData[i + 1];
         const b = pixelData[i + 2];
 
-        const elevation = -10000 + (r * 256 * 256 + g * 256 + b) * 0.1;
+        let elevation: number;
+
+        switch (encoding) {
+            case 'MapboxTerrainRGB':
+                elevation = decodeMapboxTerrainRGBPixel(r, g, b);
+                break;
+            case 'MapzenTerrarium':
+                elevation = decodeMapzenTerrariumRGBPixel(r, g, b);
+                break;
+        }
 
         array[k * 2 + 0] = elevation;
 
@@ -91,25 +112,33 @@ function decodeMapboxTerrainBuffer(
 
 // Web worker implementation
 
-export type DecodeMapboxTerrainMessage = Message<{ buffer: ArrayBuffer; noData?: number }>;
+export type DecodeTerrainMessage = Message<{
+    buffer: ArrayBuffer;
+    encoding: Encoding;
+    noData?: number;
+}>;
 
-export type MessageType = 'DecodeMapboxTerrainMessage';
+export type MessageType = 'DecodeTerrainMessage';
 
 export interface MessageMap extends BaseMessageMap<MessageType> {
-    DecodeMapboxTerrainMessage: {
-        payload: DecodeMapboxTerrainMessage['payload'];
-        response: DecodeMapboxTerrainResult;
+    DecodeTerrainMessage: {
+        payload: DecodeTerrainMessage['payload'];
+        response: DecodeTerrainResult;
     };
 }
 
-onmessage = async function onmessage(ev: MessageEvent<DecodeMapboxTerrainMessage>): Promise<void> {
+onmessage = async function onmessage(ev: MessageEvent<DecodeTerrainMessage>): Promise<void> {
     const message = ev.data;
 
     try {
-        if (message.type === 'DecodeMapboxTerrainMessage') {
+        if (message.type === 'DecodeTerrainMessage') {
             const blob = new Blob([message.payload.buffer], { type: 'image/png' });
-            const result = await decodeMapboxTerrainImage(blob, message.payload.noData);
-            const response: SuccessResponse<DecodeMapboxTerrainResult> = {
+            const result = await decodeTerrainImage(
+                blob,
+                message.payload.encoding,
+                message.payload.noData,
+            );
+            const response: SuccessResponse<DecodeTerrainResult> = {
                 requestId: message.id,
                 payload: result,
             };
