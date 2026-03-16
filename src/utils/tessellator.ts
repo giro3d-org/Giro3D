@@ -19,7 +19,41 @@ const tris = {
     plane: new Plane(),
     tempV: new Vector3(),
     UP: Object.freeze(new Vector3(0, 0, 1)),
+    DEFAULT_PLANE: Object.freeze(new Plane(new Vector3(0, 0, 1))),
 };
+
+function getPlaneFromPoints(coord: ArrayLike<number>, target: Plane): Plane | null {
+    const length = coord.length;
+
+    for (let i = 0; i < length; i += 9) {
+        const aX = (i + 0) % length;
+        const aY = (i + 1) % length;
+        const aZ = (i + 2) % length;
+
+        const bX = (i + 3) % length;
+        const bY = (i + 4) % length;
+        const bZ = (i + 5) % length;
+
+        const cX = (i + 6) % length;
+        const cY = (i + 7) % length;
+        const cZ = (i + 8) % length;
+
+        // For each triplet of points, attempt to create a triangle.
+        tris.a.set(coord[aX], coord[aY], coord[aZ]);
+        tris.b.set(coord[bX], coord[bY], coord[bZ]);
+        tris.c.set(coord[cX], coord[cY], coord[cZ]);
+
+        // If the triangle is not degenerate, return the plane that it lies on.
+        const plane = target.setFromCoplanarPoints(tris.a, tris.b, tris.c);
+
+        if (plane.normal.lengthSq() > 0) {
+            return plane;
+        }
+    }
+
+    // This will happen if all points are collinear.
+    return null;
+}
 
 /**
  * Triangulate (or tessellate) the given polygon. Triangulation will work in any plane, contrary
@@ -39,16 +73,12 @@ export function triangulate(
         return Earcut(flatCoordinates, holeIndices, 3);
     }
 
-    tris.a.set(coord[0], coord[1], coord[2]);
-    tris.b.set(coord[3], coord[4], coord[5]);
-    tris.c.set(coord[6], coord[7], coord[8]);
-
     // Since the earcut algorithm only works on the XY plane, any vertical polygon (e.g walls)
     // will not be correctly processed. We thus have to transform them as if they were sitting
     // (roughly) on the XY plane.
     // To do this, we compute the plane that the vertices are on, then create a matrix that has
     // the same orientation as this plane, then transform all points using this matrix.
-    const plane = tris.plane.setFromCoplanarPoints(tris.a, tris.b, tris.c);
+    const plane = getPlaneFromPoints(coord, tris.plane) ?? tris.DEFAULT_PLANE;
 
     // Is the plane completely orthogonal to the horizontal plane ?
     const dot = Math.abs(plane.normal.dot(tris.UP));
