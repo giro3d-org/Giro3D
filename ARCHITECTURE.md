@@ -42,12 +42,16 @@ As mentioned above, each entity is responsible for loading its own data. However
 Here is an example with the `PointCloud` entity.
 
 ```mermaid
-graph TD
-    A(PointCloudSource) --> B[PointCloud]
-    COPCSource --> A
-    LASSource --> A
-    AggregatePointCloudSource --> A
-    PotreeSource --> A
+flowchart TD
+
+subgraph PointCloudSource
+    A[PotreeSource]
+    B[AggregatePointCloudSource]
+    C[COPCSource]
+    D[LASSource]
+end
+
+PointCloudSource --> PointCloud
 ```
 
 We can see that the entity _pulls_ point cloud data from its source through the `PointCloudSource` interface.
@@ -62,17 +66,25 @@ We can see that the entity _pulls_ point cloud data from its source through the 
 The Map is an interesting case because it is the most complex entity currently in Giro3D. To manage complexity of rendering a 3D map with terrain and unlimited color layers, we go further and separate the entity, the _layers_ and the data sources.
 
 ```mermaid
-graph TD
-    A(Layer) --> B[Map]
-    C[ColorLayer] --> A
-    D[ElevationLayer] --> A
-    E[MaskLayer] --> A
-    F(ImageSource) --> C
-    F --> D
-    F --> E
-    G[GeoTiFFSource] --> F
-    H[WmsSource] --> F
-    I[...] --> F
+flowchart TD
+
+subgraph Layer
+    A[ColorLayer]
+    B[ElevationLayer]
+    C[MaskLayer]
+end
+
+subgraph ImageSource
+    D[GeoTiFFSource]
+    E[WmsSource]
+    F[...]
+end
+
+subgraph Map
+end
+
+ImageSource --> Layer
+Layer-->Map
 ```
 
 #### Layers
