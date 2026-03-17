@@ -62,10 +62,12 @@ export async function buildApidoc(parameters) {
      */
     const config = {
         $schema: 'https://typedoc.org/schema.json',
-        entryPoints: [path.join(sourceDir, 'api.ts')],
+        entryPoints: [sourceDir],
+        entryPointStrategy: 'expand',
+        exclude: ['**/internal/**', '**/version.ts'],
         tsconfig: path.join(rootDir, 'tsconfig.json'),
         out: parameters.output,
-        plugin: ['typedoc-github-theme'],
+        plugin: ['typedoc-github-theme', 'typedoc-plugin-rename-defaults'],
         theme: 'typedoc-github-theme',
         name: `API (${parameters.version}) - Giro3D`,
         readme: path.join(apidocDir, 'README.md'),
