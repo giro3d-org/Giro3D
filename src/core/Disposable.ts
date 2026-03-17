@@ -7,7 +7,7 @@
 /**
  * Trait of objects that hold unmanaged resources.
  */
-export default interface Disposable {
+export interface Disposable {
     /**
      * Releases unmanaged resources from this object.
      */
@@ -21,3 +21,5 @@ export function isDisposable(object: unknown): object is Disposable {
 
     return false;
 }
+
+export default Disposable;

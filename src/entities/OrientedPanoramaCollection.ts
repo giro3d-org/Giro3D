@@ -40,7 +40,7 @@ export type OrientedPanoramaCollectionPickResult = ImageCollectionBasePickResult
  * If the collection contains images that are too spread out geographically, visual issues may occur.
  * This is why we advise to group images that are relatively close together.
  */
-export default class OrientedPanoramaCollection<
+export class OrientedPanoramaCollection<
     TUserData extends EntityUserData = EntityUserData,
 > extends ImageCollectionBase<OrientedPanoramaSource, TUserData> {
     /** Readonly flag to indicate that this object is a OrientedPanoramaCollection instance. */
@@ -62,3 +62,5 @@ export default class OrientedPanoramaCollection<
         return new Matrix4().makeScale(source.distance, source.distance, source.distance);
     }
 }
+
+export default OrientedPanoramaCollection;

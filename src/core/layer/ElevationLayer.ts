@@ -33,7 +33,7 @@ export interface ElevationLayerOptions extends LayerOptions {
 /**
  * A layer that provides elevation data to display terrains.
  */
-class ElevationLayer<UserData extends LayerUserData = LayerUserData> extends Layer<
+export class ElevationLayer<UserData extends LayerUserData = LayerUserData> extends Layer<
     LayerEvents,
     UserData
 > {

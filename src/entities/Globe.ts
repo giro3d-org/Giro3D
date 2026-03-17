@@ -121,7 +121,7 @@ export interface GlobeOptions extends Omit<MapOptions, 'extent' | 'terrain'> {
  * between the 90° meridian and the equator).
  * - Z-axis: The rotation axis of the earth (south/north axis).
  */
-export default class Globe extends Map {
+class Globe extends Map {
     public readonly isGlobe = true as const;
     public override readonly type: string = 'Globe' as const;
 
@@ -329,3 +329,5 @@ export default class Globe extends Map {
 export function isGlobe(obj: unknown): obj is Globe {
     return (obj as Globe).isGlobe === true;
 }
+
+export default Globe;

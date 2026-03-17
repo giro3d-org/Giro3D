@@ -33,7 +33,7 @@ export type HeightMapTextureDataType =
 /**
  * Utility class to sample an elevation raster.
  */
-export default class HeightMap {
+export class HeightMap {
     /**
      * The heightmap data.
      */
@@ -228,3 +228,5 @@ export default class HeightMap {
         return rawValue;
     }
 }
+
+export default HeightMap;

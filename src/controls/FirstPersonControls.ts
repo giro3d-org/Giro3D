@@ -88,7 +88,7 @@ export interface FirstPersonControlsOptions {
     maxHeight?: number;
 }
 
-class FirstPersonControls {
+export class FirstPersonControls {
     public readonly options: FirstPersonControlsOptions = {
         moveSpeed: 10,
         verticalFOV: 180,

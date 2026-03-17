@@ -7,7 +7,7 @@
 /**
  * Colorimetry options.
  */
-export default interface ColorimetryOptions {
+export interface ColorimetryOptions {
     /**
      * Brightness.
      */
@@ -29,3 +29,5 @@ export function defaultColorimetryOptions(): ColorimetryOptions {
         contrast: 1,
     };
 }
+
+export default ColorimetryOptions;

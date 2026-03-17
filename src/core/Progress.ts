@@ -7,7 +7,7 @@
 /**
  * Trait of objects that perform asynchronous operations.
  */
-export default interface Progress {
+export interface Progress {
     /**
      * Gets whether the object is currently performing an asynchronous operation.
      */
@@ -19,3 +19,5 @@ export default interface Progress {
      */
     get progress(): number;
 }
+
+export default Progress;

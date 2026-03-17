@@ -7,7 +7,9 @@
 /**
  * Defines a range of elevation values.
  */
-export default interface ElevationRange {
+export interface ElevationRange {
     min: number;
     max: number;
 }
+
+export default ElevationRange;

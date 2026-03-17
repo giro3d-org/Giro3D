@@ -7,9 +7,9 @@
 import type Layer from './Layer';
 
 /**
- * Interface for any object that can contain {@link Layer}.
+ * Interface for any object that can contain {@link Layer | layers}.
  */
-interface HasLayers {
+export interface HasLayers {
     /**
      * Read-only flag to check if a given object is of type {@link HasLayers}.
      */

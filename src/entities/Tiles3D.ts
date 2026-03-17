@@ -197,7 +197,7 @@ interface ObjectOptions {
  * depends on the data. Many tilesets do not have vertex normals, as they increase the
  * size of the dataset.
  */
-export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
+class Tiles3D<UserData extends EntityUserData = EntityUserData>
     extends Entity3D<Tiles3DEventMap, UserData>
     implements Pickable<Tiles3DPickResult>, HasLayers
 {
@@ -862,3 +862,5 @@ export default class Tiles3D<UserData extends EntityUserData = EntityUserData>
         this._tiles.dispose();
     }
 }
+
+export default Tiles3D;
