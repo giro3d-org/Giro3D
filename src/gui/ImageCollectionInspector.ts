@@ -31,8 +31,8 @@ export default class ImageCollectionInspector extends EntityInspector<ImageColle
         this.addController(imageCollection, 'showLocationSpheres')
             .name('Show location spheres')
             .onChange(notify);
-        this.addController(imageCollection, 'showFrustums')
-            .name('Show view frustums')
+        this.addController(imageCollection, 'showWireframes')
+            .name('Show view wireframes')
             .onChange(notify);
         this.addController(imageCollection, 'showImages').name('Show images').onChange(notify);
         this.addController(imageCollection, 'imageOpacity', 0, 1, 0.01)

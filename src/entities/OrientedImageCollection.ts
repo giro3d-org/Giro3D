@@ -35,7 +35,7 @@ export type OrientedImageCollectionPickResult = ImageCollectionBasePickResult;
  *
  * Each oriented image is displayed as 3 distinct elements:
  * - a sphere positioned at the location of the camera receptor
- * - a frustum to show the view frustum of the camera receptor (orientation, field of view and aspect ratio)
+ * - a wireframe to show the camera receptor (orientation, field of view and aspect ratio)
  * - a texture plane on which the image is projected
  *
  * Each of these 3 elements can be made visible or invisible independently.
@@ -55,26 +55,26 @@ export default class OrientedImageCollection<
             .applyMatrix4(new Matrix4().makeTranslation(0, 0, -1))
             .rotateX(MathUtils.degToRad(90));
 
-        const frustumGeometry = new BufferGeometry();
-        frustumGeometry.setAttribute(
+        const wireframeGeometry = new BufferGeometry();
+        wireframeGeometry.setAttribute(
             'position',
             new Float32BufferAttribute(
                 [0, 0, 0, -0.5, -0.5, -1, +0.5, -0.5, -1, +0.5, +0.5, -1, -0.5, +0.5, -1],
                 3,
             ),
         );
-        frustumGeometry.rotateX(MathUtils.degToRad(90));
-        frustumGeometry.setIndex([0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 1]);
+        wireframeGeometry.rotateX(MathUtils.degToRad(90));
+        wireframeGeometry.setIndex([0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 1]);
 
-        super(imageGeometry, frustumGeometry, options);
+        super(imageGeometry, wireframeGeometry, options);
     }
 
-    protected override computeFrustumScaleMatrix(source: OrientedImageSource): Matrix4 {
-        const frustumSizeY = 2 * Math.tan(MathUtils.degToRad(0.5 * source.fov));
+    protected override computeWireframeScaleMatrix(source: OrientedImageSource): Matrix4 {
+        const wireframeSizeY = 2 * Math.tan(MathUtils.degToRad(0.5 * source.fov));
         return new Matrix4().makeScale(
-            source.distance * frustumSizeY * source.aspectRatio,
+            source.distance * wireframeSizeY * source.aspectRatio,
             source.distance,
-            source.distance * frustumSizeY,
+            source.distance * wireframeSizeY,
         );
     }
 }

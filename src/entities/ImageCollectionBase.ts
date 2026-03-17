@@ -62,7 +62,7 @@ export interface ImageSource {
      */
     distance: number;
     /**
-     * The URL of the image. If undefined, the image is not displayed (but the frustum and origin point can still be displayed)
+     * The URL of the image. If undefined, the image is not displayed (but the wireframe and origin point can still be displayed)
      */
     imageUrl?: string;
 }
@@ -108,16 +108,16 @@ export interface ImageCollectionBaseOptions<TSource extends ImageSource> extends
     };
 
     /**
-     * Frustums represent the field of view of each images as a view cone.
+     * Wireframes represent the field of view of each image.
      */
-    frustums?: {
+    wireframes?: {
         /**
-         * Display the frustum of each image.
+         * Display the wireframe of each image.
          * @defaultValue true
          */
         visible?: boolean;
         /**
-         * The color of the camera frustums.
+         * The color of the camera wireframes.
          * @defaultValue green
          */
         color?: ColorRepresentation;
@@ -147,7 +147,7 @@ export interface ImageCollectionBasePickResult extends PickResult {
  *
  * Each oriented image is displayed as 3 distinct elements:
  * - a sphere positioned at the location of the camera receptor
- * - a frustum to show the view frustum of the camera receptor (orientation, field of view and aspect ratio)
+ * - a wireframe to show the camera receptor
  * - a texture plane on which the image is projected
  *
  * Each of these 3 elements can be made visible or invisible independently.
@@ -178,7 +178,7 @@ export default abstract class OrientedImageCollection<
         instancedMesh: InstancedMesh | null;
     };
 
-    private readonly _frustums: {
+    private readonly _wireframes: {
         readonly bufferGeometry: BufferGeometry;
         readonly material: MeshBasicMaterial;
         instancedMesh: InstancedMesh | null;
@@ -186,7 +186,7 @@ export default abstract class OrientedImageCollection<
 
     public constructor(
         imageGeometry: BufferGeometry,
-        frustumGeometry: BufferGeometry,
+        wireframeGeometry: BufferGeometry,
         options: ImageCollectionBaseOptions<TSource>,
     ) {
         super(options);
@@ -213,10 +213,10 @@ export default abstract class OrientedImageCollection<
             instancedMesh: null,
         };
 
-        this._frustums = {
-            bufferGeometry: frustumGeometry,
+        this._wireframes = {
+            bufferGeometry: wireframeGeometry,
             material: new MeshBasicMaterial({
-                color: options.frustums?.color ?? 0x00ff00,
+                color: options.wireframes?.color ?? 0x00ff00,
                 wireframe: true,
             }),
             instancedMesh: null,
@@ -231,7 +231,7 @@ export default abstract class OrientedImageCollection<
         }
 
         this.showLocationSpheres = options.locationSpheres?.visible ?? true;
-        this.showFrustums = options.frustums?.visible ?? true;
+        this.showWireframes = options.wireframes?.visible ?? true;
         this.showImages = options.images?.visible ?? false;
 
         this.object3d.updateMatrixWorld(true);
@@ -251,10 +251,10 @@ export default abstract class OrientedImageCollection<
             getObject3DMemoryUsage(context, this._spheres.instancedMesh);
         }
 
-        getGeometryMemoryUsage(context, this._frustums.bufferGeometry);
-        getMaterialMemoryUsage(context, this._frustums.material);
-        if (this._frustums.instancedMesh) {
-            getObject3DMemoryUsage(context, this._frustums.instancedMesh);
+        getGeometryMemoryUsage(context, this._wireframes.bufferGeometry);
+        getMaterialMemoryUsage(context, this._wireframes.material);
+        if (this._wireframes.instancedMesh) {
+            getObject3DMemoryUsage(context, this._wireframes.instancedMesh);
         }
     }
 
@@ -281,23 +281,23 @@ export default abstract class OrientedImageCollection<
     }
 
     /**
-     * Gets or sets the frustums visibility.
+     * Gets or sets the wireframes visibility.
      *
      * @defaultValue true
      */
-    public get showFrustums(): boolean {
-        return this._frustums.instancedMesh?.visible === true;
+    public get showWireframes(): boolean {
+        return this._wireframes.instancedMesh?.visible === true;
     }
 
-    public set showFrustums(visible: boolean) {
-        if (this.showFrustums === visible) {
+    public set showWireframes(visible: boolean) {
+        if (this.showWireframes === visible) {
             return;
         }
 
-        if (this._frustums.instancedMesh) {
-            this._frustums.instancedMesh.visible = visible;
+        if (this._wireframes.instancedMesh) {
+            this._wireframes.instancedMesh.visible = visible;
         } else if (visible) {
-            this.computeFrustums();
+            this.computeWireframes();
         }
         this.notifyChange(this);
     }
@@ -383,18 +383,18 @@ export default abstract class OrientedImageCollection<
 
         source.distance = distance;
 
-        if (this._images.objects || this._frustums.instancedMesh) {
-            const frustumMatrix = this.computeFrustumMatrix(source);
+        if (this._images.objects || this._wireframes.instancedMesh) {
+            const wireframeMatrix = this.computeWireframeMatrix(source);
 
             if (this._images.objects) {
                 const imageObject = this._images.objects[imageIndex];
-                imageObject.mesh.matrix.copy(frustumMatrix);
+                imageObject.mesh.matrix.copy(wireframeMatrix);
                 imageObject.mesh.updateMatrixWorld(true);
             }
 
-            if (this._frustums.instancedMesh) {
-                this._frustums.instancedMesh.setMatrixAt(imageIndex, frustumMatrix);
-                this._frustums.instancedMesh.instanceMatrix.needsUpdate = true;
+            if (this._wireframes.instancedMesh) {
+                this._wireframes.instancedMesh.setMatrixAt(imageIndex, wireframeMatrix);
+                this._wireframes.instancedMesh.instanceMatrix.needsUpdate = true;
             }
         }
         this.notifyChange(this);
@@ -450,10 +450,10 @@ export default abstract class OrientedImageCollection<
         this._spheres.instancedMesh?.dispose();
         this._spheres.instancedMesh = null;
 
-        this._frustums.bufferGeometry.dispose();
-        this._frustums.material.dispose();
-        this._frustums.instancedMesh?.dispose();
-        this._frustums.instancedMesh = null;
+        this._wireframes.bufferGeometry.dispose();
+        this._wireframes.material.dispose();
+        this._wireframes.instancedMesh?.dispose();
+        this._wireframes.instancedMesh = null;
 
         super.dispose();
     }
@@ -514,38 +514,38 @@ export default abstract class OrientedImageCollection<
         instancedMesh.instanceMatrix.needsUpdate = true;
     }
 
-    private computeFrustums(): void {
-        if (this._frustums.instancedMesh) {
+    private computeWireframes(): void {
+        if (this._wireframes.instancedMesh) {
             return;
         }
 
         const instancedMesh = new InstancedMesh(
-            this._frustums.bufferGeometry,
-            this._frustums.material,
+            this._wireframes.bufferGeometry,
+            this._wireframes.material,
             this.source.images.length,
         );
-        this._frustums.instancedMesh = instancedMesh;
-        this._frustums.instancedMesh.name = 'frustums';
+        this._wireframes.instancedMesh = instancedMesh;
+        this._wireframes.instancedMesh.name = 'wireframes';
         this._container.add(instancedMesh);
 
         this.source.images.forEach((source: TSource, index: number) => {
-            const matrix = this.computeFrustumMatrix(source);
+            const matrix = this.computeWireframeMatrix(source);
             instancedMesh.setMatrixAt(index, matrix);
         });
         instancedMesh.instanceMatrix.needsUpdate = true;
     }
 
-    private computeFrustumMatrix(source: TSource): Matrix4 {
+    private computeWireframeMatrix(source: TSource): Matrix4 {
         const translationMatrix = this.computeLocalTranslationMatrix(source.position);
         const rotationMatrix = this.computeLocalRotationMatrix(source.orientation);
-        const scaleMatrix = this.computeFrustumScaleMatrix(source);
+        const scaleMatrix = this.computeWireframeScaleMatrix(source);
         return new Matrix4()
             .multiply(translationMatrix)
             .multiply(rotationMatrix)
             .multiply(scaleMatrix);
     }
 
-    protected abstract computeFrustumScaleMatrix(source: TSource): Matrix4;
+    protected abstract computeWireframeScaleMatrix(source: TSource): Matrix4;
 
     private computeLocalRotationMatrix(orientation: HeadingPitchRollLike): Matrix4 {
         const heading = orientation.heading ?? 0;
@@ -598,8 +598,8 @@ export default abstract class OrientedImageCollection<
         if (this._spheres.instancedMesh?.visible === true) {
             boundingBox.expandByObject(this._spheres.instancedMesh);
         }
-        if (this._frustums.instancedMesh?.visible === true) {
-            boundingBox.expandByObject(this._frustums.instancedMesh);
+        if (this._wireframes.instancedMesh?.visible === true) {
+            boundingBox.expandByObject(this._wireframes.instancedMesh);
         }
         if (this._images.container.visible) {
             boundingBox.expandByObject(this._images.container);
@@ -622,13 +622,13 @@ export default abstract class OrientedImageCollection<
             side: DoubleSide,
             transparent: true,
             opacity: 0,
-            color: hasUrl ? undefined : this._frustums.material.color,
+            color: hasUrl ? undefined : this._wireframes.material.color,
         });
 
         const mesh = new Mesh(this._images.bufferGeometry, material);
         mesh.name = `image-${index}`;
         this._images.container.add(mesh);
-        mesh.matrix.copy(this.computeFrustumMatrix(imageSource));
+        mesh.matrix.copy(this.computeWireframeMatrix(imageSource));
         mesh.matrixAutoUpdate = false;
         mesh.updateMatrixWorld(true);
 
@@ -664,7 +664,7 @@ export default abstract class OrientedImageCollection<
                 }
             };
         } else {
-            material.color = this._frustums.material.color;
+            material.color = this._wireframes.material.color;
             material.opacity = actualOpacity;
         }
 
