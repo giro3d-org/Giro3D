@@ -157,7 +157,7 @@ export interface Defines extends Record<string, unknown> {
     CLASSIFICATION_2?: 1;
     DEFORMATION_SUPPORT?: 1;
     NUM_TRANSFO?: number;
-    USE_LOGDEPTHBUF?: 1;
+    USE_LOGARITHMIC_DEPTH_BUFFER?: 1;
     NORMAL_OCT16?: 1;
     NORMAL_SPHEREMAPPED?: 1;
     INTERSECTING_VOLUMES_SUPPORT?: 1;

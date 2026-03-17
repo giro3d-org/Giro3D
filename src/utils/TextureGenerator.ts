@@ -18,8 +18,6 @@ import {
     HalfFloatType,
     IntType,
     LinearFilter,
-    LuminanceAlphaFormat,
-    LuminanceFormat,
     MathUtils,
     NearestFilter,
     PlaneGeometry,
@@ -154,10 +152,6 @@ function getChannelCount(pixelFormat: AnyPixelFormat): number {
             return 1;
         case RGBAFormat:
             return 4;
-        case LuminanceFormat:
-            return 1;
-        case LuminanceAlphaFormat:
-            return 2;
         case DepthFormat:
             return 1;
         case DepthStencilFormat:
