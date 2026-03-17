@@ -5,8 +5,17 @@
  */
 
 import type Feature from 'ol/Feature';
-import type { Color, ColorRepresentation, Material, SpriteMaterial, Texture } from 'three';
 import type { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
+
+import {
+    FrontSide,
+    type Color,
+    type ColorRepresentation,
+    type Material,
+    type Side,
+    type SpriteMaterial,
+    type Texture,
+} from 'three';
 
 function isColor(o: unknown): o is Color {
     return (o as Color)?.isColor ?? false;
@@ -75,6 +84,11 @@ export interface FillStyle extends BaseStyle {
      * @defaultValue false
      */
     shading?: boolean;
+    /**
+     * The side of materials.
+     * @defaultValue FrontSide
+     */
+    side?: Side;
 }
 
 /**
@@ -138,8 +152,9 @@ export function getFullFillStyle(style?: Partial<FillStyle>): Required<FillStyle
     const depthTest = style?.depthTest ?? true;
     const renderOrder = style?.renderOrder ?? 0;
     const shading = style?.shading ?? false;
+    const side = style?.side ?? FrontSide;
 
-    return { opacity, color, depthTest, renderOrder, shading };
+    return { opacity, color, depthTest, renderOrder, shading, side };
 }
 
 /**

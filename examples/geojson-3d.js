@@ -8,7 +8,7 @@ import GeoJSON from 'ol/format/GeoJSON.js';
 import { tile } from 'ol/loadingstrategy.js';
 import VectorSource from 'ol/source/Vector.js';
 import { createXYZ } from 'ol/tilegrid.js';
-import { AmbientLight, Color, DirectionalLight, Vector3 } from 'three';
+import { AmbientLight, Color, DirectionalLight, DoubleSide, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
@@ -76,6 +76,9 @@ const featureCollection = new FeatureCollection({
             fill: {
                 color: colorFromId(feature.get('id')),
                 shading: params.shading,
+                // Here we have to specify double-side shading because
+                // some polygons are incorrectly oriented.
+                side: DoubleSide,
             },
             stroke: params.lines ? { color: 'black', lineWidth: 2 } : null,
         };

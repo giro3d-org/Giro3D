@@ -19,7 +19,6 @@ import {
 import {
     BufferAttribute,
     BufferGeometry,
-    DoubleSide,
     EventDispatcher,
     MeshBasicMaterial,
     MeshLambertMaterial,
@@ -52,6 +51,7 @@ import {
     type SurfaceMaterialGenerator,
 } from '../../core/FeatureTypes';
 import RequestQueue from '../../core/RequestQueue';
+import { Vector3Array } from '../../core/VectorArray';
 import Fetcher from '../../utils/Fetcher';
 import { triangulate } from '../../utils/tessellator';
 import LineStringMesh from './LineStringMesh';
@@ -127,38 +127,46 @@ const ZERO = new Vector3(0, 0, 0);
  *
  * - flatten the array while removing the last vertex of each rings
  * - builds the new hole indices taking into account vertex removals
- *
- * @param coordinates - The coordinate of the closed shape that form the roof.
- * @param stride - The stride in the coordinate array (2 for XY, 3 for XYZ)
- * @param offset - The offset to apply to vertex positions.
- * the first/last point
- * @param elevation - The elevation.
  */
 function createFloorVertices(params: {
-    coordinates: Array<Array<Array<number>>>;
-    stride: number;
+    polygon: Polygon;
+    /** The offset to apply to vertex positions */
     offset: Vector3;
     elevation?: FeatureElevation;
     ignoreZ: boolean;
-}): { flatCoordinates: number[]; holes: number[] } {
+}): { vertices: Vector3Array; holes: number[] } {
+    const { offset, ignoreZ, elevation, polygon } = params;
+
+    const stride = polygon.getStride();
+    // Note that we are forcing the ordering of coordinates to
+    // ensure that we always have clockwise coordinates. This
+    // is vital to ensure a proper triangulation.
+    const USE_RIGHT_HAND_RULE = true;
+    const rings = polygon.getCoordinates(USE_RIGHT_HAND_RULE);
+
+    const coordinateCount = polygon.getFlatCoordinates().length / polygon.getStride();
+    // There is one less vertex since we are removing
+    // the duplicated first/last coordinate for each ring.
+    const vertexCount = coordinateCount - polygon.getLinearRingCount();
+
     // iterate on polygon and holes
     const holesIndices: number[] = [];
     let currentIndex = 0;
-    const positions: number[] = [];
+    const positions = new Vector3Array(new Float32Array(vertexCount * 3));
+    positions.length = 0;
 
-    const { coordinates, offset, ignoreZ, elevation, stride } = params;
-
-    for (const ring of coordinates) {
-        // NOTE: rings coming from openlayers are auto-closing, so we need to remove the last vertex
-        // of each ring here
+    for (const ring of rings) {
+        // NOTE: rings coming from openlayers are auto-closing,
+        // so we need to remove the last vertex of each ring here
         if (currentIndex > 0) {
             holesIndices.push(currentIndex);
         }
-        for (let i = 0; i < ring.length - 1; i++) {
-            currentIndex++;
+
+        const callback: (i: number) => void = i => {
             const coord = ring[i];
-            positions.push(coord[X] - offset.x);
-            positions.push(coord[Y] - offset.y);
+
+            const x = coord[X] - offset.x;
+            const y = coord[Y] - offset.y;
             let z = 0;
             if (!ignoreZ && stride === 3) {
                 z = coord[Z];
@@ -166,10 +174,16 @@ function createFloorVertices(params: {
                 z = Array.isArray(elevation) ? elevation[i] : elevation;
             }
             z -= offset.z;
-            positions.push(z);
+
+            positions.push(x, y, z);
+        };
+
+        for (let i = 0; i < ring.length - 1; i++) {
+            currentIndex++;
+            callback(i);
         }
     }
-    return { flatCoordinates: positions, holes: holesIndices };
+    return { vertices: positions, holes: holesIndices };
 }
 
 /**
@@ -184,18 +198,25 @@ function createFloorVertices(params: {
  * @param extrusionOffset - the extrusion offset(s) to apply to the roof element.
  */
 function createRoof(
-    positions: Array<number>,
+    positions: Vector3Array,
     pointCount: number,
     indices: Array<number>,
     extrusionOffset: FeatureExtrusionOffset,
 ): void {
+    const array = positions.array;
+
     for (let i = 0; i < pointCount; i++) {
-        positions.push(positions[i * VERT_STRIDE + X]);
-        positions.push(positions[i * VERT_STRIDE + Y]);
         const zOffset = Array.isArray(extrusionOffset) ? extrusionOffset[i] : extrusionOffset;
-        positions.push(positions[i * VERT_STRIDE + Z] + zOffset);
+
+        const x = array[i * VERT_STRIDE + X];
+        const y = array[i * VERT_STRIDE + Y];
+        const z = array[i * VERT_STRIDE + Z] + zOffset;
+
+        positions.push(x, y, z);
     }
+
     const iLength = indices.length;
+
     for (let i = 0; i < iLength; i++) {
         indices.push(indices[i] + pointCount);
     }
@@ -211,7 +232,7 @@ function createRoof(
  * @param extrusionOffset - The extrusion distance.
  */
 function createWallForRings(
-    positions: Array<number>,
+    vertices: Vector3Array,
     start: number,
     end: number,
     indices: Array<number>,
@@ -223,11 +244,29 @@ function createWallForRings(
     // Note that each side has its own vertices, as vertices of sides are not shared with
     // other sides (i.e duplicated) in order to have faceted normals for each side.
     let vertexOffset = 0;
-    const pointCount = positions.length / 3;
+    const pointCount = vertices.length;
+    const positions = vertices.array;
+    const isNegativeExtrusion = typeof extrusionOffset === 'number' && extrusionOffset < 0;
 
-    for (let i = start; i < end; i++) {
-        const idxA = i * VERT_STRIDE;
-        const iB = i + 1 === end ? start : i + 1;
+    // If extrusion is negative (goes downward), then all triangles
+    // must be inverted so that normals keep pointing in the correct direction.
+    const reverse = isNegativeExtrusion;
+
+    const count = end - start;
+    const bOffset = reverse ? -1 : +1;
+
+    for (let i = 0; i < count; i++) {
+        // Should we move along the ring in forward or reverse order ?
+        const iA = reverse ? end - i - 1 : start + i + 0;
+        // const iB = ccw ? end - i - 1 : start + i + 1;
+        let iB = iA + bOffset;
+        if (iB < start) {
+            iB = end - 1;
+        } else if (iB > end - 1) {
+            iB = start;
+        }
+
+        const idxA = iA * VERT_STRIDE;
         const idxB = iB * VERT_STRIDE;
 
         const Ax = positions[idxA + X];
@@ -238,7 +277,7 @@ function createWallForRings(
         const By = positions[idxB + Y];
         const Bz = positions[idxB + Z];
 
-        const zOffsetA = Array.isArray(extrusionOffset) ? extrusionOffset[i] : extrusionOffset;
+        const zOffsetA = Array.isArray(extrusionOffset) ? extrusionOffset[iA] : extrusionOffset;
         const zOffsetB = Array.isArray(extrusionOffset) ? extrusionOffset[iB] : extrusionOffset;
 
         // +Z top
@@ -250,10 +289,10 @@ function createWallForRings(
         //      C                    D
         // -Z bottom
 
-        positions.push(Ax, Ay, Az); // A
-        positions.push(Bx, By, Bz); // B
-        positions.push(Ax, Ay, Az + zOffsetA); // C
-        positions.push(Bx, By, Bz + zOffsetB); // D
+        vertices.push(Ax, Ay, Az); // A
+        vertices.push(Bx, By, Bz); // B
+        vertices.push(Ax, Ay, Az + zOffsetA); // C
+        vertices.push(Bx, By, Bz + zOffsetB); // D
 
         // The indices of the side are the following
         // [A, B, C, C, B, D] to form the two triangles.
@@ -281,38 +320,27 @@ function createSurfaces(
     polygon: Polygon,
     options: PolygonOptions,
 ): { positions: Float32Array; indices: Uint16Array | Uint32Array } {
-    const stride = polygon.getStride();
-
     // First we compute the positions of the top vertices (that make the 'floor').
     // note that in some dataset, it's the roof and user needs to extrusionOffset down.
-    const coordinates = polygon.getCoordinates();
-
-    const { flatCoordinates, holes } = createFloorVertices({
-        coordinates,
-        stride,
+    const { vertices, holes } = createFloorVertices({
+        polygon,
         ignoreZ: options.ignoreZ ?? false,
         offset: options.origin ?? ZERO,
         elevation: options.elevation,
     });
 
-    const pointCount = flatCoordinates.length / 3;
-
-    const triangles = triangulate(flatCoordinates, holes);
+    const forceFlat = options.extrusionOffset != null;
+    const triangles = triangulate(vertices.array, holes, forceFlat);
+    const pointCount = vertices.length;
 
     if (options.extrusionOffset != null) {
-        createRoof(flatCoordinates, pointCount, triangles, options.extrusionOffset);
+        createRoof(vertices, vertices.length, triangles, options.extrusionOffset);
 
-        createWallForRings(
-            flatCoordinates,
-            0,
-            holes[0] || pointCount,
-            triangles,
-            options.extrusionOffset,
-        );
+        createWallForRings(vertices, 0, holes[0] || pointCount, triangles, options.extrusionOffset);
 
         for (let i = 0; i < holes.length; i++) {
             createWallForRings(
-                flatCoordinates,
+                vertices,
                 holes[i],
                 holes[i + 1] || pointCount,
                 triangles,
@@ -321,12 +349,10 @@ function createSurfaces(
         }
     }
 
-    const positions = new Float32Array(flatCoordinates);
-
     const indices =
-        positions.length <= 65536 ? new Uint16Array(triangles) : new Uint32Array(triangles);
+        vertices.length <= 65536 ? new Uint16Array(triangles) : new Uint32Array(triangles);
 
-    return { positions, indices };
+    return { positions: vertices.toFloat32Array(), indices };
 }
 
 const tempOrigin = new Vector3();
@@ -858,7 +884,7 @@ export default class GeometryConverter<
             color,
             opacity,
             transparent: opacity < 1,
-            side: DoubleSide,
+            side: style.side,
             depthTest,
             depthWrite: depthTest,
         });
@@ -885,7 +911,7 @@ export default class GeometryConverter<
             color,
             opacity,
             transparent: opacity < 1,
-            side: DoubleSide,
+            side: style.side,
             depthTest,
             depthWrite: depthTest,
         });

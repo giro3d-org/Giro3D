@@ -32,8 +32,8 @@ const SIMPLE_SQUARE = [
         [0, 0, 0],
     ],
 ];
-const SIMPLE_SQUARE_VERTICES = new Float32Array([0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0]);
-const SIMPLE_SQUARE_INDICES = new Uint16Array([1, 0, 3, 3, 2, 1]);
+const SIMPLE_SQUARE_VERTICES = new Float32Array([0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0]);
+const SIMPLE_SQUARE_INDICES = new Uint16Array([2, 3, 0, 0, 1, 2]);
 
 const SIMPLE_SQUARE_ON_VERTICAL_PLANE = [
     [
@@ -45,7 +45,7 @@ const SIMPLE_SQUARE_ON_VERTICAL_PLANE = [
     ],
 ];
 const SIMPLE_SQUARE_ON_VERTICAL_PLANE_VERTICES = new Float32Array([
-    0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0,
+    0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1,
 ]);
 
 /*
@@ -73,30 +73,30 @@ const SQUARE_WITH_HOLE = [
     ],
 ];
 const SQUARE_WITH_HOLE_VERTICES = new Float32Array([
-    0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0.2, 0.2, 0, 0.2, 0.3, 0, 0.3, 0.2, 0,
+    0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0.2, 0.2, 0, 0.2, 0.3, 0, 0.3, 0.2, 0,
 ]);
 // this is the vertices extruded with 1
 const EXTRUDED_SQUARE_WITH_HOLE_VERTICES = new Float32Array([
     // bottom face, with the hole
-    0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0.2, 0.2, 0, 0.2, 0.3, 0, 0.3, 0.2, 0,
+    0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0.2, 0.2, 0, 0.2, 0.3, 0, 0.3, 0.2, 0,
     // top face, only z changes
-    0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0.2, 0.2, 1, 0.2, 0.3, 1, 0.3, 0.2, 1,
+    0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0.2, 0.2, 1, 0.2, 0.3, 1, 0.3, 0.2, 1,
     // walls on the outer ring
     // 1st wall, first 2 coordinates of bottom face and first 2 coordinates of top face
-    0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1,
+    0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1,
     // 2nd wall
-    0, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1,
+    0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1,
     // 3rd
-    1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1,
+    1, 0, 0, 1, 0, 1, 1, 1, 0, 1,
     // 4rd
-    1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1,
+    1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1,
     // walls for the hole
     0.2, 0.2, 0, 0.2, 0.3, 0, 0.2, 0.2, 1, 0.2, 0.3, 1, 0.2, 0.3, 0, 0.3, 0.2, 0, 0.2, 0.3, 1, 0.3,
     0.2, 1, 0.3, 0.2, 0, 0.2, 0.2, 0, 0.3, 0.2, 1, 0.2, 0.2, 1,
 ]);
 
 const SQUARE_WITH_HOLE_INDICES = new Uint16Array([
-    0, 4, 5, 6, 4, 0, 3, 2, 1, 1, 0, 5, 6, 0, 3, 3, 1, 5, 5, 6, 3,
+    0, 4, 5, 6, 4, 0, 1, 2, 3, 3, 0, 5, 6, 0, 1, 1, 3, 5, 5, 6, 1,
 ]);
 
 describe('build', () => {
