@@ -5,8 +5,8 @@
  */
 
 import { GlobeControls } from '3d-tiles-renderer';
+import { GoogleCloudAuthPlugin } from '3d-tiles-renderer/core/plugins';
 import {
-    GoogleCloudAuthPlugin,
     TileCompressionPlugin,
     TilesFadePlugin,
     UnloadTilesPlugin,
