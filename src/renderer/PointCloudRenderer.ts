@@ -361,7 +361,7 @@ class PointCloudRenderer {
             generateMipmaps: false,
             minFilter: NearestFilter,
             magFilter: NearestFilter,
-            depthTexture: depthBuffer ? new DepthTexture(width, height, FloatType) : undefined,
+            depthTexture: depthBuffer ? new DepthTexture(width, height, FloatType) : null,
         });
     }
 

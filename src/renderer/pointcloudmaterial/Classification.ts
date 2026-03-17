@@ -75,16 +75,11 @@ export class ClassificationsTexture {
     public classifications: Classification[];
     public readonly texture: Texture;
 
-    private readonly _array: Uint8Array; // = new Uint8Array(4 * ClassificationsTexture.maxCount);
-
+    private readonly _array: Uint8Array;
     public constructor() {
         this.classifications = ASPRS_CLASSIFICATIONS.map(c => c.clone());
         this._array = new Uint8Array(4 * ClassificationsTexture.maxCount);
-        this.texture = new DataTexture(
-            this._array as BufferSource,
-            ClassificationsTexture.maxCount,
-            1,
-        );
+        this.texture = new DataTexture(this._array, ClassificationsTexture.maxCount, 1);
     }
 
     public updateUniform(): void {

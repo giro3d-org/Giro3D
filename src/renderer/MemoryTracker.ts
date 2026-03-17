@@ -25,7 +25,7 @@ class TextureState {
             const currentOnUpdate = texture.onUpdate;
             const patchedOnUpdate = (): void => {
                 this.inGpuMemory = true;
-                currentOnUpdate?.call(texture);
+                currentOnUpdate?.call(texture, texture);
             };
             texture.onUpdate = patchedOnUpdate;
         }

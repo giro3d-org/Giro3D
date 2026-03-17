@@ -15,7 +15,7 @@ export default {
     patchMaterialForLogDepthSupport(material: ShaderMaterial): void {
         // Check if the shader does not already use the log depth buffer
         if (
-            material.vertexShader.indexOf('USE_LOGDEPTHBUF') !== -1 ||
+            material.vertexShader.indexOf('USE_LOGARITHMIC_DEPTH_BUFFER') !== -1 ||
             material.vertexShader.indexOf('logdepthbuf_pars_vertex') !== -1
         ) {
             return;
@@ -40,8 +40,7 @@ export default {
         }
 
         material.defines = {
-            USE_LOGDEPTHBUF: 1,
-            USE_LOGDEPTHBUF_EXT: 1,
+            USE_LOGARITHMIC_DEPTH_BUFFER: 1,
         };
     },
 };
