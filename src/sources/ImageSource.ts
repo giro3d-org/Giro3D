@@ -241,11 +241,11 @@ abstract class ImageSource<Events extends ImageSourceEvents = ImageSourceEvents>
     public abstract getCrs(): CoordinateSystem;
 
     /**
-     * Returns the extent of this source expressed in the CRS of the source.
+     * Returns the extent of this source expressed in the CRS of the source. Might be `null` if the extent of the source is not known.
      *
-     * @returns The extent of the source.
+     * @returns The extent of the source, if any.
      */
-    public abstract getExtent(): Extent;
+    public abstract getExtent(): Extent | null;
 
     /**
      * Raises an event to reload the source.

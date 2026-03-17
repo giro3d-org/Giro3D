@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-import TileWMS from 'ol/source/TileWMS.js';
 import {
     AxesHelper,
     BoxGeometry,
@@ -25,7 +24,6 @@ import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Interpretation from '@giro3d/giro3d/core/layer/Interpretation.js';
 import Map, { isMap } from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import WmsSource from '@giro3d/giro3d/sources/WmsSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
@@ -116,14 +114,11 @@ function createColorLayer(name, url) {
 }
 
 function createElevationLayer(name, url) {
-    const source = new TiledImageSource({
-        source: new TileWMS({
-            url,
-            projection: 'EPSG:3946',
-            params: {
-                LAYERS: [name],
-            },
-        }),
+    const source = new WmsSource({
+        url,
+        projection: 'EPSG:3946',
+        layer: name,
+        imageFormat: 'image/jpeg',
     });
 
     return new ElevationLayer({

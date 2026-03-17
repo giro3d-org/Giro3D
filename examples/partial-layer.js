@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-import TileWMS from 'ol/source/TileWMS.js';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem.js';
@@ -15,7 +14,7 @@ import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
+import WmsSource from '@giro3d/giro3d/sources/WmsSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
@@ -35,15 +34,11 @@ const map = new Map({ extent, lighting: true, backgroundColor: 'white' });
 instance.add(map);
 
 // Adds a WMS imagery layer
-const colorSource = new TiledImageSource({
-    source: new TileWMS({
-        url: 'https://data.geopf.fr/wms-r',
-        projection: 'EPSG:3946',
-        params: {
-            LAYERS: ['ORTHOIMAGERY.ORTHOPHOTOS'],
-            FORMAT: 'image/jpeg',
-        },
-    }),
+const colorSource = new WmsSource({
+    url: 'https://data.geopf.fr/wms-r',
+    projection: 'EPSG:3946',
+    layer: 'ORTHOIMAGERY.ORTHOPHOTOS',
+    imageFormat: 'image/jpeg',
 });
 
 // Define a smaller extent for the layer.
@@ -57,16 +52,11 @@ const colorLayer = new ColorLayer({
 map.addLayer(colorLayer);
 
 // Adds a WMS elevation layer
-const elevationSource = new TiledImageSource({
-    source: new TileWMS({
-        url: 'https://data.geopf.fr/wms-r',
-        projection: 'EPSG:3946',
-        crossOrigin: 'anonymous',
-        params: {
-            LAYERS: ['ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES'],
-            FORMAT: 'image/x-bil;bits=32',
-        },
-    }),
+const elevationSource = new WmsSource({
+    url: 'https://data.geopf.fr/wms-r',
+    projection: 'EPSG:3946',
+    layer: 'ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES',
+    imageFormat: 'image/x-bil;bits=32',
     format: new BilFormat(),
     noDataValue: -1000,
 });

@@ -106,21 +106,30 @@ export default class AggregateImageSource extends ImageSource {
         if (props.visible !== visible) {
             props.visible = visible;
 
-            this.update(this.getExtent());
+            this.update(this.getExtent() ?? undefined);
         }
     }
 
     /**
-     * Returns the union of the extent of all the sub-sources.
+     * Returns the union of the extent of all the sub-sources, if possible.
+     * If at least one source does not have a known extent, then the entire aggregate extent is `undefined`.
      */
-    public override getExtent(): Extent {
+    public override getExtent(): Extent | null {
         if (this._cachedExtent == null) {
-            const extents = [...this._sourceProperties.keys()].map(source => source.getExtent());
-            const extent = Extent.unionMany(...extents);
-            this._cachedExtent = extent;
+            const allSources = [...this._sourceProperties.keys()];
+            const extents = allSources.map(source => source.getExtent()).filter(e => e != null);
+
+            // To avoid advertising an incorrect extent, all sub-sources must have a valid extent,
+            // otherwise we consider that we cannot compute the aggregate extent.
+            // If we considered only the sub-sources with a valid extent, then the aggregate
+            // extent would be partial and thus incorrect.
+            if (extents.length === allSources.length) {
+                const extent = Extent.unionMany(...extents);
+                this._cachedExtent = extent;
+            }
         }
 
-        return nonNull(this._cachedExtent);
+        return this._cachedExtent ?? null;
     }
 
     public override getMemoryUsage(context: GetMemoryUsageContext): void {
@@ -196,7 +205,9 @@ export default class AggregateImageSource extends ImageSource {
                 continue;
             }
 
-            if (source.getExtent().intersectsExtent(options.extent) === true) {
+            const extent = source.getExtent();
+
+            if (extent == null || extent.intersectsExtent(options.extent) === true) {
                 const images = source
                     .getImages(options)
                     .map(response => this.patchResponse(source, response));

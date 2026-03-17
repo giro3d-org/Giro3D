@@ -41,6 +41,7 @@ import StaticImageSource, {
     type StaticImageSourceOptions,
 } from './StaticImageSource';
 import TiledImageSource, { type TiledImageSourceOptions } from './TiledImageSource';
+import UrlImageSource, { type UrlImageSourceOptions } from './UrlImageSource';
 import VectorSource, { type VectorSourceOptions } from './VectorSource';
 import VectorTileSource, { type VectorTileSourceOptions } from './VectorTileSource';
 import VideoSource, { type VideoSourceEvents, type VideoSourceOptions } from './VideoSource';
@@ -55,7 +56,6 @@ export {
     AggregatePointCloudSource,
     AggregatePointCloudSourceOptions,
     ChannelMapping,
-    // CoordinateSystem,
     COPCSource,
     COPCSourceOptions,
     CustomContainsFn,
@@ -90,6 +90,8 @@ export {
     VectorSourceOptions,
     VectorTileSource,
     VectorTileSourceOptions,
+    UrlImageSource,
+    UrlImageSourceOptions,
     VideoSource,
     VideoSourceEvents,
     VideoSourceOptions,

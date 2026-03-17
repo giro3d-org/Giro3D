@@ -6,7 +6,6 @@
 
 import colormap from 'colormap';
 import GeoJSON from 'ol/format/GeoJSON.js';
-import TileWMS from 'ol/source/TileWMS.js';
 import { Fill, Stroke, Style } from 'ol/style.js';
 import { Color, DoubleSide } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
@@ -20,8 +19,8 @@ import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import VectorSource from '@giro3d/giro3d/sources/VectorSource.js';
+import WmsSource from '@giro3d/giro3d/sources/WmsSource.js';
 
 import { bindSlider } from './widgets/bindSlider.js';
 import { bindToggle } from './widgets/bindToggle.js';
@@ -55,16 +54,11 @@ const elevationLayer = new ElevationLayer({
     extent,
     colorMap,
     minmax: { min, max },
-    source: new TiledImageSource({
-        source: new TileWMS({
-            url: 'https://data.geopf.fr/wms-r',
-            projection: 'EPSG:3946',
-            crossOrigin: 'anonymous',
-            params: {
-                LAYERS: ['ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES'],
-                FORMAT: 'image/x-bil;bits=32',
-            },
-        }),
+    source: new WmsSource({
+        url: 'https://data.geopf.fr/wms-r',
+        projection: 'EPSG:3946',
+        layer: 'ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES',
+        imageFormat: 'image/x-bil;bits=32',
         format: new BilFormat(),
         noDataValue: -1000,
     }),
@@ -78,15 +72,11 @@ instance.add(orthophotoMap);
 const orthophotoLayer = new ColorLayer({
     name: 'orthophoto',
     extent,
-    source: new TiledImageSource({
-        source: new TileWMS({
-            url: 'https://data.geopf.fr/wms-r',
-            projection: 'EPSG:3946',
-            params: {
-                LAYERS: ['ORTHOIMAGERY.ORTHOPHOTOS'],
-                FORMAT: 'image/jpeg',
-            },
-        }),
+    source: new WmsSource({
+        url: 'https://data.geopf.fr/wms-r',
+        projection: 'EPSG:3946',
+        layer: 'ORTHOIMAGERY.ORTHOPHOTOS',
+        imageFormat: 'image/jpeg',
     }),
 });
 orthophotoMap.addLayer(orthophotoLayer);
