@@ -163,7 +163,7 @@ export default class PointCloudPlugin {
 
             // @ts-expect-error scene is not a LayerNode
             const layerNode = scene as LayerNode;
-            layerNode.lod = tile.__depth;
+            layerNode.lod = tile.internal.depth;
 
             // Let's compute a texture size from the point density.
             // We asssume that the point density is homogenous and that the shape
