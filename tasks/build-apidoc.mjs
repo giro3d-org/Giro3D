@@ -66,6 +66,8 @@ export async function buildApidoc(parameters) {
         entryPoints: [path.join(sourceDir, 'api.ts')],
         tsconfig: path.join(rootDir, 'tsconfig.json'),
         out: parameters.output,
+        plugin: ['typedoc-github-theme'],
+        theme: 'typedoc-github-theme',
         name: `API (${parameters.version}) - Giro3D`,
         readme: path.join(apidocDir, 'README.md'),
         basePath: sourceDir,
