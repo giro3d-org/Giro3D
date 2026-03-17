@@ -36,6 +36,7 @@ const customInspectors: Record<string, typeof EntityInspector<Entity3D>> = {
     SkyDome: SkyDomeInspector,
     Glow: GlowInspector,
     OrientedImageCollection: ImageCollectionInspector,
+    OrientedPanoramaCollection: ImageCollectionInspector,
 };
 
 /**

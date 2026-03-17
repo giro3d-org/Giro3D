@@ -47,6 +47,12 @@ import OrientedImageCollection, {
     type OrientedImageCollectionSource,
     type OrientedImageSource,
 } from './OrientedImageCollection';
+import OrientedPanoramaCollection, {
+    type OrientedPanoramaCollectionOptions,
+    type OrientedPanoramaCollectionPickResult,
+    type OrientedPanoramaCollectionSource,
+    type OrientedPanoramaSource,
+} from './OrientedPanoramaCollection';
 import PointCloud, {
     PointCloudOptions,
     UnsupportedAttributeError,
@@ -106,6 +112,11 @@ export {
     OrientedImageCollectionPickResult,
     OrientedImageCollectionSource,
     OrientedImageSource,
+    OrientedPanoramaCollection,
+    OrientedPanoramaCollectionOptions,
+    OrientedPanoramaCollectionPickResult,
+    OrientedPanoramaCollectionSource,
+    OrientedPanoramaSource,
     PointCloud,
     PointCloudBatchTableAttributeMapping,
     PointCloudOptions,
