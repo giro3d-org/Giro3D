@@ -95,6 +95,8 @@ import PlanarTileVolume from './tiles/PlanarTileVolume';
 import TileIndex, { type NeighbourList } from './tiles/TileIndex';
 import TileMesh, { isTileMesh } from './tiles/TileMesh';
 
+export { type MapLightingOptions };
+
 /**
  * Interface for Map tiles.
  */
