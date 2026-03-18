@@ -303,6 +303,16 @@ interface FeaturesEntry {
  * of a map or map-like entity, by taking terrain into account.
  *
  * To drape features on custom entities, they must implement the {@link MapLike} interface.
+ *
+ * ## Performance warning
+ *
+ * This entity is experimental and might suffer performance issues when loading many features.
+ * Notably be careful when setting the {@link minLod} value. If this value is too low, this could cause
+ * many features to be loaded (especially when used with streamed data, such as WFS servers).
+ *
+ * It is recommended to experiment with a high `minLod` value then decrease it progressively.
+ *
+ * @experimental
  */
 export default class DrapedFeatureCollection extends Entity3D {
     public override type = 'DrapedFeatureCollection' as const;
@@ -344,6 +354,10 @@ export default class DrapedFeatureCollection extends Entity3D {
     private _sortedTiles: Tile[] | null = null;
     private _minLod = 0;
 
+    /**
+     * The minimum tile LOD (level of detail) to display the features.
+     * If zero, then features are always displayed, since root tiles have LOD zero.
+     */
     public get minLod(): number {
         return this._minLod;
     }

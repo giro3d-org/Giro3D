@@ -7,7 +7,10 @@
 import type Atmosphere from './Atmosphere';
 import type { AtmosphereOptions } from './Atmosphere';
 import type DrapedFeatureCollection from './DrapedFeatureCollection';
-import type { MapLike as DrapedFeatureCollectionMapLike } from './DrapedFeatureCollection';
+import type {
+    MapLike as DrapedFeatureCollectionMapLike,
+    DrapedFeatureCollectionOptions,
+} from './DrapedFeatureCollection';
 import type Globe from './Globe';
 import type { GlobeOptions, GlobeTerrainOptions, defaultGlobeSubdivisionStrategy } from './Globe';
 import type Glow from './Glow';
@@ -81,6 +84,7 @@ export {
     Entity3DEventMap,
     EntityEventMap,
     DrapedFeatureCollection,
+    DrapedFeatureCollectionOptions,
     EntityUserData,
     FeatureCollection,
     FeatureCollectionOptions,
