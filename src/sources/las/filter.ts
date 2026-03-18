@@ -60,6 +60,7 @@ export type DimensionFilter =
 /**
  * For a given point index, evaluate all filters in series. Returns `true` if all filters return
  * `true`, otherwise returns `false`.
+ * @internal
  */
 export function evaluateFilters(filters: FilterByIndex[] | null, pointIndex: number): boolean {
     if (filters == null || filters.length === 0) {
@@ -69,6 +70,7 @@ export function evaluateFilters(filters: FilterByIndex[] | null, pointIndex: num
     return filters.every(f => f(pointIndex));
 }
 
+/** @internal */
 export function createPredicateFromFilter(filter: DimensionFilter): (value: number) => boolean {
     const operator = filter.operator;
 
@@ -97,6 +99,7 @@ export function createPredicateFromFilter(filter: DimensionFilter): (value: numb
 /**
  * For a given set of dimension filters, return an array of ready-to-use functions to apply to each
  * point being read.
+ * @internal
  */
 export function getPerPointFilters(filters: DimensionFilter[], view: View): FilterByIndex[] | null {
     if (filters.length === 0) {

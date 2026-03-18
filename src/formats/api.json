@@ -1,0 +1,3 @@
+{
+    "include": ["BilFormat.ts", "ImageFormat.ts", "GeoTIFFFormat.ts", "MapboxTerrainFormat.ts"]
+}

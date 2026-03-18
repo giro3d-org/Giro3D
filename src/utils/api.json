@@ -1,0 +1,9 @@
+{
+    "include": [
+        "Fetcher.ts",
+        "PromiseUtils.ts",
+        "GeoJSONUtils.ts",
+        "OpenLayersUtils.ts",
+        "HttpConfiguration.ts"
+    ]
+}

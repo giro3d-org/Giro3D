@@ -9,12 +9,13 @@ import { program } from 'commander';
 import esMain from 'es-main';
 import fse from 'fs-extra';
 import path, { dirname } from 'path';
+import { exit } from 'process';
 import { fileURLToPath } from 'url';
 
 import { copyAssets } from './build-static-site.mjs';
 import { getPackageVersion } from './prepare-package.mjs';
 import { createStaticServer } from './serve.mjs';
-import { log, logOk } from './utils.mjs';
+import { log, logError, logOk } from './utils.mjs';
 
 const baseDir = dirname(fileURLToPath(import.meta.url));
 const rootDir = path.join(baseDir, '..');
@@ -47,6 +48,49 @@ export async function cleanApidoc(parameters) {
 }
 
 /**
+ * @param {string} src - The root directory
+ * @returns {string[]} - The entry points
+ */
+function collectEntryPoints(src) {
+    const result = [];
+
+    for (const entry of fse.readdirSync(src, {
+        recursive: true,
+        withFileTypes: true,
+        encoding: 'utf-8',
+    })) {
+        if (entry.isDirectory()) {
+            const dirPath = path.join(entry.parentPath, entry.name);
+            const apiFile = path.join(dirPath, 'api.json');
+
+            // If api.json is present in the directory,
+            // we consider including its files in the entry points.
+            if (fse.existsSync(apiFile)) {
+                try {
+                    const json = JSON.parse(fse.readFileSync(apiFile, { encoding: 'utf-8' }));
+                    /** @type {string[]} */
+                    const include = json.include;
+
+                    for (const item of include) {
+                        const fullpath = path.join(dirPath, item);
+                        if (fse.existsSync(fullpath)) {
+                            result.push(fullpath);
+                        } else {
+                            logError('apidoc', `No such file: ${fullpath}`);
+                            throw new Error('FATAL');
+                        }
+                    }
+                } catch {
+                    logError('apidoc', `Error while parsing ${apiFile}`);
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
+/**
  * @param {Parameters} parameters
  */
 export async function buildApidoc(parameters) {
@@ -62,9 +106,7 @@ export async function buildApidoc(parameters) {
      */
     const config = {
         $schema: 'https://typedoc.org/schema.json',
-        entryPoints: [sourceDir],
-        entryPointStrategy: 'expand',
-        exclude: ['**/internal/**', '**/version.ts'],
+        entryPoints: collectEntryPoints(sourceDir),
         tsconfig: path.join(rootDir, 'tsconfig.json'),
         out: parameters.output,
         plugin: ['typedoc-github-theme', 'typedoc-plugin-rename-defaults'],
@@ -147,8 +189,14 @@ async function run(params) {
         });
     }
 
-    await buildApidoc(params);
-    if (params.watch) {
-        await serveApidoc(params);
+    try {
+        await buildApidoc(params);
+        if (params.watch) {
+            await serveApidoc(params);
+        }
+    } catch (e) {
+        logError('apidoc', 'One or more error occured while generated API doc.');
+        logError('apidoc', e);
+        exit(1);
     }
 }

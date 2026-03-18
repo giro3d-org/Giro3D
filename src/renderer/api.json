@@ -1,0 +1,9 @@
+{
+    "include": [
+        "View.ts",
+        "IntersectingVolume.ts",
+        "c3DEngine.ts",
+        "RenderingOptions.ts",
+        "RenderingContextHandler.ts"
+    ]
+}

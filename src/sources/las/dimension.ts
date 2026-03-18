@@ -49,6 +49,7 @@ const u16Range = { min: 0, max: 65536 };
  * const { min, max } = DEFAULT_VALUE_RANGES['ReturnNumber'];
  * // { min: 0, max: 8 }
  * ```
+ * @internal
  */
 export const DEFAULT_VALUE_RANGES: Record<DimensionName, { min?: number; max?: number }> = {
     // Point Data Record Format 0
@@ -95,6 +96,7 @@ function getAttributeByteSize(input: Dimension['size']): PointCloudAttribute['si
 
 /**
  * Extracts attributes from LAS dimensions.
+ * @internal
  */
 export function extractAttributes(
     dimensions: Dimension.Map,
@@ -212,6 +214,7 @@ export function extractAttributes(
  * - `X`, `Y`, `Z` for the point position,
  * - `Intensity` for the requested attribute
  * - `Classification` and `GpsTime` for filtering.
+ * @internal
  */
 export function getDimensionsToRead(
     attributes: PointCloudAttribute[],

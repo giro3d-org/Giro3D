@@ -1,0 +1,11 @@
+{
+    "include": [
+        "PickObjectsAt.ts",
+        "PickOptions.ts",
+        "PickPointsAt.ts",
+        "PickResult.ts",
+        "PickTilesAt.ts",
+        "Pickable.ts",
+        "PickableFeatures.ts"
+    ]
+}

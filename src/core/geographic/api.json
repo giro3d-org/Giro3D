@@ -1,0 +1,11 @@
+{
+    "include": [
+        "CoordinateSystem.ts",
+        "Coordinates.ts",
+        "Ellipsoid.ts",
+        "Extent.ts",
+        "SRID.ts",
+        "Sun.ts",
+        "Unit.ts"
+    ]
+}

@@ -1,0 +1,3 @@
+{
+    "include": ["Inspector.ts", "Panel.ts"]
+}
