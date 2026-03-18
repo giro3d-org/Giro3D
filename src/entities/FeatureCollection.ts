@@ -15,7 +15,7 @@ import type {
     Polygon,
 } from 'ol/geom';
 import type VectorSource from 'ol/source/Vector';
-import type { BufferGeometry, Camera, Object3D, Plane } from 'three';
+import type { BufferGeometry, Camera, Material, Object3D, Plane } from 'three';
 
 import { VOID } from 'ol/functions';
 import { Projection } from 'ol/proj';
@@ -751,6 +751,12 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
         this.traverseMeshes(mesh => {
             this.assignRenderOrder(mesh);
         });
+    }
+
+    protected override setupMaterial(material: Material): void {
+        // Contrary to the method in the base class, we don't want
+        // to alter opacity and transparent as it is already computed per-feature.
+        material.clippingPlanes = this.clippingPlanes;
     }
 
     public override updateOpacity(): void {
