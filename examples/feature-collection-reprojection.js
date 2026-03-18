@@ -5,9 +5,8 @@
  */
 
 import GeoJSON from 'ol/format/GeoJSON.js';
-import { tile } from 'ol/loadingstrategy.js';
+import { OSM } from 'ol/source.js';
 import VectorSource from 'ol/source/Vector.js';
-import { createXYZ } from 'ol/tilegrid.js';
 import { Color, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import { MathUtils } from 'three/src/math/MathUtils.js';
@@ -16,8 +15,11 @@ import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates';
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem.js';
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
+import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import FeatureCollection from '@giro3d/giro3d/entities/FeatureCollection.js';
+import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
+import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
 
@@ -26,12 +28,25 @@ const crs = CoordinateSystem.register(
     '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
 );
 
-const extent = new Extent(crs, -111629.52, 1275028.84, 5976033.79, 7230161.64);
+const center = new Coordinates(crs, 651_668, 6_862_256);
+const extent = Extent.fromCenterAndSize(crs, center, 20_000, 14_000);
 
 const instance = new Instance({
     target: 'view',
     crs: extent.crs,
 });
+
+const map = new Map({ extent });
+
+instance.add(map);
+
+const osm = new ColorLayer({
+    source: new TiledImageSource({
+        source: new OSM(),
+    }),
+});
+
+map.addLayer(osm);
 
 // This is a GeoJSON with the default crs EPSG:4326
 const arrondissementSource = new VectorSource({
@@ -65,16 +80,17 @@ const arrondissements = new FeatureCollection({
         return {
             fill: {
                 color,
+                opacity: 0.6,
                 depthTest: false,
                 renderOrder: 1,
             },
-            stroke: highlight
-                ? {
-                      color: 'white',
-                      depthTest: false,
-                      renderOrder: 2,
-                  }
-                : null,
+            stroke: {
+                color: 'black',
+                opacity: 0.99, // To ensure it is renderer on top of surfaces
+                lineWidth: highlight ? 4 : 2,
+                depthTest: false,
+                renderOrder: 2,
+            },
         };
     },
 });
@@ -107,72 +123,15 @@ const perimeterqaa = new FeatureCollection({
             },
             stroke: {
                 color: '#85f516',
+                opacity: 0.99, // To ensure that it is properly drawn on top of the surfaces
                 lineWidth: highlight ? 4 : 1,
-                depthTest: false,
                 renderOrder: 4,
+                depthTest: false,
             },
         };
     },
 });
 instance.add(perimeterqaa);
-
-// A WFS source in EPSG:3857
-const bdTopoSource = new VectorSource({
-    format: new GeoJSON(),
-    url: function url(bbox) {
-        return `${
-            'https://data.geopf.fr/wfs/ows' +
-            '?SERVICE=WFS' +
-            '&VERSION=2.0.0' +
-            '&request=GetFeature' +
-            '&typename=BDTOPO_V3:batiment' +
-            '&outputFormat=application/json' +
-            '&SRSNAME=EPSG:3857' +
-            '&startIndex=0' +
-            '&bbox='
-        }${bbox.join(',')},EPSG:3857`;
-    },
-    strategy: tile(createXYZ({ tileSize: 512 })),
-});
-const buildings = new FeatureCollection({
-    name: 'buildings',
-    source: bdTopoSource,
-    // we specify that FeatureCollection should reproject the features before displaying them
-    dataProjection: CoordinateSystem.epsg3857,
-    // We are working on a flat, 2D scene, so we must ignore the Z coordinate of features, if any.
-    ignoreZ: true,
-    extent,
-    style: feature => {
-        const properties = feature.getProperties();
-        const highlighted = properties.highlight;
-        let color = '#FFFFFF';
-
-        if (highlighted) {
-            color = 'cyan';
-        } else {
-            if (properties.usage_1 === 'Résidentiel') {
-                color = '#9d9484';
-            } else if (properties.usage_1 === 'Commercial et services') {
-                color = '#b0ffa7';
-            }
-        }
-        return {
-            fill: {
-                color,
-                depthTest: false,
-                renderOrder: 5,
-            },
-            stroke: {
-                color: 'black',
-                renderOrder: 6,
-                depthTest: false,
-            },
-        };
-    },
-    minLevel: 11,
-    maxLevel: 11,
-});
-instance.add(buildings);
 
 const position = new Coordinates(crs, 652212.5, 6860754.1, 27717.3);
 const lookAtCoords = new Coordinates(crs, 652338.3, 6862087.1, 200);
