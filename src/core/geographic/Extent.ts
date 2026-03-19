@@ -530,6 +530,24 @@ class Extent {
         return result;
     }
 
+    public getQuadrant(x: number, y: number): 0 | 1 | 2 | 3 {
+        const dims = this.dimensions(tmpXY);
+        const midX = this.west + dims.width / 2;
+        const midY = this.south + dims.height / 2;
+
+        if (x < midX) {
+            if (y < midY) {
+                return 0;
+            }
+            return 1;
+        } else {
+            if (y < midY) {
+                return 3;
+            }
+            return 2;
+        }
+    }
+
     /**
      * Sets the target with the width and height of this extent.
      * The `x` property will be set with the width,
@@ -563,11 +581,15 @@ class Extent {
                 c.latitude >= this.minY - epsilon
             );
         }
+        return this.isXYInside(c.x, c.y, epsilon);
+    }
+
+    public isXYInside(x: number, y: number, epsilon = 0): boolean {
         return (
-            c.x <= this.maxX + epsilon &&
-            c.x >= this.minX - epsilon &&
-            c.y <= this.maxY + epsilon &&
-            c.y >= this.minY - epsilon
+            x <= this.maxX + epsilon &&
+            x >= this.minX - epsilon &&
+            y <= this.maxY + epsilon &&
+            y >= this.minY - epsilon
         );
     }
 

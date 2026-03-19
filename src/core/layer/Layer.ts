@@ -247,7 +247,8 @@ export interface LayerEvents {
     /**
      * Fires when a node has been completed.
      */
-    'node-complete': { node: LayerNode };
+
+    'node-complete': { node: LayerNode; layer: Layer };
 }
 
 export interface LayerOptions {
@@ -1387,17 +1388,17 @@ abstract class Layer<
 
         target.textureIsFinal = isLastRender;
 
-        if (isLastRender) {
-            this.setTargetState(target, TargetState.Complete);
-        } else {
-            this.setTargetState(target, TargetState.Pending);
-        }
-
         target.paintCount++;
 
         const texture = nonNull(target.renderTarget).object.texture;
         this.applyTextureToNode({ texture, pitch }, target, isLastRender);
         this.instance.notifyChange(this);
+
+        if (isLastRender) {
+            this.setTargetState(target, TargetState.Complete);
+        } else {
+            this.setTargetState(target, TargetState.Pending);
+        }
     }
 
     private setTargetState(target: Target, state: TargetState): void {
@@ -1408,7 +1409,7 @@ abstract class Layer<
         target.state = state;
 
         if (state === TargetState.Complete) {
-            this.dispatchEvent({ type: 'node-complete', node: target.node });
+            this.dispatchEvent({ type: 'node-complete', node: target.node, layer: this });
         }
     }
 

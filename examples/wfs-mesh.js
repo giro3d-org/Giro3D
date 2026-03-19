@@ -17,9 +17,13 @@ import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem.js
 import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
+import DrapedFeatureCollection from '@giro3d/giro3d/entities/DrapedFeatureCollection.js';
 import FeatureCollection from '@giro3d/giro3d/entities/FeatureCollection.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
+import StreamableFeatureSource, {
+    wfsBuilder,
+} from '@giro3d/giro3d/sources/StreamableFeatureSource.js';
 import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 
 import { bindToggle } from './widgets/bindToggle.js';

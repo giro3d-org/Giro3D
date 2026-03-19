@@ -4,7 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
 
-import type { Camera, PerspectiveCamera, Scene, SpriteMaterial, WebGLRenderer } from 'three';
+import type {
+    Camera,
+    PerspectiveCamera,
+    Scene,
+    SpriteMaterial,
+    WebGLRenderer,
+    Vector3,
+} from 'three';
 
 import { MathUtils, Sprite } from 'three';
 
@@ -26,6 +33,7 @@ export default class PointMesh<UserData extends DefaultUserData = DefaultUserDat
     public readonly isSimpleGeometryMesh = true as const;
     public readonly isPointMesh = true as const;
     public override readonly type = 'PointMesh' as const;
+    public geometryOrigin: Vector3 | undefined;
 
     private _featureOpacity = 1;
     private _styleOpacity = 1;

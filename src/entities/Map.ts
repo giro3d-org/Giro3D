@@ -17,6 +17,7 @@ import {
     type Camera,
     type ColorRepresentation,
     type Intersection,
+    type Mesh,
     type Object3D,
     type Side,
     type TextureDataType,
@@ -28,7 +29,7 @@ import type Context from '../core/Context';
 import type ContourLineOptions from '../core/ContourLineOptions';
 import type ElevationProvider from '../core/ElevationProvider';
 import type ElevationRange from '../core/ElevationRange';
-import type CoordinateSystem from '../core/geographic/CoordinateSystem';
+import type ElevationSample from '../core/ElevationSample';
 import type Extent from '../core/geographic/Extent';
 import type GetElevationOptions from '../core/GetElevationOptions';
 import type GetElevationResult from '../core/GetElevationResult';
@@ -38,6 +39,7 @@ import type ColorLayer from '../core/layer/ColorLayer';
 import type ElevationLayer from '../core/layer/ElevationLayer';
 import type HasLayers from '../core/layer/HasLayers';
 import type Layer from '../core/layer/Layer';
+import type { LayerEvents } from '../core/layer/Layer';
 import type MemoryUsage from '../core/MemoryUsage';
 import type Pickable from '../core/picking/Pickable';
 import type PickableFeatures from '../core/picking/PickableFeatures';
@@ -54,6 +56,7 @@ import type TileVolume from './tiles/TileVolume';
 
 import { defaultColorimetryOptions } from '../core/ColorimetryOptions';
 import Coordinates from '../core/geographic/Coordinates';
+import CoordinateSystem from '../core/geographic/CoordinateSystem';
 import { isColorLayer } from '../core/layer/ColorLayer';
 import { isElevationLayer } from '../core/layer/ElevationLayer';
 import { isLayer } from '../core/layer/Layer';
@@ -93,6 +96,20 @@ import TileIndex, { type NeighbourList } from './tiles/TileIndex';
 import TileMesh, { isTileMesh } from './tiles/TileMesh';
 
 /**
+ * Interface for Map tiles.
+ */
+export interface Tile extends Mesh {
+    /**
+     * The level of detail (LOD) of the tile. LOD 0 means the tile is a root tile.
+     */
+    lod: number;
+    /**
+     * The geographic extent of the tile. If the tile has LOD 0, then it is the same as the extent of its parent map.
+     */
+    extent: Extent;
+}
+
+/**
  * A function that allows subdivision of the specified tile.
  * If the function returns `true`, the node can be subdivided.
  */
@@ -100,18 +117,7 @@ export type MapSubdivisionStrategy = (
     /**
      * The tile to subdivide.
      */
-    tile: Readonly<
-        Object3D & {
-            /**
-             * The level of detail (LOD) of the tile. LOD 0 means the tile is a root tile.
-             */
-            lod: number;
-            /**
-             * The geographic extent of the tile.
-             */
-            extent: Extent;
-        }
-    >,
+    tile: Readonly<Tile>,
     context: { entity: Readonly<Map>; layers: readonly Readonly<Layer>[] },
 ) => boolean;
 
@@ -187,6 +193,7 @@ const tmpVector = new Vector3();
 const tmpBox3 = new Box3();
 const tempNDC = new Vector2();
 const tempDims = new Vector2();
+const tempElevationCoords = new Coordinates(CoordinateSystem.epsg4326, 0, 0);
 const tempCanvasCoords = new Vector2();
 const tmpSseSizes: [number, number] = [0, 0];
 const tmpIntersectList: Intersection<TileMesh>[] = [];
@@ -380,10 +387,18 @@ export interface MapEventMap extends Entity3DEventMap {
     'layer-added': { layer: Layer };
     /** Fires when a layer is removed from the map. */
     'layer-removed': { layer: Layer };
+    /** Fires when the visibility of a layer present on this map changes. */
+    'layer-visibility-changed': { layer: Layer };
     /** Fires when elevation data has changed on a specific extent of the map. */
     'elevation-changed': { extent: Extent };
+    /** Fires when (final, non-interim) elevation data has been loaded for a specific tile */
+    'elevation-loaded': { tile: Tile };
     /** Fires when all tiles are painted */
     'paint-complete': unknown;
+    /** Fires when a tile is created. */
+    'tile-created': { tile: Tile };
+    /** Fires when a tile is deleted. */
+    'tile-deleted': { tile: Tile };
 }
 
 /**
@@ -600,7 +615,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     private readonly _layerIds: Set<string> = new Set();
     private readonly _materialOptions: MaterialOptions;
     private readonly _subdivisionStrategy: MapSubdivisionStrategy;
-    private readonly _onNodeComplete: () => void;
+    private readonly _onNodeComplete: (e: LayerEvents['node-complete']) => void;
 
     private _paintCompleteTimeout: NodeJS.Timeout | null = null;
     private _geometryBuilder: TileGeometryBuilder | null = null;
@@ -688,9 +703,13 @@ class Map<UserData extends EntityUserData = EntityUserData>
         return this._layers.some(l => l.loading);
     }
 
-    private onNodeComplete(): void {
+    private onNodeComplete(e: LayerEvents['node-complete']): void {
         if (this._paintCompleteTimeout) {
             clearTimeout(this._paintCompleteTimeout);
+        }
+
+        if (isElevationLayer(e.layer)) {
+            this.dispatchEvent({ type: 'elevation-loaded', tile: e.node as unknown as Tile });
         }
 
         this._paintCompleteTimeout = setTimeout(this.evaluatePaintComplete.bind(this), 500);
@@ -1229,6 +1248,8 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
         this.updateObject(tile);
 
+        this.dispatchEvent({ type: 'tile-created', tile });
+
         this.onObjectCreated(tile);
 
         if (parent) {
@@ -1752,6 +1773,8 @@ class Map<UserData extends EntityUserData = EntityUserData>
             this.updateGlobalMinMax();
         }
 
+        this.dispatchEvent({ type: 'layer-visibility-changed', layer: event.target });
+
         this.traverseTiles(tile => {
             tile.onLayerVisibilityChanged(event.target);
         });
@@ -1867,6 +1890,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     private disposeTile(tile: TileMesh): void {
         tile.traverseTiles(desc => {
             desc.dispose();
+            this.dispatchEvent({ type: 'tile-deleted', tile: desc });
             this._allTiles.delete(desc);
         });
     }
@@ -1931,6 +1955,49 @@ class Map<UserData extends EntityUserData = EntityUserData>
             }
         }
         return { min: 0, max: 0 };
+    }
+
+    private getRootTileThatContainsXY(x: number, y: number): TileMesh {
+        for (const root of this._rootTiles) {
+            if (root.extent.isXYInside(x, y)) {
+                return root;
+            }
+        }
+
+        throw new Error('no root tile contains the coordinate');
+    }
+
+    public getElevationFast(x: number, y: number): ElevationSample | undefined {
+        if (!this._hasElevationLayer) {
+            return undefined;
+        }
+
+        const elevationLayers = this.getElevationLayers();
+        const elevationLayer = elevationLayers[0];
+
+        if (!elevationLayer.visible) {
+            return undefined;
+        }
+
+        if (!this.extent.isXYInside(x, y)) {
+            return undefined;
+        }
+
+        const root = this.getRootTileThatContainsXY(x, y);
+        const leaf = root.getLeafThatContains(x, y);
+
+        tempElevationCoords.set(this.instance.coordinateSystem, x, y);
+
+        const result = leaf?.getElevation({ coordinates: tempElevationCoords });
+
+        if (result == null) {
+            return undefined;
+        }
+
+        return {
+            ...result,
+            source: this,
+        } satisfies ElevationSample;
     }
 
     /**
