@@ -5,8 +5,9 @@
  */
 
 import type GUI from 'lil-gui';
+import type { Object3D } from 'three';
 
-import { Color, Object3D, Plane, PlaneHelper, Vector3, type ColorRepresentation } from 'three';
+import { Color, Plane, PlaneHelper, Vector3, type ColorRepresentation } from 'three';
 
 import type HasDefaultPointOfView from '../core/HasDefaultPointOfView';
 import type Instance from '../core/Instance';
@@ -30,9 +31,8 @@ const _tempArray: Object3D[] = [];
  *
  * @param callback - The callback to call for each visited object.
  */
-// @ts-expect-error monkey patching // FIXME
-Object3D.prototype.traverseOnce = function traverseOnce(callback: (obj: Object3D) => void): void {
-    this.traverse((o: Object3D) => _tempArray.push(o));
+function traverseOnce(root: Object3D, callback: (obj: Object3D) => void): void {
+    root.traverse((o: Object3D) => _tempArray.push(o));
 
     while (_tempArray.length > 0) {
         const obj = _tempArray.pop();
@@ -40,7 +40,7 @@ Object3D.prototype.traverseOnce = function traverseOnce(callback: (obj: Object3D
             callback(obj);
         }
     }
-};
+}
 
 class ClippingPlanePanel extends Panel {
     public entity: Entity3D;
@@ -296,8 +296,7 @@ class EntityInspector<T extends Entity3D = Entity3D> extends Panel {
         const color = new Color(this.boundingBoxColor);
         // by default, adds axis-oriented bounding boxes to each object in the hierarchy.
         // custom implementations may override this to have a different behaviour.
-        // @ts-expect-error traverseOnce() is monkey patched
-        this.rootObject.traverseOnce(obj => this.addOrRemoveBoundingBox(obj, visible, color));
+        traverseOnce(this.rootObject, obj => this.addOrRemoveBoundingBox(obj, visible, color));
         this.notify(this.entity);
     }
 

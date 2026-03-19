@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: MIT
  */
 
+import type { Vector3 } from 'three';
+
 import { Object3D } from 'three';
 
 import type PointMesh from './PointMesh';
@@ -19,6 +21,8 @@ export default class MultiPointMesh<UserData extends DefaultUserData = DefaultUs
     public readonly isSimpleGeometryMesh = true as const;
     public readonly isMultiPointMesh = true as const;
     public override readonly type = 'MultiPointMesh' as const;
+
+    public geometryOrigin: Vector3 | undefined;
 
     public override userData: Partial<UserData> = {};
 

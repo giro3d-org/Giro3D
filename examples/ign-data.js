@@ -4,10 +4,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-import GeoJSON from 'ol/format/GeoJSON.js';
-import { tile } from 'ol/loadingstrategy.js';
-import VectorSource from 'ol/source/Vector.js';
-import { createXYZ } from 'ol/tilegrid.js';
 import {
     AmbientLight,
     Color,
@@ -25,11 +21,14 @@ import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
-import FeatureCollection from '@giro3d/giro3d/entities/FeatureCollection.js';
+import DrapedFeatureCollection from '@giro3d/giro3d/entities/DrapedFeatureCollection.js';
 // NOTE: changing the imported name because we use the native `Map` object in this example.
 import Giro3dMap from '@giro3d/giro3d/entities/Map.js';
 import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
+import StreamableFeatureSource, {
+    wfsBuilder,
+} from '@giro3d/giro3d/sources/StreamableFeatureSource.js';
 import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
@@ -110,24 +109,6 @@ WmtsSource.fromCapabilities(url, {
     })
     .catch(console.error);
 
-const buildingSource = new VectorSource({
-    format: new GeoJSON(),
-    url: bbox => {
-        return `${
-            'https://data.geopf.fr/wfs/ows' +
-            '?SERVICE=WFS' +
-            '&VERSION=2.0.0' +
-            '&request=GetFeature' +
-            '&typename=BDTOPO_V3:batiment' +
-            '&outputFormat=application/json' +
-            '&SRSNAME=EPSG:2154' +
-            '&startIndex=0' +
-            '&bbox='
-        }${bbox.join(',')},EPSG:2154`;
-    },
-    strategy: tile(createXYZ({ tileSize: 512 })),
-});
-
 const hoverColor = new Color('yellow');
 
 // This is the style function that will assign a different style depending on a feature's attribute.
@@ -190,16 +171,20 @@ const extrusionOffsetCallback = feature => {
     return extrusionOffset;
 };
 
-const featureCollection = new FeatureCollection({
-    source: buildingSource,
-    extent,
-    extrusionOffset: extrusionOffsetCallback,
+const featureCollection = new DrapedFeatureCollection({
     style: buildingStyle,
-    minLevel: 11,
-    maxLevel: 11,
+    extrusionOffset: extrusionOffsetCallback,
+    drapingMode: 'none',
+    minLod: 11,
+    source: new StreamableFeatureSource({
+        queryBuilder: wfsBuilder('https://data.geopf.fr/wfs/ows', 'BDTOPO_V3:batiment'),
+        extent,
+    }),
 });
 
 instance.add(featureCollection);
+
+featureCollection.attach(map);
 
 // To make sure that the buildings remain correctly displayed whenever
 // one entity become transparent (i.e it's opacity is less than 1), we need
@@ -331,9 +316,10 @@ function pick(e, click) {
         const obj = picked.object;
         const { feature } = obj.userData;
 
-        feature.set(property, true);
-
-        objectsToUpdate.push(obj);
+        if (feature) {
+            feature.set(property, true);
+            objectsToUpdate.push(obj);
+        }
     }
 
     if (click) {

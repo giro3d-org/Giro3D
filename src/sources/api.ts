@@ -4,12 +4,20 @@
  * SPDX-License-Identifier: MIT
  */
 
-// import CoordinateSystem from '../core/geographic/CoordinateSystem';
+import AggregateFeatureSource, { AggregateFeatureSourceOptions } from './AggregateFeatureSource';
 import AggregateImageSource from './AggregateImageSource';
 import AggregatePointCloudSource, {
     AggregatePointCloudSourceOptions,
 } from './AggregatePointCloudSource';
 import COPCSource, { COPCSourceOptions } from './COPCSource';
+import {
+    FeatureSource,
+    FeatureSourceBase,
+    FeatureSourceEventMap,
+    GetFeatureRequest,
+    GetFeatureResult,
+} from './FeatureSource';
+import FileFeatureSource, { FileFeatureSourceOptions } from './FileFeatureSource';
 import GeoTIFFSource, {
     type ChannelMapping,
     type GeoTIFFCacheOptions,
@@ -36,10 +44,21 @@ import {
     PointCloudSourceEventMap,
 } from './PointCloudSource';
 import PotreeSource, { PotreeSourceOptions } from './PotreeSource';
+import StaticFeatureSource, { StaticFeaturesSourceOptions } from './StaticFeatureSource';
 import StaticImageSource, {
     type StaticImageSourceEvents,
     type StaticImageSourceOptions,
 } from './StaticImageSource';
+import StreamableFeatureSource, {
+    StreamableFeatureSourceOptions,
+    StreamableFeatureSourceQueryBuilder,
+    StreamableFeatureSourceGetter,
+    StreamableFeatureSourceLoadingStrategy,
+    defaultLoadingStrategy,
+    tiledLoadingStrategy,
+    wfsBuilder,
+    ogcApiFeaturesBuilder,
+} from './StreamableFeatureSource';
 import TiledImageSource, { type TiledImageSourceOptions } from './TiledImageSource';
 import UrlImageSource, { type UrlImageSourceOptions } from './UrlImageSource';
 import VectorSource, { type VectorSourceOptions } from './VectorSource';
@@ -53,15 +72,30 @@ import WmtsSource, { type WmtsFromCapabilitiesOptions, type WmtsSourceOptions } 
  */
 export {
     AggregateImageSource,
+    AggregateFeatureSource,
+    AggregateFeatureSourceOptions,
     AggregatePointCloudSource,
     AggregatePointCloudSourceOptions,
-    ChannelMapping,
+    StreamableFeatureSourceGetter,
+    StreamableFeatureSourceLoadingStrategy,
+    ogcApiFeaturesBuilder,
+    defaultLoadingStrategy,
+    tiledLoadingStrategy,
+    wfsBuilder,
     COPCSource,
     COPCSourceOptions,
+    ChannelMapping,
     CustomContainsFn,
+    FeatureSource,
+    FeatureSourceBase,
+    FeatureSourceEventMap,
+    FileFeatureSource,
+    FileFeatureSourceOptions,
     GeoTIFFCacheOptions,
     GeoTIFFSource,
     GeoTIFFSourceOptions,
+    GetFeatureRequest,
+    GetFeatureResult,
     GetImageOptions,
     GetNodeDataOptions,
     ImageResponse,
@@ -69,7 +103,6 @@ export {
     ImageSource,
     ImageSourceEvents,
     ImageSourceOptions,
-    las,
     LASSource,
     LASSourceOptions,
     PointCloudAttribute,
@@ -81,9 +114,14 @@ export {
     PointCloudSourceEventMap,
     PotreeSource,
     PotreeSourceOptions,
+    StaticFeatureSource,
+    StaticFeaturesSourceOptions,
     StaticImageSource,
     StaticImageSourceEvents,
     StaticImageSourceOptions,
+    StreamableFeatureSource,
+    StreamableFeatureSourceOptions,
+    StreamableFeatureSourceQueryBuilder,
     TiledImageSource,
     TiledImageSourceOptions,
     VectorSource,
@@ -100,4 +138,5 @@ export {
     WmtsFromCapabilitiesOptions,
     WmtsSource,
     WmtsSourceOptions,
+    las,
 };

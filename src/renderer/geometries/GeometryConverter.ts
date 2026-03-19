@@ -26,7 +26,6 @@ import {
     SRGBColorSpace,
     Vector3,
     type Material,
-    type Object3D,
     type Texture,
 } from 'three';
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
@@ -688,8 +687,9 @@ export default class GeometryConverter<
      * @param object - The object to finalize.
      * @param options - Options
      */
-    private finalize(object: Object3D, options: BaseOptions & BaseStyle): void {
+    private finalize(object: SimpleGeometryMesh, options: BaseOptions & BaseStyle): void {
         if (options.origin) {
+            object.geometryOrigin = options.origin;
             object.position.copy(options.origin);
         }
 

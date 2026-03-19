@@ -1,0 +1,60 @@
+---
+title: Draped feature collection
+shortdesc: Illustrates the <code>DrapedFeatureCollection</code> entity.
+longdesc: The <a target="_blank" href="../apidoc/classes/entities.DrapedFeatureCollection"><code>DrapedFeatureCollection</code></a> entities loads vector features and display them on top of the terrain.
+attribution: © <a target="_blank" href="https://ign.fr/">IGN</a>
+tags: [features, draping, ign, map]
+---
+
+<div class="side-pane-with-status-bar" style="width: 30rem">
+    >
+    <div class="card">
+        <div class="card-header">Parameters</div>
+        <div class="card-body">
+            <fieldset id="options">
+                <!-- Elevation layer -->
+                <div class="input-group mb-2">
+                    <label class="input-group-text" for="elevationMode">Elevation layer</label>
+                    <select class="form-select" id="elevationMode" autocomplete="off">
+                        <option value="enabled" selected>Present</option>
+                        <option value="hidden">Present, but not active</option>
+                        <option value="disabled">Absent</option>
+                    </select>
+                </div>
+
+                <!-- Draping mode -->
+                <div class="input-group mb-2">
+                    <label class="input-group-text" for="mode">Draping mode</label>
+
+                    <select class="form-select" id="mode" autocomplete="off">
+                        <option value="per-vertex" selected>per-vertex</option>
+                        <option value="per-feature">per-feature</option>
+                        <option value="none">none</option>
+                    </select>
+                </div>
+
+                <div class="card-text" id="help">
+                    <b>Draping mode</b> indicates how the geometry is deformed to conform to the
+                    terrain.
+                    <ul>
+                        <li>
+                            <code>per-feature</code> means that the feature's center is clamped to
+                            the ground, preserving the geometry shape. Suitable for flat geometries
+                            such as lakes.
+                        </li>
+                        <li>
+                            <code>per-vertex</code> means that every vertex is clamped to the
+                            ground, deforming the geometry. Suitable for features that should
+                            conform to the terrain, such as roads.
+                        </li>
+                        <li>
+                            <code>none</code> disables terrain conformation and preserves the
+                            original geometry. For 2D geometries, their elevation remains at zero.
+                            For 3D geometries, the Z coordinate of each vertex is preserved.
+                        </li>
+                    </ul>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+</div>
