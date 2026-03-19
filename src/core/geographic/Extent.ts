@@ -45,30 +45,6 @@ const cardinals: Vector2[] = [
     new Vector2(),
 ];
 
-/**
- * Possible values to define an extent.
- *  The following combinations are supported:
- * - 2 coordinates for the min and max corners of the extent
- * - 4 numerical values for the `minx`, `maxx`, `miny`, `maxy`
- * - an object with `west`, `east`, `south`, `north` properties
- */
-export type ExtentParameters =
-    | [Coordinates, Coordinates]
-    | [number, number, number, number]
-    | [{ minX: number; maxX: number; minY: number; maxY: number }]
-    | [
-          {
-              /** @deprecated use minX */
-              west: number;
-              /** @deprecated use maxX */
-              east: number;
-              /** @deprecated use minY */
-              south: number;
-              /** @deprecated use maxY */
-              north: number;
-          },
-      ];
-
 export interface GridExtent {
     extent: Extent;
     width: number;
@@ -76,47 +52,71 @@ export interface GridExtent {
 }
 
 /**
- * An object representing a spatial extent. It encapsulates a Coordinate Reference System id (CRS)
- * and coordinates.
- *
- * It leverages [proj4js](https://github.com/proj4js/proj4js) to do the heavy-lifting of defining
- * and transforming coordinates between reference systems. As a consequence, every EPSG code known
- * by proj4js can be used out of the box, as such:
- *
- *     // an extent defined by bottom-left longitude 0 and latitude 0 and top-right longitude 1 and
- *     // latitude 1
- *     const extent = new Extent(CoordinateSystem.epsg4326, 0, 0, 1, 1);
- *
- * For other EPSG codes, you must register them with `CoordinateSystem.register()` :
- *
- * ```js
- *     const crs = CoordinateSystem.register('EPSG:3946',
- *         '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 + \
- *         ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
- *
- *     extent = new Extent(
- *                  crs,
- *                  1837816.94334, 1847692.32501,
- *                  5170036.4587, 5178412.82698);
- * ```
+ * A rectangular extent in a specific {@link CoordinateSystem | coordinate system}.
  */
 class Extent {
     private readonly _values: Float64Array;
     private _crs: CoordinateSystem;
 
     /**
-     * Constructs an Extent object.
-     *
-     * @param crs - The CRS code the coordinates are expressed in. Every EPSG code known by
-     * [proj4js](https://github.com/proj4js/proj4js) can be used directly.
-     * For others, you must manually register them.
-     * Please refer to [proj4js](https://github.com/proj4js/proj4js) doc for more information.
-     * @param values - The extent values.
+     * Creates an extent from a coordinate system and a pair of coordinates.
+     * @param crs - The coordinate system to use.
+     * @param bottomLeft - The bottom-left corner of the extent.
+     * @param topRight - The top-right corner of the extent.
+     * @remarks Both coordinates must be in the same coordinate system as this extent.
      */
-    public constructor(crs: CoordinateSystem, ...values: ExtentParameters) {
+    public constructor(crs: CoordinateSystem, bottomLeft: Coordinates, topRight: Coordinates);
+    /**
+     * Creates an extent from an object containing the min/max XY values.
+     * @param crs - The coordinate system to use.
+     * @param values - The extent limits.
+     */
+    public constructor(
+        crs: CoordinateSystem,
+        values: { minX: number; maxX: number; minY: number; maxY: number },
+    );
+    /**
+     * Creates an extent from the min/max XY values.
+     * @param crs - The coordinate system to use.
+     * @param values - The extent limits.
+     * @deprecated Due to ambiguity (not all coordinate systems are north-up), this constructor
+     * should not be used.
+     */
+    public constructor(
+        crs: CoordinateSystem,
+        values: { west: number; east: number; south: number; north: number },
+    );
+    /**
+     * Creates an extent from the min/max XY values
+     * @param crs - The coordinate system to use.
+     * @param minX - The X coordinate of the left side of this extent.
+     * @param maxX - The X coordinate of the righ side of this extent.
+     * @param minY - The Y coordinate of the bottom side of this extent.
+     * @param maxY - The Y coordinate of the top side of this extent.
+     */
+    public constructor(
+        crs: CoordinateSystem,
+        minX: number,
+        maxX: number,
+        minY: number,
+        maxY: number,
+    );
+
+    public constructor(
+        crs: CoordinateSystem,
+        arg0:
+            | number
+            | Coordinates
+            | { minX: number; maxX: number; minY: number; maxY: number }
+            | { west: number; east: number; south: number; north: number },
+        arg1?: number | Coordinates,
+        arg2?: number,
+        arg3?: number,
+    ) {
         this._values = new Float64Array(4);
         this._crs = crs;
-        this.set(crs, ...values);
+        // @ts-expect-error type overload shenanigans
+        this.set(crs, arg0, arg1, arg2, arg3);
     }
 
     /**
@@ -731,21 +731,61 @@ class Extent {
     }
 
     /**
-     * Set the coordinate reference system and values of this
-     * extent.
-     *
-     * @param crs - the new CRS
-     * @param values - the new values
-     * @returns this object modified
+     * Sets the values of this extent from a coordinate system and a pair of coordinates.
+     * @param crs - The coordinate system to use.
+     * @param bottomLeft - The bottom-left corner of the extent.
+     * @param topRight - The top-right corner of the extent.
+     * @remarks Both coordinates must be in the same coordinate system as this extent.
      */
-    public set(crs: CoordinateSystem, ...values: ExtentParameters): this {
+    public set(crs: CoordinateSystem, bottomLeft: Coordinates, topRight: Coordinates): this;
+    /**
+     * Sets the values of this extent from an object containing the min/max XY values.
+     * @param crs - The coordinate system to use.
+     * @param values - The extent limits.
+     */
+    public set(
+        crs: CoordinateSystem,
+        values: { minX: number; maxX: number; minY: number; maxY: number },
+    ): this;
+    /**
+     * Sets the values of this extent from the min/max XY values.
+     * @param crs - The coordinate system to use.
+     * @param values - The extent limits.
+     * @deprecated Due to ambiguity (not all coordinate systems are north-up), this constructor
+     * should not be used.
+     */
+    public set(
+        crs: CoordinateSystem,
+        values: { west: number; east: number; south: number; north: number },
+    ): this;
+    /**
+     * Sets the values of this extent from the min/max XY values
+     * @param crs - The coordinate system to use.
+     * @param minX - The X coordinate of the left side of this extent.
+     * @param maxX - The X coordinate of the righ side of this extent.
+     * @param minY - The Y coordinate of the bottom side of this extent.
+     * @param maxY - The Y coordinate of the top side of this extent.
+     */
+    public set(crs: CoordinateSystem, minX: number, maxX: number, minY: number, maxY: number): this;
+
+    public set(
+        crs: CoordinateSystem,
+        arg0:
+            | number
+            | Coordinates
+            | { minX: number; maxX: number; minY: number; maxY: number }
+            | { west: number; east: number; south: number; north: number },
+        arg1?: number | Coordinates,
+        arg2?: number,
+        arg3?: number,
+    ): this {
         this._crs = crs;
 
-        if (values.length === 2 && isCoordinates(values[0]) && isCoordinates(values[1])) {
-            [this._values[SIDE.LEFT], this._values[SIDE.BOTTOM]] = values[0].values;
-            [this._values[SIDE.RIGHT], this._values[SIDE.TOP]] = values[1].values;
-        } else if (values.length === 1) {
-            const obj = values[0];
+        if (isCoordinates(arg0) && isCoordinates(arg1)) {
+            [this._values[SIDE.LEFT], this._values[SIDE.BOTTOM]] = arg0.values;
+            [this._values[SIDE.RIGHT], this._values[SIDE.TOP]] = arg1.values;
+        } else if (typeof arg0 === 'object') {
+            const obj = arg0;
 
             if ('west' in obj && 'east' in obj && 'south' in obj && 'north' in obj) {
                 // deprecated code path
@@ -759,13 +799,18 @@ class Extent {
                 this._values[SIDE.BOTTOM] = obj.minY;
                 this._values[SIDE.TOP] = obj.maxY;
             }
-        } else if (values.length === 4) {
-            this._values[SIDE.LEFT] = values[SIDE.LEFT];
-            this._values[SIDE.RIGHT] = values[SIDE.RIGHT];
-            this._values[SIDE.BOTTOM] = values[SIDE.BOTTOM];
-            this._values[SIDE.TOP] = values[SIDE.TOP];
+        } else if (
+            typeof arg0 === 'number' &&
+            typeof arg1 === 'number' &&
+            typeof arg2 === 'number' &&
+            typeof arg3 === 'number'
+        ) {
+            this._values[SIDE.LEFT] = arg0;
+            this._values[SIDE.RIGHT] = arg1;
+            this._values[SIDE.BOTTOM] = arg2;
+            this._values[SIDE.TOP] = arg3;
         } else {
-            throw new Error(`Unsupported constructor args '${values}'`);
+            throw new Error(`Unsupported constructor args`);
         }
         return this;
     }
@@ -1123,5 +1168,5 @@ class Extent {
 export default Extent;
 
 export function isCoordinates(obj: unknown): obj is Coordinates {
-    return (obj as Coordinates).isCoordinates === true;
+    return obj != null && (obj as Coordinates).isCoordinates === true;
 }

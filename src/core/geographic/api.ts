@@ -5,10 +5,9 @@
  */
 
 import type Coordinates from './Coordinates';
-import type { CoordinateParameters, DMS } from './Coordinates';
+import type { DMS } from './Coordinates';
 import type Ellipsoid from './Ellipsoid';
 import type Extent from './Extent';
-import type { ExtentParameters } from './Extent';
 import type Sun from './Sun';
 
 import CoordinateSystem from './CoordinateSystem';
@@ -16,7 +15,6 @@ import SRID from './SRID';
 import { AngularUnit, LinearUnit, Unit, UnitType } from './Unit';
 
 export {
-    CoordinateParameters,
     Coordinates,
     UnitType,
     Unit,
@@ -27,6 +25,5 @@ export {
     DMS,
     Ellipsoid,
     Extent,
-    ExtentParameters,
     Sun,
 };
