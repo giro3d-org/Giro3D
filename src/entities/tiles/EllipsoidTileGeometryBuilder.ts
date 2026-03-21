@@ -9,16 +9,18 @@ import { Vector2 } from 'three';
 import type Ellipsoid from '../../core/geographic/Ellipsoid';
 import type Extent from '../../core/geographic/Extent';
 import type TileCoordinate from './TileCoordinate';
-import type { TileGeometryBuilder } from './TileGeometry';
 
 import EllipsoidTileGeometry from './EllipsoidTileGeometry';
+import { TileGeometryBuilder } from './TileGeometry';
 
-export class EllipsoidTileGeometryBuilder implements TileGeometryBuilder<EllipsoidTileGeometry> {
+class EllipsoidTileGeometryBuilder extends TileGeometryBuilder<EllipsoidTileGeometry> {
     public constructor(
         private readonly ellipsoid: Ellipsoid,
         private _segments: number,
         private readonly _skirtDepth: number | null,
-    ) {}
+    ) {
+        super();
+    }
 
     public get rootTileMatrix(): Vector2 {
         // Equirectangular projection with 2 tiles on the Y axis

@@ -207,6 +207,7 @@ class TileMesh
      */
     public constructor(params: {
         geometryBuilder: TileGeometryBuilder<TileGeometry>;
+        geometry: TileGeometry;
         volume: TileVolume;
         /** The tile material. */
         material: LayeredMaterial;
@@ -226,10 +227,7 @@ class TileMesh
         enableTerrainDeformation: boolean;
         onElevationChanged: (tile: TileMesh) => void;
     }) {
-        super(
-            params.geometryBuilder.build({ extent: params.extent, tile: params.coord }),
-            params.material,
-        );
+        super(params.geometry, params.material);
 
         this._geometryBuilder = params.geometryBuilder;
         this._tileGeometry = this.geometry;
@@ -439,8 +437,7 @@ class TileMesh
         if (this._segments !== v) {
             this._segments = v;
             this.forEachMaterial(material => (material.segments = v));
-            this.createGeometry();
-            this._shouldUpdateHeightMap = true;
+            this.createGeometry().then(() => (this._shouldUpdateHeightMap = true));
         }
     }
 
@@ -453,9 +450,12 @@ class TileMesh
         }
     }
 
-    private createGeometry(): void {
+    private async createGeometry(): Promise<void> {
         this.geometry.dispose();
-        this.geometry = this._geometryBuilder.build({ extent: this.extent, tile: this.coordinate });
+        this.geometry = await this._geometryBuilder.build({
+            extent: this.extent,
+            tile: this.coordinate,
+        });
         this._tileGeometry = this.geometry;
 
         if (this._helpers.colliderMesh) {

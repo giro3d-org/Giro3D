@@ -8,9 +8,9 @@ import { Vector2 } from 'three';
 
 import type Extent from '../../core/geographic/Extent';
 import type TileCoordinate from './TileCoordinate';
-import type { TileGeometryBuilder } from './TileGeometry';
 
 import PlanarTileGeometry from './PlanarTileGeometry';
+import { TileGeometryBuilder } from './TileGeometry';
 
 export function selectBestSubdivisions(extent: Extent, maxAspectRatio: number): Vector2 {
     const dims = extent.dimensions();
@@ -31,7 +31,7 @@ export function selectBestSubdivisions(extent: Extent, maxAspectRatio: number): 
 /**
  * Builds tile in a planar coordinate system.
  */
-export default class PlanarTileGeometryBuilder implements TileGeometryBuilder<PlanarTileGeometry> {
+export default class PlanarTileGeometryBuilder extends TileGeometryBuilder<PlanarTileGeometry> {
     public readonly extent: Extent;
 
     private readonly _rootTileMatrix: Vector2;
@@ -45,6 +45,7 @@ export default class PlanarTileGeometryBuilder implements TileGeometryBuilder<Pl
         segments: number;
         skirtDepth: number | undefined;
     }) {
+        super();
         this.extent = params.extent;
         this._rootTileMatrix = selectBestSubdivisions(params.extent, params.maxAspectRatio);
         this._segments = params.segments;

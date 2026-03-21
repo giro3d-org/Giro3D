@@ -8,15 +8,17 @@ import { Vector2 } from 'three';
 
 import type Extent from '../../core/geographic/Extent';
 import type TileCoordinate from './TileCoordinate';
-import type { TileGeometryBuilder } from './TileGeometry';
 
 import PanoramaTileGeometry from './PanoramaTileGeometry';
+import { TileGeometryBuilder } from './TileGeometry';
 
-export default class PanoramaTileGeometryBuilder implements TileGeometryBuilder<PanoramaTileGeometry> {
+export default class PanoramaTileGeometryBuilder extends TileGeometryBuilder<PanoramaTileGeometry> {
     public constructor(
         private readonly _radius: number,
         private readonly _segments: number,
-    ) {}
+    ) {
+        super();
+    }
 
     public get rootTileMatrix(): Vector2 {
         // Equirectangular projection with 2 tiles on the Y axis

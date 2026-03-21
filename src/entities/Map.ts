@@ -53,6 +53,7 @@ import type { EntityUserData } from './Entity';
 import type { Entity3DOptions } from './Entity3D';
 import type MapLightingOptions from './MapLightingOptions';
 import type { TileGeometryBuilder } from './tiles/TileGeometry';
+import type TileGeometry from './tiles/TileGeometry';
 import type TileVolume from './tiles/TileVolume';
 
 import { defaultColorimetryOptions } from '../core/ColorimetryOptions';
@@ -625,8 +626,8 @@ class Map<UserData extends EntityUserData = EntityUserData>
     private readonly _layerIds: Set<string> = new Set();
     private readonly _materialOptions: MaterialOptions;
     private readonly _subdivisionStrategy: MapSubdivisionStrategy;
+    private readonly _pendingSubdivision: Set<number> = new Set();
     private readonly _onNodeComplete: (e: LayerEvents['node-complete']) => void;
-
     private _paintCompleteTimeout: NodeJS.Timeout | null = null;
     private _geometryBuilder: TileGeometryBuilder | null = null;
 
@@ -1065,39 +1066,30 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     private subdivideNode(context: Context, node: TileMesh): void {
-        if (!node.children.some(n => isTileMesh(n))) {
-            const extents = node.extent.split(2, 2);
+        if (node.children.some(n => isTileMesh(n))) {
+            return;
+        }
+        const builder = nonNull(this._geometryBuilder);
+        this._pendingSubdivision.add(node.id);
 
-            let i = 0;
-            const { x, y, z } = node.coordinate;
-
-            for (const extent of extents) {
-                let child: TileMesh;
-                if (i === 0) {
-                    child = this.requestNewTile(extent, node, z + 1, 2 * x + 0, 2 * y + 0);
-                } else if (i === 1) {
-                    child = this.requestNewTile(extent, node, z + 1, 2 * x + 0, 2 * y + 1);
-                } else if (i === 2) {
-                    child = this.requestNewTile(extent, node, z + 1, 2 * x + 1, 2 * y + 0);
-                } else {
-                    child = this.requestNewTile(extent, node, z + 1, 2 * x + 1, 2 * y + 1);
-                }
-
-                // inherit our parent's textures
+        builder.subdivide(node.coordinate, node.extent).then(children => {
+            this._pendingSubdivision.delete(node.id);
+            if (node.disposed || !node.parent) {
+                return;
+            }
+            for (const { geometry, tile, extent } of children) {
+                const child = this.requestNewTile(geometry, extent, node, tile.z, tile.x, tile.y);
                 for (const e of this.getElevationLayers()) {
                     e.update(context, child);
                 }
-
                 for (const c of this.getColorLayers()) {
                     c.update(context, child);
                 }
-
                 child.update(this._materialOptions);
                 child.updateMatrixWorld(true);
-                i++;
             }
             this.notifyChange(node);
-        }
+        });
     }
 
     private updateGeometries(): void {
@@ -1113,7 +1105,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         return nonNull(this._geometryBuilder).rootTileMatrix;
     }
 
-    public override preprocess(): Promise<void> {
+    public override async preprocess(): Promise<void> {
         if (!this.extent.crs.equals(this.getComposerProjection())) {
             throw new Error(
                 `The extent of this map is not in the correct CRS. Expected: ${this.getComposerProjection().id}, got: ${this.extent.crs.id}`,
@@ -1121,7 +1113,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         }
 
         this._geometryBuilder = this.getGeometryBuilder();
-
+        const builder = nonNull(this._geometryBuilder);
         const subdivs = this.getRootTileMatrix();
 
         // If the map is not square, we want to have more than a single
@@ -1131,14 +1123,11 @@ class Map<UserData extends EntityUserData = EntityUserData>
         let i = 0;
 
         for (const root of rootExtents) {
-            if (subdivs.x > subdivs.y) {
-                this._rootTiles.push(this.requestNewTile(root, undefined, 0, i, 0));
-            } else if (subdivs.y > subdivs.x) {
-                this._rootTiles.push(this.requestNewTile(root, undefined, 0, 0, i));
-            } else {
-                this._rootTiles.push(this.requestNewTile(root, undefined, 0, 0, 0));
-            }
+            const x = subdivs.x > subdivs.y ? i : 0;
+            const y = subdivs.y > subdivs.x ? i : 0;
 
+            const geometry = await builder.build({ tile: { z: 0, x, y }, extent: root });
+            this._rootTiles.push(this.requestNewTile(geometry, root, undefined, 0, x, y));
             i++;
         }
 
@@ -1185,6 +1174,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     private requestNewTile(
+        geometry: TileGeometry,
         extent: Extent,
         parent: TileMesh | undefined,
         z: number,
@@ -1221,6 +1211,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
         const tile = new TileMesh({
             renderer: this.instance.renderer,
+            geometry,
             material,
             depthMaterial,
             distanceMaterial,
@@ -2114,6 +2105,9 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     protected shouldSubdivide(context: Context, node: TileMesh): boolean {
+        if (this._pendingSubdivision.has(node.id)) {
+            return false;
+        }
         const worldBox = node.getWorldSpaceBoundingBox(tmpBox3);
         const size = worldBox.getSize(tmpVector);
         const geometricError = Math.max(size.x, size.y);
