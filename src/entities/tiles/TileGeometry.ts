@@ -37,11 +37,35 @@ export default interface TileGeometry extends BufferGeometry, MemoryUsage {
     get raycastGeometry(): BufferGeometry;
 }
 
-export interface TileGeometryBuilder<T extends TileGeometry = TileGeometry> {
+export abstract class TileGeometryBuilder<T extends TileGeometry = TileGeometry> {
     /**
      * The number of tiles on each axis at zoom level 0.
      */
-    get rootTileMatrix(): Vector2;
+    public abstract get rootTileMatrix(): Vector2;
 
-    build(params: { tile: TileCoordinate; extent: Extent }): T;
+    public abstract build(params: { tile: TileCoordinate; extent: Extent }): T | Promise<T>;
+
+    /**
+     * Returns the child tiles and their geometry when subdividing the given tile.
+     * The default implementation performs a standard 2×2 quad-tree split.
+     */
+    public async subdivide(
+        { z, x, y }: TileCoordinate,
+        extent: Extent,
+    ): Promise<{ geometry: T; tile: TileCoordinate; extent: Extent }[]> {
+        const extents = extent.split(2, 2);
+        const children = [
+            { tile: { z: z + 1, x: 2 * x + 0, y: 2 * y + 0 }, extent: extents[0] },
+            { tile: { z: z + 1, x: 2 * x + 0, y: 2 * y + 1 }, extent: extents[1] },
+            { tile: { z: z + 1, x: 2 * x + 1, y: 2 * y + 0 }, extent: extents[2] },
+            { tile: { z: z + 1, x: 2 * x + 1, y: 2 * y + 1 }, extent: extents[3] },
+        ];
+        return Promise.all(
+            children.map(async child => ({
+                geometry: await this.build(child),
+                tile: child.tile,
+                extent: child.extent,
+            })),
+        );
+    }
 }
