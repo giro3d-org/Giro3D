@@ -49,10 +49,30 @@ export abstract class TileGeometryBuilder<T extends TileGeometry = TileGeometry>
      * Returns the child tiles and their geometry when subdividing the given tile.
      * The default implementation performs a standard 2×2 quad-tree split.
      */
-    public async subdivide(
+    public subdivide(
         { z, x, y }: TileCoordinate,
         extent: Extent,
-    ): Promise<{ geometry: T; tile: TileCoordinate; extent: Extent }[]> {
+    ):
+        | {
+              geometry: T;
+              tile: {
+                  z: number;
+                  x: number;
+                  y: number;
+              };
+              extent: Extent;
+          }[]
+        | Promise<
+              {
+                  geometry: T;
+                  tile: {
+                      z: number;
+                      x: number;
+                      y: number;
+                  };
+                  extent: Extent;
+              }[]
+          > {
         const extents = extent.split(2, 2);
         const children = [
             { tile: { z: z + 1, x: 2 * x + 0, y: 2 * y + 0 }, extent: extents[0] },
@@ -60,11 +80,26 @@ export abstract class TileGeometryBuilder<T extends TileGeometry = TileGeometry>
             { tile: { z: z + 1, x: 2 * x + 1, y: 2 * y + 0 }, extent: extents[2] },
             { tile: { z: z + 1, x: 2 * x + 1, y: 2 * y + 1 }, extent: extents[3] },
         ];
+
+        const built = children.map(child => ({
+            result: this.build(child),
+            tile: child.tile,
+            extent: child.extent,
+        }));
+
+        if (built.every(({ result }) => !(result instanceof Promise))) {
+            return built.map(({ result, tile, extent: e }) => ({
+                geometry: result as T,
+                tile,
+                extent: e,
+            }));
+        }
+
         return Promise.all(
-            children.map(async child => ({
-                geometry: await this.build(child),
-                tile: child.tile,
-                extent: child.extent,
+            built.map(async ({ result, tile, extent: e }) => ({
+                geometry: await result,
+                tile,
+                extent: e,
             })),
         );
     }

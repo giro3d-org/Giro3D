@@ -51,6 +51,7 @@ import type RenderingState from '../renderer/RenderingState';
 import type { EntityUserData } from './Entity';
 import type { Entity3DOptions } from './Entity3D';
 import type MapLightingOptions from './MapLightingOptions';
+import type TileCoordinate from './tiles/TileCoordinate';
 import type { TileGeometryBuilder } from './tiles/TileGeometry';
 import type TileGeometry from './tiles/TileGeometry';
 import type TileVolume from './tiles/TileVolume';
@@ -1062,29 +1063,47 @@ class Map<UserData extends EntityUserData = EntityUserData>
         }
     }
 
+    private applyChildTiles(
+        context: Context,
+        node: TileMesh,
+        children: { geometry: TileGeometry; tile: TileCoordinate; extent: Extent }[],
+    ): void {
+        for (const { geometry, tile, extent } of children) {
+            const child = this.requestNewTile(geometry, extent, node, tile.z, tile.x, tile.y);
+            for (const e of this.getElevationLayers()) {
+                e.update(context, child);
+            }
+            for (const c of this.getColorLayers()) {
+                c.update(context, child);
+            }
+            child.update(this._materialOptions);
+            child.updateMatrixWorld(true);
+        }
+    }
+
     private subdivideNode(context: Context, node: TileMesh): void {
         if (node.children.some(n => isTileMesh(n))) {
             return;
         }
-        const builder = nonNull(this._geometryBuilder);
-        this._pendingSubdivision.add(node.id);
+        if (this._pendingSubdivision.has(node.id)) {
+            return;
+        }
 
-        builder.subdivide(node.coordinate, node.extent).then(children => {
+        const result = nonNull(this._geometryBuilder).subdivide(node.coordinate, node.extent);
+
+        if (!(result instanceof Promise)) {
+            this.applyChildTiles(context, node, result);
+            this.notifyChange(node);
+            return;
+        }
+
+        this._pendingSubdivision.add(node.id);
+        result.then(children => {
             this._pendingSubdivision.delete(node.id);
             if (node.disposed || !node.parent) {
                 return;
             }
-            for (const { geometry, tile, extent } of children) {
-                const child = this.requestNewTile(geometry, extent, node, tile.z, tile.x, tile.y);
-                for (const e of this.getElevationLayers()) {
-                    e.update(context, child);
-                }
-                for (const c of this.getColorLayers()) {
-                    c.update(context, child);
-                }
-                child.update(this._materialOptions);
-                child.updateMatrixWorld(true);
-            }
+            this.applyChildTiles(context, node, children);
             this.notifyChange(node);
         });
     }
@@ -1629,10 +1648,13 @@ class Map<UserData extends EntityUserData = EntityUserData>
                     this.shouldSubdivide(context, node) &&
                     this._subdivisionStrategy(node, { entity: this, layers: this._layers })
                 ) {
-                    this.subdivideNode(context, node);
-                    // display iff children aren't ready
-                    node.setDisplayed(false);
-                    requestChildrenUpdate = true;
+                    if (!node.children.some(n => isTileMesh(n))) {
+                        this.subdivideNode(context, node);
+                    }
+                    if (node.children.some(n => isTileMesh(n))) {
+                        node.setDisplayed(false);
+                        requestChildrenUpdate = true;
+                    }
                 } else {
                     node.setDisplayed(true);
                 }
