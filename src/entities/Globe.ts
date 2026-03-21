@@ -94,7 +94,7 @@ export function computeEllipsoidalImageSize(extent: Extent, ellipsoid: Ellipsoid
 /**
  * Constructor options for the {@link Globe} entity.
  */
-export interface GlobeOptions extends Omit<MapOptions, 'extent' | 'terrain'> {
+export interface GlobeOptions extends Omit<MapOptions, 'extent' | 'terrain' | 'geometryBuilder'> {
     /**
      * Which ellipsoid to use.
      * @defaultValue {@link Ellipsoid.WGS84}

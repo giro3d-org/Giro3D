@@ -520,6 +520,13 @@ export interface MapOptions extends Entity3DOptions {
      * @defaultValue {@link defaultMapSubdivisionStrategy}
      */
     subdivisionStrategy?: MapSubdivisionStrategy;
+    /**
+     * A custom tile geometry builder. When provided, overrides the default
+     * PlanarTileGeometryBuilder. The builder controls the root tiling scheme
+     * and how each tile's geometry is constructed.
+     * @defaultValue undefined
+     */
+    geometryBuilder?: TileGeometryBuilder;
 }
 
 interface ObjectOptions {
@@ -652,6 +659,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         this._onNodeComplete = this.onNodeComplete.bind(this);
 
         this._subdivisionStrategy = options.subdivisionStrategy ?? defaultMapSubdivisionStrategy;
+        this._geometryBuilder = options.geometryBuilder ?? this._geometryBuilder;
         this._subdivisionThreshold = options.subdivisionThreshold ?? DEFAULT_SUBDIVISION_THRESHOLD;
         this.maxSubdivisionLevel = options.maxSubdivisionLevel ?? 30;
         this._onTileElevationChanged = this.onTileElevationChanged.bind(this);
@@ -1162,6 +1170,9 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     protected getGeometryBuilder(): TileGeometryBuilder {
+        if (this._geometryBuilder !== null) {
+            return this._geometryBuilder;
+        }
         return new PlanarTileGeometryBuilder({
             extent: this.extent,
             maxAspectRatio: MAX_SUPPORTED_ASPECT_RATIO,
