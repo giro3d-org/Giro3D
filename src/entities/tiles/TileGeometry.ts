@@ -6,6 +6,7 @@
 
 import type { BufferGeometry, Vector2, Vector3 } from 'three';
 
+import type Coordinates from '../../core/geographic/Coordinates';
 import type Extent from '../../core/geographic/Extent';
 import type HeightMap from '../../core/HeightMap';
 import type MemoryUsage from '../../core/MemoryUsage';
@@ -63,6 +64,23 @@ export abstract class TileGeometryBuilder<T extends TileGeometry = TileGeometry>
      * In that case, the implementation should cache the result so that subsequent calls for the same tile return synchronously.
      */
     public abstract build(params: { tile: TileCoordinate; extent: Extent }): T | Promise<T>;
+
+    /**
+     * Samples elevation from the given tile geometry at the specified coordinates.
+     *
+     * Override this method to enable geometry-based elevation sampling for custom tile
+     * geometries (e.g. pre-built terrain meshes with baked-in heights). When overridden,
+     * {@link Map.getElevation} will use this method instead of the elevation layer for
+     * tiles built by this builder.
+     *
+     * @param geometry - The tile geometry to sample from.
+     * @param coordinates - The coordinates to sample, pre-projected into the map's CRS.
+     * @returns The sampled elevation value, or `null` to fall back to the elevation layer.
+     * @defaultValue returns `null` (falls back to elevation layer)
+     */
+    public getElevation(_geometry: T, _coordinates: Coordinates): number | null {
+        return null;
+    }
 
     /**
      * Returns the child tiles and their geometry when subdividing the given tile.
