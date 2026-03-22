@@ -912,6 +912,12 @@ class TileMesh
             }
         }
 
+        // fallback: geometry-based sampling via builder
+        const z = this._geometryBuilder.getElevation(this.geometry, params.coordinates);
+        if (z !== null) {
+            const resolution = (this.extent.maxX - this.extent.minX) / this.geometry.segments;
+            return { elevation: z, resolution };
+        }
         return null;
     }
 

@@ -2037,8 +2037,10 @@ class Map<UserData extends EntityUserData = EntityUserData>
     /**
      * Sample the elevation at the specified coordinate.
      *
-     * Note: this method does nothing if no elevation layer is present on the map, or if the
-     * sampling coordinate is not inside the map's extent.
+     * Elevation is sampled from two possible sources:
+     * - The {@link TileGeometryBuilder.getElevation} method of the geometry builder,
+     *   if overridden (e.g. for custom terrain tiles with baked-in heights).
+     * - The elevation layer, if one is present on the map.
      *
      * Note: sampling might return more than one sample for any given coordinate. You can sort them
      * by {@link core.ElevationSample.resolution | resolution} to select the best sample for your needs.
@@ -2047,7 +2049,6 @@ class Map<UserData extends EntityUserData = EntityUserData>
      * empty result is created. The existing samples in the array are not removed. Useful to
      * cumulate samples across different maps.
      * @returns The {@link GetElevationResult} containing the updated sample array.
-     * If the map has no elevation layer, this array is left untouched.
      */
     public getElevation(
         options: GetElevationOptions,
@@ -2058,16 +2059,6 @@ class Map<UserData extends EntityUserData = EntityUserData>
         const coordinates = options.coordinates.as(this.extent.crs);
 
         if (!this.extent.isPointInside(coordinates)) {
-            return result;
-        }
-
-        if (!this._hasElevationLayer) {
-            return result;
-        }
-
-        const elevationLayer = this.getElevationLayers()[0];
-
-        if (!elevationLayer.visible) {
             return result;
         }
 
