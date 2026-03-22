@@ -37,42 +37,42 @@ export default interface TileGeometry extends BufferGeometry, MemoryUsage {
     get raycastGeometry(): BufferGeometry;
 }
 
+export interface TileChild<T extends TileGeometry> {
+    geometry: T;
+    tile: TileCoordinate;
+    extent: Extent;
+}
+
 export abstract class TileGeometryBuilder<T extends TileGeometry = TileGeometry> {
+    /**
+     * Whether this builder builds tile geometries asynchronously.
+     * When `false` (default), `subdivide()` returns synchronously and tile creation is immediate.
+     * When `true`, `subdivide()` returns a `Promise` and the parent tile stays visible until all children are ready.
+     * @defaultValue false
+     */
+    public isAsync: boolean = false;
+
     /**
      * The number of tiles on each axis at zoom level 0.
      */
     public abstract get rootTileMatrix(): Vector2;
 
+    /**
+     * Builds the geometry for a single tile.
+     * If `isAsync` is `true`, this method may return a `Promise`.
+     * In that case, the implementation should cache the result so that subsequent calls for the same tile return synchronously.
+     */
     public abstract build(params: { tile: TileCoordinate; extent: Extent }): T | Promise<T>;
 
     /**
      * Returns the child tiles and their geometry when subdividing the given tile.
      * The default implementation performs a standard 2×2 quad-tree split.
+     * Returns synchronously when `isAsync` is `false`, as a `Promise` otherwise.
      */
     public subdivide(
         { z, x, y }: TileCoordinate,
         extent: Extent,
-    ):
-        | {
-              geometry: T;
-              tile: {
-                  z: number;
-                  x: number;
-                  y: number;
-              };
-              extent: Extent;
-          }[]
-        | Promise<
-              {
-                  geometry: T;
-                  tile: {
-                      z: number;
-                      x: number;
-                      y: number;
-                  };
-                  extent: Extent;
-              }[]
-          > {
+    ): TileChild<T>[] | Promise<TileChild<T>[]> {
         const extents = extent.split(2, 2);
         const children = [
             { tile: { z: z + 1, x: 2 * x + 0, y: 2 * y + 0 }, extent: extents[0] },
@@ -81,25 +81,19 @@ export abstract class TileGeometryBuilder<T extends TileGeometry = TileGeometry>
             { tile: { z: z + 1, x: 2 * x + 1, y: 2 * y + 1 }, extent: extents[3] },
         ];
 
-        const built = children.map(child => ({
-            result: this.build(child),
-            tile: child.tile,
-            extent: child.extent,
-        }));
-
-        if (built.every(({ result }) => !(result instanceof Promise))) {
-            return built.map(({ result, tile, extent: e }) => ({
-                geometry: result as T,
-                tile,
-                extent: e,
+        if (!this.isAsync) {
+            return children.map(child => ({
+                geometry: this.build(child) as T,
+                tile: child.tile,
+                extent: child.extent,
             }));
         }
 
         return Promise.all(
-            built.map(async ({ result, tile, extent: e }) => ({
-                geometry: await result,
-                tile,
-                extent: e,
+            children.map(async child => ({
+                geometry: await this.build(child),
+                tile: child.tile,
+                extent: child.extent,
             })),
         );
     }

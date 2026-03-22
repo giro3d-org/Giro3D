@@ -52,7 +52,7 @@ import type { EntityUserData } from './Entity';
 import type { Entity3DOptions } from './Entity3D';
 import type MapLightingOptions from './MapLightingOptions';
 import type TileCoordinate from './tiles/TileCoordinate';
-import type { TileGeometryBuilder } from './tiles/TileGeometry';
+import type { TileChild, TileGeometryBuilder } from './tiles/TileGeometry';
 import type TileGeometry from './tiles/TileGeometry';
 import type TileVolume from './tiles/TileVolume';
 
@@ -1063,6 +1063,39 @@ class Map<UserData extends EntityUserData = EntityUserData>
         }
     }
 
+    private subdivideNode(context: Context, node: TileMesh): void {
+        if (node.children.some(n => isTileMesh(n))) {
+            return;
+        }
+        if (this._pendingSubdivision.has(node.id)) {
+            return;
+        }
+
+        const builder = nonNull(this._geometryBuilder);
+
+        if (!builder.isAsync) {
+            this.applyChildTiles(
+                context,
+                node,
+                builder.subdivide(node.coordinate, node.extent) as TileChild<TileGeometry>[],
+            );
+            this.notifyChange(node);
+            return;
+        }
+
+        this._pendingSubdivision.add(node.id);
+        (
+            builder.subdivide(node.coordinate, node.extent) as Promise<TileChild<TileGeometry>[]>
+        ).then(children => {
+            this._pendingSubdivision.delete(node.id);
+            if (node.disposed || !node.parent) {
+                return;
+            }
+            this.applyChildTiles(context, node, children);
+            this.notifyChange(node);
+        });
+    }
+
     private applyChildTiles(
         context: Context,
         node: TileMesh,
@@ -1079,33 +1112,6 @@ class Map<UserData extends EntityUserData = EntityUserData>
             child.update(this._materialOptions);
             child.updateMatrixWorld(true);
         }
-    }
-
-    private subdivideNode(context: Context, node: TileMesh): void {
-        if (node.children.some(n => isTileMesh(n))) {
-            return;
-        }
-        if (this._pendingSubdivision.has(node.id)) {
-            return;
-        }
-
-        const result = nonNull(this._geometryBuilder).subdivide(node.coordinate, node.extent);
-
-        if (!(result instanceof Promise)) {
-            this.applyChildTiles(context, node, result);
-            this.notifyChange(node);
-            return;
-        }
-
-        this._pendingSubdivision.add(node.id);
-        result.then(children => {
-            this._pendingSubdivision.delete(node.id);
-            if (node.disposed || !node.parent) {
-                return;
-            }
-            this.applyChildTiles(context, node, children);
-            this.notifyChange(node);
-        });
     }
 
     private updateGeometries(): void {
