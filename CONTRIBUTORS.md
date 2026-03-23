@@ -54,6 +54,9 @@ The following people have contributed to Giro3D.
 - [Phoenix LiDAR Systems](https://phoenixlidar.com)
     - [Jérémie Piellard](https://github.com/piellardj)
 
+- [U.R.B.S](https://urbs.fr)
+    - [vincjo](https://github.com/vincjo)
+
 ---
 
 The following organizations supported Giro3D:
