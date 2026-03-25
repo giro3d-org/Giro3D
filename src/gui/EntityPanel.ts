@@ -15,8 +15,8 @@ import AtmosphereInspector from './AtmosphereInspector';
 import AxisGridInspector from './AxisGridInspector';
 import FeatureCollectionInspector from './FeatureCollectionInspector';
 import GlowInspector from './GlowInspector';
+import ImageCollectionInspector from './ImageCollectionInspector';
 import MapInspector from './MapInspector';
-import OrientedImageCollectionInspector from './OrientedImageCollectionInspector';
 import Panel from './Panel';
 import PointCloudInspector from './PointCloudInspector';
 import ShapeInspector from './ShapeInspector';
@@ -35,7 +35,8 @@ const customInspectors: Record<string, typeof EntityInspector<Entity3D>> = {
     Atmosphere: AtmosphereInspector,
     SkyDome: SkyDomeInspector,
     Glow: GlowInspector,
-    OrientedImageCollection: OrientedImageCollectionInspector,
+    OrientedImageCollection: ImageCollectionInspector,
+    OrientedPanoramaCollection: ImageCollectionInspector,
 };
 
 /**
