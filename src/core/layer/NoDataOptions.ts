@@ -8,7 +8,7 @@
  * Options related to how *no-data* pixels are treated. No-data pixels are pixels that should be
  * ignored for processing or visualization.
  */
-export default interface NoDataOptions {
+export interface NoDataOptions {
     /**
      * Enables no-data replacement. The algorithm is similar to the
      * [GDALFillNodata()](https://gdal.org/api/gdal_alg.html#_CPPv414GDALFillNodata15GDALRasterBandH15GDALRasterBandHdiiPPc16GDALProgressFuncPv)
@@ -44,3 +44,5 @@ export default interface NoDataOptions {
      */
     alpha?: number;
 }
+
+export default NoDataOptions;

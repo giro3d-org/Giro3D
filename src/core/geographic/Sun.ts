@@ -80,7 +80,7 @@ function celestialToGeographic(
  * @param date - The date to compute the geographic position. If unspecified, the current date is used.
  * @returns The geographic position of the sun at the given date.
  */
-function getGeographicPosition(date?: Date, target?: Coordinates): Coordinates {
+export function getGeographicPosition(date?: Date, target?: Coordinates): Coordinates {
     date = date ?? new Date();
 
     const JD = computeJulianDate(date);
@@ -122,7 +122,7 @@ function getGeographicPosition(date?: Date, target?: Coordinates): Coordinates {
 /**
  * Returns the local position of the sun, given the zenith and azimuth.
  */
-function getLocalPosition(
+export function getLocalPosition(
     params: {
         /**
          * The zenith of the sun, in degrees, in horizontal coordinates.
@@ -170,7 +170,7 @@ function getLocalPosition(
 /**
  * Gets the direction vector of sun rays at a given date, in the ECEF coordinate system.
  */
-function getDirection(date?: Date): Vector3 {
+export function getDirection(date?: Date): Vector3 {
     const sunGeo = getGeographicPosition(date);
 
     const dir = Ellipsoid.WGS84.toCartesian(sunGeo.latitude, sunGeo.longitude, 0).normalize();
@@ -183,7 +183,7 @@ function getDirection(date?: Date): Vector3 {
  * coordinate system centered at the observer location.
  * Note: this assumes that the target coordinate system is north up.
  */
-function getLocalFrameDirection(observer: Coordinates, date?: Date): Vector3 {
+export function getLocalFrameDirection(observer: Coordinates, date?: Date): Vector3 {
     const observerGeo = observer.as(CoordinateSystem.epsg4326);
     const observerFrame = Ellipsoid.WGS84.getEastNorthUpMatrix(
         observerGeo.latitude,

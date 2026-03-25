@@ -383,7 +383,7 @@ export type LayerUserData = Record<string, unknown>;
  * @typeParam TEvents - The event map of the layer.
  * @typeParam TUserData - The type of the `userData` property.
  */
-abstract class Layer<
+export abstract class Layer<
     TEvents extends LayerEvents = LayerEvents,
     TUserData extends LayerUserData = LayerUserData,
 >

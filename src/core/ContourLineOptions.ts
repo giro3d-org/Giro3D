@@ -9,7 +9,7 @@ import type { ColorRepresentation } from 'three';
 /**
  * Option for contour lines.
  */
-export default interface ContourLineOptions {
+export interface ContourLineOptions {
     /**
      * Enables or disables contour lines.
      */
@@ -35,3 +35,5 @@ export default interface ContourLineOptions {
      */
     color: ColorRepresentation;
 }
+
+export default ContourLineOptions;

@@ -11,7 +11,7 @@ import { type TypedArray } from 'three';
  *
  * Here, 'vector' means 'resizeable' array, and not a three.js vector.
  */
-export default class TypedArrayVector<T extends TypedArray> {
+export class TypedArrayVector<T extends TypedArray> {
     private readonly _ctor: (capacity: number) => T;
     private _array: T;
     private _length = 0;
@@ -65,3 +65,5 @@ export default class TypedArrayVector<T extends TypedArray> {
         this._array = newArray;
     }
 }
+
+export default TypedArrayVector;

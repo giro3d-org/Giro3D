@@ -105,6 +105,7 @@ export default class ConstantSizeSphere extends Mesh {
 
 /**
  * Returns the radius in world units so that a sphere appears to have a given radius in pixels.
+ * @internal
  */
 export function getWorldSpaceRadius(
     renderer: WebGLRenderer,

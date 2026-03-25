@@ -54,7 +54,7 @@ export interface GridExtent {
 /**
  * A rectangular extent in a specific {@link CoordinateSystem | coordinate system}.
  */
-class Extent {
+export class Extent {
     private readonly _values: Float64Array;
     private _crs: CoordinateSystem;
 

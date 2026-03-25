@@ -87,7 +87,7 @@ export interface AtmosphereOptions extends Entity3DOptions {
  * - `.inner`, which represents the atmosphere inside the ring and acts as a "veil",
  * - `.outer`, which represents the visible halo on the edge of the ring
  */
-export default class Atmosphere extends Entity3D {
+class Atmosphere extends Entity3D {
     public readonly isAtmosphere = true as const;
     public override readonly type = 'Atmosphere' as const;
 
@@ -295,3 +295,5 @@ export default class Atmosphere extends Entity3D {
         this._disposed = true;
     }
 }
+
+export default Atmosphere;

@@ -155,7 +155,7 @@ export interface ImageCollectionBasePickResult extends PickResult {
  * If the collection contains images that are too spread out geographically, visual issues may occur.
  * This is why we advise to group images that are relatively close together.
  */
-export default abstract class OrientedImageCollection<
+export abstract class ImageCollectionBase<
     TSource extends ImageSource = ImageSource,
     TUserData extends EntityUserData = EntityUserData,
 > extends Entity3D<Entity3DEventMap, TUserData> {
@@ -671,3 +671,5 @@ export default abstract class OrientedImageCollection<
         return imageObject;
     }
 }
+
+export default ImageCollectionBase;

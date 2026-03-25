@@ -1,0 +1,21 @@
+{
+    "include": [
+        "Atmosphere.ts",
+        "AxisGrid.ts",
+        "Entity.ts",
+        "Entity3D.ts",
+        "FeatureCollection.ts",
+        "DrapedFeatureCollection.ts",
+        "Globe.ts",
+        "Glow.ts",
+        "Map.ts",
+        "ImageCollectionBase.ts",
+        "OrientedImageCollection.ts",
+        "OrientedPanoramaCollection.ts",
+        "PointCloud.ts",
+        "Shape.ts",
+        "SkyDome.ts",
+        "SphericalPanorama.ts",
+        "Tiles3D.ts"
+    ]
+}

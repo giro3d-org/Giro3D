@@ -13,7 +13,7 @@ import { isMemoryUsage, type GetMemoryUsageContext } from './MemoryUsage';
 /**
  * The options for a cache entry.
  */
-interface CacheOptions {
+export interface CacheOptions {
     /**
      * The time to live of this entry, in milliseconds.
      */
@@ -32,19 +32,19 @@ interface CacheOptions {
 /**
  * The default max number of entries.
  */
-const DEFAULT_MAX_ENTRIES = 8192;
+export const DEFAULT_MAX_ENTRIES = 8192;
 
 /**
  * The default TTL (time to live), in milliseconds.
  */
-const DEFAULT_TTL: number = 240_000; // 240 seconds
+export const DEFAULT_TTL: number = 240_000; // 240 seconds
 
 /**
  * The default capacity, in bytes.
  */
-const DEFAULT_CAPACITY: number = 536_870_912; // 512 MB
+export const DEFAULT_CAPACITY: number = 536_870_912; // 512 MB
 
-interface CacheConfiguration {
+export interface CacheConfiguration {
     /**
      * The default TTL (time to live) of entries, in milliseconds.
      * Can be overriden for each entry (see {@link CacheOptions}).
@@ -67,7 +67,7 @@ interface CacheConfiguration {
  * The cache.
  *
  */
-class Cache implements MemoryUsage {
+export class Cache implements MemoryUsage {
     public readonly isMemoryUsage = true as const;
     private readonly _deleteHandlers: Map<string, (entry: object) => void>;
     private _lru: LRUCache<string, object>;
@@ -254,14 +254,4 @@ class Cache implements MemoryUsage {
 /**
  * A global singleton cache.
  */
-const GlobalCache: Cache = new Cache();
-
-export {
-    Cache,
-    CacheConfiguration,
-    CacheOptions,
-    DEFAULT_CAPACITY,
-    DEFAULT_MAX_ENTRIES,
-    DEFAULT_TTL,
-    GlobalCache,
-};
+export const GlobalCache: Cache = new Cache();

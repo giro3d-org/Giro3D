@@ -14,7 +14,7 @@ export const DEFAULT_MAP_SEGMENTS = 32;
 /**
  * Options for geometric terrain rendering.
  */
-export default interface TerrainOptions {
+export interface TerrainOptions {
     /**
      * Enables terrain deformation. If `true`, the surface of the map will be deformed to
      * match the elevation data. If `false` or unset, the surface of the map will be flat.
@@ -50,3 +50,5 @@ export default interface TerrainOptions {
         depth: number;
     };
 }
+
+export default TerrainOptions;

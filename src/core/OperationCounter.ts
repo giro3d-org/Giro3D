@@ -22,7 +22,7 @@ export interface OperationCounterEvents {
 /**
  * Provides a way to track the progress of running operations.
  */
-class OperationCounter extends EventDispatcher<OperationCounterEvents> implements Progress {
+export class OperationCounter extends EventDispatcher<OperationCounterEvents> implements Progress {
     private _operations: number;
     private _completed: number;
     private _total: number;

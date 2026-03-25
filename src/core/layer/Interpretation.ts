@@ -12,7 +12,7 @@ import { NoColorSpace, type ColorSpace } from 'three';
  * Note: this is unrelated to the file format / encoding (like JPG and PNG). This interpretation
  * occurs after the image was decoded into a pixel buffer.
  */
-enum Mode {
+export enum Mode {
     Raw = 0,
     ScaleToMinMax = 2,
     CompressTo8Bit = 3,
@@ -21,12 +21,13 @@ enum Mode {
 /**
  * The interpretation options.
  */
-interface InterpretationOptions {
+export interface InterpretationOptions {
     negateValues?: boolean;
     min?: number;
     max?: number;
 }
 
+/** @internal */
 export interface InterpretationUniform {
     mode: number;
     negateValues: boolean;
@@ -58,7 +59,7 @@ export interface InterpretationUniform {
  * })
  * ```
  */
-class Interpretation {
+export class Interpretation {
     private readonly _mode: Mode;
     private readonly _opts: InterpretationOptions;
 
@@ -243,7 +244,5 @@ class Interpretation {
         return uniform;
     }
 }
-
-export { InterpretationOptions, Mode };
 
 export default Interpretation;

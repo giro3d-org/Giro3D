@@ -1,0 +1,22 @@
+{
+    "include": [
+        "AggregateImageSource.ts",
+        "AggregatePointCloudSource.ts",
+        "COPCSource.ts",
+        "DebugSource.ts",
+        "ImageSource.ts",
+        "LASSource.ts",
+        "NullSource.ts",
+        "PointCloudSource.ts",
+        "PotreeSource.ts",
+        "StaticImageSource.ts",
+        "StaticPointCloudSource.ts",
+        "TiledImageSource.ts",
+        "UrlImageSource.ts",
+        "VectorSource.ts",
+        "VectorTileSource.ts",
+        "VideoSource.ts",
+        "WmsSource.ts",
+        "WmtsSource.ts"
+    ]
+}

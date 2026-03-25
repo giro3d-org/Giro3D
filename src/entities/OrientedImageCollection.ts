@@ -43,7 +43,7 @@ export type OrientedImageCollectionPickResult = ImageCollectionBasePickResult;
  * If the collection contains images that are too spread out geographically, visual issues may occur.
  * This is why we advise to group images that are relatively close together.
  */
-export default class OrientedImageCollection<
+export class OrientedImageCollection<
     TUserData extends EntityUserData = EntityUserData,
 > extends ImageCollectionBase<OrientedImageSource, TUserData> {
     /** Readonly flag to indicate that this object is a OrientedImageCollection instance. */
@@ -78,3 +78,5 @@ export default class OrientedImageCollection<
         );
     }
 }
+
+export default OrientedImageCollection;

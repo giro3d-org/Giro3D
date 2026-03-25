@@ -7,7 +7,7 @@
 /**
  * Trait for objects that need to handle rendering context loss and restoration.
  */
-export default interface RenderingContextHandler {
+export interface RenderingContextHandler {
     /**
      * Called when the rendering context has been lost.
      * @param options - The options.
@@ -29,3 +29,5 @@ export default interface RenderingContextHandler {
         canvas: HTMLCanvasElement;
     }): void;
 }
+
+export default RenderingContextHandler;

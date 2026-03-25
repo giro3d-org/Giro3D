@@ -58,7 +58,7 @@ function assertIsNotGeographic(crs: CoordinateSystem): void {
  * - for geographic systems (such as  EPSG:4326), X is the longitude, Y is the latitude and Z is the
  *   elevation above/below the reference ellipsoid.
  */
-class Coordinates {
+export class Coordinates {
     public readonly isCoordinates = true as const;
     private readonly _values: Float64Array;
     public crs: CoordinateSystem;

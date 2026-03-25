@@ -31,7 +31,7 @@ const Z = new Vector3(0, 0, 1);
  * A configurable spheroid that allows conversion from and to geodetic coordinates
  * and cartesian coordinates, as well as utility function to compute various geodetic values.
  */
-export default class Ellipsoid {
+export class Ellipsoid {
     private readonly _semiMajor: number;
     private readonly _semiMinor: number;
     private readonly _sqEccentricity: number;
@@ -414,3 +414,5 @@ export default class Ellipsoid {
         return !isOccluded;
     }
 }
+
+export default Ellipsoid;

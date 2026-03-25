@@ -9,7 +9,7 @@ import type { ColorRepresentation } from 'three';
 /**
  * Options for map graticules.
  */
-export default interface GraticuleOptions {
+export interface GraticuleOptions {
     /**
      * Enables the graticule.
      */
@@ -43,3 +43,5 @@ export default interface GraticuleOptions {
      */
     opacity: number;
 }
+
+export default GraticuleOptions;

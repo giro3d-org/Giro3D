@@ -12,7 +12,7 @@ import { Box3, Box3Helper, Color, Matrix4, Object3D, Vector3 } from 'three';
 /**
  * Helper object to visualize an {@link OBB | Oriented Bounding Box}.
  */
-export default class OBBHelper extends Object3D {
+export class OBBHelper extends Object3D {
     public override readonly type = 'OBBHelper' as const;
     public readonly isOBBHelper = true as const;
 
@@ -68,3 +68,5 @@ export default class OBBHelper extends Object3D {
         this._helper.dispose();
     }
 }
+
+export default OBBHelper;

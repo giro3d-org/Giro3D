@@ -14,7 +14,7 @@ import Entity3D from './Entity3D';
 /**
  * Displays a sky dome with atmospheric scattering and sun disc.
  */
-export default class SkyDome extends Entity3D {
+class SkyDome extends Entity3D {
     public readonly isSkyDome = true as const;
     public override readonly type = 'SkyDome' as const;
 
@@ -113,3 +113,5 @@ export default class SkyDome extends Entity3D {
         return [];
     }
 }
+
+export default SkyDome;

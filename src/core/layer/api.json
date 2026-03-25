@@ -1,0 +1,12 @@
+{
+    "include": [
+        "BlendingMode.ts",
+        "ColorLayer.ts",
+        "ElevationLayer.ts",
+        "HasLayers.ts",
+        "Interpretation.ts",
+        "Layer.ts",
+        "MaskLayer.ts",
+        "NoDataOptions.ts"
+    ]
+}

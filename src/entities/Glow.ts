@@ -103,7 +103,7 @@ export interface GlowOptions extends Entity3DOptions {
 /**
  * Displays a simple glow around an ellipsoid.
  */
-export default class Glow extends Entity3D {
+class Glow extends Entity3D {
     public readonly isGlow = true as const;
     public override readonly type = 'Glow' as const;
 
@@ -191,3 +191,5 @@ export default class Glow extends Entity3D {
         return [];
     }
 }
+
+export default Glow;

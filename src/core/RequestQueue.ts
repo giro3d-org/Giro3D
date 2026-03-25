@@ -93,7 +93,7 @@ export interface RequestQueueEvents {
 /**
  * A generic priority queue that ensures that the same request cannot be added twice in the queue.
  */
-class RequestQueue extends EventDispatcher<RequestQueueEvents> implements Progress {
+export class RequestQueue extends EventDispatcher<RequestQueueEvents> implements Progress {
     private readonly _pendingIds: Map<string, Promise<unknown>>;
     private readonly _queue: PriorityQueue<Task>;
     private readonly _opCounter: OperationCounter;
@@ -221,9 +221,7 @@ class RequestQueue extends EventDispatcher<RequestQueueEvents> implements Progre
 /**
  * A global singleton queue.
  */
-const DefaultQueue: RequestQueue = new RequestQueue();
-
-export { DefaultQueue };
+export const DefaultQueue: RequestQueue = new RequestQueue();
 
 export default RequestQueue;
 
