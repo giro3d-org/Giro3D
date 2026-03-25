@@ -99,7 +99,7 @@ const orientedImageCollection = new OrientedImageCollection({
         radius: 0.5,
         color: 'red',
     },
-    frustums: {
+    wireframes: {
         visible: true,
         color: 'yellow',
     },
@@ -170,6 +170,6 @@ instance.add(orientedImageCollection).catch(console.error);
 
 Inspector.attach('inspector', instance);
 
-bindToggle('show-frustums', v => (orientedImageCollection.showFrustums = v));
+bindToggle('show-wireframes', v => (orientedImageCollection.showWireframes = v));
 bindToggle('show-images', v => (orientedImageCollection.showImages = v));
 bindToggle('show-origins', v => (orientedImageCollection.showLocationSpheres = v));
