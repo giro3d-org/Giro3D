@@ -125,7 +125,7 @@ export interface SphericalPanoramaOptions extends Omit<MapOptions, 'extent'> {
  * In the EPSG:4978 coordinate system, the sphere is first rotated to match the local reference [East, North, Up (ENU) reference frame](https://en.wikipedia.org/wiki/Local_tangent_plane_coordinates)
  * at the coordinate of the center of the sphere, then the angles are applied.
  */
-export default class SphericalPanorama extends Map {
+class SphericalPanorama extends Map {
     public readonly isSphericalPanorama = true as const;
     public override readonly type = 'SphericalPanorama' as const;
 
@@ -246,3 +246,5 @@ export default class SphericalPanorama extends Map {
         this.object3d.updateMatrixWorld(true);
     }
 }
+
+export default SphericalPanorama;

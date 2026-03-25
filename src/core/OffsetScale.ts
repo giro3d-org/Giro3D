@@ -10,7 +10,7 @@ import { Vector2, Vector4 } from 'three';
  * Describes a transformation of a point in 2D space without rotation.
  * Typically used for to transform texture coordinates.
  */
-export default class OffsetScale extends Vector4 {
+export class OffsetScale extends Vector4 {
     public readonly isOffsetScale = true;
 
     public get offsetX(): number {
@@ -61,3 +61,5 @@ export default class OffsetScale extends Vector4 {
         return target;
     }
 }
+
+export default OffsetScale;

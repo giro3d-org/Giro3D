@@ -16,7 +16,7 @@ import ColorLayer from './ColorLayer';
 /**
  * Modes of the mask layer.
  */
-enum MaskMode {
+export enum MaskMode {
     /**
      * The mask is applied normally: transparents parts of the mask make the map transparent.
      */
@@ -42,7 +42,9 @@ export interface MaskLayerOptions extends LayerOptions {
  * a map. The source can be any source supported by the color layers.
  *
  */
-class MaskLayer<UserData extends LayerUserData = LayerUserData> extends ColorLayer<UserData> {
+export class MaskLayer<
+    UserData extends LayerUserData = LayerUserData,
+> extends ColorLayer<UserData> {
     private _maskMode: MaskMode;
     /**
      * Read-only flag to check if a given object is of type MaskLayer.
@@ -103,10 +105,8 @@ class MaskLayer<UserData extends LayerUserData = LayerUserData> extends ColorLay
     }
 }
 
-function isMaskLayer(obj: unknown): obj is MaskLayer {
+export function isMaskLayer(obj: unknown): obj is MaskLayer {
     return (obj as MaskLayer)?.isMaskLayer;
 }
 
 export default MaskLayer;
-
-export { isMaskLayer, MaskMode };

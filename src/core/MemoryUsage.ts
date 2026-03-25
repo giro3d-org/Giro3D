@@ -28,7 +28,7 @@ export interface GetMemoryUsageContext {
 /**
  * Trait of objects that can report their memory usage.
  */
-export default interface MemoryUsage {
+export interface MemoryUsage {
     /** Readonly flag to indicate that his object implements {@link MemoryUsage}. */
     isMemoryUsage: true;
     /**
@@ -158,3 +158,5 @@ export function getGeometryMemoryUsage(
         gpuMemory: bytes,
     });
 }
+
+export default MemoryUsage;

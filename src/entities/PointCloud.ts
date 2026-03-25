@@ -248,7 +248,7 @@ export interface PointCloudOptions extends Entity3DOptions {
  * pointCloud.setColoringMode('layer');
  * ```
  */
-export default class PointCloud<TUserData extends EntityUserData = EntityUserData>
+class PointCloud<TUserData extends EntityUserData = EntityUserData>
     extends Entity3D<Entity3DEventMap, TUserData>
     implements HasLayers
 {
@@ -1579,3 +1579,5 @@ export default class PointCloud<TUserData extends EntityUserData = EntityUserDat
         });
     }
 }
+
+export default PointCloud;

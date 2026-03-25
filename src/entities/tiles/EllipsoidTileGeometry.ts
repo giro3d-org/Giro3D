@@ -47,10 +47,7 @@ function copySkirtValues(array: VectorArray, segments: number): void {
     array.copyItem(LR, end + 3);
 }
 
-export default class EllipsoidTileGeometry
-    extends BufferGeometry
-    implements MemoryUsage, TileGeometry
-{
+export class EllipsoidTileGeometry extends BufferGeometry implements MemoryUsage, TileGeometry {
     public readonly isMemoryUsage = true as const;
     private readonly _extent: Extent;
     private readonly _origin: Vector3;
@@ -231,3 +228,5 @@ export default class EllipsoidTileGeometry
         return { min, max };
     }
 }
+
+export default EllipsoidTileGeometry;

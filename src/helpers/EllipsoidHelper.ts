@@ -109,7 +109,7 @@ function createLabel(text: string, color: ColorRepresentation): CSS2DObject {
 /**
  * Displays an ellipsoid along with its axes.
  */
-export default class EllipsoidHelper extends Object3D implements Disposable {
+export class EllipsoidHelper extends Object3D implements Disposable {
     public readonly isEllipsoidHelper = true as const;
     public override readonly type = 'EllipsoidHelper' as const;
 
@@ -359,3 +359,5 @@ export default class EllipsoidHelper extends Object3D implements Disposable {
         this.clear();
     }
 }
+
+export default EllipsoidHelper;

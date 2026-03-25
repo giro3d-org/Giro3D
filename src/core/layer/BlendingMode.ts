@@ -8,7 +8,7 @@
  * Describes how a layer is blended into the background (either another layer or the background
  * color).
  */
-enum BlendingMode {
+export enum BlendingMode {
     /**
      * No blending is performed, i.e if the layer has transparent or semi-transparent pixels,
      * they become opaque.

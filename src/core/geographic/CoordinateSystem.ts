@@ -77,7 +77,7 @@ function getProjCsInfos(projCs: ProjCS): ProjCSInfos {
 /**
  * Contains information about coordinate systems, as well as methods to register new coordinate systems.
  */
-export default class CoordinateSystem {
+export class CoordinateSystem {
     /**
      * The EPSG:3857 / pseudo-mercator coordinate systems.
      */
@@ -493,3 +493,5 @@ export default class CoordinateSystem {
         return this.id === other.id;
     }
 }
+
+export default CoordinateSystem;

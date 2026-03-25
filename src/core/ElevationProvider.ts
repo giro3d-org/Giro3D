@@ -13,7 +13,7 @@ import type GetElevationResult from './GetElevationResult';
  *
  * Note: to combine multiple providers into one, you can use the {@link aggregateElevationProviders} function.
  */
-export default interface ElevationProvider {
+export interface ElevationProvider {
     /**
      * Returns the elevation at the specified coordinates, without any coordinate conversion.
      * @param x - The X coordinate of the location to sample, in the same coordinate system as this elevation provider.
@@ -100,3 +100,5 @@ export function aggregateElevationProviders(...providers: ElevationProvider[]): 
     }
     return new AggregateProvider(providers);
 }
+
+export default ElevationProvider;

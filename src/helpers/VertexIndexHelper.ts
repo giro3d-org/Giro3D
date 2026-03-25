@@ -24,7 +24,7 @@ function createLabel(index: number, positions: BufferAttribute): CSS2DObject {
 /**
  * Displays the indices of vertices as DOM elements.
  */
-export default class VertexIndexHelper extends Object3D {
+export class VertexIndexHelper extends Object3D {
     public constructor(geometry: BufferGeometry) {
         super();
 
@@ -36,3 +36,5 @@ export default class VertexIndexHelper extends Object3D {
         }
     }
 }
+
+export default VertexIndexHelper;

@@ -1103,7 +1103,7 @@ export interface ShapeOptions extends Entity3DOptions {
  *
  * @typeParam UserData - The type of the {@link userData} property.
  */
-export default class Shape<UserData extends EntityUserData = EntityUserData> extends Entity3D<
+class Shape<UserData extends EntityUserData = EntityUserData> extends Entity3D<
     Entity3DEventMap,
     UserData
 > {
@@ -2705,3 +2705,5 @@ export function isShape(o: unknown): o is Shape {
 
     return (o as Shape).isShape;
 }
+
+export default Shape;

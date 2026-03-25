@@ -7,7 +7,7 @@
 /**
  * Represents a spatial reference identifier (SRID).
  */
-export default class SRID {
+export class SRID {
     private readonly _authority: string;
     private readonly _code: number;
 
@@ -55,3 +55,5 @@ export default class SRID {
         return this._code;
     }
 }
+
+export default SRID;

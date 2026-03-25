@@ -1,0 +1,30 @@
+{
+    "include": [
+        "Cache.ts",
+        "ColorMap.ts",
+        "ColorimetryOptions.ts",
+        "Context.ts",
+        "ContourLineOptions.ts",
+        "Disposable.ts",
+        "ElevationProvider.ts",
+        "ElevationRange.ts",
+        "ElevationSample.ts",
+        "FeatureTypes.ts",
+        "GetElevationOptions.ts",
+        "GetElevationResult.ts",
+        "GraticuleOptions.ts",
+        "HasDefaultPointOfView.ts",
+        "HeadingPitchRoll.ts",
+        "Instance.ts",
+        "MainLoop.ts",
+        "MemoryUsage.ts",
+        "OffsetScale.ts",
+        "OperationCounter.ts",
+        "PointOfView.ts",
+        "Progress.ts",
+        "RequestQueue.ts",
+        "TerrainOptions.ts",
+        "TypedArrayVector.ts",
+        "VectorArray.ts"
+    ]
+}

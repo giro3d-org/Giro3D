@@ -25,7 +25,7 @@ export interface HeadingPitchRollLike {
 /**
  * Defines a heading, pitch and roll in degrees.
  */
-export default class HeadingPitchRoll implements HeadingPitchRollLike {
+export class HeadingPitchRoll implements HeadingPitchRollLike {
     /**
      * The heading (or azimuth), in degrees. Zero is north, 90 is east, and so on.
      * @defaultValue 0
@@ -53,3 +53,5 @@ export default class HeadingPitchRoll implements HeadingPitchRollLike {
         this.roll = roll ?? 0;
     }
 }
+
+export default HeadingPitchRoll;

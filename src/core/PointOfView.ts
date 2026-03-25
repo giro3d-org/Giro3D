@@ -16,7 +16,7 @@ import { isOrthographicCamera, isVector3 } from '../utils/predicates';
  * Note: this point of view might not be applicable to different camera
  * settings (e.g different field of views, or orthographic sizes).
  */
-interface PointOfView {
+export interface PointOfView {
     /**
      * The location of the point of view.
      */
