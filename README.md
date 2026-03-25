@@ -234,4 +234,4 @@ Finally, you can easily implement your own data sources by subclassing the relev
 
 ### Can Giro3D work as a desktop application ?
 
-A web app built with Giro3D can be packaged using [Electron](https://www.electronjs.org) or any similar application packagers. However, if you encouter compatibility issues, please let us know by [creating an issue](https://gitlab.com/giro3d/giro3d/-/issues).
+A web app built with Giro3D can be packaged using [Electron](https://www.electronjs.org) or any similar application packagers. However, if you encounter compatibility issues, please let us know by [creating an issue](https://gitlab.com/giro3d/giro3d/-/issues).
