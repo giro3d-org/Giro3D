@@ -1138,8 +1138,8 @@ export class SunExposure
         // The bounds to collect meshes is bigger than the bounds used for probes
         // because we want to ensure that neighbouring meshes do contribute to shadows.
         // For example if the neighbouring area has high-rise buildings, they must be included.
-        const tightBoundSize = probeBounds.getBoundingSphere(temp.sphere).radius;
-        const shadowCasterBounds = probeBounds.clone().expandByScalar(tightBoundSize * 1.5);
+        const scale = probeBounds.getSize(new Vector3());
+        const shadowCasterBounds = probeBounds.clone().expandByVector(scale);
         const meshBoundsAsExtent = Extent.fromBox3(crs, shadowCasterBounds);
 
         const limits: Limits = {
