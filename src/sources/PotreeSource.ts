@@ -37,7 +37,6 @@ import type { Metadata } from './potree/Metadata';
 import { GlobalCache } from '../core/Cache';
 import CoordinateSystem from '../core/geographic/CoordinateSystem';
 import OperationCounter from '../core/OperationCounter';
-import { DefaultQueue } from '../core/RequestQueue';
 import Fetcher from '../utils/Fetcher';
 import { defined, nonNull } from '../utils/tsutils';
 import { getLazPerf } from './las/config';
@@ -504,11 +503,7 @@ export default class PotreeSource extends PointCloudSourceBase {
 
         this._opCounter.increment();
 
-        let buffer = await DefaultQueue.enqueue({
-            id: url,
-            request: () => this.fetchDataFile(url),
-            priority: node.depth,
-        }).finally(() => this._opCounter.decrement());
+        let buffer = await this.fetchDataFile(url).finally(() => this._opCounter.decrement());
 
         if (this._options.enableWorkers) {
             // We have to make a copy because this buffer might be returned more than once by the
