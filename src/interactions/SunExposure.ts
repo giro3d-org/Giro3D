@@ -6,6 +6,7 @@
 
 import type { BufferAttribute, BufferGeometry, ColorRepresentation, Matrix4, Side } from 'three';
 
+import { Uint16BufferAttribute, Uint32BufferAttribute } from 'three';
 import {
     Box3,
     Box3Helper,
@@ -48,6 +49,7 @@ import CoordinateSystem from '../core/geographic/CoordinateSystem';
 import Extent from '../core/geographic/Extent';
 import Sun from '../core/geographic/Sun';
 import OperationCounter from '../core/OperationCounter';
+import TypedArrayVector from '../core/TypedArrayVector';
 import { Vector3Array } from '../core/VectorArray';
 import { isEntity3D } from '../entities/Entity3D';
 import { isMap } from '../entities/Map';
@@ -361,6 +363,97 @@ function createTerrainGeometry(params: {
     };
 }
 
+function createTruncatedGeometry(
+    input: BufferGeometry,
+    matrix: Matrix4,
+    limits: Box3 | Sphere,
+): BufferGeometry {
+    const result = input.clone();
+
+    // The optimization is currently only done on indexed meshes.
+    if (input.index == null) {
+        return result;
+    }
+
+    const box = limits instanceof Box3 ? limits : limits.getBoundingBox(new Box3());
+
+    const vertices = input.getAttribute('position');
+
+    const triangle = new Triangle();
+
+    const indices = nonNull(result.index).array;
+    const isUint32 = indices instanceof Uint32Array;
+    const indexBufferCtor = isUint32 ? Uint32Array : Uint16Array;
+    const filteredIndices = new TypedArrayVector(indices.length, cap => new indexBufferCtor(cap));
+
+    // Let's keep only triangles that interesect with the limits.
+    for (let i = 0; i < indices.length - 2; i += 3) {
+        const a = indices[i + 0];
+        const b = indices[i + 1];
+        const c = indices[i + 2];
+
+        triangle.a.set(vertices.getX(a), vertices.getY(a), vertices.getZ(a));
+        triangle.b.set(vertices.getX(b), vertices.getY(b), vertices.getZ(b));
+        triangle.c.set(vertices.getX(c), vertices.getY(c), vertices.getZ(c));
+
+        triangle.a.applyMatrix4(matrix);
+        triangle.b.applyMatrix4(matrix);
+        triangle.c.applyMatrix4(matrix);
+
+        if (triangle.intersectsBox(box)) {
+            filteredIndices.push(a);
+            filteredIndices.push(b);
+            filteredIndices.push(c);
+        }
+    }
+
+    const filteredArray = filteredIndices.getArray();
+
+    const indexAttribute = isUint32
+        ? new Uint32BufferAttribute(filteredArray, 1)
+        : new Uint16BufferAttribute(filteredArray, 1);
+
+    result.setIndex(indexAttribute);
+
+    return result;
+}
+
+function collectMeshProbes(
+    mesh: Mesh,
+    sampleArea: number,
+    limits: Box3 | Sphere,
+    origin: Vector3,
+    positions: Vector3Array,
+    normals: Vector3Array,
+): void {
+    let area = 0;
+
+    iterateTriangles([mesh], tri => {
+        area += tri.getArea();
+    });
+
+    // To avoid spending too much time sampling the mesh,
+    // we remove all triangles that do not intersect with the limits.
+    const truncatedGeometry = createTruncatedGeometry(mesh.geometry, mesh.matrixWorld, limits);
+    const truncatedMesh = new Mesh(truncatedGeometry);
+
+    const numSamples = Math.ceil(area / sampleArea) + 1;
+    const sampler = new MeshSurfaceSampler(truncatedMesh);
+    sampler.build();
+
+    for (let i = 0; i < numSamples; i++) {
+        sampler.sample(temp.position, temp.normal);
+        temp.position.applyMatrix4(mesh.matrixWorld);
+        if (limits.containsPoint(temp.position)) {
+            temp.position.sub(origin);
+            positions.pushVector(temp.position);
+            normals.pushVector(temp.normal);
+        }
+    }
+
+    truncatedGeometry.dispose();
+}
+
 function collectObjectProbe(
     obj: Object3D,
     origin: Vector3,
@@ -389,25 +482,7 @@ function collectObjectProbe(
     });
 
     for (const mesh of meshes) {
-        let area = 0;
-
-        iterateTriangles([mesh], tri => {
-            area += tri.getArea();
-        });
-
-        const numSamples = Math.ceil(area / sampleArea) + 1;
-        const sampler = new MeshSurfaceSampler(mesh);
-        sampler.build();
-
-        for (let i = 0; i < numSamples; i++) {
-            sampler.sample(temp.position, temp.normal);
-            temp.position.applyMatrix4(mesh.matrixWorld);
-            if (limits.containsPoint(temp.position)) {
-                temp.position.sub(origin);
-                positions.pushVector(temp.position);
-                normals.pushVector(temp.normal);
-            }
-        }
+        collectMeshProbes(mesh, sampleArea, limits, origin, positions, normals);
     }
 }
 
