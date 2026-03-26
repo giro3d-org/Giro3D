@@ -411,21 +411,28 @@ function collectObjectProbe(
     }
 }
 
-function collectProbes(
-    objects: (Object3D | Entity3D)[],
-    origin: Vector3,
-    limits: Box3 | Sphere,
-    spatialResolution: number,
-): ProbeCollection {
-    const INITIAL_SIZE = 8192 * 3;
+async function collectProbes(params: {
+    objects: (Object3D | Entity3D)[];
+    origin: Vector3;
+    limits: Box3 | Sphere;
+    spatialResolution: number;
+    signal?: AbortSignal;
+}): Promise<ProbeCollection> {
+    const INITIAL_SIZE = 65536 * 3;
     const positions = new Vector3Array(new Float32Array(INITIAL_SIZE));
     positions.length = 0;
     const normals = new Vector3Array(new Float32Array(INITIAL_SIZE));
     normals.length = 0;
 
+    const { objects, limits, spatialResolution, signal, origin } = params;
+
     for (const obj of objects) {
+        signal?.throwIfAborted();
+
         const root = isEntity3D(obj) ? obj.object3d : obj;
         collectObjectProbe(root, origin, limits, spatialResolution, positions, normals);
+
+        await PromiseUtils.nextFrame();
     }
 
     const numProbes = positions.length;
@@ -1168,7 +1175,12 @@ export class SunExposure
 
         // Then, collect probes on the surface of the meshes
         // within the tight bounds.
-        const probes = collectProbes(meshes, origin, limits.probes, this._spatialResolution);
+        const probes = await collectProbes({
+            objects: meshes,
+            origin,
+            limits: limits.probes,
+            spatialResolution: this._spatialResolution,
+        });
 
         this._toDispose.push(disposeFn);
 
