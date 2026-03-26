@@ -52,7 +52,6 @@ import { Vector3Array } from '../core/VectorArray';
 import { isEntity3D } from '../entities/Entity3D';
 import { isMap } from '../entities/Map';
 import PointCloud from '../entities/PointCloud';
-import { isTileMesh } from '../entities/tiles/TileMesh';
 import StaticPointCloudSource from '../sources/StaticPointCloudSource';
 import { isMesh } from '../utils/predicates';
 import PromiseUtils from '../utils/PromiseUtils';
@@ -309,7 +308,13 @@ function createTerrainGeometry(params: {
     map: Map;
     spatialResolution: number;
     areaOfInterest: Extent;
-}): { geometry: BufferGeometry; widthSegments: number; heightSegments: number; isFlat: boolean } {
+}): {
+    geometry: BufferGeometry;
+    widthSegments: number;
+    heightSegments: number;
+    isFlat: boolean;
+    center: Vector3;
+} {
     const { map, spatialResolution, areaOfInterest } = params;
     const extent = areaOfInterest.clone().intersect(map.extent);
     const { width, height } = extent.dimensions(temp.dimensions);
@@ -323,6 +328,7 @@ function createTerrainGeometry(params: {
             isFlat: true,
             widthSegments: 1,
             heightSegments: 1,
+            center: extent.centerAsVector3(),
         };
     }
 
@@ -348,95 +354,13 @@ function createTerrainGeometry(params: {
 
     result.computeVertexNormals();
 
-    return { geometry: result, widthSegments, heightSegments, isFlat: false };
-}
-
-function bilinear(
-    TL: number,
-    TR: number,
-    BL: number,
-    BR: number,
-    buffer: BufferAttribute,
-    u: number,
-    v: number,
-    target: Vector3,
-): void {
-    function bilinear1(component: number): void {
-        const vTL = buffer.getComponent(TL, component);
-        const vTR = buffer.getComponent(TR, component);
-        const vBL = buffer.getComponent(BL, component);
-        const vBR = buffer.getComponent(BR, component);
-
-        const T = (1 - u) * vBL + u * vBR;
-        const B = (1 - u) * vTL + u * vTR;
-
-        const interpolated = (1 - v) * T + v * B;
-
-        target.setComponent(component, interpolated);
-    }
-
-    bilinear1(0); // X
-    bilinear1(1); // Y
-    bilinear1(2); // Z
-}
-
-/**
- * Special case where we leverage the structure of map tiles (nice grids) to speed up probe
- * computation instead of iterating triangles. This assumes that map mesh density is relatively
- * close to what the user expects.
- */
-function collectMapProbes(
-    map: Map,
-    origin: Vector3,
-    areaOfInterest: Extent,
-    spatialResolution: number,
-    probePositions: Vector3Array,
-    probeNormals: Vector3Array,
-): void {
-    const dims = areaOfInterest.dimensions(temp.dimensions);
-
-    const { geometry, widthSegments, heightSegments } = createTerrainGeometry({
-        map,
-        areaOfInterest,
-        spatialResolution,
-    });
-
-    const positions = geometry.getAttribute('position') as BufferAttribute;
-    const normals = geometry.getAttribute('normal') as BufferAttribute;
-    const widthCount = widthSegments + 1;
-    const heightCount = heightSegments + 1;
-
-    if (positions.count !== widthCount * heightCount) {
-        throw new Error('incorrect vertex count');
-    }
-
-    const segmentWidth = dims.width / widthSegments;
-    const segmentHeight = dims.height / heightSegments;
-    const uSubdivs = Math.ceil(segmentWidth / spatialResolution);
-    const vSubdivs = Math.ceil(segmentHeight / spatialResolution);
-
-    // For each quad, let's interpolate bilinearly to create our probes
-    for (let i = 0; i < widthCount - 1; i++) {
-        for (let j = 0; j < heightCount - 1; j++) {
-            const TL = (j + 1) * widthCount + i;
-            const TR = (j + 1) * widthCount + i + 1;
-            const BL = j * widthCount + i;
-            const BR = j * widthCount + i + 1;
-
-            for (let uIdx = 0; uIdx <= uSubdivs; uIdx++) {
-                for (let vIdx = 0; vIdx <= vSubdivs; vIdx++) {
-                    const u = uIdx / vSubdivs;
-                    const v = vIdx / vSubdivs;
-
-                    bilinear(TL, TR, BL, BR, positions, u, v, temp.position);
-                    bilinear(TL, TR, BL, BR, normals, u, v, temp.normal);
-
-                    probePositions.pushVector(temp.position.setZ(temp.position.z - origin.z));
-                    probeNormals.pushVector(temp.normal.normalize());
-                }
-            }
-        }
-    }
+    return {
+        geometry: result,
+        widthSegments,
+        heightSegments,
+        isFlat: false,
+        center: extent.centerAsVector3(),
+    };
 }
 
 function collectObjectProbe(
@@ -492,7 +416,6 @@ function collectObjectProbe(
 function collectProbes(
     objects: (Object3D | Entity3D)[],
     origin: Vector3,
-    areaOfInterest: Extent,
     limits: Box3 | Sphere,
     spatialResolution: number,
 ): ProbeCollection {
@@ -503,14 +426,8 @@ function collectProbes(
     normals.length = 0;
 
     for (const obj of objects) {
-        if (isMap(obj)) {
-            // For maps we have a better collecting algorithm that uses
-            // the map grid itself to produce regularly spaced probes.
-            collectMapProbes(obj, origin, areaOfInterest, spatialResolution, positions, normals);
-        } else {
-            const root = isEntity3D(obj) ? obj.object3d : obj;
-            collectObjectProbe(root, origin, limits, spatialResolution, positions, normals);
-        }
+        const root = isEntity3D(obj) ? obj.object3d : obj;
+        collectObjectProbe(root, origin, limits, spatialResolution, positions, normals);
     }
 
     const numProbes = positions.length;
@@ -551,14 +468,14 @@ function collectOptimizedMeshes(
     limitsAsExtent: Extent,
     limits: Box3,
     spatialResolution: number,
-): { scene: Group; disposeFn: VoidFunction } {
+): { meshes: Mesh[]; disposeFn: VoidFunction } {
     const simulationMaterial = new MeshStandardMaterial({
         color: 'red',
         side: DoubleSide,
     });
 
     const objectsToDispose: BufferGeometry[] = [];
-    const result = new Group();
+    const result: Mesh[] = [];
 
     for (const obj of objects) {
         if (isMap(obj)) {
@@ -572,11 +489,10 @@ function collectOptimizedMeshes(
             });
             const mesh = new Mesh(terrain.geometry, simulationMaterial);
 
-            mesh.position.copy(origin);
-            mesh.position.setZ(0);
+            mesh.position.copy(terrain.center);
             mesh.updateMatrixWorld(true);
 
-            result.add(mesh);
+            result.push(mesh);
 
             objectsToDispose.push(terrain.geometry);
         } else {
@@ -587,33 +503,25 @@ function collectOptimizedMeshes(
                     const bounds = temp.box.setFromObject(o);
 
                     if (bounds.intersectsBox(limits)) {
-                        if (isTileMesh(o)) {
-                            o.applyHeightMap();
-                        }
+                        const geometry = o.geometry;
+                        geometry.computeBoundingBox();
 
-                        const simulationGeometry = o.geometry.clone();
-                        simulationGeometry.computeBoundingBox();
+                        const mesh = new Mesh(geometry, simulationMaterial);
 
-                        const acceleratedMesh = new Mesh(simulationGeometry, simulationMaterial);
+                        o.matrixWorld.decompose(mesh.position, mesh.quaternion, mesh.scale);
 
-                        o.matrixWorld.decompose(
-                            acceleratedMesh.position,
-                            acceleratedMesh.quaternion,
-                            acceleratedMesh.scale,
-                        );
+                        mesh.updateMatrixWorld(true);
 
-                        acceleratedMesh.updateMatrixWorld(true);
+                        objectsToDispose.push(geometry);
 
-                        objectsToDispose.push(simulationGeometry);
-
-                        result.add(acceleratedMesh);
+                        result.push(mesh);
                     }
                 }
             });
         }
     }
 
-    return { scene: result, disposeFn: () => objectsToDispose.forEach(obj => obj.dispose()) };
+    return { meshes: result, disposeFn: () => objectsToDispose.forEach(obj => obj.dispose()) };
 }
 
 export interface SunExposureOptions {
@@ -1249,21 +1157,10 @@ export class SunExposure
             isGlobe,
         );
 
-        // Then, collect probes on the surface of the meshes
-        // within the tight bounds.
-        const probes = collectProbes(
-            this._objects,
-            origin,
-            Extent.fromBox3(crs, limits.probes),
-            limits.probes,
-            this._spatialResolution,
-        );
-
-        // Now that we have our probes, we need to build an optimized
-        // and simplified model of the simulation scene by collecting
-        // with an opaque material.
+        // Let's collect the meshes that will be used in the simulation.
+        // We limit the meshes that intersect the bounds.
         // Note that we are not altering the original objects at all.
-        const { scene, disposeFn } = collectOptimizedMeshes(
+        const { meshes, disposeFn } = collectOptimizedMeshes(
             this._objects,
             origin,
             meshBoundsAsExtent,
@@ -1271,7 +1168,15 @@ export class SunExposure
             this._spatialResolution,
         );
 
+        // Then, collect probes on the surface of the meshes
+        // within the tight bounds.
+        const probes = collectProbes(meshes, origin, limits.probes, this._spatialResolution);
+
         this._toDispose.push(disposeFn);
+
+        const scene = new Group();
+        scene.name = 'meshes';
+        scene.add(...meshes);
 
         if (this._showHelpers) {
             this.createBoundsHelper(limits.probes, 'red');
