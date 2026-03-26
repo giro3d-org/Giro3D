@@ -346,10 +346,8 @@ function createTerrainGeometry(params: {
         const v = uv.getY(i);
 
         const coordinates = extent.sampleUV(u, v, temp.coordinates);
-        const samples = map.getElevation({ coordinates }).samples;
-        samples.sort((a, b) => a.resolution - b.resolution);
-        const z = samples[0].elevation;
-        pos.setZ(i, z);
+        const elev = map.getElevationFast(coordinates.x, coordinates.y);
+        pos.setZ(i, elev?.elevation ?? 0);
     }
 
     result.computeVertexNormals();
