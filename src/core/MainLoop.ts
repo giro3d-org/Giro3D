@@ -178,8 +178,12 @@ class MainLoop {
         this.updateCameraPlanesFromObjects(context, instance);
 
         if (this.automaticCameraPlaneComputation) {
-            instance.view.near = context.distance.min;
-            instance.view.far = context.distance.max;
+            instance.view.near = Number.isFinite(context.distance.min)
+                ? context.distance.min
+                : instance.view.near;
+            instance.view.far = Number.isFinite(context.distance.max)
+                ? context.distance.max
+                : instance.view.far;
 
             instance.view.camera.updateProjectionMatrix();
         }
