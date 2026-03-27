@@ -1193,6 +1193,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
             hasElevationLayer: this._hasElevationLayer,
             maxTextureImageUnits: Capabilities.getMaxTextureUnitsCount(),
             isGlobe: this.isEllipsoidal,
+            disableVertexTransformations: false,
         };
 
         const material = new LayeredMaterial(materialOptions);

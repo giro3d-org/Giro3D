@@ -322,6 +322,11 @@ interface Defines extends Record<string, unknown> {
      */
     GLOBE?: 1;
     /**
+     * Entirely disable vertex-shader terrain processing and use the geometry as is.
+     * Useful for tiles that have their own geometry (quantized terrain mesh for example)
+     */
+    DISABLE_VERTEX_TRANSFORMATIONS?: 1;
+    /**
      * The number of _visible_ color layers
      */
     VISIBLE_COLOR_LAYER_COUNT: number;
@@ -400,6 +405,13 @@ export interface LayeredMaterialOptions {
     extent: Extent;
     textureSize: Vector2;
     isGlobe: boolean;
+    /**
+     * Entirely disable any vertex transformation and processing
+     * such as stitching and terrain deformation.
+     * This is necessary for tiles that provide their own geometry instead
+     * of a grid that should be deformed by the heightmap.
+     */
+    disableVertexTransformations: boolean;
 }
 
 class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
@@ -466,6 +478,11 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         MaterialUtils.setDefine(this, 'GLOBE', params.isGlobe);
         MaterialUtils.setDefine(this, 'TERRAIN_DEFORMATION', options.terrain.enabled);
         MaterialUtils.setDefine(this, 'DISCARD_NODATA_ELEVATION', options.discardNoData);
+        MaterialUtils.setDefine(
+            this,
+            'DISABLE_VERTEX_TRANSFORMATIONS',
+            params.disableVertexTransformations,
+        );
         MaterialUtils.setDefine(this, 'ENABLE_ELEVATION_RANGE', options.elevationRange != null);
         MaterialUtils.setDefineValue(this, 'VISIBLE_COLOR_LAYER_COUNT', 0);
         MaterialUtils.setDefine(this, 'COLOR_RENDER', true);

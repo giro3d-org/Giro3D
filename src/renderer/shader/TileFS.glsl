@@ -202,7 +202,12 @@ void main() {
     }
 #endif
 
+#if defined(DISABLE_VERTEX_TRANSFORMATIONS)
+    // We have to honor the original normals of the geometry
+    vec3 localNormal = vWorldNormal;
+#else
     vec3 localNormal = vec3(0, 0, 1);
+#endif
 
 #if defined(ELEVATION_LAYER)
     vec2 df = computeElevationDerivatives(
