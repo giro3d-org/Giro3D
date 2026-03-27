@@ -6,6 +6,7 @@
 
 import type { BufferAttribute, BufferGeometry, ColorRepresentation, Matrix4, Side } from 'three';
 
+import { Uint16BufferAttribute, Uint32BufferAttribute } from 'three';
 import {
     Box3,
     Box3Helper,
@@ -48,11 +49,11 @@ import CoordinateSystem from '../core/geographic/CoordinateSystem';
 import Extent from '../core/geographic/Extent';
 import Sun from '../core/geographic/Sun';
 import OperationCounter from '../core/OperationCounter';
+import TypedArrayVector from '../core/TypedArrayVector';
 import { Vector3Array } from '../core/VectorArray';
 import { isEntity3D } from '../entities/Entity3D';
 import { isMap } from '../entities/Map';
 import PointCloud from '../entities/PointCloud';
-import { isTileMesh } from '../entities/tiles/TileMesh';
 import StaticPointCloudSource from '../sources/StaticPointCloudSource';
 import { isMesh } from '../utils/predicates';
 import PromiseUtils from '../utils/PromiseUtils';
@@ -309,7 +310,13 @@ function createTerrainGeometry(params: {
     map: Map;
     spatialResolution: number;
     areaOfInterest: Extent;
-}): { geometry: BufferGeometry; widthSegments: number; heightSegments: number; isFlat: boolean } {
+}): {
+    geometry: BufferGeometry;
+    widthSegments: number;
+    heightSegments: number;
+    isFlat: boolean;
+    center: Vector3;
+} {
     const { map, spatialResolution, areaOfInterest } = params;
     const extent = areaOfInterest.clone().intersect(map.extent);
     const { width, height } = extent.dimensions(temp.dimensions);
@@ -323,6 +330,7 @@ function createTerrainGeometry(params: {
             isFlat: true,
             widthSegments: 1,
             heightSegments: 1,
+            center: extent.centerAsVector3(),
         };
     }
 
@@ -340,103 +348,126 @@ function createTerrainGeometry(params: {
         const v = uv.getY(i);
 
         const coordinates = extent.sampleUV(u, v, temp.coordinates);
-        const samples = map.getElevation({ coordinates }).samples;
-        samples.sort((a, b) => a.resolution - b.resolution);
-        const z = samples[0].elevation;
-        pos.setZ(i, z);
+        const elev = map.getElevationFast(coordinates.x, coordinates.y);
+        pos.setZ(i, elev?.elevation ?? 0);
     }
 
     result.computeVertexNormals();
 
-    return { geometry: result, widthSegments, heightSegments, isFlat: false };
+    return {
+        geometry: result,
+        widthSegments,
+        heightSegments,
+        isFlat: false,
+        center: extent.centerAsVector3(),
+    };
 }
 
-function bilinear(
-    TL: number,
-    TR: number,
-    BL: number,
-    BR: number,
-    buffer: BufferAttribute,
-    u: number,
-    v: number,
-    target: Vector3,
-): void {
-    function bilinear1(component: number): void {
-        const vTL = buffer.getComponent(TL, component);
-        const vTR = buffer.getComponent(TR, component);
-        const vBL = buffer.getComponent(BL, component);
-        const vBR = buffer.getComponent(BR, component);
+function createTruncatedGeometry(
+    input: BufferGeometry,
+    matrix: Matrix4,
+    limits: Box3 | Sphere,
+): BufferGeometry {
+    const result = input.clone();
 
-        const T = (1 - u) * vBL + u * vBR;
-        const B = (1 - u) * vTL + u * vTR;
-
-        const interpolated = (1 - v) * T + v * B;
-
-        target.setComponent(component, interpolated);
+    // The optimization is currently only done on indexed meshes.
+    if (input.index == null) {
+        return result;
     }
 
-    bilinear1(0); // X
-    bilinear1(1); // Y
-    bilinear1(2); // Z
+    const box = limits instanceof Box3 ? limits : limits.getBoundingBox(new Box3());
+
+    const vertices = input.getAttribute('position');
+
+    const triangle = new Triangle();
+
+    const indices = nonNull(result.index).array;
+    const isUint32 = indices instanceof Uint32Array;
+    const indexBufferCtor = isUint32 ? Uint32Array : Uint16Array;
+    const filteredIndices = new TypedArrayVector(indices.length, cap => new indexBufferCtor(cap));
+
+    // Let's keep only triangles that interesect with the limits.
+    for (let i = 0; i < indices.length - 2; i += 3) {
+        const a = indices[i + 0];
+        const b = indices[i + 1];
+        const c = indices[i + 2];
+
+        triangle.a.set(vertices.getX(a), vertices.getY(a), vertices.getZ(a));
+        triangle.b.set(vertices.getX(b), vertices.getY(b), vertices.getZ(b));
+        triangle.c.set(vertices.getX(c), vertices.getY(c), vertices.getZ(c));
+
+        triangle.a.applyMatrix4(matrix);
+        triangle.b.applyMatrix4(matrix);
+        triangle.c.applyMatrix4(matrix);
+
+        if (triangle.intersectsBox(box)) {
+            filteredIndices.push(a);
+            filteredIndices.push(b);
+            filteredIndices.push(c);
+        }
+    }
+
+    const filteredArray = filteredIndices.getArray();
+
+    const indexAttribute = isUint32
+        ? new Uint32BufferAttribute(filteredArray, 1)
+        : new Uint16BufferAttribute(filteredArray, 1);
+
+    result.setIndex(indexAttribute);
+
+    return result;
 }
 
-/**
- * Special case where we leverage the structure of map tiles (nice grids) to speed up probe
- * computation instead of iterating triangles. This assumes that map mesh density is relatively
- * close to what the user expects.
- */
-function collectMapProbes(
-    map: Map,
-    origin: Vector3,
-    areaOfInterest: Extent,
-    spatialResolution: number,
-    probePositions: Vector3Array,
-    probeNormals: Vector3Array,
-): void {
-    const dims = areaOfInterest.dimensions(temp.dimensions);
+function expandProbeArray(array: Vector3Array): void {
+    if (array.length === array.capacity) {
+        const length = array.length;
+        array.expand(Math.round(array.capacity * 1.5));
+        array.length = length;
+    }
+}
 
-    const { geometry, widthSegments, heightSegments } = createTerrainGeometry({
-        map,
-        areaOfInterest,
-        spatialResolution,
+function collectMeshProbes(
+    mesh: Mesh,
+    sampleArea: number,
+    limits: Box3 | Sphere,
+    origin: Vector3,
+    positions: Vector3Array,
+    normals: Vector3Array,
+): void {
+    let area = 0;
+
+    iterateTriangles([mesh], tri => {
+        area += tri.getArea();
     });
 
-    const positions = geometry.getAttribute('position') as BufferAttribute;
-    const normals = geometry.getAttribute('normal') as BufferAttribute;
-    const widthCount = widthSegments + 1;
-    const heightCount = heightSegments + 1;
+    // To avoid spending too much time sampling the mesh,
+    // we remove all triangles that do not intersect with the limits.
+    const truncatedGeometry = createTruncatedGeometry(mesh.geometry, mesh.matrixWorld, limits);
+    const truncatedMesh = new Mesh(truncatedGeometry);
 
-    if (positions.count !== widthCount * heightCount) {
-        throw new Error('incorrect vertex count');
-    }
+    const numSamples = Math.ceil(area / sampleArea) + 1;
+    const sampler = new MeshSurfaceSampler(truncatedMesh);
+    sampler.build();
 
-    const segmentWidth = dims.width / widthSegments;
-    const segmentHeight = dims.height / heightSegments;
-    const uSubdivs = Math.ceil(segmentWidth / spatialResolution);
-    const vSubdivs = Math.ceil(segmentHeight / spatialResolution);
+    for (let i = 0; i < numSamples; i++) {
+        sampler.sample(temp.position, temp.normal);
+        temp.position.applyMatrix4(mesh.matrixWorld);
+        if (limits.containsPoint(temp.position)) {
+            temp.position.sub(origin);
+            positions.pushVector(temp.position);
+            normals.pushVector(temp.normal);
 
-    // For each quad, let's interpolate bilinearly to create our probes
-    for (let i = 0; i < widthCount - 1; i++) {
-        for (let j = 0; j < heightCount - 1; j++) {
-            const TL = (j + 1) * widthCount + i;
-            const TR = (j + 1) * widthCount + i + 1;
-            const BL = j * widthCount + i;
-            const BR = j * widthCount + i + 1;
-
-            for (let uIdx = 0; uIdx <= uSubdivs; uIdx++) {
-                for (let vIdx = 0; vIdx <= vSubdivs; vIdx++) {
-                    const u = uIdx / vSubdivs;
-                    const v = vIdx / vSubdivs;
-
-                    bilinear(TL, TR, BL, BR, positions, u, v, temp.position);
-                    bilinear(TL, TR, BL, BR, normals, u, v, temp.normal);
-
-                    probePositions.pushVector(temp.position.setZ(temp.position.z - origin.z));
-                    probeNormals.pushVector(temp.normal.normalize());
-                }
+            // Here we don't let the array auto-expand because the expansion
+            // strategy is too slow for our needs, leading to many undecessary
+            // intermediate allocations. So we expand with our own strategy.
+            if (positions.length === positions.capacity) {
+                expandProbeArray(positions);
+                expandProbeArray(normals);
             }
         }
     }
+
+    truncatedGeometry.dispose();
 }
 
 function collectObjectProbe(
@@ -467,50 +498,32 @@ function collectObjectProbe(
     });
 
     for (const mesh of meshes) {
-        let area = 0;
-
-        iterateTriangles([mesh], tri => {
-            area += tri.getArea();
-        });
-
-        const numSamples = Math.ceil(area / sampleArea) + 1;
-        const sampler = new MeshSurfaceSampler(mesh);
-        sampler.build();
-
-        for (let i = 0; i < numSamples; i++) {
-            sampler.sample(temp.position, temp.normal);
-            temp.position.applyMatrix4(mesh.matrixWorld);
-            if (limits.containsPoint(temp.position)) {
-                temp.position.sub(origin);
-                positions.pushVector(temp.position);
-                normals.pushVector(temp.normal);
-            }
-        }
+        collectMeshProbes(mesh, sampleArea, limits, origin, positions, normals);
     }
 }
 
-function collectProbes(
-    objects: (Object3D | Entity3D)[],
-    origin: Vector3,
-    areaOfInterest: Extent,
-    limits: Box3 | Sphere,
-    spatialResolution: number,
-): ProbeCollection {
-    const INITIAL_SIZE = 8192 * 3;
+async function collectProbes(params: {
+    objects: (Object3D | Entity3D)[];
+    origin: Vector3;
+    limits: Box3 | Sphere;
+    spatialResolution: number;
+    signal?: AbortSignal;
+}): Promise<ProbeCollection> {
+    const INITIAL_SIZE = 65536 * 3;
     const positions = new Vector3Array(new Float32Array(INITIAL_SIZE));
     positions.length = 0;
     const normals = new Vector3Array(new Float32Array(INITIAL_SIZE));
     normals.length = 0;
 
+    const { objects, limits, spatialResolution, signal, origin } = params;
+
     for (const obj of objects) {
-        if (isMap(obj)) {
-            // For maps we have a better collecting algorithm that uses
-            // the map grid itself to produce regularly spaced probes.
-            collectMapProbes(obj, origin, areaOfInterest, spatialResolution, positions, normals);
-        } else {
-            const root = isEntity3D(obj) ? obj.object3d : obj;
-            collectObjectProbe(root, origin, limits, spatialResolution, positions, normals);
-        }
+        signal?.throwIfAborted();
+
+        const root = isEntity3D(obj) ? obj.object3d : obj;
+        collectObjectProbe(root, origin, limits, spatialResolution, positions, normals);
+
+        await PromiseUtils.nextFrame();
     }
 
     const numProbes = positions.length;
@@ -551,14 +564,14 @@ function collectOptimizedMeshes(
     limitsAsExtent: Extent,
     limits: Box3,
     spatialResolution: number,
-): { scene: Group; disposeFn: VoidFunction } {
+): { meshes: Mesh[]; disposeFn: VoidFunction } {
     const simulationMaterial = new MeshStandardMaterial({
         color: 'red',
         side: DoubleSide,
     });
 
     const objectsToDispose: BufferGeometry[] = [];
-    const result = new Group();
+    const result: Mesh[] = [];
 
     for (const obj of objects) {
         if (isMap(obj)) {
@@ -572,11 +585,10 @@ function collectOptimizedMeshes(
             });
             const mesh = new Mesh(terrain.geometry, simulationMaterial);
 
-            mesh.position.copy(origin);
-            mesh.position.setZ(0);
+            mesh.position.copy(terrain.center);
             mesh.updateMatrixWorld(true);
 
-            result.add(mesh);
+            result.push(mesh);
 
             objectsToDispose.push(terrain.geometry);
         } else {
@@ -587,33 +599,25 @@ function collectOptimizedMeshes(
                     const bounds = temp.box.setFromObject(o);
 
                     if (bounds.intersectsBox(limits)) {
-                        if (isTileMesh(o)) {
-                            o.applyHeightMap();
-                        }
+                        const geometry = o.geometry;
+                        geometry.computeBoundingBox();
 
-                        const simulationGeometry = o.geometry.clone();
-                        simulationGeometry.computeBoundingBox();
+                        const mesh = new Mesh(geometry, simulationMaterial);
 
-                        const acceleratedMesh = new Mesh(simulationGeometry, simulationMaterial);
+                        o.matrixWorld.decompose(mesh.position, mesh.quaternion, mesh.scale);
 
-                        o.matrixWorld.decompose(
-                            acceleratedMesh.position,
-                            acceleratedMesh.quaternion,
-                            acceleratedMesh.scale,
-                        );
+                        mesh.updateMatrixWorld(true);
 
-                        acceleratedMesh.updateMatrixWorld(true);
+                        objectsToDispose.push(geometry);
 
-                        objectsToDispose.push(simulationGeometry);
-
-                        result.add(acceleratedMesh);
+                        result.push(mesh);
                     }
                 }
             });
         }
     }
 
-    return { scene: result, disposeFn: () => objectsToDispose.forEach(obj => obj.dispose()) };
+    return { meshes: result, disposeFn: () => objectsToDispose.forEach(obj => obj.dispose()) };
 }
 
 export interface SunExposureOptions {
@@ -1225,8 +1229,8 @@ export class SunExposure
         // The bounds to collect meshes is bigger than the bounds used for probes
         // because we want to ensure that neighbouring meshes do contribute to shadows.
         // For example if the neighbouring area has high-rise buildings, they must be included.
-        const tightBoundSize = probeBounds.getBoundingSphere(temp.sphere).radius;
-        const shadowCasterBounds = probeBounds.clone().expandByScalar(tightBoundSize * 1.5);
+        const scale = probeBounds.getSize(new Vector3());
+        const shadowCasterBounds = probeBounds.clone().expandByVector(scale);
         const meshBoundsAsExtent = Extent.fromBox3(crs, shadowCasterBounds);
 
         const limits: Limits = {
@@ -1249,21 +1253,10 @@ export class SunExposure
             isGlobe,
         );
 
-        // Then, collect probes on the surface of the meshes
-        // within the tight bounds.
-        const probes = collectProbes(
-            this._objects,
-            origin,
-            Extent.fromBox3(crs, limits.probes),
-            limits.probes,
-            this._spatialResolution,
-        );
-
-        // Now that we have our probes, we need to build an optimized
-        // and simplified model of the simulation scene by collecting
-        // with an opaque material.
+        // Let's collect the meshes that will be used in the simulation.
+        // We limit the meshes that intersect the bounds.
         // Note that we are not altering the original objects at all.
-        const { scene, disposeFn } = collectOptimizedMeshes(
+        const { meshes, disposeFn } = collectOptimizedMeshes(
             this._objects,
             origin,
             meshBoundsAsExtent,
@@ -1271,7 +1264,20 @@ export class SunExposure
             this._spatialResolution,
         );
 
+        // Then, collect probes on the surface of the meshes
+        // within the tight bounds.
+        const probes = await collectProbes({
+            objects: meshes,
+            origin,
+            limits: limits.probes,
+            spatialResolution: this._spatialResolution,
+        });
+
         this._toDispose.push(disposeFn);
+
+        const scene = new Group();
+        scene.name = 'meshes';
+        scene.add(...meshes);
 
         if (this._showHelpers) {
             this.createBoundsHelper(limits.probes, 'red');

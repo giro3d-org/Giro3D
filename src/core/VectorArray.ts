@@ -261,7 +261,9 @@ export abstract class VectorArray<
      * Pushes a vector at the end of the array, allocating memory if necessary.
      */
     public push(x: number, y: number, z?: number, w?: number): void {
-        this.allocateIfFull();
+        if (this._capacity === this._length) {
+            this.allocateIfFull();
+        }
 
         this.setX(this._length, x);
         this.setY(this._length, y);
@@ -279,7 +281,9 @@ export abstract class VectorArray<
      * Pushes a vector at the end of the array, allocating memory if necessary.
      */
     public pushVector(v: V): void {
-        this.allocateIfFull();
+        if (this._capacity === this._length) {
+            this.allocateIfFull();
+        }
         this.assignVector(this._length * this._dimension, v);
         this._length++;
     }
