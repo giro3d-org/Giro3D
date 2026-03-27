@@ -37,7 +37,10 @@ void main() {
 
     #include <begin_vertex>
 
+#ifndef DISABLE_VERTEX_TRANSFORMATIONS
     #include <giro3d_terrain_vertex>
+#endif
+
     #include <project_vertex>
     #include <logdepthbuf_vertex>
     #include <clipping_planes_vertex>
