@@ -31,6 +31,7 @@ export default class SunExposurePanel extends Panel {
     private _sphere: Sphere | null = null;
     private _helper: Mesh | null = null;
     private _entity: PointCloud | null = null;
+    private _sunExposure: SunExposure | null = null;
 
     private updateBoundingSphere(): void {
         if (this._center == null) {
@@ -72,6 +73,7 @@ export default class SunExposurePanel extends Panel {
             .min(10)
             .max(120);
         this.addController(this, 'compute');
+        this.addController(this, 'cleanup');
     }
 
     public async compute(): Promise<void> {
@@ -102,15 +104,20 @@ export default class SunExposurePanel extends Panel {
             spatialResolution: this.resolution,
         });
 
+        this._sunExposure = tool;
+
         const results = await tool.compute();
         this._entity = results.entity;
-        // tool.dispose();
     }
 
-    private cleanup(): void {
+    public cleanup(): void {
         if (this._entity != null) {
             this.instance.remove(this._entity);
             this._entity = null;
+        }
+        if (this._sunExposure != null) {
+            this._sunExposure.dispose();
+            this._sunExposure = null;
         }
     }
 

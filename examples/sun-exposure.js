@@ -340,7 +340,7 @@ async function terrainScenario(instance) {
         inputs: [map],
         allowedSpatialResolutionRange: [50, 1000, 100],
         center: center.toVector3(),
-        volume: extent.toBox3(0, 5000),
+        volume: extent.toBox3(0, 6000),
     };
 }
 
