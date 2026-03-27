@@ -317,11 +317,15 @@ interface Defines extends Record<string, unknown> {
     /** For distance-based effects, such as shadow maps for point lights */
     DISTANCE_RENDER?: 1;
 
-    /** The number of _visible_ color layers */
     /**
      * The z coordinate of vertices is reset before computing terrain
      */
     GLOBE?: 1;
+    /**
+     * Entirely disable vertex-shader terrain processing and use the geometry as is.
+     * Useful for tiles that have their own geometry (quantized terrain mesh for example)
+     */
+    DISABLE_VERTEX_TRANSFORMATIONS?: 1;
     /**
      * The number of _visible_ color layers
      */
@@ -385,6 +389,31 @@ interface Uniforms extends ThreeUniforms, Record<string, IUniform> {
     skirtVertexRange: IUniform<Vector2>;
 }
 
+export interface LayeredMaterialOptions {
+    /** the material options. */
+    options: MaterialOptions;
+    /** the WebGL renderer. */
+    renderer: WebGLRenderer;
+    /** The number of maximum texture units in fragment shaders */
+    maxTextureImageUnits: number;
+    /** The function to help sorting color layers. */
+    getIndexFn: (arg0: Layer) => number;
+    /** The texture data type to be used for the atlas texture. */
+    textureDataType: TextureDataType;
+    hasElevationLayer: boolean;
+    tileDimensions: Vector2;
+    extent: Extent;
+    textureSize: Vector2;
+    isGlobe: boolean;
+    /**
+     * Entirely disable any vertex transformation and processing
+     * such as stitching and terrain deformation.
+     * This is necessary for tiles that provide their own geometry instead
+     * of a grid that should be deformed by the heightmap.
+     */
+    disableVertexTransformations: boolean;
+}
+
 class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
     public readonly isMemoryUsage = true as const;
 
@@ -433,23 +462,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         }
     }
 
-    public constructor(params: {
-        /** the material options. */
-        options: MaterialOptions;
-        /** the WebGL renderer. */
-        renderer: WebGLRenderer;
-        /** The number of maximum texture units in fragment shaders */
-        maxTextureImageUnits: number;
-        /** The function to help sorting color layers. */
-        getIndexFn: (arg0: Layer) => number;
-        /** The texture data type to be used for the atlas texture. */
-        textureDataType: TextureDataType;
-        hasElevationLayer: boolean;
-        tileDimensions: Vector2;
-        extent: Extent;
-        textureSize: Vector2;
-        isGlobe: boolean;
-    }) {
+    public constructor(params: LayeredMaterialOptions) {
         super({ clipping: true, glslVersion: GLSL3 });
 
         this._atlasInfo = { maxX: 0, maxY: 0, atlas: null };
@@ -465,6 +478,11 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         MaterialUtils.setDefine(this, 'GLOBE', params.isGlobe);
         MaterialUtils.setDefine(this, 'TERRAIN_DEFORMATION', options.terrain.enabled);
         MaterialUtils.setDefine(this, 'DISCARD_NODATA_ELEVATION', options.discardNoData);
+        MaterialUtils.setDefine(
+            this,
+            'DISABLE_VERTEX_TRANSFORMATIONS',
+            params.disableVertexTransformations,
+        );
         MaterialUtils.setDefine(this, 'ENABLE_ELEVATION_RANGE', options.elevationRange != null);
         MaterialUtils.setDefineValue(this, 'VISIBLE_COLOR_LAYER_COUNT', 0);
         MaterialUtils.setDefine(this, 'COLOR_RENDER', true);
