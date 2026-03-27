@@ -13,7 +13,7 @@ import type TileCoordinate from './TileCoordinate';
 import EllipsoidTileGeometry from './EllipsoidTileGeometry';
 import { TileGeometryBuilder } from './TileGeometry';
 
-class EllipsoidTileGeometryBuilder extends TileGeometryBuilder<EllipsoidTileGeometry> {
+export default class EllipsoidTileGeometryBuilder extends TileGeometryBuilder<EllipsoidTileGeometry> {
     public constructor(
         private readonly ellipsoid: Ellipsoid,
         private _segments: number,
@@ -41,5 +41,3 @@ class EllipsoidTileGeometryBuilder extends TileGeometryBuilder<EllipsoidTileGeom
         });
     }
 }
-
-export default EllipsoidTileGeometryBuilder;
