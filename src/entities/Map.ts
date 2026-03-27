@@ -47,6 +47,7 @@ import type PickOptions from '../core/picking/PickOptions';
 import type PointOfView from '../core/PointOfView';
 import type { SSE } from '../core/ScreenSpaceError';
 import type TerrainOptions from '../core/TerrainOptions';
+import type { LayeredMaterialOptions } from '../renderer/LayeredMaterial';
 import type RenderingState from '../renderer/RenderingState';
 import type { EntityUserData } from './Entity';
 import type { Entity3DOptions } from './Entity3D';
@@ -1181,7 +1182,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     ): TileMesh {
         const textureSize = this.getTextureSize(extent);
 
-        const materialOptions = {
+        const materialOptions: LayeredMaterialOptions = {
             renderer: this.instance.renderer,
             options: this._materialOptions,
             textureSize,

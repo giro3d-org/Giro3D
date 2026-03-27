@@ -317,7 +317,6 @@ interface Defines extends Record<string, unknown> {
     /** For distance-based effects, such as shadow maps for point lights */
     DISTANCE_RENDER?: 1;
 
-    /** The number of _visible_ color layers */
     /**
      * The z coordinate of vertices is reset before computing terrain
      */
@@ -385,6 +384,24 @@ interface Uniforms extends ThreeUniforms, Record<string, IUniform> {
     skirtVertexRange: IUniform<Vector2>;
 }
 
+export interface LayeredMaterialOptions {
+    /** the material options. */
+    options: MaterialOptions;
+    /** the WebGL renderer. */
+    renderer: WebGLRenderer;
+    /** The number of maximum texture units in fragment shaders */
+    maxTextureImageUnits: number;
+    /** The function to help sorting color layers. */
+    getIndexFn: (arg0: Layer) => number;
+    /** The texture data type to be used for the atlas texture. */
+    textureDataType: TextureDataType;
+    hasElevationLayer: boolean;
+    tileDimensions: Vector2;
+    extent: Extent;
+    textureSize: Vector2;
+    isGlobe: boolean;
+}
+
 class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
     public readonly isMemoryUsage = true as const;
 
@@ -433,23 +450,7 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         }
     }
 
-    public constructor(params: {
-        /** the material options. */
-        options: MaterialOptions;
-        /** the WebGL renderer. */
-        renderer: WebGLRenderer;
-        /** The number of maximum texture units in fragment shaders */
-        maxTextureImageUnits: number;
-        /** The function to help sorting color layers. */
-        getIndexFn: (arg0: Layer) => number;
-        /** The texture data type to be used for the atlas texture. */
-        textureDataType: TextureDataType;
-        hasElevationLayer: boolean;
-        tileDimensions: Vector2;
-        extent: Extent;
-        textureSize: Vector2;
-        isGlobe: boolean;
-    }) {
+    public constructor(params: LayeredMaterialOptions) {
         super({ clipping: true, glslVersion: GLSL3 });
 
         this._atlasInfo = { maxX: 0, maxY: 0, atlas: null };
