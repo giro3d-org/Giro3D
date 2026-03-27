@@ -47,11 +47,14 @@ import type PickOptions from '../core/picking/PickOptions';
 import type PointOfView from '../core/PointOfView';
 import type { SSE } from '../core/ScreenSpaceError';
 import type TerrainOptions from '../core/TerrainOptions';
+import type { LayeredMaterialOptions } from '../renderer/LayeredMaterial';
 import type RenderingState from '../renderer/RenderingState';
 import type { EntityUserData } from './Entity';
 import type { Entity3DOptions } from './Entity3D';
 import type MapLightingOptions from './MapLightingOptions';
-import type { TileGeometryBuilder } from './tiles/TileGeometry';
+import type TileCoordinate from './tiles/TileCoordinate';
+import type { TileChild, TileGeometryBuilder } from './tiles/TileGeometry';
+import type TileGeometry from './tiles/TileGeometry';
 import type TileVolume from './tiles/TileVolume';
 
 import { defaultColorimetryOptions } from '../core/ColorimetryOptions';
@@ -522,6 +525,13 @@ export interface MapOptions extends Entity3DOptions {
      * @defaultValue {@link defaultMapSubdivisionStrategy}
      */
     subdivisionStrategy?: MapSubdivisionStrategy;
+    /**
+     * A custom tile geometry builder. When provided, overrides the default
+     * PlanarTileGeometryBuilder. The builder controls the root tiling scheme
+     * and how each tile's geometry is constructed.
+     * @defaultValue undefined
+     */
+    geometryBuilder?: TileGeometryBuilder;
 }
 
 interface ObjectOptions {
@@ -617,8 +627,8 @@ class Map<UserData extends EntityUserData = EntityUserData>
     private readonly _layerIds: Set<string> = new Set();
     private readonly _materialOptions: MaterialOptions;
     private readonly _subdivisionStrategy: MapSubdivisionStrategy;
+    private readonly _pendingSubdivision: Set<number> = new Set();
     private readonly _onNodeComplete: (e: LayerEvents['node-complete']) => void;
-
     private _paintCompleteTimeout: NodeJS.Timeout | null = null;
     private _geometryBuilder: TileGeometryBuilder | null = null;
 
@@ -654,6 +664,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         this._onNodeComplete = this.onNodeComplete.bind(this);
 
         this._subdivisionStrategy = options.subdivisionStrategy ?? defaultMapSubdivisionStrategy;
+        this._geometryBuilder = options.geometryBuilder ?? this._geometryBuilder;
         this._subdivisionThreshold = options.subdivisionThreshold ?? DEFAULT_SUBDIVISION_THRESHOLD;
         this.maxSubdivisionLevel = options.maxSubdivisionLevel ?? 30;
         this._onTileElevationChanged = this.onTileElevationChanged.bind(this);
@@ -1056,38 +1067,53 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     private subdivideNode(context: Context, node: TileMesh): void {
-        if (!node.children.some(n => isTileMesh(n))) {
-            const extents = node.extent.split(2, 2);
+        if (node.children.some(n => isTileMesh(n))) {
+            return;
+        }
+        if (this._pendingSubdivision.has(node.id)) {
+            return;
+        }
 
-            let i = 0;
-            const { x, y, z } = node.coordinate;
+        const builder = nonNull(this._geometryBuilder);
 
-            for (const extent of extents) {
-                let child: TileMesh;
-                if (i === 0) {
-                    child = this.requestNewTile(extent, node, z + 1, 2 * x + 0, 2 * y + 0);
-                } else if (i === 1) {
-                    child = this.requestNewTile(extent, node, z + 1, 2 * x + 0, 2 * y + 1);
-                } else if (i === 2) {
-                    child = this.requestNewTile(extent, node, z + 1, 2 * x + 1, 2 * y + 0);
-                } else {
-                    child = this.requestNewTile(extent, node, z + 1, 2 * x + 1, 2 * y + 1);
-                }
-
-                // inherit our parent's textures
-                for (const e of this.getElevationLayers()) {
-                    e.update(context, child);
-                }
-
-                for (const c of this.getColorLayers()) {
-                    c.update(context, child);
-                }
-
-                child.update(this._materialOptions);
-                child.updateMatrixWorld(true);
-                i++;
-            }
+        if (!builder.isAsync) {
+            this.applyChildTiles(
+                context,
+                node,
+                builder.subdivide(node.coordinate, node.extent) as TileChild<TileGeometry>[],
+            );
             this.notifyChange(node);
+            return;
+        }
+
+        this._pendingSubdivision.add(node.id);
+        (
+            builder.subdivide(node.coordinate, node.extent) as Promise<TileChild<TileGeometry>[]>
+        ).then(children => {
+            this._pendingSubdivision.delete(node.id);
+            if (node.disposed || !node.parent) {
+                return;
+            }
+            this.applyChildTiles(context, node, children);
+            this.notifyChange(node);
+        });
+    }
+
+    private applyChildTiles(
+        context: Context,
+        node: TileMesh,
+        children: { geometry: TileGeometry; tile: TileCoordinate; extent: Extent }[],
+    ): void {
+        for (const { geometry, tile, extent } of children) {
+            const child = this.requestNewTile(geometry, extent, node, tile.z, tile.x, tile.y);
+            for (const e of this.getElevationLayers()) {
+                e.update(context, child);
+            }
+            for (const c of this.getColorLayers()) {
+                c.update(context, child);
+            }
+            child.update(this._materialOptions);
+            child.updateMatrixWorld(true);
         }
     }
 
@@ -1104,7 +1130,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         return nonNull(this._geometryBuilder).rootTileMatrix;
     }
 
-    public override preprocess(): Promise<void> {
+    public override async preprocess(): Promise<void> {
         if (!this.extent.crs.equals(this.getComposerProjection())) {
             throw new Error(
                 `The extent of this map is not in the correct CRS. Expected: ${this.getComposerProjection().id}, got: ${this.extent.crs.id}`,
@@ -1112,7 +1138,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
         }
 
         this._geometryBuilder = this.getGeometryBuilder();
-
+        const builder = nonNull(this._geometryBuilder);
         const subdivs = this.getRootTileMatrix();
 
         // If the map is not square, we want to have more than a single
@@ -1122,14 +1148,11 @@ class Map<UserData extends EntityUserData = EntityUserData>
         let i = 0;
 
         for (const root of rootExtents) {
-            if (subdivs.x > subdivs.y) {
-                this._rootTiles.push(this.requestNewTile(root, undefined, 0, i, 0));
-            } else if (subdivs.y > subdivs.x) {
-                this._rootTiles.push(this.requestNewTile(root, undefined, 0, 0, i));
-            } else {
-                this._rootTiles.push(this.requestNewTile(root, undefined, 0, 0, 0));
-            }
+            const x = subdivs.x > subdivs.y ? i : 0;
+            const y = subdivs.y > subdivs.x ? i : 0;
 
+            const geometry = await builder.build({ tile: { z: 0, x, y }, extent: root });
+            this._rootTiles.push(this.requestNewTile(geometry, root, undefined, 0, x, y));
             i++;
         }
 
@@ -1164,6 +1187,9 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     protected getGeometryBuilder(): TileGeometryBuilder {
+        if (this._geometryBuilder !== null) {
+            return this._geometryBuilder;
+        }
         return new PlanarTileGeometryBuilder({
             extent: this.extent,
             maxAspectRatio: MAX_SUPPORTED_ASPECT_RATIO,
@@ -1173,6 +1199,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     private requestNewTile(
+        geometry: TileGeometry,
         extent: Extent,
         parent: TileMesh | undefined,
         z: number,
@@ -1181,7 +1208,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
     ): TileMesh {
         const textureSize = this.getTextureSize(extent);
 
-        const materialOptions = {
+        const materialOptions: LayeredMaterialOptions = {
             renderer: this.instance.renderer,
             options: this._materialOptions,
             textureSize,
@@ -1192,6 +1219,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
             hasElevationLayer: this._hasElevationLayer,
             maxTextureImageUnits: Capabilities.getMaxTextureUnitsCount(),
             isGlobe: this.isEllipsoidal,
+            disableVertexTransformations: false,
         };
 
         const material = new LayeredMaterial(materialOptions);
@@ -1208,6 +1236,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
         const tile = new TileMesh({
             renderer: this.instance.renderer,
+            geometry,
             material,
             depthMaterial,
             distanceMaterial,
@@ -1629,10 +1658,13 @@ class Map<UserData extends EntityUserData = EntityUserData>
                     this.shouldSubdivide(context, node) &&
                     this._subdivisionStrategy(node, { entity: this, layers: this._layers })
                 ) {
-                    this.subdivideNode(context, node);
-                    // display iff children aren't ready
-                    node.setDisplayed(false);
-                    requestChildrenUpdate = true;
+                    if (!node.children.some(n => isTileMesh(n))) {
+                        this.subdivideNode(context, node);
+                    }
+                    if (node.children.some(n => isTileMesh(n))) {
+                        node.setDisplayed(false);
+                        requestChildrenUpdate = true;
+                    }
                 } else {
                     node.setDisplayed(true);
                 }
@@ -2005,8 +2037,10 @@ class Map<UserData extends EntityUserData = EntityUserData>
     /**
      * Sample the elevation at the specified coordinate.
      *
-     * Note: this method does nothing if no elevation layer is present on the map, or if the
-     * sampling coordinate is not inside the map's extent.
+     * Elevation is sampled from two possible sources:
+     * - The {@link TileGeometryBuilder.getElevation} method of the geometry builder,
+     *   if overridden (e.g. for custom terrain tiles with baked-in heights).
+     * - The elevation layer, if one is present on the map.
      *
      * Note: sampling might return more than one sample for any given coordinate. You can sort them
      * by {@link core.ElevationSample.resolution | resolution} to select the best sample for your needs.
@@ -2015,7 +2049,6 @@ class Map<UserData extends EntityUserData = EntityUserData>
      * empty result is created. The existing samples in the array are not removed. Useful to
      * cumulate samples across different maps.
      * @returns The {@link GetElevationResult} containing the updated sample array.
-     * If the map has no elevation layer, this array is left untouched.
      */
     public getElevation(
         options: GetElevationOptions,
@@ -2026,16 +2059,6 @@ class Map<UserData extends EntityUserData = EntityUserData>
         const coordinates = options.coordinates.as(this.extent.crs);
 
         if (!this.extent.isPointInside(coordinates)) {
-            return result;
-        }
-
-        if (!this._hasElevationLayer) {
-            return result;
-        }
-
-        const elevationLayer = this.getElevationLayers()[0];
-
-        if (!elevationLayer.visible) {
             return result;
         }
 
@@ -2101,6 +2124,9 @@ class Map<UserData extends EntityUserData = EntityUserData>
     }
 
     protected shouldSubdivide(context: Context, node: TileMesh): boolean {
+        if (this._pendingSubdivision.has(node.id)) {
+            return false;
+        }
         const worldBox = node.getWorldSpaceBoundingBox(tmpBox3);
         const size = worldBox.getSize(tmpVector);
         const geometricError = Math.max(size.x, size.y);
