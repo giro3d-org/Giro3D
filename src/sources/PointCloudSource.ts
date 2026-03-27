@@ -12,6 +12,8 @@ import type MemoryUsage from '../core/MemoryUsage';
 import type { GetMemoryUsageContext } from '../core/MemoryUsage';
 import type Progress from '../core/Progress';
 
+import { nonNull } from '../utils/tsutils';
+
 export interface PointCloudAttribute {
     /**
      * The name of the attribute.
@@ -139,17 +141,19 @@ export function traverseNode(
         return;
     }
 
-    if (!callback(root)) {
-        // Stop traversal
-        return;
-    }
+    const stack: PointCloudNode[] = [root];
 
-    if (root.children != null) {
-        for (let i = 0; i < root.children.length; i++) {
-            const child = root.children[i];
+    while (stack.length > 0) {
+        const currentNode = nonNull(stack.pop());
 
-            if (child) {
-                traverseNode(child, callback);
+        const shouldContinue = callback(currentNode);
+
+        if (shouldContinue && currentNode.children) {
+            for (let i = currentNode.children.length - 1; i >= 0; i--) {
+                const child = currentNode.children[i];
+                if (child) {
+                    stack.push(child);
+                }
             }
         }
     }
