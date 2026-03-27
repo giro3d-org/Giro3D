@@ -418,6 +418,14 @@ function createTruncatedGeometry(
     return result;
 }
 
+function expandProbeArray(array: Vector3Array): void {
+    if (array.length === array.capacity) {
+        const length = array.length;
+        array.expand(Math.round(array.capacity * 1.5));
+        array.length = length;
+    }
+}
+
 function collectMeshProbes(
     mesh: Mesh,
     sampleArea: number,
@@ -448,6 +456,14 @@ function collectMeshProbes(
             temp.position.sub(origin);
             positions.pushVector(temp.position);
             normals.pushVector(temp.normal);
+
+            // Here we don't let the array auto-expand because the expansion
+            // strategy is too slow for our needs, leading to many undecessary
+            // intermediate allocations. So we expand with our own strategy.
+            if (positions.length === positions.capacity) {
+                expandProbeArray(positions);
+                expandProbeArray(normals);
+            }
         }
     }
 
