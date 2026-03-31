@@ -13,7 +13,8 @@ import { isOrthographicCamera, isVector3 } from '../utils/predicates';
 /**
  * A point of view generated for a specific camera configuration.
  *
- * Note: this point of view might not be applicable to different camera
+ * > [!note]
+ * > A point of view might not be applicable to different camera
  * settings (e.g different field of views, or orthographic sizes).
  */
 export interface PointOfView {

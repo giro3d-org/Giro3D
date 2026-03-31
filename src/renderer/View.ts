@@ -98,7 +98,7 @@ export function computeZoomToFitSphere(camera: OrthographicCamera, radius: numbe
 }
 
 /**
- * Adds geospatial capabilities to three.js cameras.
+ * Represent the users's point of view. Internally this encapsulate a three.js camera.
  */
 class View extends EventDispatcher<ViewEvents> implements Disposable {
     private readonly _coordinateSystem: CoordinateSystem;
