@@ -2,7 +2,7 @@
 
 ## v2.0.0 (2026-03-31)
 
-This release introduces a bunch of new features, such as the the `SunExposure` tool to compute sun exposure on 3D meshes, the
+This release introduces several new features, such as the the `SunExposure` tool to compute sun exposure on 3D meshes, the
 experimental `DrapedFeatureCollection` to display 3D features on top of terrain, the
 `OrientedPanoramaCollection` entity to display a collection of lightweight panoramic images to complement the
 `SphericalPanorama` entity, and the `UrlImageSource` to fetch images from arbitrary extents.
@@ -55,24 +55,23 @@ features to terrain.
 
 ### Feat
 
-- **SunExposurePanel**: add button to cleanup generated objects
-- **Entity**: new OrientedPanoramaCollection
+- **entities**: new `DrapedFeatureCollection`
+- **entities**: new `OrientedPanoramaCollection`
+- **Extent**: `expandByPoint()` now returns `this`
+- **Extent**: deprecate east/west/south/north
 - **Extent**: use constructor overloads for readability
 - **Coordinates**: use constructor overloads to make documentation clearer
-- introduce DrapedFeatureCollection
-- introduce FeatureSource to fetch features
+- **sources**: new `StaticPointCloudSource`
+- **sources**: new `FeatureSource` to fetch features
+- **sources**: new `UrlImageSource`
 - **Map**: add `layer-visibility-changed` event
-- **ElevationProvider**: add `getElevationFast()`
 - **Map**: add `elevation-loaded` event when elevation is loaded on a tile
 - **Map**: add events for tile creation and deletion
+- **ElevationProvider**: add `getElevationFast()`
 - **GeometryConverter**: expose material side in fill style
-- add the UrlImageSource
 - **SunExposure**: perform sun-exposure related computations (#671)
 - **Sun**: add functions to compute sun direction
-- add `StaticPointCloudSource`
-- **geotiff**: update to geotiff.js 3.0.2
-- **Extent**: `expandByPoint` returns `this`
-- **Extent**: deprecate east/west/south/north
+- **GeoTIFFSource**: update to geotiff.js 3.0.2
 
 ### Fix
 
