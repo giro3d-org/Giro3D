@@ -1,5 +1,99 @@
 # Changelog
 
+## v2.0.0 (2026-03-31)
+
+This release introduces a bunch of new features, such as the the `SunExposure` tool to compute sun exposure on 3D meshes, the
+experimental `DrapedFeatureCollection` to display 3D features on top of terrain, the
+`OrientedPanoramaCollection` entity to display a collection of lightweight panoramic images to complement the
+`SphericalPanorama` entity, and the `UrlImageSource` to fetch images from arbitrary extents.
+
+Some minor breaking changes.
+
+### New features
+
+#### The `SunExposure` tool
+
+This tool computes exposure of 3D surfaces (meshes) to sunlight in a specific time interval. The
+simulation should be physically accurate and takes into account the date, time of day and location
+on earth to compute precise sunlight values.
+
+3 values are computed:
+
+- irradiation: the total amount of energy received by a surface over the time interval
+- mean irradiance: the mean power received by a surface over the time interval
+- hours of sunlight: the total amount of time that a surface was exposed to sunlight, regardless of
+  surface orientation
+
+#### UrlImageSource
+
+This image source can be used as is, or in subclasses such as `WmsSource`. This source fetches a
+single image per Map tile instead of multiple sub-tiles, reducing the number of HTTP requests
+emitted by the source.
+
+#### OrientedPanoramaCollection
+
+This new entity is the spherical panorama equivalent of the `OrientedImageCollection`, whereas
+panoramic images are displayed as lightweight spheres. This complements the heavier
+`SphericalPanorama` entity that is more suitable for displaying a small number of images but with
+more control over the rendering.
+
+#### DrapedFeatureCollection
+
+This experimental entity aims to workaround the limitations of `FeatureCollection` when clamping
+features to terrain.
+
+### BREAKING CHANGE
+
+- OrientedImageCollection: rename `showFrustums` to `showWireframes`
+- The type `CoordinateParameters` has been removed from the `Coordinates` module.
+- `ImageSource.getExtent()` now can return `null`, to express a source whose
+  extent is not known. Layers do not need to know the extent of the source to
+  function, although it can improve performance by avoiding requests that are
+  outside the source's extent.
+- The `INSTANCE_EVENTS` objects is removed from the
+  `Instance` module. Use the `InstanceEvents` interface instead.
+
+### Feat
+
+- **SunExposurePanel**: add button to cleanup generated objects
+- **Entity**: new OrientedPanoramaCollection
+- **Extent**: use constructor overloads for readability
+- **Coordinates**: use constructor overloads to make documentation clearer
+- introduce DrapedFeatureCollection
+- introduce FeatureSource to fetch features
+- **Map**: add `layer-visibility-changed` event
+- **ElevationProvider**: add `getElevationFast()`
+- **Map**: add `elevation-loaded` event when elevation is loaded on a tile
+- **Map**: add events for tile creation and deletion
+- **GeometryConverter**: expose material side in fill style
+- add the UrlImageSource
+- **SunExposure**: perform sun-exposure related computations (#671)
+- **Sun**: add functions to compute sun direction
+- add `StaticPointCloudSource`
+- **geotiff**: update to geotiff.js 3.0.2
+- **Extent**: `expandByPoint` returns `this`
+- **Extent**: deprecate east/west/south/north
+
+### Fix
+
+- **MainLoop**: check validity of camera planes before assigning them (#658)
+- **PotreeSource**: prevent blocking the request queue (#677)
+- **FeatureCollection**: override setupMaterial() to ensure material opacity is honored
+- **Layer**: change the target state after applying the texture to it
+- **tessellator**: avoid using degenerate triangles
+- **GeometryConverter**: handle proper orientation of extruded faces
+- **Tiles3D**: make the fetch plugin optional (#673)
+- **DrawToolPanel**: display segment lengths with better precision
+- **LAS**: preserve scaled integer Extra Bytes precision
+- **VectorSource**: handle the case where the underlying source has no known extent
+
+## Perf
+
+- **PointCloudSource**: use stack-based traversal to avoid function call cost
+- **VectorArray**: avoid calling `allocateIfFull()` when not necessary
+- **GeometryConverter**: use FrontSide instead of DoubleSide
+- **WmsSource**: subclass UrlImageSource (#666)
+
 ## v1.0.0 (2025-10-27)
 
 ### Note about the version
