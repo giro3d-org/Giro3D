@@ -53,11 +53,12 @@ let sharedPool: Pool | undefined = undefined;
  * - 3 elements means the resulting image will be a RGB image
  * - 4 elements means the resulting image will be a RGB image with an alpha channel.
  *
- * Note: if the channels is `undefined`, then they will be selected automatically with the
- * following rules: if the image has 3 or more samples, the first 3 samples will be used,
- * (i.e `[0, 1, 2]`). Otherwise, only the first sample will be used (i.e `[0]`). In any case,
- * no transparency channel will be selected automatically, as there is no way to determine
- * if a specific sample represents transparency.
+ * > [!note]
+ * > If the channels is `undefined`, then they will be selected automatically with the
+ * > following rules: if the image has 3 or more samples, the first 3 samples will be used,
+ * > (i.e `[0, 1, 2]`). Otherwise, only the first sample will be used (i.e `[0]`). In any case,
+ * > no transparency channel will be selected automatically, as there is no way to determine
+ * > if a specific sample represents transparency.
  *
  * ## Examples
  *
@@ -286,8 +287,9 @@ export interface GeoTIFFSourceOptions extends ImageSourceOptions {
  * - support high-dynamic range colors (8-bit, 16-bit and 32-bit floating point pixels),
  * - dynamic channel mapping,
  *
- * Note: performance might be degraded if the GeoTIFF is not optimized for streaming. We recommend
- * using [Cloud Optimized GeoTIFFs (COGs)](https://www.cogeo.org/) for best performance.
+ * > [!note]
+ * > Performance might be degraded if the GeoTIFF is not optimized for streaming. We recommend
+ * > using [Cloud Optimized GeoTIFFs (COGs)](https://www.cogeo.org/) for best performance.
  */
 class GeoTIFFSource extends ImageSource {
     public readonly isGeoTIFFSource: boolean = true as const;

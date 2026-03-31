@@ -43,8 +43,9 @@ export interface StaticFeaturesSourceOptions {
  * A feature source that does not read from any remote source, but
  * instead acts as a container for features added by the user.
  *
- * Note: when features are added to this source, they might be transformed to match the target
- * coordinate system, as well as assigning them unique IDs.
+ * > [!note]
+ * > When features are added to this source, they might be transformed to
+ * > match the target coordinate system, as well as assigning them unique IDs.
  */
 export default class StaticFeatureSource extends FeatureSourceBase {
     public readonly isStaticFeatureSource = true as const;

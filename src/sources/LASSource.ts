@@ -86,10 +86,11 @@ interface PerfOptions {
  * (for a noticeable cost in performance), you can set {@link LASSourceOptions.enableWorkers} to
  * `false` in constructor options.
  *
- * Note: this source uses the **laz-perf** package to perform decoding of point cloud data. This
- * package uses WebAssembly. If you wish to override the path to the required .wasm file, use
- * {@link sources.las.config.setLazPerfPath | setLazPerfPath()} before using this source.
- * The default path is {@link sources.las.config.DEFAULT_LAZPERF_PATH | DEFAULT_LAZPERF_PATH}.
+ * > [!note]
+ * > This source uses the **laz-perf** package to perform decoding of point cloud data. This
+ * > package uses WebAssembly. If you wish to override the path to the required .wasm file, use
+ * > [setLazPerfPath()](../functions/sources_las_config.setLazPerfPath.html) before using this source.
+ * > The default path is [DEFAULT_LAZPERF_PATH](../variables/sources_las_config.DEFAULT_LAZPERF_PATH.html).
  *
  * ### Supported LAS version
  *
