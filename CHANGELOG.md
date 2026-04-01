@@ -82,6 +82,7 @@ features to terrain.
 - **tessellator**: avoid using degenerate triangles
 - **GeometryConverter**: handle proper orientation of extruded faces
 - **Tiles3D**: make the fetch plugin optional (#673)
+- **Tiles3D**: check camera distances to avoid warning
 - **DrawToolPanel**: display segment lengths with better precision
 - **LAS**: preserve scaled integer Extra Bytes precision
 - **VectorSource**: handle the case where the underlying source has no known extent
