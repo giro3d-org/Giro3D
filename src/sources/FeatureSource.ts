@@ -40,7 +40,8 @@ export interface FeatureSourceEventMap {
 /**
  * Interface for feature sources.
  *
- * Note: to implement a feature source, you can use the {@link FeatureSourceBase} base class for convenience.
+ * > [!note]
+ * > To implement a feature source, you can use the {@link FeatureSourceBase} base class for convenience.
  */
 export interface FeatureSource extends EventDispatcher<FeatureSourceEventMap> {
     /**

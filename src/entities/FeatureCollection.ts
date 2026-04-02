@@ -256,7 +256,8 @@ export interface FeatureCollectionOptions extends Entity3DOptions {
  * An {@link Entity3D} that represent [simple features](https://en.wikipedia.org/wiki/Simple_Features)
  * as 3D meshes.
  *
- * ❗ Arbitrary triangulated meshes (TINs) are not supported.
+ * > [!warning]
+ * > Arbitrary triangulated meshes (TINs) are not supported.
  *
  * ## Supported geometries
  *
@@ -276,9 +277,10 @@ export interface FeatureCollectionOptions extends Entity3DOptions {
  * At the moment, this entity accepts an OpenLayers [VectorSource](https://openlayers.org/en/latest/apidoc/module-ol_source_Vector-VectorSource.html)
  * that returns [features](https://openlayers.org/en/latest/apidoc/module-ol_Feature-Feature.html).
  *
- * NOTE: if your source doesn't have a notion of level of detail, like a WFS server, you must choose
- * one level where data will be downloaded. The level giving the best user experience depends on the
- * data source. You must configure both `minLevel` and `maxLevel` to this level.
+ * > [!note]
+ * > If your source doesn't have a notion of level of detail, like a WFS server, you must choose
+ * > one level where data will be downloaded. The level giving the best user experience depends on the
+ * > data source. You must configure both `minLevel` and `maxLevel` to this level.
  *
  * For example, in the case of a WFS source:
  *
@@ -315,9 +317,10 @@ export interface FeatureCollectionOptions extends Entity3DOptions {
  * Features can be styled using a {@link FeatureStyle}, either using the same style for the entire
  * entity, or using a style function that will return a style for each feature.
  *
- * ❗ All features that share the same style will internally use the same material. It is not advised
- * to modify this material to avoid affecting all shared objects. Those materials are automatically
- * disposed when the entity is removed from the instance.
+ * > [!warning]
+ * > All features that share the same style will internally use the same material. It is not advised
+ * > to modify this material to avoid affecting all shared objects. Those materials are automatically
+ * > disposed when the entity is removed from the instance.
  *
  * Textures used by point styles are also disposed if they were created internally by the entity
  * (from a provided URL) rather than provided as a texture.

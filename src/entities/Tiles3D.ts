@@ -14,7 +14,7 @@ import {
     ImplicitTilingPlugin,
     UnloadTilesPlugin,
 } from '3d-tiles-renderer/plugins';
-import { Box3, Color, REVISION, Vector3 } from 'three';
+import { Box3, Color, MathUtils, REVISION, Vector3 } from 'three';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
@@ -843,8 +843,14 @@ class Tiles3D<UserData extends EntityUserData = EntityUserData>
             const distance = plane.distanceToPoint(bbox.getCenter(tmpVector));
             const radius = bbox.getSize(tmpVector).length() * 0.5;
 
-            this._distance.min = Math.min(this._distance.min, distance - radius);
-            this._distance.max = Math.max(this._distance.max, distance + radius);
+            const far = Math.max(this._distance.max, distance + radius);
+
+            this._distance.min = MathUtils.clamp(
+                Math.min(this._distance.min, distance - radius),
+                0,
+                far,
+            );
+            this._distance.max = far;
         }
     }
 
