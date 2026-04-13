@@ -8,10 +8,13 @@ import type { Box3, ColorRepresentation } from 'three';
 
 import {
     Box3Helper,
+    BoxGeometry,
     BufferGeometry,
     Color,
     Group,
     MathUtils,
+    Mesh,
+    MeshBasicMaterial,
     Sphere,
     Vector2,
     Vector3,
@@ -86,6 +89,10 @@ const STATE_COLORS: Record<NodeState, Color> = {
     displayed: new Color('#8cf59b'),
 };
 
+interface VolumeHelper extends Box3Helper {
+    setColor(color: ColorRepresentation): void;
+}
+
 /** Additional book-keeping info for each point cloud node. */
 interface NodeInfo {
     id: string;
@@ -95,7 +102,7 @@ interface NodeInfo {
     controller?: AbortController;
     mesh?: PointCloudMesh;
     node: PointCloudNode;
-    volumeHelper?: Box3Helper;
+    volumeHelper?: VolumeHelper;
     dataVolumeHelper?: Box3Helper;
     shouldBeVisible: boolean;
     /** Should we reload the position buffer ? */
@@ -104,14 +111,34 @@ interface NodeInfo {
 
 const nothing = (): void => {};
 
-function createBoxHelper(box: Box3, color: ColorRepresentation): Box3Helper {
-    const helper = new Box3Helper(box, color);
+function createBoxHelper(box: Box3, color: ColorRepresentation, nodeDepth: number): VolumeHelper {
+    const wireframe = new Box3Helper(box, color);
 
     // To make it clearly visible
-    helper.renderOrder = 999;
+    wireframe.renderOrder = 999;
 
     // We don't want to raycast the helpers
-    helper.raycast = nothing;
+    wireframe.raycast = nothing;
+
+    const solid = new Mesh(
+        new BoxGeometry(2, 2, 2),
+        new MeshBasicMaterial({ color, opacity: 0.05, transparent: true, depthTest: false }),
+    );
+    solid.renderOrder = 900 + nodeDepth;
+    solid.raycast = nothing;
+    solid.name = 'solid';
+
+    wireframe.add(solid);
+    wireframe.updateMatrixWorld(true);
+
+    // @ts-expect-error typing of VolumeHelper interface
+    const helper: VolumeHelper = wireframe;
+    helper.setColor = (cr): void => {
+        const c = new Color(cr);
+        solid.material.color = c;
+        // @ts-expect-error material typing
+        wireframe.material.color = c;
+    };
 
     return helper;
 }
@@ -119,11 +146,11 @@ function createBoxHelper(box: Box3, color: ColorRepresentation): Box3Helper {
 /***
  * Creates a box helper for the geometry bounding box of the node.
  */
-function createTightVolumeHelper(info: NodeInfo): Box3Helper {
+function createTightVolumeHelper(info: NodeInfo): VolumeHelper {
     const mesh = nonNull(info.mesh);
 
     const localBoundingBox = nonNull(mesh.geometry.boundingBox);
-    const helper = createBoxHelper(localBoundingBox, DATA_VOLUME_HELPER_COLOR);
+    const helper = createBoxHelper(localBoundingBox, DATA_VOLUME_HELPER_COLOR, info.node.depth);
 
     helper.name = `volume`;
 
@@ -137,10 +164,10 @@ function createTightVolumeHelper(info: NodeInfo): Box3Helper {
 /**
  * Creates a box helper for the volume of the node.
  */
-function createVolumeHelper(info: NodeInfo): Box3Helper {
+function createVolumeHelper(info: NodeInfo): VolumeHelper {
     const node = info.node;
 
-    const box = createBoxHelper(node.volume, STATE_COLORS[info.state]);
+    const box = createBoxHelper(node.volume, STATE_COLORS[info.state], info.node.depth);
 
     box.name = info.node.id;
 
@@ -1241,7 +1268,7 @@ class PointCloud<TUserData extends EntityUserData = EntityUserData>
     private createGlobalVolumeHelper(): void {
         const volume = nonNull(this._metadata).volume;
         if (volume) {
-            this._volumeHelper = createBoxHelper(volume, new Color('cyan'));
+            this._volumeHelper = createBoxHelper(volume, new Color('cyan'), 0);
             this._volumeHelper.name = 'volume';
             this._tileVolumeRoot.add(this._volumeHelper);
             this.object3d.add(this._volumeHelper);
@@ -1564,8 +1591,8 @@ class PointCloud<TUserData extends EntityUserData = EntityUserData>
                     if (info.state === 'empty') {
                         this.removeVolumeHelper(info);
                     } else {
-                        (info.volumeHelper.material as Material & { color: Color }).color =
-                            STATE_COLORS[info.state];
+                        const color = STATE_COLORS[info.state];
+                        info.volumeHelper?.setColor(color);
                         info.volumeHelper.name = `${info.node.id} (${info.state})`;
                     }
                 }
