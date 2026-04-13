@@ -12,6 +12,16 @@ pip install commitizen
 
 This will install the `cz` utility in your python packages folder (by default `$HOME/.local/bin/cz`).
 
+## Security mechanisms
+
+The CI/CD on gitlab.com automatically publishes beta and stable packages in the `@giro3d`
+organization on npmjs.com.
+
+Authentication uses the recommended [Trusted Publisher](https://docs.npmjs.com/trusted-publishers)
+mechanism instead of an authentication token.
+
+Check that the trusted publisher is enabled for the root `.gitlab-ci.yml` in the package settings (<https://www.npmjs.com/package/@giro3d/giro3d/access>).
+
 ## Note on semantic versioning
 
 Giro3D follows [semantic versioning](https://semver.org/). Until 1.0.0 is released, versions are noted `0.Y.Z`, with:
