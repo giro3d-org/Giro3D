@@ -64,7 +64,8 @@ const DEFAULT_PARAMS = {
 
 let params = { ...DEFAULT_PARAMS };
 
-// For this example, we create a simple sphere Mesh. For a full-featured globe with map/GIS support, create a Globe object (see the "globe" example)
+// For this example, we create a simple sphere Mesh.
+// For a full-featured globe with map/GIS support, create a Globe entity (see the "globe" example)
 const globe = new Mesh(
     new SphereGeometry(ellipsoid.semiMajorAxis, 256, 128),
     new MeshStandardMaterial({
@@ -78,6 +79,7 @@ globe.name = 'Globe';
 
 // Scale it to match the ellipsoid compression factor.
 globe.scale.set(1, 1, ellipsoid.compressionFactor);
+globe.rotateX(Math.PI / 2);
 globe.updateMatrixWorld(true);
 
 instance.threeObjects.add(globe);
