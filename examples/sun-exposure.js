@@ -234,6 +234,61 @@ async function sphereScenario(instance) {
  * @param {Instance} instance
  * @returns {Promise<Scenario>}
  */
+async function instancedMeshScenario(instance) {
+    const center = Coordinates.WGS84(48.85304790669139, 2.3497154907829603).as(lambert93);
+    const width = 300;
+    const areaOfInterest = Extent.fromCenterAndSize(lambert93, center, width, width);
+    const plane = new Mesh(
+        new PlaneGeometry(width, width),
+        new MeshStandardMaterial({ color: 'white' }),
+    );
+    const geometry = new SphereGeometry(1);
+
+    const mesh = new THREE.InstancedMesh(
+        geometry,
+        new MeshStandardMaterial({ color: '#0050cc' }),
+        20,
+    );
+    const matrix = new THREE.Matrix4();
+
+    for (let i = 0; i < mesh.count; i++) {
+        const u = THREE.MathUtils.lerp(0.2, 0.8, Math.random());
+        const v = THREE.MathUtils.lerp(0.2, 0.8, Math.random());
+        const scale = THREE.MathUtils.lerp(10, 30, Math.random());
+        matrix.makeScale(scale, scale, scale);
+        const pos = areaOfInterest.sampleUV(u, v);
+        const z = THREE.MathUtils.lerp(scale, scale * 3, Math.random());
+        matrix.setPosition(new THREE.Vector3(pos.x, pos.y, z));
+        mesh.setMatrixAt(i, matrix);
+    }
+
+    const centerVec3 = center.toVector3();
+    plane.position.copy(centerVec3);
+    plane.updateMatrixWorld();
+    mesh.updateMatrixWorld();
+
+    await instance.add(plane);
+    await instance.add(mesh);
+
+    const inputs = [plane, mesh];
+
+    const volume = new THREE.Box3();
+    volume.expandByObject(plane);
+    volume.expandByObject(mesh);
+
+    return {
+        areaOfInterest,
+        inputs,
+        allowedSpatialResolutionRange: [1, 50, 1],
+        center: centerVec3,
+        volume,
+    };
+}
+
+/**
+ * @param {Instance} instance
+ * @returns {Promise<Scenario>}
+ */
 async function cityBlockScenario(instance) {
     const center = Coordinates.WGS84(45.93506, 6.63125).as(lambert93);
 
@@ -350,6 +405,7 @@ const scenarios = {
     terrain: terrainScenario,
     sphere: sphereScenario,
     'city-block': cityBlockScenario,
+    'instanced-mesh': instancedMeshScenario,
 };
 
 const colorMaps = {
