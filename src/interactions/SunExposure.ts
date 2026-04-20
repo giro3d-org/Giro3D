@@ -4,8 +4,15 @@
  * SPDX-License-Identifier: MIT
  */
 
-import type { BufferAttribute, BufferGeometry, ColorRepresentation, Matrix4, Side } from 'three';
+import type {
+    BufferAttribute,
+    BufferGeometry,
+    ColorRepresentation,
+    Side,
+    InstancedMesh,
+} from 'three';
 
+import { Matrix4 } from 'three';
 import { Uint16BufferAttribute, Uint32BufferAttribute } from 'three';
 import {
     Box3,
@@ -34,7 +41,7 @@ import {
     WebGLRenderTarget,
     type Object3D,
 } from 'three';
-import { Lut, MeshSurfaceSampler } from 'three/examples/jsm/Addons.js';
+import { BufferGeometryUtils, Lut, MeshSurfaceSampler } from 'three/examples/jsm/Addons.js';
 
 import type Disposable from '../core/Disposable';
 import type Instance from '../core/Instance';
@@ -55,7 +62,7 @@ import { isEntity3D } from '../entities/Entity3D';
 import { isMap } from '../entities/Map';
 import PointCloud from '../entities/PointCloud';
 import StaticPointCloudSource from '../sources/StaticPointCloudSource';
-import { isMesh } from '../utils/predicates';
+import { isInstancedMesh, isMesh } from '../utils/predicates';
 import PromiseUtils from '../utils/PromiseUtils';
 import TextureGenerator from '../utils/TextureGenerator';
 import { nonNull } from '../utils/tsutils';
@@ -116,6 +123,7 @@ const temp = {
     plane: new Plane(),
     position: new Vector3(),
     normal: new Vector3(),
+    matrix: new Matrix4(),
 };
 
 /**
@@ -426,6 +434,30 @@ function expandProbeArray(array: Vector3Array): void {
     }
 }
 
+function createNonInstancedMesh(mesh: InstancedMesh): Mesh {
+    const geometry: Readonly<BufferGeometry> = mesh.geometry;
+
+    const geometries: BufferGeometry[] = [];
+
+    for (let i = 0; i < mesh.count; i++) {
+        const geom = geometry.clone();
+        mesh.getMatrixAt(i, temp.matrix);
+        geom.applyMatrix4(temp.matrix);
+
+        geometries.push(geom);
+    }
+
+    const staticGeometry = BufferGeometryUtils.mergeGeometries(geometries);
+
+    const result = new Mesh(staticGeometry, mesh.material);
+    mesh.matrixWorld.decompose(result.position, result.quaternion, result.scale);
+    staticGeometry.computeBoundingBox();
+    result.updateMatrix();
+    result.updateMatrixWorld(true);
+
+    return result;
+}
+
 function collectMeshProbes(
     mesh: Mesh,
     sampleArea: number,
@@ -434,16 +466,16 @@ function collectMeshProbes(
     positions: Vector3Array,
     normals: Vector3Array,
 ): void {
-    let area = 0;
-
-    iterateTriangles([mesh], tri => {
-        area += tri.getArea();
-    });
-
     // To avoid spending too much time sampling the mesh,
     // we remove all triangles that do not intersect with the limits.
     const truncatedGeometry = createTruncatedGeometry(mesh.geometry, mesh.matrixWorld, limits);
     const truncatedMesh = new Mesh(truncatedGeometry);
+
+    let area = 0;
+
+    iterateTriangles([truncatedMesh], tri => {
+        area += tri.getArea();
+    });
 
     const numSamples = Math.ceil(area / sampleArea) + 1;
     const sampler = new MeshSurfaceSampler(truncatedMesh);
@@ -486,11 +518,7 @@ function collectObjectProbe(
     // Let's collect the meshes within the volume
     obj.traverseVisible(o => {
         if (isMesh(o)) {
-            if (o.geometry.boundingBox == null) {
-                o.geometry.computeBoundingBox();
-            }
-            const localBox = nonNull(o.geometry.boundingBox);
-            const worldBox = temp.box.copy(localBox).applyMatrix4(o.matrixWorld);
+            const worldBox = temp.box.setFromObject(o);
             if (limits.intersectsBox(worldBox)) {
                 meshes.push(o);
             }
@@ -602,7 +630,15 @@ function collectOptimizedMeshes(
                         const geometry = o.geometry;
                         geometry.computeBoundingBox();
 
-                        const mesh = new Mesh(geometry, simulationMaterial);
+                        let mesh: Mesh;
+
+                        if (isInstancedMesh(o)) {
+                            // Probe sampling only work on regular meshes,
+                            // so we have to convert it beforehand.
+                            mesh = createNonInstancedMesh(o);
+                        } else {
+                            mesh = new Mesh(geometry, simulationMaterial);
+                        }
 
                         o.matrixWorld.decompose(mesh.position, mesh.quaternion, mesh.scale);
 
