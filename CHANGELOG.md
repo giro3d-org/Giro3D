@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.0.1 (2026-04-20)
+
+Hotfix for the 2.0.0 release that contains bugfixes for the `SunExposure` tool.
+
+### Fix
+
+- **SunExposure**: don't wait a frame between each input object
+- **SunExposure**: add support for instanced meshes (#679)
+- **SunExposurePanel**: exclude Shapes from computation
+
 ## v2.0.0 (2026-03-31)
 
 This release introduces several new features, such as the the `SunExposure` tool to compute sun exposure on 3D meshes, the

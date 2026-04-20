@@ -11,6 +11,7 @@ import type {
     ColorRepresentation,
     DataTexture,
     Euler,
+    InstancedMesh,
     InterleavedBufferAttribute,
     Light,
     Material,
@@ -47,6 +48,9 @@ export function isObject3D(obj: unknown): obj is Object3D {
 }
 export function isMesh(obj: unknown): obj is Mesh {
     return isObject(obj) && (obj as Mesh).isMesh === true;
+}
+export function isInstancedMesh(obj: unknown): obj is InstancedMesh {
+    return isObject(obj) && (obj as InstancedMesh).isInstancedMesh === true;
 }
 export function isLight(obj: unknown): obj is Light {
     return isObject(obj) && (obj as Light).isLight === true;

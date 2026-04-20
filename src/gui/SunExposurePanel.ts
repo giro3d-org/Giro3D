@@ -14,6 +14,7 @@ import type Entity3D from '../entities/Entity3D';
 import type PointCloud from '../entities/PointCloud';
 
 import { isEntity3D } from '../entities/Entity3D';
+import { isShape } from '../entities/Shape';
 import DrawTool from '../interactions/DrawTool';
 import SunExposure from '../interactions/SunExposure';
 import Panel from './Panel';
@@ -93,9 +94,13 @@ export default class SunExposurePanel extends Panel {
         const start = new Date(Date.UTC(yyyy, mm, dd, startTime));
         const end = new Date(Date.UTC(yyyy, mm, dd, endTime));
 
+        const objects = this.instance.getEntities(e => {
+            return isEntity3D(e) && !isShape(e);
+        }) as Entity3D[];
+
         const tool = new SunExposure({
             instance: this.instance,
-            objects: this.instance.getEntities(e => isEntity3D(e)) as Entity3D[],
+            objects,
             start,
             end,
             temporalResolution: this.temporalResolution * 60,
