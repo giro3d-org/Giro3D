@@ -545,13 +545,18 @@ async function collectProbes(params: {
 
     const { objects, limits, spatialResolution, signal, origin } = params;
 
+    let start = performance.now();
     for (const obj of objects) {
         signal?.throwIfAborted();
 
         const root = isEntity3D(obj) ? obj.object3d : obj;
         collectObjectProbe(root, origin, limits, spatialResolution, positions, normals);
 
-        await PromiseUtils.nextFrame();
+        const now = performance.now();
+        if (now - start > 30) {
+            await PromiseUtils.nextFrame();
+            start = now;
+        }
     }
 
     const numProbes = positions.length;
