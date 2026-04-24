@@ -1014,6 +1014,8 @@ export class SunExposure
 
         // Let's render the simplified simulation scene to the depth texture.
         renderer.setRenderTarget(target);
+        // This clear seems necessary on chromium/Windows only, see #680
+        renderer.clear();
         renderer.render(scene, camera);
 
         // Since we have to actually sample the texture CPU-side, we have to read it back.
