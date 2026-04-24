@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.0.2 (2026-04-24)
+
+### Fix
+
+- **SunExposure**: fix missing framebuffer clear (#680)
+
 ## v2.0.1 (2026-04-20)
 
 Hotfix for the 2.0.0 release that contains bugfixes for the `SunExposure` tool.
