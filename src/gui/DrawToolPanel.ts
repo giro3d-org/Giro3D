@@ -55,6 +55,7 @@ export default class DrawToolPanel extends Panel {
         this.addController(this, 'createSegment').name('Segment');
         this.addController(this, 'createPolygon').name('Polygon');
         this.addController(this, 'createPoint').name('Point');
+        this.addController(this, 'createRectangle').name('Extent');
         this.addController(this, 'clear').name('Clear');
     }
 
@@ -82,6 +83,14 @@ export default class DrawToolPanel extends Panel {
         tool.createSegment({
             showSegmentLabels: true,
             segmentLabelFormatter,
+            color: this.pendingColor,
+        }).then(shape => this.onShapeFinished(shape));
+    }
+
+    public createRectangle(): void {
+        const tool = this.createDrawToolIfNecessary();
+
+        tool.createExtent({
             color: this.pendingColor,
         }).then(shape => this.onShapeFinished(shape));
     }
