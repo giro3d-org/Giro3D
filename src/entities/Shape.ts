@@ -41,6 +41,7 @@ import type PickOptions from '../core/picking/PickOptions';
 import type PickResult from '../core/picking/PickResult';
 import type { Entity3DOptions } from './Entity3D';
 
+import Extent from '../core/geographic/Extent';
 import { getGeometryMemoryUsage, type GetMemoryUsageContext } from '../core/MemoryUsage';
 import ConstantSizeSphere, { getWorldSpaceRadius } from '../renderer/ConstantSizeSphere';
 import { getContrastColor } from '../utils/ColorUtils';
@@ -1748,6 +1749,16 @@ class Shape<UserData extends EntityUserData = EntityUserData> extends Entity3D<
         } else {
             return null;
         }
+    }
+
+    /**
+     * Gets the 2D extent used by this shape, if any.
+     */
+    public getExtent(): Extent | null {
+        if (this.points.length > 1) {
+            return Extent.fromPoints(this.instance.coordinateSystem, this.points);
+        }
+        return null;
     }
 
     /**
