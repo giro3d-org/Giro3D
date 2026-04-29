@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-import type { TypedArray } from 'three';
+import type { TypedArray, Vector2Like } from 'three';
 
 import { Box3, Vector2, Vector3 } from 'three';
 
@@ -897,6 +897,32 @@ export class Extent {
         if (north > this.maxY) {
             this._values[SIDE.TOP] = north;
         }
+    }
+
+    /**
+     * Returns an extent that is the minimum bounding
+     * rectangle (MBR) encompassing the given points.
+     *
+     * Note: the points are assumed to be in the same coordinate system as the extent.
+     *
+     * @param crs - the coordinate reference system of the new extent.
+     * @param points - The points to compute the MBR.
+     */
+    public static fromPoints(crs: CoordinateSystem, points: Readonly<Vector2Like[]>): Extent {
+        let minX = +Infinity;
+        let maxX = -Infinity;
+        let minY = +Infinity;
+        let maxY = -Infinity;
+
+        for (let i = 0; i < points.length; i++) {
+            const p = points[i];
+            minX = Math.min(p.x, minX);
+            maxX = Math.max(p.x, maxX);
+            minY = Math.min(p.y, minY);
+            maxY = Math.max(p.y, maxY);
+        }
+
+        return new Extent(crs, { minX, minY, maxX, maxY });
     }
 
     /**

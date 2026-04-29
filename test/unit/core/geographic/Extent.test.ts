@@ -92,6 +92,23 @@ describe('constructor', () => {
     });
 });
 
+describe('fromPoints()', () => {
+    it('should return the correct MBR', () => {
+        const points = [
+            { x: -5, y: 10 },
+            { x: 16, y: 32 },
+            { x: 4, y: -12 },
+        ];
+
+        const extent = Extent.fromPoints(CoordinateSystem.epsg3857, points);
+
+        expect(extent.minX).toEqual(-5);
+        expect(extent.minY).toEqual(-12);
+        expect(extent.maxX).toEqual(16);
+        expect(extent.maxY).toEqual(32);
+    });
+});
+
 describe('set()', () => {
     it('should assign the values', () => {
         const extent = new Extent(CoordinateSystem.epsg4326, 0, 0, 0, 0);
