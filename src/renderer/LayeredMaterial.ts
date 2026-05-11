@@ -39,7 +39,7 @@ import type GraticuleOptions from '../core/GraticuleOptions';
 import type ColorLayer from '../core/layer/ColorLayer';
 import type ElevationLayer from '../core/layer/ElevationLayer';
 import type Layer from '../core/layer/Layer';
-import type { TextureAndPitch } from '../core/layer/Layer';
+import type { LayerNodeMaterial, TextureAndPitch } from '../core/layer/Layer';
 import type MaskLayer from '../core/layer/MaskLayer';
 import type { MaskMode } from '../core/layer/MaskLayer';
 import type MemoryUsage from '../core/MemoryUsage';
@@ -385,7 +385,7 @@ interface Uniforms extends ThreeUniforms, Record<string, IUniform> {
     skirtVertexRange: IUniform<Vector2>;
 }
 
-class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
+class LayeredMaterial extends ShaderMaterial implements MemoryUsage, LayerNodeMaterial {
     public readonly isMemoryUsage = true as const;
 
     // Used for point-light shadow maps
@@ -1306,13 +1306,13 @@ class LayeredMaterial extends ShaderMaterial implements MemoryUsage {
         brightness: number,
         contrast: number,
         saturation: number,
+        tint: Color,
     ): void {
         const index = this.indexOfColorLayer(layer);
-        this._texturesInfo.color.infos[index].brightnessContrastSaturation.set(
-            brightness,
-            contrast,
-            saturation,
-        );
+        const texInfo = this._texturesInfo.color.infos[index];
+
+        texInfo.brightnessContrastSaturation.set(brightness, contrast, saturation);
+        texInfo.color = tint;
         this._mustUpdateUniforms = true;
     }
 

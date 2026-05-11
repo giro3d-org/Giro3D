@@ -5,7 +5,7 @@
  */
 
 import { type Feature } from 'ol';
-import { FloatType, RGBAFormat, type PixelFormat, type TextureDataType } from 'three';
+import { Color, ColorRepresentation, FloatType, RGBAFormat, type PixelFormat, type TextureDataType } from 'three';
 
 import type VectorSource from '../../sources/VectorSource';
 import type ColorimetryOptions from '../ColorimetryOptions';
@@ -37,6 +37,8 @@ export interface ColorLayerEvents extends LayerEvents {
     'opacity-property-changed': { opacity: number };
     /** When the layer brightness changes */
     'brightness-property-changed': { brightness: number };
+    /** When the layer tint changes */
+    'tint-property-changed': { tint: Color };
     /** When the layer contrast changes */
     'contrast-property-changed': { contrast: number };
     /** When the layer saturation changes */
@@ -188,6 +190,21 @@ export class ColorLayer<UserData extends LayerUserData = LayerUserData>
         }
     }
 
+    /**
+     * Gets or sets the tint of this layer.
+     */
+    public get tint(): Color {
+        return this._colorimetry.tint;
+    }
+
+    public set tint(v: ColorRepresentation) {
+        const color = new Color(v);
+        if (this._colorimetry.tint.equals(color)) {
+            this._colorimetry.tint = color;
+            this.dispatchEvent({ type: 'tint-property-changed', tint: color });
+        }
+    }
+
     protected override updateMaterial(material: LayerNodeMaterial): void {
         if (material.hasColorLayer(this)) {
             // Update material parameters
@@ -199,6 +216,7 @@ export class ColorLayer<UserData extends LayerUserData = LayerUserData>
                 this._colorimetry.brightness,
                 this._colorimetry.contrast,
                 this._colorimetry.saturation,
+                this._colorimetry.tint,
             );
         }
     }

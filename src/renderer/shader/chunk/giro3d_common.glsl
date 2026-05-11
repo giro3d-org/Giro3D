@@ -396,3 +396,4 @@ vec3 adjustBrightnessContrastSaturation(
     float luminance = dot(rgb, vec3(0.2126, 0.7152, 0.0722));
     return mix(vec3(luminance), rgb, brightnessContrastSaturation.z);
 }
+

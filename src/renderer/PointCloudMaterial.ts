@@ -30,7 +30,7 @@ import {
 import type ColorMap from '../core/ColorMap';
 import type Extent from '../core/geographic/Extent';
 import type ColorLayer from '../core/layer/ColorLayer';
-import type { TextureAndPitch } from '../core/layer/Layer';
+import type { LayerNodeMaterial, TextureAndPitch } from '../core/layer/Layer';
 import type { IntersectingVolume, IntersectingVolumesUniform } from './IntersectingVolume';
 import type { VertexAttributeType } from './MaterialUtils';
 import type { ColorMapUniform } from './pointcloudmaterial/ColorMapUniform';
@@ -186,7 +186,7 @@ export interface PartialAttributesState {
 /**
  * Material used for point clouds.
  */
-class PointCloudMaterial extends ShaderMaterial {
+class PointCloudMaterial extends ShaderMaterial implements LayerNodeMaterial {
     // This is an arbitrary limit, only there to prevent running out of uniform slots.
     public static readonly maxIntersectingVolumesCount: number = 8;
 
@@ -568,16 +568,7 @@ class PointCloudMaterial extends ShaderMaterial {
         // no-op
     }
 
-    public setColorimetry(
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        layer: ColorLayer,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        brightness: number,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        contrast: number,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        saturation: number,
-    ): void {
+    public setColorimetry(): void {
         // Not implemented because the points have their own BCS controls
     }
 

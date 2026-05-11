@@ -6,6 +6,8 @@
 
 import type GUI from 'lil-gui';
 
+import { Color } from 'three';
+
 import type ColorimetryOptions from '../core/ColorimetryOptions';
 import type Instance from '../core/Instance';
 
@@ -44,12 +46,16 @@ class ColorimetryPanel extends Panel {
             .min(0)
             .max(1)
             .onChange(() => this.notify());
+        this.addColorController(options, 'tint')
+            .name('Tint')
+            .onChange(() => this.notify());
     }
 
     public reset(): void {
         this._options.brightness = 0;
         this._options.saturation = 1;
         this._options.contrast = 1;
+        this._options.tint = new Color(1, 1, 1);
 
         this.notify();
 

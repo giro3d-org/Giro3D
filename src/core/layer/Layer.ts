@@ -83,6 +83,7 @@ export interface LayerNodeMaterial extends Material {
         brightness: number,
         contrast: number,
         saturation: number,
+        tint: Color,
     ): void;
     hasColorLayer(layer: ColorLayer): boolean;
     indexOfColorLayer(layer: ColorLayer): number;

@@ -34,10 +34,14 @@ vec4 computeColorLayer(
         } else {
             color = computeColor(uv, layer.offsetScale, texture);
         }
-        vec3 rgb = color.rgb * layer.color.rgb;
+        vec3 rgb = color.rgb;
 
         float a = color.a * layer.color.a;
-        return vec4(adjustBrightnessContrastSaturation(rgb, layer.brightnessContrastSaturation), a);
+        vec4 result = vec4(adjustBrightnessContrastSaturation(rgb, layer.brightnessContrastSaturation), a);
+
+        result.rgb *= layer.color.rgb * a;
+
+        return result;
     }
 
     return vec4(0);

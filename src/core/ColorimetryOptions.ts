@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: MIT
  */
 
+import { Color } from 'three';
+
 /**
  * Colorimetry options.
  */
@@ -20,13 +22,20 @@ export interface ColorimetryOptions {
      * Saturation.
      */
     saturation: number;
+    /**
+     * The tint to apply.
+     */
+    tint: Color;
 }
+
+const WHITE = new Color(1, 1, 1);
 
 export function defaultColorimetryOptions(): ColorimetryOptions {
     return {
         brightness: 0,
         saturation: 1,
         contrast: 1,
+        tint: WHITE.clone(),
     };
 }
 
