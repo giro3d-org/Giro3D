@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2026, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 module.exports = {
     presets: ['@babel/preset-typescript'],
     plugins: [
@@ -5,7 +11,4 @@ module.exports = {
         ['babel-plugin-inline-import', { extensions: ['.json', '.glsl'] }],
         ['minify-dead-code-elimination'],
     ],
-    // API barrel files are only there to generate the documentation
-    // We really don't want barrel files in the exported package
-    ignore: ['**/api.ts'],
 };
