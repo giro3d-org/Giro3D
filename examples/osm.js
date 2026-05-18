@@ -12,10 +12,12 @@ import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
+import ScreenSpaceObject from '@giro3d/giro3d/entities/ScreenSpaceObject.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
 import StatusBar from './widgets/StatusBar.js';
+import { AxesHelper } from 'three';
 
 const extent = new Extent(
     CoordinateSystem.epsg3857,
@@ -48,6 +50,14 @@ map.addLayer(osm);
 instance.view.camera.position.set(0, 0, 80000000);
 
 const controls = new MapControls(instance.view.camera, instance.domElement);
+
+const tripod = new AxesHelper();
+
+const ssObject = new ScreenSpaceObject({
+    object: tripod
+});
+
+instance.add(ssObject);
 
 instance.view.setControls(controls);
 

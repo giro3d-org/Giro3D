@@ -15,6 +15,7 @@
         "PointCloud.ts",
         "Shape.ts",
         "SkyDome.ts",
+        "ScreenSpaceObject.ts",
         "SphericalPanorama.ts",
         "Tiles3D.ts"
     ]
