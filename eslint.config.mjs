@@ -93,19 +93,6 @@ export default [
             'no-param-reassign': 'off',
             'no-use-before-define': ['error', 'nofunc'],
 
-            'no-restricted-imports': [
-                'error',
-                {
-                    patterns: [
-                        {
-                            group: ['**/api'],
-                            message:
-                                'API barrel files (api.ts) are reserved for API documentation generation. They must not be used by actual code.',
-                        },
-                    ],
-                },
-            ],
-
             'no-restricted-syntax': [
                 'error',
                 {

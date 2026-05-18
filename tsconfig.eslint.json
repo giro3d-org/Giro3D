@@ -8,7 +8,9 @@
         "vitest.setup.ts",
         "vitest.config.mts",
         "license-header.js",
-        "eslint.config.mjs"
+        "eslint.config.mjs",
+        "commitlint.config.js",
+        "babel.config.js"
     ],
     "exclude": ["node_modules/**/*", "package-lock.json"]
 }
