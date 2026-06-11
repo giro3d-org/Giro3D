@@ -1,0 +1,56 @@
+---
+title: Flight
+shortdesc: Fly a camera over a GeoJSON line
+tags: [camera, animation, geojson]
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Camera Fly</title>
+    <meta charset="UTF-8" />
+    <meta name="name" content="getting-started" />
+    <meta name="description" content="Travel the camera in space using GeoJSON Lines as a trajectory." />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="icon" href="https://giro3d.org/images/favicon.svg" />
+    <link
+      href="https://giro3d.org/assets/bootstrap-custom.css"
+      rel="stylesheet"
+    />
+    <script src="https://giro3d.org/assets/bootstrap.bundle.min.js"></script>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://giro3d.org/latest/examples/css/example.css"
+    />
+  </head>
+
+  <body>
+    <div id="view" class="m-0 p-0 w-100 h-100"></div>
+    <div
+      id="inspector"
+      class="position-absolute top-0 start-0 mh-100 overflow-auto"
+    ></div>
+
+    <script type="module" src="flight.js"></script>
+    <script>
+      /* activate popovers */
+      const popoverTriggerList = [].slice.call(
+        document.querySelectorAll('[data-bs-toggle="popover"]'),
+      );
+      popoverTriggerList.map(
+        // bootstrap is used as script in the template, disable warning about undef
+        // eslint-disable-next-line no-undef
+        (popoverTriggerEl) =>
+          new bootstrap.Popover(popoverTriggerEl, {
+            trigger: "hover",
+            placement: "left",
+            content: document.getElementById(
+              popoverTriggerEl.getAttribute("data-bs-content"),
+            ).innerHTML,
+            html: true,
+          }),
+      );
+    </script>
+  </body>
+</html>
