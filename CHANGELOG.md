@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.0.1 (2026-06-12)
+
+### Fix
+
+- **Coordinates**: properly handle geocentric systems (#681)
+- **Tiles3D**: make the fetch plugin optional (#673)
+
 ## v1.0.0 (2025-10-27)
 
 ### Note about the version
