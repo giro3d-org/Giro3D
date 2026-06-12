@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.0.3 (2026-06-12)
+
+### Fix
+
+- **Coordinates**: properly handle geocentric systems (#681)
+
 ## v2.0.2 (2026-04-24)
 
 ### Fix
@@ -109,6 +115,13 @@ features to terrain.
 - **VectorArray**: avoid calling `allocateIfFull()` when not necessary
 - **GeometryConverter**: use FrontSide instead of DoubleSide
 - **WmsSource**: subclass UrlImageSource (#666)
+
+## v1.0.1 (2026-06-12)
+
+### Fix
+
+- **Coordinates**: properly handle geocentric systems (#681)
+- **Tiles3D**: make the fetch plugin optional (#673)
 
 ## v1.0.0 (2025-10-27)
 
