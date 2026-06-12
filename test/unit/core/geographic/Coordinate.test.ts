@@ -301,4 +301,41 @@ describe('as()', () => {
         expect(coord3.longitude).toBeCloseTo(longIn, 5);
         expect(coord3.latitude).toBeCloseTo(latIn, 5);
     });
+
+    it('should correctly convert from EPSG:3857 to EPSG:4326 and rountrip', () => {
+        const x = 3831839.5120860627;
+        const y = 236608.1680778186;
+
+        const xy = new Coordinates(CoordinateSystem.epsg3857, x, y);
+        const geo = xy.as(CoordinateSystem.epsg4326);
+
+        expect(geo.longitude).toBeCloseTo(34.422, 5);
+        expect(geo.latitude).toBeCloseTo(2.125, 5);
+        expect(geo.altitude).toEqual(0);
+
+        const roundTrip = geo.as(CoordinateSystem.epsg3857);
+
+        expect(roundTrip.x).toBeCloseTo(x, 5);
+        expect(roundTrip.y).toBeCloseTo(y, 5);
+        expect(roundTrip.z).toEqual(0);
+    });
+
+    it('should correctly convert from EPSG:4978 to EPSG:4326 and rountrip', () => {
+        const x = 4776693.721778236;
+        const y = 600744.5477559135;
+        const z = 4165162.1977743837;
+
+        const ecef = new Coordinates(CoordinateSystem.epsg4978, x, y, z);
+        const geo = ecef.as(CoordinateSystem.epsg4326);
+
+        expect(geo.longitude).toBeCloseTo(7.168212461116978, 5);
+        expect(geo.latitude).toBeCloseTo(41.05567359063763, 5);
+        expect(geo.altitude).toBeCloseTo(-2931.2925422992557, 5);
+
+        const roundTrip = geo.as(CoordinateSystem.epsg4978);
+
+        expect(roundTrip.x).toBeCloseTo(x, 5);
+        expect(roundTrip.y).toBeCloseTo(y, 5);
+        expect(roundTrip.z).toBeCloseTo(z, 5);
+    });
 });
