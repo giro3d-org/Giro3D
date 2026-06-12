@@ -6,7 +6,7 @@
 
 import { register } from 'ol/proj/proj4';
 import proj4 from 'proj4';
-import { MathUtils, Vector2, type Vector2Like, Vector3, type Vector3Like } from 'three';
+import { Vector2, type Vector2Like, Vector3, type Vector3Like } from 'three';
 
 import CoordinateSystem from './CoordinateSystem';
 import { getConverter } from './ProjectionCache';
@@ -496,20 +496,13 @@ export class Coordinates {
         }
         if (this.crs.id in proj4.defs && newCrs.id in proj4.defs) {
             const val0 = this._values[0];
-            let val1 = this._values[1];
+            const val1 = this._values[1];
+            const val2 = this._values[2];
+
             const crsIn = this.crs;
 
-            // there is a bug for converting anything from and to 4978 with proj4
-            // https://github.com/proj4js/proj4js/issues/195
-            // the workaround is to use an intermediate projection, like EPSG:4326
-            if (crsIn.isEpsg(4326) && newCrs.isEpsg(3857)) {
-                val1 = MathUtils.clamp(val1, -89.999999, 89.999999);
-                const p = getConverter(crsIn, newCrs).forward([val0, val1]);
-                return target.set(newCrs, p[0], p[1], this._values[2]);
-            }
-            // here is the normal case with proj4
-            const p = getConverter(crsIn, newCrs).forward([val0, val1]);
-            return target.set(newCrs, p[0], p[1], this._values[2]);
+            const p = getConverter(crsIn, newCrs).forward([val0, val1, val2]);
+            return target.set(newCrs, p[0], p[1], p[2] ?? 0);
         }
 
         throw new Error(`Cannot convert from crs ${this.crs.id} to ${newCrs.id}`);
