@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.0.3 (2026-06-12)
+
+### Fix
+
+- **Coordinates**: properly handle geocentric systems (#681)
+
 ## v2.0.2 (2026-04-24)
 
 ### Fix
