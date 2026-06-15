@@ -1,8 +1,14 @@
+/*
+ * Copyright (c) 2015-2018, IGN France.
+ * Copyright (c) 2018-2026, Giro3D team.
+ * SPDX-License-Identifier: MIT
+ */
+
 import GeoJSON from 'ol/format/GeoJSON.js';
 import { tile } from 'ol/loadingstrategy.js';
 import VectorSource from 'ol/source/Vector.js';
 import { createXYZ } from 'ol/tilegrid.js';
-import { Color, DirectionalLight, HemisphereLight, Mesh, MeshPhongMaterial, Vector3 } from 'three';
+import { Color, HemisphereLight } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
@@ -110,7 +116,7 @@ loader.load(path, gltf => {
     instance.add(featureCollection);
 
     // Finally start loading our path data.
-    loadJson('data/path.geojson', json => {
+    loadJson('data/drone_path.geojson', json => {
         let POINTS = json.geometry.coordinates;
         // our geometry is looping, remove the last element
         // so we can loop properly with our splines.
@@ -255,5 +261,4 @@ loader.load(path, gltf => {
         // Finally, begin the update loop.
         requestAnimationFrame(loop);
     });
-
 });
