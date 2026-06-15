@@ -4,14 +4,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-// # Giro3D - Getting started
-
-// ### Welcome to Giro3D !
-
-// In this tutorial, we will cover the base features of Giro3D : the creation of the
-// [instance](../apidoc/classes/core.Instance.html), the creation of a
-// [map](../apidoc/classes/entities.Map.html), and setting up the navigation controls.
-
 // ##### Note
 // This walkthrough is based on the [2.5D Map example](../examples/getting-started.html).
 // Feel free to visit this example to see the final result of this tutorial.
@@ -20,7 +12,6 @@ import GeoJSON from 'ol/format/GeoJSON.js';
 import { tile } from 'ol/loadingstrategy.js';
 import VectorSource from 'ol/source/Vector.js';
 import { createXYZ } from 'ol/tilegrid.js';
-import { Vector3 } from 'three';
 
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem.js';
@@ -211,7 +202,7 @@ const featureCollection = new FeatureCollection({
 instance.add(featureCollection);
 
 // Finally start loading our path data.
-loadJson('data/path.geojson', json => {
+loadJson('data/flight_path.geojson', json => {
     const POINTS = json.geometry.coordinates;
     // To make movements smoother, let's make use of Cubic-Hermite splines.
     const samplePath = t => {
