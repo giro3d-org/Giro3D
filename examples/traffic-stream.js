@@ -13,7 +13,6 @@ import PointCloud from '@giro3d/giro3d/entities/PointCloud.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import COPCSource from '@giro3d/giro3d/sources/COPCSource.js';
 
-// Setup the coordinate system
 const crs = CoordinateSystem.register(
     'EPSG:32615',
     `
@@ -74,7 +73,6 @@ const instance = new Instance({
 
 const pointCloud = new PointCloud({
     source: new COPCSource({
-        url: 'https://3d.oslandia.com/giro3d/drone/brighton-beach/model.copc.laz',
     }),
 });
 
@@ -90,8 +88,6 @@ instance.add(pointCloud).then(() => {
 });
 Inspector.attach('inspector', instance);
 
-// Grab the video element from HTML, so THREE can read it
-// (Easy way of rendering a video to a texture)
 const video = document.getElementById('traffic-feed-mp4');
 
 if (!(video instanceof HTMLVideoElement)) {
@@ -99,14 +95,13 @@ if (!(video instanceof HTMLVideoElement)) {
 }
 
 const texture = new VideoTexture(video);
-// Create the material
 const movieMaterial = new MeshBasicMaterial({
     map: texture,
     color: 0xffffffff,
     side: DoubleSide,
     toneMapped: false,
 });
-// Lets use a simple plane
+
 const movieGeometry = new PlaneGeometry(10, 10);
 const movieScreen = new Mesh(movieGeometry, movieMaterial);
 movieScreen.position.set(576715, 5188162, 200);
@@ -114,12 +109,8 @@ movieScreen.updateMatrixWorld();
 instance.add(movieScreen).catch(console.error);
 
 const animate = () => {
-    // we need to constantly update the video to
-    // make it play smoothly, otherwise it will
-    // solely update upon other events (e.g.
-    // camera movement or tile updates)
     texture.needsUpdate = true;
-    instance.notifyChange(texture);
+    instance.notifyChange();
     requestAnimationFrame(animate);
 };
 

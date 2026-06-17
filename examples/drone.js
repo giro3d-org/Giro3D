@@ -18,14 +18,12 @@ import Instance from '@giro3d/giro3d/core/Instance.js';
 import FeatureCollection from '@giro3d/giro3d/entities/FeatureCollection.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 
-// Setup our json loader so we can read the geodata and animate the camera
 const loadJson = (path, doThen) => {
     fetch(path)
         .then(response => response.json()) // Parse JSON
         .then(doThen);
 };
 
-// Register our coordinate system
 const epsg2154 = CoordinateSystem.register(
     'EPSG:2154',
     '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
@@ -36,62 +34,42 @@ CoordinateSystem.register(
     '+proj=longlat +datum=WGS84 +no_defs +type=crs',
 );
 
-// Create a view instance
 const instance = new Instance({
     target: 'view',
     crs: epsg2154,
     backgroundColor: null,
 });
 
-// Lets define the center of our world, with longitude and latitude coordinates, and convert it to world space units.
 const center = new Coordinates(CoordinateSystem.epsg4326, 6.63125, 45.93506).as(
     instance.coordinateSystem,
 );
 const extent = Extent.fromCenterAndSize(epsg2154, { x: center.x, y: center.y }, 1_000, 1_000);
 
-// Let's get the THREE camera of our scene.
 const camera = instance.view.camera;
 
-// ### Optional: Set up the inspector
-
-// This is an optional step, but very useful for diagnostic and debugging issues with Giro3D.
-// The `Inspector` is a panel containing lots of useful information about the Giro3D instance.
-
-// This supposes that we have a `div` ready to host our inspector.
-
 Inspector.attach('inspector', instance);
-
-// Set up scene, and load our 3D model
 
 // https://airbornescience.nasa.gov/content/3D_Models_Gallery
 // Non-promotional commercial use:
 // https://www.nasa.gov/nasa-brand-center/images-and-media/
-const path = 'data/G3_JSC_UAVSAR_AIR_0824.glb';
+const path = 'https://3d.oslandia.com/giro3d/gltf/G3_JSC_UAVSAR_AIR_0824.glb;
 const loader = new GLTFLoader();
 
 let result = null;
 loader.load(path, gltf => {
-    // Once GLTF loads a file, we can grab the scene which is a Object3D, that can be added to our instance.
     const airplane = gltf.scene;
-    // Scale up the model since it's quite small.
     airplane.scale.set(100, 100, 100);
     airplane.updateMatrixWorld();
 
     instance.add(airplane);
 
-    // Add a hemisphere light to illuminate the 3D model.
     const hemiLight = new HemisphereLight(0xffffff, 0x444444, 3);
     hemiLight.position.set(0, 200, 0);
     instance.scene.add(hemiLight);
 
-    // Add a sky-ish background colour
     instance.scene.background = new Color(0xa0a0ff);
 
-    // Center our camera in the middle of our path.
     camera.position.set(center.x, center.y, 100);
-
-    // Lets make the path show up in the scene, we can easily display a Geo LineString using a FeatureCollection,
-    // which takes in an OpenLayers VectorSource. That is easily done by passing the URL of our Geojson to it.
 
     const pathSource = new VectorSource({
         format: new GeoJSON(),
@@ -115,13 +93,10 @@ loader.load(path, gltf => {
 
     instance.add(featureCollection);
 
-    // Finally start loading our path data.
     loadJson('data/drone_path.geojson', json => {
         let POINTS = json.geometry.coordinates;
-        // our geometry is looping, remove the last element
-        // so we can loop properly with our splines.
+
         POINTS.pop();
-        // To make movements smoother, let's make use of Cubic-Hermite splines.
         const samplePath = t => {
             if (typeof t !== 'number' || isNaN(t)) {
                 t = 0;
@@ -149,7 +124,6 @@ loader.load(path, gltf => {
             const pq2y = POINTS[p2][1] * q2 * 0.5;
             const pq3y = POINTS[p3][1] * q3 * 0.5;
 
-            // Smooth derivates to use for changing the way the model faces.
             const dq0 = -3.0 * t2 + 4.0 * t - 1.0;
             const dq1 = 9.0 * t2 - 10.0 * t;
             const dq2 = -9.0 * t2 + 8.0 * t + 1.0;
@@ -170,9 +144,6 @@ loader.load(path, gltf => {
             ];
         };
 
-        // Since cubic splines are not constant rate, we need to evenly space
-        // the steps, unfortunately there is no way to do this analytically so
-        // we take a fixed amount of samples.
         const SAMPLE_SIZE = 0.005;
         const STEP = 0.0002;
         const buildSegments = () => {
@@ -207,12 +178,9 @@ loader.load(path, gltf => {
             const xyb = samplePath(bx);
             const xyt = samplePath(tx);
 
-            // Calculate final coordinates, so these can be used as world-space
-            // coordinates for THREE (index 0).
             const finalX = xyb[0][0] * simfrac + xyt[0][0] * frac;
             const finalY = xyb[0][1] * simfrac + xyt[0][1] * frac;
-            // Easy hack for determining the next smooth position the model will
-            // be facing towards (index 1).
+
             const dFinalX = xyb[1][0] * simfrac + xyt[1][0] * frac;
             const dFinalY = xyb[1][1] * simfrac + xyt[1][1] * frac;
 
@@ -244,21 +212,15 @@ loader.load(path, gltf => {
             airplane.updateMatrixWorld();
             camera.lookAt(airplane.position);
 
-            // We must manually trigger the instance update, and pass the camera
-            // to let it know that the visible parts of the map may have changed.
-            // If we don't pass the camera as a parameter, parts of the map will
-            // not load properly once the camera moves.
+
             instance.notifyChange(camera);
             instance.notifyChange(airplane);
 
-            // advance the animation
             animationAlpha += frameTime / ANIMATION_DURATION_S;
 
-            // Continue requesting the next frame.
             requestAnimationFrame(loop);
         };
 
-        // Finally, begin the update loop.
         requestAnimationFrame(loop);
     });
 });
