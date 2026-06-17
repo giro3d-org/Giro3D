@@ -205,7 +205,6 @@ loadJson('data/flight_path.geojson', json => {
         camera.lookAt(centre);
         camera.updateMatrixWorld();
 
-
         instance.notifyChange(camera);
 
         animationAlpha += frameTime / ANIMATION_DURATION_S;

@@ -9,9 +9,7 @@ import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
-import PointCloud from '@giro3d/giro3d/entities/PointCloud.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
-import COPCSource from '@giro3d/giro3d/sources/COPCSource.js';
 
 const crs = CoordinateSystem.register(
     'EPSG:32615',
@@ -71,21 +69,6 @@ const instance = new Instance({
     backgroundColor: null,
 });
 
-const pointCloud = new PointCloud({
-    source: new COPCSource({
-    }),
-});
-
-instance.add(pointCloud).then(() => {
-    const pov = instance.view.goTo(pointCloud);
-
-    const controls = new MapControls(instance.view.camera, instance.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.2;
-    controls.target.copy(pov.target);
-    controls.saveState();
-    instance.view.setControls(controls);
-});
 Inspector.attach('inspector', instance);
 
 const video = document.getElementById('traffic-feed-mp4');
@@ -95,6 +78,7 @@ if (!(video instanceof HTMLVideoElement)) {
 }
 
 const texture = new VideoTexture(video);
+// Create the material
 const movieMaterial = new MeshBasicMaterial({
     map: texture,
     color: 0xffffffff,
@@ -106,7 +90,14 @@ const movieGeometry = new PlaneGeometry(10, 10);
 const movieScreen = new Mesh(movieGeometry, movieMaterial);
 movieScreen.position.set(576715, 5188162, 200);
 movieScreen.updateMatrixWorld();
+
 instance.add(movieScreen).catch(console.error);
+
+const controls = new MapControls(instance.view.camera, instance.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.2;
+controls.saveState();
+instance.view.setControls(controls);
 
 const animate = () => {
     texture.needsUpdate = true;

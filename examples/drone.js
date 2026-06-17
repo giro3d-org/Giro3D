@@ -52,7 +52,7 @@ Inspector.attach('inspector', instance);
 // https://airbornescience.nasa.gov/content/3D_Models_Gallery
 // Non-promotional commercial use:
 // https://www.nasa.gov/nasa-brand-center/images-and-media/
-const path = 'https://3d.oslandia.com/giro3d/gltf/G3_JSC_UAVSAR_AIR_0824.glb;
+const path = 'https://3d.oslandia.com/giro3d/gltf/G3_JSC_UAVSAR_AIR_0824.glb';
 const loader = new GLTFLoader();
 
 let result = null;
@@ -211,7 +211,6 @@ loader.load(path, gltf => {
             airplane.lookAt(airplaneXyTarget.x, airplaneXyTarget.y, airplane.position.z);
             airplane.updateMatrixWorld();
             camera.lookAt(airplane.position);
-
 
             instance.notifyChange(camera);
             instance.notifyChange(airplane);
