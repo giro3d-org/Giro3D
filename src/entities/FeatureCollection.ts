@@ -834,17 +834,32 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
             switch (type) {
                 case 'Point':
                 case 'MultiPoint':
-                    mesh = this._geometryConverter.build(geom as Point | MultiPoint, {
-                        ...commonOptions,
-                        ...style?.point,
-                    });
+                    {
+                        const elevation =
+                            typeof this._elevation === 'function'
+                                ? this._elevation(feature)
+                                : this._elevation;
+
+                        mesh = this._geometryConverter.build(geom as Point | MultiPoint, {
+                            ...commonOptions,
+                            elevation,
+                            ...style?.point,
+                        });
+                    }
                     break;
                 case 'LineString':
                 case 'MultiLineString':
-                    mesh = this._geometryConverter.build(geom as LineString | MultiLineString, {
-                        ...commonOptions,
-                        ...style?.stroke,
-                    });
+                    {
+                        const elevation =
+                            typeof this._elevation === 'function'
+                                ? this._elevation(feature)
+                                : this._elevation;
+                        mesh = this._geometryConverter.build(geom as LineString | MultiLineString, {
+                            ...commonOptions,
+                            elevation,
+                            ...style?.stroke,
+                        });
+                    }
                     break;
                 case 'Polygon':
                 case 'MultiPolygon':
