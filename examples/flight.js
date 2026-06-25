@@ -212,6 +212,7 @@ fetch('data/flight_path.geojson')
         requestAnimationFrame(loop);
     });
 
+Inspector.attach('inspector', instance);
 Inspector.attach('inspector', minimapInstance, { title: 'minimap' });
 
 StatusBar.bind(instance, { additionalInstances: minimapInstance });
