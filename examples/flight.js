@@ -21,13 +21,17 @@ import Map from '@giro3d/giro3d/entities/Map.js';
 import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
-import WmsSource from '@giro3d/giro3d/sources/WmsSource.js';
+import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 
 import StatusBar from './widgets/StatusBar';
 
 const crs = CoordinateSystem.register(
     'EPSG:3946',
     '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
+);
+CoordinateSystem.register(
+    'IGNF:WGS84G',
+    'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]',
 );
 
 const instance = new Instance({
@@ -43,38 +47,38 @@ const map = new Map({ extent });
 
 instance.add(map);
 
-const satelliteSource = new WmsSource({
-    url: 'https://data.geopf.fr/wms-r',
-    projection: 'EPSG:3946',
-    layer: 'ORTHOIMAGERY.ORTHOPHOTOS',
-    imageFormat: 'image/jpeg',
-});
+const capabilitiesUrl =
+    'https://data.geopf.fr/wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetCapabilities';
 
-const colorLayer = new ColorLayer({
-    name: 'satellite',
-    source: satelliteSource,
-    extent: map.extent,
-});
-
-map.addLayer(colorLayer);
-
-const demSource = new WmsSource({
+WmtsSource.fromCapabilities(capabilitiesUrl, {
     layer: 'ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES',
-    imageFormat: 'image/x-bil;bits=32',
-    url: 'https://data.geopf.fr/wms-r',
-    projection: 'EPSG:3946',
     format: new BilFormat(),
     noDataValue: -1000,
-});
+})
+    .then(source => {
+        map.addLayer(
+            new ElevationLayer({
+                extent: map.extent,
+                resolutionFactor: 1 / 8,
+                minmax: { min: 500, max: 1500 },
+                source: source,
+            }),
+        );
+    })
+    .catch(console.error);
 
-const elevationLayer = new ElevationLayer({
-    name: 'dem',
-    resolutionFactor: 1 / 8,
-    extent: map.extent,
-    source: demSource,
-});
-
-map.addLayer(elevationLayer);
+WmtsSource.fromCapabilities(capabilitiesUrl, {
+    layer: 'HR.ORTHOIMAGERY.ORTHOPHOTOS',
+})
+    .then(source => {
+        map.addLayer(
+            new ColorLayer({
+                extent: map.extent,
+                source: source,
+            }),
+        );
+    })
+    .catch(console.error);
 
 // Create a minimap to display camera path
 const minimapInstance = new Instance({
@@ -183,7 +187,7 @@ fetch('data/flight_path.geojson')
         }
         const interpolant = new CubicInterpolant(parameterPositions, sampleValues, 3);
 
-        const ANIMATION_DURATION_S = 30.0;
+        const ANIMATION_DURATION_S = 60.0;
         let oldTime = 0.0;
         let animationAlpha = 0.0;
         const loop = time => {
