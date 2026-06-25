@@ -23,6 +23,8 @@ import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 
+import StatusBar from './widgets/StatusBar';
+
 const loadJson = (path, doThen) => {
     fetch(path)
         .then(response => response.json()) // Parse JSON
@@ -277,6 +279,7 @@ loader.load(path, gltf => {
             requestAnimationFrame(loop);
         };
 
+        StatusBar.bind(instance);
         requestAnimationFrame(loop);
     });
 });
