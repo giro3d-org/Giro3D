@@ -15,4 +15,35 @@ tags: [camera, animation, geojson]
             border-radius: var(--bs-card-border-radius);
         "
     ></div>
+
+    <div class="card">
+        <div class="card-header">Animation</div>
+        <div class="card-body">
+            <div class="form-check form-switch">
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    checked="true"
+                    role="switch"
+                    id="toggle-animation"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="toggle-animation">Play animation</label>
+            </div>
+
+            <label for="animation-step" class="form-label">Animation step</label>
+            <div class="input-group">
+                <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    value="0"
+                    step="0.01"
+                    class="form-range"
+                    id="animation-step"
+                    autocomplete="off"
+                />
+            </div>
+        </div>
+    </div>
 </div>

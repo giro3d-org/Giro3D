@@ -23,6 +23,8 @@ import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
 
+import { bindSlider } from './widgets/bindSlider.js';
+import { bindToggle } from './widgets/bindToggle.js';
 import StatusBar from './widgets/StatusBar';
 
 const crs = CoordinateSystem.register(
@@ -163,6 +165,9 @@ const label = new CSS2DObject(labelElement);
 label.visible = true;
 minimapInstance.add(label);
 
+const ANIMATION_DURATION_S = 60.0;
+let animationAlpha = 0.0;
+
 fetch('data/flight_path.geojson')
     .then(response => response.json())
     .then(json => {
@@ -187,9 +192,8 @@ fetch('data/flight_path.geojson')
         }
         const interpolant = new CubicInterpolant(parameterPositions, sampleValues, 3);
 
-        const ANIMATION_DURATION_S = 60.0;
         let oldTime = 0.0;
-        let animationAlpha = 0.0;
+        let playing = true;
         const loop = time => {
             const frameTime = (time - oldTime) / 1000.0;
             oldTime = time;
@@ -210,10 +214,27 @@ fetch('data/flight_path.geojson')
             minimapInstance.notifyChange(label);
 
             animationAlpha = (animationAlpha + frameTime / ANIMATION_DURATION_S) % 1;
-            requestAnimationFrame(loop);
+            // @ts-expect-error value not available on HTMLElement
+            document.getElementById('animation-step').value = animationAlpha;
+
+            if (playing) {
+                requestAnimationFrame(loop);
+            }
         };
 
         requestAnimationFrame(loop);
+
+        bindToggle('toggle-animation', v => {
+            playing = v;
+            if (v) {
+                requestAnimationFrame(loop);
+            }
+        });
+
+        bindSlider('animation-step', v => {
+            animationAlpha = v;
+            requestAnimationFrame(loop);
+        });
     });
 
 Inspector.attach('inspector', instance);
