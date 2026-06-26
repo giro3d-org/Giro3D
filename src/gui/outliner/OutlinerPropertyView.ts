@@ -6,7 +6,7 @@
 
 import type GUI from 'lil-gui';
 import type { Controller } from 'lil-gui';
-import type { Vector3 } from 'three';
+import type { Euler, Vector3 } from 'three';
 
 import { Object3D } from 'three';
 
@@ -108,6 +108,10 @@ class OutlinerPropertyView extends Panel {
             return gui.add(v, key).step(0.01);
         }
 
+        function bindEuler<K extends string & keyof Euler>(gui: GUI, v: Euler, key: K): Controller {
+            return gui.add(v, key).step(0.01);
+        }
+
         this._controllers.push(bindVector(position, obj.position, 'x').onChange(update));
         this._controllers.push(bindVector(position, obj.position, 'y').onChange(update));
         this._controllers.push(bindVector(position, obj.position, 'z').onChange(update));
@@ -119,6 +123,14 @@ class OutlinerPropertyView extends Panel {
         this._controllers.push(bindVector(scale, obj.scale, 'x').onChange(update));
         this._controllers.push(bindVector(scale, obj.scale, 'y').onChange(update));
         this._controllers.push(bindVector(scale, obj.scale, 'z').onChange(update));
+
+        const rotation = this.gui.addFolder('Rotation');
+        rotation.close();
+        this._folders.push(rotation);
+
+        this._controllers.push(bindEuler(rotation, obj.rotation, 'x').onChange(update));
+        this._controllers.push(bindEuler(rotation, obj.rotation, 'y').onChange(update));
+        this._controllers.push(bindEuler(rotation, obj.rotation, 'z').onChange(update));
 
         if ('material' in obj && obj.material != null) {
             const material = this.gui.addFolder('Material');
