@@ -84,6 +84,12 @@ class CameraInspector extends Panel {
         this._controllers.push(position.add(this.camera.position, 'y'));
         this._controllers.push(position.add(this.camera.position, 'z'));
 
+        const rotation = this.gui.addFolder('Rotation');
+        rotation.close();
+        this._controllers.push(rotation.add(this.camera.rotation, 'x'));
+        this._controllers.push(rotation.add(this.camera.rotation, 'y'));
+        this._controllers.push(rotation.add(this.camera.rotation, 'z'));
+
         if (this.view.controls && 'target' in this.view.controls) {
             const target = this.gui.addFolder('Target');
             target.close();
