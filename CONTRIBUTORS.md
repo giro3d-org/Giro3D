@@ -57,10 +57,10 @@ The following people have contributed to Giro3D.
 - [TU Delft CSE](https://www.tudelft.nl/)
     - [Twan Reijinga](https://github.com/Twan-Reijinga)
     - [Tristan Fransen](https://github.com/ZilverBlade)
-
     - [Eliott Duparc](https://github.com/eliottdup)
     - [Mats Jacobs](https://github.com/Eliminator1357)
     - [Kylian Kopmels](https://github.com/Mylios)
+
 ---
 
 The following organizations supported Giro3D:
