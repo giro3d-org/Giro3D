@@ -5,10 +5,8 @@
  */
 
 import GeoJSON from 'ol/format/GeoJSON.js';
-import { tile } from 'ol/loadingstrategy.js';
 import VectorSource from 'ol/source/Vector.js';
-import { createXYZ } from 'ol/tilegrid.js';
-import { Color, HemisphereLight } from 'three';
+import { Color, CubicInterpolant, HemisphereLight, Vector3 } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
@@ -22,12 +20,6 @@ import Map from '@giro3d/giro3d/entities/Map.js';
 import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
-
-const loadJson = (path, doThen) => {
-    fetch(path)
-        .then(response => response.json()) // Parse JSON
-        .then(doThen);
-};
 
 const epsg2154 = CoordinateSystem.register(
     'EPSG:2154',
@@ -112,6 +104,8 @@ let result = null;
 loader.load(path, gltf => {
     const airplane = gltf.scene;
     airplane.scale.set(100, 100, 100);
+    airplane.rotation.x = Math.PI / 2;
+    airplane.rotation.y = Math.PI;
     airplane.updateMatrixWorld();
 
     instance.add(airplane);
@@ -130,7 +124,6 @@ loader.load(path, gltf => {
     const pathSource = new VectorSource({
         format: new GeoJSON(),
         url: 'data/drone_path.geojson',
-        strategy: tile(createXYZ({ tileSize: 512 })),
     });
 
     // Pass the VectorSource into the FeatureCollection.
@@ -150,133 +143,62 @@ loader.load(path, gltf => {
 
     instance.add(featureCollection);
 
-    loadJson('data/drone_path.geojson', json => {
-        let POINTS = json.geometry.coordinates;
+    fetch('data/drone_path.geojson')
+        .then(response => response.json())
+        .then(json => {
+            const coordinates = new Coordinates(CoordinateSystem.epsg4326, 0, 0, 0);
+            const reprojected = new Coordinates(instance.coordinateSystem, 0, 0, 0);
 
-        POINTS.pop();
-        const samplePath = t => {
-            if (typeof t !== 'number' || isNaN(t)) {
-                t = 0;
+            const POINTS = json.geometry.coordinates.map(c => {
+                // Reproject points once and for all in target coordinate system
+                coordinates.set(CoordinateSystem.epsg4326, c[0], c[1]);
+                coordinates.as(instance.coordinateSystem, reprojected);
+                return [reprojected.x, reprojected.y];
+            });
+
+            const parameterPositions = new Float32Array(POINTS.length);
+            const sampleValues = new Float32Array(POINTS.length * 2);
+            for (let i = 0; i < POINTS.length; i++) {
+                // We'll interpolate with constant time between each values from the path
+                parameterPositions[i] = i / (POINTS.length - 1);
+                sampleValues[i * 2 + 0] = POINTS[i][0];
+                sampleValues[i * 2 + 1] = POINTS[i][1];
             }
-            const p0 = Math.floor(t);
-            const p1 = (p0 + 1) % POINTS.length;
-            const p2 = (p0 + 2) % POINTS.length;
-            const p3 = (p0 + 3) % POINTS.length;
+            const interpolant = new CubicInterpolant(parameterPositions, sampleValues, 2);
 
-            t = t - Math.floor(t);
-            const t2 = t * t;
-            const t3 = t2 * t;
+            const ANIMATION_DURATION_S = 50.0;
+            const AIRPLANE_ALTITUDE = 1500.0;
+            let oldTime = 0.0;
+            let animationAlpha = 0.0;
 
-            const q0 = -t3 + 2.0 * t2 - t;
-            const q1 = 3.0 * t3 - 5.0 * t2 + 2.0;
-            const q2 = -3.0 * t3 + 4.0 * t2 + t;
-            const q3 = t3 - t2;
+            const _look_at = new Vector3();
 
-            const pq0x = POINTS[p0][0] * q0 * 0.5;
-            const pq1x = POINTS[p1][0] * q1 * 0.5;
-            const pq2x = POINTS[p2][0] * q2 * 0.5;
-            const pq3x = POINTS[p3][0] * q3 * 0.5;
-            const pq0y = POINTS[p0][1] * q0 * 0.5;
-            const pq1y = POINTS[p1][1] * q1 * 0.5;
-            const pq2y = POINTS[p2][1] * q2 * 0.5;
-            const pq3y = POINTS[p3][1] * q3 * 0.5;
+            const loop = time => {
+                const frameTime = (time - oldTime) / 1000.0;
+                oldTime = time;
 
-            const dq0 = -3.0 * t2 + 4.0 * t - 1.0;
-            const dq1 = 9.0 * t2 - 10.0 * t;
-            const dq2 = -9.0 * t2 + 8.0 * t + 1.0;
-            const dq3 = 3.0 * t2 - 2.0 * t;
+                // Move the airplane
+                const position = interpolant.evaluate(animationAlpha);
+                airplane.position.set(position[0], position[1], AIRPLANE_ALTITUDE);
 
-            const dpq0x = POINTS[p0][0] * dq0 * 0.5;
-            const dpq1x = POINTS[p1][0] * dq1 * 0.5;
-            const dpq2x = POINTS[p2][0] * dq2 * 0.5;
-            const dpq3x = POINTS[p3][0] * dq3 * 0.5;
-            const dpq0y = POINTS[p0][1] * dq0 * 0.5;
-            const dpq1y = POINTS[p1][1] * dq1 * 0.5;
-            const dpq2y = POINTS[p2][1] * dq2 * 0.5;
-            const dpq3y = POINTS[p3][1] * dq3 * 0.5;
+                // Set the heading
+                // note: evaluate returns a reference, so at this point `position` is outdated
+                const nextPosition = interpolant.evaluate((animationAlpha + 0.01) % 1);
+                _look_at.set(nextPosition[0], nextPosition[1], AIRPLANE_ALTITUDE);
+                airplane.lookAt(_look_at);
+                airplane.updateMatrixWorld();
 
-            return [
-                [pq0x + pq1x + pq2x + pq3x, pq0y + pq1y + pq2y + pq3y],
-                [dpq0x + dpq1x + dpq2x + dpq3x, dpq0y + dpq1y + dpq2y + dpq3y],
-            ];
-        };
+                // Move the camera
+                camera.lookAt(airplane.position);
 
-        const SAMPLE_SIZE = 0.005;
-        const STEP = 0.0002;
-        const buildSegments = () => {
-            let segments = [];
-            let remainingLength = 0.0;
-            for (let i = 0.0; i < POINTS.length - SAMPLE_SIZE; i += SAMPLE_SIZE) {
-                const xy1 = samplePath(i)[0];
-                const xy2 = samplePath(i + SAMPLE_SIZE)[0];
-                const dx = xy2[0] - xy1[0];
-                const dy = xy2[1] - xy1[1];
-                const seglen = Math.sqrt(dx * dx + dy * dy);
-                remainingLength += seglen;
-                if (remainingLength >= STEP) {
-                    segments.push(i);
-                    remainingLength -= STEP;
-                }
-            }
-            return segments;
-        };
-        let segments = buildSegments();
-        const sampleSegment = alpha => {
-            const x = alpha * (segments.length - 1);
-            const bottom = Math.floor(x) % segments.length;
-            const top = (bottom + 1) % segments.length;
+                instance.notifyChange(camera);
+                instance.notifyChange(airplane);
 
-            const bx = segments[bottom];
-            const tx = segments[top];
+                animationAlpha = (animationAlpha + frameTime / ANIMATION_DURATION_S) % 1;
 
-            const frac = x - Math.floor(x);
-            const simfrac = 1.0 - frac;
-
-            const xyb = samplePath(bx);
-            const xyt = samplePath(tx);
-
-            const finalX = xyb[0][0] * simfrac + xyt[0][0] * frac;
-            const finalY = xyb[0][1] * simfrac + xyt[0][1] * frac;
-
-            const dFinalX = xyb[1][0] * simfrac + xyt[1][0] * frac;
-            const dFinalY = xyb[1][1] * simfrac + xyt[1][1] * frac;
-
-            return [
-                new Coordinates(CoordinateSystem.epsg4326, finalX, finalY).as(
-                    instance.coordinateSystem,
-                ),
-                new Coordinates(CoordinateSystem.epsg4326, finalX + dFinalX, finalY + dFinalY).as(
-                    instance.coordinateSystem,
-                ),
-            ];
-        };
-
-        const ANIMATION_DURATION_S = 50.0;
-        const AIRPLANE_ALTITUDE = 1500.0;
-        let oldTime = 0.0;
-        let animationAlpha = 0.0;
-        const loop = time => {
-            const frameTime = (time - oldTime) / 1000.0;
-            oldTime = time;
-
-            const sample = sampleSegment(animationAlpha);
-            const airplaneXy = sample[0];
-            const airplaneXyTarget = sample[1];
-            airplane.position.x = airplaneXy.x;
-            airplane.position.y = airplaneXy.y;
-            airplane.position.z = AIRPLANE_ALTITUDE;
-            airplane.lookAt(airplaneXyTarget.x, airplaneXyTarget.y, airplane.position.z);
-            airplane.updateMatrixWorld();
-            camera.lookAt(airplane.position);
-
-            instance.notifyChange(camera);
-            instance.notifyChange(airplane);
-
-            animationAlpha += frameTime / ANIMATION_DURATION_S;
+                requestAnimationFrame(loop);
+            };
 
             requestAnimationFrame(loop);
-        };
-
-        requestAnimationFrame(loop);
-    });
+        });
 });
