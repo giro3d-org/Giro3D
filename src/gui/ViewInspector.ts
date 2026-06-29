@@ -80,9 +80,9 @@ class CameraInspector extends Panel {
 
         const position = this.gui.addFolder('Position');
         position.close();
-        this._controllers.push(position.add(this.camera.position, 'x'));
-        this._controllers.push(position.add(this.camera.position, 'y'));
-        this._controllers.push(position.add(this.camera.position, 'z'));
+        this._controllers.push(position.add(this.camera.position, 'x').onChange(notify));
+        this._controllers.push(position.add(this.camera.position, 'y').onChange(notify));
+        this._controllers.push(position.add(this.camera.position, 'z').onChange(notify));
 
         const rotation = this.gui.addFolder('Rotation (read-only)');
         rotation.close();
@@ -94,9 +94,9 @@ class CameraInspector extends Panel {
             const target = this.gui.addFolder('Target');
             target.close();
             const targetObj = this.view.controls.target as Vector3;
-            this._controllers.push(target.add(targetObj, 'x'));
-            this._controllers.push(target.add(targetObj, 'y'));
-            this._controllers.push(target.add(targetObj, 'z'));
+            this._controllers.push(target.add(targetObj, 'x').onChange(notify));
+            this._controllers.push(target.add(targetObj, 'y').onChange(notify));
+            this._controllers.push(target.add(targetObj, 'z').onChange(notify));
         }
     }
 
