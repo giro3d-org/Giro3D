@@ -10,6 +10,9 @@ The following people have contributed to Giro3D.
 - [AtolCD](http://www.atolcd.com)
     - [Thomas Broyer](https://github.com/tbroyer)
 
+- [Bradley Engineering](https://bradleyengineering.ca/)
+    - [sidrubs](https://gitlab.com/sidrubs)
+
 - [IGN](http://www.ign.fr)
     - [Adrien Berthet](https://github.com/zarov)
     - [Alexandre Devaux](https://github.com/nosy-b)

@@ -202,10 +202,31 @@ function setAuth(urlPrefix: string, value: string): void {
 }
 
 /**
- * Removes all configurations.
+ * Removes configuration.
+ *
+ * @param urlPrefix - If provided, removes the configuration for this exact URL prefix only.
+ * Otherwise, removes all configurations.
  */
-function clear(): void {
-    perHostProperties.clear();
+function clear(urlPrefix?: string): void {
+    if (urlPrefix === undefined) {
+        perHostProperties.clear();
+        return;
+    }
+
+    const hostname = new URL(urlPrefix).hostname;
+    const hostEntry = perHostProperties.get(hostname);
+    if (!hostEntry) {
+        return;
+    }
+
+    const index = hostEntry.findIndex(entry => entry.urlPrefix === urlPrefix);
+    if (index !== -1) {
+        hostEntry.splice(index, 1);
+    }
+
+    if (hostEntry.length === 0) {
+        perHostProperties.delete(hostname);
+    }
 }
 
 /**

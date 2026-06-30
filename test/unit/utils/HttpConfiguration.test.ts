@@ -133,3 +133,55 @@ describe('setHeader', () => {
         expect(opts.headers.Authorization).toEqual('USE_THIS_INSTEAD');
     });
 });
+
+describe('clear', () => {
+    it('should remove all configurations when called without arguments', () => {
+        HttpConfiguration.setAuth('https://tiles.example.com/a/', 'Bearer A');
+        HttpConfiguration.setAuth('https://tiles.example.com/b/', 'Bearer B');
+
+        HttpConfiguration.clear();
+
+        expect(
+            HttpConfiguration.applyConfiguration('https://tiles.example.com/a/x.png'),
+        ).toBeUndefined();
+        expect(
+            HttpConfiguration.applyConfiguration('https://tiles.example.com/b/x.png'),
+        ).toBeUndefined();
+    });
+
+    it('should remove the configuration for a single prefix without affecting others', () => {
+        HttpConfiguration.setAuth('https://tiles.example.com/a/', 'Bearer A');
+        HttpConfiguration.setAuth('https://tiles.example.com/b/', 'Bearer B');
+
+        HttpConfiguration.clear('https://tiles.example.com/a/');
+
+        const aOpts = HttpConfiguration.applyConfiguration('https://tiles.example.com/a/x.png', {});
+        const bOpts = HttpConfiguration.applyConfiguration(
+            'https://tiles.example.com/b/x.png',
+            {},
+        )!;
+
+        expect(
+            (aOpts?.headers as Record<string, string> | undefined)?.Authorization,
+        ).toBeUndefined();
+        expect((bOpts.headers as Record<string, string>).Authorization).toEqual('Bearer B');
+    });
+
+    it('should do nothing when clearing a prefix that has no configuration', () => {
+        expect(() => HttpConfiguration.clear('https://nothing.example.com')).not.toThrow();
+    });
+
+    it('should fall back to a less specific prefix on the same hostname after clearing the more specific one', () => {
+        HttpConfiguration.setHeader('https://example.com', 'Authorization', 'ROOT');
+        HttpConfiguration.setHeader('https://example.com/sub', 'Authorization', 'SUB');
+
+        HttpConfiguration.clear('https://example.com/sub');
+
+        const opts = HttpConfiguration.applyConfiguration(
+            'https://example.com/sub/resource.html',
+            {},
+        )!;
+
+        expect((opts.headers as Record<string, string>).Authorization).toEqual('ROOT');
+    });
+});
