@@ -93,6 +93,10 @@ export interface BaseOptions {
      * Ignores the Z component of coordinates.
      */
     ignoreZ?: boolean;
+    /**
+     * Sets the elevation of the features. Requires `ignoreZ` to be `false`.
+     */
+    elevation?: FeatureElevation;
 }
 
 export interface PointOptions extends BaseOptions, Partial<PointStyle> {}
@@ -100,7 +104,6 @@ export interface PolygonOptions extends BaseOptions {
     fill?: FillStyle;
     stroke?: StrokeStyle;
     extrusionOffset?: FeatureExtrusionOffset;
-    elevation?: FeatureElevation;
 }
 export interface LineOptions extends BaseOptions, StrokeStyle {}
 
@@ -361,7 +364,8 @@ function createPositionBuffer(coordinates: Coordinate[], options: BaseOptions): 
     const result = new Float32Array(bufferSize);
 
     const origin = tempOrigin;
-    const ignoreZ = options.ignoreZ;
+    const ignoreZ = options.ignoreZ ?? false;
+    const elevation = options.elevation;
 
     if (options.origin) {
         origin.copy(options.origin);
@@ -376,7 +380,13 @@ function createPositionBuffer(coordinates: Coordinate[], options: BaseOptions): 
 
         const x = p[0];
         const y = p[1];
-        const z = ignoreZ === true ? 0 : (p[2] ?? 0);
+
+        let z = 0;
+        if (!ignoreZ && p[2] != null) {
+            z = p[2];
+        } else if (elevation != null) {
+            z = Array.isArray(elevation) ? elevation[i] : elevation;
+        }
 
         result[i0 + 0] = x - origin.x;
         result[i0 + 1] = y - origin.y;
