@@ -1,8 +1,8 @@
 import CoordinateSystem from "@giro3d/giro3d/core/geographic/CoordinateSystem";
 import Instance from "@giro3d/giro3d/core/Instance";
 import Inspector from "@giro3d/giro3d/gui/Inspector";
-import { AmbientLight, BoxGeometry, DirectionalLight, Mesh, MeshStandardMaterial, Plane, PlaneGeometry } from "three";
-import { MapControls } from "three/examples/jsm/Addons.js";
+import { MapControls, TransformControls } from "three/examples/jsm/Addons.js";
+// import { TransformControls } from 'three/addons/controls/TransformControls';
 import StatusBar from "./widgets/StatusBar";
 import * as THREE from 'three';
 import { OBB } from "3d-tiles-renderer";
@@ -13,77 +13,67 @@ const instance = new Instance({
     target: 'view',
 });
 
-const plane = new Mesh(
-    new PlaneGeometry(100, 100, 1, 1),
-    new MeshStandardMaterial({ color: 'white' }),
-);
-
-const box = new Mesh(
-    new BoxGeometry(10, 10, 10, 1, 1),
-    new MeshStandardMaterial({ color: 'blue' })
-);
-
-const ambient = new AmbientLight('white', 0.2);
-const sun = new DirectionalLight('white', 1.5);
+const ambient = new THREE.AmbientLight('white', 0.2);
+const sun = new THREE.DirectionalLight('white', 1.5);
 sun.target.position.set(0, 0, 0);
 sun.position.set(100, 100, 100);
-
-instance.add(plane);
-instance.add(box);
-
-box.position.set(0, 0, 5);
-box.updateMatrixWorld(true);
-
 sun.updateMatrixWorld(true);
-instance.scene.updateMatrixWorld();
 instance.add(sun);
 instance.add(sun.target);
 instance.add(ambient);
 
+const plane = new THREE.Mesh(
+    new THREE.PlaneGeometry(200, 200),
+    new THREE.MeshStandardMaterial({ color: 'white' }),
+);
+instance.add(plane);
+
+const rand = (a, b) => { return a + Math.random() * (b - a); };
+for (let i = 0; i < 25; i++) {
+
+    const h = rand(5, 20);
+
+    const box = new THREE.Mesh(
+        new THREE.BoxGeometry(6, 6, h),
+        new THREE.MeshStandardMaterial({
+            color: new THREE.Color(Math.random(), Math.random(), Math.random())
+        })
+    );
+    box.position.set(rand(-80, 80), rand(-80, 80), 0.5 + h / 2);
+    box.updateMatrixWorld(true);
+    instance.add(box);
+}
+
+instance.scene.updateMatrixWorld();
 instance.view.goTo(plane);
 
 const controls = new MapControls(instance.view.camera, instance.domElement);
-
 controls.target.set(0, 0, 0);
-
 instance.view.setControls(controls);
 
-const MAX_DIST = 30;
-const observer = new THREE.Vector3(0, 10, 4);
+const MAX_DIST = 100;
 
-const observerMesh = new THREE.AxesHelper(20);
-observerMesh.position.copy(observer);
-instance.add(observerMesh);
-observerMesh.updateMatrixWorld();
-
-const depthMaterial = new THREE.ShaderMaterial({
-
-    uniforms: {
-        observerPosition: { value: observer },
-        maxDistance: { value: MAX_DIST }
-    },
-    vertexShader: /* glsl */`
+const DISTANCE_MATERIAL_SHADERS = {
+    vertex: `
         varying vec3 vWorldPos;
         void main() {
             vec4 worldPos = modelMatrix * vec4(position,1.0);
             vWorldPos = worldPos.xyz;
             gl_Position = projectionMatrix * viewMatrix * worldPos;
-        }
-    `,
-
-    fragmentShader: /* glsl */`
+        }`,
+    fragment: `
         uniform vec3 observerPosition;
         uniform float maxDistance;
         varying vec3 vWorldPos;
         void main() {
             float d = length(vWorldPos - observerPosition);
-            float encoded = clamp(d / maxDistance, 0.0, 1.0);
-            gl_FragColor = vec4(encoded, encoded, encoded, 1.0);
-        }
-      `
-});
-function cubeFaceMaterial(cubeTexture, face)
-{
+            float k = clamp(d / maxDistance, 0.0, 1.0);
+            gl_FragColor = vec4(k, k, k, 1.0);
+            // gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+        }`
+};
+
+function cubeFaceMaterial(cubeTexture, face) {
     return new THREE.ShaderMaterial({
         uniforms:{
             cubeMap:{
@@ -132,6 +122,7 @@ function cubeFaceMaterial(cubeTexture, face)
         side:THREE.DoubleSide
     });
 }
+
 function createCubemapDebugMeshes(size, tex) {
     const group = new THREE.Group();
     group.name = "cubemap";
@@ -173,107 +164,162 @@ function createCubemapDebugMeshes(size, tex) {
     return group;
 }
 
+const clock = new THREE.Clock();
+
 class VisibilityManager {
 
-    constructor(scene, observer) {
-        this.cubemap = new THREE.WebGLCubeRenderTarget(4096, { type: THREE.HalfFloatType });
-        this.cubeCamera = new THREE.CubeCamera(0.1, MAX_DIST, this.cubemap);
-        scene.add(this.cubeCamera);
+    constructor(scene, renderer) {
         this.scene = scene;
-        this.observer = observer;
-        this.maxDist = MAX_DIST;
-        this.injected = new WeakSet();
+        this.renderer = renderer;
 
-        this.debugmesh = createCubemapDebugMeshes(50, this.cubemap.texture);
+        this.observerMesh = new THREE.Object3D();
+        this.observerMesh.position.copy(new THREE.Vector3(0, 10, 4));
+        this.observerMesh.updateMatrixWorld(true);
+        scene.add(this.observerMesh);
+
+        this.cubemapTarget = new THREE.WebGLCubeRenderTarget(4096,
+            {
+                type: THREE.HalfFloatType,
+                generateMipmaps: false,
+                minFilter: THREE.LinearFilter,
+                magFilter: THREE.LinearFilter
+            }
+        );
+        this.cubeCamera = new THREE.CubeCamera(0.1, MAX_DIST, this.cubemapTarget);
+        scene.add(this.cubeCamera);
+
+        this.debugmesh = createCubemapDebugMeshes(100, this.cubemapTarget.texture);
         this.debugmesh.position.set(200, 25, 0);
         this.debugmesh.updateMatrixWorld(true);
         instance.add(this.debugmesh);
-    }
 
-    render() {
-        this.debugmesh.visible = false;
-        observerMesh.visible = false;
-        this.cubeCamera.position.copy(this.observer);
-        this.cubeCamera.updateMatrixWorld(true);
-        this.scene.overrideMaterial = depthMaterial;
-        this.cubeCamera.update(instance.renderer, this.scene);
-        this.scene.overrideMaterial = null;
-        this.debugmesh.visible = true;
-        observerMesh.visible = true;
-    }
-
-    inject(mat) {
-        if (!mat || this.injected.has(mat)) return;
-
-        mat.onBeforeCompile = (shader) => {
-
-            shader.uniforms.visibilityMap = { value: this.cubemap.texture };
-            shader.uniforms.observerPos = { value: this.observer };
-            shader.uniforms.maxDist = { value: this.maxDist };
-
-            shader.vertexShader =
-                'varying vec3 vVisWorld;\n' +
-                shader.vertexShader;
-
-            shader.vertexShader = shader.vertexShader.replace(
-                '#include <begin_vertex>',
-                `
-                #include <begin_vertex>
-
-                vec4 worldPos = modelMatrix * vec4(transformed, 1.0);
-                vVisWorld = worldPos.xyz;
-                `
-            );
-
-            shader.fragmentShader =
-                'varying vec3 vVisWorld;\n' +
-                'uniform samplerCube visibilityMap;\n' +
-                'uniform vec3 observerPos;\n' +
-                'uniform float maxDist;\n' +
-                shader.fragmentShader;
-
-            shader.fragmentShader = shader.fragmentShader.replace(
-                '#include <dithering_fragment>',
-                `
-                vec3 dir = vVisWorld - observerPos;
-                float dist = length(dir);
-                vec3 ray = normalize(dir);
-
-                float enc = textureCube(visibilityMap, ray).r;
-                float stored = enc * maxDist;
-
-                bool visible = dist <= stored + 0.5;
-
-                vec3 tint = visible
-                    ? vec3(0.2, 1.0, 0.2)
-                    : vec3(1.0, 0.2, 0.2);
-
-                gl_FragColor.rgb = mix(gl_FragColor.rgb, tint, 0.5);
-
-                #include <dithering_fragment>
-                `
-            );
-        };
-
-        mat.needsUpdate = true;
-        this.injected.add(mat);
-    }
-
-    scan() {
-        this.scene.traverse(obj => {
-            if (!obj.isMesh || obj == this.debugmesh || obj.parent == this.debugmesh) return;
-            this.inject(obj.material);
+        this.distanceMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                observerPosition: {value: this.observerMesh.position},
+                maxDistance: {value: MAX_DIST}
+            },
+            vertexShader: DISTANCE_MATERIAL_SHADERS.vertex,
+            fragmentShader: DISTANCE_MATERIAL_SHADERS.fragment
         });
+        this.distanceMaterial.side = THREE.DoubleSide;
+
+        // this.transformControls = new TransformControls(instance.view.camera, renderer.domElement);
+        // this.transformControls.setMode('translate');
+        // this.transformControls.addEventListener('dragging-changed', this.onControlDrag);
+        // this.transformControls.addEventListener('objectChange', this.onControlChange);
+        // this.transformControls.addEventListener('change', this.onControlChange);
+        // this.transformControls.attach(this.observerMesh);
+        // this.transformControls.getHelper().updateMatrixWorld();
+        // scene.add(this.transformControls.getHelper());
+        // instance.view.controls.addEventListener('change', this.updateTransformHelper);
     }
+
+    updateTransformHelper = () => {
+        // this.transformControls.getHelper().updateMatrixWorld();
+        instance.notifyChange();
+    };
+    onControlDrag = (event) => {
+        if ('enabled' in instance.view.controls) {
+            instance.view.controls.enabled = !event.value;
+        }
+    };
+    onControlChange = () => {
+        // this.transformControls.getHelper().updateMatrixWorld();
+        instance.notifyChange(this.observerMesh);
+        // instance.notifyChange(this.transformControls.getHelper());
+        this.update();
+    };
 
     update() {
-        this.render();
-        this.scan();
+        const dt = clock.getDelta() * 5;
+
+        this.observerMesh.translateX(dt);
+        this.observerMesh.updateMatrixWorld(true);
+
+        this.cubeCamera.position.copy(this.observerMesh.position);
+        this.cubeCamera.updateMatrixWorld(true);
+
+        const prevOverrideMaterial = this.scene.overrideMaterial;
+        this.scene.overrideMaterial = this.distanceMaterial;
+        // this.observerMesh.visible = false;
+        this.debugmesh.visible = false;
+        // this.transformControls.getHelper().visible = false;
+
+        this.cubeCamera.update(this.renderer, this.scene);
+
+        // this.transformControls.getHelper().visible = true;
+        // this.observerMesh.visible = true;
+        this.debugmesh.visible = true;
+        this.scene.overrideMaterial = prevOverrideMaterial;
+
+        this.scene.traverse(obj => {
+            if (!obj.isMesh || !obj.material || obj === this.debugmesh || obj.parent === this.debugmesh || obj === this.observerMesh || obj.material.onBeforeCompile === this.injectShader) {
+                return;
+            }
+            obj.material.userData.originalOnBeforeCompile = obj.material.onBeforeCompile;
+            obj.material.onBeforeCompile = this.injectShader;
+            obj.material.needsUpdate = true;
+        });
     }
+    injectShader = (shader) => {
+        shader.uniforms.visibilityMap = { value: this.cubemapTarget.texture };
+        shader.uniforms.observerPos = { value: this.observerMesh.position };
+        shader.uniforms.maxDist = { value: MAX_DIST };
+
+        shader.vertexShader =
+            'varying vec3 vVisWorld;\n' +
+            shader.vertexShader;
+
+        shader.vertexShader = shader.vertexShader.replace(
+            '#include <begin_vertex>',
+            `
+            #include <begin_vertex>
+
+            vec4 worldPos = modelMatrix * vec4(transformed, 1.0);
+            vVisWorld = worldPos.xyz;
+            `
+        );
+
+        shader.fragmentShader =
+            'varying vec3 vVisWorld;\n' +
+            'uniform samplerCube visibilityMap;\n' +
+            'uniform vec3 observerPos;\n' +
+            'uniform float maxDist;\n' +
+            shader.fragmentShader;
+
+        shader.fragmentShader = shader.fragmentShader.replace(
+            '#include <dithering_fragment>',
+            `
+            vec3 dir = vVisWorld - observerPos;
+            float dist = length(dir);
+            vec3 ray = normalize(dir);
+
+            float enc = textureCube(visibilityMap, ray).r;
+            float stored = enc * maxDist;
+
+            bool visible = dist <= stored + 0.5;
+
+            vec3 tint = visible
+                ? vec3(0.2, 1.0, 0.2)
+                : vec3(1.0, 0.2, 0.2);
+
+            gl_FragColor.rgb = mix(gl_FragColor.rgb, tint, 0.8);
+
+            #include <dithering_fragment>
+            `
+        );
+    };
 }
 
-const visibility = new VisibilityManager(instance.scene, observer);
+const visibility = new VisibilityManager(instance.scene, instance.renderer);
 instance.addEventListener('after-render', () => visibility.update());
 
 Inspector.attach('inspector', instance);
 StatusBar.bind(instance);
+
+const update = () => {
+    instance.notifyChange();
+    requestAnimationFrame(update);
+}
+
+update();
