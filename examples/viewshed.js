@@ -1,8 +1,8 @@
 import CoordinateSystem from "@giro3d/giro3d/core/geographic/CoordinateSystem";
 import Instance from "@giro3d/giro3d/core/Instance";
 import Inspector from "@giro3d/giro3d/gui/Inspector";
-import { MapControls, TransformControls } from "three/examples/jsm/Addons.js";
-// import { TransformControls } from 'three/addons/controls/TransformControls';
+import { MapControls } from "three/examples/jsm/Addons.js";
+import { TransformControls } from 'three/addons/controls/TransformControls';
 import StatusBar from "./widgets/StatusBar";
 import * as THREE from 'three';
 import { OBB } from "3d-tiles-renderer";
@@ -69,7 +69,6 @@ const DISTANCE_MATERIAL_SHADERS = {
             float d = length(vWorldPos - observerPosition);
             float k = clamp(d / maxDistance, 0.0, 1.0);
             gl_FragColor = vec4(k, k, k, 1.0);
-            // gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
         }`
 };
 
@@ -164,15 +163,13 @@ function createCubemapDebugMeshes(size, tex) {
     return group;
 }
 
-const clock = new THREE.Clock();
-
 class VisibilityManager {
 
     constructor(scene, renderer) {
         this.scene = scene;
         this.renderer = renderer;
 
-        this.observerMesh = new THREE.Object3D();
+        this.observerMesh = new THREE.Mesh(new THREE.SphereGeometry(1), new THREE.MeshStandardMaterial({color: new THREE.Color(0x0000ff)}));
         this.observerMesh.position.copy(new THREE.Vector3(0, 10, 4));
         this.observerMesh.updateMatrixWorld(true);
         scene.add(this.observerMesh);
@@ -214,41 +211,33 @@ class VisibilityManager {
         // instance.view.controls.addEventListener('change', this.updateTransformHelper);
     }
 
-    updateTransformHelper = () => {
-        // this.transformControls.getHelper().updateMatrixWorld();
-        instance.notifyChange();
-    };
-    onControlDrag = (event) => {
-        if ('enabled' in instance.view.controls) {
-            instance.view.controls.enabled = !event.value;
-        }
-    };
-    onControlChange = () => {
-        // this.transformControls.getHelper().updateMatrixWorld();
-        instance.notifyChange(this.observerMesh);
-        // instance.notifyChange(this.transformControls.getHelper());
-        this.update();
-    };
+    // updateTransformHelper = () => {
+    //     this.transformControls.getHelper().updateMatrixWorld();
+    //     instance.notifyChange();
+    // };
+    // onControlDrag = (event) => {
+    //     instance.view.controls.enabled = !event.value;
+    // };
+    // onControlChange = () => {
+    //     this.transformControls.getHelper().updateMatrixWorld();
+    //     instance.notifyChange(this.observerMesh);
+    //     instance.notifyChange(this.transformControls.getHelper());
+    //     this.update();
+    // };
 
     update() {
-        const dt = clock.getDelta() * 5;
-
-        this.observerMesh.translateX(dt);
-        this.observerMesh.updateMatrixWorld(true);
-
+        console.log(this.observerMesh.position)
         this.cubeCamera.position.copy(this.observerMesh.position);
         this.cubeCamera.updateMatrixWorld(true);
 
         const prevOverrideMaterial = this.scene.overrideMaterial;
         this.scene.overrideMaterial = this.distanceMaterial;
-        // this.observerMesh.visible = false;
+        this.observerMesh.visible = false;
         this.debugmesh.visible = false;
-        // this.transformControls.getHelper().visible = false;
 
         this.cubeCamera.update(this.renderer, this.scene);
 
-        // this.transformControls.getHelper().visible = true;
-        // this.observerMesh.visible = true;
+        this.observerMesh.visible = true;
         this.debugmesh.visible = true;
         this.scene.overrideMaterial = prevOverrideMaterial;
 
@@ -317,9 +306,26 @@ instance.addEventListener('after-render', () => visibility.update());
 Inspector.attach('inspector', instance);
 StatusBar.bind(instance);
 
-const update = () => {
+document.addEventListener('keydown', (ev) => {
+    if (ev.key === "ArrowDown") {
+        if (ev.ctrlKey) {
+            visibility.observerMesh.position.z -= 1;
+        } else {
+            visibility.observerMesh.position.y -= 1;
+        }
+    } else if (ev.key === "ArrowUp") {
+        if (ev.ctrlKey) {
+            visibility.observerMesh.position.z += 1;
+        } else {
+            visibility.observerMesh.position.y += 1;
+        }
+    } else if (ev.key === "ArrowLeft") {
+        visibility.observerMesh.position.x -= 1;
+    } else if (ev.key === "ArrowRight") {
+        visibility.observerMesh.position.x += 1;
+    } else {
+        return;
+    }
+    visibility.observerMesh.updateMatrixWorld(true);
     instance.notifyChange();
-    requestAnimationFrame(update);
-}
-
-update();
+});
