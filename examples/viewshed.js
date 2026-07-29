@@ -235,6 +235,7 @@ class VisibilityManager {
         this.observerMesh.visible = false;
         this.debugmesh.visible = false;
 
+        this.cubeCamera.renderTarget.clear(this.renderer, true, true, true);
         this.cubeCamera.update(this.renderer, this.scene);
 
         this.observerMesh.visible = true;
