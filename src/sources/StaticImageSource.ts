@@ -4,16 +4,19 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { CanvasTexture, MathUtils, Texture } from 'three';
+import { CanvasTexture, ClampToEdgeWrapping, LinearFilter, MathUtils, Texture } from 'three';
 
 import type CoordinateSystem from '../core/geographic/CoordinateSystem';
-import type Extent from '../core/geographic/Extent';
+import Extent from '../core/geographic/Extent';
 import type { GridExtent } from '../core/geographic/Extent';
 import type { GetImageOptions, ImageResponse, ImageSourceEvents } from './ImageSource';
 
 import EmptyTexture from '../renderer/EmptyTexture';
 import Fetcher from '../utils/Fetcher';
 import ImageSource, { ImageResult } from './ImageSource';
+import { nonNull } from '../utils/tsutils';
+import TextureGenerator from '../utils/TextureGenerator';
+import Capabilities from '../utils/Capabilities';
 
 /**
  * Options for the {@link StaticImageSource} constructor.
@@ -158,5 +161,82 @@ export default class StaticImageSource extends ImageSource<StaticImageSourceEven
         };
 
         return [response];
+    }
+
+    public static async load({
+        url,
+        extent,
+        maxSize = Capabilities.getMaxTextureSize(),
+    }: {
+        url: string;
+        extent: Extent;
+        maxSize?: number;
+    }): Promise<StaticImageSource[]> {
+        const blob = await Fetcher.blob(url);
+        const original = await TextureGenerator.decodeBlobToImageBitmap(blob, { flipY: true });
+        const actualMax = Math.min(Capabilities.getMaxTextureSize(), maxSize);
+
+        function makeTexture(ima: ImageBitmap): Texture {
+            const tex = new Texture(original);
+            tex.wrapS = ClampToEdgeWrapping;
+            tex.wrapT = ClampToEdgeWrapping;
+            tex.minFilter = LinearFilter;
+            tex.magFilter = LinearFilter;
+            tex.generateMipmaps = false;
+            tex.needsUpdate = true;
+            return tex;
+        }
+
+        // The original image is smaller than the limits, let's output a single source
+        if (original.width <= actualMax && original.height <= actualMax) {
+            return [new StaticImageSource({ source: makeTexture(original), extent, flipY: false })];
+        }
+
+        const result: StaticImageSource[] = [];
+
+        const dims = extent.dimensions();
+
+        for (let x = 0; x < original.width; x += actualMax) {
+            for (let y = 0; y < original.height; y += actualMax) {
+                const w = (x + actualMax) % original.width;
+                const h = (y + actualMax) % original.height;
+
+                const canvas = document.createElement('canvas');
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = nonNull(
+                    canvas.getContext('2d'),
+                    'Failed to retrieve CanvasRenderingContext2D',
+                );
+                ctx.drawImage(original, x, y, w, h, 0, 0, w, h);
+
+                const normalizedWidth = w / original.width;
+                const normalizedHeight = h / original.height;
+                const u = x / original.width;
+                const v = y / original.height;
+
+                const corner = extent.sampleUV(u, v);
+
+                const extentWidth = dims.width * normalizedWidth;
+                const extentHeight = dims.height * normalizedHeight;
+
+                const subExtent = new Extent(extent.crs, {
+                    minX: corner.x,
+                    minY: corner.y,
+                    maxX: corner.x + extentWidth,
+                    maxY: corner.y + extentHeight,
+                });
+
+                const source = new StaticImageSource({
+                    source: canvas,
+                    flipY: true,
+                    extent: subExtent,
+                });
+
+                result.push(source);
+            }
+        }
+
+        return result;
     }
 }

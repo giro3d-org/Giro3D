@@ -267,6 +267,52 @@ async function createImageBitmapUsingWorker(
 }
 
 /**
+ * Decodes the blob according to its media type, then returns an @link{ImageBitmap} for this blob.
+ *
+ * @param blob - The buffer to decode.
+ * @param options - Options
+ * @returns The generated ImageBitmap
+ * @throws When the media type is unsupported.
+ */
+async function decodeBlobToImageBitmap(
+    blob: Blob,
+    options: {
+        /** Should the image be flipped vertically ? */
+        flipY?: boolean;
+        /**
+         * Enable web workers.
+         * @defaultValue true
+         */
+        enableWorkers?: boolean;
+    } = {},
+): Promise<ImageBitmap> {
+    // media types are in the form 'type;args', for example: 'text/html; charset=UTF-8;
+    const [type] = blob.type.split(';');
+
+    switch (type) {
+        case 'image/webp':
+        case 'image/png':
+        case 'image/jpg': // not a valid media type, but we support it for compatibility
+        case 'image/jpeg': {
+            const enableWorker = options?.enableWorkers ?? true;
+            let img: ImageBitmap;
+            const decodeOptions: ImageBitmapOptions = {
+                imageOrientation: options.flipY === true ? 'flipY' : 'none',
+            };
+            if (enableWorker) {
+                img = await createImageBitmapUsingWorker(blob, decodeOptions);
+            } else {
+                img = await createImageBitmap(blob, decodeOptions);
+            }
+
+            return img;
+        }
+        default:
+            throw new Error(`unsupported media type for textures: ${blob.type}`);
+    }
+}
+
+/**
  * Decodes the blob according to its media type, then returns a texture for this blob.
  *
  * @param blob - The buffer to decode.
@@ -289,52 +335,30 @@ async function decodeBlob(
         enableWorkers?: boolean;
     } = {},
 ): Promise<Texture> {
-    // media types are in the form 'type;args', for example: 'text/html; charset=UTF-8;
-    const [type] = blob.type.split(';');
+    const img = await decodeBlobToImageBitmap(blob, options);
+    let tex;
 
-    switch (type) {
-        case 'image/webp':
-        case 'image/png':
-        case 'image/jpg': // not a valid media type, but we support it for compatibility
-        case 'image/jpeg': {
-            const enableWorker = options?.enableWorkers ?? true;
-            let img: ImageBitmap;
-            const decodeOptions: ImageBitmapOptions = {
-                imageOrientation: options.flipY === true ? 'flipY' : 'none',
-            };
-            if (enableWorker) {
-                img = await createImageBitmapUsingWorker(blob, decodeOptions);
-            } else {
-                img = await createImageBitmap(blob, decodeOptions);
-            }
+    const max = Capabilities.getMaxTextureSize();
 
-            let tex;
-
-            const max = Capabilities.getMaxTextureSize();
-
-            if (img.width > max || img.height > max) {
-                throw new Error(
-                    `image dimensions (${img.width} * ${img.height} pixels) exceed max texture size (${max} pixels)`,
-                );
-            }
-
-            if (options.createDataTexture === true) {
-                const buf = getPixels(img);
-                tex = new DataTexture(buf, img.width, img.height, RGBAFormat, UnsignedByteType);
-            } else {
-                tex = new Texture(img);
-            }
-            tex.wrapS = ClampToEdgeWrapping;
-            tex.wrapT = ClampToEdgeWrapping;
-            tex.minFilter = LinearFilter;
-            tex.magFilter = LinearFilter;
-            tex.generateMipmaps = false;
-            tex.needsUpdate = true;
-            return tex;
-        }
-        default:
-            throw new Error(`unsupported media type for textures: ${blob.type}`);
+    if (img.width > max || img.height > max) {
+        throw new Error(
+            `image dimensions (${img.width} * ${img.height} pixels) exceed max texture size (${max} pixels)`,
+        );
     }
+
+    if (options.createDataTexture === true) {
+        const buf = getPixels(img);
+        tex = new DataTexture(buf, img.width, img.height, RGBAFormat, UnsignedByteType);
+    } else {
+        tex = new Texture(img);
+    }
+    tex.wrapS = ClampToEdgeWrapping;
+    tex.wrapT = ClampToEdgeWrapping;
+    tex.minFilter = LinearFilter;
+    tex.magFilter = LinearFilter;
+    tex.generateMipmaps = false;
+    tex.needsUpdate = true;
+    return tex;
 }
 
 export interface CreateDataTextureResult {
@@ -924,6 +948,7 @@ export default {
     createDataTexture,
     createDataTextureAsync,
     isEmptyTexture,
+    decodeBlobToImageBitmap,
     decodeBlob,
     getChannelCount,
     getBytesPerChannel,

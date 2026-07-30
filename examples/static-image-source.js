@@ -20,6 +20,8 @@ import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 import { bindButton } from './widgets/bindButton.js';
 import { bindTextInput } from './widgets/bindTextInput.js';
 import StatusBar from './widgets/StatusBar.js';
+import { Disposable } from 'ol';
+import AggregateImageSource from '@giro3d/giro3d/sources/AggregateImageSource.js';
 
 const defaultExtent = new Extent(
     CoordinateSystem.epsg3857,
@@ -156,23 +158,15 @@ const startButton = bindButton('draw', button => {
     button.disabled = true;
     showErrorMessage(false);
 
-    drawExtent().then(extent => {
+    drawExtent().then(async extent => {
         if (currentImage) {
             map.removeLayer(currentImage, { disposeLayer: true });
+            currentImage = null;
         }
-        const source = new StaticImageSource({
-            extent,
-            source: url,
-        });
-        currentImage = new ColorLayer({ source });
 
-        source.addEventListener('loaded', () => (extentPreview.visible = false));
-        source.addEventListener('error', ({ error }) => {
-            extentPreview.visible = false;
-
-            showErrorMessage(true, error.message);
-        });
-
+        const sources = await StaticImageSource.load({ url, extent, maxSize: 512 });
+        const aggregate = new AggregateImageSource({ sources });
+        currentImage = new ColorLayer({ source: aggregate, showTileBorders: true });
         map.addLayer(currentImage);
         instance.notifyChange(map);
         button.disabled = false;
