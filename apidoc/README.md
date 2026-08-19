@@ -148,3 +148,11 @@ The [`Layer`](./classes/core_layer_Layer.Layer.html) class supports transformati
 ### Other entities
 
 Except otherwise specified, entities do not support transformation of data from their source into the Instance CRS. This means that it is not possible to display a point cloud that is in a different CRS than the instance's.
+
+## Extensibility
+
+Many parts of Giro3D can be extended with your own features :
+
+- You can create your own entity types by sub-classing [`Entity3D`](./classes/entities_Entity3D.Entity3D.html),
+- You can add support for a new image source by sub-classing [`ImageSource`](./classes/sources_ImageSource.ImageSource.html),
+- Add new image format decoders by sub-classing [`ImageFormat`](./classes/formats_ImageFormat.ImageFormat.html),
