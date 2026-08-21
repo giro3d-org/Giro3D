@@ -12,6 +12,7 @@ import {
     Color,
     Group,
     MathUtils,
+    Matrix4,
     Sphere,
     Vector2,
     Vector3,
@@ -76,6 +77,7 @@ const DEFAULT_COLORMAP = new ColorMap({
     min: 0,
     max: 1000,
 });
+const IDENTITY = new Matrix4();
 
 const DATA_VOLUME_HELPER_COLOR = new Color('#d8eb34');
 
@@ -432,6 +434,21 @@ class PointCloud<TUserData extends EntityUserData = EntityUserData>
     private getNodeLoadingPriority(nodeInfo: NodeInfo): number {
         // We want to load big, low resolution nodes first, since point clouds are additive.
         return nodeInfo.node.depth;
+    }
+
+    private getWorldSpaceVolume(volume: Box3): Box3;
+    private getWorldSpaceVolume(volume: null): null;
+    private getWorldSpaceVolume(volume: Box3 | null): Box3 | null;
+    /**
+     * Gets a Box3 in the entity's world space
+     * @param volume - Box3
+     * @returns Volume in world space, potentially same reference as `volume` parameter (if unchanged)
+     */
+    private getWorldSpaceVolume(volume: Box3 | null): Box3 | null {
+        if (volume && !this.object3d.matrixWorld.equals(IDENTITY)) {
+            return volume.clone().applyMatrix4(this.object3d.matrixWorld);
+        }
+        return volume;
     }
 
     /**
@@ -1005,7 +1022,7 @@ class PointCloud<TUserData extends EntityUserData = EntityUserData>
     }
 
     public override getBoundingBox(): Box3 | null {
-        return this._metadata?.volume ?? this._rootNode?.volume ?? null;
+        return this.getWorldSpaceVolume(this._metadata?.volume ?? this._rootNode?.volume ?? null);
     }
 
     protected override async preprocess(_opts: EntityPreprocessOptions): Promise<void> {
@@ -1219,7 +1236,7 @@ class PointCloud<TUserData extends EntityUserData = EntityUserData>
     }
 
     private updateMinMaxDistance(context: Context, node: PointCloudNode): void {
-        const bbox = node.volume;
+        const bbox = this.getWorldSpaceVolume(node.volume);
         const distance = context.distance.plane.distanceToPoint(bbox.getCenter(tmpVector3));
         const radius = bbox.getSize(tmpVector3).length() * 0.5;
 
@@ -1270,7 +1287,16 @@ class PointCloud<TUserData extends EntityUserData = EntityUserData>
             return true;
         }
 
-        const distance = view.camera.position.distanceTo(node.center);
+        let center;
+        if (this.object3d.matrixWorld.equals(IDENTITY)) {
+            center = node.center;
+        } else {
+            tmpVector3.copy(node.center);
+            tmpVector3.applyMatrix4(this.object3d.matrixWorld); // assume matrix is already updated, for performance
+            center = tmpVector3;
+        }
+
+        const distance = view.camera.position.distanceTo(center);
         const sse = computeScreenSpaceError(node, this.pointSize, preSSE, distance);
 
         return sse > this.subdivisionThreshold;
