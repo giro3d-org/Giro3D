@@ -4,9 +4,10 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { Box3, MathUtils } from 'three';
+import { Box3, MathUtils, Vector3 } from 'three';
 import { describe, expect, it, vitest } from 'vitest';
 
+import type View from '@giro3d/giro3d/renderer/View';
 import type {
     PointCloudAttribute,
     PointCloudMetadata,
@@ -121,5 +122,161 @@ describe('initialize', () => {
         expect(entity.getBoundingBox()).toEqual(metadata.volume);
         expect(entity.pointCount).toEqual(12345);
         expect(entity.getSupportedAttributes()).toEqual(attributes);
+    });
+
+    it('should take into account the world space', async () => {
+        const metadata: PointCloudMetadata = {
+            pointCount: 12345,
+            volume: new Box3().setFromArray([0, 0, 0, 1, 1, 1]),
+            attributes: [
+                { name: 'foo', dimension: 1, type: 'signed', size: 2, interpretation: 'unknown' },
+            ],
+        };
+        const volume3dSpace = new Box3().setFromArray([12, 34, 56, 13, 35, 57]);
+
+        // @ts-expect-error incomplete
+        const root: PointCloudNode = {};
+
+        const source = mockSource({ metadata, root });
+
+        const entity = new PointCloud({ source });
+        entity.object3d.position.set(12, 34, 56);
+        entity.object3d.updateMatrixWorld(true);
+
+        // @ts-expect-error incomplete
+        const instance: Instance = { notifyChange: vitest.fn() };
+
+        expect(source.initialize).not.toHaveBeenCalled();
+
+        await entity.initialize({ instance });
+
+        expect(source.initialize).toHaveBeenCalled();
+
+        expect(entity.getBoundingBox()).toEqual(volume3dSpace);
+    });
+});
+
+describe('testNodeSSE', () => {
+    it('should work if pointcloud is at 0,0,0', async () => {
+        const metadata: PointCloudMetadata = {
+            pointCount: 12345,
+            volume: new Box3().setFromArray([0, 0, 0, 1, 1, 1]),
+            attributes: [
+                {
+                    name: 'foo',
+                    dimension: 1,
+                    type: 'signed',
+                    size: 2,
+                    interpretation: 'unknown',
+                },
+            ],
+        };
+
+        // @ts-expect-error incomplete
+        const root: PointCloudNode = {
+            center: new Vector3(0.5, 0.5, 0.5),
+            depth: 0,
+            volume: new Box3().setFromArray([0, 0, 0, 1, 1, 1]),
+            geometricError: 1,
+        };
+        // @ts-expect-error incomplete
+        const child: PointCloudNode = {
+            center: new Vector3(0.25, 0.25, 0.25),
+            depth: 1,
+            volume: new Box3().setFromArray([0, 0, 0, 0.5, 0.5, 0.5]),
+            geometricError: 1,
+        };
+        const view: View = {
+            // @ts-expect-error mock
+            camera: {
+                position: new Vector3(10, 10, 10),
+            },
+        };
+        const view2: View = {
+            // @ts-expect-error mock
+            camera: {
+                position: new Vector3(0.5, 0.5, 0.5),
+            },
+        };
+
+        const source = mockSource({ metadata, root });
+
+        const entity = new PointCloud({ source });
+
+        // @ts-expect-error incomplete
+        const instance: Instance = { notifyChange: vitest.fn() };
+
+        await entity.initialize({ instance });
+
+        // @ts-expect-error private method
+        expect(entity.testNodeSSE(view, root, 1)).toBe(true);
+        // @ts-expect-error private method
+        expect(entity.testNodeSSE(view, child, 1)).toBe(false);
+
+        // @ts-expect-error private method
+        expect(entity.testNodeSSE(view2, child, 1)).toBe(true);
+    });
+
+    it('should work if pointcloud has position', async () => {
+        const metadata: PointCloudMetadata = {
+            pointCount: 12345,
+            volume: new Box3().setFromArray([0, 0, 0, 1, 1, 1]),
+            attributes: [
+                {
+                    name: 'foo',
+                    dimension: 1,
+                    type: 'signed',
+                    size: 2,
+                    interpretation: 'unknown',
+                },
+            ],
+        };
+        const offset = new Vector3(12, 34, 56);
+
+        // @ts-expect-error incomplete
+        const root: PointCloudNode = {
+            center: new Vector3(0.5, 0.5, 0.5),
+            depth: 0,
+            volume: new Box3().setFromArray([0, 0, 0, 1, 1, 1]),
+            geometricError: 1,
+        };
+        // @ts-expect-error incomplete
+        const child: PointCloudNode = {
+            center: new Vector3(0.25, 0.25, 0.25),
+            depth: 1,
+            volume: new Box3().setFromArray([0, 0, 0, 0.5, 0.5, 0.5]),
+            geometricError: 1,
+        };
+        const view: View = {
+            // @ts-expect-error mock
+            camera: {
+                position: new Vector3(offset.x + 10, offset.y + 10, offset.z + 10),
+            },
+        };
+        const view2: View = {
+            // @ts-expect-error mock
+            camera: {
+                position: new Vector3(offset.x + 0.5, offset.y + 0.5, offset.z + 0.5),
+            },
+        };
+
+        const source = mockSource({ metadata, root });
+
+        const entity = new PointCloud({ source });
+        entity.object3d.position.copy(offset);
+        entity.object3d.updateMatrixWorld(true);
+
+        // @ts-expect-error incomplete
+        const instance: Instance = { notifyChange: vitest.fn() };
+
+        await entity.initialize({ instance });
+
+        // @ts-expect-error private method
+        expect(entity.testNodeSSE(view, root, 1)).toBe(true);
+        // @ts-expect-error private method
+        expect(entity.testNodeSSE(view, child, 1)).toBe(false);
+
+        // @ts-expect-error private method
+        expect(entity.testNodeSSE(view2, child, 1)).toBe(true);
     });
 });
