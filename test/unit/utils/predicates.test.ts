@@ -23,6 +23,7 @@ import {
     PerspectiveCamera,
     PointLight,
     Quaternion,
+    Scene,
     ShaderMaterial,
     Texture,
     Vector2,
@@ -39,6 +40,13 @@ it('isObject3D', () => {
     expect(p.isObject3D(undefined)).toEqual(false);
     expect(p.isObject3D('no')).toEqual(false);
     expect(p.isObject3D(new Object3D())).toEqual(true);
+});
+it('isScene', () => {
+    expect(p.isScene(undefined)).toEqual(false);
+    expect(p.isScene(null)).toEqual(false);
+    expect(p.isScene('no')).toEqual(false);
+    expect(p.isScene(new Object3D())).toEqual(false);
+    expect(p.isScene(new Scene())).toEqual(true);
 });
 it('isMesh', () => {
     expect(p.isMesh(undefined)).toEqual(false);
