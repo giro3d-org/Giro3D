@@ -13,6 +13,7 @@ import { TexturePass } from 'three/examples/jsm/postprocessing/TexturePass.js';
 
 import type RenderingOptions from './RenderingOptions';
 
+import { isScene } from '../utils/predicates';
 import PointCloudRenderer from './PointCloudRenderer';
 
 const BUCKETS = {
@@ -169,14 +170,32 @@ export default class RenderPipeline {
 
         this.renderer.render(scene, camera);
 
-        this.renderMeshes(scene, camera, this.buckets[BUCKETS.OPAQUE]);
+        const sceneWithBackground = isScene(scene) ? scene : null;
+        const background = sceneWithBackground?.background ?? null;
+        if (sceneWithBackground) {
+            sceneWithBackground.background = null;
+        }
 
-        // Point cloud rendering adds special effects. To avoid applying those effects
-        // to all objects in the scene, we separate the meshes into buckets, and
-        // render those buckets separately.
-        this.renderPointClouds(scene, camera, target, this.buckets[BUCKETS.POINT_CLOUD], options);
+        try {
+            this.renderMeshes(scene, camera, this.buckets[BUCKETS.OPAQUE]);
 
-        this.renderMeshes(scene, camera, this.buckets[BUCKETS.TRANSPARENT]);
+            // Point cloud rendering adds special effects. To avoid applying those effects
+            // to all objects in the scene, we separate the meshes into buckets, and
+            // render those buckets separately.
+            this.renderPointClouds(
+                scene,
+                camera,
+                target,
+                this.buckets[BUCKETS.POINT_CLOUD],
+                options,
+            );
+
+            this.renderMeshes(scene, camera, this.buckets[BUCKETS.TRANSPARENT]);
+        } finally {
+            if (sceneWithBackground) {
+                sceneWithBackground.background = background;
+            }
+        }
 
         // Finally, render to the canvas via the EffectComposer.
         composer.render();
