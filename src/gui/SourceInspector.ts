@@ -150,7 +150,9 @@ class SourceInspector extends Panel {
             if (urls && urls.length > 0) {
                 this.url = urls[0];
             }
-            this.addController(this, 'url').name('Main URL');
+            if (this.url != null) {
+                this.addController(this, 'url').name('Main URL');
+            }
         }
 
         if (source.constructor.name) {
