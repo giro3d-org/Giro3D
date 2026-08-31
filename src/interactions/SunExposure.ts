@@ -332,7 +332,7 @@ function createTerrainGeometry(params: {
 
     // If there are no (visible) elevation layers, then the terrain is simply a flat plane,
     // in that case we want the simplest geometry (2 triangles) to speedup computation.
-    if (layers.length === 0 || layers.every(l => !l.visible)) {
+    if (layers.every(l => !l.visible)) {
         return {
             geometry: new PlaneGeometry(width, height),
             isFlat: true,

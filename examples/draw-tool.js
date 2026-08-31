@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { Color, DoubleSide, MathUtils, Vector3 } from 'three';
+import { Color, DoubleSide, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
@@ -233,7 +233,6 @@ function fromGeoJSON(feature) {
         return coord.as(instance.coordinateSystem, coord).toVector3();
     };
 
-    const uuid = MathUtils.generateUUID();
     let result;
 
     switch (feature.geometry.type) {
@@ -474,7 +473,7 @@ bindColorPicker('color', v => {
     // @ts-expect-error conversion
     options.color = v;
     shapes.forEach(m => {
-        m.color = v;
+        m.color = new Color(v);
     });
 });
 

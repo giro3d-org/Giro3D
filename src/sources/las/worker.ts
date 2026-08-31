@@ -202,11 +202,9 @@ export function readView(options: {
         switch (attribute.interpretation) {
             case 'color':
                 return readColor(view, stride, compressColors, perPointFilters);
-                break;
             case 'classification':
             case 'unknown':
                 return readScalarAttribute(view, attribute, stride, perPointFilters);
-                break;
         }
     });
 

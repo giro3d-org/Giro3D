@@ -155,7 +155,7 @@ function updateOffsetScale(
 }
 
 function repeat<T extends object>(value: T, count: number): T[] {
-    const result: T[] = new Array(count);
+    const result: T[] = Array.from({ length: count });
     for (let i = 0; i < count; i++) {
         result[i] = { ...value };
     }
