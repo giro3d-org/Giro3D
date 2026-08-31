@@ -14,7 +14,7 @@ import { traverseNode } from '@giro3d/giro3d/sources/PointCloudSource';
 import PotreeSource from '@giro3d/giro3d/sources/PotreeSource';
 import Fetcher from '@giro3d/giro3d/utils/Fetcher';
 
-import { getDataFileUrl, readDataFileSync } from '../../data/utils';
+import { getDataFileUrl, readDataFile, readDataFileSync } from '../../data/utils';
 
 beforeAll(() => {
     Fetcher.json = url => {
@@ -22,10 +22,10 @@ beforeAll(() => {
         const json = JSON.parse(result.toString('utf-8'));
         return Promise.resolve(json);
     };
-    Fetcher.arrayBuffer = url => {
-        const result = readDataFileSync(url.toString());
+    Fetcher.arrayBuffer = async url => {
+        const result = await readDataFile(url.toString());
         const arrayBuffer = result.buffer;
-        return Promise.resolve(arrayBuffer);
+        return Promise.resolve(arrayBuffer.slice(0));
     };
 
     // We want to use the local wasm file to avoid performing HTTP request for every single test.
@@ -238,6 +238,7 @@ describe('getHierarchy', () => {
             );
         });
     });
+
     describe('LAZ dataset', () => {
         it('should return correct octree', async () => {
             const url = getDataFileUrl('potree/laz/cloud.js');
@@ -293,7 +294,7 @@ describe('getNodeData', () => {
 
             const root = await source.getHierarchy();
 
-            const data = await source.getNodeData({ node: root });
+            const data = await source.getNodeData({ node: root, position: true });
 
             expect(data.origin).toEqual(root.volume.min);
         });
@@ -308,7 +309,7 @@ describe('getNodeData', () => {
 
             const root = await source.getHierarchy();
 
-            const data = await source.getNodeData({ node: root });
+            const data = await source.getNodeData({ node: root, position: true });
 
             expect(data.origin).toEqual(root.volume.min);
         });
