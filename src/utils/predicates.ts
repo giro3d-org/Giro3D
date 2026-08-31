@@ -24,6 +24,7 @@ import type {
     PerspectiveCamera,
     Quaternion,
     RenderTarget,
+    Scene,
     ShaderMaterial,
     Texture,
     Vector2,
@@ -45,6 +46,9 @@ export const isObject = (obj: unknown): obj is object => obj != null && typeof o
 
 export function isObject3D(obj: unknown): obj is Object3D {
     return isObject(obj) && (obj as Object3D).isObject3D === true;
+}
+export function isScene(obj: unknown): obj is Scene {
+    return isObject(obj) && (obj as Scene).isScene === true;
 }
 export function isMesh(obj: unknown): obj is Mesh {
     return isObject(obj) && (obj as Mesh).isMesh === true;
