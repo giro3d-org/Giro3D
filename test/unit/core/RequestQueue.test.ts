@@ -33,8 +33,6 @@ describe('progress & loading', () => {
         while (executedTasks < totalTasks) {
             expect(queue.loading).toEqual(true);
             expect(queue.progress).toBeCloseTo(executedTasks / totalTasks, 1);
-
-            await null;
         }
 
         expect(queue.progress).toEqual(1);

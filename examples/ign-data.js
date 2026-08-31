@@ -237,9 +237,6 @@ instance.scene.background = cubeTexture;
 // information on click
 const resultTable = document.getElementById('results');
 
-let lastCameraPosition = new Vector3(0, 0, 0);
-const tempVec3 = new Vector3(0, 0, 0);
-
 function truncate(value, length) {
     if (value == null) {
         return null;

@@ -427,7 +427,7 @@ const sunParams = {
     longitude: -41,
 };
 
-const updateSunDirection = (latitude, longitude) => {
+const updateSunDirection = () => {
     const position = Ellipsoid.WGS84.toCartesian(
         sunParams.latitude,
         sunParams.longitude,
@@ -439,20 +439,19 @@ const updateSunDirection = (latitude, longitude) => {
     sunlight.target.updateMatrixWorld(true);
     sunlight.updateMatrixWorld(true);
 
-    const normal = Ellipsoid.WGS84.getNormal(sunParams.latitude, sunParams.longitude);
     earthAtmosphere.setSunPosition(position);
     marsAtmosphere.setSunPosition(position);
 };
 
 const [setSunLatitude] = bindSlider('sunLatitude', lat => {
     sunParams.latitude = lat;
-    updateSunDirection(sunParams.latitude, sunParams.longitude);
+    updateSunDirection();
     updateLabel('sunLatitudeLabel', `Lat: ${Math.round(Math.abs(lat))}° ${lat >= 0 ? 'N' : 'S'}`);
 });
 
 const [setSunLongitude] = bindSlider('sunLongitude', lon => {
     sunParams.longitude = lon;
-    updateSunDirection(sunParams.latitude, sunParams.longitude);
+    updateSunDirection();
     updateLabel('sunLongitudeLabel', `Lon: ${Math.round(Math.abs(lon))} ${lon >= 0 ? 'E' : 'W'}°`);
 });
 

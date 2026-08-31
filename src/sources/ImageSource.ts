@@ -219,7 +219,6 @@ abstract class ImageSource<Events extends ImageSourceEvents = ImageSourceEvents>
      * @param margin - The margin, in pixels, around the initial extent.
      * @returns The adjusted parameters.
      */
-
     public adjustExtentAndPixelSize(
         requestExtent: Extent,
 

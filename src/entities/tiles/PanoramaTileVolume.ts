@@ -48,7 +48,7 @@ export default class PanoramaTileVolume extends TileVolume {
             const xCount = MathUtils.clamp(Math.round(dims.width / 5) + 1, 2, 6);
             const yCount = MathUtils.clamp(Math.round(dims.height / 5) + 1, 2, 6);
 
-            this._corners = new Array(xCount * yCount);
+            this._corners = Array.from({ length: xCount * yCount });
             const uStep = 1 / (xCount - 1);
             const jStep = 1 / (yCount - 1);
 

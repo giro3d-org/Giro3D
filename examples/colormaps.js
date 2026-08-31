@@ -255,7 +255,7 @@ const widget = new FunctionCurveEditor.Widget(canvas);
 function updateTransparency() {
     const length = parameters.colors.length;
     const f = widget.getFunction();
-    const opacities = new Array(length);
+    const opacities = Array.from({ length });
     for (let i = 0; i < length; i++) {
         const t = i / length;
         opacities[i] = f(t);
@@ -324,7 +324,7 @@ const [setPreset] = bindDropDown('preset', preset => {
                 invert: false,
                 layerType: 'elevation',
                 colors: makeColorRamp('viridis', false, false, false),
-                opacity: new Array(256).fill(1),
+                opacity: Array.from({ length: 256 }).fill(1),
                 min: elevationMin,
                 max: elevationMax,
                 mode: ColorMapMode.Elevation,

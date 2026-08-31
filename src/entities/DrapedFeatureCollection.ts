@@ -111,7 +111,7 @@ function cloneAsXYZIfRequired<
     const stride = geometry.getStride();
 
     const vertexCount = geometry.getFlatCoordinates().length / stride;
-    const flat = new Array<number>(vertexCount * 3);
+    const flat = Array.from<number>({ length: vertexCount * 3 });
 
     switch (geometry.getType()) {
         case 'LineString':
@@ -199,7 +199,7 @@ function applyPerVertexDraping<G extends SupportedPerVertexGeometry>(
     // not allow changing the layout of an existing geometry, leading to issues.
     const clone = cloneAsXYZIfRequired(geometry.clone());
     const coordinateCount = coordinates.length / stride;
-    const xyz = new Array<number>(coordinateCount * 3);
+    const xyz = Array.from<number>({ length: coordinateCount * 3 });
 
     let k = 0;
 

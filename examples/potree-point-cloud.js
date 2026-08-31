@@ -118,7 +118,7 @@ function updateColorMapMinMax() {
     setMax(max, lowerBound, upperBound);
 }
 
-const [, currentRamp] = bindDropDown('ramp', ramp => {
+bindDropDown('ramp', ramp => {
     options.colorRamp = ramp;
     updateColorMap();
 });
@@ -307,7 +307,7 @@ if (!datasetUrl) {
 
 // GUI controls for classification handling
 
-const classificationNames = new Array(32);
+const classificationNames = Array.from({ length: 32 });
 
 function addClassification(number, name, array) {
     const currentColor = array[number].color.getHexString();

@@ -494,7 +494,7 @@ export async function getWebpackConfig(parameters) {
                     {
                         from: 'index.js',
                         to: 'index.html',
-                        transform: (content, from) => {
+                        transform: () => {
                             const htmlFiles = getExamplesFiles(parameters);
                             return generateIndex(htmlFiles, parameters);
                         },
@@ -502,7 +502,7 @@ export async function getWebpackConfig(parameters) {
                     {
                         from: '*.html',
                         to: '.',
-                        transform: (content, from) => generateExample(from, parameters),
+                        transform: (_content, from) => generateExample(from, parameters),
                     },
                     { from: 'css', to: 'css' },
                     { from: 'image', to: 'image' },
@@ -549,7 +549,7 @@ export async function buildExamples(parameters) {
     });
 }
 
-export async function watchExamples(parameters) {
+export async function watchExamples() {
     const sourceFolder = path.join(rootDir, 'src');
 
     chokidar
@@ -558,7 +558,7 @@ export async function watchExamples(parameters) {
 }
 
 export async function serveExamples(parameters) {
-    await watchExamples(parameters);
+    await watchExamples();
 
     const webpackConfig = await getWebpackConfig(parameters);
     const compiler = webpack(webpackConfig);

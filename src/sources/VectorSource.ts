@@ -44,7 +44,7 @@ import OpenLayersUtils from '../utils/OpenLayersUtils';
 import { nonNull } from '../utils/tsutils';
 import ImageSource, { ImageResult } from './ImageSource';
 
-const tmpExtent = new Array(4);
+const tmpExtent = Array.from({ length: 4 });
 
 const tmpTransform: Transform = createTransform();
 

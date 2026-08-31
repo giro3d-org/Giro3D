@@ -47,6 +47,7 @@ const customInspectors: Record<string, typeof EntityInspector<Entity3D>> = {
  */
 class EntityPanel extends Panel {
     private _createInspectorsCb: () => void;
+    private _updateCb: () => void;
     public folders: GUI[];
     public inspectors: EntityInspector[];
 
@@ -57,7 +58,9 @@ class EntityPanel extends Panel {
     public constructor(gui: GUI, instance: Instance) {
         super(gui, instance, 'Entities');
 
-        this.instance.addEventListener('update-start', () => this.update());
+        this._updateCb = () => this.update();
+
+        this.instance.addEventListener('update-start', this._updateCb);
 
         // rebuild the inspectors when the instance is updated
         this._createInspectorsCb = (): void => this.createInspectors();
@@ -70,7 +73,7 @@ class EntityPanel extends Panel {
     }
 
     public override dispose(): void {
-        this.instance.removeEventListener('update-start', () => this.update());
+        this.instance.removeEventListener('update-start', this._updateCb);
         this.instance.removeEventListener('entity-added', this._createInspectorsCb);
         this.instance.removeEventListener('entity-removed', this._createInspectorsCb);
         while (this.folders.length > 0) {

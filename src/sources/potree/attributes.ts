@@ -428,7 +428,6 @@ export function getTypedArray(
                 case 4:
                     return new Int32Array(arrayLength);
             }
-            break;
         case 'unsigned':
             switch (size) {
                 case 1:
@@ -438,7 +437,6 @@ export function getTypedArray(
                 case 4:
                     return new Uint32Array(arrayLength);
             }
-            break;
         case 'float':
             return new Float32Array(arrayLength);
     }

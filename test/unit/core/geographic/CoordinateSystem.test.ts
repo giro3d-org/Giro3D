@@ -96,10 +96,10 @@ describe('fromWkt', () => {
             expect(coordinateSystem.isEpsg(2154)).toEqual(true);
             expect(coordinateSystem.name).toEqual('RGF93 v1 / Lambert-93');
             expect(coordinateSystem.srid).toBeDefined();
-            expect(coordinateSystem.srid?.isEpsg(2154)).toEqual(true);
+            expect(coordinateSystem.srid!.isEpsg(2154)).toEqual(true);
             expect(coordinateSystem.horizontal).toBeDefined();
-            expect(coordinateSystem.horizontal?.unit.name).toEqual('metre');
-            expect((coordinateSystem.horizontal?.unit as LinearUnit).metersPerUnit).toEqual(1);
+            expect(coordinateSystem.horizontal!.unit.name).toEqual('metre');
+            expect((coordinateSystem.horizontal!.unit as LinearUnit).metersPerUnit).toEqual(1);
             expect(coordinateSystem.vertical).toBeUndefined();
             expect(coordinateSystem.metersPerVerticalUnit).toBe(1);
         });
@@ -139,11 +139,11 @@ describe('fromWkt', () => {
             expect(coordinateSystem.name).toEqual('NAD83(2011) / UTM zone 14N');
             expect(coordinateSystem.srid).toBeUndefined();
             expect(coordinateSystem.horizontal).toBeDefined();
-            expect(coordinateSystem.horizontal?.unit.name).toEqual('metre');
-            expect((coordinateSystem.horizontal?.unit as LinearUnit).metersPerUnit).toEqual(1);
+            expect(coordinateSystem.horizontal!.unit.name).toEqual('metre');
+            expect((coordinateSystem.horizontal!.unit as LinearUnit).metersPerUnit).toEqual(1);
             expect(coordinateSystem.vertical).toBeDefined();
-            expect(coordinateSystem.vertical?.unit.name).toEqual('metre');
-            expect(coordinateSystem.vertical?.unit.metersPerUnit).toEqual(1);
+            expect(coordinateSystem.vertical!.unit.name).toEqual('metre');
+            expect(coordinateSystem.vertical!.unit.metersPerUnit).toEqual(1);
             expect(coordinateSystem.metersPerVerticalUnit).toBe(1);
         });
 
@@ -177,8 +177,8 @@ describe('fromWkt', () => {
             );
             expect(coordinateSystem.srid).toBeUndefined();
             expect(coordinateSystem.horizontal).toBeDefined();
-            expect(coordinateSystem.horizontal?.unit.name).toEqual('us survey foot');
-            expect((coordinateSystem.horizontal?.unit as LinearUnit).metersPerUnit).toEqual(
+            expect(coordinateSystem.horizontal!.unit.name).toEqual('us survey foot');
+            expect((coordinateSystem.horizontal!.unit as LinearUnit).metersPerUnit).toEqual(
                 0.304800609601219,
             );
             expect(coordinateSystem.vertical).toBeUndefined();
@@ -207,7 +207,7 @@ describe('fromWkt', () => {
             expect(coordinateSystem.isEpsg(4978)).toEqual(true);
             expect(coordinateSystem.name).toEqual('WGS 84');
             expect(coordinateSystem.srid).toBeDefined();
-            expect(coordinateSystem.srid?.isEpsg(4978)).toEqual(true);
+            expect(coordinateSystem.srid!.isEpsg(4978)).toEqual(true);
             expect(coordinateSystem.horizontal).toBeDefined();
             expect(coordinateSystem.vertical).toBeUndefined();
             expect(coordinateSystem.metersPerVerticalUnit).toBe(1);
@@ -247,12 +247,12 @@ describe('fromWkt', () => {
             expect(coordinateSystem.isEpsg(2992)).toEqual(true);
             expect(coordinateSystem.name).toEqual('NAD83 / Oregon GIC Lambert (ft)');
             expect(coordinateSystem.srid).toBeDefined();
-            expect(coordinateSystem.srid?.isEpsg(2992)).toEqual(true);
+            expect(coordinateSystem.srid!.isEpsg(2992)).toEqual(true);
             expect(coordinateSystem.horizontal).toBeDefined();
-            expect(coordinateSystem.horizontal?.unit.name).toEqual('foot');
+            expect(coordinateSystem.horizontal!.unit.name).toEqual('foot');
             expect(coordinateSystem.vertical).toBeDefined();
-            expect(coordinateSystem.vertical?.unit.name).toEqual('us survey foot');
-            expect(coordinateSystem.vertical?.unit.metersPerUnit).toEqual(0.304800609601219);
+            expect(coordinateSystem.vertical!.unit.name).toEqual('us survey foot');
+            expect(coordinateSystem.vertical!.unit.metersPerUnit).toEqual(0.304800609601219);
             expect(coordinateSystem.metersPerVerticalUnit).toBe(0.304800609601219);
             expect(coordinateSystem.metersPerHorizontalUnit).toBe(0.3048);
         });
@@ -286,8 +286,8 @@ describe('fromWkt', () => {
             const parsedCrs = CoordinateSystem.fromWkt(wkt);
             expect(parsedCrs).toBeDefined();
             expect(parsedCrs!.name).toEqual('RGF93 v1 / Lambert-93');
-            expect(parsedCrs!.srid?.toString()).toEqual('EPSG:2154');
-            expect(parsedCrs!.srid?.isEpsg(2154)).toEqual(true);
+            expect(parsedCrs!.srid!.toString()).toEqual('EPSG:2154');
+            expect(parsedCrs!.srid!.isEpsg(2154)).toEqual(true);
         });
 
         it('should return correct CRS name for COMPD_CS WKT without authority', () => {
@@ -377,8 +377,8 @@ describe('fromWkt', () => {
             const parsedCrs = CoordinateSystem.fromWkt(wkt);
             expect(parsedCrs).toBeDefined();
             expect(parsedCrs!.name).toEqual('WGS 84');
-            expect(parsedCrs!.srid?.toString()).toEqual('EPSG:4978');
-            expect(parsedCrs!.srid?.isEpsg(4978)).toEqual(true);
+            expect(parsedCrs!.srid!.toString()).toEqual('EPSG:4978');
+            expect(parsedCrs!.srid!.isEpsg(4978)).toEqual(true);
         });
     });
 
@@ -433,7 +433,7 @@ describe('fromWkt', () => {
             expect(coordinateSystem.isEpsg(2154)).toEqual(true);
             expect(coordinateSystem.name).toEqual('RGF93 v1 / Lambert-93');
             expect(coordinateSystem.srid).toBeDefined();
-            expect(coordinateSystem.srid?.isEpsg(2154)).toEqual(true);
+            expect(coordinateSystem.srid!.isEpsg(2154)).toEqual(true);
             expect(coordinateSystem.horizontal).toBeDefined();
             expect(coordinateSystem.vertical).toBeUndefined();
             expect(coordinateSystem.metersPerVerticalUnit).toBe(1);
@@ -491,8 +491,8 @@ describe('fromWkt', () => {
                 const parsedCrs = CoordinateSystem.fromWkt(wkt);
                 expect(parsedCrs).toBeDefined();
                 expect(parsedCrs!.name).toEqual('WGS 84 / Pseudo-Mercator');
-                expect(parsedCrs!.srid?.toString()).toEqual('EPSG:3857');
-                expect(parsedCrs!.srid?.isEpsg(3857)).toEqual(true);
+                expect(parsedCrs!.srid!.toString()).toEqual('EPSG:3857');
+                expect(parsedCrs!.srid!.isEpsg(3857)).toEqual(true);
             });
 
             it('should correctly parse EPSG:3857', () => {
@@ -526,10 +526,10 @@ describe('fromWkt', () => {
                 expect(coordinateSystem.isEpsg(3857)).toEqual(true);
                 expect(coordinateSystem.name).toEqual('WGS 84 / Pseudo-Mercator');
                 expect(coordinateSystem.srid).toBeDefined();
-                expect(coordinateSystem.srid?.isEpsg(3857)).toEqual(true);
+                expect(coordinateSystem.srid!.isEpsg(3857)).toEqual(true);
                 expect(coordinateSystem.horizontal).toBeDefined();
-                expect(coordinateSystem.horizontal?.unit.name).toEqual('metre');
-                expect((coordinateSystem.horizontal?.unit as LinearUnit).metersPerUnit).toEqual(1);
+                expect(coordinateSystem.horizontal!.unit.name).toEqual('metre');
+                expect((coordinateSystem.horizontal!.unit as LinearUnit).metersPerUnit).toEqual(1);
                 expect(coordinateSystem.vertical).toBeUndefined();
                 expect(coordinateSystem.metersPerVerticalUnit).toBe(1);
             });
@@ -582,8 +582,8 @@ describe('fromWkt', () => {
                 const parsedCrs = CoordinateSystem.fromWkt(wkt);
                 expect(parsedCrs).toBeDefined();
                 expect(parsedCrs!.name).toEqual('RGF93 v1 / Lambert-93');
-                expect(parsedCrs!.srid?.toString()).toEqual('EPSG:2154');
-                expect(parsedCrs!.srid?.isEpsg(2154)).toEqual(true);
+                expect(parsedCrs!.srid!.toString()).toEqual('EPSG:2154');
+                expect(parsedCrs!.srid!.isEpsg(2154)).toEqual(true);
             });
         });
     });
@@ -719,7 +719,7 @@ describe('id', () => {
         expect(crs).toBeDefined();
         expect(crs.id).toEqual('FOO');
         expect(crs.name).toEqual('WGS 84 / UTM zone 11N');
-        expect(crs.srid?.toString()).toEqual('EPSG:32611');
+        expect(crs.srid!.toString()).toEqual('EPSG:32611');
     });
 
     it('should return the SRID if specified, when no ID is present', () => {
@@ -728,7 +728,7 @@ describe('id', () => {
         expect(crs).toBeDefined();
         expect(crs.id).toEqual('EPSG:32611');
         expect(crs.name).toEqual('WGS 84 / UTM zone 11N');
-        expect(crs.srid?.toString()).toEqual('EPSG:32611');
+        expect(crs.srid!.toString()).toEqual('EPSG:32611');
     });
 
     it('should return the name if specified, when no ID nor SRID are present', () => {

@@ -3,29 +3,38 @@
     "version": "3.0.0-dev",
     "description": "A JS/WebGL framework for 3D geospatial data visualization",
     "keywords": [
-        "front-end",
-        "web",
-        "framework",
-        "webgl",
-        "webgl2",
-        "geography",
-        "gis",
-        "geospatial",
-        "3d",
         "3D",
+        "3d",
+        "3dtiles",
+        "framework",
+        "front-end",
+        "geography",
+        "geojson",
+        "geometry",
+        "geospatial",
+        "gis",
+        "layer",
+        "map",
+        "openlayers",
+        "pointcloud",
+        "raster",
         "three",
         "three.js",
-        "openlayers",
-        "map",
-        "layer",
-        "visualization",
-        "pointcloud",
-        "3dtiles",
-        "raster",
         "vector",
-        "geojson",
-        "geometry"
+        "visualization",
+        "web",
+        "webgl",
+        "webgl2"
     ],
+    "homepage": "https://giro3d.org/",
+    "bugs": {
+        "url": "https://gitlab.com/giro3d/giro3d/-/issues"
+    },
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://gitlab.com/giro3d/giro3d.git"
+    },
     "scripts": {
         "check-circular-dependencies": "madge -c --extensions ts ./src",
         "check-hyperlinks": "node tasks/validate-hyperlinks.mjs -i build/site",
@@ -44,17 +53,17 @@
         "build": "npm run _transpile && npm run _generate-type-definitions",
         "build-package": "npm run build && npm run _inline-workers && node tasks/prepare-package.mjs",
         "commit": "npx git-cz",
-        "format-eslint": "eslint \"tasks/**/*.mjs\" \"src/**/*.ts\" \"test/**/*.ts\" \"examples/**/*.js\" --fix",
-        "format-prettier": "prettier --write .",
+        "format-oxlint": "oxlint tasks src test examples --fix",
+        "format-oxfmt": "oxfmt --write .",
         "format-markdownlint": "markdownlint . --fix --ignore-path .gitignore",
-        "format": "npm run format-eslint && npm run format-prettier && npm run format-markdownlint",
+        "format": "npm run format-oxfmt && npm run format-prettier && npm run format-markdownlint",
         "docker": "docker build . -t giro3d:local && docker run --rm -p 8080:8080 giro3d:local",
-        "lint-prettier": "prettier --check .",
+        "lint-oxfmt": "oxfmt --check .",
         "lint-commit": "commitlint -x @commitlint/config-conventional --from=origin/HEAD --to=HEAD",
         "lint-doc": "node tasks/build-apidoc.mjs --lint-only",
-        "lint-eslint": "npm run _transpile && eslint \"tasks/**/*.mjs\" \"src/**/*.ts\" \"test/**/*.ts\" \"examples/**/*.js\"",
+        "lint-oxlint": "npm run _transpile && oxlint tasks src test examples",
         "lint-markdownlint": "markdownlint . --ignore-path .gitignore",
-        "lint": "npm run check-circular-dependencies && npm run typecheck && npm run build && npm run typecheck-examples && npm run lint-doc && npm run _check-folders && npm run lint-eslint && npm run lint-prettier && npm run lint-markdownlint",
+        "lint": "npm run check-circular-dependencies && npm run typecheck && npm run build && npm run typecheck-examples && npm run lint-doc && npm run _check-folders && npm run lint-oxlint && npm run lint-oxfmt && npm run lint-markdownlint",
         "make-package": "npm run build-package && npm pack build/giro3d/",
         "prepack": "npm run build-package",
         "serve-apidoc": "node tasks/build-apidoc.mjs --watch",
@@ -70,21 +79,6 @@
         "watch": "node observer.mjs ./src ./build/giro3d",
         "prepare": "husky"
     },
-    "repository": {
-        "type": "git",
-        "url": "git+https://gitlab.com/giro3d/giro3d.git"
-    },
-    "license": "MIT",
-    "bugs": {
-        "url": "https://gitlab.com/giro3d/giro3d/-/issues"
-    },
-    "homepage": "https://giro3d.org/",
-    "browserslist": [
-        ">0.5%",
-        "not dead",
-        "not op_mini all",
-        "Firefox ESR"
-    ],
     "dependencies": {
         "3d-tiles-renderer": "^0.4.22",
         "chart.js": "^3.9.1",
@@ -93,12 +87,9 @@
         "geotiff": "^3.0.2",
         "lil-gui": "^0.17.0",
         "lru-cache": "^10.0.1",
+        "oxfmt": "^0.65.0",
+        "oxlint": "^1.80.0",
         "wkt-parser": "^1.5.2"
-    },
-    "peerDependencies": {
-        "ol": "^10.8.0",
-        "proj4": "^2.19.0",
-        "three": "^0.180.0"
     },
     "devDependencies": {
         "@babel/cli": "^7.25.7",
@@ -112,10 +103,7 @@
         "@types/emscripten": "^1.39.13",
         "@types/geojson": "^7946.0.14",
         "@types/three": "^0.180.0",
-        "@typescript-eslint/eslint-plugin": "^8.9.0",
-        "@typescript-eslint/parser": "^8.9.0",
-        "@vitest/coverage-v8": "^3.2.4",
-        "@vitest/eslint-plugin": "^1.3.4",
+        "@vitest/coverage-v8": "^4.1.11",
         "babel-plugin-inline-import": "^3.0.0",
         "babel-plugin-minify-dead-code-elimination": "^0.5.2",
         "babel-plugin-minify-replace": "^0.5.0",
@@ -134,18 +122,6 @@
         "docco-next": "^0.9.14",
         "es-main": "^1.3.0",
         "esbuild": "^0.25.1",
-        "eslint": "^9.12.0",
-        "eslint-config-prettier": "^9.1.0",
-        "eslint-import-resolver-alias": "^1.1.2",
-        "eslint-import-resolver-typescript": "^3.6.3",
-        "eslint-import-resolver-webpack": "^0.13.9",
-        "eslint-plugin-compat": "^6.0.1",
-        "eslint-plugin-import": "^2.31.0",
-        "eslint-plugin-license-header": "^0.8.0",
-        "eslint-plugin-perfectionist": "^4.15.0",
-        "eslint-plugin-prettier": "^5.2.1",
-        "eslint-plugin-tsdoc": "^0.5.0",
-        "eslint-webpack-plugin": "^4.2.0",
         "front-matter": "^4.0.2",
         "fs-extra": "^11.2.0",
         "function-curve-editor": "^1.0.16",
@@ -157,9 +133,6 @@
         "markdownlint": "^0.40.0",
         "markdownlint-cli": "^0.48.0",
         "path": "^0.12.7",
-        "prettier": "^3.3.3",
-        "prettier-eslint": "^16.4.2",
-        "prettier-plugin-ejs": "^1.0.3",
         "process": "^0.11.10",
         "sass": "^1.70.0",
         "shiki": "^1.22.0",
@@ -172,25 +145,30 @@
         "validate-branch-name": "^1.3.1",
         "vite-plugin-glsl": "^1.5.1",
         "vite-tsconfig-paths": "^5.1.4",
-        "vitest": "^3.2.4",
-        "vitest-canvas-mock": "^0.3.3",
+        "vitest": "^4.1.11",
+        "vitest-canvas-mock": "^1.1.5",
         "webgl-lint": "^1.11.3",
         "webpack": "^5.95.0",
         "webpack-cli": "^5.1.4",
         "webpack-dev-server": "^5.1.0",
         "webpack-glsl-loader": "^1.0.1"
     },
+    "peerDependencies": {
+        "ol": "^10.8.0",
+        "proj4": "^2.19.0",
+        "three": "^0.180.0"
+    },
     "lint-staged": {
         "**/*.{ts,vue,js,jsx,cjs,mjs}": [
-            "eslint",
-            "prettier"
+            "oxlint",
+            "oxfmt"
         ],
         "**/*.{json,jsonc,css,scss,ejs}": [
-            "prettier"
+            "oxfmt"
         ],
         "**/*.md": [
             "markdownlint",
-            "prettier"
+            "oxfmt"
         ]
     },
     "config": {
@@ -199,5 +177,11 @@
             "name": "cz_conventional_commits",
             "tag_format": "v$version"
         }
-    }
+    },
+    "browserslist": [
+        ">0.5%",
+        "not dead",
+        "not op_mini all",
+        "Firefox ESR"
+    ]
 }

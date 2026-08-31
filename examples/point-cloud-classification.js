@@ -74,7 +74,7 @@ const pointcloud = new Tiles3D({
 
 instance.add(pointcloud);
 
-const classificationNames = new Array(32);
+const classificationNames = Array.from({ length: 32 });
 
 // GUI controls for classification handling
 

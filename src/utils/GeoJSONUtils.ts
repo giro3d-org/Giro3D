@@ -86,7 +86,7 @@ function fromFlatCoordinates(
     flatCoords: number[],
     geometryType: GeoJSON.GeoJsonGeometryTypes,
 ): GeoJSON.Geometry {
-    const coords = new Array(flatCoords.length / 3);
+    const coords = Array.from<[number, number, number]>({ length: flatCoords.length / 3 });
     for (let i = 0; i < flatCoords.length / 3; i += 1) {
         coords[i] = [flatCoords[i * 3 + 0], flatCoords[i * 3 + 1], flatCoords[i * 3 + 2]];
     }

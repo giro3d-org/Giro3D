@@ -7,7 +7,6 @@
 import proj4 from 'proj4';
 import { Vector3 } from 'three';
 
-import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import * as MemoryUsage from '@giro3d/giro3d/core/MemoryUsage.js';
 
@@ -185,7 +184,7 @@ function bind(instance, options = {}) {
 
     try {
         ecefToLatlonConverter = proj4(instance.coordinateSystem.id, 'EPSG:4979');
-    } catch (e) {
+    } catch {
         ecefToLatlonConverter = null;
     }
 
