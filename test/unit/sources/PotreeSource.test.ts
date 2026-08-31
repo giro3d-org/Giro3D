@@ -293,7 +293,7 @@ describe('getNodeData', () => {
 
             const root = await source.getHierarchy();
 
-            const data = await source.getNodeData({ node: root });
+            const data = await source.getNodeData({ node: root, position: true });
 
             expect(data.origin).toEqual(root.volume.min);
         });
@@ -308,7 +308,7 @@ describe('getNodeData', () => {
 
             const root = await source.getHierarchy();
 
-            const data = await source.getNodeData({ node: root });
+            const data = await source.getNodeData({ node: root, position: true });
 
             expect(data.origin).toEqual(root.volume.min);
         });
