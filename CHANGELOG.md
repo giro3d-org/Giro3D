@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.0.4 (2026-08-31)
+
+### Fix
+
+- **RenderPipeline**: don't let scene.background erase the render target between buckets (#692)
+
 ## v2.0.3 (2026-06-12)
 
 ### Fix
