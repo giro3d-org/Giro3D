@@ -422,6 +422,9 @@ bindButton('polygon', button => {
         showSurfaceLabel: true,
     });
 });
+bindButton('extent', button => {
+    createShape(button, tool.createExtent);
+});
 bindDropDown('area-unit', v => {
     options.areaUnit = v;
     shapes.forEach(shape => shape.rebuildLabels());

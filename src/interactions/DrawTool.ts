@@ -17,8 +17,13 @@ import type Disposable from '../core/Disposable';
 import type Instance from '../core/Instance';
 import type PickResult from '../core/picking/PickResult';
 import type { EntityUserData } from '../entities/Entity';
-import type { ShapePickResult, VerticalLineLabelFormatter } from '../entities/Shape';
+import type {
+    SegmentLabelFormatter,
+    ShapePickResult,
+    VerticalLineLabelFormatter,
+} from '../entities/Shape';
 
+import Extent from '../core/geographic/Extent';
 import Shape, {
     angleFormatter,
     isShape,
@@ -160,6 +165,15 @@ const verticalLengthFormatter: VerticalLineLabelFormatter = (params: {
     }
 
     return params.defaultFormatter(params);
+};
+
+const defaultExtentFormatter: SegmentLabelFormatter = params => {
+    const { start, end } = params;
+    if (Math.abs(start.x - end.x) < 0.01) {
+        return start.x.toFixed(3);
+    } else {
+        return start.y.toFixed(3);
+    }
 };
 
 export interface DrawToolEventMap {
@@ -323,6 +337,17 @@ export type PointInsertedCallback = ShapeModifiedCallback<{
      */
     position: Vector3;
 }>;
+
+export type ParametricSegmentCallback = (params: {
+    /**
+     * The position of the first vertex of the segment.
+     */
+    start: Vector3;
+    /**
+     * The position of the last vertex of the segment.
+     */
+    end: Vector3;
+}) => void;
 
 /**
  * Called when a point has been removed in a shape during edition.
@@ -1145,6 +1170,97 @@ export class DrawTool extends EventDispatcher<DrawToolEventMap> implements Dispo
             afterRemovePoint: afterRemovePointOfRing,
             afterUpdatePoint: afterUpdatePointOfRing,
         });
+    }
+
+    /**
+     * Interactively draws a segment, calling the provided callback every time
+     * the second point of the segment is moved. This method returns when the user
+     * clicks to confirm the position of the last point.
+     *
+     * Note: the segment itself is not visible, it is the responsibility of the
+     * caller to create the appropriate visual representation depending on the
+     * desired effect.
+     */
+    public async createParametricSegment({
+        callback,
+    }: {
+        callback: ParametricSegmentCallback;
+    }): Promise<void> {
+        const adaptedCallback = (shape: Shape): void => {
+            const points = shape.points;
+
+            if (points.length === 2) {
+                const start = points[0];
+                const end = points[1];
+
+                callback({
+                    start,
+                    end,
+                });
+            }
+        };
+
+        // This shape is not visible but still needed as its points make
+        // the segment that we want to create.
+        const tempShape = await this.createShape({
+            showSurface: false,
+            showVertices: true,
+            showLine: false,
+            minPoints: 2,
+            maxPoints: 2,
+            onPointCreated: adaptedCallback,
+            onTemporaryPointMoved: adaptedCallback,
+        });
+
+        if (tempShape != null) {
+            this._instance.remove(tempShape);
+        }
+    }
+
+    /**
+     * Creates an extent-like {@link Shape}.
+     * @param options - The options.
+     * @returns A promise that eventually returns the {@link Shape} or `null` if creation was cancelled.
+     */
+    public async createExtent(options?: CreationOptions): Promise<Shape | null> {
+        const rectangle = new Shape({
+            segmentLabelFormatter: defaultExtentFormatter,
+            showSegmentLabels: true,
+            showSurface: true,
+            showVertices: true,
+            showLine: true,
+            showVerticalLines: true,
+            showFloorLine: true,
+            showFloorVertices: false,
+            floorElevation: 0,
+            ...options,
+        });
+        this._instance.add(rectangle);
+        rectangle.visible = false;
+
+        const updateRectangle: ParametricSegmentCallback = ({ start, end }) => {
+            rectangle.visible = true;
+
+            const extent = Extent.fromPoints(this._instance.coordinateSystem, [start, end]);
+            const z = Math.max(start.z, end.z);
+            const floor = Math.min(start.z, end.z);
+
+            rectangle.floorElevation = options?.floorElevation ?? floor;
+
+            rectangle.setPoints([
+                new Vector3(extent.minX, extent.minY, z),
+                new Vector3(extent.minX, extent.maxY, z),
+                new Vector3(extent.maxX, extent.maxY, z),
+                new Vector3(extent.maxX, extent.minY, z),
+                new Vector3(extent.minX, extent.minY, z),
+            ]);
+
+            this._instance.notifyChange(rectangle);
+        };
+
+        await this.createParametricSegment({ callback: updateRectangle });
+
+        return rectangle;
     }
 
     /**
