@@ -36,7 +36,6 @@ async function loadData() {
     // An a high-resolution DEM of Mount St Helens
     const highRes = new GeoTIFFSource({
         url: 'https://3d.oslandia.com/giro3d/rasters/msh2009dem-3857.tif',
-        enableWorkers: false,
         crs: CRS,
     });
 
