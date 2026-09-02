@@ -86,6 +86,7 @@ import { computeDistanceToFitSphere, computeZoomToFitSphere } from '../renderer/
 import Capabilities from '../utils/Capabilities';
 import { isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
 import TextureGenerator from '../utils/TextureGenerator';
+import { nonRecursiveTraverse } from '../utils/threeutils';
 import { nonNull } from '../utils/tsutils';
 import Entity3D, { type Entity3DEventMap } from './Entity3D';
 import { MapLightingMode } from './MapLightingOptions';
@@ -2068,7 +2069,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
         if (cached == null) {
             cached = [];
-            origin.traverse(o => {
+            nonRecursiveTraverse(origin, o => {
                 if (isTileMesh(o)) {
                     callback(o);
                     cached?.push(o);
