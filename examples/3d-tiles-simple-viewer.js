@@ -5,65 +5,98 @@
  */
 
 import { Toast } from 'bootstrap';
-import { AmbientLight, Color, DirectionalLight, GridHelper, MathUtils, Mesh, Vector3 } from 'three';
+import OSM from 'ol/source/OSM.js';
+import { AmbientLight, Color, DirectionalLight, Mesh, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
+import GlobeControls from '@giro3d/giro3d/controls/GlobeControls.js';
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
+import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
+import Globe from '@giro3d/giro3d/entities/Globe.js';
 import Tiles3D from '@giro3d/giro3d/entities/Tiles3D.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
+import TiledImageSource from '@giro3d/giro3d/sources/TiledImageSource.js';
 
+import { bindButton } from './widgets/bindButton.js';
+import { bindNumberInput } from './widgets/bindNumberInput.js';
+import { bindSlider } from './widgets/bindSlider.js';
+import { bindToggle } from './widgets/bindToggle.js';
 import StatusBar from './widgets/StatusBar.js';
 
-const TILESET_URL_INPUT_ID = 'tileset_url';
-const DEFAULT_URL = 'https://3d.oslandia.com/3dtiles/19_rue_Marc_Antoine_Petit_ifc/tileset.json';
-const input = document.getElementById(TILESET_URL_INPUT_ID);
-// @ts-expect-error placeholder does not exist on HtmlElement
-input.placeholder = DEFAULT_URL;
+/** @returns {string} */
+function resolveTilesetUrl() {
+    const searchParam = new URL(document.URL).searchParams.get('url');
+    /** @type {HTMLInputElement} */
+    // @ts-expect-error not strongly typed
+    const input = document.getElementById('url');
+    const inputValue = input.value;
 
-const tmpVec3 = new Vector3();
+    if (inputValue) {
+        const value = input.value;
+        const url = new URL(document.URL);
 
-function replace_window_url(enteredUrl) {
-    const url = new URL(document.URL);
-    url.searchParams.delete(TILESET_URL_INPUT_ID);
+        url.searchParams.delete('url');
+        url.searchParams.append('url', value);
 
-    url.searchParams.append(TILESET_URL_INPUT_ID, enteredUrl);
+        window.history.replaceState({}, null, url.toString());
 
-    window.history.replaceState({}, null, url.toString());
+        return value;
+    } else if (searchParam) {
+        input.value = searchParam;
+        return searchParam;
+    } else {
+        // TODO defaults ?
+    }
 }
 
-// init instance
-const instance = new Instance({
-    target: 'view', // The id of the <div> to attach the instance
-    crs: CoordinateSystem.epsg3857,
-    backgroundColor: 0xcccccc,
-});
+const params = {
+    globeMode: false,
+    globeOpacity: 1,
+    tilesetOpacity: 1,
+    errorTarget: 8,
+};
 
-// Add a sunlight
-const sun = new DirectionalLight('#ffffff', 1.4);
-sun.position.set(1, 0, 1).normalize();
-sun.updateMatrixWorld(true);
-instance.scene.add(sun);
+/** @type {Tiles3D | undefined} */
+let tileset = undefined;
+/** @type {Instance | undefined} */
+let instance = undefined;
+/** @type {Globe | undefined} */
+let globe = undefined;
+/** @type {Inspector | undefined} */
+let inspector = undefined;
 
-// We can look below the floor, so let's light also a bit there
-const sun2 = new DirectionalLight('#ffffff', 0.5);
-sun2.position.set(0, -1, 1);
-sun2.updateMatrixWorld();
-instance.scene.add(sun2);
+/**
+ * @param {Vector3} target
+ */
+function initControls(target) {
+    if (params.globeMode) {
+        const globeControls = new GlobeControls({
+            scene: globe.object3d,
+            ellipsoid: globe.ellipsoid,
+            camera: instance.view.camera,
+            domElement: instance.domElement,
+        });
 
-// Add ambient light
-const ambientLight = new AmbientLight(0xffffff, 1);
-instance.scene.add(ambientLight);
-instance.view.minNearPlane = 0.5;
+        const updateControls = () => {
+            globeControls.update();
+            instance.notifyChange(globe);
+            instance.notifyChange(tileset);
 
-// create controls
-const controls = new MapControls(instance.view.camera, instance.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.25;
-instance.view.setControls(controls);
+            requestAnimationFrame(updateControls);
+        };
 
-// declare the tileset
-let tileset = null;
+        updateControls();
+    } else {
+        // create controls
+        const mapControls = new MapControls(instance.view.camera, instance.domElement);
+        mapControls.enableDamping = true;
+        mapControls.dampingFactor = 0.25;
+        mapControls.update();
+        mapControls.target.copy(target);
+        instance.view.setControls(mapControls);
+    }
+}
 
 // setup the error displaying
 const toastLiveExample = document.getElementById('liveToast');
@@ -73,10 +106,51 @@ function displayError(evt) {
     toastBootstrap.show();
 }
 
-function run(url) {
-    if (tileset != null) {
-        instance.remove(tileset);
+/** @param {string} url */
+async function run(url) {
+    instance?.dispose();
+    inspector?.detach();
+
+    // init instance
+    instance = new Instance({
+        target: 'view', // The id of the <div> to attach the instance
+        crs: params.globeMode ? CoordinateSystem.epsg4978 : CoordinateSystem.epsg3857,
+        backgroundColor: 0xcccccc,
+    });
+
+    if (params.globeMode) {
+        globe = new Globe({
+            backgroundColor: '#aad3df',
+        });
+
+        globe.helperColor = 'black';
+
+        await instance.add(globe);
+
+        const layer = new ColorLayer({
+            source: new TiledImageSource({ source: new OSM() }),
+        });
+
+        await globe.addLayer(layer);
     }
+
+    // Add a sunlight
+    const sun = new DirectionalLight('#ffffff', 1.4);
+    sun.position.set(1, 0, 1).normalize();
+    sun.updateMatrixWorld(true);
+    instance.scene.add(sun);
+
+    // We can look below the floor, so let's light also a bit there
+    const sun2 = new DirectionalLight('#ffffff', 0.5);
+    sun2.position.set(0, -1, 1);
+    sun2.updateMatrixWorld();
+    instance.scene.add(sun2);
+
+    // Add ambient light
+    const ambientLight = new AmbientLight(0xffffff, 1);
+    instance.scene.add(ambientLight);
+    instance.view.minNearPlane = 0.5;
+
     tileset = new Tiles3D({ url: url.toString() });
 
     // If the tileset comes from an ifc converted with py3dtiles, hide some elements that don't bring visual value
@@ -90,76 +164,32 @@ function run(url) {
         });
     });
 
-    instance.add(tileset).then(initializeCamera, displayError).catch(console.log);
+    await instance.add(tileset);
+
+    const pov = instance.view.goTo(tileset);
+
+    initControls(pov.target);
+
+    inspector = Inspector.attach('inspector', instance);
+    StatusBar.bind(instance, { disableUrlUpdate: true });
 }
 
-function placeCamera(position, lookAt) {
-    instance.view.camera.position.set(position.x, position.y, position.z);
-    instance.view.camera.lookAt(lookAt);
-    controls.target.copy(lookAt);
-    StatusBar.updateUrl();
-    instance.notifyChange(instance.view.camera);
-}
-
-// add pointcloud to scene
-function initializeCamera() {
-    const bbox = tileset.getBoundingBox();
-
-    const ratio = bbox.getSize(tmpVec3).x / bbox.getSize(tmpVec3).z;
-
-    const position = bbox
-        .getCenter(new Vector3())
-        .clone()
-        .add(bbox.getSize(tmpVec3).multiply(new Vector3(-2, -2, ratio)));
-
-    const lookAt = bbox.getCenter(tmpVec3);
-    lookAt.z = bbox.min.z;
-
-    placeCamera(position, lookAt);
-
-    const grid = new GridHelper(60, 10);
-    grid.rotateX(MathUtils.degToRad(90));
-
-    grid.position.copy(lookAt);
-
-    instance.add(grid);
-    grid.updateMatrixWorld(true);
-}
-
-// url parsing and initialization
-let tileset_url = new URL(document.URL).searchParams.get(TILESET_URL_INPUT_ID);
-
-if (tileset_url == null) {
-    tileset_url = DEFAULT_URL;
-}
-
-replace_window_url(tileset_url);
-// @ts-expect-error value does not exist on HtmlElement
-input.value = tileset_url;
-run(tileset_url);
-
-document.getElementById('start').onclick = () => {
-    // @ts-expect-error value does not exist on HtmlElement
-    const enteredUrl = input.value;
-
-    if (enteredUrl != null) {
-        replace_window_url(enteredUrl);
-        run(enteredUrl);
-    }
-};
+run(resolveTilesetUrl()).catch(console.error);
 
 // picking and highlighting logic
-const resultsTable = document.getElementById('results-body');
+const resultsTable = document.getElementById('results');
 
 let highlighted;
 let highlightColor = new Color(0xff7171);
 
 let canPick = true;
 
-/**
- * @param {MouseEvent} evt
- */
+/** @param {MouseEvent} evt */
 function highlight(evt) {
+    if (!instance || !tileset) {
+        return;
+    }
+
     if (!canPick) {
         return;
     }
@@ -180,17 +210,9 @@ function highlight(evt) {
     }
 
     if (picked.length === 0) {
-        const row = document.createElement('tr');
-        const count = document.createElement('th');
-        count.setAttribute('scope', 'row');
-        count.innerText = '-';
-        const coordinates = document.createElement('td');
-        coordinates.innerText = '-';
-        const distanceToCamera = document.createElement('td');
-        distanceToCamera.innerText = '-';
-        row.append(count, coordinates, distanceToCamera);
-        resultsTable.replaceChildren(row);
+        document.getElementById('pick-result').style.display = 'none';
     } else {
+        document.getElementById('pick-result').style.display = 'block';
         const obj = picked[0].object;
         if (obj instanceof Mesh) {
             const material = obj.material;
@@ -216,7 +238,8 @@ function highlight(evt) {
                 const nameCell = document.createElement('td');
                 nameCell.innerHTML = `<code>${name}</code>`;
                 const valueCell = document.createElement('td');
-                valueCell.innerText = value;
+                valueCell.innerText = value.toString().substring(0, 20);
+                valueCell.title = value;
                 row.append(nameCell, valueCell);
                 rows.push(row);
             }
@@ -231,5 +254,42 @@ instance.domElement.addEventListener('mousedown', () => (canPick = true));
 instance.domElement.addEventListener('mousemove', () => (canPick = false));
 instance.domElement.addEventListener('mouseup', highlight);
 
-Inspector.attach('inspector', instance);
-StatusBar.bind(instance);
+function updateParams() {
+    if (globe) {
+        globe.opacity = params.globeOpacity;
+        globe.visible = params.globeOpacity > 0;
+        instance.notifyChange(globe);
+    }
+    if (tileset) {
+        tileset.opacity = params.tilesetOpacity;
+        tileset.visible = params.tilesetOpacity > 0;
+        tileset.errorTarget = params.errorTarget;
+        instance.notifyChange(tileset);
+    }
+}
+
+updateParams();
+
+bindSlider('globe-opacity', v => {
+    params.globeOpacity = v;
+    updateParams();
+});
+bindSlider('tileset-opacity', v => {
+    params.tilesetOpacity = v;
+    updateParams();
+});
+bindButton('center-view', () => {
+    if (tileset) {
+        instance.view.goTo(tileset);
+    }
+});
+bindToggle('globe-mode', v => {
+    params.globeMode = v;
+});
+bindNumberInput('error-target', v => {
+    params.errorTarget = v;
+    updateParams();
+});
+bindButton('start', () => {
+    run(resolveTilesetUrl()).catch(console.error);
+});
