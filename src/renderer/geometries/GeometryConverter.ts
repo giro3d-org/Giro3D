@@ -30,6 +30,7 @@ import {
 } from 'three';
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
+import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
 import type SimpleGeometryMesh from './SimpleGeometryMesh';
 import type { DefaultUserData } from './SimpleGeometryMesh';
@@ -52,6 +53,7 @@ import {
 import RequestQueue from '../../core/RequestQueue';
 import { Vector3Array } from '../../core/VectorArray';
 import Fetcher from '../../utils/Fetcher';
+import { isCSS2DObject } from '../../utils/predicates';
 import { triangulate } from '../../utils/tessellator';
 import LineStringMesh from './LineStringMesh';
 import MultiLineStringMesh from './MultiLineStringMesh';
@@ -99,7 +101,9 @@ export interface BaseOptions {
     elevation?: FeatureElevation;
 }
 
-export interface PointOptions extends BaseOptions, Partial<PointStyle> {}
+export interface PointOptions extends BaseOptions, Partial<PointStyle> {
+    htmlElement?: HTMLElement;
+}
 export interface PolygonOptions extends BaseOptions {
     fill?: FillStyle;
     stroke?: StrokeStyle;
@@ -400,6 +404,15 @@ interface GeometryGeneratorEventMap {
     'texture-loaded': { texture: Texture };
 }
 
+function disposeHandler({ target }: { target: SimpleGeometryMesh }): void {
+    const mesh = target;
+
+    if (mesh.children.length > 0) {
+        // This is to ensure that HTML elements are properly removed as well
+        [...mesh.children].forEach(obj => obj.removeFromParent());
+    }
+}
+
 /**
  * Generates three.js meshes from OpenLayers geometries.
  *
@@ -674,7 +687,26 @@ export default class GeometryConverter<
         });
     }
 
-    public updatePointMesh(mesh: PointMesh, style: Partial<PointStyle>): void {
+    private addOrRemoveCSS2DObject(parent: PointMesh, element?: HTMLElement): void {
+        if (parent.children.length > 0) {
+            [...parent.children].forEach(c => {
+                if (isCSS2DObject(c)) {
+                    c.removeFromParent();
+                }
+            });
+        }
+
+        if (element != null) {
+            const css2dObject = new CSS2DObject(element);
+            parent.add(css2dObject);
+        }
+    }
+
+    public updatePointMesh(
+        mesh: PointMesh,
+        style: Partial<PointStyle>,
+        element?: HTMLElement,
+    ): void {
         const fullStyle = getFullPointStyle(style);
         const material = this._pointMaterialGenerator(fullStyle);
         mesh.update({
@@ -683,6 +715,8 @@ export default class GeometryConverter<
             opacity: fullStyle.opacity,
             renderOrder: fullStyle.renderOrder,
         });
+
+        this.addOrRemoveCSS2DObject(mesh, element);
     }
 
     public updateSurfaceMesh(mesh: SurfaceMesh, options: PolygonOptions): void {
@@ -707,6 +741,8 @@ export default class GeometryConverter<
             desc.updateMatrix();
         });
         object.updateMatrixWorld(true);
+
+        object.addEventListener('dispose', disposeHandler);
     }
 
     private getSurfaceGeometry(polygon: Polygon, options: PolygonOptions): BufferGeometry {
@@ -859,6 +895,8 @@ export default class GeometryConverter<
             opacity: style.opacity,
             pointSize: style.pointSize,
         });
+
+        this.addOrRemoveCSS2DObject(pointMesh, options.htmlElement);
 
         pointMesh.renderOrder = style.renderOrder;
 

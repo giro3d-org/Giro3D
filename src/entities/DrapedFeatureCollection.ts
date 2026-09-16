@@ -450,10 +450,14 @@ export default class DrapedFeatureCollection extends Entity3D {
 
         switch (obj.type) {
             case 'PointMesh':
-                this._geometryConverter.updatePointMesh(obj as PointMesh<MeshUserData>, {
-                    ...commonOptions,
-                    ...style?.point,
-                });
+                this._geometryConverter.updatePointMesh(
+                    obj as PointMesh<MeshUserData>,
+                    {
+                        ...commonOptions,
+                        ...style?.point,
+                    },
+                    style?.htmlElement,
+                );
                 break;
             case 'PolygonMesh':
             case 'MultiPolygonMesh':
@@ -727,6 +731,7 @@ export default class DrapedFeatureCollection extends Entity3D {
         const pointStyle = style?.point;
 
         return {
+            htmlElement: style?.htmlElement,
             color: pointStyle?.color,
             pointSize: pointStyle?.pointSize,
             renderOrder: pointStyle?.renderOrder,

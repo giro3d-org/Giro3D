@@ -656,10 +656,14 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
 
         switch (obj.type) {
             case 'PointMesh':
-                this._geometryConverter.updatePointMesh(obj as PointMesh<MeshUserData>, {
-                    ...commonOptions,
-                    ...style?.point,
-                });
+                this._geometryConverter.updatePointMesh(
+                    obj as PointMesh<MeshUserData>,
+                    {
+                        ...commonOptions,
+                        ...style?.point,
+                    },
+                    style?.htmlElement,
+                );
                 break;
             case 'PolygonMesh':
             case 'MultiPolygonMesh':
@@ -844,6 +848,7 @@ class FeatureCollection<UserData = EntityUserData> extends Entity3D<Entity3DEven
                             ...commonOptions,
                             elevation,
                             ...style?.point,
+                            htmlElement: style?.htmlElement,
                         });
                     }
                     break;
