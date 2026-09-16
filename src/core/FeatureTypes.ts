@@ -300,6 +300,10 @@ export interface FeatureStyle {
      * The style to apply to `Point`s and `MultiPoint`s.
      */
     point?: PointStyle;
+    /**
+     * The HTML element to apply to `Point`s and `MultiPoint`s.
+     */
+    htmlElement?: HTMLElement;
 }
 
 /**
