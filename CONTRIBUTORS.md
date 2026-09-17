@@ -60,6 +60,8 @@ The following people have contributed to Giro3D.
 - [University of Vienna](https://www.univie.ac.at/)
     - [Francesco Urdih](https://gitlab.com/francesco.urdih)
 
+- [Jacob Miller](https://gitlab.com/jacob-miller-hq)
+
 ---
 
 The following organizations supported Giro3D:
