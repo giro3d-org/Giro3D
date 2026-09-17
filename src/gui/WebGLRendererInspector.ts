@@ -5,11 +5,14 @@
  */
 
 import type GUI from 'lil-gui';
-import type { WebGLRenderer } from 'three';
+
+import { Vector2, type WebGLRenderer } from 'three';
 
 import type Instance from '../core/Instance';
 
 import Panel from './Panel';
+
+const tmpVec2 = new Vector2();
 
 class WebGLRendererInspector extends Panel {
     public renderer: WebGLRenderer;
@@ -25,6 +28,10 @@ class WebGLRendererInspector extends Panel {
 
         this.addController(this.renderer, 'localClippingEnabled').onChange(() => this.notify());
 
+        this.addController(this, 'drawingBufferWidth');
+        this.addController(this, 'drawingBufferHeight');
+        this.addController(this, 'pixelRatio');
+
         this._addCapabilities(this.renderer, this.gui.addFolder('Capabilities'));
 
         const loseContextExt = this.renderer.getContext().getExtension('WEBGL_lose_context');
@@ -32,6 +39,18 @@ class WebGLRendererInspector extends Panel {
             this.addController(loseContextExt, 'loseContext').name('Lose context');
             this.addController(loseContextExt, 'restoreContext').name('Restore context');
         }
+    }
+
+    public get pixelRatio() {
+        return this.renderer.getPixelRatio();
+    }
+
+    public get drawingBufferWidth() {
+        return this.renderer.getDrawingBufferSize(tmpVec2).width;
+    }
+
+    public get drawingBufferHeight() {
+        return this.renderer.getDrawingBufferSize(tmpVec2).height;
     }
 
     /**

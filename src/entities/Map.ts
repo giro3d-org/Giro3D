@@ -1179,7 +1179,9 @@ class Map<UserData extends EntityUserData = EntityUserData>
         x = 0,
         y = 0,
     ): TileMesh {
-        const textureSize = this.getTextureSize(extent);
+        const textureSize = this.getTextureSize(extent).multiplyScalar(
+            this.instance.renderer.getPixelRatio(),
+        );
 
         const materialOptions = {
             renderer: this.instance.renderer,

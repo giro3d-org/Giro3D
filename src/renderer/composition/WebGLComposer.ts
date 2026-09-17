@@ -64,6 +64,7 @@ interface SaveState {
     scissor: Vector4;
     clearColor: Color;
     viewport: Vector4;
+    pixelRatio: number;
 }
 
 export interface DrawOptions {
@@ -336,6 +337,7 @@ class WebGLComposer {
             scissor: this._renderer.getScissor(new Vector4()),
             clearColor: this._renderer.getClearColor(new Color()),
             viewport: this._renderer.getViewport(new Vector4()),
+            pixelRatio: this._renderer.getPixelRatio(),
         };
     }
 
@@ -346,6 +348,7 @@ class WebGLComposer {
         this._renderer.setScissor(state.scissor);
         this._renderer.setClearColor(state.clearColor, state.clearAlpha);
         this._renderer.setViewport(state.viewport);
+        this._renderer.setPixelRatio(state.pixelRatio);
     }
 
     /**
@@ -405,6 +408,7 @@ class WebGLComposer {
         } else {
             this._renderer.setClearColor(DEFAULT_CLEAR, 0);
         }
+        this._renderer.setPixelRatio(1);
         this._renderer.setRenderTarget(target);
         this._renderer.setViewport(0, 0, target.width, target.height);
         this._renderer.clear();
