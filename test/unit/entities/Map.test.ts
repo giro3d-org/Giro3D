@@ -4,9 +4,19 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { Color, DoubleSide, Group } from 'three';
+import {
+    Box3,
+    Color,
+    DoubleSide,
+    Group,
+    PerspectiveCamera,
+    Plane,
+    Vector3,
+    WebGLRenderer,
+} from 'three';
 import { beforeEach, describe, expect, it, vitest } from 'vitest';
 
+import type Context from '@giro3d/giro3d/core/Context';
 import type Instance from '@giro3d/giro3d/core/Instance';
 import type { LayerUserData } from '@giro3d/giro3d/core/layer/Layer';
 import type TileMesh from '@giro3d/giro3d/entities/tiles/TileMesh';
@@ -18,6 +28,7 @@ import ElevationLayer, { isElevationLayer } from '@giro3d/giro3d/core/layer/Elev
 import Map from '@giro3d/giro3d/entities/Map';
 import { DEFAULT_AZIMUTH, DEFAULT_ZENITH } from '@giro3d/giro3d/renderer/LayeredMaterial';
 import RenderingState from '@giro3d/giro3d/renderer/RenderingState';
+import View from '@giro3d/giro3d/renderer/View';
 import NullSource from '@giro3d/giro3d/sources/NullSource';
 
 const nullSource = new NullSource({
@@ -1008,5 +1019,59 @@ describe('setRenderState', () => {
         for (const fn of restoreFuncs) {
             expect(fn).toHaveBeenCalled();
         }
+    });
+});
+
+describe('shouldSubdivide', () => {
+    function makeView(width: number, height: number, pixelRatio: number, cameraZ: number): View {
+        const tile = map.rootTiles[0];
+        const center = tile.getWorldSpaceBoundingBox(new Box3()).getCenter(new Vector3());
+
+        const camera = new PerspectiveCamera(50, width / height);
+        camera.up.set(0, 1, 0);
+        camera.position.set(center.x, center.y, center.z + cameraZ);
+        camera.lookAt(center.x, center.y, center.z);
+        camera.updateMatrixWorld(true);
+
+        const renderer = new WebGLRenderer();
+        renderer.setPixelRatio(pixelRatio);
+
+        const view = new View({ crs, renderer, width, height, camera });
+        view.update();
+
+        return view;
+    }
+
+    function shouldSubdivideRootTile(view: View): boolean {
+        const context: Context = {
+            view,
+            distance: { plane: new Plane(), min: 0, max: 1 },
+        };
+
+        // @ts-expect-error protected method
+        return map.shouldSubdivide(context, map.rootTiles[0]);
+    }
+
+    it('gives the same subdivision decision for an equivalent device-pixel size, regardless of pixelRatio', () => {
+        // A view rendered at CSS 800x600 with pixelRatio 2 has the same device-pixel
+        // footprint as a view rendered at CSS 1600x1200 with pixelRatio 1.
+        for (const cameraZ of [10, 12, 15, 18, 20]) {
+            const viewLowResHighRatio = makeView(800, 600, 2, cameraZ);
+            const viewHighResLowRatio = makeView(1600, 1200, 1, cameraZ);
+
+            expect(shouldSubdivideRootTile(viewLowResHighRatio)).toEqual(
+                shouldSubdivideRootTile(viewHighResLowRatio),
+            );
+        }
+    });
+
+    it('subdivides earlier when pixelRatio increases at a fixed CSS size', () => {
+        const cameraZ = 12;
+
+        const viewAtRatio1 = makeView(800, 600, 1, cameraZ);
+        const viewAtRatio2 = makeView(800, 600, 2, cameraZ);
+
+        expect(shouldSubdivideRootTile(viewAtRatio1)).toBe(false);
+        expect(shouldSubdivideRootTile(viewAtRatio2)).toBe(true);
     });
 });

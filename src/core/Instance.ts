@@ -317,6 +317,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
 
         this._view = new View({
             crs: this._referenceCrs,
+            renderer: this._engine.renderer,
             camera: options.camera,
             width: windowSize.width,
             height: windowSize.height,

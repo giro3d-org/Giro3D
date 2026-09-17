@@ -45,7 +45,7 @@ function computeSSE(
     offset: Vector3,
     size: Vector3,
     matrix: Matrix4,
-    camera: View,
+    view: View,
     _3d: boolean,
 ): SSE {
     temp[0].copy(offset);
@@ -66,14 +66,15 @@ function computeSSE(
     for (let i = 1; i < (_3d ? 5 : 4); i++) {
         temp[i].add(temp[0]);
     }
-    const worldToNDC = camera.viewMatrix;
+    const worldToNDC = view.viewMatrix;
+    const devicePixelWidth = view.width * view.pixelRatio;
+    const devicePixelHeight = view.height * view.pixelRatio;
     for (let i = 0; i < (_3d ? 5 : 4); i++) {
         temp[i].applyMatrix4(worldToNDC);
         temp[i].z = 0;
-        // temp[i].clampScalar(-1, 1);
-        // Map temp[i] from NDC = [-1, 1] to canvas coordinates
-        temp[i].x = (temp[i].x + 1.0) * camera.width * 0.5;
-        temp[i].y = camera.height - (temp[i].y + 1.0) * camera.height * 0.5;
+        // Map temp[i] from NDC = [-1, 1] to device pixel coordinates
+        temp[i].x = (temp[i].x + 1.0) * devicePixelWidth * 0.5;
+        temp[i].y = devicePixelHeight - (temp[i].y + 1.0) * devicePixelHeight * 0.5;
     }
 
     // compute the real area
@@ -104,14 +105,14 @@ function computeSSE(
     return result;
 }
 
-function findBox3Distance(camera: View, box3: Box3, matrix: Matrix4, isMode3d: boolean): number {
+function findBox3Distance(view: View, box3: Box3, matrix: Matrix4, isMode3d: boolean): number {
     // TODO: can be cached
     // TODO: what about matrix scale component
     m.copy(matrix).invert();
     // Move camera position in box3 basis
     // (we don't transform box3 to camera basis because box3 are AABB,
     // so instead we apply the inverse transformation to the camera)
-    const pt = new Vector3(0, 0, 0).applyMatrix4(camera.camera.matrixWorld).applyMatrix4(m);
+    const pt = new Vector3(0, 0, 0).applyMatrix4(view.camera.matrixWorld).applyMatrix4(m);
     // Compute distance between the camera / box3
     tmpBox3.copy(box3);
     if (!isMode3d) {
@@ -190,8 +191,8 @@ export default {
         const distance = Math.max(0.0, sphere.distanceToPoint(view.camera.position));
         temp[0].set(geometricError, 0, -distance);
         temp[0].applyMatrix4(view.camera.projectionMatrix);
-        temp[0].x = temp[0].x * view.width * 0.5;
-        temp[0].y = temp[0].y * view.height * 0.5;
+        temp[0].x = temp[0].x * view.width * view.pixelRatio * 0.5;
+        temp[0].y = temp[0].y * view.height * view.pixelRatio * 0.5;
         temp[0].z = 0;
 
         return temp[0].length();

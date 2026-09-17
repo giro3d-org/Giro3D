@@ -13,6 +13,7 @@ import {
     OrthographicCamera,
     PerspectiveCamera,
     Vector3,
+    WebGLRenderer,
 } from 'three';
 import { beforeAll, describe, expect, it, vitest } from 'vitest';
 
@@ -30,7 +31,7 @@ describe('constructor', () => {
         const width = 123;
         const height = 456;
         const crs = CoordinateSystem.epsg3857;
-        const view = new View({ crs: DEFAULT_CRS, width, height });
+        const view = new View({ crs: DEFAULT_CRS, renderer: new WebGLRenderer(), width, height });
 
         expect(view.crs.equals(crs)).toEqual(true);
         expect(view.width).toEqual(width);
@@ -41,7 +42,12 @@ describe('constructor', () => {
 
 describe('setSize', () => {
     it('should update the size', () => {
-        const view = new View({ crs: DEFAULT_CRS, width: 0, height: 0 });
+        const view = new View({
+            crs: DEFAULT_CRS,
+            renderer: new WebGLRenderer(),
+            width: 0,
+            height: 0,
+        });
 
         view.setSize(123, 456);
 
@@ -50,9 +56,27 @@ describe('setSize', () => {
     });
 });
 
+describe('pixelRatio', () => {
+    it('should reflect the renderer pixel ratio', () => {
+        const renderer = new WebGLRenderer();
+        const view = new View({ crs: DEFAULT_CRS, renderer, width: 123, height: 456 });
+
+        expect(view.pixelRatio).toEqual(renderer.getPixelRatio());
+
+        renderer.setPixelRatio(2);
+
+        expect(view.pixelRatio).toEqual(2);
+    });
+});
+
 describe('setControls', () => {
     it('should update the controls in its update() step', () => {
-        const view = new View({ crs: DEFAULT_CRS, width: 0, height: 0 });
+        const view = new View({
+            crs: DEFAULT_CRS,
+            renderer: new WebGLRenderer(),
+            width: 0,
+            height: 0,
+        });
 
         const controls: ExternalControls = {
             addEventListener: vitest.fn(),
@@ -76,7 +100,12 @@ describe('setControls', () => {
     });
 
     it('should raise an event when the controls change', () => {
-        const view = new View({ crs: DEFAULT_CRS, width: 0, height: 0 });
+        const view = new View({
+            crs: DEFAULT_CRS,
+            renderer: new WebGLRenderer(),
+            width: 0,
+            height: 0,
+        });
 
         // @ts-expect-error incorrect type
         const controls: ExternalControls = new EventDispatcher();
@@ -96,7 +125,7 @@ describe('setControls', () => {
 describe('goTo', () => {
     let view: View;
     beforeAll(() => {
-        view = new View({ crs: DEFAULT_CRS, width: 0, height: 0 });
+        view = new View({ crs: DEFAULT_CRS, renderer: new WebGLRenderer(), width: 0, height: 0 });
         Object3D.DEFAULT_UP.set(0, 0, 1);
     });
 

@@ -30,6 +30,7 @@ beforeEach(() => {
     camera = new THREE.PerspectiveCamera(45);
     view = new View({
         crs: CoordinateSystem.epsg3857,
+        renderer: new THREE.WebGLRenderer(),
         width: 1,
         height: 1,
         camera,

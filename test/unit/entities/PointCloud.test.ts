@@ -280,3 +280,64 @@ describe('testNodeSSE', () => {
         expect(entity.testNodeSSE(view2, child, 1)).toBe(true);
     });
 });
+
+describe('testNodeSSE with pixelRatio', () => {
+    function computePreSSE(fovDeg: number, height: number, pixelRatio: number): number {
+        return (height * pixelRatio) / (2 * Math.tan(MathUtils.degToRad(fovDeg) * 0.5));
+    }
+
+    it('gives the same subdivision decision for an equivalent device-pixel height', async () => {
+        const metadata: PointCloudMetadata = {
+            pointCount: 12345,
+            volume: new Box3().setFromArray([0, 0, 0, 1, 1, 1]),
+            attributes: [
+                { name: 'foo', dimension: 1, type: 'signed', size: 2, interpretation: 'unknown' },
+            ],
+        };
+
+        // @ts-expect-error incomplete
+        const root: PointCloudNode = {
+            center: new Vector3(0.5, 0.5, 0.5),
+            depth: 0,
+            volume: new Box3().setFromArray([0, 0, 0, 1, 1, 1]),
+            geometricError: 1,
+        };
+        // @ts-expect-error incomplete
+        const child: PointCloudNode = {
+            center: new Vector3(0.25, 0.25, 0.25),
+            depth: 1,
+            volume: new Box3().setFromArray([0, 0, 0, 0.5, 0.5, 0.5]),
+            geometricError: 1,
+        };
+        const view: View = {
+            // @ts-expect-error mock
+            camera: {
+                position: new Vector3(500, 500, 500),
+            },
+        };
+
+        const source = mockSource({ metadata, root });
+
+        const entity = new PointCloud({ source });
+
+        // @ts-expect-error incomplete
+        const instance: Instance = { notifyChange: vitest.fn() };
+
+        await entity.initialize({ instance });
+
+        // 600 CSS pixels at pixelRatio 2 is the same device-pixel height as 1200 at ratio 1.
+        const preSSELowResHighRatio = computePreSSE(50, 600, 2);
+        const preSSEHighResLowRatio = computePreSSE(50, 1200, 1);
+        const preSSEAtRatio1 = computePreSSE(50, 600, 1);
+
+        // @ts-expect-error private method
+        const resultLowResHighRatio = entity.testNodeSSE(view, child, preSSELowResHighRatio);
+        // @ts-expect-error private method
+        const resultHighResLowRatio = entity.testNodeSSE(view, child, preSSEHighResLowRatio);
+        // @ts-expect-error private method
+        const resultAtRatio1 = entity.testNodeSSE(view, child, preSSEAtRatio1);
+
+        expect(resultLowResHighRatio).toEqual(resultHighResLowRatio);
+        expect(resultLowResHighRatio).not.toEqual(resultAtRatio1);
+    });
+});
