@@ -16,7 +16,6 @@ import {
     Scene,
     Texture,
     UnsignedByteType,
-    Vector4,
     WebGLRenderTarget,
     type ColorRepresentation,
     type MagnificationTextureFilter,
@@ -60,10 +59,7 @@ function processTextureDisposal(event: { target: Texture }): void {
 interface SaveState {
     clearAlpha: number;
     renderTarget: WebGLRenderTarget | null;
-    scissorTest: boolean;
-    scissor: Vector4;
     clearColor: Color;
-    viewport: Vector4;
 }
 
 export interface DrawOptions {
@@ -332,20 +328,14 @@ class WebGLComposer {
         return {
             clearAlpha: this._renderer.getClearAlpha(),
             renderTarget: this._renderer.getRenderTarget(),
-            scissorTest: this._renderer.getScissorTest(),
-            scissor: this._renderer.getScissor(new Vector4()),
             clearColor: this._renderer.getClearColor(new Color()),
-            viewport: this._renderer.getViewport(new Vector4()),
         };
     }
 
     private restoreState(state: SaveState): void {
         this._renderer.setClearAlpha(state.clearAlpha);
         this._renderer.setRenderTarget(state.renderTarget);
-        this._renderer.setScissorTest(state.scissorTest);
-        this._renderer.setScissor(state.scissor);
         this._renderer.setClearColor(state.clearColor, state.clearAlpha);
-        this._renderer.setViewport(state.viewport);
     }
 
     /**
@@ -405,22 +395,27 @@ class WebGLComposer {
         } else {
             this._renderer.setClearColor(DEFAULT_CLEAR, 0);
         }
-        this._renderer.setRenderTarget(target);
-        this._renderer.setViewport(0, 0, target.width, target.height);
-        this._renderer.clear();
+
+        // Set the viewport/scissor directly on the render target rather than calling
+        // renderer.setViewport()/setScissor(), which interpret their arguments as CSS
+        // pixels and multiply by the renderer's pixelRatio. Render targets are always
+        // texel-sized, so going through the renderer's pixel-ratio-aware API here would
+        // silently scale the viewport/scissor rect by pixelRatio a second time.
+        // These must be set before setRenderTarget(), since that call reads them
+        // synchronously into the renderer's current viewport/scissor state.
+        target.viewport.set(0, 0, target.width, target.height);
 
         const rect = opts.rect ?? this._extent;
         if (!rect) {
             throw new Error('no rect provided and no default rect to setup camera');
         }
-        this.setCameraRect(rect);
 
         // If the requested rectangle is not the same as the extent of this composer,
         // then it is a partial render.
         // We need to scissor the output in order to render only the overlap between
         // the requested extent and the extent of this composer.
         if (this._extent && opts.rect && !opts.rect.equals(this._extent)) {
-            this._renderer.setScissorTest(true);
+            target.scissorTest = true;
             const intersection = this._extent.getIntersection(opts.rect);
             const sRect = Rect.getNormalizedRect(intersection, opts.rect);
 
@@ -432,13 +427,21 @@ class WebGLComposer {
             const sw = Math.ceil(sRect.w * width + 2 * pixelMargin);
             const sh = Math.ceil(sRect.h * height + 2 * pixelMargin);
 
-            this._renderer.setScissor(
+            target.scissor.set(
                 MathUtils.clamp(sx, 0, width),
                 MathUtils.clamp(sy, 0, height),
                 MathUtils.clamp(sw, 0, width),
                 MathUtils.clamp(sh, 0, height),
             );
+        } else {
+            target.scissorTest = false;
         }
+
+        this._renderer.setRenderTarget(target);
+        this._renderer.clear();
+
+        this.setCameraRect(rect);
+
         this._renderer.render(this._scene, this._camera);
 
         target.texture.wrapS = ClampToEdgeWrapping;
