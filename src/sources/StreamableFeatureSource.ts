@@ -57,7 +57,7 @@ export const ogcApiFeaturesBuilder: (
 
         const bbox = params.extent.as(params.sourceCoordinateSystem);
 
-        url.searchParams.set('bbox', `${bbox.west},${bbox.south},${bbox.east},${bbox.north}`);
+        url.searchParams.set('bbox', `${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}`);
 
         const limit = opts?.limit ?? 1000;
         url.searchParams.set('limit', limit.toString());
@@ -102,7 +102,7 @@ export const wfsBuilder: (
         const bbox = params.extent.as(params.sourceCoordinateSystem);
         url.searchParams.set(
             'bbox',
-            `${bbox.west},${bbox.south},${bbox.east},${bbox.north},${params.sourceCoordinateSystem.id}`,
+            `${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY},${params.sourceCoordinateSystem.id}`,
         );
 
         if (opts?.params) {
@@ -200,10 +200,10 @@ export const tiledLoadingStrategy: (params?: {
     const tileSize = params?.tileSize ?? 1000;
     return request => {
         const extent = request.extent;
-        const xmin = Math.floor(extent.west / tileSize);
-        const xmax = Math.ceil(extent.east / tileSize);
-        const ymin = Math.floor(extent.south / tileSize);
-        const ymax = Math.ceil(extent.north / tileSize);
+        const xmin = Math.floor(extent.minX / tileSize);
+        const xmax = Math.ceil(extent.maxX / tileSize);
+        const ymin = Math.floor(extent.minY / tileSize);
+        const ymax = Math.ceil(extent.maxY / tileSize);
 
         const tileRequests: GetFeatureRequest[] = [];
 
@@ -304,24 +304,24 @@ export default class StreamableFeatureSource extends FeatureSourceBase {
     public async getFeatures(request: GetFeatureRequest): Promise<GetFeatureResult> {
         this.throwIfNotInitialized();
 
-        let west = request.extent.west;
-        let east = request.extent.east;
-        let south = request.extent.south;
-        let north = request.extent.north;
+        let minX = request.extent.minX;
+        let maxX = request.extent.maxX;
+        let minY = request.extent.minY;
+        let maxY = request.extent.maxY;
 
         if (this._options.extent) {
-            west = Math.max(west, this._options.extent.west);
-            east = Math.min(east, this._options.extent.east);
-            south = Math.max(south, this._options.extent.south);
-            north = Math.min(north, this._options.extent.north);
+            minX = Math.max(minX, this._options.extent.minX);
+            maxX = Math.min(maxX, this._options.extent.maxX);
+            minY = Math.max(minY, this._options.extent.minY);
+            maxY = Math.min(maxY, this._options.extent.maxY);
         }
 
-        if (west >= east || south >= north) {
+        if (minX >= maxX || minY >= maxY) {
             // Empty extent
             return { features: [] };
         }
 
-        const adjustedExtent = new Extent(request.extent.crs, { east, north, south, west });
+        const adjustedExtent = new Extent(request.extent.crs, { maxX, maxY, minY, minX });
 
         const strategy = nonNull(this._options.loadingStrategy);
 
