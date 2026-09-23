@@ -53,7 +53,7 @@ export const ogcApiFeaturesBuilder: (
     },
 ) => StreamableFeatureSourceQueryBuilder = (serviceUrl, collection, opts) => {
     return params => {
-        const url = new URL(`/collections/${collection}/items.json`, serviceUrl);
+        const url = new URL(`${serviceUrl}/collections/${collection}/items`);
 
         const bbox = params.extent.as(params.sourceCoordinateSystem);
 
