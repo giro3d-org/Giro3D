@@ -5,6 +5,7 @@
  */
 
 import type GUI from 'lil-gui';
+import type { Blending } from 'three';
 
 import type Instance from '../core/Instance';
 import type PointCloud from '../entities/PointCloud';
@@ -13,10 +14,20 @@ import ColorMapInspector from './ColorMapInspector';
 import EntityInspector from './EntityInspector';
 import PointCloudSourceInspector from './PointCloudSourceInspector';
 
+const blendingModes: string[] = [
+    'NoBlending',
+    'NormalBlending',
+    'AdditiveBlending',
+    'SubtractiveBlending',
+    'MultiplyBlending',
+    'CustomBlending',
+];
+
 export default class PointCloudInspector extends EntityInspector<PointCloud> {
     public elevationColorMapInspector: ColorMapInspector | null = null;
     public attributesColorMapInspectors: ReadonlyMap<string, ColorMapInspector> | null = null;
     public sourceInspector: PointCloudSourceInspector | null = null;
+    public blending: string = blendingModes[0];
 
     public get pointBudget(): number {
         return this.entity.pointBudget ?? -1;
@@ -57,6 +68,9 @@ export default class PointCloudInspector extends EntityInspector<PointCloud> {
         this.addController(entity, 'decimation').min(1).max(100).step(1);
         this.addController(this, 'pointBudget');
         this.addController(entity, 'showNodeDataVolumes');
+        this.addController(this, 'blending', blendingModes).onChange(() => {
+            entity.blending = blendingModes.indexOf(this.blending) as Blending;
+        });
         if (entity.pointCount != null) {
             this.addController(entity, 'pointCount');
         }

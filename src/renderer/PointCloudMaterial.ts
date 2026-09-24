@@ -5,6 +5,7 @@
  */
 
 import type {
+    Blending,
     BufferAttribute,
     BufferGeometry,
     Camera,
@@ -19,7 +20,6 @@ import {
     GLSL3,
     Matrix4,
     NoBlending,
-    NormalBlending,
     ShaderMaterial,
     Uniform,
     Vector2,
@@ -195,6 +195,8 @@ class PointCloudMaterial extends ShaderMaterial {
     public colorLayer: ColorLayer | null;
     public disposed = false;
 
+    private _savedBlending: Blending;
+
     public intersectingVolumes: IntersectingVolume[] = [];
 
     private _elevationColorMap: ColorMap = createDefaultColorMap();
@@ -361,6 +363,8 @@ class PointCloudMaterial extends ShaderMaterial {
         this.vertexShader = PointsVS;
         this.fragmentShader = PointsFS;
 
+        this._savedBlending = this.blending;
+
         // Default
         this.defines = {
             SCALAR_0_TYPE: 'uint',
@@ -464,7 +468,10 @@ class PointCloudMaterial extends ShaderMaterial {
      */
     public enablePicking(picking: number): void {
         this.pickingId = picking;
-        this.blending = picking ? NoBlending : NormalBlending;
+        if (picking !== 0) {
+            this._savedBlending = this.blending;
+        }
+        this.blending = picking !== 0 ? NoBlending : this._savedBlending;
     }
 
     public hasColorLayer(layer: ColorLayer): boolean {

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-import type { Box3, ColorRepresentation } from 'three';
+import type { Blending, Box3, ColorRepresentation } from 'three';
 
 import {
     Box3Helper,
@@ -13,6 +13,7 @@ import {
     Group,
     MathUtils,
     Matrix4,
+    NormalBlending,
     Sphere,
     Vector2,
     Vector3,
@@ -289,6 +290,7 @@ class PointCloud<TUserData extends EntityUserData = EntityUserData>
     private _pointBudget: number | null = null;
     private _elevationColorMap: ColorMap = DEFAULT_COLORMAP.clone();
     private _colorimetry: ColorimetryOptions = defaultColorimetryOptions();
+    private _blending: Blending = NormalBlending;
 
     // Available after initialization
     private _rootNode: PointCloudNode | null = null;
@@ -486,6 +488,21 @@ class PointCloud<TUserData extends EntityUserData = EntityUserData>
                 this.updateMaterial(info.mesh);
             }
         });
+    }
+
+    /**
+     * Gets or sets the blending mode of this point cloud.
+     */
+    public get blending(): Blending {
+        return this._blending;
+    }
+
+    public set blending(v: Blending) {
+        if (this._blending !== v) {
+            this._blending = v;
+            this.updateMaterials();
+            this.notifyChange(this);
+        }
     }
 
     /**
@@ -1394,6 +1411,8 @@ class PointCloud<TUserData extends EntityUserData = EntityUserData>
         material.opacity = this.opacity;
         material.size = this._pointSize;
         material.mode = this._shaderMode;
+
+        material.blending = this._blending;
 
         material.brightness = this._colorimetry.brightness;
         material.saturation = this._colorimetry.saturation;
