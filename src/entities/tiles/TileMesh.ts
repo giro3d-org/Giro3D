@@ -747,8 +747,8 @@ class TileMesh
         const wRatio = diameter / width;
         const hRatio = diameter / height;
 
-        target.setX(Math.ceil(wRatio * view.width));
-        target.setY(Math.ceil(hRatio * view.height));
+        target.setX(Math.ceil(wRatio * view.width * view.pixelRatio));
+        target.setY(Math.ceil(hRatio * view.height * view.pixelRatio));
 
         return target;
     }

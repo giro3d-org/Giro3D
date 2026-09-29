@@ -16,6 +16,7 @@ import {
     PerspectiveCamera,
     Sphere,
     Vector3,
+    type WebGLRenderer,
 } from 'three';
 import { type OBB } from 'three/examples/jsm/Addons.js';
 
@@ -103,6 +104,7 @@ export function computeZoomToFitSphere(camera: OrthographicCamera, radius: numbe
 class View extends EventDispatcher<ViewEvents> implements Disposable {
     private readonly _coordinateSystem: CoordinateSystem;
     private readonly _viewMatrix: Matrix4;
+    private readonly _renderer: WebGLRenderer;
     private _camera: PerspectiveCamera | OrthographicCamera;
     private _width: number;
     private _height: number;
@@ -128,6 +130,14 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
     }
 
     /**
+     * The ratio between the size of this view, in device pixels, and its size in CSS pixels.
+     * This is the renderer's own pixel ratio (see `WebGLRenderer.getPixelRatio()`).
+     */
+    public get pixelRatio(): number {
+        return this._renderer.getPixelRatio();
+    }
+
+    /**
      * Gets or sets the current camera.
      */
     public get camera(): PerspectiveCamera | OrthographicCamera {
@@ -148,6 +158,8 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
     public constructor(params: {
         /** The coordinate system of the view. */
         crs: CoordinateSystem;
+        /** The renderer used to display this view. */
+        renderer: WebGLRenderer;
         /** The width in pixels of the camera viewport */
         width: number;
         /** The height in pixels of the camera viewport */
@@ -160,6 +172,7 @@ class View extends EventDispatcher<ViewEvents> implements Disposable {
         const { width, height, crs } = params;
 
         this._coordinateSystem = crs;
+        this._renderer = params.renderer;
 
         this._camera = params.camera ?? new PerspectiveCamera(30, width / height);
         this._camera.near = DEFAULT_MIN_NEAR_PLANE;

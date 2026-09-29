@@ -1081,9 +1081,11 @@ class PointCloud<TUserData extends EntityUserData = EntityUserData>
         if (isPerspectiveCamera(camera)) {
             // See https://cesiumjs.org/hosted-apps/massiveworlds/downloads/Ring/WorldScaleTerrainRendering.pptx
             // slide 17
-            preSSE = view.height / (2 * Math.tan(MathUtils.degToRad(camera.fov) * 0.5));
+            const devicePixelHeight = view.height * view.pixelRatio;
+            preSSE = devicePixelHeight / (2 * Math.tan(MathUtils.degToRad(camera.fov) * 0.5));
         } else if (isOrthographicCamera(camera)) {
-            preSSE = (view.height * camera.near) / (camera.top - camera.bottom);
+            const devicePixelHeight = view.height * view.pixelRatio;
+            preSSE = (devicePixelHeight * camera.near) / (camera.top - camera.bottom);
         }
 
         traverseNode(this._rootNode, node => {
