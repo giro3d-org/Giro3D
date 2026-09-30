@@ -38,6 +38,7 @@ CoordinateSystem.register(
 
 const instance = new Instance({
     target: 'view',
+    backgroundColor: '#2ddaed',
     crs,
 });
 
@@ -62,7 +63,6 @@ WmtsSource.fromCapabilities(capabilitiesUrl, {
             new ElevationLayer({
                 extent: map.extent,
                 resolutionFactor: 1 / 8,
-                minmax: { min: 500, max: 1500 },
                 source: source,
             }),
         );
@@ -118,7 +118,7 @@ const featureCollection = new FeatureCollection({
     elevation: 0,
     style: feature => {
         return {
-            stroke: { color: 'yellow', lineWidth: 2 },
+            stroke: { color: 'black', lineWidth: 2 },
         };
     },
 });
