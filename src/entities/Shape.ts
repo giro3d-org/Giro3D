@@ -37,6 +37,7 @@ import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
+import type Context from '../core/Context';
 import type PickOptions from '../core/picking/PickOptions';
 import type PickResult from '../core/picking/PickResult';
 import type { Entity3DOptions } from './Entity3D';
@@ -47,6 +48,7 @@ import ConstantSizeSphere, { getWorldSpaceRadius } from '../renderer/ConstantSiz
 import { getContrastColor } from '../utils/ColorUtils';
 import GeoJSONUtils from '../utils/GeoJSONUtils';
 import { triangulate } from '../utils/tessellator';
+import { nonNull } from '../utils/tsutils';
 import { type EntityUserData } from './Entity';
 import Entity3D, { type Entity3DEventMap } from './Entity3D';
 
@@ -2126,6 +2128,30 @@ class Shape<UserData extends EntityUserData = EntityUserData> extends Entity3D<
     public override preUpdate(): unknown[] | null {
         this.visitLines(line => line.updateMaterialResolution(this.instance.renderer));
         return null;
+    }
+
+    public override postUpdate(context: Context, _changeSources: Set<unknown>): void {
+        this.updateMinMaxDistance(context);
+    }
+
+    private updateMinMaxDistance(context: Context): void {
+        const bbox = nonNull(this.getBoundingBox());
+        const tmpVector = new Vector3();
+        const distance = context.distance.plane.distanceToPoint(bbox.getCenter(tmpVector));
+
+        const radius = bbox.getSize(tmpVector).length() * 0.5;
+        const MAX_DISTANCE = 1_000_000_000;
+        const MIN_DISTANCE = 0.5;
+        this._distance.min = MathUtils.clamp(
+            Math.min(this._distance.min, distance - radius),
+            MIN_DISTANCE,
+            MAX_DISTANCE,
+        );
+        this._distance.max = MathUtils.clamp(
+            Math.max(this._distance.max, distance + radius),
+            this._distance.min,
+            MAX_DISTANCE,
+        );
     }
 
     private visitLabels(callback: (label: Label) => void): void {
