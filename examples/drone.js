@@ -4,9 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-import GeoJSON from 'ol/format/GeoJSON.js';
-import VectorSource from 'ol/source/Vector.js';
-import { Color, CubicInterpolant, HemisphereLight, Vector3 } from 'three';
+import { Color, CubicInterpolant, DirectionalLight, HemisphereLight, Vector3 } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
@@ -15,8 +13,8 @@ import Extent from '@giro3d/giro3d/core/geographic/Extent.js';
 import Instance from '@giro3d/giro3d/core/Instance.js';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer.js';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer.js';
-import FeatureCollection from '@giro3d/giro3d/entities/FeatureCollection.js';
 import Map from '@giro3d/giro3d/entities/Map.js';
+import Shape from '@giro3d/giro3d/entities/Shape';
 import BilFormat from '@giro3d/giro3d/formats/BilFormat.js';
 import Inspector from '@giro3d/giro3d/gui/Inspector.js';
 import WmtsSource from '@giro3d/giro3d/sources/WmtsSource.js';
@@ -102,7 +100,6 @@ Inspector.attach('inspector', instance);
 const path = 'https://3d.oslandia.com/giro3d/gltf/G3_JSC_UAVSAR_AIR_0824.glb';
 const loader = new GLTFLoader();
 
-let result = null;
 loader.load(path, gltf => {
     const airplane = gltf.scene;
     airplane.scale.set(100, 100, 100);
@@ -113,37 +110,22 @@ loader.load(path, gltf => {
     instance.add(airplane);
 
     const hemiLight = new HemisphereLight(0xffffff, 0x444444, 3);
+    const sun = new DirectionalLight();
+    instance.scene.add(sun);
+    instance.scene.add(sun.target);
+    sun.target.position.set(0, 0, 0);
+    sun.position.set(1000, 1000, 1000);
+    sun.updateMatrixWorld(true);
+
     hemiLight.position.set(0, 200, 0);
     instance.scene.add(hemiLight);
 
-    instance.scene.background = new Color(0xa0a0ff);
+    instance.scene.background = new Color('#2ddaed');
 
     const cameraPosition = new Coordinates(CoordinateSystem.epsg4326, 6.63125, 45.93506).as(
         instance.coordinateSystem,
     );
     camera.position.set(cameraPosition.x, cameraPosition.y, 1600);
-
-    const pathSource = new VectorSource({
-        format: new GeoJSON(),
-        url: 'data/drone_path.geojson',
-    });
-
-    // Pass the VectorSource into the FeatureCollection.
-    const featureCollection = new FeatureCollection({
-        source: pathSource,
-        dataProjection: CoordinateSystem.epsg4326,
-        extent,
-        minLevel: 0,
-        maxLevel: 0,
-        elevation: 1500,
-        style: feature => {
-            return {
-                stroke: { color: 'yellow', lineWidth: 2 },
-            };
-        },
-    });
-
-    instance.add(featureCollection);
 
     fetch('data/drone_path.geojson')
         .then(response => response.json())
@@ -151,31 +133,55 @@ loader.load(path, gltf => {
             const coordinates = new Coordinates(CoordinateSystem.epsg4326, 0, 0, 0);
             const reprojected = new Coordinates(instance.coordinateSystem, 0, 0, 0);
 
-            const POINTS = json.geometry.coordinates.map(c => {
+            const points = json.geometry.coordinates.map(c => {
                 // Reproject points once and for all in target coordinate system
                 coordinates.set(CoordinateSystem.epsg4326, c[0], c[1]);
                 coordinates.as(instance.coordinateSystem, reprojected);
                 return [reprojected.x, reprojected.y];
             });
 
-            const parameterPositions = new Float32Array(POINTS.length);
-            const sampleValues = new Float32Array(POINTS.length * 2);
-            for (let i = 0; i < POINTS.length; i++) {
-                // We'll interpolate with constant time between each values from the path
-                parameterPositions[i] = i / (POINTS.length - 1);
-                sampleValues[i * 2 + 0] = POINTS[i][0];
-                sampleValues[i * 2 + 1] = POINTS[i][1];
-            }
-            const interpolant = new CubicInterpolant(parameterPositions, sampleValues, 2);
+            const parameterPositions = new Float32Array(points.length);
+            const sampleValues = new Float32Array(points.length * 2);
+            const shapePoints = Array.from({ length: 1000 });
 
             const ANIMATION_DURATION_S = 50.0;
             const AIRPLANE_ALTITUDE = 1500.0;
+
+            for (let i = 0; i < points.length; i++) {
+                // We'll interpolate with constant time between each values from the path
+                parameterPositions[i] = i / (points.length - 1);
+
+                const x = points[i][0];
+                const y = points[i][1];
+
+                sampleValues[i * 2 + 0] = x;
+                sampleValues[i * 2 + 1] = y;
+            }
+
+            const interpolant = new CubicInterpolant(parameterPositions, sampleValues, 2);
+
+            for (let i = 0; i <= 1000; i += 1) {
+                const t = i / 1000;
+                const [x, y] = interpolant.evaluate(t);
+
+                shapePoints[i] = new Vector3(x, y, AIRPLANE_ALTITUDE);
+            }
+
             let oldTime = 0.0;
             let animationAlpha = 0.0;
 
-            const _look_at = new Vector3();
+            // Let's represent the flight path with a Shape entity.
+            const shape = new Shape({ showVertices: false, lineWidth: 3 });
 
-            const loop = time => {
+            shape.setPoints(shapePoints);
+            // points.map(([x, y]) => new Vector3(x, y, AIRPLANE_ALTITUDE - 5)));
+            shape.color = 'yellow';
+            shape.depthTest = true;
+            instance.add(shape);
+
+            const lookAt = new Vector3();
+
+            const animate = time => {
                 const frameTime = (time - oldTime) / 1000.0;
                 oldTime = time;
 
@@ -186,8 +192,8 @@ loader.load(path, gltf => {
                 // Set the heading
                 // note: evaluate returns a reference, so at this point `position` is outdated
                 const nextPosition = interpolant.evaluate((animationAlpha + 0.01) % 1);
-                _look_at.set(nextPosition[0], nextPosition[1], AIRPLANE_ALTITUDE);
-                airplane.lookAt(_look_at);
+                lookAt.set(nextPosition[0], nextPosition[1], AIRPLANE_ALTITUDE);
+                airplane.lookAt(lookAt);
                 airplane.updateMatrixWorld();
 
                 // Move the camera
@@ -198,10 +204,10 @@ loader.load(path, gltf => {
 
                 animationAlpha = (animationAlpha + frameTime / ANIMATION_DURATION_S) % 1;
 
-                requestAnimationFrame(loop);
+                requestAnimationFrame(animate);
             };
 
             StatusBar.bind(instance);
-            requestAnimationFrame(loop);
+            requestAnimationFrame(animate);
         });
 });
