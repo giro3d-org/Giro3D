@@ -104,10 +104,9 @@ interface PerfOptions {
  *
  * ### Dimensions filtering
  *
- * This source supports filtering over dimensions (also known as attributes). By providing filters
- * in the form of callback functions to apply to various dimensions, it is possible to eliminate
- * points during reads. For example, it is possible to remove unwanted classifications such as noise
- * from the output points.
+ * This source supports filtering over dimensions (also known as attributes). By providing filters,
+ * it is possible to eliminate points during reads. For example, it is possible to remove unwanted
+ * classifications such as noise from the output points.
  *
  * Note that dimension filtering is independent from the selected attribute. In other words, it is
  * possible to select the dimension `"Intensity"`, while filtering on dimensions `"Classification"`
