@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-import type { LRUCache, PriorityQueue, Tile, TilesRendererEventMap } from '3d-tiles-renderer';
+import type {
+    DownloadPriorityQueue,
+    LRUCache,
+    PriorityQueue,
+    Tile,
+    TilesRendererEventMap,
+} from '3d-tiles-renderer';
 import type { ColorRepresentation, Material, Object3D } from 'three';
 
 import { TilesRenderer } from '3d-tiles-renderer';
@@ -163,7 +169,7 @@ export interface Tiles3DEventMap extends Entity3DEventMap {
 }
 
 interface SharedResources {
-    downloadQueue: PriorityQueue;
+    downloadQueue: DownloadPriorityQueue;
     parseQueue: PriorityQueue;
     lruCache: LRUCache;
 }
