@@ -489,7 +489,7 @@ class Tiles3D<UserData extends EntityUserData = EntityUserData>
 
             const handlers = {
                 success: (): void => {
-                    this._tiles.removeEventListener('load-content', handlers.success);
+                    this._tiles.removeEventListener('load-root-tileset', handlers.success);
                     this._tiles.removeEventListener('load-error', handlers.error);
                     // The two next lines became necessary starting with
                     // 3d-tile-renderer v0.4.8 but the actual reason is unclear.
@@ -498,12 +498,12 @@ class Tiles3D<UserData extends EntityUserData = EntityUserData>
                     resolve();
                 },
                 error: (error: TilesRendererEventMap['load-error']): void => {
-                    this._tiles.removeEventListener('load-content', handlers.success);
+                    this._tiles.removeEventListener('load-root-tileset', handlers.success);
                     this._tiles.removeEventListener('load-error', handlers.error);
                     reject(error);
                 },
             };
-            this._tiles.addEventListener('load-content', handlers.success);
+            this._tiles.addEventListener('load-root-tileset', handlers.success);
             this._tiles.addEventListener('load-error', handlers.error);
 
             const camera = instance.view.camera;

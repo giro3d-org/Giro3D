@@ -4,12 +4,54 @@
  * SPDX-License-Identifier: MIT
  */
 
-import type { BufferGeometry, Material } from 'three';
+import type { BufferGeometry, Material, Vector2 } from 'three';
 
-import { Group, Mesh } from 'three';
-import { describe, expect, it } from 'vitest';
+import { Group, Mesh, WebGLRenderer } from 'three';
+import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
+import { afterEach, describe, expect, it, vitest } from 'vitest';
 
+import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem';
+import Instance from '@giro3d/giro3d/core/Instance';
 import Tiles3D from '@giro3d/giro3d/entities/Tiles3D';
+import Fetcher from '@giro3d/giro3d/utils/Fetcher';
+
+import { setupGlobalMocks } from '../mocks';
+
+describe('initialize', () => {
+    afterEach(() => vitest.restoreAllMocks());
+
+    it('adds the entity to the scene when the root tileset loads', async () => {
+        setupGlobalMocks();
+        const renderer = new WebGLRenderer();
+        const instance = new Instance({
+            target: document.createElement('div'),
+            crs: CoordinateSystem.epsg3857,
+            renderer,
+        });
+        instance.renderer.getSize = vitest.fn((target: Vector2) => target.set(10, 10));
+        const entity = new Tiles3D({ url: 'https://example.com/tileset.json' });
+
+        vitest.spyOn(KTX2Loader.prototype, 'detectSupport').mockReturnThis();
+        vitest.spyOn(Fetcher, 'fetch').mockResolvedValue(
+            new Response(
+                JSON.stringify({
+                    asset: { version: '1.0' },
+                    geometricError: 0,
+                    root: {
+                        boundingVolume: { box: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1] },
+                        geometricError: 0,
+                        refine: 'REPLACE',
+                    },
+                }),
+            ),
+        );
+
+        await expect(instance.add(entity)).resolves.toBe(entity);
+        expect(entity.object3d.parent).toBe(instance.scene);
+
+        instance.dispose();
+    });
+});
 
 describe('onObjectCreated', () => {
     it('should set the opacity of the created object and its descendants to the current opacity value when they have no original opacity', () => {
