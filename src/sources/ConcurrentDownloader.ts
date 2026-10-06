@@ -135,8 +135,9 @@ export default class ConcurrentDownloader {
 
         const abortController = new AbortController();
 
+        let timeoutId: ReturnType<typeof setTimeout> | undefined;
         if (this._timeout) {
-            setTimeout(() => abortController.abort('timeout'), this._timeout);
+            timeoutId = setTimeout(() => abortController.abort('timeout'), this._timeout);
         }
 
         if (options) {
@@ -152,7 +153,7 @@ export default class ConcurrentDownloader {
                 retries: this._retry,
             }).finally(() => {
                 this._requests.delete(key);
-                clearTimeout(this._timeout);
+                clearTimeout(timeoutId);
             }),
         };
 
