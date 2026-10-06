@@ -4,7 +4,7 @@
 
 ### Fix
 
-- **ConcurrentDownloader**: clear the real timeout handle instead of the configured duration
+- **ConcurrentDownloader**: clear the real timeout handle instead of the configured duration (#697)
 
 ## v2.0.4 (2026-08-31)
 
