@@ -44,15 +44,11 @@ describe('fetch', () => {
     it('should handle timeouts', async () => {
         let aggregateSignal: AbortSignal;
 
-        const response = {
-            status: 200,
-            statusText: 'ok',
-            clone: () => response,
-        } as Response;
-
+        // A request that never settles on its own, so the only way it can
+        // ever be aborted is via the timeout.
         const fetch: FetchCallback = (url, options) => {
             aggregateSignal = options!.signal!;
-            return Promise.resolve(response);
+            return new Promise(() => {});
         };
 
         const timeout = 1000;
@@ -68,6 +64,36 @@ describe('fetch', () => {
 
         expect(aggregateSignal!.aborted).toEqual(true);
         expect(aggregateSignal!.reason).toEqual('timeout');
+    });
+
+    it('should not abort an already completed request once the timeout elapses', async () => {
+        let aggregateSignal: AbortSignal;
+
+        const response = {
+            status: 200,
+            statusText: 'ok',
+            clone: () => response,
+        } as Response;
+
+        const fetch: FetchCallback = (url, options) => {
+            aggregateSignal = options!.signal!;
+            return Promise.resolve(response);
+        };
+
+        const timeout = 1000;
+
+        const dl = new ConcurrentDownloader({ fetch, timeout });
+
+        // The request completes well before the timeout elapses, so the
+        // pending timeout should be cancelled and must not abort the
+        // (already settled) controller afterwards.
+        await dl.fetch(URL);
+
+        expect(aggregateSignal!.aborted).toEqual(false);
+
+        await PromiseUtils.delay(timeout * 2);
+
+        expect(aggregateSignal!.aborted).toEqual(false);
     });
 
     it('should abort the deduplicated request when *all* requests are aborted', () => {
