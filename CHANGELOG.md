@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.0.5 (2026-10-06)
+
+### Fix
+
+- **ConcurrentDownloader**: clear the real timeout handle instead of the configured duration
+
 ## v2.0.4 (2026-08-31)
 
 ### Fix

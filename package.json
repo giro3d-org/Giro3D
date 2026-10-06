@@ -1,6 +1,6 @@
 {
     "name": "@giro3d/giro3d",
-    "version": "2.0.4",
+    "version": "2.0.5",
     "description": "A JS/WebGL framework for 3D geospatial data visualization",
     "keywords": [
         "front-end",
@@ -86,7 +86,7 @@
         "Firefox ESR"
     ],
     "dependencies": {
-        "3d-tiles-renderer": "^0.4.22",
+        "3d-tiles-renderer": "0.4.22",
         "chart.js": "^3.9.1",
         "copc": "^0.0.8",
         "earcut": "^2.2.4",
@@ -96,7 +96,7 @@
         "wkt-parser": "^1.5.2"
     },
     "peerDependencies": {
-        "ol": "^10.8.0",
+        "ol": "~10.8.0",
         "proj4": "^2.19.0",
         "three": "^0.180.0"
     },
