@@ -327,7 +327,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
 
         this._entities = new Set();
 
-        if (window.ResizeObserver != null) {
+        if (globalThis.ResizeObserver != null) {
             this._resizeObserver = new ResizeObserver(() => {
                 this._updateRendererSize(this.viewport);
             });
@@ -692,7 +692,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         target: Vector2,
         touchIdx = 0,
     ): Vector2 {
-        if (window.TouchEvent != null && event instanceof TouchEvent) {
+        if (globalThis.TouchEvent != null && event instanceof TouchEvent) {
             const touchEvent = event as TouchEvent;
             const br = this.domElement.getBoundingClientRect();
             return target.set(

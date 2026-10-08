@@ -253,7 +253,7 @@ async function json<T = unknown>(input: RequestInfo | URL, options?: RequestInit
 async function xml(input: RequestInfo | URL, options?: RequestInit): Promise<Document> {
     const response = await fetchInternal(input, options);
     const txt = await response.text();
-    return new window.DOMParser().parseFromString(txt, 'text/xml');
+    return new globalThis.DOMParser().parseFromString(txt, 'text/xml');
 }
 
 /**

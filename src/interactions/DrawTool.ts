@@ -461,7 +461,7 @@ export class DrawTool extends EventDispatcher<DrawToolEventMap> implements Dispo
         // moved after the creation started. This can happen if the creation is triggered by a
         // key press rather than a click for example.
         this._mouseEventHandler = this.onMouseEvent.bind(this);
-        window.addEventListener('mousemove', this._mouseEventHandler);
+        globalThis.addEventListener('mousemove', this._mouseEventHandler);
     }
 
     private onMouseEvent(e: MouseEvent): void {
@@ -1311,7 +1311,7 @@ export class DrawTool extends EventDispatcher<DrawToolEventMap> implements Dispo
             this._selectedVertexMarker = undefined;
         }
 
-        window.removeEventListener('mousemove', this._mouseEventHandler);
+        globalThis.removeEventListener('mousemove', this._mouseEventHandler);
     }
 }
 

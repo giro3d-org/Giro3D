@@ -132,8 +132,8 @@ export default class WorkerPool<
     }
 
     public static get defaultConcurrency(): number {
-        if (typeof window !== 'undefined' && window.navigator != null) {
-            return window.navigator.hardwareConcurrency;
+        if (globalThis.navigator != null) {
+            return globalThis.navigator.hardwareConcurrency;
         } else {
             return 1;
         }

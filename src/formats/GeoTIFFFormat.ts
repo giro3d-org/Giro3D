@@ -69,7 +69,7 @@ class GeoTIFFFormat extends ImageFormat {
         const spp = image.getSamplesPerPixel();
 
         // Let's use web workers to decode TIFF in the background
-        if (window.Worker != null && geotiffWorkerPool == null) {
+        if (globalThis.Worker != null && geotiffWorkerPool == null) {
             geotiffWorkerPool = new Pool();
         }
 

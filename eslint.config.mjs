@@ -173,6 +173,20 @@ export default [
         },
     },
     {
+        files: ['src/**/*.ts'],
+
+        rules: {
+            'no-restricted-globals': [
+                'error',
+                {
+                    name: 'window',
+                    message:
+                        'Use globalThis instead of window: window is not defined inside Web Workers.',
+                },
+            ],
+        },
+    },
+    {
         files: ['**/*.ts'],
 
         rules: {

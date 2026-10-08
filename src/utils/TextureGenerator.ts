@@ -246,7 +246,7 @@ async function createImageBitmapUsingWorker(
     blob: Blob,
     options?: ImageBitmapOptions,
 ): Promise<ImageBitmap> {
-    if (window.Worker != null) {
+    if (globalThis.Worker != null) {
         const pool = getDecoderPool();
 
         const buffer = await blob.arrayBuffer();
@@ -525,7 +525,7 @@ async function createDataTextureAsync(
 
     const enableWorkers = options?.enableWorkers ?? true;
 
-    if (enableWorkers && window.Worker != null) {
+    if (enableWorkers && globalThis.Worker != null) {
         const pool = getDecoderPool();
 
         result = await pool.queue(
@@ -857,7 +857,10 @@ function getMemoryUsage(
 function getImageData(
     source: ImageBitmap | HTMLCanvasElement | OffscreenCanvas,
 ): Uint8ClampedArray {
-    if (source instanceof HTMLCanvasElement || source instanceof OffscreenCanvas) {
+    if (
+        (typeof HTMLCanvasElement !== 'undefined' && source instanceof HTMLCanvasElement) ||
+        source instanceof OffscreenCanvas
+    ) {
         const context = source.getContext('2d', {
             willReadFrequently: true,
         }) as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
