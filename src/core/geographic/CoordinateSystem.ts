@@ -353,6 +353,7 @@ export class CoordinateSystem {
     }
 
     private readonly _customId?: string;
+    private readonly _id: string;
 
     /**
      * The readable name of this coordinate system.
@@ -380,14 +381,7 @@ export class CoordinateSystem {
      * By order of priority, will return: the custom identifier, the SRID, then the name.
      */
     public get id(): string {
-        if (typeof this._customId !== 'undefined') {
-            return this._customId;
-        }
-
-        if (typeof this.srid !== 'undefined') {
-            return this.srid.toString();
-        }
-        return this.name;
+        return this._id;
     }
 
     public constructor(params: {
@@ -419,6 +413,14 @@ export class CoordinateSystem {
         this.name = params.name;
         this.srid = params.srid;
         this._customId = params.id;
+
+        if (typeof this._customId !== 'undefined') {
+            this._id = this._customId;
+        } else if (typeof this.srid !== 'undefined') {
+            this._id = this.srid.toString();
+        } else {
+            this._id = this.name;
+        }
 
         if (typeof params.horizontal !== 'undefined') {
             this.horizontal = params.horizontal;

@@ -59,6 +59,9 @@ const WKT_UTM_ZONE_11 = `
         ID["EPSG",32611]]
         `;
 
+const WKT_GEOGRAPHIC_WGS84 =
+    'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]';
+
 beforeEach(() => {
     CoordinateSystem.clearRegistry();
 });
@@ -740,5 +743,43 @@ describe('id', () => {
         expect(crs.id).toEqual('GCS_WGS_1984');
         expect(crs.name).toEqual('GCS_WGS_1984');
         expect(crs.srid).toBeUndefined();
+    });
+});
+
+describe('equals', () => {
+    it('should return true for two instances sharing the same custom id, even if name/srid differ', () => {
+        const a = CoordinateSystem.fromWkt(WKT_UTM_ZONE_11, { id: 'FOO' });
+        const b = CoordinateSystem.fromWkt(WKT_GEOGRAPHIC_WGS84, { id: 'FOO' });
+
+        expect(a.equals(b)).toEqual(true);
+    });
+
+    it('should return true for two instances sharing the same SRID, when no custom id is set', () => {
+        const a = CoordinateSystem.fromWkt(WKT_UTM_ZONE_11);
+        const b = CoordinateSystem.fromWkt(WKT_UTM_ZONE_11);
+
+        expect(a.equals(b)).toEqual(true);
+    });
+
+    it('should return true for two instances sharing the same name, when no custom id nor SRID are set', () => {
+        const a = CoordinateSystem.fromWkt(WKT_GEOGRAPHIC_WGS84);
+        const b = CoordinateSystem.fromWkt(WKT_GEOGRAPHIC_WGS84);
+
+        expect(a.equals(b)).toEqual(true);
+    });
+
+    it('should return false for instances with different ids', () => {
+        const a = CoordinateSystem.fromWkt(WKT_UTM_ZONE_11, { id: 'FOO' });
+        const b = CoordinateSystem.fromWkt(WKT_UTM_ZONE_11, { id: 'BAR' });
+
+        expect(a.equals(b)).toEqual(false);
+    });
+
+    it('should return true when comparing the same preset instance to itself', () => {
+        expect(CoordinateSystem.epsg3857.equals(CoordinateSystem.epsg3857)).toEqual(true);
+    });
+
+    it('should return false when comparing two different presets', () => {
+        expect(CoordinateSystem.epsg3857.equals(CoordinateSystem.epsg4326)).toEqual(false);
     });
 });
