@@ -644,7 +644,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
         this._rootTiles = [];
 
-        this._layerIndices = new window.Map();
+        this._layerIndices = new globalThis.Map();
 
         if (!options.extent.isValid()) {
             throw new Error(

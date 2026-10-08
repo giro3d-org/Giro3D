@@ -74,7 +74,7 @@ let sharedPool: Pool | undefined = undefined;
 export type ChannelMapping = [number] | [number, number, number] | [number, number, number, number];
 
 function getPool(concurrency?: number): Pool | undefined {
-    if (sharedPool == null && window.Worker != null) {
+    if (sharedPool == null && globalThis.Worker != null) {
         sharedPool = new Pool(concurrency);
     }
 
