@@ -68,6 +68,77 @@ describe('Instance', () => {
         });
     });
 
+    describe('canvas option', () => {
+        // Shared across most assertions below to avoid piling up extra Instances (each one
+        // schedules a MainLoop frame that nothing cancels on dispose, a pre-existing jsdom/rAF
+        // quirk unrelated to this option).
+        let canvasInstance: Instance;
+
+        beforeEach(() => {
+            canvasInstance = new Instance({
+                canvas: document.createElement('canvas'),
+                crs: CoordinateSystem.epsg3857,
+                renderer: new WebGLRenderer(),
+            });
+        });
+
+        it('should throw if both target and canvas are provided', () => {
+            expect(
+                () =>
+                    new Instance({
+                        target: viewerDiv,
+                        canvas: document.createElement('canvas'),
+                        crs: CoordinateSystem.epsg3857,
+                        renderer,
+                    }),
+            ).toThrow(/provide either target or canvas/);
+        });
+
+        it('should not create a viewport', () => {
+            expect(() => canvasInstance.viewport).toThrow(/DOM-free/);
+        });
+
+        it('should not create a CSS2D label renderer', () => {
+            expect(canvasInstance.css2DRenderer).toBeNull();
+        });
+
+        it('should dispose without throwing', () => {
+            expect(() => canvasInstance.dispose()).not.toThrow();
+        });
+
+        it('should not observe resizing, since there is no viewport element to observe', () => {
+            const observerCountBefore = resizeObservers.length;
+
+            new Instance({
+                canvas: document.createElement('canvas'),
+                crs: CoordinateSystem.epsg3857,
+                renderer: new WebGLRenderer(),
+            }).dispose();
+
+            expect(resizeObservers.length).toBe(observerCountBefore);
+        });
+
+        it('should accept an OffscreenCanvas-shaped object, with no label renderer', () => {
+            const fakeOffscreenCanvas = {
+                width: 320,
+                height: 240,
+                getContext: vitest.fn(),
+                addEventListener: vitest.fn(),
+                removeEventListener: vitest.fn(),
+            } as unknown as OffscreenCanvas;
+
+            const offscreenInstance = new Instance({
+                canvas: fakeOffscreenCanvas,
+                crs: CoordinateSystem.epsg3857,
+                renderer: new WebGLRenderer(),
+            });
+
+            expect(offscreenInstance.css2DRenderer).toBeNull();
+            expect(() => offscreenInstance.viewport).toThrow(/DOM-free/);
+            expect(() => offscreenInstance.dispose()).not.toThrow();
+        });
+    });
+
     describe('canvasToNormalizedCoords', () => {
         it('should return the passed target', () => {
             const target = new Vector2();

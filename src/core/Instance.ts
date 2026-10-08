@@ -138,8 +138,19 @@ export interface InstanceOptions {
     /**
      * The container for the instance. May be either the `id` of an existing `<div>` element,
      * or the element itself.
+     *
+     * Exactly one of {@link target} and {@link canvas} must be provided.
      */
-    target: string | HTMLDivElement;
+    target?: string | HTMLDivElement;
+    /**
+     * Renders directly into this canvas instead of creating a wrapper `<div>` inside
+     * {@link target}. Accepts a regular `HTMLCanvasElement` or a transferable `OffscreenCanvas`,
+     * so the instance can be constructed in a Worker. No DOM is touched on this path: there is
+     * no viewport element, no `ResizeObserver`, and no CSS2D label renderer.
+     *
+     * Exactly one of {@link target} and {@link canvas} must be provided.
+     */
+    canvas?: HTMLCanvasElement | OffscreenCanvas;
     /**
      * The coordinate reference system of the scene.
      * Must be a cartesian system.
@@ -199,6 +210,12 @@ function isObject3D(o: unknown): o is Object3D {
     return (o as Object3D).isObject3D;
 }
 
+// Structural, so it can be evaluated in a realm where HTMLCanvasElement is not declared at all
+// (e.g. a Worker). OffscreenCanvas has no ownerDocument, unlike a real DOM canvas.
+function isDomCanvas(canvas: HTMLCanvasElement | OffscreenCanvas): canvas is HTMLCanvasElement {
+    return 'ownerDocument' in canvas;
+}
+
 /**
  * The instance is the core component of Giro3D. It encapsulates the 3D scene,
  * the current camera and one or more {@link Entity | entities}. The instance displays
@@ -229,7 +246,7 @@ function isObject3D(o: unknown): o is Object3D {
  */
 class Instance extends EventDispatcher<InstanceEvents> implements Progress {
     private readonly _referenceCrs: CoordinateSystem;
-    private readonly _viewport: HTMLDivElement;
+    private readonly _viewport: HTMLDivElement | null;
     private readonly _mainLoop: MainLoop;
     private readonly _engine: C3DEngine;
     private readonly _scene: Scene;
@@ -259,42 +276,58 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         super();
         Object3D.DEFAULT_UP.set(0, 0, 1);
 
-        const target = options.target;
         let viewerDiv: HTMLElement | null = null;
 
-        if (typeof target === 'string') {
-            viewerDiv = document.getElementById(target);
-        } else if (options.target instanceof HTMLElement) {
-            viewerDiv = options.target;
+        if (options.canvas != null) {
+            if (options.target != null) {
+                throw new Error(
+                    'Invalid parameters (provide either target or canvas, but not both)',
+                );
+            }
+
+            this._referenceCrs = options.crs;
+            this._viewport = null;
+
+            this._engine = new C3DEngine(options.canvas, {
+                clearColor: options.backgroundColor,
+                renderer: options.renderer,
+            });
+        } else {
+            const target = options.target;
+
+            if (typeof target === 'string') {
+                viewerDiv = document.getElementById(target);
+            } else if (options.target instanceof HTMLElement) {
+                viewerDiv = options.target;
+            }
+
+            if (!viewerDiv || !(viewerDiv instanceof HTMLDivElement)) {
+                throw new Error('Invalid target parameter (must be a valid <div>)');
+            }
+            if (viewerDiv.childElementCount > 0) {
+                console.warn(
+                    'Target element has children; Giro3D expects an empty element - this can lead to unexpected behaviors',
+                );
+            }
+
+            this._referenceCrs = options.crs;
+
+            // viewerDiv may have padding/borders, which is annoying when retrieving its size
+            // Wrap our canvas in a new div so we make sure the display
+            // is correct whatever the page layout is
+            // (especially when skrinking so there is no scrollbar/bleading)
+            this._viewport = document.createElement('div');
+            this._viewport.style.position = 'relative';
+            this._viewport.style.overflow = 'hidden'; // Hide overflow during resizing
+            this._viewport.style.width = '100%'; // Make sure it fills the space
+            this._viewport.style.height = '100%';
+            viewerDiv.appendChild(this._viewport);
+
+            this._engine = new C3DEngine(this._viewport, {
+                clearColor: options.backgroundColor,
+                renderer: options.renderer,
+            });
         }
-
-        if (!viewerDiv || !(viewerDiv instanceof HTMLDivElement)) {
-            throw new Error('Invalid target parameter (must be a valid <div>)');
-        }
-        if (viewerDiv.childElementCount > 0) {
-            console.warn(
-                'Target element has children; Giro3D expects an empty element - this can lead to unexpected behaviors',
-            );
-        }
-
-        this._referenceCrs = options.crs;
-        this._viewport = viewerDiv;
-
-        // viewerDiv may have padding/borders, which is annoying when retrieving its size
-        // Wrap our canvas in a new div so we make sure the display
-        // is correct whatever the page layout is
-        // (especially when skrinking so there is no scrollbar/bleading)
-        this._viewport = document.createElement('div');
-        this._viewport.style.position = 'relative';
-        this._viewport.style.overflow = 'hidden'; // Hide overflow during resizing
-        this._viewport.style.width = '100%'; // Make sure it fills the space
-        this._viewport.style.height = '100%';
-        viewerDiv.appendChild(this._viewport);
-
-        this._engine = new C3DEngine(this._viewport, {
-            clearColor: options.backgroundColor,
-            renderer: options.renderer,
-        });
 
         this._mainLoop = new MainLoop();
 
@@ -327,7 +360,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
 
         this._entities = new Set();
 
-        if (globalThis.ResizeObserver != null) {
+        if (viewerDiv != null && globalThis.ResizeObserver != null) {
             this._resizeObserver = new ResizeObserver(() => {
                 this._updateRendererSize(this.viewport);
             });
@@ -338,22 +371,37 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
 
         this._onContextRestored = this.onContextRestored.bind(this);
         this._onContextLost = this.onContextLost.bind(this);
-        this.domElement.addEventListener('webglcontextlost', this._onContextLost);
-        this.domElement.addEventListener('webglcontextrestored', this._onContextRestored);
+        // A real DOM canvas (whether we created it or the caller supplied one via `canvas`)
+        // fires these events normally. An OffscreenCanvas fires differently-named
+        // 'contextlost'/'contextrestored' events instead, so recovery isn't wired up for it here.
+        if (isDomCanvas(this.domElement)) {
+            this.domElement.addEventListener('webglcontextlost', this._onContextLost);
+            this.domElement.addEventListener('webglcontextrestored', this._onContextRestored);
+        }
     }
 
     private onContextLost(): void {
+        // Only reachable via the 'webglcontextlost' listener, which is only ever attached to a
+        // real DOM canvas (see the constructor).
+        const canvas = this.domElement;
+        if (!isDomCanvas(canvas)) {
+            return;
+        }
         this.getEntities().forEach(entity => {
             if (isEntity3D(entity)) {
-                entity.onRenderingContextLost({ canvas: this.domElement });
+                entity.onRenderingContextLost({ canvas });
             }
         });
     }
 
     private onContextRestored(): void {
+        const canvas = this.domElement;
+        if (!isDomCanvas(canvas)) {
+            return;
+        }
         this.getEntities().forEach(entity => {
             if (isEntity3D(entity)) {
-                entity.onRenderingContextRestored({ canvas: this.domElement });
+                entity.onRenderingContextRestored({ canvas });
             }
         });
         this.notifyChange();
@@ -366,6 +414,9 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
 
     /** Gets the DOM element that contains the Giro3D viewport. */
     public get viewport(): HTMLDivElement {
+        if (this._viewport == null) {
+            throw new Error('this instance is DOM-free: it has no viewport, only a canvas');
+        }
         return this._viewport;
     }
 
@@ -423,9 +474,9 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
     }
 
     /**
-     * Gets the underlying CSS2DRenderer.
+     * Gets the underlying CSS2DRenderer, or `null` if this instance is DOM-free.
      */
-    public get css2DRenderer(): CSS2DRenderer {
+    public get css2DRenderer(): CSS2DRenderer | null {
         return this._engine.labelRenderer;
     }
 
@@ -479,8 +530,10 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         }
         this._disposed = true;
 
-        this.domElement.removeEventListener('webglcontextlost', this._onContextLost);
-        this.domElement.removeEventListener('webglcontextrestored', this._onContextRestored);
+        if (isDomCanvas(this.domElement)) {
+            this.domElement.removeEventListener('webglcontextlost', this._onContextLost);
+            this.domElement.removeEventListener('webglcontextrestored', this._onContextRestored);
+        }
 
         this._resizeObserver?.disconnect();
         for (const obj of this.getObjects()) {
@@ -490,7 +543,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
 
         this._engine.dispose();
         this._view.dispose();
-        this.viewport.remove();
+        this._viewport?.remove();
 
         this.dispatchEvent({ type: 'dispose' });
     }
@@ -692,9 +745,17 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         target: Vector2,
         touchIdx = 0,
     ): Vector2 {
+        // DOM events can only ever target a real DOM canvas.
+        const canvas = this.domElement;
+        if (!isDomCanvas(canvas)) {
+            throw new Error(
+                'this instance is DOM-free: cannot translate DOM event coordinates without a DOM canvas',
+            );
+        }
+
         if (globalThis.TouchEvent != null && event instanceof TouchEvent) {
             const touchEvent = event as TouchEvent;
-            const br = this.domElement.getBoundingClientRect();
+            const br = canvas.getBoundingClientRect();
             return target.set(
                 touchEvent.touches[touchIdx].clientX - br.x,
                 touchEvent.touches[touchIdx].clientY - br.y,
@@ -703,12 +764,12 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
 
         const mouseEvent = event as MouseEvent;
 
-        if (mouseEvent.target === this.domElement) {
+        if (mouseEvent.target === canvas) {
             return target.set(mouseEvent.offsetX, mouseEvent.offsetY);
         }
 
         // Event was triggered outside of the canvas, probably a CSS2DElement
-        const br = this.domElement.getBoundingClientRect();
+        const br = canvas.getBoundingClientRect();
         return target.set(mouseEvent.clientX - br.x, mouseEvent.clientY - br.y);
     }
 

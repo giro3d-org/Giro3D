@@ -65,6 +65,19 @@ function requiresCustomPipeline(options: RenderingOptions): boolean {
     return options.enableEDL || options.enableInpainting || options.enablePointCloudOcclusion;
 }
 
+// Structural, so it can be evaluated in a realm where HTMLCanvasElement is not declared at all
+// (e.g. a Worker). Covers both HTMLCanvasElement and OffscreenCanvas identically.
+function isCanvasTarget(
+    target: HTMLDivElement | HTMLCanvasElement | OffscreenCanvas,
+): target is HTMLCanvasElement | OffscreenCanvas {
+    return 'getContext' in target;
+}
+
+// Also structural: OffscreenCanvas has no ownerDocument, unlike a real DOM canvas.
+function isDomCanvas(canvas: HTMLCanvasElement | OffscreenCanvas): canvas is HTMLCanvasElement {
+    return 'ownerDocument' in canvas;
+}
+
 function createErrorMessage(): HTMLDivElement {
     // from Detector.js
     const element = document.createElement('div');
@@ -94,12 +107,17 @@ function createErrorMessage(): HTMLDivElement {
     return element;
 }
 
-function createRenderer(target: HTMLDivElement, options?: WebGLRendererParameters): WebGLRenderer {
+function createRenderer(
+    target: HTMLDivElement | HTMLCanvasElement | OffscreenCanvas,
+    options?: WebGLRendererParameters,
+): WebGLRenderer {
     // Create renderer
     try {
+        const canvas =
+            options?.canvas ?? (isCanvasTarget(target) ? target : document.createElement('canvas'));
         const renderer = new WebGLRenderer({
             ...options,
-            canvas: options?.canvas ?? document.createElement('canvas'),
+            canvas,
             antialias: options?.antialias ?? true,
             alpha: options?.alpha ?? true,
             logarithmicDepthBuffer: options?.logarithmicDepthBuffer ?? false,
@@ -113,7 +131,9 @@ function createRenderer(target: HTMLDivElement, options?: WebGLRendererParameter
     } catch (error) {
         const msg = 'Failed to create WebGLRenderer';
         console.error(msg, error);
-        target.appendChild(createErrorMessage());
+        if (!isCanvasTarget(target)) {
+            target.appendChild(createErrorMessage());
+        }
         if (error instanceof Error) {
             throw new Error(`${msg}: ${error.message}`);
         } else {
@@ -159,7 +179,8 @@ class C3DEngine {
     private readonly _renderTargets: Map<number, WebGLRenderTarget> = new Map();
 
     public readonly renderer: WebGLRenderer;
-    public readonly labelRenderer: CSS2DRenderer;
+    public readonly labelRenderer: CSS2DRenderer | null;
+    private readonly _domTarget: HTMLDivElement | null;
     private _renderPipeline: RenderPipeline | null;
 
     public width: number;
@@ -170,14 +191,25 @@ class C3DEngine {
     public clearColor: ColorRepresentation = 0x030508;
 
     /**
-     * @param target - The parent div that will contain the canvas.
+     * @param target - The parent div that will contain the canvas, or, when DOM-free, the
+     * canvas (regular or offscreen) to render into directly.
      * @param options - The options.
      */
-    public constructor(target: HTMLDivElement, options?: EngineOptions) {
+    public constructor(
+        target: HTMLDivElement | HTMLCanvasElement | OffscreenCanvas,
+        options?: EngineOptions,
+    ) {
         registerChunks();
 
-        this.width = target.clientWidth;
-        this.height = target.clientHeight;
+        if (isCanvasTarget(target)) {
+            this._domTarget = null;
+            this.width = target.width;
+            this.height = target.height;
+        } else {
+            this._domTarget = target;
+            this.width = target.clientWidth;
+            this.height = target.clientHeight;
+        }
 
         if (options?.renderer instanceof WebGLRenderer) {
             this.renderer = options?.renderer;
@@ -190,14 +222,15 @@ class C3DEngine {
         // Don't verify shaders by default (it is very costly)
         this.renderer.debug.checkShaderErrors = false;
 
-        this.labelRenderer = new CSS2DRenderer();
+        const labelRenderer = this._domTarget != null ? new CSS2DRenderer() : null;
+        this.labelRenderer = labelRenderer;
 
-        // Let's allow our canvas to take focus
+        // Let's allow our canvas to take focus (only possible for a real DOM canvas)
         // The condition below looks weird, but it's correct: querying tabIndex
         // returns -1 if not set, but we still need to explicitly set it to force
         // the tabindex focus flag to true (see
         // https://www.w3.org/TR/html5/editing.html#specially-focusable)
-        if (this.renderer.domElement.tabIndex === -1) {
+        if (isDomCanvas(this.renderer.domElement) && this.renderer.domElement.tabIndex === -1) {
             this.renderer.domElement.tabIndex = -1;
         }
 
@@ -219,26 +252,31 @@ class C3DEngine {
 
         this.renderer.autoClear = false;
 
-        // Finalize DOM insertion:
-        // Ensure display is OK whatever the page layout is
-        // - By default canvas has `display: inline-block`, which makes it affected by
-        // its parent's line-height, so it will take more space than it's actual size
-        // - Setting `display: block` is not enough in flex displays
-        this.renderer.domElement.style.position = 'absolute';
-        this.labelRenderer.domElement.style.position = 'absolute';
-        this.labelRenderer.domElement.style.top = '0';
-        this.labelRenderer.domElement.style.pointerEvents = 'none';
-        // Make sure labelRenderer starts a new stacking context, so the labels don't
-        // stay on top of other components (e.g. inspector, etc.)
-        this.labelRenderer.domElement.style.zIndex = '0';
+        if (this._domTarget != null && labelRenderer != null) {
+            // Finalize DOM insertion:
+            // Ensure display is OK whatever the page layout is
+            // - By default canvas has `display: inline-block`, which makes it affected by
+            // its parent's line-height, so it will take more space than it's actual size
+            // - Setting `display: block` is not enough in flex displays
+            this.renderer.domElement.style.position = 'absolute';
+            labelRenderer.domElement.style.position = 'absolute';
+            labelRenderer.domElement.style.top = '0';
+            labelRenderer.domElement.style.pointerEvents = 'none';
+            // Make sure labelRenderer starts a new stacking context, so the labels don't
+            // stay on top of other components (e.g. inspector, etc.)
+            labelRenderer.domElement.style.zIndex = '0';
+        }
 
-        // Set default size
-        this.renderer.setSize(this.width, this.height);
-        this.labelRenderer.setSize(this.width, this.height);
+        // Set default size. updateStyle must be off when we don't own the canvas's presentation
+        // (DOM-free, or a caller-supplied DOM canvas): neither should have its `.style` touched.
+        this.renderer.setSize(this.width, this.height, this._domTarget != null);
+        labelRenderer?.setSize(this.width, this.height);
 
-        // Append renderer to the DOM
-        target.appendChild(this.renderer.domElement);
-        target.appendChild(this.labelRenderer.domElement);
+        if (this._domTarget != null && labelRenderer != null) {
+            // Append renderer to the DOM
+            this._domTarget.appendChild(this.renderer.domElement);
+            this._domTarget.appendChild(labelRenderer.domElement);
+        }
 
         this._renderPipeline = null;
 
@@ -250,8 +288,12 @@ class C3DEngine {
             rt.dispose();
         }
         this._renderTargets.clear();
-        this.labelRenderer.domElement.remove();
-        this.renderer.domElement.remove();
+        if (this._domTarget != null) {
+            // Only remove elements we created ourselves; a caller-supplied canvas (DOM or
+            // offscreen) is the caller's to manage.
+            this.labelRenderer?.domElement.remove();
+            this.renderer.domElement.remove();
+        }
         this.renderer.dispose();
     }
 
@@ -261,8 +303,8 @@ class C3DEngine {
         for (const rt of this._renderTargets.values()) {
             rt.setSize(this.width, this.height);
         }
-        this.renderer.setSize(this.width, this.height);
-        this.labelRenderer.setSize(this.width, this.height);
+        this.renderer.setSize(this.width, this.height, this._domTarget != null);
+        this.labelRenderer?.setSize(this.width, this.height);
     }
 
     /**
@@ -300,7 +342,7 @@ class C3DEngine {
             this.renderer.render(scene, camera);
         }
 
-        this.labelRenderer.render(scene, camera);
+        this.labelRenderer?.render(scene, camera);
     }
 
     /**
