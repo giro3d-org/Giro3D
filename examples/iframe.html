@@ -1,0 +1,22 @@
+---
+title: Iframe
+shortdesc: Display an iframe that can synchronize with the map coordinates.
+attribution: © <a target="_blank" href="https://ign.fr/">IGN</a>
+tags: [map, iframe, panoramax]
+---
+
+<div class="side-pane-with-status-bar">
+    <div class="card">
+        <h5 class="card-header">Panoramax</h5>
+        <p class="card-subtitle m-2">
+            Double click on the main map to synchronize the Panoramax view
+        </p>
+        <div class="card-body p-0">
+            <iframe
+                id="panoramax-iframe"
+                src="https://explore.panoramax.fr/en/index?s=fm;s2;m17/48.867654/2.342277;vd;udefault"
+                style="border: none; width: 500px; height: 300px"
+            ></iframe>
+        </div>
+    </div>
+</div>
