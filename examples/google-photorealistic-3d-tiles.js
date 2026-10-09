@@ -57,7 +57,7 @@ function run(apiKey) {
     tiles.registerPlugin(new UnloadTilesPlugin());
     tiles.registerPlugin(new TilesFadePlugin());
 
-    const controls = new GlobeControls(instance.scene, camera, instance.domElement, tiles);
+    const controls = new GlobeControls(instance.scene, camera, instance.domElement);
     controls.enableDamping = true;
 
     /** @type {Array<{ type: string, value: any }>} */
