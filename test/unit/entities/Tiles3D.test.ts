@@ -8,7 +8,7 @@ import type { BufferGeometry, Material, Vector2 } from 'three';
 
 import { Group, Mesh, WebGLRenderer } from 'three';
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
-import { afterEach, describe, expect, it, vitest } from 'vitest';
+import { describe, expect, it, vitest } from 'vitest';
 
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem';
 import Instance from '@giro3d/giro3d/core/Instance';
@@ -18,9 +18,7 @@ import Fetcher from '@giro3d/giro3d/utils/Fetcher';
 import { setupGlobalMocks } from '../mocks';
 
 describe('initialize', () => {
-    afterEach(() => vitest.restoreAllMocks());
-
-    it('adds the entity to the scene when the root tileset loads', async () => {
+    it('adds the entity to the scene when the root tileset loads', async ({ onTestFinished }) => {
         setupGlobalMocks();
         const renderer = new WebGLRenderer();
         const instance = new Instance({
@@ -31,8 +29,11 @@ describe('initialize', () => {
         instance.renderer.getSize = vitest.fn((target: Vector2) => target.set(10, 10));
         const entity = new Tiles3D({ url: 'https://example.com/tileset.json' });
 
-        vitest.spyOn(KTX2Loader.prototype, 'detectSupport').mockReturnThis();
-        vitest.spyOn(Fetcher, 'fetch').mockResolvedValue(
+        const detectSupport = vitest.spyOn(KTX2Loader.prototype, 'detectSupport').mockReturnThis();
+        onTestFinished(() => detectSupport.mockRestore());
+        const fetch = vitest.spyOn(Fetcher, 'fetch');
+        onTestFinished(() => fetch.mockRestore());
+        fetch.mockResolvedValue(
             new Response(
                 JSON.stringify({
                     asset: { version: '1.0' },
