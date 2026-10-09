@@ -4,26 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-import type { OrthographicCamera, PerspectiveCamera } from 'three';
+import type { Object3D } from 'three';
 import type { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
-import {
-    Clock,
-    EventDispatcher,
-    Group,
-    Object3D,
-    Scene,
-    Vector2,
-    Vector3,
-    type ColorRepresentation,
-    type WebGLRenderer,
-    type WebGLRendererParameters,
-} from 'three';
+import { Clock, Group, Vector2 } from 'three';
 
 import type Entity from '../entities/Entity';
 import type Entity3D from '../entities/Entity3D';
-import type RenderingOptions from '../renderer/RenderingOptions';
-import type CoordinateSystem from './geographic/CoordinateSystem';
 import type PickOptions from './picking/PickOptions';
 import type PickResult from './picking/PickResult';
 import type Progress from './Progress';
@@ -32,9 +19,14 @@ import { isEntity } from '../entities/Entity';
 import { isEntity3D } from '../entities/Entity3D';
 import C3DEngine from '../renderer/c3DEngine';
 import { GlobalRenderTargetPool } from '../renderer/RenderTargetPool';
-import View from '../renderer/View';
 import { GlobalCache } from './Cache';
 import { isDisposable } from './Disposable';
+import InstanceBase, {
+    type EntityEventPayload,
+    type FrameEventPayload,
+    type InstanceBaseOptions,
+    type InstanceEvents,
+} from './InstanceBase';
 import MainLoop from './MainLoop';
 import {
     aggregateMemoryUsage,
@@ -46,137 +38,20 @@ import { isPickable } from './picking/Pickable';
 import { isPickableFeatures } from './picking/PickableFeatures';
 import pickObjectsAt from './picking/PickObjectsAt';
 
+export type { EntityEventPayload, FrameEventPayload, InstanceEvents };
+
 const vectors = {
-    pos: new Vector3(),
-    size: new Vector3(),
     evtToCanvas: new Vector2(),
     pickVec2: new Vector2(),
 };
 
-/** Frame event payload */
-export interface FrameEventPayload {
-    /** The frame number. */
-    frame: number;
-    /** Time elapsed since previous update loop, in milliseconds */
-    dt: number;
-    /** `true` if the update loop restarted */
-    updateLoopRestarted: boolean;
-}
-
-/** Entity event payload */
-export interface EntityEventPayload {
-    /** Entity */
-    entity: Entity;
-}
-
-/**
- * Events supported by
- * [`Instance.addEventListener()`](https://threejs.org/docs/#api/en/core/EventDispatcher.addEventListener)
- * and
- * [`Instance.removeEventListener()`](https://threejs.org/docs/#api/en/core/EventDispatcher.removeEventListener)
- */
-export interface InstanceEvents {
-    /**
-     * Fires when an entity is added to the instance.
-     */
-    'entity-added': unknown;
-    /**
-     * Fires when an entity is removed from the instance.
-     */
-    'entity-removed': unknown;
-    /**
-     * Fires at the start of the update
-     */
-    'update-start': FrameEventPayload;
-    /**
-     * Fires before the camera update
-     */
-    'before-camera-update': { camera: View } & FrameEventPayload;
-    /**
-     * Fires after the camera update
-     */
-    'after-camera-update': { camera: View } & FrameEventPayload;
-    /**
-     * Fires before the entity update
-     */
-    'before-entity-update': EntityEventPayload & FrameEventPayload;
-    /**
-     * Fires after the entity update
-     */
-    'after-entity-update': EntityEventPayload & FrameEventPayload;
-    /**
-     * Fires before the render
-     */
-    'before-render': FrameEventPayload;
-    /**
-     * Fires after the render
-     */
-    'after-render': FrameEventPayload;
-    /**
-     * Fires at the end of the update
-     */
-    'update-end': FrameEventPayload;
-    'picking-start': unknown;
-    'picking-end': {
-        /**
-         * The duration of the picking, in seconds.
-         */
-        elapsed: number;
-        /**
-         * The picking results.
-         */
-        results?: PickResult<unknown>[];
-    };
-    /**
-     * Fires when the instance is disposed.
-     */
-    dispose: unknown;
-}
-
 /** Options for creating Instance */
-export interface InstanceOptions {
+export interface InstanceOptions extends InstanceBaseOptions {
     /**
      * The container for the instance. May be either the `id` of an existing `<div>` element,
      * or the element itself.
-     *
-     * Exactly one of {@link target} and {@link canvas} must be provided.
      */
-    target?: string | HTMLDivElement;
-    /**
-     * Renders directly into this canvas instead of creating a wrapper `<div>` inside
-     * {@link target}. Accepts a regular `HTMLCanvasElement` or a transferable `OffscreenCanvas`,
-     * so the instance can be constructed in a Worker. No DOM is touched on this path: there is
-     * no viewport element, no `ResizeObserver`, and no CSS2D label renderer.
-     *
-     * Exactly one of {@link target} and {@link canvas} must be provided.
-     */
-    canvas?: HTMLCanvasElement | OffscreenCanvas;
-    /**
-     * The coordinate reference system of the scene.
-     * Must be a cartesian system.
-     * Must first be registered via {@link CoordinateSystem.register}
-     */
-    crs: CoordinateSystem;
-    /**
-     * The [Three.js Scene](https://threejs.org/docs/#api/en/scenes/Scene) instance to use,
-     * otherwise a default one will be constructed
-     */
-    scene3D?: Scene;
-    /**
-     * The background color of the canvas. If `null`, the canvas is transparent.
-     * If `undefined`, the default color is used.
-     * @defaultValue `'#030508'`
-     */
-    backgroundColor?: ColorRepresentation | null;
-    /**
-     * The renderer to use. Might be either an instance of an existing {@link WebGLRenderer},
-     * or options to create one. If `undefined`, a new one will be created with default parameters.
-     */
-    renderer?: WebGLRenderer | WebGLRendererParameters;
-    /**
-     * The THREE camera to use
-     */
-    camera?: PerspectiveCamera | OrthographicCamera;
+    target: string | HTMLDivElement;
 }
 
 /**
@@ -210,12 +85,6 @@ function isObject3D(o: unknown): o is Object3D {
     return (o as Object3D).isObject3D;
 }
 
-// Structural, so it can be evaluated in a realm where HTMLCanvasElement is not declared at all
-// (e.g. a Worker). OffscreenCanvas has no ownerDocument, unlike a real DOM canvas.
-function isDomCanvas(canvas: HTMLCanvasElement | OffscreenCanvas): canvas is HTMLCanvasElement {
-    return 'ownerDocument' in canvas;
-}
-
 /**
  * The instance is the core component of Giro3D. It encapsulates the 3D scene,
  * the current camera and one or more {@link Entity | entities}. The instance displays
@@ -244,21 +113,16 @@ function isDomCanvas(canvas: HTMLCanvasElement | OffscreenCanvas): canvas is HTM
  * instance.view.camera.lookAt(0, 0, 0);
  * ```
  */
-class Instance extends EventDispatcher<InstanceEvents> implements Progress {
-    private readonly _referenceCrs: CoordinateSystem;
-    private readonly _viewport: HTMLDivElement | null;
+class Instance extends InstanceBase implements Progress {
+    private readonly _viewport: HTMLDivElement;
     private readonly _mainLoop: MainLoop;
-    private readonly _engine: C3DEngine;
-    private readonly _scene: Scene;
     private readonly _threeObjects: Group;
-    private readonly _view: View;
     private readonly _entities: Set<Entity>;
     private readonly _resizeObserver?: ResizeObserver;
     private readonly _pickingClock: Clock;
     private readonly _onContextRestored: () => void;
     private readonly _onContextLost: () => void;
     private _resizeTimeout?: string | number | NodeJS.Timeout;
-    private _disposed = false;
 
     /**
      * Constructs a Giro3D Instance
@@ -273,65 +137,46 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * ```
      */
     public constructor(options: InstanceOptions) {
-        super();
-        Object3D.DEFAULT_UP.set(0, 0, 1);
-
+        const target = options.target;
         let viewerDiv: HTMLElement | null = null;
 
-        if (options.canvas != null) {
-            if (options.target != null) {
-                throw new Error(
-                    'Invalid parameters (provide either target or canvas, but not both)',
-                );
-            }
-
-            this._referenceCrs = options.crs;
-            this._viewport = null;
-
-            this._engine = new C3DEngine(options.canvas, {
-                clearColor: options.backgroundColor,
-                renderer: options.renderer,
-            });
-        } else {
-            const target = options.target;
-
-            if (typeof target === 'string') {
-                viewerDiv = document.getElementById(target);
-            } else if (options.target instanceof HTMLElement) {
-                viewerDiv = options.target;
-            }
-
-            if (!viewerDiv || !(viewerDiv instanceof HTMLDivElement)) {
-                throw new Error('Invalid target parameter (must be a valid <div>)');
-            }
-            if (viewerDiv.childElementCount > 0) {
-                console.warn(
-                    'Target element has children; Giro3D expects an empty element - this can lead to unexpected behaviors',
-                );
-            }
-
-            this._referenceCrs = options.crs;
-
-            // viewerDiv may have padding/borders, which is annoying when retrieving its size
-            // Wrap our canvas in a new div so we make sure the display
-            // is correct whatever the page layout is
-            // (especially when skrinking so there is no scrollbar/bleading)
-            this._viewport = document.createElement('div');
-            this._viewport.style.position = 'relative';
-            this._viewport.style.overflow = 'hidden'; // Hide overflow during resizing
-            this._viewport.style.width = '100%'; // Make sure it fills the space
-            this._viewport.style.height = '100%';
-            viewerDiv.appendChild(this._viewport);
-
-            this._engine = new C3DEngine(this._viewport, {
-                clearColor: options.backgroundColor,
-                renderer: options.renderer,
-            });
+        if (typeof target === 'string') {
+            viewerDiv = document.getElementById(target);
+        } else if (options.target instanceof HTMLElement) {
+            viewerDiv = options.target;
         }
+
+        if (!viewerDiv || !(viewerDiv instanceof HTMLDivElement)) {
+            throw new Error('Invalid target parameter (must be a valid <div>)');
+        }
+        if (viewerDiv.childElementCount > 0) {
+            console.warn(
+                'Target element has children; Giro3D expects an empty element - this can lead to unexpected behaviors',
+            );
+        }
+
+        // viewerDiv may have padding/borders, which is annoying when retrieving its size
+        // Wrap our canvas in a new div so we make sure the display
+        // is correct whatever the page layout is
+        // (especially when skrinking so there is no scrollbar/bleading)
+        const viewport = document.createElement('div');
+        viewport.style.position = 'relative';
+        viewport.style.overflow = 'hidden'; // Hide overflow during resizing
+        viewport.style.width = '100%'; // Make sure it fills the space
+        viewport.style.height = '100%';
+        viewerDiv.appendChild(viewport);
+
+        const engine = new C3DEngine(viewport, {
+            clearColor: options.backgroundColor,
+            renderer: options.renderer,
+        });
+
+        super(engine, options);
+
+        this._viewport = viewport;
 
         this._mainLoop = new MainLoop();
 
-        this._scene = options.scene3D || new Scene();
         // will contain simple three objects that need to be taken into
         // account, for example camera near / far calculation maybe it'll be
         // better to do the contrary: having a group where *all* the Giro3D
@@ -342,25 +187,12 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         this._threeObjects.name = 'threeObjects';
 
         this._scene.add(this._threeObjects);
-        if (!options.scene3D) {
-            this._scene.matrixWorldAutoUpdate = false;
-        }
-
-        const windowSize = this._engine.getWindowSize();
-
-        this._view = new View({
-            crs: this._referenceCrs,
-            renderer: this._engine.renderer,
-            camera: options.camera,
-            width: windowSize.width,
-            height: windowSize.height,
-        });
 
         this._view.addEventListener('change', () => this.notifyChange(this._view.camera));
 
         this._entities = new Set();
 
-        if (viewerDiv != null && globalThis.ResizeObserver != null) {
+        if (globalThis.ResizeObserver != null) {
             this._resizeObserver = new ResizeObserver(() => {
                 this._updateRendererSize(this.viewport);
             });
@@ -371,37 +203,22 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
 
         this._onContextRestored = this.onContextRestored.bind(this);
         this._onContextLost = this.onContextLost.bind(this);
-        // A real DOM canvas (whether we created it or the caller supplied one via `canvas`)
-        // fires these events normally. An OffscreenCanvas fires differently-named
-        // 'contextlost'/'contextrestored' events instead, so recovery isn't wired up for it here.
-        if (isDomCanvas(this.domElement)) {
-            this.domElement.addEventListener('webglcontextlost', this._onContextLost);
-            this.domElement.addEventListener('webglcontextrestored', this._onContextRestored);
-        }
+        this.domElement.addEventListener('webglcontextlost', this._onContextLost);
+        this.domElement.addEventListener('webglcontextrestored', this._onContextRestored);
     }
 
     private onContextLost(): void {
-        // Only reachable via the 'webglcontextlost' listener, which is only ever attached to a
-        // real DOM canvas (see the constructor).
-        const canvas = this.domElement;
-        if (!isDomCanvas(canvas)) {
-            return;
-        }
         this.getEntities().forEach(entity => {
             if (isEntity3D(entity)) {
-                entity.onRenderingContextLost({ canvas });
+                entity.onRenderingContextLost({ canvas: this.domElement });
             }
         });
     }
 
     private onContextRestored(): void {
-        const canvas = this.domElement;
-        if (!isDomCanvas(canvas)) {
-            return;
-        }
         this.getEntities().forEach(entity => {
             if (isEntity3D(entity)) {
-                entity.onRenderingContextRestored({ canvas });
+                entity.onRenderingContextRestored({ canvas: this.domElement });
             }
         });
         this.notifyChange();
@@ -414,15 +231,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
 
     /** Gets the DOM element that contains the Giro3D viewport. */
     public get viewport(): HTMLDivElement {
-        if (this._viewport == null) {
-            throw new Error('this instance is DOM-free: it has no viewport, only a canvas');
-        }
         return this._viewport;
-    }
-
-    /** Gets the CRS used in this instance. */
-    public get coordinateSystem(): CoordinateSystem {
-        return this._referenceCrs;
     }
 
     /** Gets whether at least one entity is currently loading data. */
@@ -451,48 +260,18 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         return this._mainLoop;
     }
 
-    /** Gets the rendering engine */
-    public get engine(): C3DEngine {
-        return this._engine;
-    }
-
     /**
-     * Gets the rendering options.
-     *
-     * Note: you must call {@link notifyChange | notifyChange()} to take
-     * the changes into account.
+     * Gets the underlying CSS2DRenderer.
      */
-    public get renderingOptions(): RenderingOptions {
-        return this._engine.renderingOptions;
-    }
-
-    /**
-     * Gets the underlying WebGL renderer.
-     */
-    public get renderer(): WebGLRenderer {
-        return this._engine.renderer;
-    }
-
-    /**
-     * Gets the underlying CSS2DRenderer, or `null` if this instance is DOM-free.
-     */
-    public get css2DRenderer(): CSS2DRenderer | null {
-        return this._engine.labelRenderer;
-    }
-
-    /** Gets the [3D Scene](https://threejs.org/docs/#api/en/scenes/Scene). */
-    public get scene(): Scene {
-        return this._scene;
+    public get css2DRenderer(): CSS2DRenderer {
+        // Always non-null: Instance always goes through C3DEngine's div-wrapping path, which
+        // always creates a label renderer. Only OffscreenInstance's canvas path doesn't.
+        return this._engine.labelRenderer as CSS2DRenderer;
     }
 
     /** Gets the group containing native Three.js objects. */
     public get threeObjects(): Group {
         return this._threeObjects;
-    }
-
-    /** Gets the view. */
-    public get view(): View {
-        return this._view;
     }
 
     private _doUpdateRendererSize(div: HTMLDivElement): void {
@@ -514,38 +293,20 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         this._resizeTimeout = setTimeout(() => this._doUpdateRendererSize(div), 50);
     }
 
-    /**
-     * Dispose of this instance object. Free all memory used.
-     *
-     * Note: this *will not* dispose the following reusable objects:
-     * - controls (because they can be attached and detached). For THREE.js controls, use
-     * `controls.dispose()`
-     * - Inspectors, use `inspector.detach()`
-     * - any openlayers objects, please see their individual documentation
-     *
-     */
-    public dispose(): void {
-        if (this._disposed) {
-            return;
-        }
-        this._disposed = true;
-
-        if (isDomCanvas(this.domElement)) {
-            this.domElement.removeEventListener('webglcontextlost', this._onContextLost);
-            this.domElement.removeEventListener('webglcontextrestored', this._onContextRestored);
-        }
+    protected override onBeforeDispose(): void {
+        this.domElement.removeEventListener('webglcontextlost', this._onContextLost);
+        this.domElement.removeEventListener('webglcontextrestored', this._onContextRestored);
 
         this._resizeObserver?.disconnect();
+
         for (const obj of this.getObjects()) {
             this.remove(obj);
         }
         this._scene.remove(this._threeObjects);
+    }
 
-        this._engine.dispose();
-        this._view.dispose();
-        this._viewport?.remove();
-
-        this.dispatchEvent({ type: 'dispose' });
+    protected override onAfterDispose(): void {
+        this._viewport.remove();
     }
 
     /**
@@ -723,16 +484,6 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
     }
 
     /**
-     * Executes the rendering.
-     * Internal use only.
-     *
-     * @internal
-     */
-    public render(): void {
-        this._engine.render(this._scene, this._view.camera);
-    }
-
-    /**
      * Extract canvas coordinates from a mouse-event / touch-event.
      *
      * @param event - event can be a MouseEvent or a TouchEvent
@@ -745,17 +496,9 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         target: Vector2,
         touchIdx = 0,
     ): Vector2 {
-        // DOM events can only ever target a real DOM canvas.
-        const canvas = this.domElement;
-        if (!isDomCanvas(canvas)) {
-            throw new Error(
-                'this instance is DOM-free: cannot translate DOM event coordinates without a DOM canvas',
-            );
-        }
-
         if (globalThis.TouchEvent != null && event instanceof TouchEvent) {
             const touchEvent = event as TouchEvent;
-            const br = canvas.getBoundingClientRect();
+            const br = this.domElement.getBoundingClientRect();
             return target.set(
                 touchEvent.touches[touchIdx].clientX - br.x,
                 touchEvent.touches[touchIdx].clientY - br.y,
@@ -764,12 +507,12 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
 
         const mouseEvent = event as MouseEvent;
 
-        if (mouseEvent.target === canvas) {
+        if (mouseEvent.target === this.domElement) {
             return target.set(mouseEvent.offsetX, mouseEvent.offsetY);
         }
 
         // Event was triggered outside of the canvas, probably a CSS2DElement
-        const br = canvas.getBoundingClientRect();
+        const br = this.domElement.getBoundingClientRect();
         return target.set(mouseEvent.clientX - br.x, mouseEvent.clientY - br.y);
     }
 

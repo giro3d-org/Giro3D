@@ -65,17 +65,10 @@ function requiresCustomPipeline(options: RenderingOptions): boolean {
     return options.enableEDL || options.enableInpainting || options.enablePointCloudOcclusion;
 }
 
-// Structural, so it can be evaluated in a realm where HTMLCanvasElement is not declared at all
-// (e.g. a Worker). Covers both HTMLCanvasElement and OffscreenCanvas identically.
-function isCanvasTarget(
-    target: HTMLDivElement | HTMLCanvasElement | OffscreenCanvas,
-): target is HTMLCanvasElement | OffscreenCanvas {
-    return 'getContext' in target;
-}
-
-// Also structural: OffscreenCanvas has no ownerDocument, unlike a real DOM canvas.
-function isDomCanvas(canvas: HTMLCanvasElement | OffscreenCanvas): canvas is HTMLCanvasElement {
-    return 'ownerDocument' in canvas;
+// Structural, so it can be evaluated in a realm where HTMLDivElement is not declared at all
+// (e.g. a Worker).
+function isDomTarget(target: HTMLDivElement | OffscreenCanvas): target is HTMLDivElement {
+    return 'appendChild' in target;
 }
 
 function createErrorMessage(): HTMLDivElement {
@@ -108,13 +101,13 @@ function createErrorMessage(): HTMLDivElement {
 }
 
 function createRenderer(
-    target: HTMLDivElement | HTMLCanvasElement | OffscreenCanvas,
+    target: HTMLDivElement | OffscreenCanvas,
     options?: WebGLRendererParameters,
 ): WebGLRenderer {
     // Create renderer
     try {
         const canvas =
-            options?.canvas ?? (isCanvasTarget(target) ? target : document.createElement('canvas'));
+            options?.canvas ?? (isDomTarget(target) ? document.createElement('canvas') : target);
         const renderer = new WebGLRenderer({
             ...options,
             canvas,
@@ -131,7 +124,7 @@ function createRenderer(
     } catch (error) {
         const msg = 'Failed to create WebGLRenderer';
         console.error(msg, error);
-        if (!isCanvasTarget(target)) {
+        if (isDomTarget(target)) {
             target.appendChild(createErrorMessage());
         }
         if (error instanceof Error) {
@@ -192,23 +185,20 @@ class C3DEngine {
 
     /**
      * @param target - The parent div that will contain the canvas, or, when DOM-free, the
-     * canvas (regular or offscreen) to render into directly.
+     * `OffscreenCanvas` to render into directly.
      * @param options - The options.
      */
-    public constructor(
-        target: HTMLDivElement | HTMLCanvasElement | OffscreenCanvas,
-        options?: EngineOptions,
-    ) {
+    public constructor(target: HTMLDivElement | OffscreenCanvas, options?: EngineOptions) {
         registerChunks();
 
-        if (isCanvasTarget(target)) {
-            this._domTarget = null;
-            this.width = target.width;
-            this.height = target.height;
-        } else {
+        if (isDomTarget(target)) {
             this._domTarget = target;
             this.width = target.clientWidth;
             this.height = target.clientHeight;
+        } else {
+            this._domTarget = null;
+            this.width = target.width;
+            this.height = target.height;
         }
 
         if (options?.renderer instanceof WebGLRenderer) {
@@ -230,7 +220,7 @@ class C3DEngine {
         // returns -1 if not set, but we still need to explicitly set it to force
         // the tabindex focus flag to true (see
         // https://www.w3.org/TR/html5/editing.html#specially-focusable)
-        if (isDomCanvas(this.renderer.domElement) && this.renderer.domElement.tabIndex === -1) {
+        if (this._domTarget != null && this.renderer.domElement.tabIndex === -1) {
             this.renderer.domElement.tabIndex = -1;
         }
 
