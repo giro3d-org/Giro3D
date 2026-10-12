@@ -408,7 +408,7 @@ export async function getWebpackConfig(parameters) {
         resolve: {
             alias: { '@giro3d/giro3d': giro3dPackageDir },
         },
-        devtool: 'source-map',
+        devtool: parameters.mode === 'production' ? undefined : 'source-map',
         entry,
         target: ['web', 'es5'],
         output: {
