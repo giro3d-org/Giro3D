@@ -167,9 +167,9 @@ export function findExamplesEntries(parameters) {
                 `Invalid example name: "${example}". Expected only lowercase letters, numbers and hyphens.`,
             );
         }
-        const thumbnail = path.join(examplesDir, 'screenshots', `${example}.jpg`);
+        const thumbnail = path.join(examplesDir, 'screenshots', `${example}.webp`);
         if (!fse.existsSync(thumbnail)) {
-            logError('examples', `Missing thumbnail: ${example}.jpg`);
+            logError('examples', `Missing thumbnail: ${example}.webp`);
         }
 
         if (parameters.example === undefined || parameters.example === example) {
@@ -408,7 +408,7 @@ export async function getWebpackConfig(parameters) {
         resolve: {
             alias: { '@giro3d/giro3d': giro3dPackageDir },
         },
-        devtool: 'source-map',
+        devtool: parameters.mode === 'production' ? undefined : 'source-map',
         entry,
         target: ['web', 'es5'],
         output: {
