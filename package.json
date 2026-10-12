@@ -107,7 +107,6 @@
         "@babel/preset-typescript": "^7.25.7",
         "@commitlint/cli": "19.5.0",
         "@commitlint/config-conventional": "19.5.0",
-        "@turf/turf": "^7.1.0",
         "@types/earcut": "^2.1.4",
         "@types/emscripten": "^1.39.13",
         "@types/geojson": "^7946.0.14",
