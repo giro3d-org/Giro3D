@@ -4,7 +4,8 @@
  * SPDX-License-Identifier: MIT
  */
 
-import * as turf from '@turf/turf';
+import GeoJSON from 'ol/format/GeoJSON.js';
+import { Polygon } from 'ol/geom.js';
 import XYZ from 'ol/source/XYZ.js';
 import { DoubleSide } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
@@ -42,6 +43,7 @@ const map = new Map({
 
 instance.add(map);
 
+/** @type {Polygon} */
 let footprint;
 
 /**
@@ -56,25 +58,17 @@ function customIntersectionTest(tileExtent) {
         return true;
     }
 
-    const corners = [
-        [tileExtent.topLeft().x, tileExtent.topLeft().y],
-        [tileExtent.topRight().x, tileExtent.topRight().y],
-        [tileExtent.bottomRight().x, tileExtent.bottomRight().y],
-        [tileExtent.bottomLeft().x, tileExtent.bottomLeft().y],
-    ];
-
-    const extentAsPolygon = turf.helpers.polygon([
-        [corners[0], corners[1], corners[2], corners[3], corners[0]],
-    ]);
-
-    const intersects = turf.booleanIntersects(turf.toWgs84(extentAsPolygon), footprint);
+    const olExtent = [tileExtent.minX, tileExtent.minY, tileExtent.maxX, tileExtent.maxY];
+    const intersects = footprint.intersectsExtent(olExtent);
 
     return intersects;
 }
 
 Fetcher.json('data/MtStHelens-footprint.geojson')
     .then(geojson => {
-        footprint = turf.toWgs84(geojson);
+        const features = new GeoJSON().readFeatures(geojson);
+        // @ts-expect-error getGeometry() returns the base class Geometry but we know it is a Polygon.
+        footprint = features[0].getGeometry();
 
         const source = new TiledImageSource({
             containsFn: customIntersectionTest, // Here we specify our custom intersection test
