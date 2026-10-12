@@ -167,9 +167,9 @@ export function findExamplesEntries(parameters) {
                 `Invalid example name: "${example}". Expected only lowercase letters, numbers and hyphens.`,
             );
         }
-        const thumbnail = path.join(examplesDir, 'screenshots', `${example}.jpg`);
+        const thumbnail = path.join(examplesDir, 'screenshots', `${example}.webp`);
         if (!fse.existsSync(thumbnail)) {
-            logError('examples', `Missing thumbnail: ${example}.jpg`);
+            logError('examples', `Missing thumbnail: ${example}.webp`);
         }
 
         if (parameters.example === undefined || parameters.example === example) {

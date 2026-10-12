@@ -19,9 +19,9 @@
 
 <br>
 
-| ![draw tool](examples/screenshots/draw-tool.jpg)        | ![Potree point cloud](examples/screenshots/potree-point-cloud.jpg) | ![GeoTIFF elevation](examples/screenshots/geotiff-elevation.jpg) |
-| ------------------------------------------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------- |
-| ![alt text](examples/screenshots/3d-tiles-building.jpg) | ![alt text](examples/screenshots/axis-grid.jpg)                    | ![alt text](examples/screenshots/globe.jpg)                      |
+| ![draw tool](examples/screenshots/draw-tool.webp)        | ![Potree point cloud](examples/screenshots/potree-point-cloud.webp) | ![GeoTIFF elevation](examples/screenshots/geotiff-elevation.webp) |
+| -------------------------------------------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| ![alt text](examples/screenshots/3d-tiles-building.webp) | ![alt text](examples/screenshots/axis-grid.webp)                    | ![alt text](examples/screenshots/globe.webp)                      |
 
 <div align="center">
   <a href="https://giro3d.org/latest/examples/index.html">Examples</a> ·
