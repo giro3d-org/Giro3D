@@ -93,16 +93,28 @@ Inspector.attach('inspector', instance);
 
 StatusBar.bind(instance);
 
-function synchronizeIframe(coordinates) {
+function synchronizeIframeMessage(coordinates) {
     const position = coordinates.as(CoordinateSystem.epsg4326);
 
-    // This reloads the whole iframe :(
+    const iframe = document.getElementById('panoramax-iframe');
+
+    // @ts-expect-error contentWindow only exists on Iframes
+    iframe.contentWindow.postMessage(
+        {
+            type: 'UPDATE_QUERY',
+            key: 'map',
+            value: `17/${position.latitude}/${position.longitude}`,
+        },
+        '*',
+    );
+}
+
+function synchronizeIframeSrc(coordinates) {
+    const position = coordinates.as(CoordinateSystem.epsg4326);
+
     // @ts-expect-error src only exists on Iframes
-    document.getElementById('panoramax-iframe').src =
+    document.getElementById('panoramax-iframe2').src =
         `https://explore.panoramax.fr/en/index?s=fm;s2;m17/${position.latitude}/${position.longitude};vd;udefault`;
-    // If the iframe supports messages, we can update the position via
-    // [Window: postMessage() method](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage)
-    // and potentially use the same synchronization method as the minimap example
 }
 
 instance.viewport.addEventListener('dblclick', e => {
@@ -110,10 +122,19 @@ instance.viewport.addEventListener('dblclick', e => {
         limit: 1,
     });
     if (picked.length > 0 && 'coord' in picked[0]) {
-        synchronizeIframe(picked[0].coord);
+        synchronizeIframeSrc(picked[0].coord);
     }
 });
 
-synchronizeIframe(
+synchronizeIframeMessage(
     new Coordinates(instance.coordinateSystem, controls.target.x, controls.target.y, 0),
+);
+synchronizeIframeSrc(
+    new Coordinates(instance.coordinateSystem, controls.target.x, controls.target.y, 0),
+);
+
+instance.addEventListener('after-camera-update', () =>
+    synchronizeIframeMessage(
+        new Coordinates(instance.coordinateSystem, controls.target.x, controls.target.y, 0),
+    ),
 );
