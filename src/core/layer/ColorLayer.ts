@@ -323,7 +323,7 @@ export class ColorLayer<UserData extends LayerUserData = LayerUserData>
             );
             const features = this.getVectorFeaturesInExtent(e);
 
-            const coordinateLayer = coordinate.as(layerProjection);
+            const coordinateLayer = coordinate.as(layerProjection).toVector2();
             const coord = [coordinateLayer.x, coordinateLayer.y];
             for (const feat of features) {
                 const geometry = feat.getGeometry();
@@ -351,7 +351,7 @@ export class ColorLayer<UserData extends LayerUserData = LayerUserData>
         }
 
         if ((this.source as VectorSource).isVectorSource && this.visible) {
-            const coordinateLayer = coordinate.as(layerProjection);
+            const coordinateLayer = coordinate.as(layerProjection).toVector2();
             const coord = [coordinateLayer.x, coordinateLayer.y];
             const olSource = (this.source as VectorSource).source;
             return olSource.getFeaturesAtCoordinate(coord);
