@@ -35,6 +35,7 @@ export class Ellipsoid {
     private readonly _semiMajor: number;
     private readonly _semiMinor: number;
     private readonly _sqEccentricity: number;
+    private readonly _secondEccentricitySquared: number;
     private readonly _eccentricity: number;
     private readonly _equatorialCircumference;
     private readonly _invRadiiSquared: Vector3;
@@ -82,6 +83,8 @@ export class Ellipsoid {
         this._semiMinor = params.semiMinorAxis; // Semi-minor axis
         const flattening = (this._semiMajor - this._semiMinor) / this._semiMajor; // Flattening
         this._sqEccentricity = Math.sqrt(1 - this._semiMinor ** 2 / this._semiMajor ** 2);
+        this._secondEccentricitySquared =
+            (this._semiMajor ** 2 - this._semiMinor ** 2) / this._semiMinor ** 2;
         this._eccentricity = Math.sqrt(2 * flattening - flattening * flattening);
 
         this._flattening = flattening;
@@ -269,7 +272,7 @@ export class Ellipsoid {
         const p = Math.sqrt(x ** 2 + y ** 2);
         const theta = Math.atan2(z * this._semiMajor, p * this._semiMinor);
         const lat = Math.atan2(
-            z + this._eccentricity ** 2 * this._semiMinor * Math.sin(theta) ** 3,
+            z + this._secondEccentricitySquared * this._semiMinor * Math.sin(theta) ** 3,
             p - this._sqEccentricity ** 2 * this._semiMajor * Math.cos(theta) ** 3,
         );
 

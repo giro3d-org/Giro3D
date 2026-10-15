@@ -141,6 +141,15 @@ describe('toGeodetic', () => {
             expect(n.altitude).toBeCloseTo(altitude, PRECISION);
         });
     });
+
+    it('round-trips a WGS84 point near Kielce', () => {
+        const cartesian = wgs84.toCartesian(50.8661, 20.628, 0);
+        const geodetic = wgs84.toGeodetic(cartesian.x, cartesian.y, cartesian.z);
+
+        expect(geodetic.latitude).toBeCloseTo(50.8661, PRECISION);
+        expect(geodetic.longitude).toBeCloseTo(20.628, PRECISION);
+        expect(geodetic.altitude).toBeCloseTo(0, PRECISION);
+    });
 });
 
 describe('toCartesian', () => {
