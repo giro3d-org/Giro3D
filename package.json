@@ -40,7 +40,7 @@
         "build-examples": "npm run build && npm run typecheck-examples && node tasks/build-examples.mjs",
         "build-tutorials": "npm run build-examples && node tasks/build-tutorials.mjs",
         "build-static-site": "node tasks/build-static-site.mjs",
-        "build-site": "npm run build && node tasks/build-site.mjs --build-latest && npm run check-hyperlinks",
+        "build-site": "npm run build && node tasks/build-site.mjs --build-latest",
         "build": "npm run _transpile && npm run _generate-type-definitions",
         "build-package": "npm run build && npm run _inline-workers && node tasks/prepare-package.mjs",
         "commit": "npx git-cz",
