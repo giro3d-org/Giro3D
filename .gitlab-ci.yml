@@ -89,7 +89,7 @@ build_current:
         - npm i
         - npm run make-package
 
-build_next_site:
+build_site:
     stage: build
     needs:
         - build_lts
@@ -97,28 +97,11 @@ build_next_site:
         - apk add --no-cache git
         - npm i
         - npm run build
-        - node tasks/build-site.mjs --build-next
+        - node tasks/build-site.mjs
         - mv build/site public
     artifacts:
         paths:
             - public
-
-build_latest_site:
-    stage: build
-    needs:
-        - build_lts
-    script:
-        - apk add --no-cache git
-        - npm i
-        - npm run build
-        - node tasks/build-site.mjs --build-latest --build-next
-        - mv build/site public
-    artifacts:
-        paths:
-            - public
-    rules:
-        # Test latest website only on stable releases (to speed up MR/push pipelines)
-        - if: '$CI_COMMIT_TAG && $CI_COMMIT_TAG =~ $version_stable_release'
 
 ## LINT STAGE
 
@@ -207,38 +190,11 @@ pages:
         - apk add --no-cache git
         - npm i
         - npm run build
-        - node tasks/build-site.mjs --build-latest --build-next
+        - node tasks/build-site.mjs
         - mv build/site public
     artifacts:
         paths:
             - public
     rules:
         # Only publish website on releases (and exclude pre-releases)
-        - if: '$CI_COMMIT_TAG && $CI_COMMIT_TAG =~ $version_stable_release'
-
-publish_next_site:
-    stage: publish
-    script:
-        - apk add --no-cache git
-        - npm i
-        - npm run build
-        - node tasks/build-site.mjs --build-next
-        - ./tasks/publish-website.sh --push
-    rules:
-        # Publish next website commits on main
-        - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-
-publish_latest_site:
-    stage: publish
-    # Start only if publishing package worked
-    needs:
-        - publish_package
-    script:
-        - apk add --no-cache git
-        - npm i
-        - npm run build
-        - node tasks/build-site.mjs --build-latest --build-next
-        - ./tasks/publish-website.sh --push
-    rules:
-        # Publish latest website on stable releases
         - if: '$CI_COMMIT_TAG && $CI_COMMIT_TAG =~ $version_stable_release'

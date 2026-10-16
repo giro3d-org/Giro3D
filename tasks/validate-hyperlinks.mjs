@@ -16,7 +16,7 @@ import { logError, logOk } from './utils.mjs';
 
 const MODULE = 'validate-hyperlinks';
 
-const excludedFolders = ['classes/external', 'next/'];
+const excludedFolders = ['classes/external'];
 const hrefFilter = ['about:blank', 'mailto'];
 
 let exitWithError = false;
@@ -47,9 +47,9 @@ function checkPath(uri, relativeLink, emitterPath) {
 }
 
 const redirects = [
-    { before: '/examples/', after: '/latest/examples/' },
-    { before: '/tutorials/', after: '/latest/tutorials/' },
-    { before: '/apidoc/', after: '/latest/apidoc/' },
+    { before: '/latest/examples/', after: '/examples/' },
+    { before: '/latest/tutorials/', after: '/tutorials/' },
+    { before: '/latest/apidoc/', after: '/apidoc/' },
 ];
 
 /**

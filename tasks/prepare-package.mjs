@@ -15,17 +15,24 @@ const buildDir = path.resolve(baseDir, '../build/giro3d');
 
 export async function getPackageVersion() {
     const pkg = await fse.readJSON(path.resolve(baseDir, '../package.json'));
-    return `v${pkg.version}`;
+    let version = `v${pkg.version}`;
+    if (version.endsWith('-dev')) {
+        const gitCommit = await getGitVersion();
+        if (gitCommit) {
+            version += ` (${gitCommit})`;
+        }
+    }
+    return version;
 }
 
 export async function getGitVersion() {
-    let nextCommitVersion = 'next';
     try {
-        nextCommitVersion = execSync('git describe --tags --always').toString();
+        const nextCommitVersion = execSync('git describe --tags --always').toString();
+        return nextCommitVersion.trim();
     } catch {
         // Ignore
+        return undefined;
     }
-    return nextCommitVersion.trim();
 }
 
 async function main() {
