@@ -24,8 +24,8 @@
 | ![alt text](examples/screenshots/3d-tiles-building.jpg) | ![alt text](examples/screenshots/axis-grid.jpg)                    | ![alt text](examples/screenshots/globe.jpg)                      |
 
 <div align="center">
-  <a href="https://giro3d.org/latest/examples/index.html">Examples</a> ·
-  <a href="https://giro3d.org/latest/apidoc/index.html">Documentation</a> ·
+  <a href="https://giro3d.org/examples/index.html">Examples</a> ·
+  <a href="https://giro3d.org/apidoc/index.html">Documentation</a> ·
   <a href="https://gitlab.com/giro3d/giro3d/-/blob/main/CHANGELOG.md">Changelog</a> ·
   <a href="https://giro3d.org/faq.html">FAQ</a>
 </div>
@@ -95,7 +95,7 @@ Below is a non-exhaustive list of supported data sources.
 
 # Getting started
 
-💡 To test Giro3D without installing anything, check the [interactive examples](https://giro3d.org/latest/examples/index.html).
+💡 To test Giro3D without installing anything, check the [interactive examples](https://giro3d.org/examples/index.html).
 
 ## 🐋 Quick start with Docker
 

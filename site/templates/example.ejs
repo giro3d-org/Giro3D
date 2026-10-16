@@ -5,15 +5,15 @@
             title: title,
             name: title,
             description: description,
-            url: `https://giro3d.org/${releaseName}/examples/${name}.html`,
-            thumbnail: `https://giro3d.org/${releaseName}/examples/screenshots/${name}.jpg`,
+            url: `https://giro3d.org/examples/${name}.html`,
+            thumbnail: `https://giro3d.org/examples/screenshots/${name}.jpg`,
         }) %>
 
         <link rel="stylesheet" type="text/css" href="css/example.css" />
         <%- customcss %>
     </head>
     <body class="bg-light">
-        <%- include('navbar-version', { activeId: 'examples' }) %>
+        <%- include('navbar', { activeId: 'examples' }) %>
 
         <div class="m-3">
             <!-- Short description (same as in the example card) -->

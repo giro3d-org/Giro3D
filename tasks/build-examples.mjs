@@ -31,9 +31,8 @@ const templatesDir = path.join(rootDir, 'site', 'templates');
 const giro3dPackageDir = path.join(rootDir, 'build', 'giro3d');
 
 export const defaultParameters = {
-    output: path.join(rootDir, 'build', 'site', 'next', 'examples'),
+    output: path.join(rootDir, 'build', 'site', 'examples'),
     version: undefined,
-    releaseName: 'next',
     mode: 'production',
     clean: true,
     example: undefined,
@@ -191,7 +190,6 @@ export async function generateIndex(htmlFiles, parameters) {
         name: `Examples (${parameters.version})`,
         description: parameters.name,
         examples: thumbnails,
-        releaseName: parameters.releaseName,
         releaseVersion: parameters.version,
     });
     return indexHtmlContent;
@@ -209,10 +207,9 @@ export async function generateExample(htmlFile, parameters) {
     const { attributes, body: htmlCustomContent } = parseExample(htmlFile);
     const cssContent = parseCss(htmlFile);
 
-    const giro3dVersion =
-        parameters.releaseName === 'next'
-            ? 'git+https://gitlab.com/giro3d/giro3d.git' // Not packaged yet, set git repo
-            : parameters.version.substring(1); // Remove "v"
+    const giro3dVersion = parameters.version.includes('-dev')
+        ? 'git+https://gitlab.com/giro3d/giro3d.git' // Not packaged yet, set git repo
+        : parameters.version.substring(1); // Remove "v"
 
     const variables = {
         content: htmlCustomContent.trim(),
@@ -228,7 +225,6 @@ export async function generateExample(htmlFile, parameters) {
         highlightedJsCode: undefined,
         highlightedHtmlCode: undefined,
         highlightedPackageCode: undefined,
-        releaseName: parameters.releaseName,
         releaseVersion: parameters.version,
         dependencies: attributes.dependencies,
     };
@@ -580,11 +576,6 @@ if (esMain(import.meta)) {
         .option('--no-clean', "Don't clean")
         .option('--mode <environment>', 'Environment', defaultParameters.mode)
         .option('-v, --version <version>', 'Version', defaultParameters.version)
-        .option(
-            '-r, --release-name <version>',
-            'Published version (latest, next, ...)',
-            defaultParameters.releaseName,
-        )
         .option('-w, --watch', 'Serve and watch for modifications', false);
 
     const cmd = program.parse();

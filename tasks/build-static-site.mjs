@@ -14,7 +14,7 @@ import { globSync } from 'glob';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import { getGitVersion, getPackageVersion } from './prepare-package.mjs';
+import { getPackageVersion } from './prepare-package.mjs';
 import { createStaticServer } from './serve.mjs';
 import { log, logOk, logWatched } from './utils.mjs';
 
@@ -27,18 +27,8 @@ const templatesDir = path.join(siteDir, 'templates');
 
 export const defaultParameters = {
     output: path.join(rootDir, 'build', 'site'),
-    releaseName: 'next',
+    version: undefined,
 };
-
-export async function getVersions() {
-    const latest = await getPackageVersion();
-    const next = await getGitVersion();
-
-    return [
-        { title: `Latest (${latest})`, href: '/latest/examples/index.html' },
-        { title: `Next (${next})`, href: '/next/examples/index.html' },
-    ];
-}
 
 function readTemplate(template) {
     const templateFilename = path.basename(template);
@@ -111,8 +101,10 @@ export async function copyAssets(parameters) {
 
 export async function copySite(parameters) {
     log('static-site', 'Building site...');
+    if (!parameters.version) {
+        parameters.version = await getPackageVersion();
+    }
     const ejsFiles = globSync(path.join(siteDir, '*.ejs'));
-    const availableVersions = await getVersions();
 
     ejsFiles.forEach(ejsFile => {
         const filename = path.basename(ejsFile);
@@ -120,8 +112,7 @@ export async function copySite(parameters) {
 
         const htmlTemplate = readTemplate(ejsFile);
         const htmlContent = htmlTemplate({
-            releaseName: parameters.releaseName,
-            availableVersions,
+            releaseVersion: parameters.version,
         }).trim();
 
         fse.outputFileSync(path.join(parameters.output, htmlFilename), htmlContent);
@@ -159,11 +150,7 @@ if (esMain(import.meta)) {
     program
         .option('-o, --output <directory>', 'Output directory', defaultParameters.output)
         .option('-c, --clean', 'Clean directory', defaultParameters.clean)
-        .option(
-            '-r, --release-name <version>',
-            'Release name to use in navbar (latest, next, ...)',
-            defaultParameters.releaseName,
-        )
+        .option('-v, --version <version>', 'Version', defaultParameters.version)
         .option('-w, --watch', 'Serve and watch for modifications', false);
 
     program.parse();
