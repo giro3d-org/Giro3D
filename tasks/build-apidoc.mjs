@@ -32,10 +32,9 @@ const tmpDir = path.join(rootDir, 'build', '.cache', 'apidoc');
  */
 
 export const defaultParameters = {
-    output: path.join(rootDir, 'build', 'site', 'next', 'apidoc'),
+    output: path.join(rootDir, 'build', 'site', 'apidoc'),
     clean: true,
     version: undefined,
-    releaseName: 'next',
 };
 
 /**
@@ -155,11 +154,6 @@ if (esMain(import.meta)) {
         .option('-c, --clean', 'Clean output directory', defaultParameters.clean)
         .option('--no-clean', "Don't clean")
         .option('-v, --version <version>', 'Version', defaultParameters.version)
-        .option(
-            '-r, --release-name <name>',
-            'Release name (latest, next, ...)',
-            defaultParameters.releaseName,
-        )
         .option('-w, --watch', 'Serve and watch for modifications', false)
         .option('--lint-only', 'Lint only', false);
 

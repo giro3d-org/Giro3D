@@ -21,47 +21,38 @@ const baseDir = dirname(fileURLToPath(import.meta.url));
 
 export const defaultParameters = {
     output: path.join(baseDir, '..', 'build', 'site'),
+    version: undefined,
 };
 
-async function buildRelease(parameters, releaseName) {
-    log('site', chalk.bold(`Building release ${releaseName}...`));
+async function buildRelease(parameters) {
+    const { output, ...options } = parameters;
+
+    log('site', chalk.bold(`Building site...`));
     await buildApidoc({
-        output: path.join(parameters.output, releaseName, 'apidoc'),
-        releaseName,
+        ...options,
+        output: path.join(parameters.output, 'apidoc'),
     });
     await buildExamples({
-        output: path.join(parameters.output, releaseName, 'examples'),
+        ...options,
+        output: path.join(parameters.output, 'examples'),
         mode: 'production',
-        releaseName,
     });
     await buildTutorials({
-        output: path.join(parameters.output, releaseName, 'tutorials'),
-        releaseName,
+        ...options,
+        output: path.join(parameters.output, 'tutorials'),
     });
-    logOk('site', chalk.bold(`Built release ${releaseName}`));
+    logOk('site', chalk.bold(`Built site`));
 }
 
 async function buildWebsite(parameters) {
-    await buildStaticSite({
-        output: parameters.output,
-        releaseName: parameters.useNext ? 'next' : 'latest',
-    });
-
-    if (parameters.buildLatest) {
-        await buildRelease(parameters, 'latest');
-    }
-
-    if (parameters.buildNext) {
-        await buildRelease(parameters, 'next');
-    }
+    await buildStaticSite(parameters);
+    await buildRelease(parameters);
 }
 
 if (esMain(import.meta)) {
     program
         .option('-o, --output <directory>', 'Output directory', defaultParameters.output)
-        .option('--build-next', 'Build as next version', false)
-        .option('--build-latest', 'Build as latest version', false)
-        .option('--use-next', 'Use next version for static site', false)
+        .option('-v, --version <version>', 'Version', defaultParameters.version)
         .option('-w, --watch', 'Serve and watch for modifications', false);
 
     program.parse();
@@ -69,17 +60,6 @@ if (esMain(import.meta)) {
     const { watch, ...options } = program.opts();
     const pwd = process.cwd();
     options.output = path.resolve(pwd, options.output);
-
-    if (!options.buildNext && !options.buildLatest) {
-        logError('site', 'Nothing to build, --build-next and/or --build-latest must be specified');
-        process.exit(1);
-    }
-    if (!options.buildNext && options.useNext) {
-        logWarning('site', 'next version is used for static site, but is not being built');
-    }
-    if (!options.buildLatest && !options.useNext) {
-        logWarning('site', 'latest version is used for static site, but is not being built');
-    }
 
     await buildWebsite(options);
     if (watch) {

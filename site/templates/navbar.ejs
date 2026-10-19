@@ -1,6 +1,4 @@
-<% function cls() { return releaseName === 'next' ? 'bg-dark' : 'bg-light'; } %>
-<% function theme() { return releaseName === 'next' ? 'dark' : ''; } %>
-<header class="header <%- cls() %>" data-bs-theme="<%- theme() %>">
+<header class="header bg-light">
     <div class="container-fluid">
         <a href="/" class="navbar-brand mx-0">
             <img
@@ -29,29 +27,15 @@
                 <%- include('navbar-link', { id: 'index', href: '/', title: 'Home', class: '' } ) %>
                 <%- include('navbar-link', { id: 'giro3d', href: '/giro3d.html', title: 'Giro3D framework' }) %>
                 <%- include('navbar-link', { id: 'piero', href: '/piero.html', title: 'Piero application', class: 'nav-link-success'}) %>
-                <%- include('navbar-link', { id: 'tutorials', href: '/' + releaseName + '/tutorials/getting-started.html', title: 'Getting started with Giro3D'}) %>
-                <%- include('navbar-link', { id: 'examples', href: '/' + releaseName + '/examples/index.html', title: 'Giro3D examples'}) %>
-                <%- include('navbar-link', { id: 'apidoc', href: '/' + releaseName + '/apidoc/index.html', title: 'API documentation'}) %>
+                <%- include('navbar-link', { id: 'tutorials', href: '/tutorials/getting-started.html', title: 'Getting started with Giro3D'}) %>
+                <%- include('navbar-link', { id: 'examples', href: '/examples/index.html', title: 'Giro3D examples'}) %>
+                <%- include('navbar-link', { id: 'apidoc', href: '/apidoc/index.html', title: 'API documentation'}) %>
 
-                <li class="nav-item dropdown">
-                    <a
-                        class="nav-link dropdown-toggle"
-                        href="#"
-                        role="button"
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false"
+                <li class="nav-item">
+                    <span class="navbar-text badge text-bg-info"
+                        >Version
+                        <%= locals.releaseVersion ?? 'next' %></span
                     >
-                        Version
-                    </a>
-                    <ul class="dropdown-menu">
-                        <% availableVersions.forEach(function (version) { %>
-                        <li>
-                            <a class="dropdown-item" href="<%= version.href %>"
-                                ><%= version.title %></a
-                            >
-                        </li>
-                        <% }); %>
-                    </ul>
                 </li>
             </ul>
 
