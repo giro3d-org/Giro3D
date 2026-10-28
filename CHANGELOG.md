@@ -1,5 +1,16 @@
 # Changelog
 
+## v2.0.6 (2026-10-28)
+
+### Fix
+
+- **DrawToolPanel**: correctly handle globe coordinates
+
+### Perf
+
+- **Globe**: improve defaultGlobeSubdivisionStrategy
+- **Map**: add some tolerance to defaultSubdivisionStrategy
+
 ## v2.0.5 (2026-10-06)
 
 ### Fix
