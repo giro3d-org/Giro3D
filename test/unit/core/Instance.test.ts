@@ -5,7 +5,7 @@
  */
 
 import { Group, Object3D, Vector2, WebGLRenderer } from 'three';
-import { beforeEach, describe, expect, it, vitest } from 'vitest';
+import { beforeEach, describe, expect, it, vi, vitest } from 'vitest';
 
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem';
 import Instance from '@giro3d/giro3d/core/Instance';
@@ -180,16 +180,20 @@ describe('Instance', () => {
         });
 
         it('should fire the entity-added event', () => {
-            let eventFired = false;
+            const listener = vi.fn();
 
-            instance.addEventListener('entity-added', () => {
-                eventFired = true;
-            });
+            instance.addEventListener('entity-added', listener);
 
-            expect(eventFired).toBeFalsy();
+            expect(listener).not.toHaveBeenCalled();
 
-            return instance.add(new FakeEntity()).then(() => {
-                expect(eventFired).toBeTruthy();
+            const entity = new FakeEntity();
+
+            return instance.add(entity).then(() => {
+                expect(listener).toHaveBeenCalledWith({
+                    type: 'entity-added',
+                    target: null,
+                    entity,
+                });
             });
         });
     });
@@ -259,20 +263,20 @@ describe('Instance', () => {
         });
 
         it('should fire the entity-removed event', async () => {
-            let eventFired = false;
-
             const entity = new FakeEntity();
+            const listener = vi.fn();
 
-            instance.addEventListener('entity-removed', () => {
-                eventFired = true;
+            instance.addEventListener('entity-removed', listener);
+
+            expect(listener).not.toHaveBeenCalled();
+
+            await instance.add(entity);
+            instance.remove(entity);
+            expect(listener).toHaveBeenCalledWith({
+                type: 'entity-removed',
+                target: null,
+                entity,
             });
-
-            expect(eventFired).toBeFalsy();
-
-            await instance.add(entity).then(() => {
-                instance.remove(entity);
-            });
-            expect(eventFired).toBeTruthy();
         });
     });
 

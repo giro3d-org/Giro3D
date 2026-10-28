@@ -79,11 +79,11 @@ export interface InstanceEvents {
     /**
      * Fires when an entity is added to the instance.
      */
-    'entity-added': unknown;
+    'entity-added': EntityEventPayload;
     /**
      * Fires when an entity is removed from the instance.
      */
-    'entity-removed': unknown;
+    'entity-removed': EntityEventPayload;
     /**
      * Fires at the start of the update
      */
@@ -559,7 +559,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         }
 
         this.notifyChange(object, { needsRedraw: false });
-        this.dispatchEvent({ type: 'entity-added' });
+        this.dispatchEvent({ type: 'entity-added', entity });
         return object;
     }
 
@@ -580,7 +580,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
 
             this._entities.delete(object);
 
-            this.dispatchEvent({ type: 'entity-removed' });
+            this.dispatchEvent({ type: 'entity-removed', entity: object });
         } else if (isObject3D(object)) {
             object.removeFromParent();
         }
