@@ -7,7 +7,7 @@
 import type GUI from 'lil-gui';
 import type Feature from 'ol/Feature';
 import type { Circle, Geometry, MultiPoint, Point, SimpleGeometry } from 'ol/geom';
-import type { EventDispatcher, Object3D } from 'three';
+import type { EventDispatcher, Material, Object3D } from 'three';
 
 import { type Coordinate } from 'ol/coordinate';
 import { getCenter } from 'ol/extent';
@@ -611,6 +611,20 @@ export default class DrapedFeatureCollection extends Entity3D {
         if (this.visible) {
             this.registerAllTiles();
         }
+    }
+
+    public override updateOpacity(): void {
+        // We have to overload the method because we don't want to replace
+        // materials' opacity with feature opacity. Instead, we want to combine them.
+        this.traverseGeometries(mesh => {
+            mesh.opacity = this.opacity;
+        });
+    }
+
+    protected override setupMaterial(material: Material): void {
+        // Contrary to the method in the base class, we don't want
+        // to alter opacity and transparent as it is already computed per-feature.
+        material.clippingPlanes = this.clippingPlanes;
     }
 
     private onLayerAdded({ layer }: MapLikeEventMap['layer-added']): void {
