@@ -14,6 +14,7 @@ import type { SegmentLabelFormatter } from '../entities/Shape';
 
 import Coordinates from '../core/geographic/Coordinates';
 import CoordinateSystem from '../core/geographic/CoordinateSystem';
+import Ellipsoid from '../core/geographic/Ellipsoid';
 import { DEFAULT_COLOR, type VertexLabelFormatter } from '../entities/Shape';
 import { DrawTool } from '../interactions/DrawTool';
 import Panel from './Panel';
@@ -21,9 +22,16 @@ import Panel from './Panel';
 const vertexLabelFormatter: (instance: Instance) => VertexLabelFormatter =
     (instance: Instance) =>
     ({ position }) => {
-        const latlon = new Coordinates(instance.coordinateSystem, position.x, position.y).as(
-            CoordinateSystem.epsg4326,
-        );
+        const { x, y, z } = position;
+        let latlon: Coordinates;
+
+        if (instance.coordinateSystem.isEpsg(4978)) {
+            latlon = Ellipsoid.WGS84.toGeodetic(x, y, z);
+        } else {
+            latlon = new Coordinates(instance.coordinateSystem, position.x, position.y).as(
+                CoordinateSystem.epsg4326,
+            );
+        }
 
         return `lat: ${latlon.latitude.toFixed(5)}°, lon: ${latlon.longitude.toFixed(5)}°`;
     };
