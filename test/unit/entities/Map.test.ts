@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: MIT
  */
 
+import type { Object3D } from 'three';
+
 import {
     Box3,
     Color,
@@ -14,18 +16,18 @@ import {
     Vector3,
     WebGLRenderer,
 } from 'three';
-import { beforeEach, describe, expect, it, vitest } from 'vitest';
+import { beforeEach, describe, expect, it, vi, vitest } from 'vitest';
 
 import type Context from '@giro3d/giro3d/core/Context';
 import type Instance from '@giro3d/giro3d/core/Instance';
-import type { LayerUserData } from '@giro3d/giro3d/core/layer/Layer';
+import type { Layer, LayerUserData } from '@giro3d/giro3d/core/layer/Layer';
 import type TileMesh from '@giro3d/giro3d/entities/tiles/TileMesh';
 
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem';
 import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import ColorLayer, { isColorLayer } from '@giro3d/giro3d/core/layer/ColorLayer';
 import ElevationLayer, { isElevationLayer } from '@giro3d/giro3d/core/layer/ElevationLayer';
-import Map from '@giro3d/giro3d/entities/Map';
+import Map, { isDataLoaded } from '@giro3d/giro3d/entities/Map';
 import { DEFAULT_AZIMUTH, DEFAULT_ZENITH } from '@giro3d/giro3d/renderer/LayeredMaterial';
 import RenderingState from '@giro3d/giro3d/renderer/RenderingState';
 import View from '@giro3d/giro3d/renderer/View';
@@ -56,10 +58,10 @@ let map: Map;
 const crs = CoordinateSystem.epsg4326;
 
 const extent = new Extent(crs, {
-    west: 0,
-    east: 10,
-    south: 0,
-    north: 10,
+    minX: 0,
+    maxX: 10,
+    minY: 0,
+    maxY: 10,
 });
 
 beforeEach(() => {
@@ -299,6 +301,47 @@ describe('getLayers', () => {
 
         expect(map.getLayers(l => isColorLayer(l)).map(l => l.id)).toEqual([col1.id, col2.id]);
         expect(map.getLayers(l => isElevationLayer(l)).map(l => l.id)).toEqual([elev1.id]);
+    });
+});
+
+describe('isDataLoaded', () => {
+    // @ts-expect-error incomplete type
+    const tile: Object3D = {
+        id: 1234,
+    };
+
+    it.each([true, false])('should return %s if the layer.isLoaded returns %s for the tile', v => {
+        // @ts-expect-error incomplete type
+        const layer: Layer = {
+            isLoaded: vi.fn(() => v),
+        };
+        expect(isDataLoaded(tile, layer)).toBe(v);
+    });
+
+    it('should honor the depthTolerance and check if ancestors are loaded', () => {
+        // @ts-expect-error incomplete type
+        const ancestor: Object3D = {
+            id: 3,
+        };
+        // @ts-expect-error incomplete type
+        const parent: Object3D = {
+            id: 2,
+            parent: ancestor,
+        };
+        // @ts-expect-error incomplete type
+        const child: Object3D = {
+            id: 1,
+            parent,
+        };
+
+        // @ts-expect-error incomplete type
+        const layer: Layer = {
+            isLoaded: vi.fn((id: Object3D['id']) => id === ancestor.id),
+        };
+
+        expect(isDataLoaded(child, layer, 0)).toBe(false);
+        expect(isDataLoaded(child, layer, 1)).toBe(false);
+        expect(isDataLoaded(child, layer, 2)).toBe(true);
     });
 });
 
