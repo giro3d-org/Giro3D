@@ -20,8 +20,6 @@ import Coordinates from '../core/geographic/Coordinates';
 import CoordinateSystem from '../core/geographic/CoordinateSystem';
 import Ellipsoid from '../core/geographic/Ellipsoid';
 import Extent from '../core/geographic/Extent';
-import { isColorLayer } from '../core/layer/ColorLayer';
-import { isElevationLayer } from '../core/layer/ElevationLayer';
 import ScreenSpaceError from '../core/ScreenSpaceError';
 import { computeDistanceToFitSphere, computeZoomToFitSphere } from '../renderer/View';
 import { isOrthographicCamera, isPerspectiveCamera } from '../utils/predicates';
@@ -39,23 +37,17 @@ const boundingSphere = new Sphere();
 const tempBox = new Box3();
 
 /**
- * Always allow subdivision up to LOD 4, then use the default map strategy for subsequent LODs.
+ * Always allow subdivision up to LOD 7, then use the default map strategy for subsequent LODs.
  */
 export const defaultGlobeSubdivisionStrategy: MapSubdivisionStrategy = (tile, context) => {
-    if (context.entity.extent.equals(Extent.WGS84) && tile.lod < 5) {
-        return context.layers.every(
-            layer =>
-                !layer.visible ||
-                // Terrain is negligible at low LODs.
-                isElevationLayer(layer) ||
-                (isColorLayer(layer) && layer.isLoaded(tile.id)),
-        );
+    // Up to LOD 7 there is no risk of dangerous subdivision because the terrain does not
+    // contribute much to the bounding box of the tile. The earth curvature contributes much more.
+    if (context.entity.extent.equals(Extent.WGS84) && tile.lod <= 7) {
+        return true;
     }
 
-    // After LOD 5, we have to be much stricter than the Map implementation.
-    // We have zero tolerance here because of extreme recursion levels when
-    // zooming in close to mountainous areas, due to the fact that we need to
-    // have the strictest bounding volumes.
+    // After LOD 7, we can use the default map strategy which will
+    // work well since globe tile become almost planar at this LOD.
     return defaultMapSubdivisionStrategy(tile, context);
 };
 

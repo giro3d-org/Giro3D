@@ -125,6 +125,30 @@ export type MapSubdivisionStrategy = (
 ) => boolean;
 
 /**
+ * Returns true if the layer has loaded data for this tile, or for any ancestor up to the
+ * {@link depthTolerance} value.
+ */
+export function isDataLoaded(tile: Object3D, layer: Layer, depthTolerance?: number): boolean {
+    if (depthTolerance == null || depthTolerance === 0) {
+        return layer.isLoaded(tile.id);
+    }
+
+    let current: Object3D | null = tile;
+    let ancestryLevel = 0;
+
+    while (current != null && ancestryLevel <= depthTolerance) {
+        if (layer.isLoaded(current.id)) {
+            return true;
+        }
+
+        current = current.parent;
+        ancestryLevel += 1;
+    }
+
+    return false;
+}
+
+/**
  * Allows subdivision if:
  * - **if elevation layer present and active and terrain deformation is enabled**: wait for all elevation layers to have finished loading the tile,
  * - otherwise allow subdivision without condition
@@ -136,13 +160,25 @@ export const defaultMapSubdivisionStrategy: MapSubdivisionStrategy = (tile, cont
         return true;
     }
 
+    // If the map has some terrain, then the bounding boxes of tiles depend on the actual elevation data.
+    // We have a chicken and egg problem here : to know the bounding box of a tile, we have to load
+    // the data for this tile. But to determine when to subdivide a tile, we have to know the bounding box.
+    // So we have to find a compromise : we allow subdivision of a few levels without knowing the
+    // data beforehand to avoid wasting too much time in unwanted subdivision levels. On the other hands,
+    // we cannot subdivide blindly, otherwise the bounding boxes of the tiles at deep levels will be
+    // completely wrong, leading to very incorrect subdivision decisions that will load huge amounts
+    // of tiles, crashing the browser.
+    const canSubdivideTerrain = (layer: ElevationLayer): boolean => {
+        return isDataLoaded(tile, layer, 2);
+    };
+
     // We have to wait until elevation data is loaded for this
     // tile so that the bounding box is up to date.
     return context.layers.every(
         layer =>
             !layer.visible ||
             isColorLayer(layer) ||
-            (isElevationLayer(layer) && layer.isLoaded(tile.id)),
+            (isElevationLayer(layer) && canSubdivideTerrain(layer)),
     );
 };
 
