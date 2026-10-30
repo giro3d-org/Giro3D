@@ -12,6 +12,7 @@ import type {
     TilesRendererEventMap,
 } from '3d-tiles-renderer';
 import type { ColorRepresentation, Material, Object3D } from 'three';
+import type { GLTFLoaderPlugin, GLTFParser } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 import { TilesRenderer } from '3d-tiles-renderer';
 import {
@@ -136,6 +137,12 @@ export interface Tiles3DOptions extends Entity3DOptions {
      * @defaultValue true
      */
     enableFetchPlugin?: boolean;
+
+    /**
+     * Additional GLTF loader plugins to pass to `GLTFLoader.register`.
+     * @defaultValue []
+     */
+    gltfExtPlugins?: Array<(parser: GLTFParser) => GLTFLoaderPlugin>;
 }
 
 const tmpBox3 = new Box3();
@@ -305,6 +312,7 @@ class Tiles3D<UserData extends EntityUserData = EntityUserData>
                 dracoLoader,
                 ktxLoader,
                 meshoptDecoder: MeshoptDecoder,
+                plugins: options?.gltfExtPlugins ?? [],
             }),
         );
 
