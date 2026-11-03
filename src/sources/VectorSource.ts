@@ -48,7 +48,11 @@ const tmpExtent = new Array(4);
 
 const tmpTransform: Transform = createTransform();
 
-function createCanvas(size: Vector2): HTMLCanvasElement {
+function createCanvas(size: Vector2): HTMLCanvasElement | OffscreenCanvas {
+    // `document` is unavailable in a Worker, where this may run via `OffscreenInstance`.
+    if (typeof document === 'undefined') {
+        return new OffscreenCanvas(size.width, size.height);
+    }
     const canvas = document.createElement('canvas');
     canvas.width = size.width;
     canvas.height = size.height;
@@ -97,7 +101,7 @@ function renderFeature(
  * @param size - The canvas size, in pixels.
  */
 function rasterizeBuilderGroup(
-    canvas: HTMLCanvasElement,
+    canvas: HTMLCanvasElement | OffscreenCanvas,
     builderGroup: CanvasBuilderGroup,
     extent: Extent,
     size: Vector2,
@@ -105,7 +109,10 @@ function rasterizeBuilderGroup(
     const pixelRatio = 1;
     const resX = extent.dimensions().x / size.width;
     const resY = extent.dimensions().y / size.height;
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    const ctx = canvas.getContext('2d', { willReadFrequently: true }) as
+        | CanvasRenderingContext2D
+        | OffscreenCanvasRenderingContext2D
+        | null;
 
     if (!ctx) {
         throw new Error('could not acquire 2d context');

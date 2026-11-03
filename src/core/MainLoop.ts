@@ -9,7 +9,7 @@ import { Clock, MathUtils, Plane, Sphere, Vector3 } from 'three';
 import type Entity from '../entities/Entity';
 import type View from '../renderer/View';
 import type Context from './Context';
-import type Instance from './Instance';
+import type InstanceBase from './InstanceBase';
 
 import { isEntity3D } from '../entities/Entity3D';
 import { isBufferGeometry } from '../utils/predicates';
@@ -96,7 +96,7 @@ class MainLoop {
     }
 
     public scheduleUpdate(
-        instance: Instance,
+        instance: InstanceBase,
         changeSource: unknown | unknown[] = undefined,
         options?: {
             needsRedraw?: boolean;
@@ -127,7 +127,7 @@ class MainLoop {
         }
     }
 
-    private update(instance: Instance, updateSources: Set<unknown>, dt: number): void {
+    private update(instance: InstanceBase, updateSources: Set<unknown>, dt: number): void {
         const frame = this._frame;
 
         const context = new ContextImpl(instance.view);
@@ -189,7 +189,7 @@ class MainLoop {
         }
     }
 
-    private updateCameraPlanesFromObjects(context: Context, instance: Instance): void {
+    private updateCameraPlanesFromObjects(context: Context, instance: InstanceBase): void {
         instance.threeObjects.traverse(o => {
             if (!o.visible) {
                 return;
@@ -211,7 +211,7 @@ class MainLoop {
         });
     }
 
-    private step(instance: Instance): void {
+    private step(instance: InstanceBase): void {
         const dt = this._clock.getDelta() * 1000;
 
         const frame = this._frame++;

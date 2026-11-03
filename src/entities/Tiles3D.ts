@@ -28,7 +28,7 @@ import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 
 import type ColorimetryOptions from '../core/ColorimetryOptions';
 import type Context from '../core/Context';
-import type Instance from '../core/Instance';
+import type InstanceBase from '../core/InstanceBase';
 import type ColorLayer from '../core/layer/ColorLayer';
 import type HasLayers from '../core/layer/HasLayers';
 import type Layer from '../core/layer/Layer';
@@ -181,13 +181,13 @@ interface SharedResources {
     lruCache: LRUCache;
 }
 
-const perInstanceSharedResources: Map<Instance, SharedResources> = new Map();
+const perInstanceSharedResources: Map<InstanceBase, SharedResources> = new Map();
 
-function getSharedResources(instance: Instance): SharedResources | null {
+function getSharedResources(instance: InstanceBase): SharedResources | null {
     return perInstanceSharedResources.get(instance) ?? null;
 }
 
-function setSharedResources(instance: Instance, resources: SharedResources): void {
+function setSharedResources(instance: InstanceBase, resources: SharedResources): void {
     if (perInstanceSharedResources.has(instance)) {
         return;
     }

@@ -8,7 +8,7 @@ import { Color, FloatType, Vector2, Vector3 } from 'three';
 
 import type Map from '../../entities/Map';
 import type TileMesh from '../../entities/tiles/TileMesh';
-import type Instance from '../Instance';
+import type InstanceBase from '../InstanceBase';
 import type PickOptions from './PickOptions';
 import type PickResult from './PickResult';
 
@@ -40,7 +40,7 @@ const BLACK = new Color(0, 0, 0);
 const tmpCoords = new Coordinates(CoordinateSystem.epsg3857, 0, 0, 0);
 
 function renderTileBuffer(
-    instance: Instance,
+    instance: InstanceBase,
     map: Map,
     coords: Vector2 | undefined,
     radius: number,
@@ -96,7 +96,7 @@ function renderTileBuffer(
  * @returns Target
  */
 function pickTilesAt(
-    instance: Instance,
+    instance: InstanceBase,
     canvasCoords: Vector2,
     map: Map,
     options: PickOptions = {},

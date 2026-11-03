@@ -7,7 +7,7 @@
 import { Color, FloatType, Vector3, type Points, type Vector2 } from 'three';
 
 import type Entity3D from '../../entities/Entity3D';
-import type Instance from '../Instance';
+import type InstanceBase from '../InstanceBase';
 import type PickOptions from './PickOptions';
 import type PickResult from './PickResult';
 
@@ -52,7 +52,7 @@ interface PickPointsCandidate {
  * @returns Array of picked objects
  */
 function pickPointsAt(
-    instance: Instance,
+    instance: InstanceBase,
     canvasCoords: Vector2,
     entity: Entity3D,
     options: PickOptions = {},

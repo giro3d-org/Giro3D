@@ -8,7 +8,7 @@ import { EventDispatcher, MathUtils, type Camera } from 'three';
 
 import type Context from '../core/Context';
 import type Disposable from '../core/Disposable';
-import type Instance from '../core/Instance';
+import type InstanceBase from '../core/InstanceBase';
 
 /* eslint no-unused-vars: 0 */
 /* eslint class-methods-use-this: 0 */
@@ -21,7 +21,7 @@ export interface EntityEventMap {
 export type EntityUserData = Record<string, unknown>;
 
 export interface EntityPreprocessOptions {
-    instance: Instance;
+    instance: InstanceBase;
 }
 
 /**
@@ -91,7 +91,7 @@ abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserDa
     public readonly id: string;
     private _frozen: boolean;
     private _ready = false;
-    private _instance?: Instance;
+    private _instance?: InstanceBase;
 
     /**
      * Determine if this entity is ready to use.
@@ -100,7 +100,7 @@ abstract class Entity<TEventMap extends EntityEventMap = EntityEventMap, TUserDa
         return this._ready;
     }
 
-    public get instance(): Instance {
+    public get instance(): InstanceBase {
         if (!this._instance) {
             throw new Error(
                 'This entity has not been added to an instance or its initialization is not finished.\n' +

@@ -7,7 +7,7 @@
 import { Color, Raycaster, Vector2, type Object3D, type TypedArray } from 'three';
 
 import type Entity3D from '../../entities/Entity3D';
-import type Instance from '../Instance';
+import type InstanceBase from '../InstanceBase';
 import type PickOptions from './PickOptions';
 import type PickResult from './PickResult';
 
@@ -36,7 +36,7 @@ function findEntityInParent(obj: Object3D): Entity3D | null {
  * @returns Array of picked objects
  */
 function pickObjectsAt(
-    instance: Instance,
+    instance: InstanceBase,
     canvasCoords: Vector2,
     object: Object3D,
     options: PickOptions = {},

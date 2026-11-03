@@ -1,0 +1,26 @@
+---
+title: OffscreenInstance
+shortdesc: Render the Giro3D scene in a worker and an offscreen canvas using the OffscreenInstance.
+attribution: © <a href="http://threejs.org" target="_blank">threejs.org</a>
+tags: [offscreen, worker, gltf, performance]
+---
+
+<div class="side-pane-with-status-bar">
+    <div class="card">
+        <div class="card-body">
+            <p>
+                This scene is not rendered on the main thread. The canvas below is transferred to a
+                dedicated Worker via <code>canvas.transferControlToOffscreen()</code>, and the
+                Worker owns an <code>OffscreenInstance</code> that loads a GLTF model with
+                <code>GLTFLoader</code>, plays three independent <code>AnimationMixer</code>-driven
+                animations, and renders every frame itself, no DOM. You can still drag/scroll to
+                move the camera: three.js's control classes need DOM APIs an
+                <code>OffscreenCanvas</code> doesn't have, so they can't run inside the Worker, but
+                a normal <code>MapControls</code> instance drives a plain camera on this thread and
+                its transform is mirrored into the Worker on every change.
+            </p>
+        </div>
+    </div>
+</div>
+
+<canvas id="offscreen-canvas"></canvas>

@@ -214,11 +214,20 @@ function createDataCopy(target: WebGLRenderTarget, renderer: WebGLRenderer): voi
  * @param image - The image.
  * @returns The pixel buffer.
  */
-function getPixels(image: ImageBitmap | HTMLImageElement | HTMLCanvasElement): Uint8ClampedArray {
-    const canvas = document.createElement('canvas');
+function getPixels(
+    image: ImageBitmap | HTMLImageElement | HTMLCanvasElement | OffscreenCanvas,
+): Uint8ClampedArray {
+    // `document` is unavailable in a Worker, where this may run via `OffscreenInstance`.
+    const canvas =
+        typeof document !== 'undefined'
+            ? document.createElement('canvas')
+            : new OffscreenCanvas(image.width, image.height);
     canvas.width = image.width;
     canvas.height = image.height;
-    const context = canvas.getContext('2d', { willReadFrequently: true });
+    const context = canvas.getContext('2d', { willReadFrequently: true }) as
+        | CanvasRenderingContext2D
+        | OffscreenCanvasRenderingContext2D
+        | null;
 
     if (!context) {
         throw new Error('could not acquire 2D context on canvas');
