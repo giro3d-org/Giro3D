@@ -193,6 +193,12 @@ async function loadSubtree(
  * > package uses WebAssembly. If you wish to override the path to the required .wasm file, use
  * > [setLazPerfPath()](../functions/sources_las_config.setLazPerfPath.html) before using this source.
  * > The default path is [DEFAULT_LAZPERF_PATH](../variables/sources_las_config.DEFAULT_LAZPERF_PATH.html).
+ * 
+ * > [!note]
+ * > When using `color` coloring mode (the default), COPC and LAS 1.4 require 2-bytes value ranges.
+ * > If your pointcloud appears black while other tools show it in color, the scales might be wrong. 
+ * > You should rescale the point cloud file via
+ * > [PDAL](https://pdal.io/en/2.9.0/stages/filters.assign.html#example-2) for instance.
  *
  * ### Decimation
  *
