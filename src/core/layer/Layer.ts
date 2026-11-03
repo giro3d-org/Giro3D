@@ -33,7 +33,7 @@ import type ElevationRange from '../ElevationRange';
 import type Coordinates from '../geographic/Coordinates';
 import type CoordinateSystem from '../geographic/CoordinateSystem';
 import type { GridExtent } from '../geographic/Extent';
-import type Instance from '../Instance';
+import type InstanceBase from '../InstanceBase';
 import type MemoryUsage from '../MemoryUsage';
 import type OffsetScale from '../OffsetScale';
 import type Progress from '../Progress';
@@ -426,7 +426,7 @@ export abstract class Layer<
     protected readonly _queue: RequestQueue;
     private readonly _opCounter: OperationCounter;
     private _sortedTargets: Target[] | null = null;
-    private _instance: Instance | null = null;
+    private _instance: InstanceBase | null = null;
     private _composerProjection: CoordinateSystem | null = null;
     private readonly _createReadableTextures: boolean;
     private readonly _preloadImages: boolean;
@@ -607,7 +607,7 @@ export abstract class Layer<
          * The instance to associate this layer.
          * Once set, the layer cannot be used with any other instance.
          */
-        instance: Instance;
+        instance: InstanceBase;
         composerProjection: CoordinateSystem;
     }): Promise<this> {
         const { instance } = options;
@@ -634,7 +634,7 @@ export abstract class Layer<
         return this._preprocessOnce;
     }
 
-    protected get instance(): Instance {
+    protected get instance(): InstanceBase {
         return nonNull(this._instance, 'This layer is not initialized');
     }
 

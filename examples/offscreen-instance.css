@@ -1,0 +1,11 @@
+#view {
+  display: none;
+}
+
+#offscreen-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 1.3rem);
+}

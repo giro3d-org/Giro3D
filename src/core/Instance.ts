@@ -4,38 +4,27 @@
  * SPDX-License-Identifier: MIT
  */
 
-import type { OrthographicCamera, PerspectiveCamera } from 'three';
+import type { Object3D } from 'three';
 import type { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
-import {
-    Clock,
-    EventDispatcher,
-    Group,
-    Object3D,
-    Scene,
-    Vector2,
-    Vector3,
-    type ColorRepresentation,
-    type WebGLRenderer,
-    type WebGLRendererParameters,
-} from 'three';
+import { Clock, Vector2 } from 'three';
 
 import type Entity from '../entities/Entity';
 import type Entity3D from '../entities/Entity3D';
-import type RenderingOptions from '../renderer/RenderingOptions';
-import type CoordinateSystem from './geographic/CoordinateSystem';
 import type PickOptions from './picking/PickOptions';
 import type PickResult from './picking/PickResult';
 import type Progress from './Progress';
 
-import { isEntity } from '../entities/Entity';
 import { isEntity3D } from '../entities/Entity3D';
 import C3DEngine from '../renderer/c3DEngine';
 import { GlobalRenderTargetPool } from '../renderer/RenderTargetPool';
-import View from '../renderer/View';
 import { GlobalCache } from './Cache';
-import { isDisposable } from './Disposable';
-import MainLoop from './MainLoop';
+import InstanceBase, {
+    type EntityEventPayload,
+    type FrameEventPayload,
+    type InstanceBaseOptions,
+    type InstanceEvents,
+} from './InstanceBase';
 import {
     aggregateMemoryUsage,
     getObject3DMemoryUsage,
@@ -46,126 +35,20 @@ import { isPickable } from './picking/Pickable';
 import { isPickableFeatures } from './picking/PickableFeatures';
 import pickObjectsAt from './picking/PickObjectsAt';
 
+export type { EntityEventPayload, FrameEventPayload, InstanceEvents };
+
 const vectors = {
-    pos: new Vector3(),
-    size: new Vector3(),
     evtToCanvas: new Vector2(),
     pickVec2: new Vector2(),
 };
 
-/** Frame event payload */
-export interface FrameEventPayload {
-    /** The frame number. */
-    frame: number;
-    /** Time elapsed since previous update loop, in milliseconds */
-    dt: number;
-    /** `true` if the update loop restarted */
-    updateLoopRestarted: boolean;
-}
-
-/** Entity event payload */
-export interface EntityEventPayload {
-    /** Entity */
-    entity: Entity;
-}
-
-/**
- * Events supported by
- * [`Instance.addEventListener()`](https://threejs.org/docs/#api/en/core/EventDispatcher.addEventListener)
- * and
- * [`Instance.removeEventListener()`](https://threejs.org/docs/#api/en/core/EventDispatcher.removeEventListener)
- */
-export interface InstanceEvents {
-    /**
-     * Fires when an entity is added to the instance.
-     */
-    'entity-added': EntityEventPayload;
-    /**
-     * Fires when an entity is removed from the instance.
-     */
-    'entity-removed': EntityEventPayload;
-    /**
-     * Fires at the start of the update
-     */
-    'update-start': FrameEventPayload;
-    /**
-     * Fires before the camera update
-     */
-    'before-camera-update': { camera: View } & FrameEventPayload;
-    /**
-     * Fires after the camera update
-     */
-    'after-camera-update': { camera: View } & FrameEventPayload;
-    /**
-     * Fires before the entity update
-     */
-    'before-entity-update': EntityEventPayload & FrameEventPayload;
-    /**
-     * Fires after the entity update
-     */
-    'after-entity-update': EntityEventPayload & FrameEventPayload;
-    /**
-     * Fires before the render
-     */
-    'before-render': FrameEventPayload;
-    /**
-     * Fires after the render
-     */
-    'after-render': FrameEventPayload;
-    /**
-     * Fires at the end of the update
-     */
-    'update-end': FrameEventPayload;
-    'picking-start': unknown;
-    'picking-end': {
-        /**
-         * The duration of the picking, in seconds.
-         */
-        elapsed: number;
-        /**
-         * The picking results.
-         */
-        results?: PickResult<unknown>[];
-    };
-    /**
-     * Fires when the instance is disposed.
-     */
-    dispose: unknown;
-}
-
 /** Options for creating Instance */
-export interface InstanceOptions {
+export interface InstanceOptions extends InstanceBaseOptions {
     /**
      * The container for the instance. May be either the `id` of an existing `<div>` element,
      * or the element itself.
      */
     target: string | HTMLDivElement;
-    /**
-     * The coordinate reference system of the scene.
-     * Must be a cartesian system.
-     * Must first be registered via {@link CoordinateSystem.register}
-     */
-    crs: CoordinateSystem;
-    /**
-     * The [Three.js Scene](https://threejs.org/docs/#api/en/scenes/Scene) instance to use,
-     * otherwise a default one will be constructed
-     */
-    scene3D?: Scene;
-    /**
-     * The background color of the canvas. If `null`, the canvas is transparent.
-     * If `undefined`, the default color is used.
-     * @defaultValue `'#030508'`
-     */
-    backgroundColor?: ColorRepresentation | null;
-    /**
-     * The renderer to use. Might be either an instance of an existing {@link WebGLRenderer},
-     * or options to create one. If `undefined`, a new one will be created with default parameters.
-     */
-    renderer?: WebGLRenderer | WebGLRendererParameters;
-    /**
-     * The THREE camera to use
-     */
-    camera?: PerspectiveCamera | OrthographicCamera;
 }
 
 /**
@@ -193,10 +76,6 @@ export interface PickObjectsAtOptions extends PickOptions {
      * @defaultValue false
      */
     pickFeatures?: boolean;
-}
-
-function isObject3D(o: unknown): o is Object3D {
-    return (o as Object3D).isObject3D;
 }
 
 /**
@@ -227,21 +106,13 @@ function isObject3D(o: unknown): o is Object3D {
  * instance.view.camera.lookAt(0, 0, 0);
  * ```
  */
-class Instance extends EventDispatcher<InstanceEvents> implements Progress {
-    private readonly _referenceCrs: CoordinateSystem;
+class Instance extends InstanceBase implements Progress {
     private readonly _viewport: HTMLDivElement;
-    private readonly _mainLoop: MainLoop;
-    private readonly _engine: C3DEngine;
-    private readonly _scene: Scene;
-    private readonly _threeObjects: Group;
-    private readonly _view: View;
-    private readonly _entities: Set<Entity>;
     private readonly _resizeObserver?: ResizeObserver;
     private readonly _pickingClock: Clock;
     private readonly _onContextRestored: () => void;
     private readonly _onContextLost: () => void;
     private _resizeTimeout?: string | number | NodeJS.Timeout;
-    private _disposed = false;
 
     /**
      * Constructs a Giro3D Instance
@@ -256,9 +127,6 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
      * ```
      */
     public constructor(options: InstanceOptions) {
-        super();
-        Object3D.DEFAULT_UP.set(0, 0, 1);
-
         const target = options.target;
         let viewerDiv: HTMLElement | null = null;
 
@@ -277,55 +145,25 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
             );
         }
 
-        this._referenceCrs = options.crs;
-        this._viewport = viewerDiv;
-
         // viewerDiv may have padding/borders, which is annoying when retrieving its size
         // Wrap our canvas in a new div so we make sure the display
         // is correct whatever the page layout is
         // (especially when skrinking so there is no scrollbar/bleading)
-        this._viewport = document.createElement('div');
-        this._viewport.style.position = 'relative';
-        this._viewport.style.overflow = 'hidden'; // Hide overflow during resizing
-        this._viewport.style.width = '100%'; // Make sure it fills the space
-        this._viewport.style.height = '100%';
-        viewerDiv.appendChild(this._viewport);
+        const viewport = document.createElement('div');
+        viewport.style.position = 'relative';
+        viewport.style.overflow = 'hidden'; // Hide overflow during resizing
+        viewport.style.width = '100%'; // Make sure it fills the space
+        viewport.style.height = '100%';
+        viewerDiv.appendChild(viewport);
 
-        this._engine = new C3DEngine(this._viewport, {
+        const engine = new C3DEngine(viewport, {
             clearColor: options.backgroundColor,
             renderer: options.renderer,
         });
 
-        this._mainLoop = new MainLoop();
+        super(engine, options);
 
-        this._scene = options.scene3D || new Scene();
-        // will contain simple three objects that need to be taken into
-        // account, for example camera near / far calculation maybe it'll be
-        // better to do the contrary: having a group where *all* the Giro3D
-        // object will be added, and traverse all other objects for near far
-        // calculation but actually I'm not even sure near far calculation is
-        // worthy of this.
-        this._threeObjects = new Group();
-        this._threeObjects.name = 'threeObjects';
-
-        this._scene.add(this._threeObjects);
-        if (!options.scene3D) {
-            this._scene.matrixWorldAutoUpdate = false;
-        }
-
-        const windowSize = this._engine.getWindowSize();
-
-        this._view = new View({
-            crs: this._referenceCrs,
-            renderer: this._engine.renderer,
-            camera: options.camera,
-            width: windowSize.width,
-            height: windowSize.height,
-        });
-
-        this._view.addEventListener('change', () => this.notifyChange(this._view.camera));
-
-        this._entities = new Set();
+        this._viewport = viewport;
 
         if (globalThis.ResizeObserver != null) {
             this._resizeObserver = new ResizeObserver(() => {
@@ -369,11 +207,6 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         return this._viewport;
     }
 
-    /** Gets the CRS used in this instance. */
-    public get coordinateSystem(): CoordinateSystem {
-        return this._referenceCrs;
-    }
-
     /** Gets whether at least one entity is currently loading data. */
     public get loading(): boolean {
         const entities = this.getEntities();
@@ -395,53 +228,13 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         return sum / entities.length;
     }
 
-    /** Gets the main loop */
-    public get mainLoop(): MainLoop {
-        return this._mainLoop;
-    }
-
-    /** Gets the rendering engine */
-    public get engine(): C3DEngine {
-        return this._engine;
-    }
-
-    /**
-     * Gets the rendering options.
-     *
-     * Note: you must call {@link notifyChange | notifyChange()} to take
-     * the changes into account.
-     */
-    public get renderingOptions(): RenderingOptions {
-        return this._engine.renderingOptions;
-    }
-
-    /**
-     * Gets the underlying WebGL renderer.
-     */
-    public get renderer(): WebGLRenderer {
-        return this._engine.renderer;
-    }
-
     /**
      * Gets the underlying CSS2DRenderer.
      */
     public get css2DRenderer(): CSS2DRenderer {
-        return this._engine.labelRenderer;
-    }
-
-    /** Gets the [3D Scene](https://threejs.org/docs/#api/en/scenes/Scene). */
-    public get scene(): Scene {
-        return this._scene;
-    }
-
-    /** Gets the group containing native Three.js objects. */
-    public get threeObjects(): Group {
-        return this._threeObjects;
-    }
-
-    /** Gets the view. */
-    public get view(): View {
-        return this._view;
+        // Always non-null: Instance always goes through C3DEngine's div-wrapping path, which
+        // always creates a label renderer. Only OffscreenInstance's canvas path doesn't.
+        return this._engine.labelRenderer as CSS2DRenderer;
     }
 
     private _doUpdateRendererSize(div: HTMLDivElement): void {
@@ -463,220 +256,15 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         this._resizeTimeout = setTimeout(() => this._doUpdateRendererSize(div), 50);
     }
 
-    /**
-     * Dispose of this instance object. Free all memory used.
-     *
-     * Note: this *will not* dispose the following reusable objects:
-     * - controls (because they can be attached and detached). For THREE.js controls, use
-     * `controls.dispose()`
-     * - Inspectors, use `inspector.detach()`
-     * - any openlayers objects, please see their individual documentation
-     *
-     */
-    public dispose(): void {
-        if (this._disposed) {
-            return;
-        }
-        this._disposed = true;
-
+    protected override onBeforeDispose(): void {
         this.domElement.removeEventListener('webglcontextlost', this._onContextLost);
         this.domElement.removeEventListener('webglcontextrestored', this._onContextRestored);
 
         this._resizeObserver?.disconnect();
-        for (const obj of this.getObjects()) {
-            this.remove(obj);
-        }
-        this._scene.remove(this._threeObjects);
-
-        this._engine.dispose();
-        this._view.dispose();
-        this.viewport.remove();
-
-        this.dispatchEvent({ type: 'dispose' });
     }
 
-    /**
-     * Add THREE object or Entity to the instance.
-     *
-     * If the object or entity has no parent, it will be added to the default tree (i.e under
-     * `.scene` for entities and under `.threeObjects` for regular Object3Ds.).
-     *
-     * If the object or entity already has a parent, then it will not be changed. Check that this
-     * parent is present in the scene graph (i.e has the `.scene` object as ancestor), otherwise it
-     * will **never be displayed**.
-     *
-     * @example
-     * // Add Map to instance
-     * instance.add(new Map(...);
-     *
-     * // Add Map to instance then wait for the map to be ready.
-     * instance.add(new Map(...).then(...);
-     * @param object - the object to add
-     * @returns a promise resolved with the new layer object when it is fully initialized
-     * or rejected if any error occurred.
-     */
-    public async add<T extends Object3D | Entity>(object: T): Promise<T> {
-        if (object == null) {
-            throw new Error('object is undefined');
-        }
-
-        if (!isObject3D(object) && !isEntity(object)) {
-            throw new Error('object is not an instance of THREE.Object3D or Giro3D.Entity');
-        }
-
-        if (isObject3D(object)) {
-            // case of a simple THREE.js object3D
-            const object3d = object as Object3D;
-            if (object.parent == null) {
-                // Add to default scene graph
-                this._threeObjects.add(object3d);
-            }
-            this.notifyChange(object3d);
-            return object3d as T;
-        }
-
-        // We know it's an Entity
-        const entity = object as Entity;
-
-        const duplicate = this.getObjects(l => l.id === object.id);
-        if (duplicate.length > 0) {
-            throw new Error(`Invalid id '${object.id}': id already used`);
-        }
-
-        this._entities.add(entity);
-
-        await entity.initialize({
-            instance: this,
-        });
-
-        if (
-            isEntity3D(entity) &&
-            entity.object3d != null &&
-            entity.object3d.parent == null &&
-            entity.object3d !== this._scene
-        ) {
-            // Add to default scene graph
-            this._scene.add(entity.object3d);
-        }
-
-        this.notifyChange(object, { needsRedraw: false });
-        this.dispatchEvent({ type: 'entity-added', entity });
-        return object;
-    }
-
-    /**
-     * Removes the entity or THREE object from the scene.
-     *
-     * @param object - the object to remove.
-     */
-    public remove(object: Object3D | Entity): void {
-        if (isDisposable(object)) {
-            object.dispose();
-        }
-
-        if (isEntity(object)) {
-            if (isEntity3D(object)) {
-                object.object3d.removeFromParent();
-            }
-
-            this._entities.delete(object);
-
-            this.dispatchEvent({ type: 'entity-removed', entity: object });
-        } else if (isObject3D(object)) {
-            object.removeFromParent();
-        }
-
-        this.notifyChange(this._view.camera);
-    }
-
-    /**
-     * Notifies the scene it needs to be updated due to changes exterior to the
-     * scene itself (e.g. camera movement).
-     * non-interactive events (e.g: texture loaded)
-     *
-     * @param changeSources - The source(s) of the change. Might be a single object or an array.
-     * @param options - Notification options.
-     */
-    public notifyChange(
-        changeSources: unknown | unknown[] = undefined,
-        options?: {
-            /**
-             * Should we render the scene?
-             * @defaultValue true
-             */
-            needsRedraw?: boolean;
-            /**
-             * Should the update be immediate? If `false`, the update is deferred to the
-             * next animation frame.
-             * @defaultValue false
-             */
-            immediate?: boolean;
-        },
-    ): void {
-        this._mainLoop.scheduleUpdate(this, changeSources, options);
-    }
-
-    /**
-     * Get all top-level objects (entities and regular THREE objects), using an optional filter
-     * predicate.
-     *
-     * ```js
-     * // get all objects
-     * const allObjects = instance.getObjects();
-     * // get all object whose name includes 'foo'
-     * const fooObjects = instance.getObjects(obj => obj.name === 'foo');
-     * ```
-     * @param filter - the optional filter predicate.
-     * @returns an array containing the queried objects
-     */
-    public getObjects(filter?: (obj: Object3D | Entity) => boolean): (Object3D | Entity)[] {
-        const result = [];
-        for (const obj of this._entities) {
-            if (!filter || filter(obj)) {
-                result.push(obj);
-            }
-        }
-        for (const obj of this._threeObjects.children) {
-            if (!filter || filter(obj)) {
-                result.push(obj);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Get all entities, with an optional predicate applied.
-     *
-     * ```js
-     * // get all entities
-     * const allEntities = instance.getEntities();
-     *
-     * // get all entities whose name contains 'building'
-     * const buildings = instance.getEntities(entity => entity.name.includes('building'));
-     * ```
-     * @param filter - the optional filter predicate
-     * @returns an array containing the queried entities
-     */
-    public getEntities(filter?: (obj: Entity) => boolean): Entity[] {
-        const result = [];
-
-        for (const obj of this._entities) {
-            if (!filter || filter(obj)) {
-                result.push(obj);
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * Executes the rendering.
-     * Internal use only.
-     *
-     * @internal
-     */
-    public render(): void {
-        this._engine.render(this._scene, this._view.camera);
+    protected override onAfterDispose(): void {
+        this._viewport.remove();
     }
 
     /**
@@ -729,32 +317,6 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
             this.eventToCanvasCoords(event, target, touchIdx),
             target,
         );
-    }
-
-    /**
-     * Convert canvas coordinates to normalized device coordinates (NDC).
-     *
-     * @param canvasCoords - (in pixels, 0-0 = top-left of the instance)
-     * @param target - The target to set with the result.
-     * @returns NDC coordinates (x and y are [-1, 1])
-     */
-    public canvasToNormalizedCoords(canvasCoords: Vector2, target: Vector2): Vector2 {
-        target.x = 2 * (canvasCoords.x / this._view.width) - 1;
-        target.y = -2 * (canvasCoords.y / this._view.height) + 1;
-        return target;
-    }
-
-    /**
-     * Convert NDC coordinates to canvas coordinates.
-     *
-     * @param ndcCoords - The NDC coordinates to convert
-     * @param target - The target to set with the result.
-     * @returns canvas coordinates (in pixels, 0-0 = top-left of the instance)
-     */
-    public normalizedToCanvasCoords(ndcCoords: Vector2, target: Vector2): Vector2 {
-        target.x = (ndcCoords.x + 1) * 0.5 * this._view.width;
-        target.y = (ndcCoords.y - 1) * -0.5 * this._view.height;
-        return target;
     }
 
     /**
