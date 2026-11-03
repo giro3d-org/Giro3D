@@ -93,11 +93,11 @@ Below is a non-exhaustive list of supported data sources.
 > [!note]
 > You can also implement your own data sources, such as image sources or point cloud sources, as well as your own entities.
 
-# Getting started
+## Getting started
 
 💡 To test Giro3D without installing anything, check the [interactive examples](https://giro3d.org/examples/index.html).
 
-## 🐋 Quick start with Docker
+### 🐋 Quick start with Docker
 
 To run the examples locally without installing Node or NPM and without cloning the repository, you can use Docker to build and run an arbitrary branch of Giro3D:
 
@@ -122,7 +122,7 @@ Then open your browser on the following URL: <http://localhost:8080>.
 > [!note]
 > This procedure will not work on branches that do not contain a `Dockerfile`.
 
-## Install from the NPM package
+### Install from the NPM package
 
 To install with [npm](https://www.npmjs.com/) (recommended method):
 
@@ -146,7 +146,7 @@ import Instance from '@giro3d/giro3d/src/core/Instance.js';
 
 This will probably limit browser compatibility though, without application specific process or loader. Also, non `.js` files (such as `.glsl` files) will need to be inlined at client application level.
 
-## From a release bundle
+### From a release bundle
 
 See our [release page](https://gitlab.com/giro3d/giro3d/-/releases).
 
