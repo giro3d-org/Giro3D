@@ -215,6 +215,20 @@ The name is a reference to the italian mathematician and inventor [Girolamo Card
 
 The Giro3D source code and example code is licensed under the [MIT license](https://opensource.org/license/mit). The Giro3D website, documentation, and images are licensed under the [CC BY-SA](https://creativecommons.org/licenses/by-sa/4.0/deed.en) license.
 
+### What is the minimal configuration to run Giro3D ?
+
+Giro3D should work with any browser that supports WebGL2 :
+
+- Firefox 51 (released in 2017)
+- Safari 15 (released in 2021)
+- Chrome 56 (released in 2017)
+
+It has also been tested on Windows, Linux, Android, macOS and iOS.
+
+> [!note]
+> The actual performance will vary greatly with the amount of data to display as well as the CPU and
+> GPU used.
+
 ### Can I use Giro3D in React/Vue/Angular... framework ?
 
 Yes, Giro3D should integrate without issue in those frameworks. We have tested and integrated Giro3D in React and Vue extensively.
