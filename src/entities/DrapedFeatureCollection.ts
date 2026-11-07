@@ -229,6 +229,11 @@ export interface DrapedFeatureCollectionOptions {
      */
     source: FeatureSource;
     /**
+     * The target to drape the features on. Can be specified later with {@link
+     * DrapedFeatureCollection.attach}
+     */
+    target?: MapLike;
+    /**
      * The minimum tile LOD (level of detail) to display the features.
      * If zero, then features are always displayed, since root tiles have LOD zero.
      * @defaultValue 0
@@ -399,6 +404,10 @@ export default class DrapedFeatureCollection extends Entity3D {
         );
 
         this._source.addEventListener('updated', this._eventHandlers.onSourceUpdated);
+
+        if (options.target) {
+            this.attach(options.target);
+        }
     }
 
     public traverseGeometries(callback: (geom: SimpleGeometryMesh<MeshUserData>) => void): void {

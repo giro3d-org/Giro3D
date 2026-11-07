@@ -173,6 +173,7 @@ const extrusionOffsetCallback = feature => {
 
 const featureCollection = new DrapedFeatureCollection({
     style: buildingStyle,
+    target: map,
     extrusionOffset: extrusionOffsetCallback,
     drapingMode: 'none',
     minLod: 11,
@@ -183,8 +184,6 @@ const featureCollection = new DrapedFeatureCollection({
 });
 
 instance.add(featureCollection);
-
-featureCollection.attach(map);
 
 // To make sure that the buildings remain correctly displayed whenever
 // one entity become transparent (i.e it's opacity is less than 1), we need

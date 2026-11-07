@@ -76,18 +76,21 @@ const style = {
 const entities = {
     'per-vertex': new DrapedFeatureCollection({
         source: featureSource,
+        target: map,
         minLod: 0,
         drapingMode: 'per-vertex',
         style,
     }),
     'per-feature': new DrapedFeatureCollection({
         source: featureSource,
+        target: map,
         minLod: 0,
         drapingMode: 'per-feature',
         style,
     }),
     none: new DrapedFeatureCollection({
         source: featureSource,
+        target: map,
         minLod: 0,
         drapingMode: 'none',
         style,
@@ -109,15 +112,9 @@ function loadDrapedFeatures() {
     entities['per-vertex'].visible = false;
     entities['none'].visible = false;
 
-    instance.add(entities['per-vertex']).then(() => {
-        entities['per-vertex'].attach(map);
-    });
-    instance.add(entities['none']).then(() => {
-        entities['none'].attach(map);
-    });
-    instance.add(entities['per-feature']).then(() => {
-        entities['per-feature'].attach(map);
-    });
+    instance.add(entities['per-vertex']);
+    instance.add(entities['none']);
+    instance.add(entities['per-feature']);
 
     updateEntities(currentMode);
 }
