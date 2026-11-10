@@ -8,11 +8,11 @@ import { MathUtils } from 'three';
 
 import type CoordinateSystem from '../core/geographic/CoordinateSystem';
 import type { GetMemoryUsageContext } from '../core/MemoryUsage';
-import type { GetImageOptions, ImageResponse, ImageResult } from './ImageSource';
+import type { GetImageOptions, ImageResponse } from './ImageSource';
 
 import Extent from '../core/geographic/Extent';
 import { nonEmpty, nonNull } from '../utils/tsutils';
-import ImageSource from './ImageSource';
+import ImageSource, { ImageResult } from './ImageSource';
 
 interface SourceProperties {
     zIndex: number;
@@ -142,20 +142,20 @@ export default class AggregateImageSource extends ImageSource {
     ): ImageResponse['request'] {
         const { zIndex, id } = nonNull(this._sourceProperties.get(source));
 
+        // Sub-sources may cache and reuse their results, so we must copy them rather than mutate them.
+        const patch = (img: ImageResult): ImageResult =>
+            new ImageResult({ ...img, id: `${img.id}-${id}`, zIndex });
+
         const patched = (): Promise<ImageResult> | ImageResult => {
             const result = request();
 
             if (result instanceof Promise) {
-                return result.then(img => {
-                    img.zIndex = zIndex;
-                    img.id = `${img.id}-${id}`;
-                    return img;
-                });
+                return result.then(patch);
             } else {
-                result.zIndex = zIndex;
-                result.id = `${result.id}-${id}`;
+                const copy = patch(result);
 
-                return result;
+                // The layer expects promises when this source is asynchronous (e.g. mixed sub-sources).
+                return this.synchronous ? copy : Promise.resolve(copy);
             }
         };
 
