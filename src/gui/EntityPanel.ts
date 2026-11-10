@@ -7,6 +7,7 @@
 import type GUI from 'lil-gui';
 
 import type Instance from '../core/Instance';
+import type Entity from '../entities/Entity';
 import type Entity3D from '../entities/Entity3D';
 import type EntityInspector from './EntityInspector';
 
@@ -43,12 +44,13 @@ const customInspectors: Record<string, typeof EntityInspector<Entity3D>> = {
  * Provides an inspector for the entities in an instance.
  * To add a custom inspector for a specific entity type,
  * use {@link registerInspector}.
- *
  */
 class EntityPanel extends Panel {
-    private _createInspectorsCb: () => void;
-    public folders: GUI[];
-    public inspectors: EntityInspector[];
+    public inspectors: Map<Entity3D['id'], { folder: GUI; inspector: EntityInspector }> = new Map();
+
+    private _onInstanceUpdated: () => void;
+    private _onEntityAdded: (e: { entity: Entity }) => void;
+    private _onEntityRemoved: (e: { entity: Entity }) => void;
 
     /**
      * @param gui - The GUI.
@@ -57,28 +59,27 @@ class EntityPanel extends Panel {
     public constructor(gui: GUI, instance: Instance) {
         super(gui, instance, 'Entities');
 
-        this.instance.addEventListener('update-start', () => this.update());
+        this._onInstanceUpdated = this.update.bind(this);
+        this._onEntityAdded = this.onEntityAdded.bind(this);
+        this._onEntityRemoved = this.onEntityRemoved.bind(this);
 
-        // rebuild the inspectors when the instance is updated
-        this._createInspectorsCb = (): void => this.createInspectors();
-        this.instance.addEventListener('entity-added', this._createInspectorsCb);
-        this.instance.addEventListener('entity-removed', this._createInspectorsCb);
+        this.instance.addEventListener('update-start', this._onInstanceUpdated);
 
-        this.folders = [];
-        this.inspectors = [];
-        this.createInspectors();
+        this.instance.addEventListener('entity-added', this._onEntityAdded);
+        this.instance.addEventListener('entity-removed', this._onEntityRemoved);
+
+        this.instance.getEntities().forEach(entity => this.onEntityAdded({ entity }));
     }
 
     public override dispose(): void {
-        this.instance.removeEventListener('update-start', () => this.update());
-        this.instance.removeEventListener('entity-added', this._createInspectorsCb);
-        this.instance.removeEventListener('entity-removed', this._createInspectorsCb);
-        while (this.folders.length > 0) {
-            this.folders.pop()?.destroy();
-        }
-        while (this.inspectors.length > 0) {
-            this.inspectors.pop()?.dispose();
-        }
+        this.instance.removeEventListener('update-start', this._onInstanceUpdated);
+        this.instance.removeEventListener('entity-added', this._onEntityAdded);
+        this.instance.removeEventListener('entity-removed', this._onEntityRemoved);
+
+        this.inspectors.forEach(({ folder, inspector }) => {
+            folder.destroy();
+            inspector.dispose();
+        });
     }
 
     /**
@@ -97,30 +98,33 @@ class EntityPanel extends Panel {
     }
 
     public override update(): void {
-        this.inspectors.forEach(i => i.update());
+        this.inspectors.forEach(entry => entry.inspector.update());
     }
 
-    public createInspectors(): void {
-        while (this.folders.length > 0) {
-            this.folders.pop()?.destroy();
-        }
-        while (this.inspectors.length > 0) {
-            this.inspectors.pop()?.dispose();
+    private onEntityAdded({ entity }: { entity: Entity }): void {
+        if (this.inspectors.has(entity.id)) {
+            return;
         }
 
-        this.instance
-            .getObjects(obj => isEntity3D(obj))
-            .forEach(obj => {
-                const entity = obj as Entity3D;
-                const type = entity.type;
-                if (customInspectors[type] != null) {
-                    const inspector = new customInspectors[type](this.gui, this.instance, entity);
-                    this.inspectors.push(inspector);
-                    this.folders.push(inspector.gui);
-                } else {
-                    console.warn(`no inspector found for entity type ${type}`);
-                }
-            });
+        if (isEntity3D(entity)) {
+            const type = entity.type;
+
+            if (customInspectors[type] != null) {
+                const inspector = new customInspectors[type](this.gui, this.instance, entity);
+
+                this.inspectors.set(entity.id, { inspector, folder: inspector.gui });
+            } else {
+                console.warn(`no inspector found for entity type ${type}`);
+            }
+        }
+    }
+
+    private onEntityRemoved({ entity }: { entity: Entity }): void {
+        const entry = this.inspectors.get(entity.id);
+        if (entry) {
+            entry.folder.destroy();
+            entry.inspector.dispose();
+        }
     }
 }
 
