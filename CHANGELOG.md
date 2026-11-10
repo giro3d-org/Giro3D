@@ -1,5 +1,63 @@
 # Changelog
 
+## v3.0.0 (2026-11-10)
+
+This release brings two major improvements to Giro3D: **offscreen rendering** and **viewsheds**, as well as some performance improvements in various entities.
+
+### Offscreen rendering
+
+By using an `OffscreenInstance` rather than a regular `Instance`, Giro3D can use a web worker to render into an `OffscreenCanvas`. This reduces CPU pressure on the main thread. Some limitations may apply though: workers do not have access to the DOM, so some features might be unavailable, such as three.js's `CSS2DObject`s or the `AxisGrid` CSS labels.
+
+👉 Check the `offscreen-instance` example for a possible implementation of offscreen rendering in Giro3D.
+
+### Viewshed
+
+The new `Viewshed` displays visible and occluded regions in a fully customizable way:
+
+- select between omnidirectional and frustum viewsheds,
+- set color and opacity of both visible and occluded regions,
+- set quality settings such as texture size and bias
+
+👉 Check the `viewshed` and `viewshed-on-terrain` examples to see it in action
+
+### BREAKING CHANGE
+
+- some types have moved from `Instance` to `InstanceBase`, such as `PickObjectsAtOptions`. Update your import paths to reflect this change.
+
+### Feat
+
+- Introduce **OffscreenInstance** for worker-based rendering in a DOM-free environment (#705, #701)
+- add **Viewshed** tool (#444)
+- **Tiles3D**: allow passing custom GLTF loader plugins
+- **Shape**: update view min/max distances
+- **DrawTool**: add `createExtent()` method
+- **Shape**: add the `getExtent()` method
+- **Extent**: add `fromPoints()` static method
+- **FeatureCollection**: add support for elevation option for points and lines (#518)
+- **CameraInspector**: enable setting camera position and target
+- **Inspector**: add rotation properties
+
+### Fix
+
+- **Instance**: add missing entity to `entity-added` and `entity-removed` events
+- **DrapedFeatureCollection**: properly handle opacity of features
+- **DrawToolPanel**: correctly handle globe coordinates
+- **Tiles3D**: listen for root tileset load event
+- **ConcurrentDownloader**: clear the real timeout handle instead of the configured duration
+- **renderer**: set viewport/scissor directly on render target
+- **core**: account for pixel ratio in sse
+- **SourceInspector**: handle case where tile source has no URL
+- **RenderPipeline**: don't let `scene.background` erase the render target between buckets
+- **PointCloud**: ensure `getBoundingBox()` and SSE computation take `matrixWorld` into account
+- **Map**: add missing export for `MapLightingMode`
+
+### Perf
+
+- **Globe**: improve `defaultGlobeSubdivisionStrategy`
+- **Map**: add some tolerance to `defaultSubdivisionStrategy`
+- **CoordinateSystem**: cache computed `id` instead of recomputing on every access
+- **Map**: use a non-recursive traversal of tiles
+
 ## v2.0.6 (2026-10-28)
 
 ### Fix
