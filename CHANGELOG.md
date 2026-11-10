@@ -58,6 +58,18 @@ The new `Viewshed` displays visible and occluded regions in a fully customizable
 - **CoordinateSystem**: cache computed `id` instead of recomputing on every access
 - **Map**: use a non-recursive traversal of tiles
 
+## v2.0.7 (2026-11-10)
+
+### Fix
+
+- **AggregateImageSource**: fix infinite loop of requests
+- **Instance**: add missing entity to entity-added and entity-removed events
+- **DrapedFeatureCollection**: properly handle opacity of features
+
+### Perf
+
+- **EntityPanel**: don't recreate all inspector when an entity is added/removed
+
 ## v2.0.6 (2026-10-28)
 
 ### Fix
