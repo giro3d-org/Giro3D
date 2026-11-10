@@ -39,7 +39,7 @@ class MapTerrainPanel extends Panel {
         this.addController(this, 'segments')
             .name('Tile subdivisions')
             .min(2)
-            .max(128)
+            .max(256)
             .onChange(v => this.updateSegments(v));
 
         this.addController(this.map, 'showColliderMeshes')

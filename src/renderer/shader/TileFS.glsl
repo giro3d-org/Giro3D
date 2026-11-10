@@ -61,6 +61,7 @@ uniform vec2        baseTextureSize; // The theoretical texture size of the tile
 #include <giro3d_compose_layers_pars_fragment>
 #include <giro3d_contour_line_pars_fragment>
 #include <giro3d_hillshading_pars_fragment>
+#include <giro3d_viewshed_pars_fragment>
 
 #if defined(ENABLE_ELEVATION_RANGE)
 uniform vec2        elevationRange; // Optional elevation range for the whole tile. Not to be confused with elevation range per layer.
@@ -378,6 +379,7 @@ if (isSurface) {
         #include <colorspace_fragment>
         #include <fog_fragment>
         #include <premultiplied_alpha_fragment>
+        #include <giro3d_viewshed_fragment>
         #include <dithering_fragment>
     } else if (renderingState == STATE_PICKING) {
         float id = float(uuid);

@@ -541,7 +541,7 @@ class TileMesh
         }
     }
 
-    private updateHeightMapIfNecessary(): void {
+    public updateHeightMapIfNecessary(): void {
         if (this._shouldUpdateHeightMap) {
             this._shouldUpdateHeightMap = false;
 

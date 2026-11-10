@@ -1,0 +1,115 @@
+---
+title: Viewshed
+shortdesc: Display a viewshed.
+tags: ['viewshed']
+---
+
+<div class="side-pane-with-status-bar" style="width: 24rem">
+    <div class="card">
+        <div class="card-header">Parameters</div>
+        <div class="card-body">
+            <p><b>Viewshed parameters</b></p>
+
+            <!-- Scenario selector -->
+            <div class="input-group">
+                <label class="input-group-text col-6" for="scenario">Mode</label>
+                <select class="form-select" id="mode" autocomplete="off" title="Viewshed mode">
+                    <option value="cubemap" selected>Omnidirectional</option>
+                    <option value="frustum">Frustum</option>
+                </select>
+            </div>
+
+            <!-- Min distance -->
+            <div class="input-group mt-2">
+                <label for="min-distance" class="input-group-text col-6">Min distance</label>
+                <input
+                    type="number"
+                    min="0.01"
+                    max="100"
+                    value="0.1"
+                    step="0.01"
+                    class="form-control"
+                    id="min-distance"
+                    autocomplete="off"
+                />
+            </div>
+
+            <!-- Max distance -->
+            <div class="input-group mt-2">
+                <label for="max-distance" class="input-group-text col-6">Max distance</label>
+                <input
+                    type="number"
+                    min="10"
+                    max="400"
+                    value="200"
+                    step="10"
+                    class="form-control"
+                    id="max-distance"
+                    autocomplete="off"
+                />
+            </div>
+
+            <!-- Viewshed color -->
+            <div class="input-group mt-2">
+                <label class="input-group-text col-6" for="visible-color">Viewshed color</label>
+                <input
+                    type="color"
+                    class="form-control form-control-color p-2"
+                    id="visible-color"
+                    value="#00ff00"
+                    title="color"
+                    autocomplete="off"
+                />
+            </div>
+            <!-- Viewshed color -->
+
+            <div class="input-group mt-2">
+                <label class="input-group-text col-6" for="occluded-color">Occluded color</label>
+                <input
+                    type="color"
+                    class="form-control form-control-color p-2"
+                    id="occluded-color"
+                    value="#ff0000"
+                    title="color"
+                    autocomplete="off"
+                />
+            </div>
+
+            <hr />
+
+            <p><b>Quality parameters</b></p>
+
+            <!-- Texture size -->
+            <div class="input-group mt-2">
+                <label class="input-group-text col-6" for="texture-size">Texture size</label>
+                <select
+                    class="form-select"
+                    id="texture-size"
+                    autocomplete="off"
+                    title="Texture size"
+                >
+                    <option value="512">512</option>
+                    <option value="1024">1024</option>
+                    <option value="2048">2048</option>
+                    <option value="4096" selected>4096</option>
+                    <option value="8192">8192</option>
+                </select>
+            </div>
+
+            <!-- Bias -->
+            <div class="input-group mt-2">
+                <label for="bias" class="input-group-text col-6">Bias</label>
+                <input
+                    type="number"
+                    min="0"
+                    max="10"
+                    value="0.1"
+                    step="0.1"
+                    class="form-control"
+                    id="bias"
+                    autocomplete="off"
+                />
+            </div>
+        </div>
+    </div>
+</div>

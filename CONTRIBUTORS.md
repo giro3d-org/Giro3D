@@ -69,6 +69,9 @@ The following people have contributed to Giro3D.
 
 - [Jacob Miller](https://gitlab.com/jacob-miller-hq)
 
+- [Sourcepole](https://sourcepole.ch)
+    - [Sandro Mani](https://github.com/manisandro)
+
 ---
 
 The following organizations supported Giro3D:

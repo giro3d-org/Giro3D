@@ -1,6 +1,7 @@
 #include <giro3d_precision_qualifiers>
 #include <giro3d_common>
 #include <giro3d_terrain_pars_vertex>
+#include <giro3d_viewshed_pars_vertex>
 
 #include <common>
 #include <normal_pars_vertex>
@@ -48,6 +49,7 @@ void main() {
     #include <worldpos_vertex>
     #include <shadowmap_vertex>
     #include <fog_vertex>
+    #include <giro3d_viewshed_vertex>
 
     vWorldPosition = (modelMatrix * vec4(transformed, 1.0)).xyz;
     vHighPrecisionZW = gl_Position.zw;

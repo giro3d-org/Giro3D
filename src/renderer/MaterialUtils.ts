@@ -43,7 +43,7 @@ function setDefine<M extends HasDefines, K extends keyof M['defines']>(
 ): void {
     condition = condition ?? false;
     if (material.defines == null) {
-        throw new Error('material.defines is null');
+        material.defines = {};
     }
 
     const key = name as string;
@@ -78,7 +78,7 @@ function setDefineValue<M extends HasDefines, K extends keyof M['defines']>(
     value?: number | string,
 ): boolean {
     if (material.defines == null) {
-        throw new Error('material.defines is null');
+        material.defines = {};
     }
 
     const key = name as string;
