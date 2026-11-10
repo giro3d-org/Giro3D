@@ -4,7 +4,7 @@
 
 ## Requirements
 
-Install the commitizen utility with pip
+Install the [commitizen](https://commitizen-tools.github.io/commitizen/) utility with pip or any compatible package manager (homebrew...)
 
 ```shell
 pip install commitizen
@@ -39,7 +39,7 @@ This scenario assumes that we want to release version **`v2.0.0`** of Giro3D.
     - Remove `"private": true` so that the package can be published from this branch
     - Set `"version"` to `2.0.0-beta.0`
 1. Run `npm i` (to update `package-lock.json` accordingly)
-1. Generate changelog, etc. (described below)
+1. Generate the changelog (described below)
 1. Create a merge request (MR) for `release/2.0` to be merged into `main`
 1. If major changes are required (i.e. that require peer-review), new merge requests can be created, branching from and to the release branch
 1. When the release MR is ready:
@@ -78,7 +78,7 @@ If an urgent hotfix is needed for an existing release (say, release a hotfix `v2
 2. generate a changelog with commitizen:
 
     ```shell
-    $HOME/.local/bin/cz changelog --incremental --unreleased-version <version>
+    cz changelog --incremental --unreleased-version <version>
     ```
 
     where version is the version we want to release (don't forget the `v` prefix, for example `v2.0.0`).
@@ -87,16 +87,48 @@ If an urgent hotfix is needed for an existing release (say, release a hotfix `v2
    It's also best to sort the items in Feat/Fix/Refactor alphabetically.
    For the `BREAKING CHANGE` section, edit the text to add a migration guide.
 
-## Publish on NPM
+## Publish the package manually on npmjs.com
+
+> [!warning] Warning
+> This procedure is for exceptional circumstances only ! In general, publishing NPM packages should
+> be done from the CI/CD pipeline described in `.gitlab-ci.yml`. One notable exception is to publish
+> preview packages in non-stable channels, such as <https://www.npmjs.com/package/@giro3d/giro3d/v/2.0.0-perfwms.1>
 
 If you wish to manually create a NPM release:
 
-```shell
-# check authentification
-npm who
+### Check that you are authenticated
 
-# build the package
-npm run make-package
-# publish the package - make sure the path "build/giro3d/" is specified!
-npm publish build/giro3d/ --access public
+```shell
+npm who
 ```
+
+### Optional: clean your repository and reinstall packages
+
+```shell
+git clean -ffdx
+npm ci
+```
+
+### Build the package
+
+```shell
+npm run make-package
+```
+
+### Publish the package
+
+> [!warning]
+> Ensure that the package has been properly built in the `build/giro3d/` folder !
+
+If you are publishing a preview package, use the `preview` tag.
+
+```shell
+npm publish build/giro3d/ --access public --tag preview
+```
+
+## Update external references to Giro3D
+
+If the release is a major version that brings notable improvements and features, it might be
+relevant to update:
+
+- the OSGeo Giro3D page: <https://www.osgeo.org/projects/giro3d/>
