@@ -1056,7 +1056,7 @@ class Map<UserData extends EntityUserData = EntityUserData>
 
     public set segments(v: number) {
         if (this._materialOptions.terrain.segments !== v) {
-            if (MathUtils.isPowerOfTwo(v) && v >= 1 && v <= 128) {
+            if (MathUtils.isPowerOfTwo(v) && v >= 1 && v <= 256) {
                 this._materialOptions.terrain.segments = v;
 
                 if (

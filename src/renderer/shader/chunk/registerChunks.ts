@@ -22,6 +22,10 @@ import giro3d_outline_pars_fragment from './giro3d_outline_pars_fragment.glsl';
 import giro3d_precision_qualifiers from './giro3d_precision_qualifiers.glsl';
 import giro3d_terrain_pars_vertex from './giro3d_terrain_pars_vertex.glsl';
 import giro3d_terrain_vertex from './giro3d_terrain_vertex.glsl';
+import giro3d_viewshed_fragment from './giro3d_viewshed_fragment.glsl';
+import giro3d_viewshed_pars_fragment from './giro3d_viewshed_pars_fragment.glsl';
+import giro3d_viewshed_pars_vertex from './giro3d_viewshed_pars_vertex.glsl';
+import giro3d_viewshed_vertex from './giro3d_viewshed_vertex.glsl';
 
 type ShaderChunk = typeof ShaderChunk;
 
@@ -42,6 +46,10 @@ interface Giro3DShaderChunk extends ShaderChunk {
     giro3d_intersecting_volume_pars: string;
     giro3d_terrain_pars_vertex: string;
     giro3d_terrain_vertex: string;
+    giro3d_viewshed_pars_vertex: string;
+    giro3d_viewshed_pars_fragment: string;
+    giro3d_viewshed_vertex: string;
+    giro3d_viewshed_fragment: string;
 }
 
 export default function registerChunks(): void {
@@ -61,4 +69,12 @@ export default function registerChunks(): void {
     Giro3dShaderChunk.giro3d_intersecting_volume_pars = giro3d_intersecting_volume_pars;
     Giro3dShaderChunk.giro3d_terrain_pars_vertex = giro3d_terrain_pars_vertex;
     Giro3dShaderChunk.giro3d_terrain_vertex = giro3d_terrain_vertex;
+    Giro3dShaderChunk.giro3d_viewshed_pars_vertex = giro3d_viewshed_pars_vertex;
+    Giro3dShaderChunk.giro3d_viewshed_pars_fragment = giro3d_viewshed_pars_fragment;
+    Giro3dShaderChunk.giro3d_viewshed_vertex = giro3d_viewshed_vertex;
+    Giro3dShaderChunk.giro3d_viewshed_fragment = giro3d_viewshed_fragment;
+}
+
+export function getChunks(): Giro3DShaderChunk {
+    return ShaderChunk as Giro3DShaderChunk;
 }

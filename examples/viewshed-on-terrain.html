@@ -1,0 +1,180 @@
+---
+title: Terrain viewshed
+shortdesc: Display a viewshed on terrain with various parameters.
+tags: ['viewshed', 'terrain', 'map']
+---
+
+<div class="side-pane-with-status-bar" style="width: 24rem">
+    <div class="card">
+        <div class="card-header">Parameters</div>
+        <div class="card-body">
+            <p><b>Viewshed parameters</b></p>
+
+            <!-- Scenario selector -->
+            <div class="input-group">
+                <label class="input-group-text col-6" for="scenario">Mode</label>
+                <select class="form-select" id="mode" autocomplete="off" title="Viewshed mode">
+                    <option value="cubemap" selected>Omnidirectional</option>
+                    <option value="frustum">Frustum</option>
+                </select>
+            </div>
+
+            <!-- Camera azimuth (frustum mode only) -->
+            <div class="input-group mt-2">
+                <label class="input-group-text col-6" for="camera-azimuth">Camera azimuth</label>
+                <input
+                    type="number"
+                    min="0"
+                    max="359"
+                    value="0"
+                    step="1"
+                    class="form-control"
+                    id="camera-azimuth"
+                    autocomplete="off"
+                />
+            </div>
+
+            <!-- Observer height -->
+            <div class="input-group mt-2">
+                <label for="observer-height" class="input-group-text col-6">Observer height</label>
+                <input
+                    type="number"
+                    min="0"
+                    max="10000"
+                    value="25"
+                    step="1"
+                    class="form-control"
+                    id="observer-height"
+                    autocomplete="off"
+                />
+            </div>
+
+            <!-- Max distance -->
+            <div class="input-group mt-2">
+                <label for="max-distance" class="input-group-text col-6">Max distance</label>
+                <input
+                    type="number"
+                    min="10"
+                    max="10000"
+                    value="4000"
+                    step="10"
+                    class="form-control"
+                    id="max-distance"
+                    autocomplete="off"
+                />
+            </div>
+
+            <!-- Min distance -->
+            <div class="input-group mt-2">
+                <label for="min-distance" class="input-group-text col-6">Min distance</label>
+                <input
+                    type="number"
+                    min="0.01"
+                    max="100"
+                    value="5"
+                    step="0.01"
+                    class="form-control"
+                    id="min-distance"
+                    autocomplete="off"
+                />
+            </div>
+
+            <!-- Viewshed color -->
+            <div class="input-group mt-2">
+                <label class="input-group-text col-6" for="visible-color">Viewshed color</label>
+                <input
+                    type="color"
+                    class="form-control form-control-color p-2"
+                    id="visible-color"
+                    value="#F8E45C"
+                    title="color"
+                    autocomplete="off"
+                />
+            </div>
+
+            <hr />
+
+            <p><b>Quality parameters</b></p>
+
+            <!-- Texture size -->
+            <div class="input-group mt-2">
+                <label class="input-group-text col-6" for="texture-size">Texture size</label>
+                <select
+                    class="form-select"
+                    id="texture-size"
+                    autocomplete="off"
+                    title="Texture size"
+                >
+                    <option value="512">512</option>
+                    <option value="1024">1024</option>
+                    <option value="2048">2048</option>
+                    <option value="4096" selected>4096</option>
+                    <option value="8192">8192</option>
+                </select>
+            </div>
+
+            <!-- Terrain resolution -->
+            <div class="input-group mt-2">
+                <label class="input-group-text col-6" for="terrain-resolution"
+                    >Terrain resolution</label
+                >
+                <select
+                    class="form-select"
+                    id="terrain-resolution"
+                    autocomplete="off"
+                    title="Terrain resolution"
+                >
+                    <option value="16">16</option>
+                    <option value="32">32</option>
+                    <option value="64">64</option>
+                    <option value="128" selected>128</option>
+                    <option value="256">256</option>
+                </select>
+            </div>
+
+            <!-- Bias -->
+            <div class="input-group mt-2">
+                <label for="bias" class="input-group-text col-6">Bias</label>
+                <input
+                    type="number"
+                    min="0"
+                    max="1000"
+                    value="30"
+                    step="1"
+                    class="form-control"
+                    id="bias"
+                    autocomplete="off"
+                />
+            </div>
+
+            <hr />
+
+            <p><b>Helpers</b></p>
+
+            <!-- Show/Hide texture helper -->
+            <div class="form-check form-switch">
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    role="switch"
+                    id="show-texture"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="show-texture">Show visibility texture</label>
+            </div>
+
+            <!-- Show/Hide radius circle -->
+            <div class="form-check form-switch">
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    checked="true"
+                    role="switch"
+                    id="show-circle"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="show-circle">Show radius circle</label>
+            </div>
+        </div>
+    </div>
+</div>
