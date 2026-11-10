@@ -104,13 +104,44 @@ describe('set()', () => {
 });
 
 describe('clone', () => {
-    it('should return the correct value', () => {
-        const c0 = new Coordinates(CoordinateSystem.epsg3857, 1, 2, 3);
-        const c1 = c0.clone();
+    describe('without target', () => {
+        it('should return the correct value', () => {
+            const c0 = new Coordinates(CoordinateSystem.epsg3857, 1, 2, 3);
+            const c1 = c0.clone();
 
-        expect(c0.x).toEqual(c0.x);
-        expect(c1.y).toEqual(c0.y);
-        expect(c1.z).toEqual(c0.z);
+            expect(c0.x).toEqual(c0.x);
+            expect(c1.y).toEqual(c0.y);
+            expect(c1.z).toEqual(c0.z);
+        });
+
+        it('should handle geographic coordinates', () => {
+            const c0 = Coordinates.WGS84(1, 2);
+            const c1 = c0.clone();
+
+            expect(c1.longitude).toEqual(2);
+            expect(c1.latitude).toEqual(1);
+        });
+    });
+
+    describe('with target', () => {
+        const target = new Coordinates(CoordinateSystem.epsg3857, 0, 0, 0);
+
+        it('should return the correct value', () => {
+            const c0 = new Coordinates(CoordinateSystem.epsg3857, 1, 2, 3);
+            const c1 = c0.clone(target);
+
+            expect(c0.x).toEqual(c0.x);
+            expect(c1.y).toEqual(c0.y);
+            expect(c1.z).toEqual(c0.z);
+        });
+
+        it('should handle geographic coordinates', () => {
+            const c0 = Coordinates.WGS84(1, 2);
+            const c1 = c0.clone(target);
+
+            expect(c1.longitude).toEqual(2);
+            expect(c1.latitude).toEqual(1);
+        });
     });
 });
 

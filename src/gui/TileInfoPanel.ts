@@ -144,7 +144,8 @@ class TileInfoPanel extends Panel {
         if (this.instance.coordinateSystem.isEpsg(4978)) {
             return Ellipsoid.WGS84.toCartesian(center.latitude, center.longitude, z);
         } else {
-            return new Vector3(center.x, center.y, z);
+            const { x, y } = center.toVector2();
+            return new Vector3(x, y, z);
         }
     }
 

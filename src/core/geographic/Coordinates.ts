@@ -189,7 +189,7 @@ export class Coordinates {
     public clone(target?: Coordinates): Coordinates {
         let r;
         if (target) {
-            target.set(this.crs, this.x, this.y, this.z);
+            target.set(this.crs, this._values[0], this._values[1], this._values[2]);
             r = target;
         } else {
             r = new Coordinates(this.crs, this._values[0], this._values[1], this._values[2]);

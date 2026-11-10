@@ -312,14 +312,16 @@ export class ColorLayer<UserData extends LayerUserData = LayerUserData>
             const results: Feature[] = [];
             const radiusSqr = radius ** 2;
 
+            const { x, y } = coordinate.toVector2();
+
             // First, define a square extent around the point
             // We might get more features than wanted, so we'll need to filter them afterwards.
             const e = new Extent(
                 coordinate.crs,
-                coordinate.x - xTileRes * radius,
-                coordinate.x + xTileRes * radius,
-                coordinate.y - yTileRes * radius,
-                coordinate.y + yTileRes * radius,
+                x - xTileRes * radius,
+                x + xTileRes * radius,
+                y - yTileRes * radius,
+                y + yTileRes * radius,
             );
             const features = this.getVectorFeaturesInExtent(e);
 
