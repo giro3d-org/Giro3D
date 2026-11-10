@@ -4,22 +4,26 @@
  * SPDX-License-Identifier: MIT
  */
 
-import type { OrthographicCamera, PerspectiveCamera, Vector2 } from 'three';
+import type { OrthographicCamera, PerspectiveCamera } from 'three';
 
 import {
+    Clock,
     EventDispatcher,
     Group,
     Object3D,
     Scene,
+    Vector2,
     type ColorRepresentation,
     type WebGLRenderer,
     type WebGLRendererParameters,
 } from 'three';
 
 import type Entity from '../entities/Entity';
+import type Entity3D from '../entities/Entity3D';
 import type C3DEngine from '../renderer/c3DEngine';
 import type RenderingOptions from '../renderer/RenderingOptions';
 import type CoordinateSystem from './geographic/CoordinateSystem';
+import type PickOptions from './picking/PickOptions';
 import type PickResult from './picking/PickResult';
 
 import { isEntity } from '../entities/Entity';
@@ -27,10 +31,15 @@ import { isEntity3D } from '../entities/Entity3D';
 import View from '../renderer/View';
 import { isDisposable } from './Disposable';
 import MainLoop from './MainLoop';
+import { isPickable } from './picking/Pickable';
+import { isPickableFeatures } from './picking/PickableFeatures';
+import pickObjectsAt from './picking/PickObjectsAt';
 
 function isObject3D(o: unknown): o is Object3D {
     return (o as Object3D).isObject3D;
 }
+
+const pickVec2 = new Vector2();
 
 /** Frame event payload */
 export interface FrameEventPayload {
@@ -46,6 +55,33 @@ export interface FrameEventPayload {
 export interface EntityEventPayload {
     /** Entity */
     entity: Entity;
+}
+
+/**
+ * Options for picking objects from a Giro3D {@link InstanceBase}.
+ */
+export interface PickObjectsAtOptions extends PickOptions {
+    /**
+     * List of entities to pick from.
+     * If not provided, will pick from all the objects in the scene.
+     * Strings consist in the IDs of the object.
+     */
+    where?: (string | Object3D | Entity)[];
+    /**
+     * Indicates if the results should be sorted by distance, as Three.js raycasting does.
+     * This prevents the `limit` option to be fully used as it is applied after sorting,
+     * thus it may be slow and is disabled by default.
+     *
+     * @defaultValue false
+     */
+    sortByDistance?: boolean;
+    /**
+     * Indicates if features information are also retrieved from the picked object.
+     * On complex objects, this may be slow, and therefore is disabled by default.
+     *
+     * @defaultValue false
+     */
+    pickFeatures?: boolean;
 }
 
 /**
@@ -157,6 +193,7 @@ abstract class InstanceBase extends EventDispatcher<InstanceEvents> {
     protected readonly _threeObjects: Group;
     protected readonly _entities: Set<Entity>;
     protected _disposed = false;
+    private readonly _pickingClock: Clock;
 
     protected constructor(engine: C3DEngine, options: InstanceBaseOptions) {
         super();
@@ -195,6 +232,8 @@ abstract class InstanceBase extends EventDispatcher<InstanceEvents> {
         this._scene.add(this._threeObjects);
 
         this._entities = new Set();
+
+        this._pickingClock = new Clock(false);
     }
 
     /** Gets the CRS used in this instance. */
@@ -462,6 +501,108 @@ abstract class InstanceBase extends EventDispatcher<InstanceEvents> {
         }
 
         return result;
+    }
+
+    /**
+     * Gets the object by it's id property.
+     *
+     * @param objectId - Object id
+     * @returns Object found
+     * @throws Error if object cannot be found
+     */
+    private objectIdToObject(objectId: string | number): Object3D | Entity {
+        const lookup = this.getObjects(l => l.id === objectId);
+        if (!lookup.length) {
+            throw new Error(`Invalid object id used as where argument (value = ${objectId})`);
+        }
+        return lookup[0];
+    }
+
+    /**
+     * Return objects from some layers/objects3d under the given canvas coordinates.
+     *
+     * @param canvasCoords - canvas coordinates (in pixels, 0-0 = top-left of the instance)
+     * @param options - Options
+     * @returns An array of objects. Each element contains at least an object
+     * property which is the Object3D under the cursor. Then depending on the queried
+     * layer/source, there may be additionnal properties (coming from THREE.Raycaster
+     * for instance).
+     * If `options.pickFeatures` if `true`, `features` property may be set.
+     *
+     * ```js
+     * instance.pickObjectsAt(canvasCoords)
+     * instance.pickObjectsAt(canvasCoords, { radius: 1, where: [entity0, entity1] })
+     * instance.pickObjectsAt(canvasCoords, { radius: 3, where: [entity0] })
+     * ```
+     */
+    public pickObjectsAt(canvasCoords: Vector2, options: PickObjectsAtOptions = {}): PickResult[] {
+        this.dispatchEvent({ type: 'picking-start' });
+        this._pickingClock.start();
+
+        let results: PickResult[] = [];
+        const sources =
+            options.where && options.where.length > 0 ? [...options.where] : this.getObjects();
+        const radius = options.radius ?? 0;
+        const limit = options.limit ?? Infinity;
+        const sortByDistance = options.sortByDistance ?? false;
+        const pickFeatures = options.pickFeatures ?? false;
+
+        for (const source of sources) {
+            const object = typeof source === 'string' ? this.objectIdToObject(source) : source;
+
+            if (!(object as Object3D | Entity3D).visible) {
+                continue;
+            }
+
+            const pickOptions = {
+                ...options,
+                radius,
+                limit: limit - results.length,
+                vec2: pickVec2,
+                sortByDistance: false,
+            };
+            if (sortByDistance) {
+                pickOptions.limit = Infinity;
+                pickOptions.pickFeatures = false;
+            }
+
+            if (isPickable(object)) {
+                const res = object.pick(canvasCoords, pickOptions);
+                results.push(...res);
+            } else if ((object as Object3D).isObject3D) {
+                const res = pickObjectsAt(this, canvasCoords, object as Object3D, pickOptions);
+                results.push(...res);
+            }
+
+            if (results.length >= limit && !sortByDistance) {
+                break;
+            }
+        }
+
+        if (sortByDistance) {
+            results.sort((a, b) => a.distance - b.distance);
+            if (limit !== Infinity) {
+                results = results.slice(0, limit);
+            }
+        }
+
+        if (pickFeatures) {
+            const pickFeaturesOptions = options;
+
+            results.forEach(result => {
+                if (result.entity && isPickableFeatures(result.entity)) {
+                    result.entity.pickFeaturesFrom(result, pickFeaturesOptions);
+                } else if (result.object != null && isPickableFeatures(result.object)) {
+                    result.object.pickFeaturesFrom(result, pickFeaturesOptions);
+                }
+            });
+        }
+
+        const elapsed = this._pickingClock.getElapsedTime();
+        this._pickingClock.stop();
+        this.dispatchEvent({ type: 'picking-end', elapsed, results });
+
+        return results;
     }
 
     /**

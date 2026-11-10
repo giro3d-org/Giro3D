@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { Object3D, WebGLRenderer } from 'three';
+import { Object3D, Vector2, WebGLRenderer } from 'three';
 import { beforeEach, describe, expect, it, vitest } from 'vitest';
 
 import CoordinateSystem from '@giro3d/giro3d/core/geographic/CoordinateSystem';
@@ -105,6 +105,13 @@ describe('OffscreenInstance', () => {
             instance.remove(entity);
 
             expect(listener).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('pickObjectsAt', () => {
+        it('should not throw and return an array, given a plain Vector2', () => {
+            const results = instance.pickObjectsAt(new Vector2(10, 10));
+            expect(results).toEqual([]);
         });
     });
 

@@ -4,14 +4,10 @@
  * SPDX-License-Identifier: MIT
  */
 
-import type { Object3D } from 'three';
 import type { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
-import { Clock, Vector2 } from 'three';
+import { Vector2 } from 'three';
 
-import type Entity from '../entities/Entity';
-import type Entity3D from '../entities/Entity3D';
-import type PickOptions from './picking/PickOptions';
 import type PickResult from './picking/PickResult';
 import type Progress from './Progress';
 
@@ -24,6 +20,7 @@ import InstanceBase, {
     type FrameEventPayload,
     type InstanceBaseOptions,
     type InstanceEvents,
+    type PickObjectsAtOptions,
 } from './InstanceBase';
 import {
     aggregateMemoryUsage,
@@ -31,15 +28,11 @@ import {
     type GetMemoryUsageContext,
     type MemoryUsageReport,
 } from './MemoryUsage';
-import { isPickable } from './picking/Pickable';
-import { isPickableFeatures } from './picking/PickableFeatures';
-import pickObjectsAt from './picking/PickObjectsAt';
 
-export type { EntityEventPayload, FrameEventPayload, InstanceEvents };
+export type { EntityEventPayload, FrameEventPayload, InstanceEvents, PickObjectsAtOptions };
 
 const vectors = {
     evtToCanvas: new Vector2(),
-    pickVec2: new Vector2(),
 };
 
 /** Options for creating Instance */
@@ -49,33 +42,6 @@ export interface InstanceOptions extends InstanceBaseOptions {
      * or the element itself.
      */
     target: string | HTMLDivElement;
-}
-
-/**
- * Options for picking objects from the Giro3D {@link Instance}.
- */
-export interface PickObjectsAtOptions extends PickOptions {
-    /**
-     * List of entities to pick from.
-     * If not provided, will pick from all the objects in the scene.
-     * Strings consist in the IDs of the object.
-     */
-    where?: (string | Object3D | Entity)[];
-    /**
-     * Indicates if the results should be sorted by distance, as Three.js raycasting does.
-     * This prevents the `limit` option to be fully used as it is applied after sorting,
-     * thus it may be slow and is disabled by default.
-     *
-     * @defaultValue false
-     */
-    sortByDistance?: boolean;
-    /**
-     * Indicates if features information are also retrieved from the picked object.
-     * On complex objects, this may be slow, and therefore is disabled by default.
-     *
-     * @defaultValue false
-     */
-    pickFeatures?: boolean;
 }
 
 /**
@@ -109,7 +75,6 @@ export interface PickObjectsAtOptions extends PickOptions {
 class Instance extends InstanceBase implements Progress {
     private readonly _viewport: HTMLDivElement;
     private readonly _resizeObserver?: ResizeObserver;
-    private readonly _pickingClock: Clock;
     private readonly _onContextRestored: () => void;
     private readonly _onContextLost: () => void;
     private _resizeTimeout?: string | number | NodeJS.Timeout;
@@ -171,8 +136,6 @@ class Instance extends InstanceBase implements Progress {
             });
             this._resizeObserver.observe(viewerDiv);
         }
-
-        this._pickingClock = new Clock(false);
 
         this._onContextRestored = this.onContextRestored.bind(this);
         this._onContextLost = this.onContextLost.bind(this);
@@ -320,21 +283,6 @@ class Instance extends InstanceBase implements Progress {
     }
 
     /**
-     * Gets the object by it's id property.
-     *
-     * @param objectId - Object id
-     * @returns Object found
-     * @throws Error if object cannot be found
-     */
-    private objectIdToObject(objectId: string | number): Object3D | Entity {
-        const lookup = this.getObjects(l => l.id === objectId);
-        if (!lookup.length) {
-            throw new Error(`Invalid object id used as where argument (value = ${objectId})`);
-        }
-        return lookup[0];
-    }
-
-    /**
      * Return objects from some layers/objects3d under the mouse in this instance.
      *
      * @param mouseOrEvt - mouse position in window coordinates, i.e [0, 0] = top-left,
@@ -352,81 +300,15 @@ class Instance extends InstanceBase implements Progress {
      * instance.pickObjectsAt(mouseEvent, { radius: 3, where: [entity0] })
      * ```
      */
-    public pickObjectsAt(
+    public override pickObjectsAt(
         mouseOrEvt: Vector2 | MouseEvent | TouchEvent,
         options: PickObjectsAtOptions = {},
     ): PickResult[] {
-        this.dispatchEvent({ type: 'picking-start' });
-        this._pickingClock.start();
-
-        let results: PickResult[] = [];
-        const sources =
-            options.where && options.where.length > 0 ? [...options.where] : this.getObjects();
-        const mouse =
+        const canvasCoords =
             mouseOrEvt instanceof Event
                 ? this.eventToCanvasCoords(mouseOrEvt, vectors.evtToCanvas)
                 : mouseOrEvt;
-        const radius = options.radius ?? 0;
-        const limit = options.limit ?? Infinity;
-        const sortByDistance = options.sortByDistance ?? false;
-        const pickFeatures = options.pickFeatures ?? false;
-
-        for (const source of sources) {
-            const object = typeof source === 'string' ? this.objectIdToObject(source) : source;
-
-            if (!(object as Object3D | Entity3D).visible) {
-                continue;
-            }
-
-            const pickOptions = {
-                ...options,
-                radius,
-                limit: limit - results.length,
-                vec2: vectors.pickVec2,
-                sortByDistance: false,
-            };
-            if (sortByDistance) {
-                pickOptions.limit = Infinity;
-                pickOptions.pickFeatures = false;
-            }
-
-            if (isPickable(object)) {
-                const res = object.pick(mouse, pickOptions);
-                results.push(...res);
-            } else if ((object as Object3D).isObject3D) {
-                const res = pickObjectsAt(this, mouse, object as Object3D, pickOptions);
-                results.push(...res);
-            }
-
-            if (results.length >= limit && !sortByDistance) {
-                break;
-            }
-        }
-
-        if (sortByDistance) {
-            results.sort((a, b) => a.distance - b.distance);
-            if (limit !== Infinity) {
-                results = results.slice(0, limit);
-            }
-        }
-
-        if (pickFeatures) {
-            const pickFeaturesOptions = options;
-
-            results.forEach(result => {
-                if (result.entity && isPickableFeatures(result.entity)) {
-                    result.entity.pickFeaturesFrom(result, pickFeaturesOptions);
-                } else if (result.object != null && isPickableFeatures(result.object)) {
-                    result.object.pickFeaturesFrom(result, pickFeaturesOptions);
-                }
-            });
-        }
-
-        const elapsed = this._pickingClock.getElapsedTime();
-        this._pickingClock.stop();
-        this.dispatchEvent({ type: 'picking-end', elapsed, results });
-
-        return results;
+        return super.pickObjectsAt(canvasCoords, options);
     }
 
     public getMemoryUsage(): MemoryUsageReport {

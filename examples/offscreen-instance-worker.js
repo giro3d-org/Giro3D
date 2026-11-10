@@ -14,6 +14,7 @@ import {
     Mesh,
     MeshPhongMaterial,
     PlaneGeometry,
+    Vector2,
 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
@@ -26,6 +27,20 @@ let camera;
 let mixers = [];
 let models = [];
 const clock = new Clock();
+
+// pickObjectsAt() returns the specific mesh that was hit (a GLTF skeleton bone/mesh), not the
+// top-level model group added via instance.add(); walk up to find which of the three models it
+// belongs to, so the whole model can be highlighted.
+function findModelAncestor(object) {
+    let node = object;
+    while (node) {
+        if (models.includes(node)) {
+            return node;
+        }
+        node = node.parent;
+    }
+    return null;
+}
 
 function tick() {
     const delta = clock.getDelta();
@@ -52,10 +67,33 @@ function tick() {
 }
 
 self.addEventListener('message', event => {
-    const { canvas, resize, cameraTransform } = event.data;
+    const { canvas, resize, cameraTransform, pick } = event.data;
 
     if (resize) {
         instance.engine.onWindowResize(resize.width, resize.height);
+        return;
+    }
+
+    if (pick) {
+        // Picks using the canvas coordinates forwarded from the main thread (see
+        // offscreen-instance.js), rather than a MouseEvent: the click happened on the main
+        // thread's <canvas> element, which isn't visible to this Worker.
+        const results = instance.pickObjectsAt(new Vector2(pick.x, pick.y));
+
+        for (const model of models) {
+            model.scale.setScalar(1);
+        }
+        const hitModel = results[0] && findModelAncestor(results[0].object);
+        if (hitModel) {
+            hitModel.scale.setScalar(1.15);
+        }
+
+        self.postMessage({
+            pickResult: {
+                count: results.length,
+                hitModel: hitModel?.name ?? null,
+            },
+        });
         return;
     }
 
@@ -79,10 +117,10 @@ self.addEventListener('message', event => {
     instance.renderer.shadowMap.enabled = true;
 
     // MainLoop's automatic near/far plane computation only looks at Giro3D entities and objects
-    // added through instance.threeObjects (see the TODO in MainLoop.ts); the ground and models
-    // below are added straight to instance.scene, so it would see no objects at all and clamp
-    // the far plane to 0, making everything disappear. Not needed here anyway: nothing in this
-    // scene moves far from the camera.
+    // added through instance.threeObjects (see the TODO in MainLoop.ts); the ground/lights below
+    // are added straight to instance.scene, so with nothing else to look at, it would clamp the
+    // far plane to 0, making everything disappear. Not needed here anyway: nothing in this scene
+    // moves far from the camera.
     instance.mainLoop.automaticCameraPlaneComputation = false;
 
     // A darker, cooler palette than three-js-integration.js's, so this doesn't read as a copy
@@ -149,20 +187,21 @@ self.addEventListener('message', event => {
         mixer2.clipAction(gltf.animations[1]).play(); // run
         mixer3.clipAction(gltf.animations[3]).play(); // walk
 
+        model1.name = 'soldier-idle';
         model1.position.x = 1;
         model1.rotation.x = Math.PI / 2;
         model1.updateMatrixWorld();
+        model2.name = 'soldier-run';
         model2.position.x = 0;
         model2.rotation.x = Math.PI / 2;
         model2.updateMatrixWorld();
+        model3.name = 'soldier-walk';
         model3.position.x = 2;
         model3.rotation.x = Math.PI / 2;
         model3.updateMatrixWorld();
 
-        // OffscreenInstance has no entity system, so unlike instance.add() in other examples,
-        // we add directly to the Three.js scene.
         for (const model of models) {
-            instance.scene.add(model);
+            instance.add(model);
         }
 
         self.requestAnimationFrame(tick);
