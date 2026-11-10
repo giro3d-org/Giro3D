@@ -372,6 +372,35 @@ describe('Instance', () => {
         });
     });
 
+    describe('pickObjectsAt', () => {
+        it('should not throw and return an array, given a plain Vector2', () => {
+            const results = instance.pickObjectsAt(new Vector2(10, 10));
+            expect(results).toEqual([]);
+        });
+
+        it('should not throw and return an array, given a MouseEvent', () => {
+            const results = instance.pickObjectsAt(mouseEvent);
+            expect(results).toEqual([]);
+        });
+
+        it('should not throw and return an array, given a TouchEvent', () => {
+            const results = instance.pickObjectsAt(touchEvent);
+            expect(results).toEqual([]);
+        });
+
+        it('should fire picking-start and picking-end events', () => {
+            const start = vitest.fn();
+            const end = vitest.fn();
+            instance.addEventListener('picking-start', start);
+            instance.addEventListener('picking-end', end);
+
+            instance.pickObjectsAt(new Vector2(10, 10));
+
+            expect(start).toHaveBeenCalledTimes(1);
+            expect(end).toHaveBeenCalledTimes(1);
+        });
+    });
+
     describe('progress', () => {
         it('should return 1 if no entity is present', () => {
             expect(instance.progress).toEqual(1);
