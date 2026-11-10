@@ -39,6 +39,14 @@
                 </li>
             </ul>
 
+            <% if (locals.searchExamples) { %>
+            <%- include('navbar-examples-search') %>
+            <% } %>
+
+            <% if (locals.searchApidoc) { %>
+            <%- include('navbar-apidoc-search') %>
+            <% } %>
+
             <ul class="navbar-nav me-2">
                 <%# > Comment to kinda disable prettier %>
                 <%- include('navbar-link', { id: 'faq', href: '/faq.html', title: 'FAQ'}) %>
