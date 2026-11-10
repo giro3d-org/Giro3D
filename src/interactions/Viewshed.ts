@@ -235,10 +235,14 @@ export class Viewshed implements Disposable {
     }
 
     private unpatchMaterial(material: Material): void {
-        material.onBeforeCompile = material.userData.originalOnBeforeCompile;
-        delete material.userData.originalOnBeforeCompile;
-        material.customProgramCacheKey = material.userData.originalCustomProgramCacheKey;
-        delete material.userData.originalCustomProgramCacheKey;
+        if (material.userData.originalOnBeforeCompile !== undefined) {
+            material.onBeforeCompile = material.userData.originalOnBeforeCompile;
+            delete material.userData.originalOnBeforeCompile;
+        }
+        if (material.userData.originalCustomProgramCacheKey !== undefined) {
+            material.customProgramCacheKey = material.userData.originalCustomProgramCacheKey;
+            delete material.userData.originalCustomProgramCacheKey;
+        }
         material.needsUpdate = true;
     }
 
