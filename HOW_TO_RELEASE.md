@@ -40,6 +40,7 @@ This scenario assumes that we want to release version **`v2.0.0`** of Giro3D.
     - Set `"version"` to `2.0.0-beta.0`
 1. Run `npm i` (to update `package-lock.json` accordingly)
 1. Generate the changelog (described below)
+1. Update the content of the giro3d.org website if necessary
 1. Create a merge request (MR) for `release/2.0` to be merged into `main`
 1. If major changes are required (i.e. that require peer-review), new merge requests can be created, branching from and to the release branch
 1. When the release MR is ready:
@@ -90,7 +91,7 @@ If an urgent hotfix is needed for an existing release (say, release a hotfix `v2
 ## Publish the package manually on npmjs.com
 
 > [!warning] Warning
-> This procedure is for exceptional circumstances only ! In general, publishing NPM packages should
+> This procedure is for exceptional circumstances only! In general, publishing NPM packages should
 > be done from the CI/CD pipeline described in `.gitlab-ci.yml`. One notable exception is to publish
 > preview packages in non-stable channels, such as <https://www.npmjs.com/package/@giro3d/giro3d/v/2.0.0-perfwms.1>
 
@@ -118,7 +119,7 @@ npm run make-package
 ### Publish the package
 
 > [!warning]
-> Ensure that the package has been properly built in the `build/giro3d/` folder !
+> Ensure that the package has been properly built in the `build/giro3d/` folder!
 
 If you are publishing a preview package, use the `preview` tag.
 
