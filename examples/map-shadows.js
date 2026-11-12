@@ -604,7 +604,7 @@ bindButton('create-cube', btn => {
 
     instance.domElement.addEventListener('mousemove', onMouseMove);
 
-    instance.domElement.addEventListener('mousedown', e => {
+    instance.domElement.addEventListener('mousedown', () => {
         cube.material.opacity = 1;
         cube.material.transparent = false;
 

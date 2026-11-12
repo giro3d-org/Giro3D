@@ -5,7 +5,6 @@
  */
 
 import chokidar from 'chokidar';
-import CircularDependencyPlugin from 'circular-dependency-plugin';
 import { program } from 'commander';
 import CopyPlugin from 'copy-webpack-plugin';
 import ejs from 'ejs';
@@ -13,8 +12,8 @@ import esMain from 'es-main';
 import frontMatter from 'front-matter';
 import fse from 'fs-extra';
 import path, { dirname } from 'path';
-import * as prettier from 'prettier';
 import * as shiki from 'shiki';
+import * as oxfmt from 'oxfmt';
 import { fileURLToPath } from 'url';
 import webpack from 'webpack';
 import webpackDevServer from 'webpack-dev-server';
@@ -234,7 +233,7 @@ export async function generateExample(htmlFile, parameters) {
 
         let htmlCode = htmlCodeTemplate(variables);
 
-        htmlCode = await prettier.format(htmlCode, { parser: 'html' });
+        htmlCode = (await oxfmt.format('index.html', htmlCode)).code;
 
         const packageJson = generatePackageJsonContent(variables).trim();
 
@@ -248,8 +247,8 @@ export async function generateExample(htmlFile, parameters) {
             .replaceAll(/\/\*\*.*?\*\//gs, '') // remove JSDoc comments
             .replaceAll(/^.*\/\/\s*@ts.*$/gim, ''); // Remove typescript-related comments
 
-        // Format the code with Prettier
-        sourceCode = await prettier.format(sourceCode, { parser: 'babel' });
+        // Format the code
+        sourceCode = (await oxfmt.format('index.js', sourceCode)).code;
 
         variables['highlightedJsCode'] = await shiki.codeToHtml(sourceCode, {
             theme: 'github-light',
@@ -469,17 +468,6 @@ export async function getWebpackConfig(parameters) {
             ],
         },
         plugins: [
-            new CircularDependencyPlugin({
-                // exclude detection of files based on a RegExp
-                exclude: /node_modules/,
-                // add errors to webpack instead of warnings
-                failOnError: true,
-                // allow import cycles that include an asyncronous import,
-                // e.g. via import(/* webpackMode: "weak" */ './file.js')
-                allowAsyncCycles: false,
-                // set the current working directory for displaying module paths
-                cwd: process.cwd(),
-            }),
             new CopyPlugin({
                 patterns: [
                     {
@@ -490,7 +478,7 @@ export async function getWebpackConfig(parameters) {
                     {
                         from: 'index.js',
                         to: 'index.html',
-                        transform: (content, from) => {
+                        transform: () => {
                             const htmlFiles = getExamplesFiles(parameters);
                             return generateIndex(htmlFiles, parameters);
                         },
@@ -498,7 +486,7 @@ export async function getWebpackConfig(parameters) {
                     {
                         from: '*.html',
                         to: '.',
-                        transform: (content, from) => generateExample(from, parameters),
+                        transform: (_content, from) => generateExample(from, parameters),
                     },
                     { from: 'css', to: 'css' },
                     { from: 'image', to: 'image' },
@@ -545,7 +533,7 @@ export async function buildExamples(parameters) {
     });
 }
 
-export async function watchExamples(parameters) {
+export async function watchExamples() {
     const sourceFolder = path.join(rootDir, 'src');
 
     chokidar
@@ -554,7 +542,7 @@ export async function watchExamples(parameters) {
 }
 
 export async function serveExamples(parameters) {
-    await watchExamples(parameters);
+    await watchExamples();
 
     const webpackConfig = await getWebpackConfig(parameters);
     const compiler = webpack(webpackConfig);

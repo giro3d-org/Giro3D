@@ -522,7 +522,7 @@ document.getElementById('filename').innerText = fragments[fragments.length - 1];
 
 // GUI controls for classification handling
 
-const classificationNames = new Array(32);
+const classificationNames = Array.from({ length: 32 });
 
 function addClassification(number, name, array, updateClassificationFilter) {
     const currentColor = array[number].color.getHexString();
