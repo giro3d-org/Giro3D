@@ -273,6 +273,7 @@ const readPositionCartesian: ReaderGen = (_attribute, attributeOffset, pointByte
     return (view, pointIndex, target) => {
         const offset = pointIndex * pointByteSize + attributeOffset;
 
+        // oxlint-disable-next-line oxc/erasing-op
         const x = view.getUint32(offset + 0 * itemSize, true);
         const y = view.getUint32(offset + 1 * itemSize, true);
         const z = view.getUint32(offset + 2 * itemSize, true);
@@ -428,7 +429,6 @@ export function getTypedArray(
                 case 4:
                     return new Int32Array(arrayLength);
             }
-            break;
         case 'unsigned':
             switch (size) {
                 case 1:
@@ -438,7 +438,6 @@ export function getTypedArray(
                 case 4:
                     return new Uint32Array(arrayLength);
             }
-            break;
         case 'float':
             return new Float32Array(arrayLength);
     }

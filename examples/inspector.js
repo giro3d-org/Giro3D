@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-import GUI from 'lil-gui';
 import StadiaMaps from 'ol/source/StadiaMaps.js';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
@@ -21,7 +20,7 @@ import StatusBar from './widgets/StatusBar.js';
 
 class MyCustomPanel extends Panel {
     /**
-     * @param {GUI} parentGui The parent GUI.
+     * @param {import('lil-gui').default} parentGui The parent GUI.
      * @param {Map} map The observed map.
      * @param {Instance} instance The Giro3D instance.
      */

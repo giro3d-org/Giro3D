@@ -41,7 +41,7 @@ export class Classification {
  *
  * See https://www.asprs.org/wp-content/uploads/2010/12/LAS_Specification.pdf
  */
-export const ASPRS_CLASSIFICATIONS: Classification[] = new Array(256);
+export const ASPRS_CLASSIFICATIONS: Classification[] = Array.from({ length: 256 });
 
 const DEFAULT_CLASSIFICATION = new Classification(0xff8100);
 

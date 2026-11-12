@@ -15,7 +15,7 @@ import { buildExamples } from './build-examples.mjs';
 import { buildStaticSite } from './build-static-site.mjs';
 import { buildTutorials } from './build-tutorials.mjs';
 import { createStaticServer } from './serve.mjs';
-import { log, logError, logOk, logWarning } from './utils.mjs';
+import { log, logOk } from './utils.mjs';
 
 const baseDir = dirname(fileURLToPath(import.meta.url));
 
@@ -25,7 +25,7 @@ export const defaultParameters = {
 };
 
 async function buildRelease(parameters) {
-    const { output, ...options } = parameters;
+    const { ...options } = parameters;
 
     log('site', chalk.bold(`Building site...`));
     await buildApidoc({

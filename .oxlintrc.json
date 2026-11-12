@@ -1,0 +1,16 @@
+{
+    "ignorePatterns": ["test/data"],
+    "plugins": ["import"],
+    "jsPlugins": ["@tony.ganchev/eslint-plugin-header"],
+    "rules": {
+        "import/no-cycle": "error",
+        "@tony.ganchev/header/header": [
+            "error",
+            {
+                "header": {
+                    "file": "license-header.js"
+                }
+            }
+        ]
+    }
+}

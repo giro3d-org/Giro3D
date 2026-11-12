@@ -13,6 +13,7 @@
 // to make it work
 import type BaseEvent from 'ol/events/Event';
 import type Feature from 'ol/Feature.js';
+import type { Extent as OlExtent } from 'ol/extent';
 import type FeatureFormat from 'ol/format/Feature.js';
 import type { Geometry } from 'ol/geom';
 import type { Style } from 'ol/style.js';
@@ -44,7 +45,7 @@ import OpenLayersUtils from '../utils/OpenLayersUtils';
 import { nonNull } from '../utils/tsutils';
 import ImageSource, { ImageResult } from './ImageSource';
 
-const tmpExtent = new Array(4);
+const tmpExtent: OlExtent = Array.from({ length: 4 });
 
 const tmpTransform: Transform = createTransform();
 

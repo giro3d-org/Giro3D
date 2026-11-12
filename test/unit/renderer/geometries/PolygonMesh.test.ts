@@ -21,8 +21,8 @@ export function makeSurfaceGeometry(options?: { vertexCount?: number }): BufferG
 
     const vertexCount = options?.vertexCount ?? 20;
 
-    geometry.setIndex(new Array(vertexCount));
-    geometry.setFromPoints(new Array<Vector3>(vertexCount).fill(new Vector3()));
+    geometry.setIndex(Array.from({ length: vertexCount }));
+    geometry.setFromPoints(Array.from<Vector3>({ length: vertexCount }).fill(new Vector3()));
 
     return geometry;
 }
@@ -52,7 +52,9 @@ export function makeRings(options?: {
     for (let i = 0; i < count; i++) {
         const geometry = new LineGeometry();
         if (options?.vertexCount != null) {
-            geometry.setFromPoints(new Array<Vector3>(options.vertexCount).fill(new Vector3()));
+            geometry.setFromPoints(
+                Array.from<Vector3>({ length: options.vertexCount }).fill(new Vector3()),
+            );
         }
         result.push(new LineStringMesh(geometry, material, options?.opacity ?? 1));
     }

@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: MIT
  */
 
+// oxlint-disable no-unused-vars
+
 import {
     EventDispatcher,
     FloatType,
@@ -219,14 +221,10 @@ abstract class ImageSource<Events extends ImageSourceEvents = ImageSourceEvents>
      * @param margin - The margin, in pixels, around the initial extent.
      * @returns The adjusted parameters.
      */
-
     public adjustExtentAndPixelSize(
         requestExtent: Extent,
-
         requestWidth: number,
-
         requestHeight: number,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         margin = 0,
     ): GridExtent | null {
         // Default implementation.
