@@ -6,7 +6,6 @@
 
 import chokidar from 'chokidar';
 import { program } from 'commander';
-import CopyPlugin from 'copy-webpack-plugin';
 import ejs from 'ejs';
 import esMain from 'es-main';
 import frontMatter from 'front-matter';
@@ -15,8 +14,8 @@ import path, { dirname } from 'path';
 import * as shiki from 'shiki';
 import * as oxfmt from 'oxfmt';
 import { fileURLToPath } from 'url';
-import webpack from 'webpack';
-import webpackDevServer from 'webpack-dev-server';
+import { build, createServer } from 'vite';
+import { defineConfig } from 'vite';
 
 import { handleModification } from '../observer.mjs';
 import { copyAssets } from './build-static-site.mjs';
@@ -128,7 +127,7 @@ export function getExamplesFiles(parameters) {
 
     const htmlFiles = fse
         .readdirSync(examplesDir)
-        .filter(f => f.endsWith('.html') && filter(f))
+        .filter(f => f.endsWith('.html') && f !== 'index.html' && filter(f))
         .map(f => path.resolve(examplesDir, f));
 
     htmlFiles.forEach(f => validateExample(f));
@@ -172,7 +171,8 @@ export function findExamplesEntries(parameters) {
 
         if (parameters.example === undefined || parameters.example === example) {
             const jsFile = `${example}.js`;
-            entry[example] = [path.join(examplesDir, jsFile)];
+            // Use relative path from examplesDir for Vite to resolve correctly
+            entry[example] = path.join(examplesDir, jsFile);
         }
     });
     return entry;
@@ -201,6 +201,12 @@ export async function generateExample(htmlFile, parameters) {
     const jsFile = htmlFile.replace('.html', '.js');
 
     const jsContent = await fse.readFile(jsFile, 'utf-8');
+    
+    // In dev mode, use absolute path to JS file from examples directory
+    // This allows Vite to resolve imports correctly
+    const jsPath = parameters.mode === 'development' 
+        ? `/examples/${jsFilename}` 
+        : jsFilename;
 
     const name = path.parse(htmlFile).name;
     const { attributes, body: htmlCustomContent } = parseExample(htmlFile);
@@ -356,13 +362,19 @@ function generatePackageJsonContent(parameters) {
     return JSON.stringify(content, null, INDENT);
 }
 
-export async function getWebpackConfig(parameters) {
-    log('examples', 'Generating webpack configuration...');
-    const entry = findExamplesEntries(parameters);
-
+/**
+ * Prepare output directory with HTML files and static assets
+ */
+async function prepareOutputDirectory(parameters, htmlFiles) {
     if (!parameters.version) {
         parameters.version = await getPackageVersion();
     }
+
+    // Create output directory
+    if (parameters.clean) {
+        fse.removeSync(parameters.output);
+    }
+    fse.ensureDirSync(parameters.output);
 
     if (!fse.existsSync(path.join(parameters.output, '..', '..', 'assets'))) {
         await copyAssets({
@@ -370,135 +382,103 @@ export async function getWebpackConfig(parameters) {
         });
     }
 
-    /** @type {webpack.Configuration} */
-    const webpackConfig = {
+    // Generate index.html
+    const indexHtml = await generateIndex(htmlFiles, parameters);
+    fse.writeFileSync(path.join(parameters.output, 'index.html'), indexHtml);
+
+    // Generate each example HTML file
+    for (const htmlFile of htmlFiles) {
+        const htmlContent = await generateExample(htmlFile, parameters);
+        const outputName = path.basename(htmlFile);
+        fse.writeFileSync(path.join(parameters.output, outputName), htmlContent);
+    }
+
+    // Copy static assets
+    const staticDirs = ['css', 'image', 'screenshots', 'data'];
+    for (const dir of staticDirs) {
+        const src = path.join(examplesDir, dir);
+        if (fse.existsSync(src)) {
+            fse.copySync(src, path.join(parameters.output, dir));
+        }
+    }
+
+    // Copy index.js if it exists
+    const indexJs = path.join(examplesDir, 'index.js');
+    if (fse.existsSync(indexJs)) {
+        fse.copySync(indexJs, path.join(parameters.output, 'index.js'));
+    }
+}
+
+export async function getViteConfig(parameters, htmlFiles = null) {
+    log('examples', 'Generating Vite configuration...');
+    const entry = findExamplesEntries(parameters);
+
+    if (!parameters.version) {
+        parameters.version = await getPackageVersion();
+    }
+
+    // If htmlFiles not provided, get them
+    if (!htmlFiles) {
+        htmlFiles = getExamplesFiles(parameters);
+    }
+    await prepareOutputDirectory(parameters, htmlFiles);
+
+    /** @type {import('vite').UserConfig} */
+    const viteConfig = defineConfig({
         mode: parameters.mode,
-        watchOptions: {
-            ignored: /node_modules/,
-            poll: false,
-        },
-        module: {
-            rules: [
-                {
-                    // Added because when copc.js switched to type: "module",
-                    // webpack refused to import the files in this library since
-                    // import paths were missing the ".js" extension.
-                    test: /\.m?js/, // fix:issue: https://github.com/webpack/webpack/issues/11467
-                    resolve: {
-                        fullySpecified: false,
-                    },
-                },
-                {
-                    test: {
-                        and: [
-                            () => parameters.mode === 'development',
-                            new RegExp(`${examplesDir}/\\w+\\.js`),
-                        ],
-                    },
-                    use: path.resolve(baseDir, 'prepend-import-loader.js'),
-                },
-            ],
-        },
-        context: examplesDir,
         resolve: {
-            alias: { '@giro3d/giro3d': giro3dPackageDir },
-        },
-        devtool: parameters.mode === 'production' ? undefined : 'source-map',
-        entry,
-        target: ['web', 'es5'],
-        output: {
-            filename: '[name].js',
-            clean: true,
-            path: parameters.output,
-            library: '[name]',
-            libraryTarget: 'umd',
-            umdNamedDefine: true,
-            devtoolModuleFilenameTemplate: 'webpack://[namespace]/[resource-path]?[loaders]',
-            devtoolNamespace: 'giro3d',
-        },
-        optimization: {
-            minimize: parameters.mode === 'production',
-            splitChunks: {
-                minSize: 17000,
-                minRemainingSize: 0,
-                minChunks: 1,
-                maxAsyncRequests: 30,
-                maxInitialRequests: 30,
-                automaticNameDelimiter: '_',
-                enforceSizeThreshold: 30000,
-                cacheGroups: {
-                    // we are opting out of defaultVendors, so rest of the node modules will be part of default cacheGroup
-                    defaultVendors: false,
-                    ol: {
-                        test: /[\\/]node_modules[\\/]ol[\\/]/,
-                        name: '__ol',
-                        chunks: 'all',
-                        priority: 100,
-                    },
-                    three: {
-                        test: /[\\/]node_modules[\\/]three[\\/]/,
-                        name: '__three',
-                        chunks: 'all',
-                        priority: 100,
-                    },
-                    vendor: {
-                        test: /[\\/]node_modules[\\/]/,
-                        name: '__vendor',
-                        chunks: 'all',
-                        priority: 10,
-                    },
-                },
+            alias: {
+                '@giro3d/giro3d': giro3dPackageDir,
             },
         },
-        devServer: {
-            hot: true,
-            client: {
-                progress: true,
-                overlay: true,
+        build: {
+            // In production: output to parameters.output
+            // In development: output to a temp directory (dev mode uses dev server, not build)
+            outDir: parameters.mode === 'production' ? parameters.output : path.join(rootDir, 'build', '.vite-dev'),
+            emptyOutDir: parameters.mode === 'production' ? false : true,
+            rollupOptions: {
+                input: entry,
+                output: {
+                    entryFileNames: '[name].js',
+                    assetFileNames: 'assets/[name].[ext]',
+                },
+                // Suppress warnings about direct eval in third-party dependencies
+                onwarn(warning, defaultHandler) {
+                    // EVAL warnings from third-party libraries (like three.js/lottie) are expected
+                    // and don't affect functionality, so we suppress them
+                    if (warning.code === 'EVAL') {
+                        return;
+                    }
+                    defaultHandler(warning);
+                },
             },
-            static: [
-                {
-                    directory: path.join(parameters.output, '..', '..', 'assets'),
-                    publicPath: '/assets/',
-                },
-                {
-                    directory: path.join(parameters.output, '..', '..', 'images'),
-                    publicPath: '/images/',
-                },
+            target: 'es2020',
+            minify: parameters.mode === 'production',
+            sourcemap: parameters.mode === 'development',
+        },
+        optimizeDeps: {
+            // Pre-bundle common dependencies for better performance
+            include: [
+                'three',
+                'ol',
+                '3d-tiles-renderer',
+                'camera-controls',
+                'copc',
+                'geotiff',
+                'earcut',
+                'lil-gui',
+                'lru-cache',
+                'wkt-parser',
             ],
+            esbuildOptions: {
+                target: 'es2020',
+            },
         },
-        plugins: [
-            new CopyPlugin({
-                patterns: [
-                    {
-                        // Don't webpack index.js
-                        from: 'index.js',
-                        to: 'index.js',
-                    },
-                    {
-                        from: 'index.js',
-                        to: 'index.html',
-                        transform: () => {
-                            const htmlFiles = getExamplesFiles(parameters);
-                            return generateIndex(htmlFiles, parameters);
-                        },
-                    },
-                    {
-                        from: '*.html',
-                        to: '.',
-                        transform: (_content, from) => generateExample(from, parameters),
-                    },
-                    { from: 'css', to: 'css' },
-                    { from: 'image', to: 'image' },
-                    { from: 'screenshots', to: 'screenshots' },
-                    { from: 'data', to: 'data' },
-                ],
-            }),
-        ],
-    };
+        logLevel: 'info',
+    });
 
     logOk('examples', `Found ${Object.keys(entry).length} example(s)`);
-    return webpackConfig;
+    return viteConfig;
 }
 
 export async function cleanExamples(parameters) {
@@ -507,30 +487,16 @@ export async function cleanExamples(parameters) {
 }
 
 export async function buildExamples(parameters) {
-    const webpackConfig = await getWebpackConfig(parameters);
-    const compiler = webpack(webpackConfig);
+    const viteConfig = await getViteConfig(parameters);
 
-    return new Promise((resolve, reject) => {
-        log('examples', 'Generating examples...');
-        compiler.run((err, stats) => {
-            if (err) {
-                reject(err);
-                return;
-            }
-            console.log(stats.toString({ colors: true }));
-
-            compiler.close(closeErr => {
-                if (closeErr) {
-                    reject(closeErr);
-                } else if (stats.hasErrors()) {
-                    reject(new Error('Webpack failed'));
-                } else {
-                    logOk('examples', `Examples built at ${webpackConfig.output.path}`);
-                    resolve();
-                }
-            });
-        });
-    });
+    try {
+        log('examples', 'Building with Vite...');
+        await build(viteConfig);
+        logOk('examples', `Examples built at ${parameters.output}`);
+    } catch (err) {
+        logError('examples', `Build failed: ${err.message}`);
+        throw err;
+    }
 }
 
 export async function watchExamples() {
@@ -542,14 +508,131 @@ export async function watchExamples() {
 }
 
 export async function serveExamples(parameters) {
-    await watchExamples();
+    const htmlFiles = getExamplesFiles(parameters);
+    
+    // In dev mode, prepare the output directory for static assets
+    if (!parameters.version) {
+        parameters.version = await getPackageVersion();
+    }
+    
+    if (parameters.clean) {
+        fse.removeSync(parameters.output);
+    }
+    fse.ensureDirSync(parameters.output);
+    
+    // Copy parent assets if needed
+    if (!fse.existsSync(path.join(parameters.output, '..', '..', 'assets'))) {
+        await copyAssets({
+            output: path.join(parameters.output, '..', '..'),
+        });
+    }
+    
+    // Copy static assets that are needed for examples
+    const staticDirs = ['css', 'image', 'screenshots', 'data'];
+    for (const dir of staticDirs) {
+        const src = path.join(examplesDir, dir);
+        if (fse.existsSync(src)) {
+            fse.copySync(src, path.join(parameters.output, dir));
+        }
+    }
 
-    const webpackConfig = await getWebpackConfig(parameters);
-    const compiler = webpack(webpackConfig);
-    const server = new webpackDevServer(webpackConfig.devServer, compiler);
+    // Generate HTML files to output directory
+    // We'll also copy JS files there for Vite to serve
+    
+    // Generate index.html (gallery page)
+    const indexHtml = await generateIndex(htmlFiles, parameters);
+    fse.writeFileSync(path.join(parameters.output, 'index.html'), indexHtml);
 
-    log('examples', 'Starting server...');
-    return server.start();
+    // Generate HTML files for the examples we're serving
+    for (const htmlFile of htmlFiles) {
+        const htmlContent = await generateExample(htmlFile, parameters);
+        const outputName = path.basename(htmlFile);
+        const outputPath = path.join(parameters.output, outputName);
+        fse.writeFileSync(outputPath, htmlContent);
+    }
+
+    // Build entry points map for Vite
+    const entry = {};
+    htmlFiles.forEach(htmlFile => {
+        const name = path.parse(htmlFile).name;
+        const jsFile = path.join(examplesDir, `${name}.js`);
+        if (fse.existsSync(jsFile)) {
+            entry[name] = jsFile;
+        }
+    });
+
+    // Create server with additional configuration for development
+    // We set root to output directory where the HTML files are
+    const server = await createServer({
+        mode: parameters.mode,
+        resolve: {
+            alias: {
+                '@giro3d/giro3d': giro3dPackageDir,
+            },
+        },
+        root: parameters.output,
+        server: {
+            fs: {
+                // Allow serving files from output dir (HTML/JS), examples dir (source JS), and root
+                allow: [parameters.output, examplesDir, rootDir],
+            },
+            host: true,
+            port: 8080,
+        },
+        appType: 'mpa', // Multi-page application mode
+        build: {
+            outDir: path.join(rootDir, 'build', '.vite-dev'),
+            emptyOutDir: true,
+            rollupOptions: {
+                input: entry,
+                output: {
+                    entryFileNames: '[name].js',
+                    assetFileNames: 'assets/[name].[ext]',
+                },
+                onwarn(warning, defaultHandler) {
+                    if (warning.code === 'EVAL') {
+                        return;
+                    }
+                    defaultHandler(warning);
+                },
+            },
+            target: 'es2020',
+            minify: false,
+            sourcemap: true,
+        },
+        optimizeDeps: {
+            include: [
+                'three',
+                'ol',
+                '3d-tiles-renderer',
+                'camera-controls',
+                'copc',
+                'geotiff',
+                'earcut',
+                'lil-gui',
+                'lru-cache',
+                'wkt-parser',
+            ],
+            esbuildOptions: {
+                target: 'es2020',
+            },
+        },
+        logLevel: 'info',
+    });
+
+    const port = server.config.server.port;
+    const protocol = server.config.server.https ? 'https' : 'http';
+    
+    await server.listen();
+    log('examples', `Server running at ${protocol}://localhost:${port}`);
+
+    // Watch for source changes
+    watchExamples();
+
+    // Keep the process alive while the server is running
+    // Using setInterval to prevent the event loop from blocking
+    setInterval(() => {}, 10000);
+    await new Promise(() => {});
 }
 
 /**
@@ -573,6 +656,11 @@ if (esMain(import.meta)) {
     if (cmd.processedArgs.length > 0) {
         options.example = cmd.processedArgs[0];
     }
+    
+    // Also check for EXAMPLE environment variable
+    if (process.env.EXAMPLE && !options.example) {
+        options.example = process.env.EXAMPLE;
+    }
 
     const pwd = process.cwd();
     options.output = path.resolve(pwd, options.output);
@@ -580,10 +668,6 @@ if (esMain(import.meta)) {
     if (clean) {
         await cleanExamples(options);
     }
-
-    await copyAssets({
-        output: path.join(options.output, '..'),
-    });
 
     if (watch) {
         await serveExamples(options);
