@@ -4,12 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
 
-import * as babel from '@babel/core';
+import * as esbuild from 'esbuild';
 import chokidar from 'chokidar';
 import esMain from 'es-main';
 import fs from 'fs';
 import { globSync } from 'glob';
 import path from 'path';
+
+import { inlineGlslAndJsonImports } from './tasks/inline-imports.mjs';
 
 function usage() {
     console.log('observer.js <source> <dest>');
@@ -69,38 +71,52 @@ export function handleModification(sourceFile, sourceFolder, destFolder) {
 }
 
 /**
- * Transpile a single Javascript file using the babel command line.
+ * Transpile a single TypeScript file using esbuild.
  *
  * @param {string} - sourceFile The file to transpile.
  * @param {string} - sourceFolder The top-level folder containing the modified file.
- * @param {string} - destFolder The top-level folder to put the transpiled file and source map.
+ * @param {string} - destFolder The top-level folder to put the transpiled file.
  */
 function transpileFile(sourceFile, sourceFolder, destFolder) {
     const destFile = sourceFile.replace(sourceFolder, destFolder).replace('.ts', '.js');
 
     console.log(` - transpiling: ${sourceFile.replace(sourceFolder, '')}`);
 
-    function logError(e) {
-        if (e) {
-            console.error(e);
-        }
-    }
+    // Ensure output directory exists
+    fs.mkdirSync(path.dirname(destFile), { recursive: true });
 
-    babel.transformFile(sourceFile, { sourceMaps: true }, (err, result) => {
-        if (err) {
-            logError(err);
-            return;
-        }
+    try {
+        // Preprocess to inline GLSL and JSON imports
+        const processedContent = inlineGlslAndJsonImports(sourceFile);
+
+        // Write the preprocessed content to a temp file
+        const tempFile = `${sourceFile}.tmp`;
+        fs.writeFileSync(tempFile, processedContent, 'utf8');
+
+        // Transpile with esbuild
+        esbuild.buildSync({
+            entryPoints: [tempFile],
+            outfile: destFile,
+            format: 'esm',
+            target: 'es2020',
+            platform: 'browser',
+            bundle: false,
+            minify: false,
+            sourcemap: true,
+            loader: {
+                '.ts': 'ts',
+                '.tmp': 'ts',
+            },
+            packages: 'external',
+        });
 
         console.log(`  -> ${destFile}`);
-        fs.writeFile(destFile, result.code, logError);
 
-        if (result.map) {
-            const mapFile = `${destFile}.map`;
-            console.log(`  -> ${mapFile}`);
-            fs.writeFile(mapFile, JSON.stringify(result.map), logError);
-        }
-    });
+        // Clean up temp file
+        fs.unlinkSync(tempFile);
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 function main() {

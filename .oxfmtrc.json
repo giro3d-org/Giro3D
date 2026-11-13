@@ -1,6 +1,6 @@
 {
     "$schema": "./node_modules/oxfmt/configuration_schema.json",
     "singleQuote": true,
-    "jsxSingleQuote": true,
+    "ignorePatterns": ["build/**", "*.min.js", "package-lock.json"],
     "arrowParens": "avoid"
 }
