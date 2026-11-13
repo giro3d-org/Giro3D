@@ -18,7 +18,13 @@ function makeView(
 ): { view: View; renderer: WebGLRenderer } {
     const camera = new PerspectiveCamera(45, width / height);
     camera.position.set(0, 0, cameraZ);
-    const renderer = new WebGLRenderer();
+    let ratio = 1;
+    const renderer = {
+        setPixelRatio: (v: number) => {
+            ratio = v;
+        },
+        getPixelRatio: () => ratio,
+    } as unknown as WebGLRenderer;
     const view = new View({
         crs: CoordinateSystem.epsg3857,
         renderer,

@@ -15,7 +15,7 @@ import {
     Vector3,
     WebGLRenderer,
 } from 'three';
-import { beforeAll, describe, expect, it, vitest } from 'vitest';
+import { beforeAll, describe, expect, it, vi, vitest } from 'vitest';
 
 import type HasDefaultPointOfView from '@giro3d/giro3d/core/HasDefaultPointOfView';
 import type PointOfView from '@giro3d/giro3d/core/PointOfView';
@@ -58,14 +58,11 @@ describe('setSize', () => {
 
 describe('pixelRatio', () => {
     it('should reflect the renderer pixel ratio', () => {
-        const renderer = new WebGLRenderer();
+        const renderer = { getPixelRatio: vi.fn(() => 2.2) } as unknown as WebGLRenderer;
         const view = new View({ crs: DEFAULT_CRS, renderer, width: 123, height: 456 });
 
-        expect(view.pixelRatio).toEqual(renderer.getPixelRatio());
-
-        renderer.setPixelRatio(2);
-
-        expect(view.pixelRatio).toEqual(2);
+        expect(view.pixelRatio).toEqual(2.2);
+        expect(renderer.getPixelRatio).toHaveBeenCalled();
     });
 });
 

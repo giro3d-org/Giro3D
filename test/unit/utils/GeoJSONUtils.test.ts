@@ -105,7 +105,7 @@ describe('toFlatCoordinates', () => {
             geometries: [],
         };
 
-        expect(() => GeoJSONUtils.toFlatCoordinates(geometry)).toThrowError();
+        expect(() => GeoJSONUtils.toFlatCoordinates(geometry)).toThrow();
     });
 });
 
@@ -126,13 +126,13 @@ describe('fromFlat3Coordinates', () => {
     );
 
     it('should fail on GeometryCollection', () => {
-        expect(() => GeoJSONUtils.fromFlat3Coordinates([], 'GeometryCollection')).toThrowError();
+        expect(() => GeoJSONUtils.fromFlat3Coordinates([], 'GeometryCollection')).toThrow();
     });
 
     it('should fail on other type of geometry', () => {
         expect(() =>
             GeoJSONUtils.fromFlat3Coordinates([], 'Circle' as GeoJSON.GeoJsonGeometryTypes),
-        ).toThrowError();
+        ).toThrow();
     });
 });
 
@@ -153,12 +153,12 @@ describe('fromFlatCoordinates', () => {
     );
 
     it('should fail on GeometryCollection', () => {
-        expect(() => GeoJSONUtils.fromFlat3Coordinates([], 'GeometryCollection')).toThrowError();
+        expect(() => GeoJSONUtils.fromFlat3Coordinates([], 'GeometryCollection')).toThrow();
     });
 
     it('should fail on other type of geometry', () => {
         expect(() =>
             GeoJSONUtils.fromFlat3Coordinates([], 'Circle' as GeoJSON.GeoJsonGeometryTypes),
-        ).toThrowError();
+        ).toThrow();
     });
 });

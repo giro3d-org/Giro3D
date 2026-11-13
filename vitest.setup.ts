@@ -9,42 +9,34 @@ import 'vitest-canvas-mock';
 
 vitest.mock('three', async () => {
     const three = await vitest.importActual('three');
-    return {
-        ...three,
-        WebGLRenderer: vitest.fn().mockImplementation(() => {
-            let pixelRatio = 1;
-            return {
-                domElement: document.createElement('canvas'),
-                capabilities: {
-                    getMaxAnisotropy(): number {
-                        return 0;
-                    },
-                },
-                dispose: vitest.fn(),
-                setSize: vitest.fn(),
-                clear: vitest.fn(),
-                setClearColor: vitest.fn(),
-                setRenderTarget: vitest.fn(),
-                render: vitest.fn(),
-                getDrawingBufferSize: vitest.fn().mockReturnValue({ width: 10, height: 10 }),
-                getPixelRatio: vitest.fn(() => pixelRatio),
-                setPixelRatio: vitest.fn((value: number) => {
-                    pixelRatio = value;
-                }),
-                getContext(): { getParameter(): number; getExtension(): boolean } {
-                    return {
-                        getParameter(): number {
-                            return 0;
-                        },
-                        getExtension(): boolean {
-                            return true;
-                        },
-                    };
-                },
-                debug: {
-                    checkShaderErrors: false,
+
+    const WebGLRenderer = vitest.fn(
+        class {
+            domElement = document.createElement('canvas');
+            capabilities = {
+                getMaxAnisotropy(): number {
+                    return 0;
                 },
             };
-        }),
+            dispose = vitest.fn();
+            setSize = vitest.fn();
+            clear = vitest.fn();
+            setClearColor = vitest.fn();
+            setRenderTarget = vitest.fn();
+            render = vitest.fn();
+            getDrawingBufferSize = vitest.fn().mockReturnValue({ width: 10, height: 10 });
+            getContext = vitest.fn(() => ({
+                getParameter: vitest.fn(() => 0),
+                getExtension: vitest.fn(() => true),
+            }));
+            debug = {
+                checkShaderErrors: false,
+            };
+        },
+    );
+
+    return {
+        ...three,
+        WebGLRenderer,
     };
 });

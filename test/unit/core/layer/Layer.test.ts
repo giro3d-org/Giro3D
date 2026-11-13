@@ -123,7 +123,7 @@ describe('constructor', () => {
 
     it('should not accept all sources', () => {
         // @ts-expect-error null argument
-        expect(() => new TestLayer({ source: null })).toThrowError(/missing or invalid source/);
+        expect(() => new TestLayer({ source: null })).toThrow(/missing or invalid source/);
     });
 });
 

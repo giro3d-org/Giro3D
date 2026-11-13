@@ -53,7 +53,7 @@ describe('constructor', () => {
 
         expect(
             () => new HeightMap(buffer, width, height, new OffsetScale(), RedFormat, FloatType),
-        ).toThrowError(/buffer is too small/);
+        ).toThrow(/buffer is too small/);
     });
 });
 

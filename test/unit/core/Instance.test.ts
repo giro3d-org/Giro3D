@@ -126,7 +126,7 @@ describe('Instance', () => {
         it('should return a rejected promise if not of correct type', async () => {
             const invalid = {};
             // @ts-expect-error invalid type
-            await expect(instance.add(invalid)).rejects.toThrowError(
+            await expect(instance.add(invalid)).rejects.toThrow(
                 'object is not an instance of THREE.Object3D or Giro3D.Entity',
             );
         });

@@ -348,13 +348,13 @@ describe('isDataLoaded', () => {
 describe('addLayers', () => {
     it('should accept only Layer object', async () => {
         // @ts-expect-error missing parameter
-        await expect(map.addLayer()).rejects.toThrowError('layer is not an instance of Layer');
+        await expect(map.addLayer()).rejects.toThrow('layer is not an instance of Layer');
         // @ts-expect-error null parameter
-        await expect(map.addLayer(null)).rejects.toThrowError('layer is not an instance of Layer');
+        await expect(map.addLayer(null)).rejects.toThrow('layer is not an instance of Layer');
         // @ts-expect-error invalid parameter
-        await expect(map.addLayer([])).rejects.toThrowError('layer is not an instance of Layer');
+        await expect(map.addLayer([])).rejects.toThrow('layer is not an instance of Layer');
         // @ts-expect-error invalid parameter
-        await expect(map.addLayer(map)).rejects.toThrowError('layer is not an instance of Layer');
+        await expect(map.addLayer(map)).rejects.toThrow('layer is not an instance of Layer');
 
         expect(map.getLayers()).toStrictEqual([]);
     });
@@ -373,7 +373,7 @@ describe('addLayers', () => {
         const layer = new ColorLayer({ source: nullSource });
 
         map.addLayer(layer);
-        await expect(map.addLayer(layer)).rejects.toThrowError(/is already present in this map/);
+        await expect(map.addLayer(layer)).rejects.toThrow(/is already present in this map/);
     });
 
     it('should fire the layer-added event', async () => {
@@ -1076,8 +1076,9 @@ describe('shouldSubdivide', () => {
         camera.lookAt(center.x, center.y, center.z);
         camera.updateMatrixWorld(true);
 
-        const renderer = new WebGLRenderer();
-        renderer.setPixelRatio(pixelRatio);
+        const renderer: WebGLRenderer = {
+            getPixelRatio: () => pixelRatio,
+        } as unknown as WebGLRenderer;
 
         const view = new View({ crs, renderer, width, height, camera });
         view.update();
