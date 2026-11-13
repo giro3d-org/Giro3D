@@ -201,12 +201,10 @@ export async function generateExample(htmlFile, parameters) {
     const jsFile = htmlFile.replace('.html', '.js');
 
     const jsContent = await fse.readFile(jsFile, 'utf-8');
-    
+
     // In dev mode, use absolute path to JS file from examples directory
     // This allows Vite to resolve imports correctly
-    const jsPath = parameters.mode === 'development' 
-        ? `/examples/${jsFilename}` 
-        : jsFilename;
+    const jsPath = parameters.mode === 'development' ? `/examples/${jsFilename}` : jsFilename;
 
     const name = path.parse(htmlFile).name;
     const { attributes, body: htmlCustomContent } = parseExample(htmlFile);
@@ -434,7 +432,10 @@ export async function getViteConfig(parameters, htmlFiles = null) {
         build: {
             // In production: output to parameters.output
             // In development: output to a temp directory (dev mode uses dev server, not build)
-            outDir: parameters.mode === 'production' ? parameters.output : path.join(rootDir, 'build', '.vite-dev'),
+            outDir:
+                parameters.mode === 'production'
+                    ? parameters.output
+                    : path.join(rootDir, 'build', '.vite-dev'),
             emptyOutDir: parameters.mode === 'production' ? false : true,
             rollupOptions: {
                 input: entry,
@@ -509,24 +510,24 @@ export async function watchExamples() {
 
 export async function serveExamples(parameters) {
     const htmlFiles = getExamplesFiles(parameters);
-    
+
     // In dev mode, prepare the output directory for static assets
     if (!parameters.version) {
         parameters.version = await getPackageVersion();
     }
-    
+
     if (parameters.clean) {
         fse.removeSync(parameters.output);
     }
     fse.ensureDirSync(parameters.output);
-    
+
     // Copy parent assets if needed
     if (!fse.existsSync(path.join(parameters.output, '..', '..', 'assets'))) {
         await copyAssets({
             output: path.join(parameters.output, '..', '..'),
         });
     }
-    
+
     // Copy static assets that are needed for examples
     const staticDirs = ['css', 'image', 'screenshots', 'data'];
     for (const dir of staticDirs) {
@@ -538,7 +539,7 @@ export async function serveExamples(parameters) {
 
     // Generate HTML files to output directory
     // We'll also copy JS files there for Vite to serve
-    
+
     // Generate index.html (gallery page)
     const indexHtml = await generateIndex(htmlFiles, parameters);
     fse.writeFileSync(path.join(parameters.output, 'index.html'), indexHtml);
@@ -622,7 +623,7 @@ export async function serveExamples(parameters) {
 
     const port = server.config.server.port;
     const protocol = server.config.server.https ? 'https' : 'http';
-    
+
     await server.listen();
     log('examples', `Server running at ${protocol}://localhost:${port}`);
 
@@ -656,7 +657,7 @@ if (esMain(import.meta)) {
     if (cmd.processedArgs.length > 0) {
         options.example = cmd.processedArgs[0];
     }
-    
+
     // Also check for EXAMPLE environment variable
     if (process.env.EXAMPLE && !options.example) {
         options.example = process.env.EXAMPLE;
