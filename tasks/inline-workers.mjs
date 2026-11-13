@@ -46,7 +46,7 @@ function formatBytes(bytes) {
  *
  * Note: Bundling and minification is done with **esbuild**, as it is very fast (much faster than Webpack).
  *
- * Important note: this task works on the **transpiled files** (i.e babel-processed .js files in
+ * Important note: this task works on the **transpiled files** (i.e esbuild-processed .js files in
  * build/giro3d), not on the original source files!
  */
 
