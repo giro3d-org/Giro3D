@@ -91,7 +91,7 @@ interface RemoteData {
      * The actual volume of the LAS file. This is different from the volume of the octree.
      */
     volume: Box3;
-    nodes: Map<string, Hierarchy.Node>;
+    nodes: Map<string, { node: Hierarchy.Node; page: Hierarchy.Subtree }>;
     dimensions: Dimension.Map;
 }
 
@@ -107,7 +107,7 @@ const tmpSize = new Vector3();
 
 function createChild(
     sourceId: string,
-    nodes: Map<string, Hierarchy.Node>,
+    nodes: Map<string, { node: Hierarchy.Node }>,
     node: Octree.Octree<NodeInternalData>,
     geometricError: number,
     qx: 0 | 1,
@@ -150,9 +150,9 @@ function createChild(
             z,
             id,
             center,
-            pointCount: childNode.pointCount,
+            pointCount: childNode.node.pointCount,
             geometricError,
-            hasData: childNode.pointCount > 0,
+            hasData: childNode.node.pointCount > 0,
             sourceId,
             volume,
         },
@@ -161,24 +161,6 @@ function createChild(
     );
 
     return child;
-}
-
-async function loadSubtree(
-    getter: Getter,
-    root: Hierarchy.Page,
-    nodeMap: Map<string, Hierarchy.Node | undefined>,
-): Promise<void> {
-    const { nodes, pages } = await Copc.loadHierarchyPage(getter, root);
-
-    for (const [id, node] of Object.entries(nodes)) {
-        nodeMap.set(id, node);
-    }
-
-    for (const page of Object.values(pages)) {
-        if (page) {
-            await loadSubtree(getter, page, nodeMap);
-        }
-    }
 }
 
 /**
@@ -293,6 +275,18 @@ export default class COPCSource extends PointCloudSourceBase {
         this._getter = typeof options.url === 'string' ? createGetter(options.url) : options.url;
     }
 
+    private async loadHierarchyPage(
+        getter: Getter,
+        root: Hierarchy.Page,
+        nodeMap: Map<string, { node: Hierarchy.Node | undefined; page: Hierarchy.Subtree }>,
+    ): Promise<void> {
+        const hierarchyPage = await Copc.loadHierarchyPage(getter, root);
+
+        for (const [id, node] of Object.entries(hierarchyPage.nodes)) {
+            nodeMap.set(id, { node, page: hierarchyPage });
+        }
+    }
+
     protected async initializeOnce(): Promise<this> {
         const counter = this._opCounter;
 
@@ -306,13 +300,14 @@ export default class COPCSource extends PointCloudSourceBase {
 
         const volume = new Box3(new Vector3(minx, miny, minz), new Vector3(maxx, maxy, maxz));
 
-        const nodes = new Map<string, Hierarchy.Node>();
+        const nodes = new Map<string, { node: Hierarchy.Node; page: Hierarchy.Subtree }>();
 
-        await loadSubtree(this._getter, copc.info.rootHierarchyPage, nodes).finally(() =>
+        await this.loadHierarchyPage(this._getter, copc.info.rootHierarchyPage, nodes).finally(() =>
             counter.decrement(),
         );
 
-        const rootNode = nonNull(nodes.get('0-0-0-0'), 'FATAL: no root node in the LAS file.');
+        const root = nonNull(nodes.get('0-0-0-0'), 'FATAL: no root node in the LAS file.');
+        const rootNode = nonNull(root.node);
 
         const rootView = await this.loadPointDataView(this._getter, copc, rootNode).finally(() =>
             counter.decrement(),
@@ -355,14 +350,14 @@ export default class COPCSource extends PointCloudSourceBase {
         return Promise.resolve(result);
     }
 
-    public getHierarchy(): Promise<PointCloudNode> {
+    public getHierarchy(_node?: PointCloudNode): Promise<PointCloudNode[]> {
         const { copc, nodes } = this.ensureInitialized();
 
         const [xmin, ymin, zmin, xmax, ymax, zmax] = copc.info.cube;
 
         const volume = new Box3(new Vector3(xmin, ymin, zmin), new Vector3(xmax, ymax, zmax));
 
-        const rootNode = nonNull(nodes.get('0-0-0-0'));
+        const rootNode = nonNull(nodes.get('0-0-0-0')).node;
 
         const rootGeometricError = copc.info.spacing;
 
@@ -409,7 +404,7 @@ export default class COPCSource extends PointCloudSourceBase {
             return true;
         });
 
-        return Promise.resolve(root);
+        return Promise.resolve([root]);
     }
 
     public async getNodeData(params: GetNodeDataOptions): Promise<PointCloudNodeData> {
@@ -418,7 +413,7 @@ export default class COPCSource extends PointCloudSourceBase {
         const id = params.node.id;
         const priority = -params.node.depth;
 
-        const node = nodes.get(id);
+        const node = nodes.get(id)?.node;
 
         if (!node) {
             throw new Error('no such node: ' + id);

@@ -126,7 +126,14 @@ export interface PointCloudNode {
      * The children of this node. If undefined, this node is a leaf node. The array can contain
      * undefined items though (for example an octree that does not have 8 defined children).
      */
-    children?: Array<PointCloudNode | undefined>;
+    children?: Array<PointCloudNode | undefined> | 'unloaded';
+}
+
+export function traverseNodes(
+    roots: (PointCloudNode | undefined)[],
+    callback: (node: PointCloudNode) => boolean,
+): void {
+    roots.forEach(root => traverseNode(root, callback));
 }
 
 /**
@@ -148,7 +155,7 @@ export function traverseNode(
 
         const shouldContinue = callback(currentNode);
 
-        if (shouldContinue && currentNode.children) {
+        if (shouldContinue && Array.isArray(currentNode.children)) {
             for (let i = currentNode.children.length - 1; i >= 0; i--) {
                 const child = currentNode.children[i];
                 if (child) {
@@ -252,9 +259,12 @@ export interface PointCloudSource<
     /**
      * Gets the hierarchy of this point cloud.
      *
+     * @param node - If specified, will fetch the hierarchy under this node. Otherwise will fetch
+     * the hierarchy under the root node.
+     *
      * Note: this does not provide point cloud data itself.
      */
-    getHierarchy(): Promise<PointCloudNode>;
+    getHierarchy(node?: PointCloudNode): Promise<PointCloudNode[]>;
 
     /**
      * Gets the metadata of this source.
@@ -326,7 +336,7 @@ export abstract class PointCloudSourceBase<
      *
      * Note: this does not provide point cloud data itself.
      */
-    public abstract getHierarchy(): Promise<PointCloudNode>;
+    public abstract getHierarchy(node?: PointCloudNode): Promise<PointCloudNode[]>;
 
     /**
      * Gets the metadata of this source.

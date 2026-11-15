@@ -574,7 +574,7 @@ export default class PotreeSource extends PointCloudSourceBase {
         };
     }
 
-    public async getHierarchy(): Promise<PointCloudNode> {
+    public async getHierarchy(): Promise<PointCloudNode[]> {
         this._opCounter.increment();
 
         const metadata = nonNull(this._datasetInfo?.metadata, 'not initialized');
@@ -595,7 +595,7 @@ export default class PotreeSource extends PointCloudSourceBase {
             center: volume.getCenter(new Vector3()),
         }).finally(() => this._opCounter.decrement());
 
-        return root;
+        return [root];
     }
 
     public dispose(): void {

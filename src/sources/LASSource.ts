@@ -283,7 +283,7 @@ export default class LASSource extends PointCloudSourceBase {
         return Promise.resolve(result);
     }
 
-    public async getHierarchy(): Promise<PointCloudNode> {
+    public async getHierarchy(): Promise<PointCloudNode[]> {
         const { min, max, pointCount } = nonNull(this._header, 'not initialized');
 
         const volume = new Box3().set(
@@ -302,7 +302,7 @@ export default class LASSource extends PointCloudSourceBase {
             pointCount,
         };
 
-        return uniqueNode;
+        return [uniqueNode];
     }
 
     public async getNodeData(params: GetNodeDataOptions): Promise<PointCloudNodeData> {

@@ -4,8 +4,9 @@
  * SPDX-License-Identifier: MIT
  */
 
-import type { Box3, ColorRepresentation } from 'three';
+import type { ColorRepresentation } from 'three';
 
+import { Box3 } from 'three';
 import {
     Box3Helper,
     BufferGeometry,
@@ -48,6 +49,7 @@ import { ColorSlot } from '../renderer/pointcloudmaterial/slots/ColorSlot';
 import { ScalarSlot } from '../renderer/pointcloudmaterial/slots/ScalarSlot';
 import {
     traverseNode,
+    traverseNodes,
     type PointCloudAttribute,
     type PointCloudMetadata,
     type PointCloudNode,
@@ -297,7 +299,7 @@ class PointCloud<TUserData extends EntityUserData = EntityUserData>
     private _colorimetry: ColorimetryOptions = defaultColorimetryOptions();
 
     // Available after initialization
-    private _rootNode: PointCloudNode | null = null;
+    private _rootNodes: (PointCloudNode | undefined)[] | null = null;
     private _metadata: PointCloudMetadata | null = null;
     private _volumeHelper: Box3Helper | null = null;
 
@@ -1028,13 +1030,27 @@ class PointCloud<TUserData extends EntityUserData = EntityUserData>
     }
 
     public override getBoundingBox(): Box3 | null {
-        return this.getWorldSpaceVolume(this._metadata?.volume ?? this._rootNode?.volume ?? null);
+        if (this._metadata?.volume) {
+            return this.getWorldSpaceVolume(this._metadata.volume);
+        }
+
+        if (this._rootNodes != null && this._rootNodes.length > 0) {
+            const box = new Box3().makeEmpty();
+            this._rootNodes.forEach(n => {
+                if (n) {
+                    box.copy(box.union(n.volume));
+                }
+            });
+            return this.getWorldSpaceVolume(box);
+        }
+
+        return null;
     }
 
     protected override async preprocess(_opts: EntityPreprocessOptions): Promise<void> {
         await this.source.initialize();
 
-        this._rootNode = await this.source.getHierarchy();
+        this._rootNodes = await this.source.getHierarchy();
 
         this._metadata = await this.source.getMetadata();
 
@@ -1076,7 +1092,7 @@ class PointCloud<TUserData extends EntityUserData = EntityUserData>
     }
 
     public override preUpdate(context: Context): unknown[] | null {
-        if (!this.visible || this.frozen || !this._rootNode) {
+        if (!this.visible || this.frozen || !this._rootNodes) {
             return null;
         }
 
@@ -1094,7 +1110,7 @@ class PointCloud<TUserData extends EntityUserData = EntityUserData>
             preSSE = (devicePixelHeight * camera.near) / (camera.top - camera.bottom);
         }
 
-        traverseNode(this._rootNode, node => {
+        traverseNodes(this._rootNodes, node => {
             const nodeVisible = view.isBox3Visible(node.volume, this.object3d.matrixWorld);
             const contentVisible = nodeVisible && this.testNodeSSE(view, node, preSSE);
 
@@ -1548,6 +1564,12 @@ class PointCloud<TUserData extends EntityUserData = EntityUserData>
         } else if (info.state === 'empty') {
             this._stateMachine.transition(info, 'loading');
         }
+
+        if (node.children === 'unloaded') {
+            // Let's load the sub-tree hierarchy for this node
+            const subtree = await this.source.getHierarchy(node);
+            node.children = subtree;
+        }
     }
 
     private getNodeInfo(node: PointCloudNode): NodeInfo {
@@ -1581,7 +1603,11 @@ class PointCloud<TUserData extends EntityUserData = EntityUserData>
     }
 
     private forEachNodeInfo(callbackfn: (info: NodeInfo) => void): void {
-        traverseNode(this._rootNode, node => {
+        if (!this._rootNodes) {
+            return;
+        }
+
+        traverseNodes(this._rootNodes, node => {
             callbackfn(this.getNodeInfo(node));
             return true;
         });

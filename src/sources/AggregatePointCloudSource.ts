@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { Box3, Vector3 } from 'three';
+import { Box3 } from 'three';
 
 import type { GetMemoryUsageContext } from '../core/MemoryUsage';
 
@@ -145,26 +145,10 @@ export default class AggregatePointCloudSource extends PointCloudSourceBase {
         return 1;
     }
 
-    public async getHierarchy(): Promise<PointCloudNode> {
+    public async getHierarchy(): Promise<PointCloudNode[]> {
         const allRootNodes = await Promise.all(this._sources.map(s => s.getHierarchy()));
 
-        const volume = new Box3().makeEmpty();
-        for (const node of allRootNodes) {
-            volume.union(node.volume);
-        }
-
-        const pseudoRoot: PointCloudNode = {
-            hasData: false,
-            volume,
-            sourceId: this.id,
-            center: volume.getCenter(new Vector3()),
-            id: '__pseudoRoot',
-            depth: -1,
-            children: allRootNodes,
-            geometricError: +Infinity,
-        };
-
-        return pseudoRoot;
+        return allRootNodes.flat();
     }
 
     public async getMetadata(): Promise<PointCloudMetadata> {

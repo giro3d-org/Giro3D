@@ -60,7 +60,7 @@ export default class StaticPointCloudSource
         return Promise.resolve(this);
     }
 
-    public override getHierarchy(): Promise<PointCloudNode> {
+    public override getHierarchy(): Promise<PointCloudNode[]> {
         const unique: PointCloudNode = {
             center: this._origin,
             depth: 0,
@@ -72,7 +72,7 @@ export default class StaticPointCloudSource
             geometricError: this._spacing,
         };
 
-        return Promise.resolve(unique);
+        return Promise.resolve([unique]);
     }
 
     public override getMetadata(): Promise<PointCloudMetadata> {
