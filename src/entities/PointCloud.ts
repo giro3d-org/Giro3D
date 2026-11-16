@@ -1058,6 +1058,13 @@ class PointCloud<TUserData extends EntityUserData = EntityUserData>
     }
 
     private deleteNodeHierarchy(root: PointCloudNode): void {
+        const rootInfo = this.getNodeInfo(root);
+
+        if (rootInfo.state === 'empty' || rootInfo.state === 'hidden') {
+            // No need to visit the sub-hierarchy
+            return;
+        }
+
         // Delete this node and its descendants
         traverseNode(root, subNode => {
             const subInfo = this.getNodeInfo(subNode);
