@@ -265,6 +265,7 @@ class PointCloud<TUserData extends EntityUserData = EntityUserData>
     private readonly _tileVolumeRoot: Group = new Group();
     private readonly _pointsRoot: Group = new Group();
     private readonly _cleanupPollingInterval: NodeJS.Timeout;
+    private readonly _hiddenNodes: Set<NodeInfo> = new Set();
 
     private readonly _classificationsPerAttribute: Map<string, Classification[]> = new Map();
     private readonly _colorMapPerAttribute: Map<string, ColorMap> = new Map();
@@ -354,6 +355,10 @@ class PointCloud<TUserData extends EntityUserData = EntityUserData>
             this.notifyChange();
         };
 
+        this._stateMachine.addPreTransitionCallback('hidden', ({ value }) => {
+            this._hiddenNodes.delete(value);
+        });
+
         this._stateMachine.addPostTransitionCallback('hidden', ({ value }) => {
             // If the node was being loaded, let's abort the loading
             value.controller?.abort('aborted');
@@ -362,6 +367,8 @@ class PointCloud<TUserData extends EntityUserData = EntityUserData>
             if (value.mesh) {
                 value.mesh.visible = false;
             }
+
+            this._hiddenNodes.add(value);
 
             onStateChanged(value);
         });
@@ -1274,10 +1281,15 @@ class PointCloud<TUserData extends EntityUserData = EntityUserData>
         }
         return classifications;
     }
+
     private cleanup(): void {
+        if (this._hiddenNodes.size === 0) {
+            return;
+        }
+
         const now = performance.now();
 
-        this.forEachNodeInfo(info => {
+        [...this._hiddenNodes].forEach(info => {
             this.cleanupNodeIfNecessary(info, now);
         });
     }
