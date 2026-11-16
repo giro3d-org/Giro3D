@@ -71,6 +71,8 @@ class Inspector {
     public gui: GUI;
     public folders: Panel[];
 
+    private updateListener: VoidFunction;
+
     /**
      * Creates an instance of the inspector.
      *
@@ -98,7 +100,8 @@ class Inspector {
 
         parent.appendChild(this.gui.domElement);
 
-        instance.addEventListener('update-end', () => this.update());
+        this.updateListener = this.update.bind(this);
+        instance.addEventListener('update-end', this.updateListener);
 
         this.folders = [];
 
@@ -160,7 +163,7 @@ class Inspector {
      */
     public detach(): void {
         this.clearPanels();
-        this.instance.removeEventListener('update-end', () => this.update());
+        this.instance.removeEventListener('update-end', this.updateListener);
         this.gui.domElement.remove();
     }
 
