@@ -118,7 +118,7 @@ function updateColorMapMinMax() {
     setMax(max, lowerBound, upperBound);
 }
 
-const [, currentRamp] = bindDropDown('ramp', ramp => {
+bindDropDown('ramp', ramp => {
     options.colorRamp = ramp;
     updateColorMap();
 });

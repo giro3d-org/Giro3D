@@ -5,7 +5,6 @@
  */
 
 import GeoJSON from 'ol/format/GeoJSON.js';
-import { Polygon } from 'ol/geom.js';
 import XYZ from 'ol/source/XYZ.js';
 import { DoubleSide } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
@@ -26,7 +25,6 @@ const x = -13602618.385789588;
 const y = 5811042.273912458;
 
 const extent = new Extent(CoordinateSystem.epsg3857, x - 12000, x + 13000, y - 4000, y + 26000);
-
 const instance = new Instance({
     target: 'view',
     crs: extent.crs,
@@ -43,7 +41,7 @@ const map = new Map({
 
 instance.add(map);
 
-/** @type {Polygon} */
+/** @type {import ('ol/geom').Polygon} */
 let footprint;
 
 /**

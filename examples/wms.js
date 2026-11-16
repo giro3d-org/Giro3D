@@ -19,8 +19,7 @@ import { bindDropDown } from './widgets/bindDropDown';
 import StatusBar from './widgets/StatusBar';
 
 const epsg3857 = CoordinateSystem.epsg3857;
-const epsg4326 = CoordinateSystem.epsg4326;
-const epsg2154 = CoordinateSystem.register(
+CoordinateSystem.register(
     'EPSG:2154',
     `PROJCRS["RGF93 v1 / Lambert-93",
         BASEGEOGCRS["RGF93 v1",

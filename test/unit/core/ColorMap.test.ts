@@ -279,6 +279,7 @@ describe('getTexture', () => {
         const texture = cm.getTexture();
         const data = texture.image.data;
 
+        // oxlint-disable-next-line oxc/erasing-op
         expect(data[0 * 4 + 3]).toEqual(Math.round(255 * 0.2));
         expect(data[1 * 4 + 3]).toEqual(Math.round(255 * 1));
         expect(data[2 * 4 + 3]).toEqual(Math.round(255 * 0.5));
