@@ -26,7 +26,6 @@ import Extent from '@giro3d/giro3d/core/geographic/Extent';
 import Instance from '@giro3d/giro3d/core/Instance';
 import ColorLayer from '@giro3d/giro3d/core/layer/ColorLayer';
 import ElevationLayer from '@giro3d/giro3d/core/layer/ElevationLayer';
-import Entity3D from '@giro3d/giro3d/entities/Entity3D';
 import Map from '@giro3d/giro3d/entities/Map';
 import { MapLightingMode } from '@giro3d/giro3d/entities/MapLightingOptions';
 import MapboxTerrainFormat from '@giro3d/giro3d/formats/MapboxTerrainFormat';
@@ -48,11 +47,6 @@ import updateColorMapPreview from './widgets/updateColorMapPreview';
 const lambert93 = CoordinateSystem.register(
     'EPSG:2154',
     '+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
-);
-
-const utm32 = CoordinateSystem.register(
-    'EPSG:25832',
-    '+proj=utm +zone=32 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
 );
 
 const params = {
@@ -117,7 +111,7 @@ function createLights(instance, center) {
  * @property {Extent} areaOfInterest
  * @property {THREE.Box3} volume
  * @property {Vector3} center,
- * @property {Array<THREE.Object3D|Entity3D>} inputs
+ * @property {Array<THREE.Object3D|import('@giro3d/giro3d/entities/Entity3D').default>} inputs
  * @property {[number, number, number]} allowedSpatialResolutionRange
  */
 
@@ -541,7 +535,7 @@ async function run(scenarioName) {
         const dd = params.date.getUTCDay();
         const start = new Date(Date.UTC(yyyy, mm, dd, params.startTime));
         const end = new Date(Date.UTC(yyyy, mm, dd, params.endTime));
-        inputs.forEach(obj => (obj.visible = true));
+        inputs.forEach((/** @type {{ visible: boolean; }} */ obj) => (obj.visible = true));
 
         const sunExposure = new SunExposure({
             instance,
@@ -585,7 +579,9 @@ async function run(scenarioName) {
             .then(results => {
                 currentPointCloud = results.entity;
                 if (!params.showInputs) {
-                    inputs.forEach(obj => (obj.visible = false));
+                    inputs.forEach(
+                        (/** @type {{ visible: boolean; }} */ obj) => (obj.visible = false),
+                    );
                 }
 
                 instance.notifyChange();

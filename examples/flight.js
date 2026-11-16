@@ -116,10 +116,8 @@ const featureCollection = new FeatureCollection({
     extent,
     ignoreZ: true,
     elevation: 0,
-    style: feature => {
-        return {
-            stroke: { color: 'black', lineWidth: 2 },
-        };
+    style: {
+        stroke: { color: 'black', lineWidth: 2 },
     },
 });
 minimapInstance.add(featureCollection);

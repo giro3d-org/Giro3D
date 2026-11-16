@@ -4,9 +4,8 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { Toast } from 'bootstrap';
 import OSM from 'ol/source/OSM.js';
-import { AmbientLight, Color, DirectionalLight, Mesh, Vector3 } from 'three';
+import { AmbientLight, Color, DirectionalLight, Mesh } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 import GlobeControls from '@giro3d/giro3d/controls/GlobeControls.js';
@@ -67,7 +66,7 @@ let globe = undefined;
 let inspector = undefined;
 
 /**
- * @param {Vector3} target
+ * @param {import('three').Vector3} target
  */
 function initControls(target) {
     if (params.globeMode) {
@@ -96,14 +95,6 @@ function initControls(target) {
         mapControls.target.copy(target);
         instance.view.setControls(mapControls);
     }
-}
-
-// setup the error displaying
-const toastLiveExample = document.getElementById('liveToast');
-const toastBootstrap = Toast.getOrCreateInstance(toastLiveExample);
-function displayError(evt) {
-    document.getElementById('error').innerText = evt.error.message;
-    toastBootstrap.show();
 }
 
 /** @param {string} url */
@@ -156,7 +147,7 @@ async function run(url) {
     // If the tileset comes from an ifc converted with py3dtiles, hide some elements that don't bring visual value
     tileset.addEventListener('object-created', evt => {
         const scene = evt.obj;
-        scene.traverse(obj => {
+        scene.traverse((/** @type {import('three').Object3D} */ obj) => {
             if (obj.userData?.class === 'IfcSpace') {
                 obj.visible = false;
                 instance.notifyChange();
@@ -198,7 +189,7 @@ function highlight(evt) {
         radius: 5,
         limit: 10,
         where: [tileset],
-        filter: pick => pick.object.visible, // Ignore invisible objects, such as IfcSpace elements
+        filter: (/** @type {{ object: { visible: any; }; }} */ pick) => pick.object.visible, // Ignore invisible objects, such as IfcSpace elements
     });
 
     if (highlighted && highlighted.material.color != null) {

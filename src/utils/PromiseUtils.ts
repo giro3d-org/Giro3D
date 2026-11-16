@@ -15,7 +15,7 @@ function delay(duration: number): Promise<void> {
 }
 
 function nextFrame(): Promise<void> {
-    return new Promise(resolve => requestAnimationFrame(_ => resolve()));
+    return new Promise(resolve => requestAnimationFrame(() => resolve()));
 }
 
 export enum PromiseStatus {

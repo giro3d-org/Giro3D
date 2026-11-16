@@ -7,9 +7,9 @@
 import proj4 from 'proj4';
 import { Vector3 } from 'three';
 
-import Coordinates from '@giro3d/giro3d/core/geographic/Coordinates.js';
-import Instance from '@giro3d/giro3d/core/Instance.js';
 import * as MemoryUsage from '@giro3d/giro3d/core/MemoryUsage.js';
+
+/** @typedef {import('@giro3d/giro3d/core/Instance').default} Instance */
 
 const VIEW_PARAM = 'view';
 let currentURL = '';
@@ -39,6 +39,10 @@ let crsButton;
 let coordsAsLatLon = false;
 let ecefToLatlonConverter;
 
+/**
+ * @param {Instance} instance
+ * @param {string | URL} url
+ */
 function processUrl(instance, url) {
     const pov = new URL(url).searchParams.get(VIEW_PARAM);
     if (pov) {
@@ -46,7 +50,11 @@ function processUrl(instance, url) {
             const [x, y, z, tx, ty, tz] = pov.split(',').map(s => Number.parseFloat(s));
 
             instance.view.camera.position.set(x, y, z);
-            instance.view.controls?.target?.set(tx, ty, tz);
+            const controls = instance.view.controls;
+
+            if (controls && 'target' in controls && controls.target instanceof Vector3) {
+                controls.target.set(tx, ty, tz);
+            }
         } finally {
             instance.notifyChange();
         }
@@ -57,6 +65,9 @@ function updateUrl() {
     const url = new URL(document.URL);
     url.searchParams.delete(VIEW_PARAM);
 
+    /**
+     * @param {number} n
+     */
     function round10(n) {
         return Math.round(n * 10) / 10;
     }
@@ -142,6 +153,9 @@ function updateCoordinates() {
     }
 }
 
+/**
+ * @param {MouseEvent} mouseEvent
+ */
 function pick(mouseEvent) {
     updateCameraMoving();
 
@@ -185,7 +199,7 @@ function bind(instance, options = {}) {
 
     try {
         ecefToLatlonConverter = proj4(instance.coordinateSystem.id, 'EPSG:4979');
-    } catch (e) {
+    } catch {
         ecefToLatlonConverter = null;
     }
 
