@@ -72,6 +72,8 @@ The following people have contributed to Giro3D.
 - [Sourcepole](https://sourcepole.ch)
     - [Sandro Mani](https://github.com/manisandro)
 
+- [Kamil Piwowarski](https://gitlab.com/kapiwko)
+
 ---
 
 The following organizations supported Giro3D:
