@@ -178,6 +178,11 @@ export class Viewshed implements Disposable {
     private readonly _nearFarBias: Vector3 = new Vector3();
     private readonly _alreadyPatchedMaterialsIds = new Set<string>();
 
+    private readonly _injectShader: (
+        parameters: WebGLProgramParametersWithUniforms,
+        renderer: WebGLRenderer,
+    ) => void;
+
     private _mode: ViewshedMode;
     private _textureSize: number;
     private _objects: Array<Object3D | Entity3D> = [];
@@ -203,6 +208,8 @@ export class Viewshed implements Disposable {
         this._nearFarBias.z = options.bias ?? 0.5;
         this._visibleColor.copy(readColor(options.visibleColor ?? DEFAULT_VISIBLE_COLOR));
         this._occludedColor.copy(readColor(options.occludedColor ?? DEFAULT_OCCLUDED_COLOR));
+
+        this._injectShader = this.injectShader.bind(this);
 
         // Create render target
         this.setupViewshedCamera();
@@ -267,10 +274,10 @@ export class Viewshed implements Disposable {
             parameters.uniforms.occludedColor = { value: this._occludedColor };
             parameters.uniformsNeedUpdate = true;
         } else {
-            if (material.onBeforeCompile !== this.injectShader) {
+            if (material.onBeforeCompile !== this._injectShader) {
                 material.userData.originalOnBeforeCompile = material.onBeforeCompile;
                 material.userData.originalCustomProgramCacheKey = material.customProgramCacheKey;
-                material.onBeforeCompile = this.injectShader.bind(this);
+                material.onBeforeCompile = this._injectShader;
                 const shaderKey = MathUtils.generateUUID();
                 material.customProgramCacheKey = (): string => shaderKey;
                 material.needsUpdate = true;
