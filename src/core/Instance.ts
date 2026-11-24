@@ -487,6 +487,7 @@ class Instance extends EventDispatcher<InstanceEvents> implements Progress {
         }
         this._scene.remove(this._threeObjects);
 
+        this._mainLoop.dispose();
         this._engine.dispose();
         this._view.dispose();
         this.viewport.remove();
