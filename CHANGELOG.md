@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.0.8 (2026-11-26)
+
+### Perf
+
+- **PointCloud**: optimize sub-hierarchy deletion by visiting each subtree only once
+- **PointCloud**: optimize cleanup step by not traversing the entire hierarchy
+
 ## v2.0.7 (2026-11-10)
 
 ### Fix
