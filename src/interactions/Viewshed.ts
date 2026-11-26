@@ -242,6 +242,10 @@ export class Viewshed implements Disposable {
     }
 
     private unpatchMaterial(material: Material): void {
+        const hasDefines = material as unknown as HasDefines;
+        MaterialUtils.setDefine(hasDefines, 'VIEWSHED_CUBEMAP', false);
+        MaterialUtils.setDefine(hasDefines, 'VIEWSHED_FRUSTUM', false);
+
         if (material.userData.originalOnBeforeCompile !== undefined) {
             material.onBeforeCompile = material.userData.originalOnBeforeCompile;
             delete material.userData.originalOnBeforeCompile;
