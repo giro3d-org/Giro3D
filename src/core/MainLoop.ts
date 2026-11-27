@@ -9,6 +9,7 @@ import { Clock, MathUtils, Plane, Sphere, Vector3 } from 'three';
 import type Entity from '../entities/Entity';
 import type View from '../renderer/View';
 import type Context from './Context';
+import type Disposable from './Disposable';
 import type Instance from './Instance';
 
 import { isEntity3D } from '../entities/Entity3D';
@@ -57,7 +58,7 @@ function updateElements(context: Context, entity: Entity, elements?: unknown[] |
     }
 }
 
-class MainLoop {
+class MainLoop implements Disposable {
     private _renderingState: RenderingState;
     public get renderingState(): RenderingState {
         return this._renderingState;
@@ -68,6 +69,8 @@ class MainLoop {
     private readonly _changeSources: Set<unknown>;
     private readonly _clock = new Clock();
     private _frame = 0;
+    private _animationFrameRequestHandle: number | null = null;
+    private _disposed = false;
 
     /**
      * The number of frames processed.
@@ -120,10 +123,20 @@ class MainLoop {
             if (immediate) {
                 this.step(instance);
             } else {
-                requestAnimationFrame(() => {
+                if (this._animationFrameRequestHandle != null) {
+                    cancelAnimationFrame(this._animationFrameRequestHandle);
+                }
+                this._animationFrameRequestHandle = requestAnimationFrame(() => {
                     this.step(instance);
                 });
             }
+        }
+    }
+
+    public dispose(): void {
+        this._disposed = true;
+        if (this._animationFrameRequestHandle != null) {
+            cancelAnimationFrame(this._animationFrameRequestHandle);
         }
     }
 
@@ -212,6 +225,10 @@ class MainLoop {
     }
 
     private step(instance: Instance): void {
+        if (this._disposed) {
+            return;
+        }
+
         const dt = this._clock.getDelta() * 1000;
 
         const frame = this._frame++;
