@@ -47,7 +47,7 @@ const instance = new Instance({
 });
 
 let observerHeight = 2;
-const originition = new THREE.Vector3(0, 10, 4);
+const origin = new THREE.Vector3(0, 10, 4);
 const observerDirection = new THREE.Vector3(1, 0, 0);
 let showVisibilityTexture = true;
 
@@ -81,18 +81,19 @@ const viewshed = new Viewshed({
 const circle = new Circle([0, 0], viewshed.maxDistance);
 const feature = new Feature(circle);
 
-/** @type {ColorLayer} */
-let vectorLayer;
+const circleStroke = new Stroke({
+    color: 'yellow',
+    width: 2,
+});
 
 const circleSource = new VectorSource({
     data: [feature],
     style: new Style({
-        stroke: new Stroke({
-            color: 'yellow',
-            width: 2,
-        }),
+        stroke: circleStroke,
     }),
 });
+
+const vectorLayer = new ColorLayer({ source: circleSource });
 
 instance.add(map).then(async () => {
     const url = 'https://3d.oslandia.com/giro3d/cache/wmts/ign.xml';
@@ -133,8 +134,6 @@ instance.add(map).then(async () => {
             );
         })
         .catch(console.error);
-
-    vectorLayer = new ColorLayer({ source: circleSource });
 
     map.addLayer(vectorLayer);
 });
@@ -177,7 +176,7 @@ instance.domElement.addEventListener('mousemove', e => {
 
         point.setZ(point.z + observerHeight);
 
-        originition.copy(point);
+        origin.copy(point);
 
         observer.setPoints([point]);
         observer.floorElevation = floorZ;
@@ -189,8 +188,10 @@ instance.domElement.addEventListener('mousemove', e => {
 const setMode = (/** @type {string} */ mode) => {
     if (mode === 'cubemap') {
         viewshed.mode = ViewshedMode.Omnidirectional;
+        vectorLayer.visible = true;
     } else if (mode === 'frustum') {
         viewshed.mode = ViewshedMode.Frustum;
+        vectorLayer.visible = false;
     }
     updateTextureHelper();
     instance.notifyChange();
@@ -215,6 +216,8 @@ const setBias = (/** @type {number} */ bias) => {
 const setVisibleColor = (/** @type {THREE.ColorRepresentation} */ v) => {
     const col = new THREE.Color(v);
     viewshed.visibleColor = new THREE.Vector4(col.r * 255, col.g * 255, col.b * 255, 0.5);
+    observer.color = col;
+    circleStroke.setColor('#' + col.getHexString());
     instance.notifyChange();
 };
 const setObserverHeight = (/** @type {number} */ height) => {
@@ -238,8 +241,15 @@ const setShowTexture = (/** @type {boolean} */ show) => {
 };
 const setShowCircle = (/** @type {boolean} */ show) => {
     if (vectorLayer) {
-        vectorLayer.visible = show;
+        vectorLayer.visible = show && viewshed.mode === ViewshedMode.Omnidirectional;
         instance.notifyChange(vectorLayer);
+    }
+};
+const setEnableViewshed = (/** @type {boolean} */ enable) => {
+    if (enable) {
+        viewshed.objects = [map];
+    } else {
+        viewshed.objects = [];
     }
 };
 setMode(bindDropDown('mode', setMode)[1]);
@@ -253,24 +263,25 @@ setCameraAzimuth(bindNumberInput('camera-azimuth', setCameraAzimuth)[1]);
 setTerrainResolution(bindNumericalDropDown('terrain-resolution', setTerrainResolution)[1]);
 setShowTexture(bindToggle('show-texture', setShowTexture)[1]);
 setShowCircle(bindToggle('show-circle', setShowCircle)[1]);
+setEnableViewshed(bindToggle('enable-viewshed', setEnableViewshed)[1]);
 
 function updateTextureHelperPosition() {
     if (textureHelper) {
         textureHelper.texture = viewshed.getTexture();
 
         if (viewshed.mode === ViewshedMode.Omnidirectional) {
-            textureHelper.position.copy(originition);
+            textureHelper.position.copy(origin);
             textureHelper.material.side = THREE.BackSide;
             textureHelper.scale.set(20_000, 20_000, 20_000);
         } else {
             textureHelper.material.side = THREE.DoubleSide;
             textureHelper.position.copy(
-                originition.clone().addScaledVector(observerDirection, viewshed.maxDistance),
+                origin.clone().addScaledVector(observerDirection, viewshed.maxDistance),
             );
             textureHelper.quaternion.copy(new THREE.Quaternion());
             textureHelper.rotateX(Math.PI / 2);
 
-            textureHelper.lookAt(originition);
+            textureHelper.lookAt(origin);
             const dist = viewshed.maxDistance;
             const halfFov = viewshed.frustumFov / 2;
 
@@ -285,7 +296,7 @@ function updateTextureHelperPosition() {
 }
 
 instance.addEventListener('after-render', () => {
-    viewshed.origin = originition;
+    viewshed.origin = origin;
     viewshed.direction = observerDirection;
 
     updateTextureHelperPosition();

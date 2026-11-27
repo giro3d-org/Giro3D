@@ -10,8 +10,22 @@ tags: ['viewshed', 'terrain', 'map']
         <div class="card-body">
             <p><b>Viewshed parameters</b></p>
 
+            <div class="form-check form-switch">
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    role="switch"
+                    checked
+                    id="enable-viewshed"
+                    autocomplete="off"
+                />
+                <label class="form-check-label" for="enable-viewshed"
+                    >Enable viewshed on terrain</label
+                >
+            </div>
+
             <!-- Scenario selector -->
-            <div class="input-group">
+            <div class="input-group mt-2">
                 <label class="input-group-text col-6" for="scenario">Mode</label>
                 <select class="form-select" id="mode" autocomplete="off" title="Viewshed mode">
                     <option value="cubemap" selected>Omnidirectional</option>
